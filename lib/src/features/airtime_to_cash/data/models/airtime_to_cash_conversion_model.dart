@@ -120,6 +120,8 @@ class AirtimeToCashConversionModel extends AirtimeToCashConversion {
         return A2CConversionStatus.failed;
       case 'processing':
         return A2CConversionStatus.processing;
+      case 'awaiting_settlement':
+        return A2CConversionStatus.awaitingSettlement;
       default:
         return A2CConversionStatus.pending;
     }

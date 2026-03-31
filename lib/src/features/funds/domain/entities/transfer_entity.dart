@@ -9,6 +9,8 @@ class TransferEntity extends Equatable {
   final Int64 totalAmount; // Minor units
   final DateTime createdAt;
   final DateTime? scheduledAt;
+  final String? providerReference; // Flutterwave/provider transaction reference
+  final String? internalReference; // Internal TRF-{id} reference
 
   const TransferEntity({
     required this.transferId,
@@ -18,6 +20,8 @@ class TransferEntity extends Equatable {
     required this.totalAmount,
     required this.createdAt,
     this.scheduledAt,
+    this.providerReference,
+    this.internalReference,
   });
 
   bool get isScheduled => scheduledAt != null && status == 'scheduled';
@@ -31,5 +35,7 @@ class TransferEntity extends Equatable {
         totalAmount,
         createdAt,
         scheduledAt,
+        providerReference,
+        internalReference,
       ];
 }

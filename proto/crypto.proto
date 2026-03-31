@@ -2,9 +2,8 @@ syntax = "proto3";
 
 package pb;
 
-option go_package = "crypto-microservice/pb";
+option go_package = "github.com/lazervault/crypto-service/proto;proto";
 
-import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 
 // ============================================================================
@@ -61,8 +60,6 @@ message CryptoMessage {
   google.protobuf.Timestamp atl_date = 24;
   google.protobuf.Timestamp last_updated = 25;
   repeated PricePoint price_history = 26;
-
-  // Additional fields for detailed view
   string description = 27;
   repeated string categories = 28;
   map<string, string> links = 29;
@@ -86,14 +83,13 @@ message PricePoint {
 // REQUEST/RESPONSE MESSAGES
 // ============================================================================
 
-// Get Cryptos
 message GetCryptosRequest {
   int32 page = 1;
   int32 per_page = 2;
-  string vs_currency = 3; // Default: usd
-  string order = 4; // market_cap_desc, volume_desc, etc.
-  repeated string ids = 5; // Optional: specific crypto IDs
-  string category = 6; // Optional: defi, stablecoins, etc.
+  string vs_currency = 3;
+  string order = 4;
+  repeated string ids = 5;
+  string category = 6;
 }
 
 message GetCryptosResponse {
@@ -101,20 +97,18 @@ message GetCryptosResponse {
   CryptoPaginationInfo pagination = 2;
 }
 
-// Get Crypto By ID
 message GetCryptoByIdRequest {
   string id = 1;
   bool include_market_data = 2;
   bool include_community_data = 3;
   bool include_developer_data = 4;
-  string vs_currency = 5; // Default: usd
+  string vs_currency = 5;
 }
 
 message GetCryptoByIdResponse {
   CryptoMessage crypto = 1;
 }
 
-// Search Cryptos
 message SearchCryptosRequest {
   string query = 1;
 }
@@ -123,12 +117,11 @@ message SearchCryptosResponse {
   repeated CryptoMessage cryptos = 1;
 }
 
-// Get Crypto Price History
 message GetCryptoPriceHistoryRequest {
   string id = 1;
-  string range = 2; // 1d, 7d, 30d, 90d, 1y, all
-  string vs_currency = 3; // Default: usd
-  int32 interval = 4; // Optional: data interval in minutes
+  string range = 2;
+  string vs_currency = 3;
+  int32 interval = 4;
 }
 
 message GetCryptoPriceHistoryResponse {
@@ -137,31 +130,28 @@ message GetCryptoPriceHistoryResponse {
   string range = 3;
 }
 
-// Get Trending Cryptos
 message GetTrendingCryptosRequest {
-  int32 limit = 1; // Default: 10
+  int32 limit = 1;
 }
 
 message GetTrendingCryptosResponse {
   repeated CryptoMessage cryptos = 1;
 }
 
-// Get Top Cryptos
 message GetTopCryptosRequest {
-  int32 limit = 1; // Default: 100
-  string vs_currency = 2; // Default: usd
+  int32 limit = 1;
+  string vs_currency = 2;
 }
 
 message GetTopCryptosResponse {
   repeated CryptoMessage cryptos = 1;
 }
 
-// Get Market Chart
 message GetMarketChartRequest {
   string id = 1;
   string vs_currency = 2;
   int32 days = 3;
-  string interval = 4; // daily, hourly
+  string interval = 4;
 }
 
 message GetMarketChartResponse {
@@ -170,10 +160,7 @@ message GetMarketChartResponse {
   repeated PricePoint total_volumes = 3;
 }
 
-// Get Global Market Data
-message GetGlobalMarketDataRequest {
-  // No parameters needed
-}
+message GetGlobalMarketDataRequest {}
 
 message GetGlobalMarketDataResponse {
   double total_market_cap = 1;
@@ -186,28 +173,29 @@ message GetGlobalMarketDataResponse {
 }
 
 // ============================================================================
-// EXCHANGE RATE
+// CRYPTO → FIAT SPOT RATE (crypto-service)
+// Message names are crypto-specific so generated descriptors do not collide with
+// exchange-service's pb.GetExchangeRate* (same binary may link both stubs).
 // ============================================================================
 
-message GetExchangeRateRequest {
-  string crypto_id = 1;
-  string fiat_currency = 2; // e.g., NGN, GBP, USD
-}
-
-message GetExchangeRateResponse {
+message GetCryptoFiatRateRequest {
   string crypto_id = 1;
   string fiat_currency = 2;
-  double rate = 3;             // Current exchange rate
-  double fee_percentage = 4;   // Platform fee percentage
-  double spread = 5;           // Spread markup
-  google.protobuf.Timestamp valid_until = 6; // Rate expiry time
+}
+
+message GetCryptoFiatRateResponse {
+  string crypto_id = 1;
+  string fiat_currency = 2;
+  double rate = 3;
+  double fee_percentage = 4;
+  double spread = 5;
+  google.protobuf.Timestamp valid_until = 6;
 }
 
 // ============================================================================
 // WALLET & TRADING METHODS
 // ============================================================================
 
-// Get Crypto Holdings (User's portfolio)
 message GetCryptoHoldingsRequest {
   string user_id = 1;
 }
@@ -228,7 +216,6 @@ message GetCryptoHoldingsResponse {
   string fiat_currency = 3;
 }
 
-// Get Crypto Transactions
 message GetCryptoTransactionsRequest {
   string user_id = 1;
   int32 limit = 2;
@@ -237,7 +224,7 @@ message GetCryptoTransactionsRequest {
 
 message CryptoTransaction {
   string id = 1;
-  string type = 2; // buy, sell, swap, deposit, withdrawal
+  string type = 2;
   string crypto_id = 3;
   string crypto_symbol = 4;
   double amount = 5;
@@ -254,14 +241,13 @@ message GetCryptoTransactionsResponse {
   int32 total_count = 2;
 }
 
-// Buy Crypto
 message BuyCryptoRequest {
   string user_id = 1;
   string crypto_id = 2;
   double fiat_amount = 3;
   string fiat_currency = 4;
-  string transaction_pin = 5;    // Required: user's transaction PIN
-  string idempotency_key = 6;    // Required: prevents duplicate execution
+  string transaction_pin = 5;
+  string idempotency_key = 6;
 }
 
 message BuyCryptoResponse {
@@ -270,19 +256,18 @@ message BuyCryptoResponse {
   double crypto_amount = 3;
   double fiat_amount = 4;
   string status = 5;
-  double fee = 6;                // Platform fee charged
-  double exchange_rate = 7;      // Rate used for the trade
-  double net_amount = 8;         // Fiat amount after fee deduction
+  double fee = 6;
+  double exchange_rate = 7;
+  double net_amount = 8;
 }
 
-// Sell Crypto
 message SellCryptoRequest {
   string user_id = 1;
   string crypto_id = 2;
   double crypto_amount = 3;
   string fiat_currency = 4;
-  string transaction_pin = 5;    // Required: user's transaction PIN
-  string idempotency_key = 6;    // Required: prevents duplicate execution
+  string transaction_pin = 5;
+  string idempotency_key = 6;
 }
 
 message SellCryptoResponse {
@@ -291,19 +276,18 @@ message SellCryptoResponse {
   double fiat_amount = 3;
   double crypto_amount = 4;
   string status = 5;
-  double fee = 6;                // Platform fee charged
-  double exchange_rate = 7;      // Rate used for the trade
-  double net_amount = 8;         // Fiat amount after fee deduction
+  double fee = 6;
+  double exchange_rate = 7;
+  double net_amount = 8;
 }
 
-// Convert Crypto
 message ConvertCryptoRequest {
   string user_id = 1;
   string from_crypto_id = 2;
   string to_crypto_id = 3;
   double from_amount = 4;
-  string transaction_pin = 5;    // Required: user's transaction PIN
-  string idempotency_key = 6;    // Required: prevents duplicate execution
+  string transaction_pin = 5;
+  string idempotency_key = 6;
 }
 
 message ConvertCryptoResponse {
@@ -311,11 +295,10 @@ message ConvertCryptoResponse {
   double to_amount = 2;
   double rate = 3;
   string status = 4;
-  double fee = 5;                // Platform fee charged
-  double from_amount = 6;        // Original amount (for confirmation)
+  double fee = 5;
+  double from_amount = 6;
 }
 
-// Get Wallets
 message GetWalletsRequest {
   string user_id = 1;
 }
@@ -326,7 +309,7 @@ message CryptoWallet {
   string crypto_symbol = 3;
   string address = 4;
   double balance = 5;
-  string wallet_type = 6; // hot, cold, exchange
+  string wallet_type = 6;
   string chain = 7;
   string crypto_name = 8;
 }
@@ -335,7 +318,6 @@ message GetWalletsResponse {
   repeated CryptoWallet wallets = 1;
 }
 
-// Create Wallet
 message CreateWalletRequest {
   string user_id = 1;
   string crypto_id = 2;
@@ -363,7 +345,6 @@ message BatchCreateWalletsResponse {
   int32 failed_count = 3;
 }
 
-// Get Wallet Balance
 message GetWalletBalanceRequest {
   string wallet_id = 1;
 }
@@ -397,9 +378,7 @@ message CreateWatchlistResponse {
   CryptoWatchlistProto watchlist = 1;
 }
 
-message GetWatchlistsRequest {
-  // User ID extracted from JWT
-}
+message GetWatchlistsRequest {}
 
 message GetWatchlistsResponse {
   repeated CryptoWatchlistProto watchlists = 1;
@@ -431,13 +410,281 @@ message DeleteWatchlistResponse {
   bool success = 1;
 }
 
+// Toggle Favorite
 message ToggleFavoriteRequest {
-  string crypto_id = 1;  // e.g., "bitcoin", "ethereum"
+  string crypto_id = 1;
 }
 
 message ToggleFavoriteResponse {
-  bool is_favorite = 1;  // true if added to favorites, false if removed
-  string message = 2;     // Optional message
+  bool is_favorite = 1;
+  string message = 2;
+}
+
+// ============================================================================
+// ADMIN — PLATFORM PORTFOLIO AGGREGATION
+// ============================================================================
+
+message GetPlatformCryptoPortfolioRequest {
+  string fiat_currency = 1; // e.g. "USD", "NGN"
+}
+
+message AssetAllocation {
+  string crypto_id = 1;
+  string symbol = 2;
+  string name = 3;
+  double total_balance = 4;          // Sum of all users' holdings
+  double total_fiat_value = 5;       // total_balance * current_price
+  double current_price = 6;
+  double allocation_percentage = 7;  // % of total portfolio value
+  int32 holders_count = 8;           // Unique users holding this asset
+  double price_change_24h = 9;
+}
+
+message PlatformCryptoStats {
+  int32 total_users_with_holdings = 1;
+  int32 total_wallets = 2;
+  int32 total_transactions = 3;
+  int32 total_unique_assets = 4;
+}
+
+message GetPlatformCryptoPortfolioResponse {
+  double total_portfolio_value = 1;
+  string fiat_currency = 2;
+  repeated AssetAllocation assets = 3;
+  PlatformCryptoStats stats = 4;
+  google.protobuf.Timestamp last_updated = 5;
+}
+
+// Admin: paginated platform-wide transaction list
+message GetPlatformCryptoTransactionsRequest {
+  int32 page = 1;
+  int32 per_page = 2;
+  string status_filter = 3;   // optional: pending, completed, failed
+  string type_filter = 4;     // optional: buy, sell, swap
+}
+
+message GetPlatformCryptoTransactionsResponse {
+  repeated CryptoTransaction transactions = 1;
+  int32 total_count = 2;
+  int32 page = 3;
+  int32 per_page = 4;
+}
+
+// ============================================================================
+// NEWS & OHLCV
+// ============================================================================
+
+message CryptoNewsItem {
+  string id = 1;
+  string title = 2;
+  string url = 3;
+  google.protobuf.Timestamp published_at = 4;
+  repeated string currencies = 5;
+  string source = 6;
+  string sentiment = 7;
+  int32 votes_positive = 8;
+  int32 votes_negative = 9;
+}
+
+message GetCryptoNewsRequest {
+  repeated string currencies = 1;
+  int32 limit = 2;
+}
+
+message GetCryptoNewsResponse {
+  repeated CryptoNewsItem items = 1;
+}
+
+message OHLCVPoint {
+  google.protobuf.Timestamp timestamp = 1;
+  double open = 2;
+  double high = 3;
+  double low = 4;
+  double close = 5;
+  double volume = 6;
+}
+
+message GetOHLCVRequest {
+  string crypto_id = 1;
+  string vs_currency = 2;
+  int32 days = 3;
+}
+
+message GetOHLCVResponse {
+  repeated OHLCVPoint points = 1;
+}
+
+// ============================================================================
+// ORDER BOOK & RECENT TRADES
+// ============================================================================
+
+message OrderBookEntry {
+  string price = 1;
+  string volume = 2;
+}
+
+message GetOrderBookRequest {
+  string market = 1;  // e.g. "btcngn"
+}
+
+message GetOrderBookResponse {
+  repeated OrderBookEntry bids = 1;
+  repeated OrderBookEntry asks = 2;
+  string market = 3;
+}
+
+message TradeEntry {
+  string id = 1;
+  string price = 2;
+  string volume = 3;
+  string side = 4;  // "buy" or "sell"
+  string market = 5;
+  google.protobuf.Timestamp created_at = 6;
+}
+
+message GetRecentTradesRequest {
+  string market = 1;
+}
+
+message GetRecentTradesResponse {
+  repeated TradeEntry trades = 1;
+}
+
+// ============================================================================
+// FEAR & GREED INDEX
+// ============================================================================
+
+message GetFearGreedIndexRequest {}
+
+message FearGreedEntry {
+  int32 value = 1;
+  string classification = 2;  // "Extreme Fear", "Fear", "Neutral", "Greed", "Extreme Greed"
+  google.protobuf.Timestamp timestamp = 3;
+}
+
+message GetFearGreedIndexResponse {
+  FearGreedEntry current = 1;
+  repeated FearGreedEntry history = 2;
+}
+
+// ============================================================================
+// PRICE ALERTS
+// ============================================================================
+
+message PriceAlert {
+  string id = 1;
+  string crypto_id = 2;
+  string crypto_symbol = 3;
+  double target_price = 4;
+  string direction = 5;  // "above" or "below"
+  string fiat_currency = 6;
+  bool is_active = 7;
+  bool is_triggered = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp triggered_at = 10;
+}
+
+message CreatePriceAlertRequest {
+  string crypto_id = 1;
+  double target_price = 2;
+  string direction = 3;
+  string fiat_currency = 4;
+}
+
+message CreatePriceAlertResponse {
+  PriceAlert alert = 1;
+}
+
+message GetPriceAlertsRequest {
+  bool active_only = 1;
+}
+
+message GetPriceAlertsResponse {
+  repeated PriceAlert alerts = 1;
+}
+
+message DeletePriceAlertRequest {
+  string alert_id = 1;
+}
+
+message DeletePriceAlertResponse {
+  bool success = 1;
+}
+
+// ============================================================================
+// FEE TIERS (admin)
+// ============================================================================
+
+message FeeTier {
+  string id = 1;
+  string currency = 2;
+  string crypto_id = 3;
+  double min_amount = 4;
+  double max_amount = 5;
+  double fee_percentage = 6;
+  bool is_active = 7;
+}
+
+message GetFeeTiersRequest {}
+
+message GetFeeTiersResponse {
+  repeated FeeTier tiers = 1;
+}
+
+message CreateFeeTierRequest {
+  string currency = 1;
+  string crypto_id = 2;
+  double min_amount = 3;
+  double max_amount = 4;
+  double fee_percentage = 5;
+}
+
+message CreateFeeTierResponse {
+  FeeTier tier = 1;
+}
+
+message UpdateFeeTierRequest {
+  string id = 1;
+  double fee_percentage = 2;
+  bool is_active = 3;
+}
+
+message UpdateFeeTierResponse {
+  FeeTier tier = 1;
+}
+
+message DeleteFeeTierRequest {
+  string id = 1;
+}
+
+message DeleteFeeTierResponse {
+  bool success = 1;
+}
+
+// ============================================================================
+// RECONCILIATION (admin)
+// ============================================================================
+
+message RunReconciliationRequest {
+  string triggered_by = 1;
+}
+
+message ReconciliationResult {
+  string id = 1;
+  string date = 2;
+  int32 expired_holds_released = 3;
+  int32 stuck_transactions_found = 4;
+  int32 failed_outbox_count = 5;
+  string status = 6;
+  google.protobuf.Timestamp created_at = 7;
+}
+
+message GetReconciliationLogsRequest {
+  int32 limit = 1;
+}
+
+message GetReconciliationLogsResponse {
+  repeated ReconciliationResult logs = 1;
 }
 
 // ============================================================================
@@ -454,184 +701,70 @@ message CryptoPaginationInfo {
 }
 
 // ============================================================================
+// Supported Assets (Quidax-tradeable, CoinGecko-enriched)
+// ============================================================================
+
+message GetSupportedAssetsRequest {
+  string vs_currency = 1; // Fiat currency for price display (default: "usd")
+  int32 page = 2;         // Page number (default: 1)
+  int32 per_page = 3;     // Items per page (default: 50)
+}
+
+message GetSupportedAssetsResponse {
+  repeated CryptoMessage assets = 1;
+  CryptoPaginationInfo pagination = 2;
+}
+
+// ============================================================================
 // SERVICE DEFINITION
 // ============================================================================
 
 service CryptoService {
-  // Get list of cryptocurrencies with market data
-  rpc GetCryptos(GetCryptosRequest) returns (GetCryptosResponse) {
-    option (google.api.http) = {
-      get: "/v1/cryptos"
-    };
-  }
+  rpc GetCryptos(GetCryptosRequest) returns (GetCryptosResponse);
+  rpc GetCryptoById(GetCryptoByIdRequest) returns (GetCryptoByIdResponse);
+  rpc SearchCryptos(SearchCryptosRequest) returns (SearchCryptosResponse);
+  rpc GetCryptoPriceHistory(GetCryptoPriceHistoryRequest) returns (GetCryptoPriceHistoryResponse);
+  rpc GetTrendingCryptos(GetTrendingCryptosRequest) returns (GetTrendingCryptosResponse);
+  rpc GetTopCryptos(GetTopCryptosRequest) returns (GetTopCryptosResponse);
+  rpc GetMarketChart(GetMarketChartRequest) returns (GetMarketChartResponse);
+  rpc GetGlobalMarketData(GetGlobalMarketDataRequest) returns (GetGlobalMarketDataResponse);
+  rpc GetSupportedAssets(GetSupportedAssetsRequest) returns (GetSupportedAssetsResponse);
+  rpc GetCryptoFiatRate(GetCryptoFiatRateRequest) returns (GetCryptoFiatRateResponse);
+  rpc GetCryptoHoldings(GetCryptoHoldingsRequest) returns (GetCryptoHoldingsResponse);
+  rpc GetCryptoTransactions(GetCryptoTransactionsRequest) returns (GetCryptoTransactionsResponse);
+  rpc BuyCrypto(BuyCryptoRequest) returns (BuyCryptoResponse);
+  rpc SellCrypto(SellCryptoRequest) returns (SellCryptoResponse);
+  rpc ConvertCrypto(ConvertCryptoRequest) returns (ConvertCryptoResponse);
+  rpc GetWallets(GetWalletsRequest) returns (GetWalletsResponse);
+  rpc CreateWallet(CreateWalletRequest) returns (CreateWalletResponse);
+  rpc GetWalletBalance(GetWalletBalanceRequest) returns (GetWalletBalanceResponse);
+  rpc BatchCreateWallets(BatchCreateWalletsRequest) returns (BatchCreateWalletsResponse);
+  rpc CreateWatchlist(CreateWatchlistRequest) returns (CreateWatchlistResponse);
+  rpc GetWatchlists(GetWatchlistsRequest) returns (GetWatchlistsResponse);
+  rpc AddToWatchlist(AddToWatchlistRequest) returns (AddToWatchlistResponse);
+  rpc RemoveFromWatchlist(RemoveFromWatchlistRequest) returns (RemoveFromWatchlistResponse);
+  rpc DeleteWatchlist(DeleteWatchlistRequest) returns (DeleteWatchlistResponse);
+  rpc ToggleFavorite(ToggleFavoriteRequest) returns (ToggleFavoriteResponse);
 
-  // Get detailed cryptocurrency information
-  rpc GetCryptoById(GetCryptoByIdRequest) returns (GetCryptoByIdResponse) {
-    option (google.api.http) = {
-      get: "/v1/cryptos/{id}"
-    };
-  }
+  // Market Data: News, OHLCV, Order Book, Trades
+  rpc GetCryptoNews(GetCryptoNewsRequest) returns (GetCryptoNewsResponse);
+  rpc GetOHLCV(GetOHLCVRequest) returns (GetOHLCVResponse);
+  rpc GetOrderBook(GetOrderBookRequest) returns (GetOrderBookResponse);
+  rpc GetRecentTrades(GetRecentTradesRequest) returns (GetRecentTradesResponse);
+  rpc GetFearGreedIndex(GetFearGreedIndexRequest) returns (GetFearGreedIndexResponse);
 
-  // Search cryptocurrencies by name or symbol
-  rpc SearchCryptos(SearchCryptosRequest) returns (SearchCryptosResponse) {
-    option (google.api.http) = {
-      get: "/v1/cryptos/search"
-    };
-  }
+  // Price Alerts
+  rpc CreatePriceAlert(CreatePriceAlertRequest) returns (CreatePriceAlertResponse);
+  rpc GetPriceAlerts(GetPriceAlertsRequest) returns (GetPriceAlertsResponse);
+  rpc DeletePriceAlert(DeletePriceAlertRequest) returns (DeletePriceAlertResponse);
 
-  // Get historical price data for a cryptocurrency
-  rpc GetCryptoPriceHistory(GetCryptoPriceHistoryRequest) returns (GetCryptoPriceHistoryResponse) {
-    option (google.api.http) = {
-      get: "/v1/cryptos/{id}/history"
-    };
-  }
-
-  // Get trending cryptocurrencies
-  rpc GetTrendingCryptos(GetTrendingCryptosRequest) returns (GetTrendingCryptosResponse) {
-    option (google.api.http) = {
-      get: "/v1/cryptos/trending"
-    };
-  }
-
-  // Get top cryptocurrencies by market cap
-  rpc GetTopCryptos(GetTopCryptosRequest) returns (GetTopCryptosResponse) {
-    option (google.api.http) = {
-      get: "/v1/cryptos/top"
-    };
-  }
-
-  // Get market chart data
-  rpc GetMarketChart(GetMarketChartRequest) returns (GetMarketChartResponse) {
-    option (google.api.http) = {
-      get: "/v1/cryptos/{id}/market-chart"
-    };
-  }
-
-  // Get global cryptocurrency market data
-  rpc GetGlobalMarketData(GetGlobalMarketDataRequest) returns (GetGlobalMarketDataResponse) {
-    option (google.api.http) = {
-      get: "/v1/cryptos/global"
-    };
-  }
-
-  // Get live exchange rate for a crypto/fiat pair
-  rpc GetExchangeRate(GetExchangeRateRequest) returns (GetExchangeRateResponse) {
-    option (google.api.http) = {
-      get: "/v1/crypto/exchange-rate"
-    };
-  }
-
-  // Get user's crypto holdings
-  rpc GetCryptoHoldings(GetCryptoHoldingsRequest) returns (GetCryptoHoldingsResponse) {
-    option (google.api.http) = {
-      get: "/v1/crypto/holdings"
-    };
-  }
-
-  // Get user's crypto transactions
-  rpc GetCryptoTransactions(GetCryptoTransactionsRequest) returns (GetCryptoTransactionsResponse) {
-    option (google.api.http) = {
-      get: "/v1/crypto/transactions"
-    };
-  }
-
-  // Buy cryptocurrency
-  rpc BuyCrypto(BuyCryptoRequest) returns (BuyCryptoResponse) {
-    option (google.api.http) = {
-      post: "/v1/crypto/buy"
-      body: "*"
-    };
-  }
-
-  // Sell cryptocurrency
-  rpc SellCrypto(SellCryptoRequest) returns (SellCryptoResponse) {
-    option (google.api.http) = {
-      post: "/v1/crypto/sell"
-      body: "*"
-    };
-  }
-
-  // Convert between cryptocurrencies
-  rpc ConvertCrypto(ConvertCryptoRequest) returns (ConvertCryptoResponse) {
-    option (google.api.http) = {
-      post: "/v1/crypto/convert"
-      body: "*"
-    };
-  }
-
-  // Get user's crypto wallets
-  rpc GetWallets(GetWalletsRequest) returns (GetWalletsResponse) {
-    option (google.api.http) = {
-      get: "/v1/crypto/wallets"
-    };
-  }
-
-  // Create a new crypto wallet
-  rpc CreateWallet(CreateWalletRequest) returns (CreateWalletResponse) {
-    option (google.api.http) = {
-      post: "/v1/crypto/wallets"
-      body: "*"
-    };
-  }
-
-  // Get wallet balance
-  rpc GetWalletBalance(GetWalletBalanceRequest) returns (GetWalletBalanceResponse) {
-    option (google.api.http) = {
-      get: "/v1/crypto/wallets/{wallet_id}/balance"
-    };
-  }
-
-  // Batch create default stablecoin wallets
-  rpc BatchCreateWallets(BatchCreateWalletsRequest) returns (BatchCreateWalletsResponse) {
-    option (google.api.http) = {
-      post: "/v1/crypto/wallets/batch"
-      body: "*"
-    };
-  }
-
-  // Create a new watchlist
-  rpc CreateWatchlist(CreateWatchlistRequest) returns (CreateWatchlistResponse) {
-    option (google.api.http) = {
-      post: "/v1/crypto/watchlists"
-      body: "*"
-    };
-  }
-
-  // Get user's watchlists
-  rpc GetWatchlists(GetWatchlistsRequest) returns (GetWatchlistsResponse) {
-    option (google.api.http) = {
-      get: "/v1/crypto/watchlists"
-    };
-  }
-
-  // Add crypto to a watchlist
-  rpc AddToWatchlist(AddToWatchlistRequest) returns (AddToWatchlistResponse) {
-    option (google.api.http) = {
-      post: "/v1/crypto/watchlists/{watchlist_id}/add"
-      body: "*"
-    };
-  }
-
-  // Remove crypto from a watchlist
-  rpc RemoveFromWatchlist(RemoveFromWatchlistRequest) returns (RemoveFromWatchlistResponse) {
-    option (google.api.http) = {
-      post: "/v1/crypto/watchlists/{watchlist_id}/remove"
-      body: "*"
-    };
-  }
-
-  // Delete a watchlist
-  rpc DeleteWatchlist(DeleteWatchlistRequest) returns (DeleteWatchlistResponse) {
-    option (google.api.http) = {
-      delete: "/v1/crypto/watchlists/{watchlist_id}"
-    };
-  }
-
-  // Toggle favorite - adds or removes a crypto from user's default favorites watchlist
-  rpc ToggleFavorite(ToggleFavoriteRequest) returns (ToggleFavoriteResponse) {
-    option (google.api.http) = {
-      post: "/v1/crypto/favorites/toggle"
-      body: "*"
-    };
-  }
+  // Admin RPCs (require admin role in metadata)
+  rpc GetPlatformCryptoPortfolio(GetPlatformCryptoPortfolioRequest) returns (GetPlatformCryptoPortfolioResponse);
+  rpc GetPlatformCryptoTransactions(GetPlatformCryptoTransactionsRequest) returns (GetPlatformCryptoTransactionsResponse);
+  rpc GetFeeTiers(GetFeeTiersRequest) returns (GetFeeTiersResponse);
+  rpc CreateFeeTier(CreateFeeTierRequest) returns (CreateFeeTierResponse);
+  rpc UpdateFeeTier(UpdateFeeTierRequest) returns (UpdateFeeTierResponse);
+  rpc DeleteFeeTier(DeleteFeeTierRequest) returns (DeleteFeeTierResponse);
+  rpc RunReconciliation(RunReconciliationRequest) returns (ReconciliationResult);
+  rpc GetReconciliationLogs(GetReconciliationLogsRequest) returns (GetReconciliationLogsResponse);
 }

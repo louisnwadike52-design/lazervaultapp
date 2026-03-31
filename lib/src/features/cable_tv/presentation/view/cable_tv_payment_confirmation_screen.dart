@@ -45,38 +45,42 @@ class _CableTVPaymentConfirmationScreenState
     final transactionId = const Uuid().v4();
     final idempotencyKey = const Uuid().v4();
 
+    String? verificationToken;
+
     final success = await validateTransactionPin(
       context: context,
       transactionId: transactionId,
       transactionType: 'cable_subscription',
       amount: package.amount,
       currency: 'NGN',
-      title: 'Confirm Cable TV Payment',
-      message:
-          'Confirm payment of \u20A6${_currencyFormat.format(package.amount)} for ${provider.name}?',
-      onPinValidated: (verificationToken) async {
-        // Navigate to processing screen with all payment params.
-        // The processing screen triggers the cubit call on its own cubit instance.
-        Get.toNamed(
-          AppRoutes.cableTVPaymentProcessing,
-          arguments: {
-            'provider': provider,
-            'package': package,
-            'validation': args['validation'],
-            'smartCardNumber': smartCardNumber,
-            'transactionId': transactionId,
-            'verificationToken': verificationToken,
-            'idempotencyKey': idempotencyKey,
-          },
-        );
+      title: 'Confirm Payment',
+      message: 'Confirm cable TV payment of \u20A6${_currencyFormat.format(package.amount)}',
+      onPinValidated: (token) async {
+        verificationToken = token;
       },
     );
 
-    if (!success) {
+    if (!success || verificationToken == null) {
       setState(() {
         _isProcessing = false;
       });
+      return;
     }
+    if (!mounted) return;
+
+    // Navigate AFTER modal is dismissed
+    Get.offNamed(
+      AppRoutes.cableTVPaymentProcessing,
+      arguments: {
+        'provider': provider,
+        'package': package,
+        'validation': args['validation'],
+        'smartCardNumber': smartCardNumber,
+        'transactionId': transactionId,
+        'verificationToken': verificationToken!,
+        'idempotencyKey': idempotencyKey,
+      },
+    );
   }
 
   @override

@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package pb;
+package recipient;
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
@@ -91,7 +91,7 @@ message ListRecipientsRequest {
 
 message ListRecipientsResponse {
   repeated Recipient recipients = 1;
-  PaginationInfo pagination = 2; // Pagination metadata
+  common.PaginationInfo pagination = 2; // Pagination metadata
 }
 
 // --- Update Recipient ---

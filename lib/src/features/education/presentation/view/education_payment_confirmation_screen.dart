@@ -58,36 +58,40 @@ class _EducationPaymentConfirmationScreenState
     final transactionId = uuid.v4();
     final idempotencyKey = uuid.v4();
 
+    String? verificationToken;
+
     final success = await validateTransactionPin(
       context: context,
       transactionId: transactionId,
       transactionType: 'education_purchase',
       amount: _totalAmount,
       currency: 'NGN',
-      title: 'Confirm Education Purchase',
-      message:
-          'Confirm purchase of $_quantity ${_quantity == 1 ? 'PIN' : 'PINs'} for \u20A6${_formatAmount(_totalAmount)}?',
-      onPinValidated: (verificationToken) async {
-        // Navigate to processing screen with all payment params.
-        // The processing screen triggers the cubit call on its own cubit instance.
-        Get.toNamed(AppRoutes.educationPaymentProcessing, arguments: {
-          'provider': _provider,
-          'quantity': _quantity,
-          'phone': _phone,
-          'totalAmount': _totalAmount,
-          'transactionId': transactionId,
-          'verificationToken': verificationToken,
-          'idempotencyKey': idempotencyKey,
-          if (_billersCode != null) 'billersCode': _billersCode,
-        });
+      title: 'Confirm Purchase',
+      message: 'Confirm education purchase of \u20A6${_totalAmount.toStringAsFixed(0)}',
+      onPinValidated: (token) async {
+        verificationToken = token;
       },
     );
 
-    if (!success) {
+    if (!success || verificationToken == null) {
       setState(() {
         _isProcessing = false;
       });
+      return;
     }
+    if (!mounted) return;
+
+    // Navigate AFTER modal is dismissed
+    Get.offNamed(AppRoutes.educationPaymentProcessing, arguments: {
+      'provider': _provider,
+      'quantity': _quantity,
+      'phone': _phone,
+      'totalAmount': _totalAmount,
+      'transactionId': transactionId,
+      'verificationToken': verificationToken!,
+      'idempotencyKey': idempotencyKey,
+      if (_billersCode != null) 'billersCode': _billersCode,
+    });
   }
 
   @override

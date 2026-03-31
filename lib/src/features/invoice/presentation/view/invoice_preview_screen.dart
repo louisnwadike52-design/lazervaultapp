@@ -2163,15 +2163,22 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
     final transactionId = 'INV-SVC-FEE-${DateTime.now().millisecondsSinceEpoch}';
 
     // Show PIN bottomsheet and verify
-    final pinResult = await validatePinOnly(
+    String? verificationToken;
+
+    final success = await validateTransactionPin(
       context: context,
       transactionId: transactionId,
       transactionType: 'invoice_unlock',
       amount: 99.99,
       currency: invoice.currency,
+      title: 'Confirm Service Fee',
+      message: 'Confirm invoice unlock fee of ${invoice.currency} 99.99',
+      onPinValidated: (token) async {
+        verificationToken = token;
+      },
     );
 
-    if (pinResult == null || !pinResult.success) return;
+    if (!success || verificationToken == null) return;
 
     // Set the selected account on AccountManager so x-account-id metadata is sent
     try {
@@ -2187,7 +2194,7 @@ class _InvoicePreviewScreenState extends State<InvoicePreviewScreen>
     await cubit.unlockInvoice(
       invoice.id,
       accountId: _selectedAccountId,
-      verificationToken: pinResult.verificationToken,
+      verificationToken: verificationToken,
       transactionId: transactionId,
     );
 
@@ -3734,15 +3741,22 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
     final transactionId = 'INV-SVC-FEE-${DateTime.now().millisecondsSinceEpoch}';
 
     // Show PIN bottomsheet and verify
-    final pinResult = await validatePinOnly(
+    String? verificationToken;
+
+    final success = await validateTransactionPin(
       context: context,
       transactionId: transactionId,
       transactionType: 'invoice_unlock',
       amount: 99.99,
       currency: invoice.currency,
+      title: 'Confirm Service Fee',
+      message: 'Confirm invoice unlock fee of ${invoice.currency} 99.99',
+      onPinValidated: (token) async {
+        verificationToken = token;
+      },
     );
 
-    if (pinResult == null || !pinResult.success) return;
+    if (!success || verificationToken == null) return;
 
     // Set the selected account on AccountManager so x-account-id metadata is sent
     try {
@@ -3758,8 +3772,8 @@ class _TagUserBottomSheetState extends State<_TagUserBottomSheet>
     await cubit.unlockInvoice(
       invoice.id,
       accountId: _selectedAccountId,
-      verificationToken: pinResult.verificationToken,
+      verificationToken: verificationToken,
       transactionId: transactionId,
     );
   }
-} 
+}

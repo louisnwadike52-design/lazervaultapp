@@ -48,6 +48,33 @@ class AirtimeTransactionModel extends AirtimeTransaction {
     );
   }
 
+  factory AirtimeTransactionModel.fromTransferAirtimeResponse(
+    pb.TransferAirtimeResponse response, {
+    required String currency,
+  }) {
+    final payment = response.payment;
+    final effectiveStatus = payment.status.isEmpty ? 'completed' : payment.status;
+    return AirtimeTransactionModel(
+      id: payment.id,
+      transactionReference: payment.reference,
+      networkProvider: _networkTypeFromBillType(payment.providerId.isNotEmpty ? payment.providerId : response.recipientPhone),
+      recipientPhoneNumber: response.recipientPhone,
+      recipientName: response.recipientName,
+      amount: response.amountSent,
+      currency: currency,
+      status: _statusFromString(effectiveStatus),
+      createdAt: DateTime.tryParse(payment.createdAt) ?? DateTime.now(),
+      userId: payment.userId,
+      fee: response.commission,
+      totalAmount: response.totalCharged,
+      metadata: {
+        'providerReference': response.providerReference,
+        'commission': response.commission,
+        'isTransfer': true,
+      },
+    );
+  }
+
   factory AirtimeTransactionModel.fromBillPaymentProto(
     pb.BillPayment payment, {
     String currency = 'NGN',

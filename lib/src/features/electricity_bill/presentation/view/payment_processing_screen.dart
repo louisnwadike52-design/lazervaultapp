@@ -191,19 +191,10 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
               }
 
               if (state is PaymentSuccess) {
-                setState(() {
-                  _currentStep = 3;
-                  _isComplete = true;
-                });
-
-                // Navigate to receipt after brief delay to show completion
-                Future.delayed(const Duration(milliseconds: 1200), () {
-                  if (!mounted) return;
-                  Get.offNamed(
-                    AppRoutes.electricityBillReceipt,
-                    arguments: {'payment': state.payment},
-                  );
-                });
+                Get.offNamed(
+                  AppRoutes.electricityBillReceipt,
+                  arguments: {'payment': state.payment},
+                );
               }
 
               if (state is PaymentFailed) {

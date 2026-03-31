@@ -2,11 +2,13 @@ import 'dart:async';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/utils/debouncer.dart';
 import '../../../domain/entities/insurance_product_entity.dart';
 import '../../../domain/repositories/insurance_repository.dart';
@@ -27,6 +29,7 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
   final Map<String, List<AuxiliaryItem>> _auxiliaryCache = {};
   final Map<String, bool> _auxiliaryLoading = {};
   final Map<String, bool> _fileUploading = {};
+  final Map<String, CountryLocale> _phoneCountryCodes = {}; // per-field country code
 
   /// Detects if a field requires file upload based on name patterns
   bool _isFileField(InsuranceProductFormField field) {
@@ -40,7 +43,9 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
         name.endsWith('_url');
   }
 
-  /// Returns the utility ID for fields that need auxiliary data, or null
+  /// Returns the utility ID for fields that need auxiliary data, or null.
+  /// Fields with static options defined on the backend (e.g. state) should NOT
+  /// be listed here — they use the options from the field definition directly.
   String? _getUtilityIdForField(String fieldName) {
     final name = fieldName.toLowerCase();
     if (name.contains('vehicle_make') || name == 'make') {
@@ -49,9 +54,7 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
     if (name.contains('vehicle_model') || name == 'model') {
       return InsuranceUtilityIds.vehicleModels;
     }
-    if (name.contains('state') && !name.contains('status')) {
-      return InsuranceUtilityIds.nigerianStates;
-    }
+    // State uses static options from backend — no auxiliary fetch needed
     return null;
   }
 
@@ -319,11 +322,13 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
       case 'boolean':
         return _buildBooleanField(cubit, field, value);
       case 'number':
-        return _buildTextField(cubit, field, value, error, keyboardType: TextInputType.number);
+        return _buildTextField(cubit, field, value, error,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[\d.]'))]);
       case 'email':
         return _buildTextField(cubit, field, value, error, keyboardType: TextInputType.emailAddress);
       case 'phone':
-        return _buildTextField(cubit, field, value, error, keyboardType: TextInputType.phone);
+        return _buildPhoneField(cubit, field, value, error);
       default:
         return _buildTextField(cubit, field, value, error);
     }
@@ -335,14 +340,24 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
     if (type == 'email' && (!value.contains('@') || !value.contains('.'))) {
       return 'Please enter a valid email address';
     }
-    if (type == 'phone' && !RegExp(r'^[0-9+\-\s()]+$').hasMatch(value)) {
-      return 'Please enter a valid phone number';
+    if (type == 'phone') {
+      final digits = value.replaceAll(RegExp(r'[^\d]'), '');
+      final stripped = digits.startsWith('0') ? digits.substring(1) : digits;
+      if (stripped.length < 7) return 'Enter at least 7 digits';
+      if (stripped.length > 14) return 'Phone number too long';
+    }
+    if (type == 'number') {
+      if (double.tryParse(value) == null) return 'Please enter a valid number';
+      if (double.parse(value) < 0) return 'Value must be positive';
+    }
+    if (type == 'text' && field.required && value.trim().length < 2) {
+      return 'Must be at least 2 characters';
     }
     return null;
   }
 
   Widget _buildTextField(CreatePolicyCubit cubit, InsuranceProductFormField field, String value, String? error,
-      {TextInputType keyboardType = TextInputType.text}) {
+      {TextInputType keyboardType = TextInputType.text, List<TextInputFormatter>? inputFormatters}) {
     final controller = _getController(field.name, value);
     final inlineError = error ?? _validateField(field, controller.text);
     return Padding(
@@ -361,6 +376,7 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
         SizedBox(height: 8.h),
         TextFormField(
           controller: controller, keyboardType: keyboardType,
+          inputFormatters: inputFormatters,
           onChanged: (v) => _debouncer.run(() => cubit.updateFormField(field.name, v)),
           style: GoogleFonts.inter(fontSize: 14.sp, color: Colors.white),
           decoration: InputDecoration(
@@ -380,6 +396,225 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
     );
   }
 
+  Widget _buildPhoneField(CreatePolicyCubit cubit, InsuranceProductFormField field, String value, String? error) {
+    // Initialize country code for this field if not yet set
+    _phoneCountryCodes.putIfAbsent(field.name, () {
+      // Try to detect from existing value
+      if (value.startsWith('+')) {
+        final sorted = List<CountryLocale>.from(CountryLocales.all)
+          ..sort((a, b) => b.dialCode.length.compareTo(a.dialCode.length));
+        for (final c in sorted) {
+          if (value.startsWith(c.dialCode)) return c;
+        }
+      }
+      return CountryLocales.all.first; // Nigeria default
+    });
+
+    final country = _phoneCountryCodes[field.name]!;
+
+    // Strip dial code from displayed value so controller only has local digits
+    String localValue = value;
+    if (value.startsWith(country.dialCode)) {
+      localValue = value.substring(country.dialCode.length);
+    } else if (value.startsWith('+')) {
+      // Strip any other dial code prefix
+      final sorted = List<CountryLocale>.from(CountryLocales.all)
+        ..sort((a, b) => b.dialCode.length.compareTo(a.dialCode.length));
+      for (final c in sorted) {
+        if (value.startsWith(c.dialCode)) {
+          localValue = value.substring(c.dialCode.length);
+          break;
+        }
+      }
+    }
+
+    final controller = _getController(field.name, localValue);
+    // Sync controller if value changed externally
+    if (controller.text != localValue && localValue != value) {
+      controller.text = localValue;
+    }
+
+    final digits = controller.text.replaceAll(RegExp(r'[^\d]'), '');
+    final stripped = digits.startsWith('0') ? digits.substring(1) : digits;
+    String? inlineError = error;
+    if (inlineError == null && digits.isNotEmpty) {
+      if (stripped.length < 7) {
+        inlineError = 'Enter at least 7 digits';
+      } else if (stripped.length > 14) {
+        inlineError = 'Phone number too long';
+      }
+    }
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: 16.h),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Text(field.label, style: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600, color: Colors.white)),
+          if (field.required) Text(' *', style: GoogleFonts.inter(fontSize: 13.sp, color: const Color(0xFFEF4444))),
+        ]),
+        if (field.description.isNotEmpty)
+          Padding(padding: EdgeInsets.only(top: 2.h),
+            child: Text(field.description, style: GoogleFonts.inter(fontSize: 11.sp, color: const Color(0xFF9CA3AF)))),
+        SizedBox(height: 8.h),
+        Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.circular(10.r),
+            border: Border.all(
+              color: inlineError != null ? const Color(0xFFEF4444) : const Color(0xFF2D2D2D),
+            ),
+          ),
+          child: Row(
+            children: [
+              // Country code button
+              GestureDetector(
+                onTap: () => _showPhoneCountryPicker(field.name, cubit, field, controller),
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 14.h),
+                  decoration: const BoxDecoration(
+                    border: Border(right: BorderSide(color: Color(0xFF2D2D2D), width: 1)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(country.flag, style: TextStyle(fontSize: 18.sp)),
+                      SizedBox(width: 4.w),
+                      Text(country.dialCode,
+                        style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                      SizedBox(width: 2.w),
+                      Icon(Icons.keyboard_arrow_down, color: const Color(0xFF6B7280), size: 16.sp),
+                    ],
+                  ),
+                ),
+              ),
+              // Local number input
+              Expanded(
+                child: TextField(
+                  controller: controller,
+                  keyboardType: TextInputType.phone,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(11),
+                  ],
+                  onChanged: (v) {
+                    final local = v.replaceAll(RegExp(r'[^\d]'), '');
+                    final s = local.startsWith('0') ? local.substring(1) : local;
+                    final full = '${country.dialCode}$s';
+                    _debouncer.run(() => cubit.updateFormField(field.name, full));
+                  },
+                  style: GoogleFonts.inter(fontSize: 14.sp, color: Colors.white),
+                  decoration: InputDecoration(
+                    hintText: '08012345678',
+                    hintStyle: GoogleFonts.inter(fontSize: 14.sp, color: const Color(0xFF9CA3AF).withValues(alpha: 0.5)),
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 14.h),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (inlineError != null)
+          Padding(
+            padding: EdgeInsets.only(top: 6.h, left: 4.w),
+            child: Text(inlineError, style: GoogleFonts.inter(fontSize: 11.sp, color: const Color(0xFFEF4444))),
+          ),
+      ]),
+    );
+  }
+
+  void _showPhoneCountryPicker(String fieldName, CreatePolicyCubit cubit, InsuranceProductFormField field, TextEditingController controller) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        String searchQuery = '';
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            final filtered = searchQuery.isEmpty ? CountryLocales.all : CountryLocales.search(searchQuery);
+            return DraggableScrollableSheet(
+              initialChildSize: 0.7, maxChildSize: 0.9, minChildSize: 0.4,
+              builder: (context, scrollController) {
+                return Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1F1F1F),
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+                  ),
+                  child: Column(children: [
+                    Container(
+                      margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
+                      width: 40.w, height: 4.h,
+                      decoration: BoxDecoration(color: const Color(0xFF2D2D2D), borderRadius: BorderRadius.circular(2.r)),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                      child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                        Text('Select Country Code', style: GoogleFonts.inter(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w700)),
+                        GestureDetector(onTap: () => Navigator.pop(context), child: Icon(Icons.close, color: const Color(0xFF9CA3AF), size: 24.sp)),
+                      ]),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+                      child: TextField(
+                        onChanged: (v) => setSheetState(() => searchQuery = v),
+                        style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
+                        decoration: InputDecoration(
+                          hintText: 'Search country...', hintStyle: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 14.sp),
+                          prefixIcon: Icon(Icons.search, color: const Color(0xFF6B7280), size: 20.sp),
+                          filled: true, fillColor: const Color(0xFF0A0A0A),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r), borderSide: BorderSide.none),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: ListView.builder(
+                        controller: scrollController,
+                        padding: EdgeInsets.symmetric(horizontal: 20.w),
+                        itemCount: filtered.length,
+                        itemBuilder: (context, index) {
+                          final c = filtered[index];
+                          final isSelected = c.countryCode == _phoneCountryCodes[fieldName]?.countryCode;
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() => _phoneCountryCodes[fieldName] = c);
+                              // Re-send full phone to cubit
+                              final local = controller.text.replaceAll(RegExp(r'[^\d]'), '');
+                              final s = local.startsWith('0') ? local.substring(1) : local;
+                              cubit.updateFormField(field.name, '${c.dialCode}$s');
+                              Navigator.pop(context);
+                            },
+                            child: Container(
+                              margin: EdgeInsets.only(bottom: 8.h),
+                              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+                              decoration: BoxDecoration(
+                                color: isSelected ? const Color(0xFF3B82F6).withValues(alpha: 0.1) : const Color(0xFF0A0A0A),
+                                borderRadius: BorderRadius.circular(12.r),
+                                border: isSelected ? Border.all(color: const Color(0xFF3B82F6), width: 1.5) : null,
+                              ),
+                              child: Row(children: [
+                                Text(c.flag, style: TextStyle(fontSize: 24.sp)),
+                                SizedBox(width: 12.w),
+                                Expanded(child: Text(c.countryName, style: GoogleFonts.inter(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w500))),
+                                Text(c.dialCode, style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                                if (isSelected) ...[SizedBox(width: 8.w), Icon(Icons.check_circle, color: const Color(0xFF3B82F6), size: 20.sp)],
+                              ]),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ]),
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
   Widget _buildDropdownField(CreatePolicyCubit cubit, InsuranceProductFormField field, String value, String? error) {
     return Padding(
       padding: EdgeInsets.only(bottom: 16.h),
@@ -389,29 +624,134 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
           if (field.required) Text(' *', style: GoogleFonts.inter(fontSize: 13.sp, color: const Color(0xFFEF4444))),
         ]),
         SizedBox(height: 8.h),
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 14.w),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1F1F1F), borderRadius: BorderRadius.circular(10.r),
-            border: Border.all(color: error != null ? const Color(0xFFEF4444) : const Color(0xFF2D2D2D)),
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: value.isNotEmpty && field.options.contains(value) ? value : null,
-              hint: Text('Select ${field.label.toLowerCase()}',
-                style: GoogleFonts.inter(fontSize: 14.sp, color: const Color(0xFF9CA3AF).withValues(alpha: 0.5))),
-              isExpanded: true, dropdownColor: const Color(0xFF1F1F1F),
-              style: GoogleFonts.inter(fontSize: 14.sp, color: Colors.white),
-              icon: Icon(Icons.keyboard_arrow_down, color: const Color(0xFF9CA3AF), size: 20.sp),
-              items: field.options.map((o) => DropdownMenuItem(value: o, child: Text(o))).toList(),
-              onChanged: (v) { if (v != null) cubit.updateFormField(field.name, v); },
+        GestureDetector(
+          onTap: () => _showSelectBottomSheet(cubit, field, value),
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1F1F1F), borderRadius: BorderRadius.circular(10.r),
+              border: Border.all(color: error != null ? const Color(0xFFEF4444) : const Color(0xFF2D2D2D)),
             ),
+            child: Row(children: [
+              Expanded(
+                child: Text(
+                  value.isNotEmpty ? value : 'Select ${field.label.toLowerCase()}',
+                  style: GoogleFonts.inter(
+                    fontSize: 14.sp,
+                    color: value.isNotEmpty ? Colors.white : const Color(0xFF9CA3AF).withValues(alpha: 0.5),
+                  ),
+                ),
+              ),
+              Icon(Icons.keyboard_arrow_down, color: const Color(0xFF9CA3AF), size: 20.sp),
+            ]),
           ),
         ),
         if (error != null)
           Padding(padding: EdgeInsets.only(top: 6.h, left: 14.w),
             child: Text(error, style: GoogleFonts.inter(fontSize: 11.sp, color: const Color(0xFFEF4444)))),
       ]),
+    );
+  }
+
+  void _showSelectBottomSheet(CreatePolicyCubit cubit, InsuranceProductFormField field, String currentValue) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        String searchQuery = '';
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            final options = field.options;
+            final filtered = searchQuery.isEmpty
+                ? options
+                : options.where((o) => o.toLowerCase().contains(searchQuery.toLowerCase())).toList();
+            return DraggableScrollableSheet(
+              initialChildSize: options.length > 6 ? 0.7 : 0.45,
+              maxChildSize: 0.9,
+              minChildSize: 0.3,
+              builder: (context, scrollController) {
+                return Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1F1F1F),
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+                  ),
+                  child: Column(children: [
+                    Container(
+                      margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
+                      width: 40.w, height: 4.h,
+                      decoration: BoxDecoration(color: const Color(0xFF2D2D2D), borderRadius: BorderRadius.circular(2.r)),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                      child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                        Text('Select ${field.label}',
+                          style: GoogleFonts.inter(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w700)),
+                        GestureDetector(
+                          onTap: () => Navigator.pop(context),
+                          child: Icon(Icons.close, color: const Color(0xFF9CA3AF), size: 24.sp),
+                        ),
+                      ]),
+                    ),
+                    if (options.length > 5)
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+                        child: TextField(
+                          onChanged: (v) => setSheetState(() => searchQuery = v),
+                          style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
+                          decoration: InputDecoration(
+                            hintText: 'Search...',
+                            hintStyle: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 14.sp),
+                            prefixIcon: Icon(Icons.search, color: const Color(0xFF6B7280), size: 20.sp),
+                            filled: true, fillColor: const Color(0xFF0A0A0A),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r), borderSide: BorderSide.none),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                          ),
+                        ),
+                      ),
+                    Expanded(
+                      child: filtered.isEmpty
+                        ? Center(child: Text('No options found', style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 14.sp)))
+                        : ListView.builder(
+                            controller: scrollController,
+                            padding: EdgeInsets.symmetric(horizontal: 20.w),
+                            itemCount: filtered.length,
+                            itemBuilder: (context, index) {
+                              final option = filtered[index];
+                              final isSelected = option == currentValue;
+                              return GestureDetector(
+                                onTap: () {
+                                  cubit.updateFormField(field.name, option);
+                                  Navigator.pop(context);
+                                  setState(() {}); // Refresh the form
+                                },
+                                child: Container(
+                                  margin: EdgeInsets.only(bottom: 6.h),
+                                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+                                  decoration: BoxDecoration(
+                                    color: isSelected ? const Color(0xFF6366F1).withValues(alpha: 0.1) : const Color(0xFF0A0A0A),
+                                    borderRadius: BorderRadius.circular(10.r),
+                                    border: isSelected ? Border.all(color: const Color(0xFF6366F1), width: 1.5) : null,
+                                  ),
+                                  child: Row(children: [
+                                    Expanded(child: Text(option,
+                                      style: GoogleFonts.inter(color: Colors.white, fontSize: 15.sp, fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400))),
+                                    if (isSelected)
+                                      Icon(Icons.check_circle, color: const Color(0xFF6366F1), size: 20.sp),
+                                  ]),
+                                ),
+                              );
+                            },
+                          ),
+                    ),
+                  ]),
+                );
+              },
+            );
+          },
+        );
+      },
     );
   }
 

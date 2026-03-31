@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
+import 'package:lazervault/src/features/investments/presentation/theme/invest_trading_ui.dart';
 
 import '../../../domain/entities/stock_entity.dart';
 
@@ -13,6 +14,7 @@ class TradeReviewScreen extends StatelessWidget {
   final int quantity;
   final double? limitPrice;
   final double? stopPrice;
+  final Color? accentColor;
 
   const TradeReviewScreen({
     super.key,
@@ -22,6 +24,7 @@ class TradeReviewScreen extends StatelessWidget {
     required this.quantity,
     this.limitPrice,
     this.stopPrice,
+    this.accentColor,
   });
 
   double get _executionPrice {
@@ -48,6 +51,10 @@ class TradeReviewScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = accentColor ?? InvestTradingUi.accent;
+    final sideColor =
+        orderSide == OrderSide.buy ? InvestTradingUi.buy : InvestTradingUi.sell;
+
     return SingleChildScrollView(
       padding: EdgeInsets.all(20.w),
       child: Column(
@@ -55,58 +62,60 @@ class TradeReviewScreen extends StatelessWidget {
         children: [
           // Order summary header
           Container(
+            width: double.infinity,
             padding: EdgeInsets.all(24.w),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  (orderSide == OrderSide.buy ? Colors.green : Colors.red)
-                      .withValues(alpha: 0.3),
-                  (orderSide == OrderSide.buy ? Colors.green : Colors.red)
-                      .withValues(alpha: 0.1),
-                ],
-              ),
+              color: InvestTradingUi.surfaceElevated,
               borderRadius: BorderRadius.circular(20.r),
-              border: Border.all(
-                color: (orderSide == OrderSide.buy ? Colors.green : Colors.red)
-                    .withValues(alpha: 0.3),
-              ),
+              border: Border.all(color: sideColor.withValues(alpha: 0.35)),
             ),
             child: Column(
               children: [
-                Icon(
-                  orderSide == OrderSide.buy
-                      ? Icons.shopping_cart_outlined
-                      : Icons.sell_outlined,
-                  size: 48.sp,
-                  color: orderSide == OrderSide.buy ? Colors.green : Colors.red,
+                Container(
+                  padding: EdgeInsets.all(14.w),
+                  decoration: BoxDecoration(
+                    color: sideColor.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    orderSide == OrderSide.buy
+                        ? Icons.trending_up_rounded
+                        : Icons.trending_down_rounded,
+                    size: 36.sp,
+                    color: sideColor,
+                  ),
                 ),
                 SizedBox(height: 16.h),
                 Text(
-                  orderSide == OrderSide.buy ? 'Buying' : 'Selling',
-                  style: GoogleFonts.inter(
-                    fontSize: 16.sp,
-                    color: Colors.grey[400],
-                  ),
+                  orderSide == OrderSide.buy ? 'BUY ORDER' : 'SELL ORDER',
+                  style: InvestTradingUi.eyebrow(sideColor),
                 ),
-                SizedBox(height: 4.h),
+                SizedBox(height: 8.h),
                 Text(
-                  '$quantity ${quantity == 1 ? 'Share' : 'Shares'}',
+                  '$quantity ${quantity == 1 ? 'share' : 'shares'}',
                   style: GoogleFonts.inter(
                     fontSize: 32.sp,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    color: InvestTradingUi.textPrimary,
+                    letterSpacing: -0.6,
                   ),
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  'of ${stock.symbol}',
+                  stock.symbol,
                   style: GoogleFonts.inter(
-                    fontSize: 20.sp,
+                    fontSize: 17.sp,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: InvestTradingUi.textSecondary,
                   ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  stock.name,
+                  textAlign: TextAlign.center,
+                  style: InvestTradingUi.labelMuted(),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -116,11 +125,11 @@ class TradeReviewScreen extends StatelessWidget {
 
           // Order details section
           Text(
-            'Order Details',
+            'Order details',
             style: GoogleFonts.inter(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w700,
+              color: InvestTradingUi.textPrimary,
             ),
           ),
           SizedBox(height: 16.h),
@@ -132,8 +141,8 @@ class TradeReviewScreen extends StatelessWidget {
             _buildDivider(),
             _buildDetailRow(
               'Action',
-              orderSide == OrderSide.buy ? 'BUY' : 'SELL',
-              valueColor: orderSide == OrderSide.buy ? Colors.green : Colors.red,
+              orderSide == OrderSide.buy ? 'Buy' : 'Sell',
+              valueColor: sideColor,
             ),
             _buildDivider(),
             _buildDetailRow('Order Type', _getOrderTypeLabel()),
@@ -145,11 +154,11 @@ class TradeReviewScreen extends StatelessWidget {
 
           // Price details section
           Text(
-            'Price Details',
+            'Price details',
             style: GoogleFonts.inter(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w700,
+              color: InvestTradingUi.textPrimary,
             ),
           ),
           SizedBox(height: 16.h),
@@ -157,30 +166,37 @@ class TradeReviewScreen extends StatelessWidget {
           _buildDetailCard([
             if (orderType == OrderType.market)
               _buildDetailRow(
-                'Market Price',
-                CurrencySymbols.formatAmountWithCurrency(stock.currentPrice, stock.currency),
-                valueColor: Colors.white,
+                'Market price',
+                CurrencySymbols.formatAmountWithCurrency(
+                    stock.currentPrice, stock.currency),
+                valueColor: InvestTradingUi.textPrimary,
               ),
             if (orderType == OrderType.limit || orderType == OrderType.stopLimit) ...[
               _buildDetailRow(
-                'Limit Price',
-                limitPrice != null ? CurrencySymbols.formatAmountWithCurrency(limitPrice!, stock.currency) : 'N/A',
-                valueColor: Colors.white,
+                'Limit price',
+                limitPrice != null
+                    ? CurrencySymbols.formatAmountWithCurrency(
+                        limitPrice!, stock.currency)
+                    : '—',
+                valueColor: InvestTradingUi.textPrimary,
               ),
               _buildDivider(),
             ],
             if (orderType == OrderType.stopLoss || orderType == OrderType.stopLimit) ...[
               _buildDetailRow(
-                'Stop Price',
-                stopPrice != null ? CurrencySymbols.formatAmountWithCurrency(stopPrice!, stock.currency) : 'N/A',
-                valueColor: Colors.white,
+                'Stop price',
+                stopPrice != null
+                    ? CurrencySymbols.formatAmountWithCurrency(
+                        stopPrice!, stock.currency)
+                    : '—',
+                valueColor: InvestTradingUi.textPrimary,
               ),
               _buildDivider(),
             ],
             _buildDetailRow(
-              'Execution Price',
+              'Execution price',
               CurrencySymbols.formatAmountWithCurrency(_executionPrice, stock.currency),
-              valueColor: const Color(0xFF6366F1),
+              valueColor: accent,
             ),
             _buildDivider(),
             _buildDetailRow(
@@ -199,20 +215,13 @@ class TradeReviewScreen extends StatelessWidget {
 
           // Total section
           Container(
-            padding: EdgeInsets.all(24.w),
+            padding: EdgeInsets.all(22.w),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  const Color(0xFF6366F1).withValues(alpha: 0.3),
-                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(16.r),
+              color: InvestTradingUi.surfaceElevated,
+              borderRadius: BorderRadius.circular(18.r),
               border: Border.all(
-                color: const Color(0xFF6366F1).withValues(alpha: 0.5),
-                width: 2,
+                color: accent.withValues(alpha: 0.45),
+                width: 1.5,
               ),
             ),
             child: Row(
@@ -222,19 +231,20 @@ class TradeReviewScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      orderSide == OrderSide.buy ? 'Total Cost' : 'Total Proceeds',
-                      style: GoogleFonts.inter(
-                        fontSize: 14.sp,
-                        color: Colors.grey[400],
-                      ),
+                      orderSide == OrderSide.buy
+                          ? 'Total cost'
+                          : 'Total proceeds',
+                      style: InvestTradingUi.labelMuted(),
                     ),
-                    SizedBox(height: 4.h),
+                    SizedBox(height: 6.h),
                     Text(
-                      CurrencySymbols.formatAmountWithCurrency(_grandTotal, stock.currency),
+                      CurrencySymbols.formatAmountWithCurrency(
+                          _grandTotal, stock.currency),
                       style: GoogleFonts.inter(
-                        fontSize: 32.sp,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                        fontSize: 28.sp,
+                        fontWeight: FontWeight.w800,
+                        color: InvestTradingUi.textPrimary,
+                        letterSpacing: -0.5,
                       ),
                     ),
                   ],
@@ -242,15 +252,16 @@ class TradeReviewScreen extends StatelessWidget {
                 Container(
                   padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
-                    color: orderSide == OrderSide.buy ? Colors.green : Colors.red,
+                    color: sideColor.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
+                    border: Border.all(color: sideColor.withValues(alpha: 0.5)),
                   ),
                   child: Icon(
                     orderSide == OrderSide.buy
-                        ? Icons.arrow_upward
-                        : Icons.arrow_downward,
-                    color: Colors.white,
-                    size: 32.sp,
+                        ? Icons.arrow_upward_rounded
+                        : Icons.arrow_downward_rounded,
+                    color: sideColor,
+                    size: 28.sp,
                   ),
                 ),
               ],
@@ -261,20 +272,20 @@ class TradeReviewScreen extends StatelessWidget {
 
           // Important notes
           _buildInfoBox(
-            Icons.info_outline,
-            'Important Information',
+            Icons.info_outline_rounded,
+            'Before you confirm',
             _getImportantNote(),
-            Colors.blue,
+            accent,
           ),
 
           SizedBox(height: 16.h),
 
           // Risk warning
           _buildInfoBox(
-            Icons.warning_amber_outlined,
-            'Risk Warning',
-            'Trading stocks involves risk. You may lose some or all of your investment. Past performance does not guarantee future results.',
-            Colors.orange,
+            Icons.shield_outlined,
+            'Risk',
+            'Capital at risk. You may get back less than you invest. Past performance is not a guide to the future.',
+            const Color(0xFFFB923C),
           ),
 
           SizedBox(height: 24.h),
@@ -282,26 +293,22 @@ class TradeReviewScreen extends StatelessWidget {
           // Terms acceptance
           Container(
             padding: EdgeInsets.all(16.w),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+            decoration: InvestTradingUi.cardDecoration(
+              color: InvestTradingUi.surfaceElevated,
             ),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(
-                  Icons.check_circle,
-                  color: Colors.green,
-                  size: 24.sp,
+                  Icons.verified_user_outlined,
+                  color: InvestTradingUi.buy,
+                  size: 22.sp,
                 ),
                 SizedBox(width: 12.w),
                 Expanded(
                   child: Text(
-                    'By placing this order, you agree to our Terms of Service and Risk Disclosure.',
-                    style: GoogleFonts.inter(
-                      fontSize: 12.sp,
-                      color: Colors.grey[400],
-                    ),
+                    'By placing this order you agree to our terms and risk disclosures.',
+                    style: InvestTradingUi.labelMuted().copyWith(height: 1.4),
                   ),
                 ),
               ],
@@ -317,24 +324,7 @@ class TradeReviewScreen extends StatelessWidget {
   Widget _buildDetailCard(List<Widget> children) {
     return Container(
       padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF2A2A3E).withValues(alpha: 0.6),
-            const Color(0xFF1F1F35).withValues(alpha: 0.8),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+      decoration: InvestTradingUi.statementCardDecoration(),
       child: Column(children: children),
     );
   }
@@ -348,21 +338,25 @@ class TradeReviewScreen extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 8.h),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              fontSize: 14.sp,
-              color: labelColor ?? Colors.grey[400],
+          Expanded(
+            child: Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 14.sp,
+                color: labelColor ?? InvestTradingUi.textSecondary,
+              ),
             ),
           ),
-          Text(
-            value,
-            style: GoogleFonts.inter(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w600,
-              color: valueColor ?? Colors.white,
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: GoogleFonts.inter(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+                color: valueColor ?? InvestTradingUi.textPrimary,
+              ),
             ),
           ),
         ],
@@ -374,7 +368,7 @@ class TradeReviewScreen extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 4.h),
       child: Divider(
-        color: Colors.white.withValues(alpha: 0.1),
+        color: InvestTradingUi.border,
         height: 1,
       ),
     );
@@ -385,13 +379,13 @@ class TradeReviewScreen extends StatelessWidget {
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: color.withValues(alpha: 0.28)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: color, size: 24.sp),
+          Icon(icon, color: color, size: 22.sp),
           SizedBox(width: 12.w),
           Expanded(
             child: Column(
@@ -400,18 +394,16 @@ class TradeReviewScreen extends StatelessWidget {
                 Text(
                   title,
                   style: GoogleFonts.inter(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w700,
                     color: color,
+                    letterSpacing: 0.2,
                   ),
                 ),
-                SizedBox(height: 4.h),
+                SizedBox(height: 6.h),
                 Text(
                   message,
-                  style: GoogleFonts.inter(
-                    fontSize: 12.sp,
-                    color: Colors.grey[400],
-                  ),
+                  style: InvestTradingUi.labelMuted().copyWith(height: 1.35),
                 ),
               ],
             ),

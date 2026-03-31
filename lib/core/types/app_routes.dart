@@ -181,6 +181,7 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String stockDetails = '/stocks/details';
   static const String stockTrade = '/stocks/trade';
   static const String stockTradeAmount = '/stocks/trade/amount';
+  /// Portfolio cash flows (add / withdraw / rebalance); not equity trade checkout.
   static const String stockTradePayment = '/stocks/trade/payment';
   static const String stockTradeReview = '/stocks/trade/review';
   static const String stockTradeReceipt = '/stocks/trade/receipt';
@@ -259,6 +260,8 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String airtimePaymentConfirmation = '/airtime/payment-confirmation';
   static const String airtimeHistory = '/airtime/history';
   static const String airtimeDetails = '/airtime/details';
+  static const String airtimeTransfer = '/airtime/transfer';
+  static const String airtimeTransferReview = '/airtime/transfer-review';
 
   // AutoSave Routes
   static const String autoSave = '/auto-save';

@@ -509,62 +509,71 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
         recipientCountry = _countryConfig.countryCode;
       }
 
-      await validateTransactionPin(
+      String? verificationToken;
+
+      final success = await validateTransactionPin(
         context: context,
         transactionId: 'exchange-${DateTime.now().millisecondsSinceEpoch}',
         transactionType: 'international_transfer',
         amount: cubit.amount,
         currency: cubit.fromCurrency,
-        onPinValidated: (verificationToken) async {
-          pinModalKey.currentState?.setProcessing();
-
-          await cubit.initiateTransfer(
-            verificationToken: verificationToken,
-            recipientName: recipientName,
-            recipientAccountNumber: accountNumber,
-            recipientBankName: recipientBankName,
-            recipientBankCode: recipientBankCode,
-            recipientSwiftCode: _swiftController.text.trim().isNotEmpty
-                ? _swiftController.text.trim()
-                : null,
-            recipientCountry: recipientCountry,
-            recipientEmail: _emailController.text.trim().isNotEmpty
-                ? _emailController.text.trim()
-                : null,
-            purposeOfPayment: _purposeOfPayment,
-            recipientRoutingNumber: recipientBankCode,
-            recipientAddress: _addressController.text.trim().isNotEmpty
-                ? _addressController.text.trim()
-                : null,
-          );
-
-          final currentState = cubit.state;
-          if (currentState is ExchangeSuccess) {
-            pinModalKey.currentState?.setSuccess();
-            await Future.delayed(const Duration(milliseconds: 800));
-            if (mounted) Navigator.of(context).pop();
-            Get.offNamed(
-              AppRoutes.exchangeReceipt,
-              arguments: currentState.transaction,
-            );
-          } else if (currentState is ExchangeProcessing) {
-            pinModalKey.currentState?.setSuccess();
-            await Future.delayed(const Duration(milliseconds: 800));
-            if (mounted) Navigator.of(context).pop();
-            Get.offNamed(
-              AppRoutes.exchangeProcessing,
-              arguments: {
-                'transactionId': currentState.transactionId,
-                'isConversion': currentState.isConversion,
-              },
-            );
-          } else if (currentState is ExchangeError) {
-            final errorMsg = currentState.message;
-            cubit.restoreHomeState();
-            throw Exception(errorMsg);
-          }
+        title: 'Confirm Transfer',
+        message: 'Confirm international transfer of ${cubit.fromCurrency} ${cubit.amount.toStringAsFixed(2)}',
+        onPinValidated: (token) async {
+          verificationToken = token;
         },
       );
+
+      if (!success || verificationToken == null) return;
+      if (!mounted) return;
+
+      // Execute transfer AFTER modal is dismissed
+      await cubit.initiateTransfer(
+        verificationToken: verificationToken!,
+        recipientName: recipientName,
+        recipientAccountNumber: accountNumber,
+        recipientBankName: recipientBankName,
+        recipientBankCode: recipientBankCode,
+        recipientSwiftCode: _swiftController.text.trim().isNotEmpty
+            ? _swiftController.text.trim()
+            : null,
+        recipientCountry: recipientCountry,
+        recipientEmail: _emailController.text.trim().isNotEmpty
+            ? _emailController.text.trim()
+            : null,
+        purposeOfPayment: _purposeOfPayment,
+        recipientRoutingNumber: recipientBankCode,
+        recipientAddress: _addressController.text.trim().isNotEmpty
+            ? _addressController.text.trim()
+            : null,
+      );
+
+      final currentState = cubit.state;
+      if (currentState is ExchangeSuccess) {
+        Get.offNamed(
+          AppRoutes.exchangeReceipt,
+          arguments: currentState.transaction,
+        );
+      } else if (currentState is ExchangeProcessing) {
+        Get.offNamed(
+          AppRoutes.exchangeProcessing,
+          arguments: {
+            'transactionId': currentState.transactionId,
+            'isConversion': currentState.isConversion,
+          },
+        );
+      } else if (currentState is ExchangeError) {
+        cubit.restoreHomeState();
+        if (mounted) {
+          Get.snackbar(
+            'Transfer Failed',
+            currentState.message,
+            backgroundColor: const Color(0xFFEF4444),
+            colorText: Colors.white,
+            snackPosition: SnackPosition.TOP,
+          );
+        }
+      }
     } finally {
       if (mounted) {
         setState(() => _isSubmitting = false);

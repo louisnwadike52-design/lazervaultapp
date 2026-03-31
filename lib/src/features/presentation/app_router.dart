@@ -79,10 +79,11 @@ import 'package:lazervault/src/features/authentication/presentation/views/sign_u
 import 'package:lazervault/src/features/authentication/presentation/views/two_factor_setup_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/two_factor_verification_screen.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/two_factor_settings_screen.dart';
-import 'package:lazervault/src/features/stocks/presentation/view/stocks_screen.dart' as StockFeature;
-import 'package:lazervault/src/features/stocks/presentation/view/stocks_landing_screen.dart';
+import 'package:lazervault/src/features/investments/presentation/view/invest_activity_screen.dart';
+import 'package:lazervault/src/features/investments/presentation/view/invest_asset_hub_screen.dart';
 import 'package:lazervault/src/features/stocks/presentation/view/stock_details_screen.dart';
-import 'package:lazervault/src/features/stocks/presentation/view/stock_trade_amount_screen.dart';
+import 'package:lazervault/src/features/stocks/presentation/navigation/stock_details_route_args.dart';
+import 'package:lazervault/src/features/stocks/presentation/view/stock_trade_flow_screen.dart';
 import 'package:lazervault/src/features/stocks/presentation/view/stock_trade_payment_screen.dart';
 import 'package:lazervault/src/features/stocks/presentation/view/stock_trade_review_screen.dart';
 import 'package:lazervault/src/features/stocks/presentation/view/stock_trade_receipt_screen.dart';
@@ -168,7 +169,6 @@ import 'package:lazervault/src/features/insurance/presentation/view/insurance_li
 import 'package:lazervault/src/features/insurance/presentation/view/insurance_policy_detail_view.dart';
 import 'package:lazervault/src/features/insurance/presentation/view/edit_insurance_policy_view.dart';
 import 'package:lazervault/src/features/insurance/presentation/view/insurance_payment_screen.dart';
-import 'package:lazervault/src/features/insurance/presentation/view/insurance_payment_processing_screen.dart';
 import 'package:lazervault/src/features/insurance/presentation/view/insurance_payment_confirmation_screen.dart';
 import 'package:lazervault/src/features/insurance/presentation/view/create_claim_screen.dart';
 import 'package:lazervault/src/features/insurance/domain/entities/insurance_entity.dart';
@@ -194,10 +194,12 @@ import 'package:lazervault/src/features/airtime/presentation/view/network_select
 import 'package:lazervault/src/features/airtime/presentation/view/recipient_input_screen.dart';
 import 'package:lazervault/src/features/airtime/presentation/view/amount_selection_screen.dart';
 import 'package:lazervault/src/features/airtime/presentation/view/airtime_review_screen.dart';
-// Processing screen removed — payment now runs inside PIN modal
+import 'package:lazervault/src/features/airtime/presentation/view/airtime_payment_processing_screen.dart';
 import 'package:lazervault/src/features/airtime/presentation/view/airtime_payment_confirmation_screen.dart';
 import 'package:lazervault/src/features/airtime/presentation/view/airtime_history_screen.dart';
 import 'package:lazervault/src/features/airtime/presentation/view/airtime_details_screen.dart';
+import 'package:lazervault/src/features/airtime/presentation/view/airtime_transfer_screen.dart';
+import 'package:lazervault/src/features/airtime/presentation/view/airtime_transfer_review_screen.dart';
 import 'package:lazervault/src/features/airtime_to_cash/presentation/cubit/airtime_to_cash_cubit.dart';
 import 'package:lazervault/src/features/airtime_to_cash/presentation/view/airtime_to_cash_home_screen.dart';
 import 'package:lazervault/src/features/airtime_to_cash/presentation/view/a2c_network_selection_screen.dart';
@@ -580,7 +582,7 @@ class AppRouter {
       name: AppRoutes.stocks,
       page: () => BlocProvider(
         create: (context) => serviceLocator<StockCubit>(),
-        child: const StocksLandingScreen(),
+        child: const InvestAssetHubScreen(),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -1388,10 +1390,14 @@ class AppRouter {
     GetPage(
       name: AppRoutes.stockDetails,
       page: () {
-        final stock = Get.arguments as Stock;
+        final args = StockDetailsRouteArgs.parse(Get.arguments);
         return BlocProvider(
-          create: (_) => serviceLocator<StockCubit>()..loadStockDetails(stock.symbol),
-          child: serviceLocator<StockDetailsScreen>(param1: stock),
+          create: (_) =>
+              serviceLocator<StockCubit>()..loadStockDetails(args.stock.symbol),
+          child: serviceLocator<StockDetailsScreen>(
+            param1: args.stock,
+            param2: args.investCollectionId,
+          ),
         );
       },
       transition: Transition.rightToLeft,
@@ -1399,8 +1405,8 @@ class AppRouter {
     GetPage(
       name: AppRoutes.stockTrade,
       page: () => BlocProvider(
-        create: (_) => serviceLocator<StockCubit>()..loadStocks(),
-        child: serviceLocator<StockFeature.StocksScreen>(), // Will show trade dialog
+        create: (_) => serviceLocator<StockCubit>(),
+        child: const InvestAssetHubScreen(),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -1409,7 +1415,7 @@ class AppRouter {
       page: () {
         return BlocProvider(
           create: (_) => serviceLocator<StockCubit>(),
-          child: serviceLocator<StockTradeAmountScreen>(),
+          child: const StockTradeFlowScreen(),
         );
       },
       transition: Transition.rightToLeft,
@@ -1448,7 +1454,9 @@ class AppRouter {
       name: AppRoutes.stockPortfolio,
       page: () => BlocProvider(
         create: (_) => serviceLocator<StockCubit>()..loadPortfolio(),
-        child: serviceLocator<StockFeature.StocksScreen>(), // Will show portfolio tab
+        child: const InvestActivityScreen(
+          section: InvestActivitySection.portfolio,
+        ),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -1456,7 +1464,9 @@ class AppRouter {
       name: AppRoutes.stockWatchlist,
       page: () => BlocProvider(
         create: (_) => serviceLocator<StockCubit>()..loadWatchlists(),
-        child: serviceLocator<StockFeature.StocksScreen>(), // Will show watchlist tab
+        child: const InvestActivityScreen(
+          section: InvestActivitySection.watchlist,
+        ),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -1464,7 +1474,9 @@ class AppRouter {
       name: AppRoutes.stockOrders,
       page: () => BlocProvider(
         create: (_) => serviceLocator<StockCubit>()..loadOrders(),
-        child: serviceLocator<StockFeature.StocksScreen>(), // Will show orders tab
+        child: const InvestActivityScreen(
+          section: InvestActivitySection.orders,
+        ),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -1472,7 +1484,9 @@ class AppRouter {
       name: AppRoutes.stockNews,
       page: () => BlocProvider(
         create: (_) => serviceLocator<StockCubit>()..loadMarketNews(),
-        child: serviceLocator<StockFeature.StocksScreen>(), // Will show news tab
+        child: const InvestActivityScreen(
+          section: InvestActivitySection.news,
+        ),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -1661,16 +1675,8 @@ class AppRouter {
       },
       transition: Transition.rightToLeft,
     ),
-    GetPage(
-      name: AppRoutes.insurancePaymentProcessing,
-      page: () {
-        return BlocProvider(
-          create: (_) => serviceLocator<InsuranceCubit>(),
-          child: const InsurancePaymentProcessingScreen(),
-        );
-      },
-      transition: Transition.rightToLeft,
-    ),
+    // InsurancePaymentProcessingScreen removed — PIN flow now handled
+    // inline via TransactionPinMixin in CreateInsurancePolicyCarousel
     GetPage(
       name: AppRoutes.insurancePaymentConfirmation,
       page: () {
@@ -1848,7 +1854,14 @@ GetPage(
       ),
       transition: Transition.rightToLeft,
     ),
-    // Processing screen removed — payment now runs inside PIN modal on review screen
+    GetPage(
+      name: AppRoutes.airtimePaymentProcessing,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AirtimeCubit>(),
+        child: const AirtimePaymentProcessingScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
     GetPage(
       name: AppRoutes.airtimePaymentConfirmation,
       page: () => BlocProvider(
@@ -1874,12 +1887,33 @@ GetPage(
       transition: Transition.rightToLeft,
     ),
 
+    // Airtime Transfer routes
+    GetPage(
+      name: AppRoutes.airtimeTransfer,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AirtimeCubit>(),
+        child: const AirtimeTransferScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.airtimeTransferReview,
+      page: () => MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => serviceLocator<AirtimeCubit>()),
+          BlocProvider(create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
+        ],
+        child: const AirtimeTransferReviewScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+
     // Airtime-to-Cash routes
     GetPage(
       name: AppRoutes.airtimeToCash,
       page: () => BlocProvider(
         create: (_) => serviceLocator<AirtimeToCashCubit>(),
-        child: const AirtimeToCashHomeScreen(),
+        child: const A2CNetworkSelectionScreen(),
       ),
       transition: Transition.rightToLeft,
     ),

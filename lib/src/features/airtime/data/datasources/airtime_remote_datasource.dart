@@ -20,6 +20,20 @@ abstract class AirtimeRemoteDataSource {
     String? reloadlyOperatorId,
     required String currency,
   });
+  Future<AirtimeTransactionModel> transferAirtime({
+    required String senderPhone,
+    required String recipientPhone,
+    required String recipientName,
+    required String network,
+    required double amount,
+    required String transactionId,
+    required String verificationToken,
+    required String idempotencyKey,
+    required String countryCode,
+    String? operatorId,
+    String? transferNote,
+    required String currency,
+  });
   Future<List<AirtimeTransactionModel>> getHistory({
     String? billType,
     int limit = 20,
@@ -91,6 +105,50 @@ class AirtimeRemoteDataSourceImpl implements AirtimeRemoteDataSource {
       return AirtimeTransactionModel.fromBuyAirtimeResponse(response, currency: currency);
     } on GrpcError catch (e) {
       throw Exception('Failed to purchase airtime: ${e.message}');
+    }
+  }
+
+  @override
+  Future<AirtimeTransactionModel> transferAirtime({
+    required String senderPhone,
+    required String recipientPhone,
+    required String recipientName,
+    required String network,
+    required double amount,
+    required String transactionId,
+    required String verificationToken,
+    required String idempotencyKey,
+    required String countryCode,
+    String? operatorId,
+    String? transferNote,
+    required String currency,
+  }) async {
+    try {
+      final request = pb.TransferAirtimeRequest()
+        ..senderPhone = senderPhone
+        ..recipientPhone = recipientPhone
+        ..network = network
+        ..amount = amount
+        ..countryCode = countryCode
+        ..transactionId = transactionId
+        ..verificationToken = verificationToken
+        ..idempotencyKey = idempotencyKey
+        ..recipientName = recipientName;
+
+      if (operatorId != null && operatorId.isNotEmpty) {
+        request.operatorId = operatorId;
+      }
+      if (transferNote != null && transferNote.isNotEmpty) {
+        request.transferNote = transferNote;
+      }
+
+      final options = await grpcClient.callOptions;
+      final response = await grpcClient.utilityPaymentsClient
+          .transferAirtime(request, options: options);
+
+      return AirtimeTransactionModel.fromTransferAirtimeResponse(response, currency: currency);
+    } on GrpcError catch (e) {
+      throw Exception('Failed to transfer airtime: ${e.message}');
     }
   }
 

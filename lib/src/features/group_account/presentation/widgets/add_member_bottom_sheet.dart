@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/utils/debouncer.dart';
+import 'package:lazervault/core/utils/user_search_query.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
 import '../../domain/entities/group_entities.dart';
@@ -91,8 +92,7 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
       _showInviteUI = false;
     });
 
-    // Clean the query - remove @ and $ symbols
-    final cleanQuery = query.replaceAll('@', '').replaceAll('\$', '').trim();
+    final cleanQuery = normalizeLazerVaultUserSearchQuery(query);
 
     if (cleanQuery.isEmpty) {
       setState(() {
@@ -120,7 +120,7 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
     });
 
     // Debounce the search - wait 500ms after user stops typing
-    _debouncer.run(() => _performSearch(cleanQuery));
+    _debouncer.run(() => _performSearch(query));
   }
 
   Future<void> _performSearch(String query) async {

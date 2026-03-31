@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package pb;
+package group_accounts;
 
 option go_package = "group-accounts-service/proto";
 
@@ -124,6 +124,8 @@ message GroupMemberMessage {
   string phone_number = 11;
   bool is_partial = 12;
   string user_username = 13;
+  bool email_matches_search_query = 14;
+  bool phone_matches_search_query_exact = 15;
 }
 
 message ContributionMessage {
@@ -819,7 +821,7 @@ service GroupAccountService {
 
   rpc SearchUsers(SearchUsersRequest) returns (SearchUsersResponse) {
     option (google.api.http) = {
-      get: "/v1/users/search"
+      get: "/v1/groups/users/search"
     };
   }
 

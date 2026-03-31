@@ -1,14 +1,13 @@
-// This is a generated file - do not edit.
 //
-// Generated from crowdfund.proto.
-
-// @dart = 3.3
+//  Generated code. Do not modify.
+//  source: crowdfund.proto
+//
+// @dart = 2.12
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: curly_braces_in_flow_control_structures
-// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
-// ignore_for_file: non_constant_identifier_names, unused_import
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -171,21 +170,8 @@ const CrowdfundCreatorMessage$json = {
     {'1': 'last_name', '3': 4, '4': 1, '5': 9, '10': 'lastName'},
     {'1': 'profile_picture', '3': 5, '4': 1, '5': 9, '10': 'profilePicture'},
     {'1': 'verified', '3': 6, '4': 1, '5': 8, '10': 'verified'},
-    {
-      '1': 'verified_at',
-      '3': 7,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'verifiedAt'
-    },
-    {
-      '1': 'facial_recognition_enabled',
-      '3': 8,
-      '4': 1,
-      '5': 8,
-      '10': 'facialRecognitionEnabled'
-    },
+    {'1': 'verified_at', '3': 7, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'verifiedAt'},
+    {'1': 'facial_recognition_enabled', '3': 8, '4': 1, '5': 8, '10': 'facialRecognitionEnabled'},
   ],
 };
 
@@ -204,14 +190,7 @@ const CrowdfundMessage$json = {
   '2': [
     {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
     {'1': 'creator_user_id', '3': 2, '4': 1, '5': 4, '10': 'creatorUserId'},
-    {
-      '1': 'creator',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.CrowdfundCreatorMessage',
-      '10': 'creator'
-    },
+    {'1': 'creator', '3': 3, '4': 1, '5': 11, '6': '.pb.CrowdfundCreatorMessage', '10': 'creator'},
     {'1': 'title', '3': 4, '4': 1, '5': 9, '10': 'title'},
     {'1': 'description', '3': 5, '4': 1, '5': 9, '10': 'description'},
     {'1': 'story', '3': 6, '4': 1, '5': 9, '10': 'story'},
@@ -219,65 +198,17 @@ const CrowdfundMessage$json = {
     {'1': 'target_amount', '3': 8, '4': 1, '5': 4, '10': 'targetAmount'},
     {'1': 'current_amount', '3': 9, '4': 1, '5': 4, '10': 'currentAmount'},
     {'1': 'currency', '3': 10, '4': 1, '5': 9, '10': 'currency'},
-    {
-      '1': 'deadline',
-      '3': 11,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'deadline'
-    },
+    {'1': 'deadline', '3': 11, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'deadline'},
     {'1': 'category', '3': 12, '4': 1, '5': 9, '10': 'category'},
-    {
-      '1': 'status',
-      '3': 13,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.CrowdfundStatus',
-      '10': 'status'
-    },
+    {'1': 'status', '3': 13, '4': 1, '5': 14, '6': '.pb.CrowdfundStatus', '10': 'status'},
     {'1': 'image_url', '3': 14, '4': 1, '5': 9, '10': 'imageUrl'},
-    {
-      '1': 'visibility',
-      '3': 15,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.CrowdfundVisibility',
-      '10': 'visibility'
-    },
+    {'1': 'visibility', '3': 15, '4': 1, '5': 14, '6': '.pb.CrowdfundVisibility', '10': 'visibility'},
     {'1': 'metadata', '3': 16, '4': 1, '5': 9, '10': 'metadata'},
     {'1': 'donor_count', '3': 17, '4': 1, '5': 5, '10': 'donorCount'},
-    {
-      '1': 'progress_percentage',
-      '3': 18,
-      '4': 1,
-      '5': 1,
-      '10': 'progressPercentage'
-    },
-    {
-      '1': 'created_at',
-      '3': 19,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'createdAt'
-    },
-    {
-      '1': 'updated_at',
-      '3': 20,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'updatedAt'
-    },
-    {
-      '1': 'recent_donations',
-      '3': 21,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.CrowdfundDonationMessage',
-      '10': 'recentDonations'
-    },
+    {'1': 'progress_percentage', '3': 18, '4': 1, '5': 1, '10': 'progressPercentage'},
+    {'1': 'created_at', '3': 19, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    {'1': 'updated_at', '3': 20, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
+    {'1': 'recent_donations', '3': 21, '4': 3, '5': 11, '6': '.pb.CrowdfundDonationMessage', '10': 'recentDonations'},
   ],
 };
 
@@ -326,32 +257,11 @@ const CrowdfundDonationMessage$json = {
     {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
     {'1': 'crowdfund_id', '3': 2, '4': 1, '5': 9, '10': 'crowdfundId'},
     {'1': 'donor_user_id', '3': 3, '4': 1, '5': 4, '10': 'donorUserId'},
-    {
-      '1': 'donor',
-      '3': 4,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.CrowdfundDonorMessage',
-      '10': 'donor'
-    },
+    {'1': 'donor', '3': 4, '4': 1, '5': 11, '6': '.pb.CrowdfundDonorMessage', '10': 'donor'},
     {'1': 'amount', '3': 5, '4': 1, '5': 4, '10': 'amount'},
     {'1': 'currency', '3': 6, '4': 1, '5': 9, '10': 'currency'},
-    {
-      '1': 'donation_date',
-      '3': 7,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'donationDate'
-    },
-    {
-      '1': 'status',
-      '3': 8,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.DonationStatus',
-      '10': 'status'
-    },
+    {'1': 'donation_date', '3': 7, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'donationDate'},
+    {'1': 'status', '3': 8, '4': 1, '5': 14, '6': '.pb.DonationStatus', '10': 'status'},
     {'1': 'transaction_id', '3': 9, '4': 1, '5': 9, '10': 'transactionId'},
     {'1': 'receipt_id', '3': 10, '4': 1, '5': 9, '10': 'receiptId'},
     {'1': 'message', '3': 11, '4': 1, '5': 9, '10': 'message'},
@@ -386,22 +296,8 @@ const CrowdfundReceiptMessage$json = {
     {'1': 'donor_name', '3': 6, '4': 1, '5': 9, '10': 'donorName'},
     {'1': 'amount', '3': 7, '4': 1, '5': 4, '10': 'amount'},
     {'1': 'currency', '3': 8, '4': 1, '5': 9, '10': 'currency'},
-    {
-      '1': 'donation_date',
-      '3': 9,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'donationDate'
-    },
-    {
-      '1': 'generated_at',
-      '3': 10,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'generatedAt'
-    },
+    {'1': 'donation_date', '3': 9, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'donationDate'},
+    {'1': 'generated_at', '3': 10, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'generatedAt'},
     {'1': 'receipt_number', '3': 11, '4': 1, '5': 9, '10': 'receiptNumber'},
     {'1': 'receipt_data', '3': 12, '4': 1, '5': 9, '10': 'receiptData'},
   ],
@@ -428,24 +324,10 @@ const CreateCrowdfundRequest$json = {
     {'1': 'story', '3': 3, '4': 1, '5': 9, '10': 'story'},
     {'1': 'target_amount', '3': 4, '4': 1, '5': 4, '10': 'targetAmount'},
     {'1': 'currency', '3': 5, '4': 1, '5': 9, '10': 'currency'},
-    {
-      '1': 'deadline',
-      '3': 6,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'deadline'
-    },
+    {'1': 'deadline', '3': 6, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'deadline'},
     {'1': 'category', '3': 7, '4': 1, '5': 9, '10': 'category'},
     {'1': 'image_url', '3': 8, '4': 1, '5': 9, '10': 'imageUrl'},
-    {
-      '1': 'visibility',
-      '3': 9,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.CrowdfundVisibility',
-      '10': 'visibility'
-    },
+    {'1': 'visibility', '3': 9, '4': 1, '5': 14, '6': '.pb.CrowdfundVisibility', '10': 'visibility'},
     {'1': 'metadata', '3': 10, '4': 1, '5': 9, '10': 'metadata'},
   ],
 };
@@ -464,22 +346,14 @@ final $typed_data.Uint8List createCrowdfundRequestDescriptor = $convert.base64De
 const CreateCrowdfundResponse$json = {
   '1': 'CreateCrowdfundResponse',
   '2': [
-    {
-      '1': 'crowdfund',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.CrowdfundMessage',
-      '10': 'crowdfund'
-    },
+    {'1': 'crowdfund', '3': 1, '4': 1, '5': 11, '6': '.pb.CrowdfundMessage', '10': 'crowdfund'},
   ],
 };
 
 /// Descriptor for `CreateCrowdfundResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List createCrowdfundResponseDescriptor =
-    $convert.base64Decode(
-        'ChdDcmVhdGVDcm93ZGZ1bmRSZXNwb25zZRIyCgljcm93ZGZ1bmQYASABKAsyFC5wYi5Dcm93ZG'
-        'Z1bmRNZXNzYWdlUgljcm93ZGZ1bmQ=');
+final $typed_data.Uint8List createCrowdfundResponseDescriptor = $convert.base64Decode(
+    'ChdDcmVhdGVDcm93ZGZ1bmRSZXNwb25zZRIyCgljcm93ZGZ1bmQYASABKAsyFC5wYi5Dcm93ZG'
+    'Z1bmRNZXNzYWdlUgljcm93ZGZ1bmQ=');
 
 @$core.Deprecated('Use getCrowdfundRequestDescriptor instead')
 const GetCrowdfundRequest$json = {
@@ -498,14 +372,7 @@ final $typed_data.Uint8List getCrowdfundRequestDescriptor = $convert.base64Decod
 const GetCrowdfundResponse$json = {
   '1': 'GetCrowdfundResponse',
   '2': [
-    {
-      '1': 'crowdfund',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.CrowdfundMessage',
-      '10': 'crowdfund'
-    },
+    {'1': 'crowdfund', '3': 1, '4': 1, '5': 11, '6': '.pb.CrowdfundMessage', '10': 'crowdfund'},
   ],
 };
 
@@ -522,22 +389,9 @@ const ListCrowdfundsRequest$json = {
     {'1': 'page_size', '3': 2, '4': 1, '5': 5, '10': 'pageSize'},
     {'1': 'status', '3': 3, '4': 1, '5': 9, '10': 'status'},
     {'1': 'category', '3': 4, '4': 1, '5': 9, '10': 'category'},
-    {
-      '1': 'my_crowdfunds_only',
-      '3': 5,
-      '4': 1,
-      '5': 8,
-      '10': 'myCrowdfundsOnly'
-    },
+    {'1': 'my_crowdfunds_only', '3': 5, '4': 1, '5': 8, '10': 'myCrowdfundsOnly'},
     {'1': 'sort_by', '3': 6, '4': 1, '5': 9, '10': 'sortBy'},
-    {
-      '1': 'visibility',
-      '3': 7,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.CrowdfundVisibility',
-      '10': 'visibility'
-    },
+    {'1': 'visibility', '3': 7, '4': 1, '5': 14, '6': '.pb.CrowdfundVisibility', '10': 'visibility'},
   ],
 };
 
@@ -553,22 +407,8 @@ final $typed_data.Uint8List listCrowdfundsRequestDescriptor = $convert.base64Dec
 const ListCrowdfundsResponse$json = {
   '1': 'ListCrowdfundsResponse',
   '2': [
-    {
-      '1': 'crowdfunds',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.CrowdfundMessage',
-      '10': 'crowdfunds'
-    },
-    {
-      '1': 'pagination',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.CrowdfundPaginationInfo',
-      '10': 'pagination'
-    },
+    {'1': 'crowdfunds', '3': 1, '4': 3, '5': 11, '6': '.pb.CrowdfundMessage', '10': 'crowdfunds'},
+    {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.pb.CrowdfundPaginationInfo', '10': 'pagination'},
   ],
 };
 
@@ -588,31 +428,22 @@ const SearchCrowdfundsRequest$json = {
 };
 
 /// Descriptor for `SearchCrowdfundsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List searchCrowdfundsRequestDescriptor =
-    $convert.base64Decode(
-        'ChdTZWFyY2hDcm93ZGZ1bmRzUmVxdWVzdBIUCgVxdWVyeRgBIAEoCVIFcXVlcnkSFAoFbGltaX'
-        'QYAiABKAVSBWxpbWl0');
+final $typed_data.Uint8List searchCrowdfundsRequestDescriptor = $convert.base64Decode(
+    'ChdTZWFyY2hDcm93ZGZ1bmRzUmVxdWVzdBIUCgVxdWVyeRgBIAEoCVIFcXVlcnkSFAoFbGltaX'
+    'QYAiABKAVSBWxpbWl0');
 
 @$core.Deprecated('Use searchCrowdfundsResponseDescriptor instead')
 const SearchCrowdfundsResponse$json = {
   '1': 'SearchCrowdfundsResponse',
   '2': [
-    {
-      '1': 'crowdfunds',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.CrowdfundMessage',
-      '10': 'crowdfunds'
-    },
+    {'1': 'crowdfunds', '3': 1, '4': 3, '5': 11, '6': '.pb.CrowdfundMessage', '10': 'crowdfunds'},
   ],
 };
 
 /// Descriptor for `SearchCrowdfundsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List searchCrowdfundsResponseDescriptor =
-    $convert.base64Decode(
-        'ChhTZWFyY2hDcm93ZGZ1bmRzUmVzcG9uc2USNAoKY3Jvd2RmdW5kcxgBIAMoCzIULnBiLkNyb3'
-        'dkZnVuZE1lc3NhZ2VSCmNyb3dkZnVuZHM=');
+final $typed_data.Uint8List searchCrowdfundsResponseDescriptor = $convert.base64Decode(
+    'ChhTZWFyY2hDcm93ZGZ1bmRzUmVzcG9uc2USNAoKY3Jvd2RmdW5kcxgBIAMoCzIULnBiLkNyb3'
+    'dkZnVuZE1lc3NhZ2VSCmNyb3dkZnVuZHM=');
 
 @$core.Deprecated('Use updateCrowdfundRequestDescriptor instead')
 const UpdateCrowdfundRequest$json = {
@@ -622,22 +453,8 @@ const UpdateCrowdfundRequest$json = {
     {'1': 'title', '3': 2, '4': 1, '5': 9, '10': 'title'},
     {'1': 'description', '3': 3, '4': 1, '5': 9, '10': 'description'},
     {'1': 'story', '3': 4, '4': 1, '5': 9, '10': 'story'},
-    {
-      '1': 'deadline',
-      '3': 5,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'deadline'
-    },
-    {
-      '1': 'status',
-      '3': 6,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.CrowdfundStatus',
-      '10': 'status'
-    },
+    {'1': 'deadline', '3': 5, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'deadline'},
+    {'1': 'status', '3': 6, '4': 1, '5': 14, '6': '.pb.CrowdfundStatus', '10': 'status'},
     {'1': 'image_url', '3': 7, '4': 1, '5': 9, '10': 'imageUrl'},
     {'1': 'metadata', '3': 8, '4': 1, '5': 9, '10': 'metadata'},
   ],
@@ -656,22 +473,14 @@ final $typed_data.Uint8List updateCrowdfundRequestDescriptor = $convert.base64De
 const UpdateCrowdfundResponse$json = {
   '1': 'UpdateCrowdfundResponse',
   '2': [
-    {
-      '1': 'crowdfund',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.CrowdfundMessage',
-      '10': 'crowdfund'
-    },
+    {'1': 'crowdfund', '3': 1, '4': 1, '5': 11, '6': '.pb.CrowdfundMessage', '10': 'crowdfund'},
   ],
 };
 
 /// Descriptor for `UpdateCrowdfundResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateCrowdfundResponseDescriptor =
-    $convert.base64Decode(
-        'ChdVcGRhdGVDcm93ZGZ1bmRSZXNwb25zZRIyCgljcm93ZGZ1bmQYASABKAsyFC5wYi5Dcm93ZG'
-        'Z1bmRNZXNzYWdlUgljcm93ZGZ1bmQ=');
+final $typed_data.Uint8List updateCrowdfundResponseDescriptor = $convert.base64Decode(
+    'ChdVcGRhdGVDcm93ZGZ1bmRSZXNwb25zZRIyCgljcm93ZGZ1bmQYASABKAsyFC5wYi5Dcm93ZG'
+    'Z1bmRNZXNzYWdlUgljcm93ZGZ1bmQ=');
 
 @$core.Deprecated('Use deleteCrowdfundRequestDescriptor instead')
 const DeleteCrowdfundRequest$json = {
@@ -682,10 +491,9 @@ const DeleteCrowdfundRequest$json = {
 };
 
 /// Descriptor for `DeleteCrowdfundRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deleteCrowdfundRequestDescriptor =
-    $convert.base64Decode(
-        'ChZEZWxldGVDcm93ZGZ1bmRSZXF1ZXN0EiEKDGNyb3dkZnVuZF9pZBgBIAEoCVILY3Jvd2RmdW'
-        '5kSWQ=');
+final $typed_data.Uint8List deleteCrowdfundRequestDescriptor = $convert.base64Decode(
+    'ChZEZWxldGVDcm93ZGZ1bmRSZXF1ZXN0EiEKDGNyb3dkZnVuZF9pZBgBIAEoCVILY3Jvd2RmdW'
+    '5kSWQ=');
 
 @$core.Deprecated('Use deleteCrowdfundResponseDescriptor instead')
 const DeleteCrowdfundResponse$json = {
@@ -697,10 +505,9 @@ const DeleteCrowdfundResponse$json = {
 };
 
 /// Descriptor for `DeleteCrowdfundResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deleteCrowdfundResponseDescriptor =
-    $convert.base64Decode(
-        'ChdEZWxldGVDcm93ZGZ1bmRSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEhgKB2'
-        '1lc3NhZ2UYAiABKAlSB21lc3NhZ2U=');
+final $typed_data.Uint8List deleteCrowdfundResponseDescriptor = $convert.base64Decode(
+    'ChdEZWxldGVDcm93ZGZ1bmRSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEhgKB2'
+    '1lc3NhZ2UYAiABKAlSB21lc3NhZ2U=');
 
 @$core.Deprecated('Use makeDonationRequestDescriptor instead')
 const MakeDonationRequest$json = {
@@ -727,14 +534,7 @@ final $typed_data.Uint8List makeDonationRequestDescriptor = $convert.base64Decod
 const MakeDonationResponse$json = {
   '1': 'MakeDonationResponse',
   '2': [
-    {
-      '1': 'donation',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.CrowdfundDonationMessage',
-      '10': 'donation'
-    },
+    {'1': 'donation', '3': 1, '4': 1, '5': 11, '6': '.pb.CrowdfundDonationMessage', '10': 'donation'},
   ],
 };
 
@@ -754,41 +554,25 @@ const GetCrowdfundDonationsRequest$json = {
 };
 
 /// Descriptor for `GetCrowdfundDonationsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getCrowdfundDonationsRequestDescriptor =
-    $convert.base64Decode(
-        'ChxHZXRDcm93ZGZ1bmREb25hdGlvbnNSZXF1ZXN0EiEKDGNyb3dkZnVuZF9pZBgBIAEoCVILY3'
-        'Jvd2RmdW5kSWQSEgoEcGFnZRgCIAEoBVIEcGFnZRIbCglwYWdlX3NpemUYAyABKAVSCHBhZ2VT'
-        'aXpl');
+final $typed_data.Uint8List getCrowdfundDonationsRequestDescriptor = $convert.base64Decode(
+    'ChxHZXRDcm93ZGZ1bmREb25hdGlvbnNSZXF1ZXN0EiEKDGNyb3dkZnVuZF9pZBgBIAEoCVILY3'
+    'Jvd2RmdW5kSWQSEgoEcGFnZRgCIAEoBVIEcGFnZRIbCglwYWdlX3NpemUYAyABKAVSCHBhZ2VT'
+    'aXpl');
 
 @$core.Deprecated('Use getCrowdfundDonationsResponseDescriptor instead')
 const GetCrowdfundDonationsResponse$json = {
   '1': 'GetCrowdfundDonationsResponse',
   '2': [
-    {
-      '1': 'donations',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.CrowdfundDonationMessage',
-      '10': 'donations'
-    },
-    {
-      '1': 'pagination',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.DonationPaginationInfo',
-      '10': 'pagination'
-    },
+    {'1': 'donations', '3': 1, '4': 3, '5': 11, '6': '.pb.CrowdfundDonationMessage', '10': 'donations'},
+    {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.pb.DonationPaginationInfo', '10': 'pagination'},
   ],
 };
 
 /// Descriptor for `GetCrowdfundDonationsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getCrowdfundDonationsResponseDescriptor =
-    $convert.base64Decode(
-        'Ch1HZXRDcm93ZGZ1bmREb25hdGlvbnNSZXNwb25zZRI6Cglkb25hdGlvbnMYASADKAsyHC5wYi'
-        '5Dcm93ZGZ1bmREb25hdGlvbk1lc3NhZ2VSCWRvbmF0aW9ucxI6CgpwYWdpbmF0aW9uGAIgASgL'
-        'MhoucGIuRG9uYXRpb25QYWdpbmF0aW9uSW5mb1IKcGFnaW5hdGlvbg==');
+final $typed_data.Uint8List getCrowdfundDonationsResponseDescriptor = $convert.base64Decode(
+    'Ch1HZXRDcm93ZGZ1bmREb25hdGlvbnNSZXNwb25zZRI6Cglkb25hdGlvbnMYASADKAsyHC5wYi'
+    '5Dcm93ZGZ1bmREb25hdGlvbk1lc3NhZ2VSCWRvbmF0aW9ucxI6CgpwYWdpbmF0aW9uGAIgASgL'
+    'MhoucGIuRG9uYXRpb25QYWdpbmF0aW9uSW5mb1IKcGFnaW5hdGlvbg==');
 
 @$core.Deprecated('Use getUserDonationsRequestDescriptor instead')
 const GetUserDonationsRequest$json = {
@@ -800,31 +584,16 @@ const GetUserDonationsRequest$json = {
 };
 
 /// Descriptor for `GetUserDonationsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getUserDonationsRequestDescriptor =
-    $convert.base64Decode(
-        'ChdHZXRVc2VyRG9uYXRpb25zUmVxdWVzdBISCgRwYWdlGAEgASgFUgRwYWdlEhsKCXBhZ2Vfc2'
-        'l6ZRgCIAEoBVIIcGFnZVNpemU=');
+final $typed_data.Uint8List getUserDonationsRequestDescriptor = $convert.base64Decode(
+    'ChdHZXRVc2VyRG9uYXRpb25zUmVxdWVzdBISCgRwYWdlGAEgASgFUgRwYWdlEhsKCXBhZ2Vfc2'
+    'l6ZRgCIAEoBVIIcGFnZVNpemU=');
 
 @$core.Deprecated('Use getUserDonationsResponseDescriptor instead')
 const GetUserDonationsResponse$json = {
   '1': 'GetUserDonationsResponse',
   '2': [
-    {
-      '1': 'donations',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.CrowdfundDonationMessage',
-      '10': 'donations'
-    },
-    {
-      '1': 'pagination',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.DonationPaginationInfo',
-      '10': 'pagination'
-    },
+    {'1': 'donations', '3': 1, '4': 3, '5': 11, '6': '.pb.CrowdfundDonationMessage', '10': 'donations'},
+    {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.pb.DonationPaginationInfo', '10': 'pagination'},
   ],
 };
 
@@ -843,31 +612,22 @@ const GenerateDonationReceiptRequest$json = {
 };
 
 /// Descriptor for `GenerateDonationReceiptRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List generateDonationReceiptRequestDescriptor =
-    $convert.base64Decode(
-        'Ch5HZW5lcmF0ZURvbmF0aW9uUmVjZWlwdFJlcXVlc3QSHwoLZG9uYXRpb25faWQYASABKAlSCm'
-        'RvbmF0aW9uSWQ=');
+final $typed_data.Uint8List generateDonationReceiptRequestDescriptor = $convert.base64Decode(
+    'Ch5HZW5lcmF0ZURvbmF0aW9uUmVjZWlwdFJlcXVlc3QSHwoLZG9uYXRpb25faWQYASABKAlSCm'
+    'RvbmF0aW9uSWQ=');
 
 @$core.Deprecated('Use generateDonationReceiptResponseDescriptor instead')
 const GenerateDonationReceiptResponse$json = {
   '1': 'GenerateDonationReceiptResponse',
   '2': [
-    {
-      '1': 'receipt',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.CrowdfundReceiptMessage',
-      '10': 'receipt'
-    },
+    {'1': 'receipt', '3': 1, '4': 1, '5': 11, '6': '.pb.CrowdfundReceiptMessage', '10': 'receipt'},
   ],
 };
 
 /// Descriptor for `GenerateDonationReceiptResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List generateDonationReceiptResponseDescriptor =
-    $convert.base64Decode(
-        'Ch9HZW5lcmF0ZURvbmF0aW9uUmVjZWlwdFJlc3BvbnNlEjUKB3JlY2VpcHQYASABKAsyGy5wYi'
-        '5Dcm93ZGZ1bmRSZWNlaXB0TWVzc2FnZVIHcmVjZWlwdA==');
+final $typed_data.Uint8List generateDonationReceiptResponseDescriptor = $convert.base64Decode(
+    'Ch9HZW5lcmF0ZURvbmF0aW9uUmVjZWlwdFJlc3BvbnNlEjUKB3JlY2VpcHQYASABKAsyGy5wYi'
+    '5Dcm93ZGZ1bmRSZWNlaXB0TWVzc2FnZVIHcmVjZWlwdA==');
 
 @$core.Deprecated('Use getUserCrowdfundReceiptsRequestDescriptor instead')
 const GetUserCrowdfundReceiptsRequest$json = {
@@ -879,40 +639,24 @@ const GetUserCrowdfundReceiptsRequest$json = {
 };
 
 /// Descriptor for `GetUserCrowdfundReceiptsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getUserCrowdfundReceiptsRequestDescriptor =
-    $convert.base64Decode(
-        'Ch9HZXRVc2VyQ3Jvd2RmdW5kUmVjZWlwdHNSZXF1ZXN0EhIKBHBhZ2UYASABKAVSBHBhZ2USGw'
-        'oJcGFnZV9zaXplGAIgASgFUghwYWdlU2l6ZQ==');
+final $typed_data.Uint8List getUserCrowdfundReceiptsRequestDescriptor = $convert.base64Decode(
+    'Ch9HZXRVc2VyQ3Jvd2RmdW5kUmVjZWlwdHNSZXF1ZXN0EhIKBHBhZ2UYASABKAVSBHBhZ2USGw'
+    'oJcGFnZV9zaXplGAIgASgFUghwYWdlU2l6ZQ==');
 
 @$core.Deprecated('Use getUserCrowdfundReceiptsResponseDescriptor instead')
 const GetUserCrowdfundReceiptsResponse$json = {
   '1': 'GetUserCrowdfundReceiptsResponse',
   '2': [
-    {
-      '1': 'receipts',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.CrowdfundReceiptMessage',
-      '10': 'receipts'
-    },
-    {
-      '1': 'pagination',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.CrowdfundReceiptPaginationInfo',
-      '10': 'pagination'
-    },
+    {'1': 'receipts', '3': 1, '4': 3, '5': 11, '6': '.pb.CrowdfundReceiptMessage', '10': 'receipts'},
+    {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.pb.CrowdfundReceiptPaginationInfo', '10': 'pagination'},
   ],
 };
 
 /// Descriptor for `GetUserCrowdfundReceiptsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getUserCrowdfundReceiptsResponseDescriptor =
-    $convert.base64Decode(
-        'CiBHZXRVc2VyQ3Jvd2RmdW5kUmVjZWlwdHNSZXNwb25zZRI3CghyZWNlaXB0cxgBIAMoCzIbLn'
-        'BiLkNyb3dkZnVuZFJlY2VpcHRNZXNzYWdlUghyZWNlaXB0cxJCCgpwYWdpbmF0aW9uGAIgASgL'
-        'MiIucGIuQ3Jvd2RmdW5kUmVjZWlwdFBhZ2luYXRpb25JbmZvUgpwYWdpbmF0aW9u');
+final $typed_data.Uint8List getUserCrowdfundReceiptsResponseDescriptor = $convert.base64Decode(
+    'CiBHZXRVc2VyQ3Jvd2RmdW5kUmVjZWlwdHNSZXNwb25zZRI3CghyZWNlaXB0cxgBIAMoCzIbLn'
+    'BiLkNyb3dkZnVuZFJlY2VpcHRNZXNzYWdlUghyZWNlaXB0cxJCCgpwYWdpbmF0aW9uGAIgASgL'
+    'MiIucGIuQ3Jvd2RmdW5kUmVjZWlwdFBhZ2luYXRpb25JbmZvUgpwYWdpbmF0aW9u');
 
 @$core.Deprecated('Use getCrowdfundStatisticsRequestDescriptor instead')
 const GetCrowdfundStatisticsRequest$json = {
@@ -923,10 +667,9 @@ const GetCrowdfundStatisticsRequest$json = {
 };
 
 /// Descriptor for `GetCrowdfundStatisticsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getCrowdfundStatisticsRequestDescriptor =
-    $convert.base64Decode(
-        'Ch1HZXRDcm93ZGZ1bmRTdGF0aXN0aWNzUmVxdWVzdBIhCgxjcm93ZGZ1bmRfaWQYASABKAlSC2'
-        'Nyb3dkZnVuZElk');
+final $typed_data.Uint8List getCrowdfundStatisticsRequestDescriptor = $convert.base64Decode(
+    'Ch1HZXRDcm93ZGZ1bmRTdGF0aXN0aWNzUmVxdWVzdBIhCgxjcm93ZGZ1bmRfaWQYASABKAlSC2'
+    'Nyb3dkZnVuZElk');
 
 @$core.Deprecated('Use getCrowdfundStatisticsResponseDescriptor instead')
 const GetCrowdfundStatisticsResponse$json = {
@@ -935,58 +678,19 @@ const GetCrowdfundStatisticsResponse$json = {
     {'1': 'crowdfund_id', '3': 1, '4': 1, '5': 9, '10': 'crowdfundId'},
     {'1': 'total_raised', '3': 2, '4': 1, '5': 4, '10': 'totalRaised'},
     {'1': 'target_amount', '3': 3, '4': 1, '5': 4, '10': 'targetAmount'},
-    {
-      '1': 'progress_percentage',
-      '3': 4,
-      '4': 1,
-      '5': 1,
-      '10': 'progressPercentage'
-    },
+    {'1': 'progress_percentage', '3': 4, '4': 1, '5': 1, '10': 'progressPercentage'},
     {'1': 'donor_count', '3': 5, '4': 1, '5': 5, '10': 'donorCount'},
     {'1': 'average_donation', '3': 6, '4': 1, '5': 4, '10': 'averageDonation'},
     {'1': 'largest_donation', '3': 7, '4': 1, '5': 4, '10': 'largestDonation'},
     {'1': 'days_remaining', '3': 8, '4': 1, '5': 5, '10': 'daysRemaining'},
     {'1': 'is_completed', '3': 9, '4': 1, '5': 8, '10': 'isCompleted'},
-    {
-      '1': 'created_at',
-      '3': 10,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'createdAt'
-    },
+    {'1': 'created_at', '3': 10, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
     {'1': 'unique_donors', '3': 11, '4': 1, '5': 5, '10': 'uniqueDonors'},
-    {
-      '1': 'smallest_donation',
-      '3': 12,
-      '4': 1,
-      '5': 4,
-      '10': 'smallestDonation'
-    },
-    {
-      '1': 'top_contributors',
-      '3': 13,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.ContributorLeaderboardEntry',
-      '10': 'topContributors'
-    },
-    {
-      '1': 'daily_progress',
-      '3': 14,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.DailyProgressEntry',
-      '10': 'dailyProgress'
-    },
+    {'1': 'smallest_donation', '3': 12, '4': 1, '5': 4, '10': 'smallestDonation'},
+    {'1': 'top_contributors', '3': 13, '4': 3, '5': 11, '6': '.pb.ContributorLeaderboardEntry', '10': 'topContributors'},
+    {'1': 'daily_progress', '3': 14, '4': 3, '5': 11, '6': '.pb.DailyProgressEntry', '10': 'dailyProgress'},
     {'1': 'funding_velocity', '3': 15, '4': 1, '5': 1, '10': 'fundingVelocity'},
-    {
-      '1': 'projected_completion_date',
-      '3': 16,
-      '4': 1,
-      '5': 9,
-      '10': 'projectedCompletionDate'
-    },
+    {'1': 'projected_completion_date', '3': 16, '4': 1, '5': 9, '10': 'projectedCompletionDate'},
   ],
 };
 
@@ -1014,13 +718,7 @@ const ContributorLeaderboardEntry$json = {
     {'1': 'rank', '3': 1, '4': 1, '5': 5, '10': 'rank'},
     {'1': 'display_name', '3': 2, '4': 1, '5': 9, '10': 'displayName'},
     {'1': 'total_amount', '3': 3, '4': 1, '5': 1, '10': 'totalAmount'},
-    {
-      '1': 'contribution_count',
-      '3': 4,
-      '4': 1,
-      '5': 5,
-      '10': 'contributionCount'
-    },
+    {'1': 'contribution_count', '3': 4, '4': 1, '5': 5, '10': 'contributionCount'},
     {'1': 'is_anonymous', '3': 5, '4': 1, '5': 8, '10': 'isAnonymous'},
   ],
 };
@@ -1039,13 +737,7 @@ const DailyProgressEntry$json = {
     {'1': 'date', '3': 1, '4': 1, '5': 9, '10': 'date'},
     {'1': 'amount', '3': 2, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'donation_count', '3': 3, '4': 1, '5': 5, '10': 'donationCount'},
-    {
-      '1': 'cumulative_amount',
-      '3': 4,
-      '4': 1,
-      '5': 1,
-      '10': 'cumulativeAmount'
-    },
+    {'1': 'cumulative_amount', '3': 4, '4': 1, '5': 1, '10': 'cumulativeAmount'},
   ],
 };
 
@@ -1062,20 +754,8 @@ const WithdrawFromCrowdfundRequest$json = {
     {'1': 'crowdfund_id', '3': 1, '4': 1, '5': 9, '10': 'crowdfundId'},
     {'1': 'amount', '3': 2, '4': 1, '5': 4, '10': 'amount'},
     {'1': 'transaction_pin', '3': 3, '4': 1, '5': 9, '10': 'transactionPin'},
-    {
-      '1': 'destination_account_id',
-      '3': 4,
-      '4': 1,
-      '5': 9,
-      '10': 'destinationAccountId'
-    },
-    {
-      '1': 'destination_account_type',
-      '3': 5,
-      '4': 1,
-      '5': 9,
-      '10': 'destinationAccountType'
-    },
+    {'1': 'destination_account_id', '3': 4, '4': 1, '5': 9, '10': 'destinationAccountId'},
+    {'1': 'destination_account_type', '3': 5, '4': 1, '5': 9, '10': 'destinationAccountType'},
   ],
 };
 
@@ -1093,27 +773,9 @@ const WithdrawFromCrowdfundResponse$json = {
   '2': [
     {'1': 'crowdfund_id', '3': 1, '4': 1, '5': 9, '10': 'crowdfundId'},
     {'1': 'amount_withdrawn', '3': 2, '4': 1, '5': 4, '10': 'amountWithdrawn'},
-    {
-      '1': 'remaining_balance',
-      '3': 3,
-      '4': 1,
-      '5': 4,
-      '10': 'remainingBalance'
-    },
-    {
-      '1': 'destination_account_id',
-      '3': 4,
-      '4': 1,
-      '5': 9,
-      '10': 'destinationAccountId'
-    },
-    {
-      '1': 'destination_new_balance',
-      '3': 5,
-      '4': 1,
-      '5': 4,
-      '10': 'destinationNewBalance'
-    },
+    {'1': 'remaining_balance', '3': 3, '4': 1, '5': 4, '10': 'remainingBalance'},
+    {'1': 'destination_account_id', '3': 4, '4': 1, '5': 9, '10': 'destinationAccountId'},
+    {'1': 'destination_new_balance', '3': 5, '4': 1, '5': 4, '10': 'destinationNewBalance'},
     {'1': 'message', '3': 6, '4': 1, '5': 9, '10': 'message'},
   ],
 };
@@ -1138,31 +800,16 @@ const GetMyCrowdfundsRequest$json = {
 };
 
 /// Descriptor for `GetMyCrowdfundsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getMyCrowdfundsRequestDescriptor =
-    $convert.base64Decode(
-        'ChZHZXRNeUNyb3dkZnVuZHNSZXF1ZXN0EhIKBHBhZ2UYASABKAVSBHBhZ2USGwoJcGFnZV9zaX'
-        'plGAIgASgFUghwYWdlU2l6ZRIWCgZzdGF0dXMYAyABKAlSBnN0YXR1cw==');
+final $typed_data.Uint8List getMyCrowdfundsRequestDescriptor = $convert.base64Decode(
+    'ChZHZXRNeUNyb3dkZnVuZHNSZXF1ZXN0EhIKBHBhZ2UYASABKAVSBHBhZ2USGwoJcGFnZV9zaX'
+    'plGAIgASgFUghwYWdlU2l6ZRIWCgZzdGF0dXMYAyABKAlSBnN0YXR1cw==');
 
 @$core.Deprecated('Use getMyCrowdfundsResponseDescriptor instead')
 const GetMyCrowdfundsResponse$json = {
   '1': 'GetMyCrowdfundsResponse',
   '2': [
-    {
-      '1': 'crowdfunds',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.CrowdfundMessage',
-      '10': 'crowdfunds'
-    },
-    {
-      '1': 'pagination',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.CrowdfundPaginationInfo',
-      '10': 'pagination'
-    },
+    {'1': 'crowdfunds', '3': 1, '4': 3, '5': 11, '6': '.pb.CrowdfundMessage', '10': 'crowdfunds'},
+    {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.pb.CrowdfundPaginationInfo', '10': 'pagination'},
   ],
 };
 
@@ -1181,42 +828,28 @@ const GetCampaignWalletBalanceRequest$json = {
 };
 
 /// Descriptor for `GetCampaignWalletBalanceRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getCampaignWalletBalanceRequestDescriptor =
-    $convert.base64Decode(
-        'Ch9HZXRDYW1wYWlnbldhbGxldEJhbGFuY2VSZXF1ZXN0EiEKDGNyb3dkZnVuZF9pZBgBIAEoCV'
-        'ILY3Jvd2RmdW5kSWQ=');
+final $typed_data.Uint8List getCampaignWalletBalanceRequestDescriptor = $convert.base64Decode(
+    'Ch9HZXRDYW1wYWlnbldhbGxldEJhbGFuY2VSZXF1ZXN0EiEKDGNyb3dkZnVuZF9pZBgBIAEoCV'
+    'ILY3Jvd2RmdW5kSWQ=');
 
 @$core.Deprecated('Use getCampaignWalletBalanceResponseDescriptor instead')
 const GetCampaignWalletBalanceResponse$json = {
   '1': 'GetCampaignWalletBalanceResponse',
   '2': [
     {'1': 'crowdfund_id', '3': 1, '4': 1, '5': 9, '10': 'crowdfundId'},
-    {
-      '1': 'campaign_wallet_id',
-      '3': 2,
-      '4': 1,
-      '5': 9,
-      '10': 'campaignWalletId'
-    },
+    {'1': 'campaign_wallet_id', '3': 2, '4': 1, '5': 9, '10': 'campaignWalletId'},
     {'1': 'balance', '3': 3, '4': 1, '5': 4, '10': 'balance'},
-    {
-      '1': 'available_balance',
-      '3': 4,
-      '4': 1,
-      '5': 4,
-      '10': 'availableBalance'
-    },
+    {'1': 'available_balance', '3': 4, '4': 1, '5': 4, '10': 'availableBalance'},
     {'1': 'currency', '3': 5, '4': 1, '5': 9, '10': 'currency'},
   ],
 };
 
 /// Descriptor for `GetCampaignWalletBalanceResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getCampaignWalletBalanceResponseDescriptor =
-    $convert.base64Decode(
-        'CiBHZXRDYW1wYWlnbldhbGxldEJhbGFuY2VSZXNwb25zZRIhCgxjcm93ZGZ1bmRfaWQYASABKA'
-        'lSC2Nyb3dkZnVuZElkEiwKEmNhbXBhaWduX3dhbGxldF9pZBgCIAEoCVIQY2FtcGFpZ25XYWxs'
-        'ZXRJZBIYCgdiYWxhbmNlGAMgASgEUgdiYWxhbmNlEisKEWF2YWlsYWJsZV9iYWxhbmNlGAQgAS'
-        'gEUhBhdmFpbGFibGVCYWxhbmNlEhoKCGN1cnJlbmN5GAUgASgJUghjdXJyZW5jeQ==');
+final $typed_data.Uint8List getCampaignWalletBalanceResponseDescriptor = $convert.base64Decode(
+    'CiBHZXRDYW1wYWlnbldhbGxldEJhbGFuY2VSZXNwb25zZRIhCgxjcm93ZGZ1bmRfaWQYASABKA'
+    'lSC2Nyb3dkZnVuZElkEiwKEmNhbXBhaWduX3dhbGxldF9pZBgCIAEoCVIQY2FtcGFpZ25XYWxs'
+    'ZXRJZBIYCgdiYWxhbmNlGAMgASgEUgdiYWxhbmNlEisKEWF2YWlsYWJsZV9iYWxhbmNlGAQgAS'
+    'gEUhBhdmFpbGFibGVCYWxhbmNlEhoKCGN1cnJlbmN5GAUgASgJUghjdXJyZW5jeQ==');
 
 @$core.Deprecated('Use crowdfundPaginationInfoDescriptor instead')
 const CrowdfundPaginationInfo$json = {
@@ -1286,54 +919,14 @@ const NotificationChannelMessage$json = {
     {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
     {'1': 'crowdfund_id', '3': 2, '4': 1, '5': 9, '10': 'crowdfundId'},
     {'1': 'creator_user_id', '3': 3, '4': 1, '5': 9, '10': 'creatorUserId'},
-    {
-      '1': 'channel_type',
-      '3': 4,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.NotificationChannelType',
-      '10': 'channelType'
-    },
-    {
-      '1': 'status',
-      '3': 5,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.NotificationChannelStatus',
-      '10': 'status'
-    },
+    {'1': 'channel_type', '3': 4, '4': 1, '5': 14, '6': '.pb.NotificationChannelType', '10': 'channelType'},
+    {'1': 'status', '3': 5, '4': 1, '5': 14, '6': '.pb.NotificationChannelStatus', '10': 'status'},
     {'1': 'channel_name', '3': 6, '4': 1, '5': 9, '10': 'channelName'},
     {'1': 'channel_username', '3': 7, '4': 1, '5': 9, '10': 'channelUsername'},
-    {
-      '1': 'enabled_events',
-      '3': 8,
-      '4': 3,
-      '5': 14,
-      '6': '.pb.NotificationEventType',
-      '10': 'enabledEvents'
-    },
-    {
-      '1': 'preferences',
-      '3': 9,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.NotificationPreferencesMessage',
-      '10': 'preferences'
-    },
-    {
-      '1': 'last_notification_at',
-      '3': 10,
-      '4': 1,
-      '5': 9,
-      '10': 'lastNotificationAt'
-    },
-    {
-      '1': 'notification_count',
-      '3': 11,
-      '4': 1,
-      '5': 5,
-      '10': 'notificationCount'
-    },
+    {'1': 'enabled_events', '3': 8, '4': 3, '5': 14, '6': '.pb.NotificationEventType', '10': 'enabledEvents'},
+    {'1': 'preferences', '3': 9, '4': 1, '5': 11, '6': '.pb.NotificationPreferencesMessage', '10': 'preferences'},
+    {'1': 'last_notification_at', '3': 10, '4': 1, '5': 9, '10': 'lastNotificationAt'},
+    {'1': 'notification_count', '3': 11, '4': 1, '5': 5, '10': 'notificationCount'},
     {'1': 'failure_count', '3': 12, '4': 1, '5': 5, '10': 'failureCount'},
     {'1': 'last_error', '3': 13, '4': 1, '5': 9, '10': 'lastError'},
     {'1': 'created_at', '3': 14, '4': 1, '5': 9, '10': 'createdAt'},
@@ -1361,46 +954,16 @@ final $typed_data.Uint8List notificationChannelMessageDescriptor = $convert.base
 const NotificationPreferencesMessage$json = {
   '1': 'NotificationPreferencesMessage',
   '2': [
-    {
-      '1': 'include_donor_name',
-      '3': 1,
-      '4': 1,
-      '5': 8,
-      '10': 'includeDonorName'
-    },
+    {'1': 'include_donor_name', '3': 1, '4': 1, '5': 8, '10': 'includeDonorName'},
     {'1': 'include_amount', '3': 2, '4': 1, '5': 8, '10': 'includeAmount'},
     {'1': 'include_message', '3': 3, '4': 1, '5': 8, '10': 'includeMessage'},
     {'1': 'include_progress', '3': 4, '4': 1, '5': 8, '10': 'includeProgress'},
-    {
-      '1': 'include_leaderboard',
-      '3': 5,
-      '4': 1,
-      '5': 8,
-      '10': 'includeLeaderboard'
-    },
-    {
-      '1': 'large_donation_threshold',
-      '3': 6,
-      '4': 1,
-      '5': 1,
-      '10': 'largeDonationThreshold'
-    },
+    {'1': 'include_leaderboard', '3': 5, '4': 1, '5': 8, '10': 'includeLeaderboard'},
+    {'1': 'large_donation_threshold', '3': 6, '4': 1, '5': 1, '10': 'largeDonationThreshold'},
     {'1': 'message_template', '3': 7, '4': 1, '5': 9, '10': 'messageTemplate'},
     {'1': 'language', '3': 8, '4': 1, '5': 9, '10': 'language'},
-    {
-      '1': 'quiet_hours_enabled',
-      '3': 9,
-      '4': 1,
-      '5': 8,
-      '10': 'quietHoursEnabled'
-    },
-    {
-      '1': 'quiet_hours_start',
-      '3': 10,
-      '4': 1,
-      '5': 9,
-      '10': 'quietHoursStart'
-    },
+    {'1': 'quiet_hours_enabled', '3': 9, '4': 1, '5': 8, '10': 'quietHoursEnabled'},
+    {'1': 'quiet_hours_start', '3': 10, '4': 1, '5': 9, '10': 'quietHoursStart'},
     {'1': 'quiet_hours_end', '3': 11, '4': 1, '5': 9, '10': 'quietHoursEnd'},
     {'1': 'timezone', '3': 12, '4': 1, '5': 9, '10': 'timezone'},
   ],
@@ -1426,26 +989,13 @@ const NotificationDeliveryMessage$json = {
     {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
     {'1': 'channel_id', '3': 2, '4': 1, '5': 9, '10': 'channelId'},
     {'1': 'crowdfund_id', '3': 3, '4': 1, '5': 9, '10': 'crowdfundId'},
-    {
-      '1': 'event_type',
-      '3': 4,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.NotificationEventType',
-      '10': 'eventType'
-    },
+    {'1': 'event_type', '3': 4, '4': 1, '5': 14, '6': '.pb.NotificationEventType', '10': 'eventType'},
     {'1': 'event_data', '3': 5, '4': 1, '5': 9, '10': 'eventData'},
     {'1': 'message_content', '3': 6, '4': 1, '5': 9, '10': 'messageContent'},
     {'1': 'success', '3': 7, '4': 1, '5': 8, '10': 'success'},
     {'1': 'error_message', '3': 8, '4': 1, '5': 9, '10': 'errorMessage'},
     {'1': 'retry_count', '3': 9, '4': 1, '5': 5, '10': 'retryCount'},
-    {
-      '1': 'platform_message_id',
-      '3': 10,
-      '4': 1,
-      '5': 9,
-      '10': 'platformMessageId'
-    },
+    {'1': 'platform_message_id', '3': 10, '4': 1, '5': 9, '10': 'platformMessageId'},
     {'1': 'created_at', '3': 11, '4': 1, '5': 9, '10': 'createdAt'},
     {'1': 'delivered_at', '3': 12, '4': 1, '5': 9, '10': 'deliveredAt'},
   ],
@@ -1468,21 +1018,14 @@ const TelegramConnectionDataMessage$json = {
   '1': 'TelegramConnectionDataMessage',
   '2': [
     {'1': 'chat_id', '3': 1, '4': 1, '5': 9, '10': 'chatId'},
-    {
-      '1': 'verification_code',
-      '3': 2,
-      '4': 1,
-      '5': 9,
-      '10': 'verificationCode'
-    },
+    {'1': 'verification_code', '3': 2, '4': 1, '5': 9, '10': 'verificationCode'},
   ],
 };
 
 /// Descriptor for `TelegramConnectionDataMessage`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List telegramConnectionDataMessageDescriptor =
-    $convert.base64Decode(
-        'Ch1UZWxlZ3JhbUNvbm5lY3Rpb25EYXRhTWVzc2FnZRIXCgdjaGF0X2lkGAEgASgJUgZjaGF0SW'
-        'QSKwoRdmVyaWZpY2F0aW9uX2NvZGUYAiABKAlSEHZlcmlmaWNhdGlvbkNvZGU=');
+final $typed_data.Uint8List telegramConnectionDataMessageDescriptor = $convert.base64Decode(
+    'Ch1UZWxlZ3JhbUNvbm5lY3Rpb25EYXRhTWVzc2FnZRIXCgdjaGF0X2lkGAEgASgJUgZjaGF0SW'
+    'QSKwoRdmVyaWZpY2F0aW9uX2NvZGUYAiABKAlSEHZlcmlmaWNhdGlvbkNvZGU=');
 
 @$core.Deprecated('Use discordConnectionDataMessageDescriptor instead')
 const DiscordConnectionDataMessage$json = {
@@ -1495,11 +1038,10 @@ const DiscordConnectionDataMessage$json = {
 };
 
 /// Descriptor for `DiscordConnectionDataMessage`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List discordConnectionDataMessageDescriptor =
-    $convert.base64Decode(
-        'ChxEaXNjb3JkQ29ubmVjdGlvbkRhdGFNZXNzYWdlEh8KC3dlYmhvb2tfdXJsGAEgASgJUgp3ZW'
-        'Job29rVXJsEh8KC3NlcnZlcl9uYW1lGAIgASgJUgpzZXJ2ZXJOYW1lEiEKDGNoYW5uZWxfbmFt'
-        'ZRgDIAEoCVILY2hhbm5lbE5hbWU=');
+final $typed_data.Uint8List discordConnectionDataMessageDescriptor = $convert.base64Decode(
+    'ChxEaXNjb3JkQ29ubmVjdGlvbkRhdGFNZXNzYWdlEh8KC3dlYmhvb2tfdXJsGAEgASgJUgp3ZW'
+    'Job29rVXJsEh8KC3NlcnZlcl9uYW1lGAIgASgJUgpzZXJ2ZXJOYW1lEiEKDGNoYW5uZWxfbmFt'
+    'ZRgDIAEoCVILY2hhbm5lbE5hbWU=');
 
 @$core.Deprecated('Use whatsAppBusinessConnectionDataMessageDescriptor instead')
 const WhatsAppBusinessConnectionDataMessage$json = {
@@ -1512,11 +1054,10 @@ const WhatsAppBusinessConnectionDataMessage$json = {
 };
 
 /// Descriptor for `WhatsAppBusinessConnectionDataMessage`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List whatsAppBusinessConnectionDataMessageDescriptor =
-    $convert.base64Decode(
-        'CiVXaGF0c0FwcEJ1c2luZXNzQ29ubmVjdGlvbkRhdGFNZXNzYWdlEiYKD3Bob25lX251bWJlcl'
-        '9pZBgBIAEoCVINcGhvbmVOdW1iZXJJZBIhCgxhY2Nlc3NfdG9rZW4YAiABKAlSC2FjY2Vzc1Rv'
-        'a2VuEiEKDHJlY2lwaWVudF9pZBgDIAEoCVILcmVjaXBpZW50SWQ=');
+final $typed_data.Uint8List whatsAppBusinessConnectionDataMessageDescriptor = $convert.base64Decode(
+    'CiVXaGF0c0FwcEJ1c2luZXNzQ29ubmVjdGlvbkRhdGFNZXNzYWdlEiYKD3Bob25lX251bWJlcl'
+    '9pZBgBIAEoCVINcGhvbmVOdW1iZXJJZBIhCgxhY2Nlc3NfdG9rZW4YAiABKAlSC2FjY2Vzc1Rv'
+    'a2VuEiEKDHJlY2lwaWVudF9pZBgDIAEoCVILcmVjaXBpZW50SWQ=');
 
 @$core.Deprecated('Use slackConnectionDataMessageDescriptor instead')
 const SlackConnectionDataMessage$json = {
@@ -1529,78 +1070,24 @@ const SlackConnectionDataMessage$json = {
 };
 
 /// Descriptor for `SlackConnectionDataMessage`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List slackConnectionDataMessageDescriptor =
-    $convert.base64Decode(
-        'ChpTbGFja0Nvbm5lY3Rpb25EYXRhTWVzc2FnZRIfCgt3ZWJob29rX3VybBgBIAEoCVIKd2ViaG'
-        '9va1VybBIlCg53b3Jrc3BhY2VfbmFtZRgCIAEoCVINd29ya3NwYWNlTmFtZRIhCgxjaGFubmVs'
-        'X25hbWUYAyABKAlSC2NoYW5uZWxOYW1l');
+final $typed_data.Uint8List slackConnectionDataMessageDescriptor = $convert.base64Decode(
+    'ChpTbGFja0Nvbm5lY3Rpb25EYXRhTWVzc2FnZRIfCgt3ZWJob29rX3VybBgBIAEoCVIKd2ViaG'
+    '9va1VybBIlCg53b3Jrc3BhY2VfbmFtZRgCIAEoCVINd29ya3NwYWNlTmFtZRIhCgxjaGFubmVs'
+    'X25hbWUYAyABKAlSC2NoYW5uZWxOYW1l');
 
 @$core.Deprecated('Use connectNotificationChannelRequestDescriptor instead')
 const ConnectNotificationChannelRequest$json = {
   '1': 'ConnectNotificationChannelRequest',
   '2': [
     {'1': 'crowdfund_id', '3': 1, '4': 1, '5': 9, '10': 'crowdfundId'},
-    {
-      '1': 'channel_type',
-      '3': 2,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.NotificationChannelType',
-      '10': 'channelType'
-    },
+    {'1': 'channel_type', '3': 2, '4': 1, '5': 14, '6': '.pb.NotificationChannelType', '10': 'channelType'},
     {'1': 'channel_name', '3': 3, '4': 1, '5': 9, '10': 'channelName'},
-    {
-      '1': 'telegram',
-      '3': 4,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.TelegramConnectionDataMessage',
-      '9': 0,
-      '10': 'telegram'
-    },
-    {
-      '1': 'discord',
-      '3': 5,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.DiscordConnectionDataMessage',
-      '9': 0,
-      '10': 'discord'
-    },
-    {
-      '1': 'whatsapp_business',
-      '3': 6,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.WhatsAppBusinessConnectionDataMessage',
-      '9': 0,
-      '10': 'whatsappBusiness'
-    },
-    {
-      '1': 'slack',
-      '3': 7,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.SlackConnectionDataMessage',
-      '9': 0,
-      '10': 'slack'
-    },
-    {
-      '1': 'enabled_events',
-      '3': 8,
-      '4': 3,
-      '5': 14,
-      '6': '.pb.NotificationEventType',
-      '10': 'enabledEvents'
-    },
-    {
-      '1': 'preferences',
-      '3': 9,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.NotificationPreferencesMessage',
-      '10': 'preferences'
-    },
+    {'1': 'telegram', '3': 4, '4': 1, '5': 11, '6': '.pb.TelegramConnectionDataMessage', '9': 0, '10': 'telegram'},
+    {'1': 'discord', '3': 5, '4': 1, '5': 11, '6': '.pb.DiscordConnectionDataMessage', '9': 0, '10': 'discord'},
+    {'1': 'whatsapp_business', '3': 6, '4': 1, '5': 11, '6': '.pb.WhatsAppBusinessConnectionDataMessage', '9': 0, '10': 'whatsappBusiness'},
+    {'1': 'slack', '3': 7, '4': 1, '5': 11, '6': '.pb.SlackConnectionDataMessage', '9': 0, '10': 'slack'},
+    {'1': 'enabled_events', '3': 8, '4': 3, '5': 14, '6': '.pb.NotificationEventType', '10': 'enabledEvents'},
+    {'1': 'preferences', '3': 9, '4': 1, '5': 11, '6': '.pb.NotificationPreferencesMessage', '10': 'preferences'},
   ],
   '8': [
     {'1': 'connection_data'},
@@ -1625,40 +1112,20 @@ final $typed_data.Uint8List connectNotificationChannelRequestDescriptor = $conve
 const ConnectNotificationChannelResponse$json = {
   '1': 'ConnectNotificationChannelResponse',
   '2': [
-    {
-      '1': 'channel',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.NotificationChannelMessage',
-      '10': 'channel'
-    },
-    {
-      '1': 'requires_verification',
-      '3': 2,
-      '4': 1,
-      '5': 8,
-      '10': 'requiresVerification'
-    },
-    {
-      '1': 'verification_instructions',
-      '3': 3,
-      '4': 1,
-      '5': 9,
-      '10': 'verificationInstructions'
-    },
+    {'1': 'channel', '3': 1, '4': 1, '5': 11, '6': '.pb.NotificationChannelMessage', '10': 'channel'},
+    {'1': 'requires_verification', '3': 2, '4': 1, '5': 8, '10': 'requiresVerification'},
+    {'1': 'verification_instructions', '3': 3, '4': 1, '5': 9, '10': 'verificationInstructions'},
     {'1': 'message', '3': 4, '4': 1, '5': 9, '10': 'message'},
   ],
 };
 
 /// Descriptor for `ConnectNotificationChannelResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List connectNotificationChannelResponseDescriptor =
-    $convert.base64Decode(
-        'CiJDb25uZWN0Tm90aWZpY2F0aW9uQ2hhbm5lbFJlc3BvbnNlEjgKB2NoYW5uZWwYASABKAsyHi'
-        '5wYi5Ob3RpZmljYXRpb25DaGFubmVsTWVzc2FnZVIHY2hhbm5lbBIzChVyZXF1aXJlc192ZXJp'
-        'ZmljYXRpb24YAiABKAhSFHJlcXVpcmVzVmVyaWZpY2F0aW9uEjsKGXZlcmlmaWNhdGlvbl9pbn'
-        'N0cnVjdGlvbnMYAyABKAlSGHZlcmlmaWNhdGlvbkluc3RydWN0aW9ucxIYCgdtZXNzYWdlGAQg'
-        'ASgJUgdtZXNzYWdl');
+final $typed_data.Uint8List connectNotificationChannelResponseDescriptor = $convert.base64Decode(
+    'CiJDb25uZWN0Tm90aWZpY2F0aW9uQ2hhbm5lbFJlc3BvbnNlEjgKB2NoYW5uZWwYASABKAsyHi'
+    '5wYi5Ob3RpZmljYXRpb25DaGFubmVsTWVzc2FnZVIHY2hhbm5lbBIzChVyZXF1aXJlc192ZXJp'
+    'ZmljYXRpb24YAiABKAhSFHJlcXVpcmVzVmVyaWZpY2F0aW9uEjsKGXZlcmlmaWNhdGlvbl9pbn'
+    'N0cnVjdGlvbnMYAyABKAlSGHZlcmlmaWNhdGlvbkluc3RydWN0aW9ucxIYCgdtZXNzYWdlGAQg'
+    'ASgJUgdtZXNzYWdl');
 
 @$core.Deprecated('Use disconnectNotificationChannelRequestDescriptor instead')
 const DisconnectNotificationChannelRequest$json = {
@@ -1669,10 +1136,9 @@ const DisconnectNotificationChannelRequest$json = {
 };
 
 /// Descriptor for `DisconnectNotificationChannelRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List disconnectNotificationChannelRequestDescriptor =
-    $convert.base64Decode(
-        'CiREaXNjb25uZWN0Tm90aWZpY2F0aW9uQ2hhbm5lbFJlcXVlc3QSHQoKY2hhbm5lbF9pZBgBIA'
-        'EoCVIJY2hhbm5lbElk');
+final $typed_data.Uint8List disconnectNotificationChannelRequestDescriptor = $convert.base64Decode(
+    'CiREaXNjb25uZWN0Tm90aWZpY2F0aW9uQ2hhbm5lbFJlcXVlc3QSHQoKY2hhbm5lbF9pZBgBIA'
+    'EoCVIJY2hhbm5lbElk');
 
 @$core.Deprecated('Use disconnectNotificationChannelResponseDescriptor instead')
 const DisconnectNotificationChannelResponse$json = {
@@ -1684,10 +1150,9 @@ const DisconnectNotificationChannelResponse$json = {
 };
 
 /// Descriptor for `DisconnectNotificationChannelResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List disconnectNotificationChannelResponseDescriptor =
-    $convert.base64Decode(
-        'CiVEaXNjb25uZWN0Tm90aWZpY2F0aW9uQ2hhbm5lbFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKA'
-        'hSB3N1Y2Nlc3MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
+final $typed_data.Uint8List disconnectNotificationChannelResponseDescriptor = $convert.base64Decode(
+    'CiVEaXNjb25uZWN0Tm90aWZpY2F0aW9uQ2hhbm5lbFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKA'
+    'hSB3N1Y2Nlc3MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
 
 @$core.Deprecated('Use getNotificationChannelsRequestDescriptor instead')
 const GetNotificationChannelsRequest$json = {
@@ -1698,31 +1163,22 @@ const GetNotificationChannelsRequest$json = {
 };
 
 /// Descriptor for `GetNotificationChannelsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getNotificationChannelsRequestDescriptor =
-    $convert.base64Decode(
-        'Ch5HZXROb3RpZmljYXRpb25DaGFubmVsc1JlcXVlc3QSIQoMY3Jvd2RmdW5kX2lkGAEgASgJUg'
-        'tjcm93ZGZ1bmRJZA==');
+final $typed_data.Uint8List getNotificationChannelsRequestDescriptor = $convert.base64Decode(
+    'Ch5HZXROb3RpZmljYXRpb25DaGFubmVsc1JlcXVlc3QSIQoMY3Jvd2RmdW5kX2lkGAEgASgJUg'
+    'tjcm93ZGZ1bmRJZA==');
 
 @$core.Deprecated('Use getNotificationChannelsResponseDescriptor instead')
 const GetNotificationChannelsResponse$json = {
   '1': 'GetNotificationChannelsResponse',
   '2': [
-    {
-      '1': 'channels',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.NotificationChannelMessage',
-      '10': 'channels'
-    },
+    {'1': 'channels', '3': 1, '4': 3, '5': 11, '6': '.pb.NotificationChannelMessage', '10': 'channels'},
   ],
 };
 
 /// Descriptor for `GetNotificationChannelsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getNotificationChannelsResponseDescriptor =
-    $convert.base64Decode(
-        'Ch9HZXROb3RpZmljYXRpb25DaGFubmVsc1Jlc3BvbnNlEjoKCGNoYW5uZWxzGAEgAygLMh4ucG'
-        'IuTm90aWZpY2F0aW9uQ2hhbm5lbE1lc3NhZ2VSCGNoYW5uZWxz');
+final $typed_data.Uint8List getNotificationChannelsResponseDescriptor = $convert.base64Decode(
+    'Ch9HZXROb3RpZmljYXRpb25DaGFubmVsc1Jlc3BvbnNlEjoKCGNoYW5uZWxzGAEgAygLMh4ucG'
+    'IuTm90aWZpY2F0aW9uQ2hhbm5lbE1lc3NhZ2VSCGNoYW5uZWxz');
 
 @$core.Deprecated('Use updateNotificationChannelRequestDescriptor instead')
 const UpdateNotificationChannelRequest$json = {
@@ -1730,30 +1186,9 @@ const UpdateNotificationChannelRequest$json = {
   '2': [
     {'1': 'channel_id', '3': 1, '4': 1, '5': 9, '10': 'channelId'},
     {'1': 'channel_name', '3': 2, '4': 1, '5': 9, '10': 'channelName'},
-    {
-      '1': 'enabled_events',
-      '3': 3,
-      '4': 3,
-      '5': 14,
-      '6': '.pb.NotificationEventType',
-      '10': 'enabledEvents'
-    },
-    {
-      '1': 'preferences',
-      '3': 4,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.NotificationPreferencesMessage',
-      '10': 'preferences'
-    },
-    {
-      '1': 'status',
-      '3': 5,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.NotificationChannelStatus',
-      '10': 'status'
-    },
+    {'1': 'enabled_events', '3': 3, '4': 3, '5': 14, '6': '.pb.NotificationEventType', '10': 'enabledEvents'},
+    {'1': 'preferences', '3': 4, '4': 1, '5': 11, '6': '.pb.NotificationPreferencesMessage', '10': 'preferences'},
+    {'1': 'status', '3': 5, '4': 1, '5': 14, '6': '.pb.NotificationChannelStatus', '10': 'status'},
   ],
 };
 
@@ -1770,24 +1205,16 @@ final $typed_data.Uint8List updateNotificationChannelRequestDescriptor = $conver
 const UpdateNotificationChannelResponse$json = {
   '1': 'UpdateNotificationChannelResponse',
   '2': [
-    {
-      '1': 'channel',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.NotificationChannelMessage',
-      '10': 'channel'
-    },
+    {'1': 'channel', '3': 1, '4': 1, '5': 11, '6': '.pb.NotificationChannelMessage', '10': 'channel'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
   ],
 };
 
 /// Descriptor for `UpdateNotificationChannelResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateNotificationChannelResponseDescriptor =
-    $convert.base64Decode(
-        'CiFVcGRhdGVOb3RpZmljYXRpb25DaGFubmVsUmVzcG9uc2USOAoHY2hhbm5lbBgBIAEoCzIeLn'
-        'BiLk5vdGlmaWNhdGlvbkNoYW5uZWxNZXNzYWdlUgdjaGFubmVsEhgKB21lc3NhZ2UYAiABKAlS'
-        'B21lc3NhZ2U=');
+final $typed_data.Uint8List updateNotificationChannelResponseDescriptor = $convert.base64Decode(
+    'CiFVcGRhdGVOb3RpZmljYXRpb25DaGFubmVsUmVzcG9uc2USOAoHY2hhbm5lbBgBIAEoCzIeLn'
+    'BiLk5vdGlmaWNhdGlvbkNoYW5uZWxNZXNzYWdlUgdjaGFubmVsEhgKB21lc3NhZ2UYAiABKAlS'
+    'B21lc3NhZ2U=');
 
 @$core.Deprecated('Use testNotificationChannelRequestDescriptor instead')
 const TestNotificationChannelRequest$json = {
@@ -1798,10 +1225,9 @@ const TestNotificationChannelRequest$json = {
 };
 
 /// Descriptor for `TestNotificationChannelRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List testNotificationChannelRequestDescriptor =
-    $convert.base64Decode(
-        'Ch5UZXN0Tm90aWZpY2F0aW9uQ2hhbm5lbFJlcXVlc3QSHQoKY2hhbm5lbF9pZBgBIAEoCVIJY2'
-        'hhbm5lbElk');
+final $typed_data.Uint8List testNotificationChannelRequestDescriptor = $convert.base64Decode(
+    'Ch5UZXN0Tm90aWZpY2F0aW9uQ2hhbm5lbFJlcXVlc3QSHQoKY2hhbm5lbF9pZBgBIAEoCVIJY2'
+    'hhbm5lbElk');
 
 @$core.Deprecated('Use testNotificationChannelResponseDescriptor instead')
 const TestNotificationChannelResponse$json = {
@@ -1809,22 +1235,15 @@ const TestNotificationChannelResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'platform_message_id',
-      '3': 3,
-      '4': 1,
-      '5': 9,
-      '10': 'platformMessageId'
-    },
+    {'1': 'platform_message_id', '3': 3, '4': 1, '5': 9, '10': 'platformMessageId'},
   ],
 };
 
 /// Descriptor for `TestNotificationChannelResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List testNotificationChannelResponseDescriptor =
-    $convert.base64Decode(
-        'Ch9UZXN0Tm90aWZpY2F0aW9uQ2hhbm5lbFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2'
-        'Nlc3MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRIuChNwbGF0Zm9ybV9tZXNzYWdlX2lkGAMg'
-        'ASgJUhFwbGF0Zm9ybU1lc3NhZ2VJZA==');
+final $typed_data.Uint8List testNotificationChannelResponseDescriptor = $convert.base64Decode(
+    'Ch9UZXN0Tm90aWZpY2F0aW9uQ2hhbm5lbFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2'
+    'Nlc3MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRIuChNwbGF0Zm9ybV9tZXNzYWdlX2lkGAMg'
+    'ASgJUhFwbGF0Zm9ybU1lc3NhZ2VJZA==');
 
 @$core.Deprecated('Use getTelegramBotInfoRequestDescriptor instead')
 const GetTelegramBotInfoRequest$json = {
@@ -1832,8 +1251,8 @@ const GetTelegramBotInfoRequest$json = {
 };
 
 /// Descriptor for `GetTelegramBotInfoRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getTelegramBotInfoRequestDescriptor =
-    $convert.base64Decode('ChlHZXRUZWxlZ3JhbUJvdEluZm9SZXF1ZXN0');
+final $typed_data.Uint8List getTelegramBotInfoRequestDescriptor = $convert.base64Decode(
+    'ChlHZXRUZWxlZ3JhbUJvdEluZm9SZXF1ZXN0');
 
 @$core.Deprecated('Use getTelegramBotInfoResponseDescriptor instead')
 const GetTelegramBotInfoResponse$json = {
@@ -1847,11 +1266,10 @@ const GetTelegramBotInfoResponse$json = {
 };
 
 /// Descriptor for `GetTelegramBotInfoResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getTelegramBotInfoResponseDescriptor =
-    $convert.base64Decode(
-        'ChpHZXRUZWxlZ3JhbUJvdEluZm9SZXNwb25zZRIhCgxib3RfdXNlcm5hbWUYASABKAlSC2JvdF'
-        'VzZXJuYW1lEhkKCGJvdF9uYW1lGAIgASgJUgdib3ROYW1lEhkKCGJvdF9saW5rGAMgASgJUgdi'
-        'b3RMaW5rEiIKDGluc3RydWN0aW9ucxgEIAEoCVIMaW5zdHJ1Y3Rpb25z');
+final $typed_data.Uint8List getTelegramBotInfoResponseDescriptor = $convert.base64Decode(
+    'ChpHZXRUZWxlZ3JhbUJvdEluZm9SZXNwb25zZRIhCgxib3RfdXNlcm5hbWUYASABKAlSC2JvdF'
+    'VzZXJuYW1lEhkKCGJvdF9uYW1lGAIgASgJUgdib3ROYW1lEhkKCGJvdF9saW5rGAMgASgJUgdi'
+    'b3RMaW5rEiIKDGluc3RydWN0aW9ucxgEIAEoCVIMaW5zdHJ1Y3Rpb25z');
 
 @$core.Deprecated('Use verifyTelegramChannelRequestDescriptor instead')
 const VerifyTelegramChannelRequest$json = {
@@ -1859,46 +1277,31 @@ const VerifyTelegramChannelRequest$json = {
   '2': [
     {'1': 'crowdfund_id', '3': 1, '4': 1, '5': 9, '10': 'crowdfundId'},
     {'1': 'chat_id', '3': 2, '4': 1, '5': 9, '10': 'chatId'},
-    {
-      '1': 'verification_code',
-      '3': 3,
-      '4': 1,
-      '5': 9,
-      '10': 'verificationCode'
-    },
+    {'1': 'verification_code', '3': 3, '4': 1, '5': 9, '10': 'verificationCode'},
   ],
 };
 
 /// Descriptor for `VerifyTelegramChannelRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List verifyTelegramChannelRequestDescriptor =
-    $convert.base64Decode(
-        'ChxWZXJpZnlUZWxlZ3JhbUNoYW5uZWxSZXF1ZXN0EiEKDGNyb3dkZnVuZF9pZBgBIAEoCVILY3'
-        'Jvd2RmdW5kSWQSFwoHY2hhdF9pZBgCIAEoCVIGY2hhdElkEisKEXZlcmlmaWNhdGlvbl9jb2Rl'
-        'GAMgASgJUhB2ZXJpZmljYXRpb25Db2Rl');
+final $typed_data.Uint8List verifyTelegramChannelRequestDescriptor = $convert.base64Decode(
+    'ChxWZXJpZnlUZWxlZ3JhbUNoYW5uZWxSZXF1ZXN0EiEKDGNyb3dkZnVuZF9pZBgBIAEoCVILY3'
+    'Jvd2RmdW5kSWQSFwoHY2hhdF9pZBgCIAEoCVIGY2hhdElkEisKEXZlcmlmaWNhdGlvbl9jb2Rl'
+    'GAMgASgJUhB2ZXJpZmljYXRpb25Db2Rl');
 
 @$core.Deprecated('Use verifyTelegramChannelResponseDescriptor instead')
 const VerifyTelegramChannelResponse$json = {
   '1': 'VerifyTelegramChannelResponse',
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
-    {
-      '1': 'channel',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.NotificationChannelMessage',
-      '10': 'channel'
-    },
+    {'1': 'channel', '3': 2, '4': 1, '5': 11, '6': '.pb.NotificationChannelMessage', '10': 'channel'},
     {'1': 'message', '3': 3, '4': 1, '5': 9, '10': 'message'},
   ],
 };
 
 /// Descriptor for `VerifyTelegramChannelResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List verifyTelegramChannelResponseDescriptor =
-    $convert.base64Decode(
-        'Ch1WZXJpZnlUZWxlZ3JhbUNoYW5uZWxSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZX'
-        'NzEjgKB2NoYW5uZWwYAiABKAsyHi5wYi5Ob3RpZmljYXRpb25DaGFubmVsTWVzc2FnZVIHY2hh'
-        'bm5lbBIYCgdtZXNzYWdlGAMgASgJUgdtZXNzYWdl');
+final $typed_data.Uint8List verifyTelegramChannelResponseDescriptor = $convert.base64Decode(
+    'Ch1WZXJpZnlUZWxlZ3JhbUNoYW5uZWxSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZX'
+    'NzEjgKB2NoYW5uZWwYAiABKAsyHi5wYi5Ob3RpZmljYXRpb25DaGFubmVsTWVzc2FnZVIHY2hh'
+    'bm5lbBIYCgdtZXNzYWdlGAMgASgJUgdtZXNzYWdl');
 
 @$core.Deprecated('Use getNotificationHistoryRequestDescriptor instead')
 const GetNotificationHistoryRequest$json = {
@@ -1912,24 +1315,16 @@ const GetNotificationHistoryRequest$json = {
 };
 
 /// Descriptor for `GetNotificationHistoryRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getNotificationHistoryRequestDescriptor =
-    $convert.base64Decode(
-        'Ch1HZXROb3RpZmljYXRpb25IaXN0b3J5UmVxdWVzdBIhCgxjcm93ZGZ1bmRfaWQYASABKAlSC2'
-        'Nyb3dkZnVuZElkEh0KCmNoYW5uZWxfaWQYAiABKAlSCWNoYW5uZWxJZBISCgRwYWdlGAMgASgF'
-        'UgRwYWdlEhsKCXBhZ2Vfc2l6ZRgEIAEoBVIIcGFnZVNpemU=');
+final $typed_data.Uint8List getNotificationHistoryRequestDescriptor = $convert.base64Decode(
+    'Ch1HZXROb3RpZmljYXRpb25IaXN0b3J5UmVxdWVzdBIhCgxjcm93ZGZ1bmRfaWQYASABKAlSC2'
+    'Nyb3dkZnVuZElkEh0KCmNoYW5uZWxfaWQYAiABKAlSCWNoYW5uZWxJZBISCgRwYWdlGAMgASgF'
+    'UgRwYWdlEhsKCXBhZ2Vfc2l6ZRgEIAEoBVIIcGFnZVNpemU=');
 
 @$core.Deprecated('Use getNotificationHistoryResponseDescriptor instead')
 const GetNotificationHistoryResponse$json = {
   '1': 'GetNotificationHistoryResponse',
   '2': [
-    {
-      '1': 'deliveries',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.NotificationDeliveryMessage',
-      '10': 'deliveries'
-    },
+    {'1': 'deliveries', '3': 1, '4': 3, '5': 11, '6': '.pb.NotificationDeliveryMessage', '10': 'deliveries'},
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
     {'1': 'page', '3': 3, '4': 1, '5': 5, '10': 'page'},
     {'1': 'page_size', '3': 4, '4': 1, '5': 5, '10': 'pageSize'},
@@ -1938,25 +1333,17 @@ const GetNotificationHistoryResponse$json = {
 };
 
 /// Descriptor for `GetNotificationHistoryResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getNotificationHistoryResponseDescriptor =
-    $convert.base64Decode(
-        'Ch5HZXROb3RpZmljYXRpb25IaXN0b3J5UmVzcG9uc2USPwoKZGVsaXZlcmllcxgBIAMoCzIfLn'
-        'BiLk5vdGlmaWNhdGlvbkRlbGl2ZXJ5TWVzc2FnZVIKZGVsaXZlcmllcxIUCgV0b3RhbBgCIAEo'
-        'BVIFdG90YWwSEgoEcGFnZRgDIAEoBVIEcGFnZRIbCglwYWdlX3NpemUYBCABKAVSCHBhZ2VTaX'
-        'plEhkKCGhhc19tb3JlGAUgASgIUgdoYXNNb3Jl');
+final $typed_data.Uint8List getNotificationHistoryResponseDescriptor = $convert.base64Decode(
+    'Ch5HZXROb3RpZmljYXRpb25IaXN0b3J5UmVzcG9uc2USPwoKZGVsaXZlcmllcxgBIAMoCzIfLn'
+    'BiLk5vdGlmaWNhdGlvbkRlbGl2ZXJ5TWVzc2FnZVIKZGVsaXZlcmllcxIUCgV0b3RhbBgCIAEo'
+    'BVIFdG90YWwSEgoEcGFnZRgDIAEoBVIEcGFnZRIbCglwYWdlX3NpemUYBCABKAVSCHBhZ2VTaX'
+    'plEhkKCGhhc19tb3JlGAUgASgIUgdoYXNNb3Jl');
 
 @$core.Deprecated('Use getCrowdfundLeaderboardRequestDescriptor instead')
 const GetCrowdfundLeaderboardRequest$json = {
   '1': 'GetCrowdfundLeaderboardRequest',
   '2': [
-    {
-      '1': 'sort_by',
-      '3': 1,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.LeaderboardSortBy',
-      '10': 'sortBy'
-    },
+    {'1': 'sort_by', '3': 1, '4': 1, '5': 14, '6': '.pb.LeaderboardSortBy', '10': 'sortBy'},
     {'1': 'category', '3': 2, '4': 1, '5': 9, '10': 'category'},
     {'1': 'limit', '3': 3, '4': 1, '5': 5, '10': 'limit'},
     {'1': 'offset', '3': 4, '4': 1, '5': 5, '10': 'offset'},
@@ -1964,53 +1351,37 @@ const GetCrowdfundLeaderboardRequest$json = {
 };
 
 /// Descriptor for `GetCrowdfundLeaderboardRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getCrowdfundLeaderboardRequestDescriptor =
-    $convert.base64Decode(
-        'Ch5HZXRDcm93ZGZ1bmRMZWFkZXJib2FyZFJlcXVlc3QSLgoHc29ydF9ieRgBIAEoDjIVLnBiLk'
-        'xlYWRlcmJvYXJkU29ydEJ5UgZzb3J0QnkSGgoIY2F0ZWdvcnkYAiABKAlSCGNhdGVnb3J5EhQK'
-        'BWxpbWl0GAMgASgFUgVsaW1pdBIWCgZvZmZzZXQYBCABKAVSBm9mZnNldA==');
+final $typed_data.Uint8List getCrowdfundLeaderboardRequestDescriptor = $convert.base64Decode(
+    'Ch5HZXRDcm93ZGZ1bmRMZWFkZXJib2FyZFJlcXVlc3QSLgoHc29ydF9ieRgBIAEoDjIVLnBiLk'
+    'xlYWRlcmJvYXJkU29ydEJ5UgZzb3J0QnkSGgoIY2F0ZWdvcnkYAiABKAlSCGNhdGVnb3J5EhQK'
+    'BWxpbWl0GAMgASgFUgVsaW1pdBIWCgZvZmZzZXQYBCABKAVSBm9mZnNldA==');
 
 @$core.Deprecated('Use getCrowdfundLeaderboardResponseDescriptor instead')
 const GetCrowdfundLeaderboardResponse$json = {
   '1': 'GetCrowdfundLeaderboardResponse',
   '2': [
-    {
-      '1': 'entries',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.LeaderboardCrowdfundEntry',
-      '10': 'entries'
-    },
+    {'1': 'entries', '3': 1, '4': 3, '5': 11, '6': '.pb.LeaderboardCrowdfundEntry', '10': 'entries'},
     {'1': 'total_count', '3': 2, '4': 1, '5': 5, '10': 'totalCount'},
   ],
 };
 
 /// Descriptor for `GetCrowdfundLeaderboardResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getCrowdfundLeaderboardResponseDescriptor =
-    $convert.base64Decode(
-        'Ch9HZXRDcm93ZGZ1bmRMZWFkZXJib2FyZFJlc3BvbnNlEjcKB2VudHJpZXMYASADKAsyHS5wYi'
-        '5MZWFkZXJib2FyZENyb3dkZnVuZEVudHJ5UgdlbnRyaWVzEh8KC3RvdGFsX2NvdW50GAIgASgF'
-        'Ugp0b3RhbENvdW50');
+final $typed_data.Uint8List getCrowdfundLeaderboardResponseDescriptor = $convert.base64Decode(
+    'Ch9HZXRDcm93ZGZ1bmRMZWFkZXJib2FyZFJlc3BvbnNlEjcKB2VudHJpZXMYASADKAsyHS5wYi'
+    '5MZWFkZXJib2FyZENyb3dkZnVuZEVudHJ5UgdlbnRyaWVzEh8KC3RvdGFsX2NvdW50GAIgASgF'
+    'Ugp0b3RhbENvdW50');
 
 @$core.Deprecated('Use leaderboardCrowdfundEntryDescriptor instead')
 const LeaderboardCrowdfundEntry$json = {
   '1': 'LeaderboardCrowdfundEntry',
   '2': [
     {'1': 'rank', '3': 1, '4': 1, '5': 5, '10': 'rank'},
-    {
-      '1': 'crowdfund',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.CrowdfundMessage',
-      '10': 'crowdfund'
-    },
+    {'1': 'crowdfund', '3': 2, '4': 1, '5': 11, '6': '.pb.CrowdfundMessage', '10': 'crowdfund'},
   ],
 };
 
 /// Descriptor for `LeaderboardCrowdfundEntry`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List leaderboardCrowdfundEntryDescriptor =
-    $convert.base64Decode(
-        'ChlMZWFkZXJib2FyZENyb3dkZnVuZEVudHJ5EhIKBHJhbmsYASABKAVSBHJhbmsSMgoJY3Jvd2'
-        'RmdW5kGAIgASgLMhQucGIuQ3Jvd2RmdW5kTWVzc2FnZVIJY3Jvd2RmdW5k');
+final $typed_data.Uint8List leaderboardCrowdfundEntryDescriptor = $convert.base64Decode(
+    'ChlMZWFkZXJib2FyZENyb3dkZnVuZEVudHJ5EhIKBHJhbmsYASABKAVSBHJhbmsSMgoJY3Jvd2'
+    'RmdW5kGAIgASgLMhQucGIuQ3Jvd2RmdW5kTWVzc2FnZVIJY3Jvd2RmdW5k');
+

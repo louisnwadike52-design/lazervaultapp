@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package pb;
+package accounts;
 
 option go_package = "lazervaultGolang/pb";
 

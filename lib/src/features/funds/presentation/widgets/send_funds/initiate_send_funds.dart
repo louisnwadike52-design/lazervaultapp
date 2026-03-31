@@ -113,6 +113,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
   bool _transferSucceeded = false;
   bool _hasNavigatedToReceipt = false;
   TransferSuccess? _pendingTransferSuccess;
+  Map<String, dynamic>? _lastTransferDetails;
 
   // Stored for deferred recurring setup after transfer succeeds
   String? _pendingRecurringTransactionId;
@@ -1259,42 +1260,57 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                                       final accountCurrency = summaries.isNotEmpty && selectedCardIndex < summaries.length
                                           ? summaries[selectedCardIndex].currency
                                           : 'NGN';
-                                      final currSym = _getCurrencySymbol(accountCurrency);
 
-                                      // Get fee info for PIN modal processing view
-                                      final lastFee = context.read<TransferCubit>().lastFeeLoaded;
-                                      final pinFee = (lastFee != null && lastFee.fee > 0) ? lastFee.fee / 100.0 : null;
-                                      final pinTotal = pinFee != null ? transferAmountMajor + pinFee : null;
-
-                                      final success = await validateTransactionPin(
+                                      final pinSuccess = await validateTransactionPin(
                                         context: context,
                                         transactionId: transactionId,
                                         transactionType: 'transfer',
                                         amount: transferAmountMajor,
-                                        fee: pinFee,
-                                        totalAmount: pinTotal,
                                         currency: accountCurrency,
-                                        currencySymbol: currSym,
                                         title: 'Confirm Transfer',
-                                        message: 'Confirm transfer of $currSym${transferAmountMajor.toStringAsFixed(2)} to ${_recipient!.name}?',
+                                        message: 'Confirm transfer of $accountCurrency ${transferAmountMajor.toStringAsFixed(2)}',
                                         onPinValidated: (verificationToken) async {
-                                          // PIN is valid, proceed with transfer
+                                          // Execute transfer inside callback — PIN modal stays open
+                                          // showing processing phase while backend works
                                           await _executeTransferWithPin(
                                             accountState: accountState,
                                             transactionId: transactionId,
                                             verificationToken: verificationToken,
                                           );
+
+                                          // Wait for TransferSuccess state from cubit
+                                          final transferCubit = context.read<TransferCubit>();
+                                          await transferCubit.stream.firstWhere(
+                                            (s) => s is TransferSuccess || s is TransferFailure || s is TransferPinFailure,
+                                          ).timeout(
+                                            const Duration(seconds: 30),
+                                            onTimeout: () => transferCubit.state,
+                                          );
+
+                                          // If transfer failed, throw to show error in PIN modal
+                                          final finalState = transferCubit.state;
+                                          if (finalState is TransferFailure) {
+                                            throw Exception(finalState.message);
+                                          } else if (finalState is TransferPinFailure) {
+                                            throw Exception('Invalid PIN');
+                                          }
+                                          // TransferSuccess — mixin will show success, then dismiss
                                         },
                                       );
 
-                                      if (!success) {
-                                        // PIN validation failed or was cancelled
-                                        // Reset loading state
+                                      if (!pinSuccess) {
                                         if (mounted) {
                                           setState(() {
                                             _isConfirmingTransfer = false;
                                           });
                                         }
+                                        return;
+                                      }
+
+                                      // Transfer completed and PIN modal dismissed — navigate to receipt
+                                      if (_lastTransferDetails != null && mounted) {
+                                        Get.offAllNamed(AppRoutes.transferProof,
+                                            arguments: _lastTransferDetails);
                                       }
                                     },
                               style: ElevatedButton.styleFrom(
@@ -1549,6 +1565,8 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       'reference': _referenceController.text.trim().isNotEmpty
           ? _referenceController.text.trim()
           : null,
+      'providerReference': transferState.response.providerReference,
+      'internalReference': transferState.response.internalReference,
       'status': transferState.response.status,
       'network': _recipient!.bankName == 'LazerVault'
           ? 'LazerVault Internal Transfer'
@@ -1571,15 +1589,8 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
     // listeners when this screen is revisited
     context.read<TransferCubit>().resetState();
 
-    Future.delayed(const Duration(milliseconds: 200), () async {
-      if (mounted) {
-        // Ensure pending recipient save completes before disposing widget tree
-        if (_pendingRecipientSave != null) {
-          await _pendingRecipientSave;
-        }
-        Get.offAllNamed(AppRoutes.transferProof, arguments: transferDetails);
-      }
-    });
+    // Navigate directly to receipt
+    Get.offAllNamed(AppRoutes.transferProof, arguments: transferDetails);
   }
 
   /// Non-blocking: ensure a P2P financial connection exists for internal recipients.
@@ -1875,8 +1886,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
             });
           }
 
-          // --- Show success in PIN modal ---
-          pinModalKey.currentState?.setSuccess();
+          // PIN modal handles success animation — don't call setSuccess here
 
           // --- Fire deferred recurring setup after transfer succeeds ---
           // Guard: only fire once, and only if recurring was enabled
@@ -2044,6 +2054,8 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
               'reference': _referenceController.text.trim().isNotEmpty
                   ? _referenceController.text.trim()
                   : null,
+              'providerReference': transferState.response.providerReference,
+              'internalReference': transferState.response.internalReference,
               'status': transferState.response.status,
               'network': _recipient!.bankName == 'LazerVault'
                   ? 'LazerVault Internal Transfer'
@@ -2064,48 +2076,13 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
             print(
                 'Listener: Transfer details prepared: $transferDetails');
 
-            // Wait for success animation, then dismiss sheet and navigate to receipt
-            Future.delayed(const Duration(milliseconds: 1500), () {
-              if (mounted) {
-                // Pop the PIN bottom sheet
-                Navigator.of(context).pop();
+            // Store transfer details — navigation happens after PIN modal dismisses
+            _lastTransferDetails = transferDetails;
 
-                // If recurring setup is still pending, defer navigation
-                // until recurring resolves (success or error) so the user sees the result
-                if (_recurringSetupPending) {
-                  _transferSucceeded = true;
-                  _pendingTransferSuccess = transferState;
-                  // Safety timeout: if recurring takes >10s, warn and navigate
-                  Future.delayed(const Duration(seconds: 10), () {
-                    if (_recurringSetupPending && mounted) {
-                      _recurringSetupPending = false;
-                      _recurringSetupInitiated = false;
-                      Get.snackbar(
-                        'Recurring Setup Timed Out',
-                        'Transfer succeeded. Recurring payment setup is still processing — check recurring transfers later.',
-                        snackPosition: SnackPosition.BOTTOM,
-                        backgroundColor: Colors.orange.withValues(alpha: 0.8),
-                        colorText: Colors.white,
-                        duration: const Duration(seconds: 6),
-                      );
-                      _navigateToReceipt(context, transferState);
-                    }
-                  });
-                } else {
-                  // No recurring or already resolved — navigate immediately
-                  Future.delayed(const Duration(milliseconds: 200), () async {
-                    if (mounted) {
-                      // Ensure pending recipient save completes before disposing widget tree
-                      if (_pendingRecipientSave != null) {
-                        await _pendingRecipientSave;
-                      }
-                      Get.offAllNamed(AppRoutes.transferProof,
-                          arguments: transferDetails);
-                    }
-                  });
-                }
-              }
-            });
+            if (_recurringSetupPending) {
+              _transferSucceeded = true;
+              _pendingTransferSuccess = transferState;
+            }
           } catch (e, stackTrace) {
             print("Error inside TransferSuccess listener: $e\n$stackTrace");
             if (_isConfirmingTransfer) {

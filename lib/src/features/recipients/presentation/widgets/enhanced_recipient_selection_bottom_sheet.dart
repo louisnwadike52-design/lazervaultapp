@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/utils/user_search_query.dart';
 import 'package:lazervault/core/models/device_contact.dart';
 import 'package:lazervault/core/services/contact_service.dart';
 import 'package:lazervault/core/services/injection_container.dart';
@@ -155,19 +156,19 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
 
     // Always trigger platform-wide search when query is long enough,
     // regardless of tab. This enables two-tier search: saved first, platform fallback.
-    if (widget.allowLazertagUsers && _searchQuery.replaceAll('@', '').replaceAll('\$', '').trim().length >= 2) {
+    final normalizedLen = normalizeLazerVaultUserSearchQuery(_searchQuery).length;
+    if (widget.allowLazertagUsers && normalizedLen >= 2) {
       _searchDebounce?.cancel();
       _searchDebounce = Timer(const Duration(milliseconds: 300), () {
         _searchLazertagUsers(_searchQuery);
       });
-    } else if (_searchQuery.replaceAll('@', '').replaceAll('\$', '').trim().length < 2) {
+    } else if (normalizedLen < 2) {
       setState(() => _lazertagResults = []);
     }
   }
 
   Future<void> _searchLazertagUsers(String query) async {
-    final cleanQuery = query.replaceAll('@', '').replaceAll('\$', '').trim();
-    if (cleanQuery.length < 2) {
+    if (normalizeLazerVaultUserSearchQuery(query).length < 2) {
       setState(() => _lazertagResults = []);
       return;
     }
@@ -176,7 +177,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
 
     try {
       final tagPayCubit = GetIt.I<TagPayCubit>();
-      final results = await tagPayCubit.searchUsers(cleanQuery, limit: 20);
+      final results = await tagPayCubit.searchUsers(query, limit: 20);
 
       if (!mounted) return;
 
@@ -731,7 +732,7 @@ class _EnhancedRecipientSelectionBottomSheetState extends State<EnhancedRecipien
       );
     }
 
-    final cleanQuery = _searchQuery.replaceAll('@', '').replaceAll('\$', '').trim();
+    final cleanQuery = normalizeLazerVaultUserSearchQuery(_searchQuery);
     if (_lazertagResults.isEmpty && cleanQuery.length >= 2) {
       return _buildEmptyState(
         icon: Icons.search_off,

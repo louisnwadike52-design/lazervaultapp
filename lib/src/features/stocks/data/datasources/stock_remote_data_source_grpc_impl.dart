@@ -6,7 +6,6 @@ import 'package:lazervault/core/grpc/grpc_channel_manager.dart';
 import 'package:lazervault/src/generated/investments.pbgrpc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../domain/entities/price_point.dart';
 import '../../domain/entities/stock_entity.dart';
 import '../models/stock_model.dart';
 import 'stock_remote_data_source.dart';

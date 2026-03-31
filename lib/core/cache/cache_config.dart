@@ -137,10 +137,10 @@ class CacheConfig {
   );
 
   /// Configuration for insurance products from MyCover.ai marketplace.
-  /// Longer stale time (30 min) as products change infrequently, 12 hour cache.
+  /// Short cache to ensure form field changes propagate quickly.
   static const insuranceProducts = CacheConfig(
-    staleTime: Duration(minutes: 30),
-    cacheTime: Duration(hours: 12),
+    staleTime: Duration(minutes: 2),
+    cacheTime: Duration(minutes: 5),
   );
 
   /// Configuration for insurance quotes.

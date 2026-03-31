@@ -113,6 +113,38 @@ class Stock extends Equatable {
     currency: json['currency'] as String,
   );
 
+  /// Placeholder for navigation; [StockDetailsScreen] loads full quote via cubit.
+  factory Stock.navigationStub(String symbol, {String currency = 'USD'}) {
+    final now = DateTime.now();
+    return Stock(
+      symbol: symbol.toUpperCase(),
+      name: symbol.toUpperCase(),
+      currentPrice: 0,
+      previousClose: 0,
+      change: 0,
+      changePercent: 0,
+      dayHigh: 0,
+      dayLow: 0,
+      volume: 0,
+      marketCap: 0,
+      peRatio: 0,
+      dividendYield: 0,
+      sector: '',
+      industry: '',
+      logoUrl: '',
+      priceHistory: const [],
+      lastUpdated: now,
+      weekHigh52: 0,
+      weekLow52: 0,
+      avgVolume: 0,
+      beta: 0,
+      eps: 0,
+      description: '',
+      exchange: '',
+      currency: currency,
+    );
+  }
+
   @override
   List<Object?> get props => [
     symbol,

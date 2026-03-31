@@ -138,8 +138,8 @@ class _A2CReviewScreenState extends State<A2CReviewScreen>
       });
       setState(() => _isProcessing = false);
     } else {
-      // OTP not required — go straight to PIN validation
-      _proceedWithPinValidation(state.sessionId, '');
+      // OTP not required — use sessionId as session token directly
+      _proceedWithPinValidation(state.sessionId, state.sessionId);
     }
   }
 
@@ -148,6 +148,8 @@ class _A2CReviewScreenState extends State<A2CReviewScreen>
     final transactionId =
         'a2c_${DateTime.now().millisecondsSinceEpoch}_${phoneNumber!.replaceAll(RegExp(r'[^\d]'), '')}';
 
+    String? verificationToken;
+
     final success = await validateTransactionPin(
       context: context,
       transactionId: transactionId,
@@ -155,97 +157,113 @@ class _A2CReviewScreenState extends State<A2CReviewScreen>
       amount: amount!,
       currency: 'NGN',
       title: 'Confirm Conversion',
-      message:
-          'Convert \u20A6${amount!.toStringAsFixed(0)} $network airtime to cash?',
-      onPinValidated: (verificationToken) async {
-        final cubit = context.read<AirtimeToCashCubit>();
-        final completer = Completer<void>();
-        StreamSubscription<AirtimeToCashState>? subscription;
-
-        subscription = cubit.stream.listen((s) {
-          if (s is AirtimeToCashSuccess) {
-            subscription?.cancel();
-            pinModalKey.currentState?.setSuccess();
-            Future.delayed(const Duration(milliseconds: 1500), () {
-              if (mounted) {
-                Navigator.of(context).pop(); // Close PIN modal
-                Get.offNamed(AppRoutes.airtimeToCashProcessing, arguments: {
-                  'phoneNumber': phoneNumber,
-                  'network': network,
-                  'amount': amount,
-                  'rate': rate,
-                  'estimatedCash': estimatedCash,
-                  'sessionToken': sessionToken,
-                  'transactionId': transactionId,
-                  'verificationToken': verificationToken,
-                  'sourceAccountId': _selectedAccountId,
-                  'isAlreadyProcessed': true,
-                  'conversion': s.conversion,
-                  'newBalance': s.newBalance,
-                });
-              }
-            });
-            if (!completer.isCompleted) completer.complete();
-          } else if (s is AirtimeToCashProcessingPending) {
-            subscription?.cancel();
-            pinModalKey.currentState?.setSuccess();
-            Future.delayed(const Duration(milliseconds: 1500), () {
-              if (mounted) {
-                Navigator.of(context).pop(); // Close PIN modal
-                Get.offNamed(AppRoutes.airtimeToCashProcessing, arguments: {
-                  'phoneNumber': phoneNumber,
-                  'network': network,
-                  'amount': amount,
-                  'rate': rate,
-                  'estimatedCash': estimatedCash,
-                  'sessionToken': sessionToken,
-                  'transactionId': transactionId,
-                  'verificationToken': verificationToken,
-                  'sourceAccountId': _selectedAccountId,
-                  'isAlreadyProcessed': true,
-                  'isProcessingPending': true,
-                  'conversion': s.conversion,
-                  'message': s.message,
-                });
-              }
-            });
-            if (!completer.isCompleted) completer.complete();
-          } else if (s is AirtimeToCashFailed) {
-            subscription?.cancel();
-            pinModalKey.currentState?.setFailed(s.message);
-            if (!completer.isCompleted) {
-              completer.completeError(Exception(s.message));
-            }
-          }
-        });
-
-        cubit.processConversion(
-          phoneNumber: phoneNumber!,
-          network: network!,
-          amount: amount!,
-          sessionToken: sessionToken,
-          transactionId: transactionId,
-          verificationToken: verificationToken,
-          sourceAccountId: _selectedAccountId,
-        );
-
-        await completer.future.timeout(
-          const Duration(seconds: 90),
-          onTimeout: () {
-            subscription?.cancel();
-            if (!completer.isCompleted) {
-              pinModalKey.currentState?.setFailed('Request timed out. Check your conversion history.');
-            }
-          },
-        );
+      message: 'Confirm airtime to cash conversion',
+      onPinValidated: (token) async {
+        verificationToken = token;
       },
     );
 
-    if (!success && mounted) {
-      setState(() {
-        _isProcessing = false;
-        _isOTPRequestInProgress = false;
-      });
+    if (!success || verificationToken == null) {
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+          _isOTPRequestInProgress = false;
+        });
+      }
+      return;
+    }
+    if (!mounted) return;
+
+    // Execute conversion AFTER modal is dismissed
+    final cubit = context.read<AirtimeToCashCubit>();
+    final completer = Completer<void>();
+    StreamSubscription<AirtimeToCashState>? subscription;
+
+    subscription = cubit.stream.listen((s) {
+      if (s is AirtimeToCashSuccess) {
+        subscription?.cancel();
+        if (mounted) {
+          Get.offNamed(AppRoutes.airtimeToCashProcessing, arguments: {
+            'phoneNumber': phoneNumber,
+            'network': network,
+            'amount': amount,
+            'rate': rate,
+            'estimatedCash': estimatedCash,
+            'sessionToken': sessionToken,
+            'transactionId': transactionId,
+            'verificationToken': verificationToken,
+            'sourceAccountId': _selectedAccountId,
+            'isAlreadyProcessed': true,
+            'conversion': s.conversion,
+            'newBalance': s.newBalance,
+          });
+        }
+        if (!completer.isCompleted) completer.complete();
+      } else if (s is AirtimeToCashProcessingPending) {
+        subscription?.cancel();
+        if (mounted) {
+          Get.offNamed(AppRoutes.airtimeToCashProcessing, arguments: {
+            'phoneNumber': phoneNumber,
+            'network': network,
+            'amount': amount,
+            'rate': rate,
+            'estimatedCash': estimatedCash,
+            'sessionToken': sessionToken,
+            'transactionId': transactionId,
+            'verificationToken': verificationToken,
+            'sourceAccountId': _selectedAccountId,
+            'isAlreadyProcessed': true,
+            'isProcessingPending': true,
+            'conversion': s.conversion,
+            'message': s.message,
+          });
+        }
+        if (!completer.isCompleted) completer.complete();
+      } else if (s is AirtimeToCashFailed) {
+        subscription?.cancel();
+        if (mounted) {
+          Get.snackbar('Conversion Failed', s.message,
+              backgroundColor: const Color(0xFFEF4444), colorText: Colors.white,
+              snackPosition: SnackPosition.TOP);
+          setState(() {
+            _isProcessing = false;
+            _isOTPRequestInProgress = false;
+          });
+        }
+        if (!completer.isCompleted) {
+          completer.completeError(Exception(s.message));
+        }
+      }
+    });
+
+    cubit.processConversion(
+      phoneNumber: phoneNumber!,
+      network: network!,
+      amount: amount!,
+      sessionToken: sessionToken,
+      transactionId: transactionId,
+      verificationToken: verificationToken!,
+      sourceAccountId: _selectedAccountId,
+    );
+
+    try {
+      await completer.future.timeout(
+        const Duration(seconds: 90),
+        onTimeout: () {
+          subscription?.cancel();
+          if (mounted) {
+            Get.snackbar('Timeout', 'Request timed out. Check your conversion history.',
+                backgroundColor: const Color(0xFFFB923C), colorText: Colors.white,
+                snackPosition: SnackPosition.TOP);
+            setState(() {
+              _isProcessing = false;
+              _isOTPRequestInProgress = false;
+            });
+          }
+        },
+      );
+    } catch (_) {
+      // Error already handled in stream listener
     }
   }
 

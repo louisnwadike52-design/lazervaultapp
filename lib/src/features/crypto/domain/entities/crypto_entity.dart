@@ -257,6 +257,31 @@ class CryptoHolding extends Equatable {
       ];
 }
 
+class CryptoNews extends Equatable {
+  final String id;
+  final String title;
+  final String url;
+  final String source;
+  final String sentiment;
+  final DateTime publishedAt;
+  final int votesPositive;
+  final int votesNegative;
+
+  const CryptoNews({
+    required this.id,
+    required this.title,
+    required this.url,
+    required this.source,
+    this.sentiment = 'neutral',
+    required this.publishedAt,
+    this.votesPositive = 0,
+    this.votesNegative = 0,
+  });
+
+  @override
+  List<Object> get props => [id, title, url, source, sentiment, publishedAt];
+}
+
 enum TransactionType { buy, sell, swap }
 
 class CryptoTransaction extends Equatable {

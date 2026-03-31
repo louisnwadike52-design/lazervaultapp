@@ -195,37 +195,39 @@ class _A2COTPScreenState extends State<A2COTPScreen>
     final transactionId =
         'a2c_${DateTime.now().millisecondsSinceEpoch}_${phoneNumber!.replaceAll(RegExp(r'[^\d]'), '')}';
 
+    String? verificationToken;
+
     final success = await validateTransactionPin(
       context: context,
       transactionId: transactionId,
       transactionType: 'airtime_to_cash',
       amount: amount!,
       currency: 'NGN',
-      title: 'Confirm Conversion',
-      message:
-          'Convert \u20A6${amount!.toStringAsFixed(0)} $network airtime to cash?',
-      onPinValidated: (verificationToken) async {
-        // Close PIN modal, navigate to processing screen
-        if (mounted) {
-          Navigator.of(context).pop();
-        }
-        Get.offNamed(AppRoutes.airtimeToCashProcessing, arguments: {
-          'phoneNumber': phoneNumber,
-          'network': network,
-          'amount': amount,
-          'rate': rate,
-          'estimatedCash': estimatedCash,
-          'sessionToken': state.sessionToken,
-          'transactionId': transactionId,
-          'verificationToken': verificationToken,
-          'sourceAccountId': _sourceAccountId,
-        });
+      title: 'Confirm Airtime to Cash',
+      message: 'Confirm airtime to cash conversion',
+      onPinValidated: (token) async {
+        verificationToken = token;
       },
     );
 
-    if (!success && mounted) {
-      setState(() => _isVerifying = false);
+    if (!success || verificationToken == null) {
+      if (mounted) setState(() => _isVerifying = false);
+      return;
     }
+    if (!mounted) return;
+
+    // Navigate AFTER modal is dismissed
+    Get.offNamed(AppRoutes.airtimeToCashProcessing, arguments: {
+      'phoneNumber': phoneNumber,
+      'network': network,
+      'amount': amount,
+      'rate': rate,
+      'estimatedCash': estimatedCash,
+      'sessionToken': state.sessionToken,
+      'transactionId': transactionId,
+      'verificationToken': verificationToken!,
+      'sourceAccountId': _sourceAccountId,
+    });
   }
 
   void _handleResendSuccess(AirtimeToCashOTPSent state) {

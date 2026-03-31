@@ -160,15 +160,22 @@ class _QRPaymentConfirmationScreenState
     final idPrefix = qrCode.length >= 8 ? qrCode.substring(0, 8) : qrCode;
     final transactionId = 'QR-PAY-$idPrefix';
 
-    final pinResult = await validatePinOnly(
+    String? verificationToken;
+
+    final success = await validateTransactionPin(
       context: context,
       transactionId: transactionId,
       transactionType: 'qr_payment',
       amount: amount,
       currency: currency,
+      title: 'Confirm Payment',
+      message: 'Confirm QR payment of $currency ${amount.toStringAsFixed(2)}',
+      onPinValidated: (token) async {
+        verificationToken = token;
+      },
     );
 
-    if (pinResult == null || !pinResult.success) return;
+    if (!success || verificationToken == null) return;
 
     setState(() {
       _isProcessing = true;
@@ -179,7 +186,7 @@ class _QRPaymentConfirmationScreenState
           qrCode: qrCode,
           sourceAccountId: _selectedAccountId!,
           amount: amount,
-          transactionPin: pinResult.verificationToken ?? '',
+          transactionPin: verificationToken!,
         );
   }
 

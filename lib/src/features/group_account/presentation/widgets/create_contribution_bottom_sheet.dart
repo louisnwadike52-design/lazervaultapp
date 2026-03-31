@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:lazervault/core/utils/user_search_query.dart';
 import '../../domain/entities/group_entities.dart';
 import '../../data/datasources/group_account_remote_data_source.dart';
 import '../cubit/group_account_cubit.dart';
@@ -2123,8 +2124,7 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
     // Cancel previous timer
     _debounceTimer?.cancel();
 
-    // Clean the query (remove @ and $ symbols)
-    final cleanQuery = query.replaceAll('@', '').replaceAll('\$', '').trim();
+    final cleanQuery = normalizeLazerVaultUserSearchQuery(query);
 
     if (cleanQuery.isEmpty) {
       setState(() {
@@ -2148,7 +2148,7 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
 
     // Debounce: 500ms delay after user stops typing
     _debounceTimer = Timer(const Duration(milliseconds: 500), () {
-      _performSearch(cleanQuery);
+      _performSearch(query);
     });
   }
 
@@ -2544,7 +2544,7 @@ class _AddMemberForContributionSheetState extends State<_AddMemberForContributio
     }
 
     // Query too short
-    final cleanQuery = _searchQuery.replaceAll('@', '').replaceAll('\$', '').trim();
+    final cleanQuery = normalizeLazerVaultUserSearchQuery(_searchQuery);
     if (cleanQuery.length < 2) {
       return Container(
         padding: EdgeInsets.all(16.w),

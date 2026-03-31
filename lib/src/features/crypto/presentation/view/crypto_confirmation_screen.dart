@@ -10,7 +10,7 @@ import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
 import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
-import '../../domain/entities/crypto_entity.dart';
+import '../models/crypto_transaction_models.dart';
 import 'crypto_receipt_screen.dart';
 
 class CryptoConfirmationScreen extends StatefulWidget {
@@ -128,89 +128,90 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
     }
 
     final details = widget.transactionDetails;
+    String? verificationToken;
+
     final success = await validateTransactionPin(
       context: context,
       transactionId: 'CRYPTO-${DateTime.now().millisecondsSinceEpoch}',
       transactionType: details.type.name,
       amount: details.fiatAmount,
       currency: CurrencySymbols.currentCurrency,
-      currencySymbol: CurrencySymbols.currentSymbol,
-      fee: details.networkFee + details.tradingFee,
-      totalAmount: details.totalAmount,
-      onPinValidated: (verificationToken) async {
-        // PIN validated - now show processing screen
-        if (mounted) {
-          setState(() {
-            _isProcessing = true;
-          });
-          _processingController.repeat();
-        }
-
-        final cubit = context.read<CryptoCubit>();
-        final quantity = details.cryptoQuantity ?? (double.tryParse(details.cryptoAmount) ?? 0.0);
-
-        // Execute real backend call based on transaction type
-        switch (details.type) {
-          case CryptoTransactionType.buy:
-            await cubit.buyCrypto(
-              cryptoId: details.cryptoId ?? details.cryptoSymbol.toLowerCase(),
-              quantity: quantity,
-              price: details.pricePerUnit,
-              transactionPin: verificationToken,
-            );
-            break;
-          case CryptoTransactionType.sell:
-            await cubit.sellCrypto(
-              cryptoId: details.cryptoId ?? details.cryptoSymbol.toLowerCase(),
-              quantity: quantity,
-              price: details.pricePerUnit,
-              transactionPin: verificationToken,
-            );
-            break;
-          case CryptoTransactionType.swap:
-            await cubit.convertCrypto(
-              fromCryptoId: details.fromCryptoId ?? details.fromCrypto?.toLowerCase() ?? '',
-              toCryptoId: details.toCryptoId ?? details.toCrypto?.toLowerCase() ?? '',
-              amount: quantity,
-              transactionPin: verificationToken,
-            );
-            break;
-        }
-
-        _processingController.stop();
-
-        // Check cubit state for result
-        final state = cubit.state;
-        if (state is CryptoTransactionSuccess) {
-          if (mounted) {
-            setState(() {
-              _isProcessing = false;
-              _isCompleted = true;
-              _transactionId = state.transaction.id;
-            });
-          }
-          await Future.delayed(const Duration(seconds: 1));
-          if (mounted) _viewReceipt();
-        } else if (state is CryptoError) {
-          if (mounted) {
-            setState(() {
-              _isProcessing = false;
-            });
-            Get.snackbar(
-              'Transaction Failed',
-              state.message,
-              backgroundColor: Colors.red.withValues(alpha: 0.9),
-              colorText: Colors.white,
-              snackPosition: SnackPosition.TOP,
-            );
-          }
-        }
+      title: 'Confirm ${_getTransactionTypeTitle()}',
+      message: 'Confirm ${_getTransactionTypeTitle().toLowerCase()} of ${details.cryptoAmount} ${details.cryptoSymbol}',
+      onPinValidated: (token) async {
+        verificationToken = token;
       },
     );
 
-    if (!success && mounted) {
-      // PIN validation was cancelled or failed
-      _resetRateCountdown();
+    if (!success || verificationToken == null) {
+      if (mounted) _resetRateCountdown();
+      return;
+    }
+    if (!mounted) return;
+
+    // PIN validated - now show processing screen
+    setState(() {
+      _isProcessing = true;
+    });
+    _processingController.repeat();
+    final cubit = context.read<CryptoCubit>();
+    final quantity = details.cryptoQuantity ?? (double.tryParse(details.cryptoAmount) ?? 0.0);
+
+    // Execute real backend call based on transaction type
+    switch (details.type) {
+      case CryptoTransactionType.buy:
+        await cubit.buyCrypto(
+          cryptoId: details.cryptoId ?? details.cryptoSymbol.toLowerCase(),
+          quantity: quantity,
+          price: details.pricePerUnit,
+          transactionPin: verificationToken!,
+        );
+        break;
+      case CryptoTransactionType.sell:
+        await cubit.sellCrypto(
+          cryptoId: details.cryptoId ?? details.cryptoSymbol.toLowerCase(),
+          quantity: quantity,
+          price: details.pricePerUnit,
+          transactionPin: verificationToken!,
+        );
+        break;
+      case CryptoTransactionType.swap:
+        await cubit.convertCrypto(
+          fromCryptoId: details.fromCryptoId ?? details.fromCrypto?.toLowerCase() ?? '',
+          toCryptoId: details.toCryptoId ?? details.toCrypto?.toLowerCase() ?? '',
+          amount: quantity,
+          transactionPin: verificationToken!,
+        );
+        break;
+    }
+
+    _processingController.stop();
+
+    // Check cubit state for result
+    final state = cubit.state;
+    if (state is CryptoTransactionSuccess) {
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+          _isCompleted = true;
+          _transactionId = state.transaction.id;
+        });
+      }
+      await Future.delayed(const Duration(seconds: 1));
+      if (mounted) _viewReceipt();
+    } else if (state is CryptoError) {
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
+        Get.snackbar(
+          'Transaction Failed',
+          state.message,
+          backgroundColor: Colors.red.withValues(alpha: 0.9),
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+        );
+      }
     }
   }
 
@@ -897,57 +898,11 @@ class _CryptoConfirmationScreenState extends State<CryptoConfirmationScreen>
 
   String _getPaymentMethodDetails() {
     switch (widget.transactionDetails.paymentMethod.toLowerCase()) {
-      case 'card':
-        return 'Visa ending in 1234';
-      case 'bank transfer':
-        return 'Instant bank transfer';
-      case 'apple pay':
-        return 'Touch ID verification';
-      case 'google pay':
-        return 'Fingerprint verification';
+      case 'lazervault wallet':
+        return 'LazerVault ${CurrencySymbols.currentCurrency} Wallet';
       default:
-        return 'Secure payment';
+        return 'LazerVault Wallet';
     }
   }
 }
-
-// Transaction details model
-class CryptoTransactionDetails {
-  final CryptoTransactionType type;
-  final String cryptoName;
-  final String cryptoSymbol;
-  final String cryptoAmount;
-  final double pricePerUnit;
-  final double fiatAmount;
-  final double networkFee;
-  final double tradingFee;
-  final double totalAmount;
-  final String paymentMethod;
-  final String? fromCrypto; // For swaps
-  final String? toCrypto; // For swaps
-  final String? cryptoId; // Backend crypto ID
-  final String? fromCryptoId; // For swaps - source crypto ID
-  final String? toCryptoId; // For swaps - target crypto ID
-  final double? cryptoQuantity; // Parsed numeric quantity
-
-  const CryptoTransactionDetails({
-    required this.type,
-    required this.cryptoName,
-    required this.cryptoSymbol,
-    required this.cryptoAmount,
-    required this.pricePerUnit,
-    required this.fiatAmount,
-    required this.networkFee,
-    required this.tradingFee,
-    required this.totalAmount,
-    required this.paymentMethod,
-    this.fromCrypto,
-    this.toCrypto,
-    this.cryptoId,
-    this.fromCryptoId,
-    this.toCryptoId,
-    this.cryptoQuantity,
-  });
-}
-
-enum CryptoTransactionType { buy, sell, swap } 
+ 

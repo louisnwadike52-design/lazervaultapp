@@ -2,14 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
+import 'package:lazervault/src/features/investments/presentation/theme/invest_trading_ui.dart';
 
 import '../../../domain/entities/stock_entity.dart';
 
-/// Step 1: Select trade action (buy/sell) and order type
+/// Step 1: Buy/sell + order type (Revolut / eToro style, hub accent for order types).
 class TradeActionSelectorScreen extends StatefulWidget {
   final Stock stock;
   final OrderSide initialSide;
   final OrderType initialType;
+  final Color? accentColor;
   final Function(OrderSide, OrderType) onChanged;
 
   const TradeActionSelectorScreen({
@@ -17,16 +19,20 @@ class TradeActionSelectorScreen extends StatefulWidget {
     required this.stock,
     required this.initialSide,
     required this.initialType,
+    this.accentColor,
     required this.onChanged,
   });
 
   @override
-  State<TradeActionSelectorScreen> createState() => _TradeActionSelectorScreenState();
+  State<TradeActionSelectorScreen> createState() =>
+      _TradeActionSelectorScreenState();
 }
 
 class _TradeActionSelectorScreenState extends State<TradeActionSelectorScreen> {
   late OrderSide _selectedSide;
   late OrderType _selectedType;
+
+  Color get _accent => widget.accentColor ?? InvestTradingUi.accent;
 
   @override
   void initState() {
@@ -41,47 +47,48 @@ class _TradeActionSelectorScreenState extends State<TradeActionSelectorScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final up = InvestTradingUi.buy;
+    final down = InvestTradingUi.sell;
+
     return SingleChildScrollView(
       padding: EdgeInsets.all(20.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Stock info card
           Container(
             padding: EdgeInsets.all(20.w),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  const Color(0xFF2A2A3E).withValues(alpha: 0.8),
-                  const Color(0xFF1F1F35).withValues(alpha: 0.9),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(16.r),
+            decoration: InvestTradingUi.cardDecoration(
+              color: InvestTradingUi.surfaceElevated,
             ),
             child: Row(
               children: [
-                // Logo
-                ...[
                 Container(
                   width: 48.w,
                   height: 48.w,
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8.r),
+                    color: _accent.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(color: _accent.withValues(alpha: 0.35)),
                   ),
                   padding: EdgeInsets.all(8.w),
-                  child: Image.network(
-                    widget.stock.logoUrl,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Icon(Icons.business, size: 32.sp, color: Colors.grey);
-                    },
-                  ),
+                  child: widget.stock.logoUrl.isEmpty
+                      ? Icon(
+                          Icons.show_chart_rounded,
+                          size: 26.sp,
+                          color: _accent,
+                        )
+                      : Image.network(
+                          widget.stock.logoUrl,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Icon(
+                              Icons.business_rounded,
+                              size: 26.sp,
+                              color: _accent,
+                            );
+                          },
+                        ),
                 ),
                 SizedBox(width: 16.w),
-              ],
-                // Symbol and name
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -89,51 +96,55 @@ class _TradeActionSelectorScreenState extends State<TradeActionSelectorScreen> {
                       Text(
                         widget.stock.symbol,
                         style: GoogleFonts.inter(
-                          fontSize: 20.sp,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
+                          fontSize: 19.sp,
+                          fontWeight: FontWeight.w800,
+                          color: InvestTradingUi.textPrimary,
+                          letterSpacing: -0.3,
                         ),
                       ),
                       SizedBox(height: 4.h),
                       Text(
                         widget.stock.name,
-                        style: GoogleFonts.inter(
-                          fontSize: 14.sp,
-                          color: Colors.grey[400],
-                        ),
+                        style: InvestTradingUi.labelMuted(),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
                 ),
-                // Current price
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      CurrencySymbols.formatAmountWithCurrency(widget.stock.currentPrice, widget.stock.currency),
+                      CurrencySymbols.formatAmountWithCurrency(
+                        widget.stock.currentPrice,
+                        widget.stock.currency,
+                      ),
                       style: GoogleFonts.inter(
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w800,
+                        color: InvestTradingUi.textPrimary,
                       ),
                     ),
                     SizedBox(height: 4.h),
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                       decoration: BoxDecoration(
-                        color: widget.stock.isPositive
-                            ? Colors.green.withValues(alpha: 0.2)
-                            : Colors.red.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(4.r),
+                        color: (widget.stock.isPositive ? up : down)
+                            .withValues(alpha: 0.14),
+                        borderRadius: BorderRadius.circular(8.r),
+                        border: Border.all(
+                          color: (widget.stock.isPositive ? up : down)
+                              .withValues(alpha: 0.35),
+                        ),
                       ),
                       child: Text(
                         '${widget.stock.isPositive ? '+' : ''}${widget.stock.changePercent.toStringAsFixed(2)}%',
                         style: GoogleFonts.inter(
-                          fontSize: 12.sp,
-                          fontWeight: FontWeight.w600,
-                          color: widget.stock.isPositive ? Colors.green : Colors.red,
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w700,
+                          color: widget.stock.isPositive ? up : down,
                         ),
                       ),
                     ),
@@ -143,79 +154,79 @@ class _TradeActionSelectorScreenState extends State<TradeActionSelectorScreen> {
             ),
           ),
 
-          SizedBox(height: 32.h),
+          SizedBox(height: 28.h),
 
-          // Buy/Sell selection
           Text(
-            'Select Action',
+            'Buy or sell',
             style: GoogleFonts.inter(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w700,
+              color: InvestTradingUi.textPrimary,
             ),
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 14.h),
 
           Row(
             children: [
               Expanded(
-                child: _buildActionButton(
-                  'Buy',
-                  Icons.trending_up,
-                  Colors.green,
-                  OrderSide.buy,
+                child: _buildSideTile(
+                  label: 'Buy',
+                  icon: Icons.trending_up_rounded,
+                  side: OrderSide.buy,
+                  activeColor: up,
+                  fgWhenActive: Colors.black,
                 ),
               ),
               SizedBox(width: 12.w),
               Expanded(
-                child: _buildActionButton(
-                  'Sell',
-                  Icons.trending_down,
-                  Colors.red,
-                  OrderSide.sell,
+                child: _buildSideTile(
+                  label: 'Sell',
+                  icon: Icons.trending_down_rounded,
+                  side: OrderSide.sell,
+                  activeColor: down,
+                  fgWhenActive: Colors.white,
                 ),
               ),
             ],
           ),
 
-          SizedBox(height: 32.h),
+          SizedBox(height: 28.h),
 
-          // Order type selection
           Text(
-            'Order Type',
+            'Order type',
             style: GoogleFonts.inter(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w700,
+              color: InvestTradingUi.textPrimary,
             ),
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 14.h),
 
-          _buildOrderTypeCard(
-            'Market Order',
-            'Execute immediately at current market price',
-            Icons.flash_on,
+          _buildOrderTypeRow(
+            'Market',
+            'Execute at the best price now',
+            Icons.bolt_rounded,
             OrderType.market,
           ),
-          SizedBox(height: 12.h),
-          _buildOrderTypeCard(
-            'Limit Order',
-            'Set a specific price you want to pay/receive',
-            Icons.edit_note,
+          SizedBox(height: 10.h),
+          _buildOrderTypeRow(
+            'Limit',
+            'Set the max you pay or min you accept',
+            Icons.edit_note_rounded,
             OrderType.limit,
           ),
-          SizedBox(height: 12.h),
-          _buildOrderTypeCard(
-            'Stop Loss',
-            'Automatically sell when price drops to stop level',
+          SizedBox(height: 10.h),
+          _buildOrderTypeRow(
+            'Stop loss',
+            'Triggers a market order at your stop',
             Icons.shield_outlined,
             OrderType.stopLoss,
           ),
-          SizedBox(height: 12.h),
-          _buildOrderTypeCard(
-            'Stop Limit',
-            'Combine stop and limit orders for more control',
-            Icons.settings_outlined,
+          SizedBox(height: 10.h),
+          _buildOrderTypeRow(
+            'Stop limit',
+            'Stop trigger + limit price',
+            Icons.tune_rounded,
             OrderType.stopLimit,
           ),
         ],
@@ -223,129 +234,135 @@ class _TradeActionSelectorScreenState extends State<TradeActionSelectorScreen> {
     );
   }
 
-  Widget _buildActionButton(String label, IconData icon, Color color, OrderSide side) {
-    final isSelected = _selectedSide == side;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedSide = side;
-        });
-        _updateSelection();
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: EdgeInsets.symmetric(vertical: 20.h),
-        decoration: BoxDecoration(
-          gradient: isSelected
-              ? LinearGradient(
-                  colors: [color.withValues(alpha: 0.8), color.withValues(alpha: 0.6)],
-                )
-              : null,
-          color: isSelected ? null : Colors.white.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(
-            color: isSelected ? color : Colors.white.withValues(alpha: 0.1),
-            width: isSelected ? 2 : 1,
+  Widget _buildSideTile({
+    required String label,
+    required IconData icon,
+    required OrderSide side,
+    required Color activeColor,
+    required Color fgWhenActive,
+  }) {
+    final selected = _selectedSide == side;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          setState(() => _selectedSide = side);
+          _updateSelection();
+        },
+        borderRadius: BorderRadius.circular(14.r),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: EdgeInsets.symmetric(vertical: 18.h),
+          decoration: BoxDecoration(
+            color: selected
+                ? activeColor
+                : InvestTradingUi.surfaceElevated,
+            borderRadius: BorderRadius.circular(14.r),
+            border: Border.all(
+              color: selected
+                  ? activeColor
+                  : Colors.white.withValues(alpha: 0.1),
+              width: selected ? 2 : 1,
+            ),
           ),
-        ),
-        child: Column(
-          children: [
-            Icon(
-              icon,
-              size: 32.sp,
-              color: isSelected ? Colors.white : Colors.grey[400],
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w600,
-                color: isSelected ? Colors.white : Colors.grey[400],
+          child: Column(
+            children: [
+              Icon(
+                icon,
+                size: 30.sp,
+                color: selected ? fgWhenActive : InvestTradingUi.textSecondary,
               ),
-            ),
-          ],
+              SizedBox(height: 8.h),
+              Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w800,
+                  color: selected ? fgWhenActive : InvestTradingUi.textSecondary,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildOrderTypeCard(
+  Widget _buildOrderTypeRow(
     String title,
     String description,
     IconData icon,
     OrderType type,
   ) {
-    final isSelected = _selectedType == type;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedType = type;
-        });
-        _updateSelection();
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: EdgeInsets.all(16.w),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? const Color(0xFF6366F1).withValues(alpha: 0.2)
-              : Colors.white.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(
-            color: isSelected
-                ? const Color(0xFF6366F1)
-                : Colors.white.withValues(alpha: 0.1),
-            width: isSelected ? 2 : 1,
+    final selected = _selectedType == type;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          setState(() => _selectedType = type);
+          _updateSelection();
+        },
+        borderRadius: BorderRadius.circular(14.r),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: EdgeInsets.all(14.w),
+          decoration: BoxDecoration(
+            color: selected
+                ? _accent.withValues(alpha: 0.12)
+                : InvestTradingUi.surfaceElevated,
+            borderRadius: BorderRadius.circular(14.r),
+            border: Border.all(
+              color: selected
+                  ? _accent.withValues(alpha: 0.55)
+                  : Colors.white.withValues(alpha: 0.08),
+              width: selected ? 1.5 : 1,
+            ),
           ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: EdgeInsets.all(12.w),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? const Color(0xFF6366F1)
-                    : Colors.white.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8.r),
+          child: Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(10.w),
+                decoration: BoxDecoration(
+                  color: selected
+                      ? _accent.withValues(alpha: 0.22)
+                      : InvestTradingUi.surface,
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                child: Icon(
+                  icon,
+                  size: 22.sp,
+                  color: selected ? _accent : InvestTradingUi.textSecondary,
+                ),
               ),
-              child: Icon(
-                icon,
-                size: 24.sp,
-                color: isSelected ? Colors.white : Colors.grey[400],
-              ),
-            ),
-            SizedBox(width: 16.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: GoogleFonts.inter(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                      color: isSelected ? Colors.white : Colors.grey[300],
+              SizedBox(width: 14.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.inter(
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w700,
+                        color: InvestTradingUi.textPrimary,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    description,
-                    style: GoogleFonts.inter(
-                      fontSize: 13.sp,
-                      color: Colors.grey[400],
+                    SizedBox(height: 2.h),
+                    Text(
+                      description,
+                      style: InvestTradingUi.labelMuted().copyWith(height: 1.3),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            if (isSelected)
-              Icon(
-                Icons.check_circle,
-                color: const Color(0xFF6366F1),
-                size: 24.sp,
-              ),
-          ],
+              if (selected)
+                Icon(
+                  Icons.check_circle_rounded,
+                  color: _accent,
+                  size: 24.sp,
+                ),
+            ],
+          ),
         ),
       ),
     );

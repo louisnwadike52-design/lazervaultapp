@@ -34,7 +34,10 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
   void _generateQrData() {
     final amount = (transferDetails['amount'] as num?)?.toDouble() ?? 0.0;
     final currency = transferDetails['currency'] as String? ?? 'NGN';
-    final reference = transferDetails['reference'] as String? ??
+    // Use provider/internal reference for QR (Flutterwave-trackable)
+    final internalRef = transferDetails['internalReference'] as String?;
+    final provRef = transferDetails['providerReference'] as String?;
+    final reference = provRef ?? internalRef ??
         transferDetails['transferId']?.toString() ??
         transferDetails['transactionId']?.toString() ??
         _uuid.v4();
@@ -257,6 +260,7 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
     final recipientBank = transferDetails['recipientBankName'] as String?;
     final recipientAccount = transferDetails['recipientAccountMasked'] as String?;
     final reference = transferDetails['reference'] as String? ?? '';
+    final providerReference = transferDetails['providerReference'] as String?;
     final narration = transferDetails['narration'] as String?;
     final transferType = transferDetails['transferType'] as String?;
     final network = transferDetails['network'] as String?;
@@ -299,6 +303,8 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
                   ? '$sourceAccountName ($sourceAccountInfo)'
                   : sourceAccountInfo,
             ),
+          if (providerReference != null && providerReference.isNotEmpty)
+            _buildDetailRow('Transaction Ref', providerReference),
           if (reference.isNotEmpty)
             _buildDetailRow('Reference', reference),
           if (narration != null && narration.isNotEmpty)

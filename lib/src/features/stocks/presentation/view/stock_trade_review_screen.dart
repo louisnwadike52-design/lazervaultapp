@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
+import 'package:lazervault/src/features/investments/presentation/models/invest_asset_hub_config.dart';
+import 'package:lazervault/src/features/investments/presentation/theme/invest_trading_ui.dart';
 import '../../cubit/stock_cubit.dart';
 import '../../cubit/stock_state.dart';
 import '../../domain/entities/stock_entity.dart';
@@ -42,7 +44,9 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
   String _paymentMethod = '';
 
   Map<String, dynamic> _paymentDetails = {};
-  
+  String? _investCollectionId;
+  late Color _hubAccent;
+
   bool _isProcessing = false;
   bool _isCompleted = false;
   String _transactionId = '';
@@ -70,6 +74,9 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
     _estimatedTotal = args['estimatedTotal'] ?? 0.0;
     _paymentMethod = args['paymentMethod'] ?? '';
     _paymentDetails = args['paymentDetails'] ?? {};
+    _investCollectionId = args['investCollection'] as String?;
+    _hubAccent = InvestAssetHubConfig.forCollectionId(_investCollectionId)
+        .accentColor;
   }
 
   void _setupAnimations() {
@@ -110,24 +117,26 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
     final transactionId = 'stock_${_tradeType}_${DateTime.now().millisecondsSinceEpoch}_${_selectedStock?.symbol}';
 
     // Validate PIN before processing stock trade
+    String? verificationToken;
+
     final success = await validateTransactionPin(
       context: context,
       transactionId: transactionId,
       transactionType: 'stock_trade',
       amount: _estimatedTotal,
       currency: 'USD',
-      title: 'Confirm ${_tradeType == 'buy' ? 'Buy' : 'Sell'} Order',
-      message: 'Confirm $_tradeType of $_shares shares of ${_selectedStock?.symbol ?? 'stock'} for ${CurrencySymbols.formatAmountWithCurrency(_estimatedTotal, _selectedStock?.currency ?? 'USD')}?',
-      onPinValidated: (verificationToken) async {
-        // PIN is valid, proceed with trade processing
-        _executeTradeWithToken(transactionId, verificationToken);
+      title: 'Confirm ${_tradeType == 'buy' ? 'Buy' : 'Sell'}',
+      message: 'Confirm ${_tradeType} of $_shares shares of ${_selectedStock?.symbol ?? 'stock'}',
+      onPinValidated: (token) async {
+        verificationToken = token;
       },
     );
 
-    if (!success) {
-      // PIN validation failed or was cancelled
-      // User has already been notified via the mixin
-    }
+    if (!success || verificationToken == null) return;
+    if (!mounted) return;
+
+    // PIN is valid, proceed with trade processing
+    _executeTradeWithToken(transactionId, verificationToken!);
   }
 
   /// Execute stock trade with verification token (investment-gateway / investments-service).
@@ -199,6 +208,7 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
       'transactionDate': DateTime.now(),
       'paymentMethod': _paymentMethod,
       'paymentDetails': _paymentDetails,
+      'investCollection': _investCollectionId,
     });
   }
 
@@ -207,19 +217,9 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F23),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF1A1A3E),
-              const Color(0xFF0F0F23),
-              const Color(0xFF0A0A1A),
-            ],
-          ),
-        ),
+      backgroundColor: InvestTradingUi.background,
+      body: DecoratedBox(
+        decoration: BoxDecoration(gradient: InvestTradingUi.scaffoldGradient),
         child: SafeArea(
           child: Column(
             children: [
@@ -258,16 +258,15 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
             Container(
               height: 40.h,
               width: 40.w,
-              decoration: BoxDecoration(
-                color: Colors.grey[900],
-                borderRadius: BorderRadius.circular(12.r),
+              decoration: InvestTradingUi.cardDecoration(
+                color: InvestTradingUi.surfaceElevated,
               ),
               child: IconButton(
                 onPressed: () => Navigator.of(context).pop(),
                 icon: Icon(
-                  Icons.arrow_back,
-                  color: Colors.white,
-                  size: 20.sp,
+                  Icons.arrow_back_ios_new_rounded,
+                  color: InvestTradingUi.textPrimary,
+                  size: 18.sp,
                 ),
               ),
             ),
@@ -277,26 +276,24 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _isCompleted 
-                      ? 'Trade Successful!'
-                      : _isProcessing 
-                          ? 'Processing Trade...'
-                          : 'Review Trade',
+                  _isCompleted
+                      ? 'Trade successful'
+                      : _isProcessing
+                          ? 'Processing…'
+                          : 'Confirm trade',
                   style: GoogleFonts.inter(
-                    color: Colors.white,
+                    color: InvestTradingUi.textPrimary,
                     fontSize: 20.sp,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.3,
                   ),
                 ),
                 if (!_isCompleted)
                   Text(
-                    _isProcessing 
-                        ? 'Please wait while we process your trade'
-                        : 'Confirm your trade details',
-                    style: GoogleFonts.inter(
-                      color: Colors.grey[400],
-                      fontSize: 12.sp,
-                    ),
+                    _isProcessing
+                        ? 'Hang tight — we’re executing your order'
+                        : 'Check amounts and fees before you confirm',
+                    style: InvestTradingUi.labelMuted(),
                   ),
               ],
             ),
@@ -338,12 +335,15 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
                   height: 80.h,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [Colors.blue, Colors.purple],
+                      colors: [
+                        _hubAccent,
+                        _hubAccent.withValues(alpha: 0.55),
+                      ],
                     ),
                     borderRadius: BorderRadius.circular(40.r),
                   ),
                   child: Icon(
-                    Icons.trending_up,
+                    Icons.show_chart_rounded,
                     color: Colors.white,
                     size: 40.sp,
                   ),
@@ -353,20 +353,21 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
           ),
           SizedBox(height: 32.h),
           Text(
-            'Processing Your Trade',
+            'Processing your trade',
             style: GoogleFonts.inter(
-              color: Colors.white,
+              color: InvestTradingUi.textPrimary,
               fontSize: 24.sp,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w800,
             ),
           ),
           SizedBox(height: 16.h),
           Text(
-            'Please wait while we execute your $_tradeType order\nfor ${_selectedStock?.symbol ?? 'stock'}',
+            'Executing your $_tradeType order for ${_selectedStock?.symbol ?? 'this instrument'}',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
-              color: Colors.grey[400],
-              fontSize: 16.sp,
+              color: InvestTradingUi.textSecondary,
+              fontSize: 15.sp,
+              height: 1.4,
             ),
           ),
           SizedBox(height: 32.h),
@@ -379,7 +380,7 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
             ),
             child: LinearProgressIndicator(
               backgroundColor: Colors.transparent,
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+              valueColor: AlwaysStoppedAnimation<Color>(_hubAccent),
               borderRadius: BorderRadius.circular(2.r),
             ),
           ),
@@ -398,33 +399,36 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
             width: 100.w,
             height: 100.h,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.green, Colors.teal],
+              color: InvestTradingUi.buy.withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: InvestTradingUi.buy.withValues(alpha: 0.55),
+                width: 2,
               ),
-              borderRadius: BorderRadius.circular(50.r),
             ),
             child: Icon(
-              Icons.check,
-              color: Colors.white,
+              Icons.check_rounded,
+              color: InvestTradingUi.buy,
               size: 50.sp,
             ),
           ),
           SizedBox(height: 32.h),
           Text(
-            'Trade Executed Successfully!',
+            'Order executed',
             style: GoogleFonts.inter(
-              color: Colors.white,
+              color: InvestTradingUi.textPrimary,
               fontSize: 24.sp,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w800,
             ),
           ),
           SizedBox(height: 16.h),
           Text(
-            'Your $_tradeType order for $_shares shares of ${_selectedStock?.symbol ?? 'stock'} has been completed.',
+            'Your $_tradeType for $_shares shares of ${_selectedStock?.symbol ?? 'stock'} is complete.',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
-              color: Colors.grey[400],
-              fontSize: 16.sp,
+              color: InvestTradingUi.textSecondary,
+              fontSize: 15.sp,
+              height: 1.4,
             ),
           ),
           SizedBox(height: 32.h),
@@ -433,44 +437,44 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
           Row(
             children: [
               Expanded(
-                child: ElevatedButton(
+                child: OutlinedButton(
                   onPressed: _viewReceipt,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey[800],
-                    foregroundColor: Colors.white,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: InvestTradingUi.textPrimary,
+                    side: BorderSide(
+                      color: Colors.white.withValues(alpha: 0.2),
+                    ),
                     padding: EdgeInsets.symmetric(vertical: 16.h),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
+                      borderRadius: BorderRadius.circular(14.r),
                     ),
-                    elevation: 0,
                   ),
                   child: Text(
-                    'View Receipt',
+                    'Receipt',
                     style: GoogleFonts.inter(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
               ),
               SizedBox(width: 16.w),
               Expanded(
-                child: ElevatedButton(
+                child: FilledButton(
                   onPressed: _goToHome,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: _hubAccent,
                     foregroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(vertical: 16.h),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
+                      borderRadius: BorderRadius.circular(14.r),
                     ),
-                    elevation: 0,
                   ),
                   child: Text(
                     'Done',
                     style: GoogleFonts.inter(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
@@ -485,34 +489,16 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
   Widget _buildTradeDetailsCard() {
     return Container(
       padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF2A2A5E),
-            const Color(0xFF1A1A3E),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(20.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
-      ),
+      decoration: InvestTradingUi.statementCardDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Trade Details',
+            'Trade details',
             style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
+              color: InvestTradingUi.textPrimary,
+              fontSize: 17.sp,
+              fontWeight: FontWeight.w700,
             ),
           ),
           SizedBox(height: 16.h),
@@ -522,16 +508,19 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
                 width: 50.w,
                 height: 50.h,
                 decoration: BoxDecoration(
-                  color: Colors.blue.withValues(alpha: 0.2),
+                  color: _hubAccent.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(
+                    color: _hubAccent.withValues(alpha: 0.35),
+                  ),
                 ),
                 child: Center(
                   child: Text(
                     _selectedStock?.symbol.substring(0, 2) ?? 'ST',
                     style: GoogleFonts.inter(
-                      color: Colors.blue,
+                      color: _hubAccent,
                       fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
@@ -544,17 +533,14 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
                     Text(
                       _selectedStock?.symbol ?? 'Stock',
                       style: GoogleFonts.inter(
-                        color: Colors.white,
+                        color: InvestTradingUi.textPrimary,
                         fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     Text(
                       _selectedStock?.name ?? 'Stock Name',
-                      style: GoogleFonts.inter(
-                        color: Colors.grey[400],
-                        fontSize: 12.sp,
-                      ),
+                      style: InvestTradingUi.labelMuted(),
                     ),
                   ],
                 ),
@@ -563,19 +549,20 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    _selectedStock != null ? CurrencySymbols.formatAmountWithCurrency(_selectedStock!.currentPrice, _selectedStock!.currency) : '0.00',
+                    _selectedStock != null
+                        ? CurrencySymbols.formatAmountWithCurrency(
+                            _selectedStock!.currentPrice,
+                            _selectedStock!.currency)
+                        : '—',
                     style: GoogleFonts.inter(
-                      color: Colors.white,
+                      color: InvestTradingUi.textPrimary,
                       fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   Text(
-                    'Current Price',
-                    style: GoogleFonts.inter(
-                      color: Colors.grey[400],
-                      fontSize: 10.sp,
-                    ),
+                    'Last price',
+                    style: InvestTradingUi.labelMuted().copyWith(fontSize: 11.sp),
                   ),
                 ],
               ),
@@ -594,27 +581,18 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
   Widget _buildPaymentDetailsCard() {
     return Container(
       padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: Colors.grey[900],
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+      decoration: InvestTradingUi.cardDecoration(
+        color: InvestTradingUi.surfaceElevated,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Payment Method',
+            'Payment',
             style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
+              color: InvestTradingUi.textPrimary,
+              fontSize: 17.sp,
+              fontWeight: FontWeight.w700,
             ),
           ),
           SizedBox(height: 16.h),
@@ -641,17 +619,14 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
                     Text(
                       _getPaymentMethodName(),
                       style: GoogleFonts.inter(
-                        color: Colors.white,
+                        color: InvestTradingUi.textPrimary,
                         fontSize: 14.sp,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     Text(
                       _getPaymentMethodDetails(),
-                      style: GoogleFonts.inter(
-                        color: Colors.grey[400],
-                        fontSize: 12.sp,
-                      ),
+                      style: InvestTradingUi.labelMuted(),
                     ),
                   ],
                 ),
@@ -666,33 +641,22 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
   Widget _buildSummaryCard() {
     return Container(
       padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: Colors.grey[900],
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
-      ),
+      decoration: InvestTradingUi.statementCardDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Order Summary',
+            'Order summary',
             style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
+              color: InvestTradingUi.textPrimary,
+              fontSize: 17.sp,
+              fontWeight: FontWeight.w700,
             ),
           ),
           SizedBox(height: 16.h),
           _buildSummaryRow('Trade Amount', CurrencySymbols.formatAmountWithCurrency(_amount, _selectedStock?.currency ?? 'USD')),
           _buildSummaryRow('Trading Fee', CurrencySymbols.formatAmountWithCurrency(_fees, _selectedStock?.currency ?? 'USD')),
-          Divider(color: Colors.grey[700], height: 24.h),
+          Divider(color: InvestTradingUi.border, height: 24.h),
           _buildSummaryRow(
             'Total ${_tradeType == 'buy' ? 'Cost' : 'Proceeds'}',
             CurrencySymbols.formatAmountWithCurrency(_estimatedTotal, _selectedStock?.currency ?? 'USD'),
@@ -707,23 +671,11 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.green.withValues(alpha: 0.2),
-            Colors.teal.withValues(alpha: 0.2),
-          ],
-        ),
+        color: InvestTradingUi.surfaceElevated,
         borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+        border: Border.all(
+          color: InvestTradingUi.buy.withValues(alpha: 0.35),
+        ),
       ),
       child: Column(
         children: [
@@ -749,16 +701,16 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
           Text(
             label,
             style: GoogleFonts.inter(
-              color: Colors.grey[400],
+              color: InvestTradingUi.textSecondary,
               fontSize: 14.sp,
             ),
           ),
           Text(
             value,
             style: GoogleFonts.inter(
-              color: Colors.white,
+              color: InvestTradingUi.textPrimary,
               fontSize: 14.sp,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -775,17 +727,19 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
           Text(
             label,
             style: GoogleFonts.inter(
-              color: isTotal ? Colors.white : Colors.grey[400],
+              color: isTotal
+                  ? InvestTradingUi.textPrimary
+                  : InvestTradingUi.textSecondary,
               fontSize: isTotal ? 16.sp : 14.sp,
-              fontWeight: isTotal ? FontWeight.w600 : FontWeight.w400,
+              fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
             ),
           ),
           Text(
             value,
             style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: isTotal ? 16.sp : 14.sp,
-              fontWeight: isTotal ? FontWeight.w600 : FontWeight.w500,
+              color: InvestTradingUi.textPrimary,
+              fontSize: isTotal ? 17.sp : 14.sp,
+              fontWeight: isTotal ? FontWeight.w800 : FontWeight.w600,
             ),
           ),
         ],
@@ -794,24 +748,26 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
   }
 
   Widget _buildConfirmButton() {
+    final isBuy = _tradeType == 'buy';
+    final bg = isBuy ? InvestTradingUi.buy : InvestTradingUi.sell;
+    final fg = isBuy ? Colors.black : Colors.white;
     return SizedBox(
       width: double.infinity,
-      child: ElevatedButton(
+      child: FilledButton(
         onPressed: _processTrade,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue,
-          foregroundColor: Colors.white,
+        style: FilledButton.styleFrom(
+          backgroundColor: bg,
+          foregroundColor: fg,
           padding: EdgeInsets.symmetric(vertical: 16.h),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.r),
+            borderRadius: BorderRadius.circular(14.r),
           ),
-          elevation: 0,
         ),
         child: Text(
-          'Confirm Trade',
+          isBuy ? 'Confirm buy' : 'Confirm sell',
           style: GoogleFonts.inter(
             fontSize: 16.sp,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w800,
           ),
         ),
       ),
@@ -821,13 +777,13 @@ class _StockTradeReviewScreenState extends State<StockTradeReviewScreen>
   Color _getPaymentMethodColor() {
     switch (_paymentMethod) {
       case 'account':
-        return Colors.blue;
+        return _hubAccent;
       case 'crypto':
-        return Colors.orange;
+        return const Color(0xFFFB923C);
       case 'international':
-        return Colors.green;
+        return InvestTradingUi.buy;
       default:
-        return Colors.blue;
+        return _hubAccent;
     }
   }
 

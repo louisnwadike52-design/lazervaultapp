@@ -1,14 +1,13 @@
-// This is a generated file - do not edit.
 //
-// Generated from id_pay.proto.
-
-// @dart = 3.3
+//  Generated code. Do not modify.
+//  source: id_pay.proto
+//
+// @dart = 2.12
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: curly_braces_in_flow_control_structures
-// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
-// ignore_for_file: non_constant_identifier_names, unused_import
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -71,62 +70,21 @@ const IDPay$json = {
     {'1': 'creator_id', '3': 3, '4': 1, '5': 9, '10': 'creatorId'},
     {'1': 'creator_name', '3': 4, '4': 1, '5': 9, '10': 'creatorName'},
     {'1': 'creator_username', '3': 5, '4': 1, '5': 9, '10': 'creatorUsername'},
-    {
-      '1': 'type',
-      '3': 6,
-      '4': 1,
-      '5': 14,
-      '6': '.id_pay.IDPayType',
-      '10': 'type'
-    },
-    {
-      '1': 'amount_mode',
-      '3': 7,
-      '4': 1,
-      '5': 14,
-      '6': '.id_pay.IDPayAmountMode',
-      '10': 'amountMode'
-    },
+    {'1': 'type', '3': 6, '4': 1, '5': 14, '6': '.id_pay.IDPayType', '10': 'type'},
+    {'1': 'amount_mode', '3': 7, '4': 1, '5': 14, '6': '.id_pay.IDPayAmountMode', '10': 'amountMode'},
     {'1': 'amount', '3': 8, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'min_amount', '3': 9, '4': 1, '5': 1, '10': 'minAmount'},
     {'1': 'max_amount', '3': 10, '4': 1, '5': 1, '10': 'maxAmount'},
     {'1': 'currency', '3': 11, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'description', '3': 12, '4': 1, '5': 9, '10': 'description'},
-    {
-      '1': 'status',
-      '3': 13,
-      '4': 1,
-      '5': 14,
-      '6': '.id_pay.IDPayStatus',
-      '10': 'status'
-    },
-    {
-      '1': 'expires_at',
-      '3': 14,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'expiresAt'
-    },
-    {
-      '1': 'created_at',
-      '3': 15,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'createdAt'
-    },
+    {'1': 'status', '3': 13, '4': 1, '5': 14, '6': '.id_pay.IDPayStatus', '10': 'status'},
+    {'1': 'expires_at', '3': 14, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'expiresAt'},
+    {'1': 'created_at', '3': 15, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
     {'1': 'total_received', '3': 16, '4': 1, '5': 1, '10': 'totalReceived'},
     {'1': 'payment_count', '3': 17, '4': 1, '5': 5, '10': 'paymentCount'},
     {'1': 'never_expires', '3': 18, '4': 1, '5': 8, '10': 'neverExpires'},
     {'1': 'organization_id', '3': 19, '4': 1, '5': 9, '10': 'organizationId'},
-    {
-      '1': 'organization_name',
-      '3': 20,
-      '4': 1,
-      '5': 9,
-      '10': 'organizationName'
-    },
+    {'1': 'organization_name', '3': 20, '4': 1, '5': 9, '10': 'organizationName'},
   ],
 };
 
@@ -162,14 +120,7 @@ const IDPayTransaction$json = {
     {'1': 'currency', '3': 9, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'reference', '3': 10, '4': 1, '5': 9, '10': 'reference'},
     {'1': 'status', '3': 11, '4': 1, '5': 9, '10': 'status'},
-    {
-      '1': 'created_at',
-      '3': 12,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'createdAt'
-    },
+    {'1': 'created_at', '3': 12, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
   ],
 };
 
@@ -195,36 +146,10 @@ const IDPayOrganization$json = {
     {'1': 'logo_url', '3': 5, '4': 1, '5': 9, '10': 'logoUrl'},
     {'1': 'account_id', '3': 6, '4': 1, '5': 9, '10': 'accountId'},
     {'1': 'total_received', '3': 7, '4': 1, '5': 1, '10': 'totalReceived'},
-    {
-      '1': 'total_payment_count',
-      '3': 8,
-      '4': 1,
-      '5': 5,
-      '10': 'totalPaymentCount'
-    },
-    {
-      '1': 'active_id_pay_count',
-      '3': 9,
-      '4': 1,
-      '5': 5,
-      '10': 'activeIdPayCount'
-    },
-    {
-      '1': 'created_at',
-      '3': 10,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'createdAt'
-    },
-    {
-      '1': 'updated_at',
-      '3': 11,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'updatedAt'
-    },
+    {'1': 'total_payment_count', '3': 8, '4': 1, '5': 5, '10': 'totalPaymentCount'},
+    {'1': 'active_id_pay_count', '3': 9, '4': 1, '5': 5, '10': 'activeIdPayCount'},
+    {'1': 'created_at', '3': 10, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    {'1': 'updated_at', '3': 11, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
   ],
 };
 
@@ -243,35 +168,15 @@ final $typed_data.Uint8List iDPayOrganizationDescriptor = $convert.base64Decode(
 const CreateIDPayRequest$json = {
   '1': 'CreateIDPayRequest',
   '2': [
-    {
-      '1': 'type',
-      '3': 1,
-      '4': 1,
-      '5': 14,
-      '6': '.id_pay.IDPayType',
-      '10': 'type'
-    },
-    {
-      '1': 'amount_mode',
-      '3': 2,
-      '4': 1,
-      '5': 14,
-      '6': '.id_pay.IDPayAmountMode',
-      '10': 'amountMode'
-    },
+    {'1': 'type', '3': 1, '4': 1, '5': 14, '6': '.id_pay.IDPayType', '10': 'type'},
+    {'1': 'amount_mode', '3': 2, '4': 1, '5': 14, '6': '.id_pay.IDPayAmountMode', '10': 'amountMode'},
     {'1': 'amount', '3': 3, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'currency', '3': 4, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'min_amount', '3': 5, '4': 1, '5': 1, '10': 'minAmount'},
     {'1': 'max_amount', '3': 6, '4': 1, '5': 1, '10': 'maxAmount'},
     {'1': 'description', '3': 7, '4': 1, '5': 9, '10': 'description'},
     {'1': 'validity_minutes', '3': 8, '4': 1, '5': 5, '10': 'validityMinutes'},
-    {
-      '1': 'recipient_account_id',
-      '3': 9,
-      '4': 1,
-      '5': 9,
-      '10': 'recipientAccountId'
-    },
+    {'1': 'recipient_account_id', '3': 9, '4': 1, '5': 9, '10': 'recipientAccountId'},
     {'1': 'never_expires', '3': 10, '4': 1, '5': 8, '10': 'neverExpires'},
     {'1': 'organization_id', '3': 11, '4': 1, '5': 9, '10': 'organizationId'},
   ],
@@ -292,14 +197,7 @@ final $typed_data.Uint8List createIDPayRequestDescriptor = $convert.base64Decode
 const CreateIDPayResponse$json = {
   '1': 'CreateIDPayResponse',
   '2': [
-    {
-      '1': 'id_pay',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.id_pay.IDPay',
-      '10': 'idPay'
-    },
+    {'1': 'id_pay', '3': 1, '4': 1, '5': 11, '6': '.id_pay.IDPay', '10': 'idPay'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
   ],
 };
@@ -318,30 +216,15 @@ const LookupIDPayRequest$json = {
 };
 
 /// Descriptor for `LookupIDPayRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List lookupIDPayRequestDescriptor =
-    $convert.base64Decode(
-        'ChJMb29rdXBJRFBheVJlcXVlc3QSFQoGcGF5X2lkGAEgASgJUgVwYXlJZA==');
+final $typed_data.Uint8List lookupIDPayRequestDescriptor = $convert.base64Decode(
+    'ChJMb29rdXBJRFBheVJlcXVlc3QSFQoGcGF5X2lkGAEgASgJUgVwYXlJZA==');
 
 @$core.Deprecated('Use lookupIDPayResponseDescriptor instead')
 const LookupIDPayResponse$json = {
   '1': 'LookupIDPayResponse',
   '2': [
-    {
-      '1': 'id_pay',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.id_pay.IDPay',
-      '10': 'idPay'
-    },
-    {
-      '1': 'organization',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.id_pay.IDPayOrganization',
-      '10': 'organization'
-    },
+    {'1': 'id_pay', '3': 1, '4': 1, '5': 11, '6': '.id_pay.IDPay', '10': 'idPay'},
+    {'1': 'organization', '3': 2, '4': 1, '5': 11, '6': '.id_pay.IDPayOrganization', '10': 'organization'},
   ],
 };
 
@@ -374,14 +257,7 @@ final $typed_data.Uint8List payIDPayRequestDescriptor = $convert.base64Decode(
 const PayIDPayResponse$json = {
   '1': 'PayIDPayResponse',
   '2': [
-    {
-      '1': 'transaction',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.id_pay.IDPayTransaction',
-      '10': 'transaction'
-    },
+    {'1': 'transaction', '3': 1, '4': 1, '5': 11, '6': '.id_pay.IDPayTransaction', '10': 'transaction'},
     {'1': 'new_balance', '3': 2, '4': 1, '5': 1, '10': 'newBalance'},
     {'1': 'message', '3': 3, '4': 1, '5': 9, '10': 'message'},
   ],
@@ -399,14 +275,7 @@ const GetMyIDPaysRequest$json = {
   '2': [
     {'1': 'limit', '3': 1, '4': 1, '5': 5, '10': 'limit'},
     {'1': 'offset', '3': 2, '4': 1, '5': 5, '10': 'offset'},
-    {
-      '1': 'status_filter',
-      '3': 3,
-      '4': 1,
-      '5': 14,
-      '6': '.id_pay.IDPayStatus',
-      '10': 'statusFilter'
-    },
+    {'1': 'status_filter', '3': 3, '4': 1, '5': 14, '6': '.id_pay.IDPayStatus', '10': 'statusFilter'},
   ],
 };
 
@@ -420,14 +289,7 @@ final $typed_data.Uint8List getMyIDPaysRequestDescriptor = $convert.base64Decode
 const GetMyIDPaysResponse$json = {
   '1': 'GetMyIDPaysResponse',
   '2': [
-    {
-      '1': 'id_pays',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.id_pay.IDPay',
-      '10': 'idPays'
-    },
+    {'1': 'id_pays', '3': 1, '4': 3, '5': 11, '6': '.id_pay.IDPay', '10': 'idPays'},
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
   ],
 };
@@ -448,33 +310,24 @@ const GetIDPayTransactionsRequest$json = {
 };
 
 /// Descriptor for `GetIDPayTransactionsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getIDPayTransactionsRequestDescriptor =
-    $convert.base64Decode(
-        'ChtHZXRJRFBheVRyYW5zYWN0aW9uc1JlcXVlc3QSFQoGcGF5X2lkGAEgASgJUgVwYXlJZBIUCg'
-        'VsaW1pdBgCIAEoBVIFbGltaXQSFgoGb2Zmc2V0GAMgASgFUgZvZmZzZXQ=');
+final $typed_data.Uint8List getIDPayTransactionsRequestDescriptor = $convert.base64Decode(
+    'ChtHZXRJRFBheVRyYW5zYWN0aW9uc1JlcXVlc3QSFQoGcGF5X2lkGAEgASgJUgVwYXlJZBIUCg'
+    'VsaW1pdBgCIAEoBVIFbGltaXQSFgoGb2Zmc2V0GAMgASgFUgZvZmZzZXQ=');
 
 @$core.Deprecated('Use getIDPayTransactionsResponseDescriptor instead')
 const GetIDPayTransactionsResponse$json = {
   '1': 'GetIDPayTransactionsResponse',
   '2': [
-    {
-      '1': 'transactions',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.id_pay.IDPayTransaction',
-      '10': 'transactions'
-    },
+    {'1': 'transactions', '3': 1, '4': 3, '5': 11, '6': '.id_pay.IDPayTransaction', '10': 'transactions'},
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
   ],
 };
 
 /// Descriptor for `GetIDPayTransactionsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getIDPayTransactionsResponseDescriptor =
-    $convert.base64Decode(
-        'ChxHZXRJRFBheVRyYW5zYWN0aW9uc1Jlc3BvbnNlEjwKDHRyYW5zYWN0aW9ucxgBIAMoCzIYLm'
-        'lkX3BheS5JRFBheVRyYW5zYWN0aW9uUgx0cmFuc2FjdGlvbnMSFAoFdG90YWwYAiABKAVSBXRv'
-        'dGFs');
+final $typed_data.Uint8List getIDPayTransactionsResponseDescriptor = $convert.base64Decode(
+    'ChxHZXRJRFBheVRyYW5zYWN0aW9uc1Jlc3BvbnNlEjwKDHRyYW5zYWN0aW9ucxgBIAMoCzIYLm'
+    'lkX3BheS5JRFBheVRyYW5zYWN0aW9uUgx0cmFuc2FjdGlvbnMSFAoFdG90YWwYAiABKAVSBXRv'
+    'dGFs');
 
 @$core.Deprecated('Use cancelIDPayRequestDescriptor instead')
 const CancelIDPayRequest$json = {
@@ -485,8 +338,8 @@ const CancelIDPayRequest$json = {
 };
 
 /// Descriptor for `CancelIDPayRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List cancelIDPayRequestDescriptor =
-    $convert.base64Decode('ChJDYW5jZWxJRFBheVJlcXVlc3QSDgoCaWQYASABKAlSAmlk');
+final $typed_data.Uint8List cancelIDPayRequestDescriptor = $convert.base64Decode(
+    'ChJDYW5jZWxJRFBheVJlcXVlc3QSDgoCaWQYASABKAlSAmlk');
 
 @$core.Deprecated('Use cancelIDPayResponseDescriptor instead')
 const CancelIDPayResponse$json = {
@@ -497,9 +350,8 @@ const CancelIDPayResponse$json = {
 };
 
 /// Descriptor for `CancelIDPayResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List cancelIDPayResponseDescriptor =
-    $convert.base64Decode(
-        'ChNDYW5jZWxJRFBheVJlc3BvbnNlEhgKB21lc3NhZ2UYASABKAlSB21lc3NhZ2U=');
+final $typed_data.Uint8List cancelIDPayResponseDescriptor = $convert.base64Decode(
+    'ChNDYW5jZWxJRFBheVJlc3BvbnNlEhgKB21lc3NhZ2UYASABKAlSB21lc3NhZ2U=');
 
 @$core.Deprecated('Use getIDPayDetailsRequestDescriptor instead')
 const GetIDPayDetailsRequest$json = {
@@ -510,29 +362,21 @@ const GetIDPayDetailsRequest$json = {
 };
 
 /// Descriptor for `GetIDPayDetailsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getIDPayDetailsRequestDescriptor = $convert
-    .base64Decode('ChZHZXRJRFBheURldGFpbHNSZXF1ZXN0Eg4KAmlkGAEgASgJUgJpZA==');
+final $typed_data.Uint8List getIDPayDetailsRequestDescriptor = $convert.base64Decode(
+    'ChZHZXRJRFBheURldGFpbHNSZXF1ZXN0Eg4KAmlkGAEgASgJUgJpZA==');
 
 @$core.Deprecated('Use getIDPayDetailsResponseDescriptor instead')
 const GetIDPayDetailsResponse$json = {
   '1': 'GetIDPayDetailsResponse',
   '2': [
-    {
-      '1': 'id_pay',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.id_pay.IDPay',
-      '10': 'idPay'
-    },
+    {'1': 'id_pay', '3': 1, '4': 1, '5': 11, '6': '.id_pay.IDPay', '10': 'idPay'},
   ],
 };
 
 /// Descriptor for `GetIDPayDetailsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getIDPayDetailsResponseDescriptor =
-    $convert.base64Decode(
-        'ChdHZXRJRFBheURldGFpbHNSZXNwb25zZRIkCgZpZF9wYXkYASABKAsyDS5pZF9wYXkuSURQYX'
-        'lSBWlkUGF5');
+final $typed_data.Uint8List getIDPayDetailsResponseDescriptor = $convert.base64Decode(
+    'ChdHZXRJRFBheURldGFpbHNSZXNwb25zZRIkCgZpZF9wYXkYASABKAsyDS5pZF9wYXkuSURQYX'
+    'lSBWlkUGF5');
 
 @$core.Deprecated('Use createOrganizationRequestDescriptor instead')
 const CreateOrganizationRequest$json = {
@@ -555,24 +399,16 @@ final $typed_data.Uint8List createOrganizationRequestDescriptor = $convert.base6
 const CreateOrganizationResponse$json = {
   '1': 'CreateOrganizationResponse',
   '2': [
-    {
-      '1': 'organization',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.id_pay.IDPayOrganization',
-      '10': 'organization'
-    },
+    {'1': 'organization', '3': 1, '4': 1, '5': 11, '6': '.id_pay.IDPayOrganization', '10': 'organization'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
   ],
 };
 
 /// Descriptor for `CreateOrganizationResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List createOrganizationResponseDescriptor =
-    $convert.base64Decode(
-        'ChpDcmVhdGVPcmdhbml6YXRpb25SZXNwb25zZRI9Cgxvcmdhbml6YXRpb24YASABKAsyGS5pZF'
-        '9wYXkuSURQYXlPcmdhbml6YXRpb25SDG9yZ2FuaXphdGlvbhIYCgdtZXNzYWdlGAIgASgJUgdt'
-        'ZXNzYWdl');
+final $typed_data.Uint8List createOrganizationResponseDescriptor = $convert.base64Decode(
+    'ChpDcmVhdGVPcmdhbml6YXRpb25SZXNwb25zZRI9Cgxvcmdhbml6YXRpb24YASABKAsyGS5pZF'
+    '9wYXkuSURQYXlPcmdhbml6YXRpb25SDG9yZ2FuaXphdGlvbhIYCgdtZXNzYWdlGAIgASgJUgdt'
+    'ZXNzYWdl');
 
 @$core.Deprecated('Use getMyOrganizationsRequestDescriptor instead')
 const GetMyOrganizationsRequest$json = {
@@ -585,33 +421,24 @@ const GetMyOrganizationsRequest$json = {
 };
 
 /// Descriptor for `GetMyOrganizationsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getMyOrganizationsRequestDescriptor =
-    $convert.base64Decode(
-        'ChlHZXRNeU9yZ2FuaXphdGlvbnNSZXF1ZXN0Eh0KCmFjY291bnRfaWQYASABKAlSCWFjY291bn'
-        'RJZBIUCgVsaW1pdBgCIAEoBVIFbGltaXQSFgoGb2Zmc2V0GAMgASgFUgZvZmZzZXQ=');
+final $typed_data.Uint8List getMyOrganizationsRequestDescriptor = $convert.base64Decode(
+    'ChlHZXRNeU9yZ2FuaXphdGlvbnNSZXF1ZXN0Eh0KCmFjY291bnRfaWQYASABKAlSCWFjY291bn'
+    'RJZBIUCgVsaW1pdBgCIAEoBVIFbGltaXQSFgoGb2Zmc2V0GAMgASgFUgZvZmZzZXQ=');
 
 @$core.Deprecated('Use getMyOrganizationsResponseDescriptor instead')
 const GetMyOrganizationsResponse$json = {
   '1': 'GetMyOrganizationsResponse',
   '2': [
-    {
-      '1': 'organizations',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.id_pay.IDPayOrganization',
-      '10': 'organizations'
-    },
+    {'1': 'organizations', '3': 1, '4': 3, '5': 11, '6': '.id_pay.IDPayOrganization', '10': 'organizations'},
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
   ],
 };
 
 /// Descriptor for `GetMyOrganizationsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getMyOrganizationsResponseDescriptor =
-    $convert.base64Decode(
-        'ChpHZXRNeU9yZ2FuaXphdGlvbnNSZXNwb25zZRI/Cg1vcmdhbml6YXRpb25zGAEgAygLMhkuaW'
-        'RfcGF5LklEUGF5T3JnYW5pemF0aW9uUg1vcmdhbml6YXRpb25zEhQKBXRvdGFsGAIgASgFUgV0'
-        'b3RhbA==');
+final $typed_data.Uint8List getMyOrganizationsResponseDescriptor = $convert.base64Decode(
+    'ChpHZXRNeU9yZ2FuaXphdGlvbnNSZXNwb25zZRI/Cg1vcmdhbml6YXRpb25zGAEgAygLMhkuaW'
+    'RfcGF5LklEUGF5T3JnYW5pemF0aW9uUg1vcmdhbml6YXRpb25zEhQKBXRvdGFsGAIgASgFUgV0'
+    'b3RhbA==');
 
 @$core.Deprecated('Use updateOrganizationRequestDescriptor instead')
 const UpdateOrganizationRequest$json = {
@@ -634,22 +461,14 @@ final $typed_data.Uint8List updateOrganizationRequestDescriptor = $convert.base6
 const UpdateOrganizationResponse$json = {
   '1': 'UpdateOrganizationResponse',
   '2': [
-    {
-      '1': 'organization',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.id_pay.IDPayOrganization',
-      '10': 'organization'
-    },
+    {'1': 'organization', '3': 1, '4': 1, '5': 11, '6': '.id_pay.IDPayOrganization', '10': 'organization'},
   ],
 };
 
 /// Descriptor for `UpdateOrganizationResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateOrganizationResponseDescriptor =
-    $convert.base64Decode(
-        'ChpVcGRhdGVPcmdhbml6YXRpb25SZXNwb25zZRI9Cgxvcmdhbml6YXRpb24YASABKAsyGS5pZF'
-        '9wYXkuSURQYXlPcmdhbml6YXRpb25SDG9yZ2FuaXphdGlvbg==');
+final $typed_data.Uint8List updateOrganizationResponseDescriptor = $convert.base64Decode(
+    'ChpVcGRhdGVPcmdhbml6YXRpb25SZXNwb25zZRI9Cgxvcmdhbml6YXRpb24YASABKAsyGS5pZF'
+    '9wYXkuSURQYXlPcmdhbml6YXRpb25SDG9yZ2FuaXphdGlvbg==');
 
 @$core.Deprecated('Use deleteOrganizationRequestDescriptor instead')
 const DeleteOrganizationRequest$json = {
@@ -660,9 +479,8 @@ const DeleteOrganizationRequest$json = {
 };
 
 /// Descriptor for `DeleteOrganizationRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deleteOrganizationRequestDescriptor =
-    $convert.base64Decode(
-        'ChlEZWxldGVPcmdhbml6YXRpb25SZXF1ZXN0Eg4KAmlkGAEgASgJUgJpZA==');
+final $typed_data.Uint8List deleteOrganizationRequestDescriptor = $convert.base64Decode(
+    'ChlEZWxldGVPcmdhbml6YXRpb25SZXF1ZXN0Eg4KAmlkGAEgASgJUgJpZA==');
 
 @$core.Deprecated('Use deleteOrganizationResponseDescriptor instead')
 const DeleteOrganizationResponse$json = {
@@ -673,9 +491,8 @@ const DeleteOrganizationResponse$json = {
 };
 
 /// Descriptor for `DeleteOrganizationResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deleteOrganizationResponseDescriptor =
-    $convert.base64Decode(
-        'ChpEZWxldGVPcmdhbml6YXRpb25SZXNwb25zZRIYCgdtZXNzYWdlGAEgASgJUgdtZXNzYWdl');
+final $typed_data.Uint8List deleteOrganizationResponseDescriptor = $convert.base64Decode(
+    'ChpEZWxldGVPcmdhbml6YXRpb25SZXNwb25zZRIYCgdtZXNzYWdlGAEgASgJUgdtZXNzYWdl');
 
 @$core.Deprecated('Use getOrganizationDetailsRequestDescriptor instead')
 const GetOrganizationDetailsRequest$json = {
@@ -686,38 +503,23 @@ const GetOrganizationDetailsRequest$json = {
 };
 
 /// Descriptor for `GetOrganizationDetailsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getOrganizationDetailsRequestDescriptor =
-    $convert.base64Decode(
-        'Ch1HZXRPcmdhbml6YXRpb25EZXRhaWxzUmVxdWVzdBIOCgJpZBgBIAEoCVICaWQ=');
+final $typed_data.Uint8List getOrganizationDetailsRequestDescriptor = $convert.base64Decode(
+    'Ch1HZXRPcmdhbml6YXRpb25EZXRhaWxzUmVxdWVzdBIOCgJpZBgBIAEoCVICaWQ=');
 
 @$core.Deprecated('Use getOrganizationDetailsResponseDescriptor instead')
 const GetOrganizationDetailsResponse$json = {
   '1': 'GetOrganizationDetailsResponse',
   '2': [
-    {
-      '1': 'organization',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.id_pay.IDPayOrganization',
-      '10': 'organization'
-    },
-    {
-      '1': 'id_pays',
-      '3': 2,
-      '4': 3,
-      '5': 11,
-      '6': '.id_pay.IDPay',
-      '10': 'idPays'
-    },
+    {'1': 'organization', '3': 1, '4': 1, '5': 11, '6': '.id_pay.IDPayOrganization', '10': 'organization'},
+    {'1': 'id_pays', '3': 2, '4': 3, '5': 11, '6': '.id_pay.IDPay', '10': 'idPays'},
     {'1': 'total_paid_out', '3': 3, '4': 1, '5': 1, '10': 'totalPaidOut'},
   ],
 };
 
 /// Descriptor for `GetOrganizationDetailsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getOrganizationDetailsResponseDescriptor =
-    $convert.base64Decode(
-        'Ch5HZXRPcmdhbml6YXRpb25EZXRhaWxzUmVzcG9uc2USPQoMb3JnYW5pemF0aW9uGAEgASgLMh'
-        'kuaWRfcGF5LklEUGF5T3JnYW5pemF0aW9uUgxvcmdhbml6YXRpb24SJgoHaWRfcGF5cxgCIAMo'
-        'CzINLmlkX3BheS5JRFBheVIGaWRQYXlzEiQKDnRvdGFsX3BhaWRfb3V0GAMgASgBUgx0b3RhbF'
-        'BhaWRPdXQ=');
+final $typed_data.Uint8List getOrganizationDetailsResponseDescriptor = $convert.base64Decode(
+    'Ch5HZXRPcmdhbml6YXRpb25EZXRhaWxzUmVzcG9uc2USPQoMb3JnYW5pemF0aW9uGAEgASgLMh'
+    'kuaWRfcGF5LklEUGF5T3JnYW5pemF0aW9uUgxvcmdhbml6YXRpb24SJgoHaWRfcGF5cxgCIAMo'
+    'CzINLmlkX3BheS5JRFBheVIGaWRQYXlzEiQKDnRvdGFsX3BhaWRfb3V0GAMgASgBUgx0b3RhbF'
+    'BhaWRPdXQ=');
+

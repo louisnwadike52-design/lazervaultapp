@@ -1,14 +1,13 @@
-// This is a generated file - do not edit.
 //
-// Generated from accounts.proto.
-
-// @dart = 3.3
+//  Generated code. Do not modify.
+//  source: accounts.proto
+//
+// @dart = 2.12
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: curly_braces_in_flow_control_structures
-// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
-// ignore_for_file: non_constant_identifier_names, unused_import
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -26,24 +25,12 @@ const Account$json = {
     {'1': 'currency', '3': 6, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'locale', '3': 7, '4': 1, '5': 9, '10': 'locale'},
     {'1': 'balance', '3': 8, '4': 1, '5': 1, '10': 'balance'},
-    {
-      '1': 'available_balance',
-      '3': 9,
-      '4': 1,
-      '5': 1,
-      '10': 'availableBalance'
-    },
+    {'1': 'available_balance', '3': 9, '4': 1, '5': 1, '10': 'availableBalance'},
     {'1': 'status', '3': 10, '4': 1, '5': 9, '10': 'status'},
     {'1': 'is_primary', '3': 11, '4': 1, '5': 8, '10': 'isPrimary'},
     {'1': 'bank_code', '3': 12, '4': 1, '5': 9, '10': 'bankCode'},
     {'1': 'branch_code', '3': 13, '4': 1, '5': 9, '10': 'branchCode'},
-    {
-      '1': 'freeze_reason_code',
-      '3': 14,
-      '4': 1,
-      '5': 5,
-      '10': 'freezeReasonCode'
-    },
+    {'1': 'freeze_reason_code', '3': 14, '4': 1, '5': 5, '10': 'freezeReasonCode'},
     {'1': 'freeze_reason', '3': 15, '4': 1, '5': 9, '10': 'freezeReason'},
     {'1': 'frozen_at', '3': 16, '4': 1, '5': 9, '10': 'frozenAt'},
     {'1': 'frozen_by', '3': 17, '4': 1, '5': 9, '10': 'frozenBy'},
@@ -55,13 +42,7 @@ const Account$json = {
     {'1': 'provider', '3': 23, '4': 1, '5': 9, '10': 'provider'},
     {'1': 'provider_ref', '3': 24, '4': 1, '5': 9, '10': 'providerRef'},
     {'1': 'bank_name', '3': 25, '4': 1, '5': 9, '10': 'bankName'},
-    {
-      '1': 'single_transaction_limit',
-      '3': 26,
-      '4': 1,
-      '5': 1,
-      '10': 'singleTransactionLimit'
-    },
+    {'1': 'single_transaction_limit', '3': 26, '4': 1, '5': 1, '10': 'singleTransactionLimit'},
     {'1': 'reserved_balance', '3': 27, '4': 1, '5': 1, '10': 'reservedBalance'},
     {'1': 'kyc_tier', '3': 28, '4': 1, '5': 5, '10': 'kycTier'},
   ],
@@ -95,23 +76,11 @@ const AccountSummary$json = {
     {'1': 'account_type', '3': 2, '4': 1, '5': 9, '10': 'accountType'},
     {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'balance', '3': 4, '4': 1, '5': 4, '10': 'balance'},
-    {
-      '1': 'masked_account_number',
-      '3': 5,
-      '4': 1,
-      '5': 9,
-      '10': 'maskedAccountNumber'
-    },
+    {'1': 'masked_account_number', '3': 5, '4': 1, '5': 9, '10': 'maskedAccountNumber'},
     {'1': 'status', '3': 6, '4': 1, '5': 9, '10': 'status'},
     {'1': 'uuid', '3': 7, '4': 1, '5': 9, '10': 'uuid'},
     {'1': 'account_number', '3': 8, '4': 1, '5': 9, '10': 'accountNumber'},
-    {
-      '1': 'available_balance',
-      '3': 9,
-      '4': 1,
-      '5': 4,
-      '10': 'availableBalance'
-    },
+    {'1': 'available_balance', '3': 9, '4': 1, '5': 4, '10': 'availableBalance'},
     {'1': 'reserved_balance', '3': 10, '4': 1, '5': 4, '10': 'reservedBalance'},
     {'1': 'account_name', '3': 11, '4': 1, '5': 9, '10': 'accountName'},
   ],
@@ -131,15 +100,7 @@ final $typed_data.Uint8List accountSummaryDescriptor = $convert.base64Decode(
 const GetUserAccountsRequest$json = {
   '1': 'GetUserAccountsRequest',
   '2': [
-    {
-      '1': 'target_user_id',
-      '3': 1,
-      '4': 1,
-      '5': 9,
-      '9': 0,
-      '10': 'targetUserId',
-      '17': true
-    },
+    {'1': 'target_user_id', '3': 1, '4': 1, '5': 9, '9': 0, '10': 'targetUserId', '17': true},
   ],
   '8': [
     {'1': '_target_user_id'},
@@ -147,31 +108,22 @@ const GetUserAccountsRequest$json = {
 };
 
 /// Descriptor for `GetUserAccountsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getUserAccountsRequestDescriptor =
-    $convert.base64Decode(
-        'ChZHZXRVc2VyQWNjb3VudHNSZXF1ZXN0EikKDnRhcmdldF91c2VyX2lkGAEgASgJSABSDHRhcm'
-        'dldFVzZXJJZIgBAUIRCg9fdGFyZ2V0X3VzZXJfaWQ=');
+final $typed_data.Uint8List getUserAccountsRequestDescriptor = $convert.base64Decode(
+    'ChZHZXRVc2VyQWNjb3VudHNSZXF1ZXN0EikKDnRhcmdldF91c2VyX2lkGAEgASgJSABSDHRhcm'
+    'dldFVzZXJJZIgBAUIRCg9fdGFyZ2V0X3VzZXJfaWQ=');
 
 @$core.Deprecated('Use getUserAccountsResponseDescriptor instead')
 const GetUserAccountsResponse$json = {
   '1': 'GetUserAccountsResponse',
   '2': [
-    {
-      '1': 'accounts',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.accounts.AccountSummary',
-      '10': 'accounts'
-    },
+    {'1': 'accounts', '3': 1, '4': 3, '5': 11, '6': '.accounts.AccountSummary', '10': 'accounts'},
   ],
 };
 
 /// Descriptor for `GetUserAccountsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getUserAccountsResponseDescriptor =
-    $convert.base64Decode(
-        'ChdHZXRVc2VyQWNjb3VudHNSZXNwb25zZRI0CghhY2NvdW50cxgBIAMoCzIYLmFjY291bnRzLk'
-        'FjY291bnRTdW1tYXJ5UghhY2NvdW50cw==');
+final $typed_data.Uint8List getUserAccountsResponseDescriptor = $convert.base64Decode(
+    'ChdHZXRVc2VyQWNjb3VudHNSZXNwb25zZRI0CghhY2NvdW50cxgBIAMoCzIYLmFjY291bnRzLk'
+    'FjY291bnRTdW1tYXJ5UghhY2NvdW50cw==');
 
 @$core.Deprecated('Use transactionDescriptor instead')
 const Transaction$json = {
@@ -191,20 +143,8 @@ const Transaction$json = {
     {'1': 'locale', '3': 12, '4': 1, '5': 9, '10': 'locale'},
     {'1': 'service_name', '3': 13, '4': 1, '5': 9, '10': 'serviceName'},
     {'1': 'created_at', '3': 14, '4': 1, '5': 9, '10': 'createdAt'},
-    {
-      '1': 'counterparty_name',
-      '3': 15,
-      '4': 1,
-      '5': 9,
-      '10': 'counterpartyName'
-    },
-    {
-      '1': 'counterparty_account',
-      '3': 16,
-      '4': 1,
-      '5': 9,
-      '10': 'counterpartyAccount'
-    },
+    {'1': 'counterparty_name', '3': 15, '4': 1, '5': 9, '10': 'counterpartyName'},
+    {'1': 'counterparty_account', '3': 16, '4': 1, '5': 9, '10': 'counterpartyAccount'},
     {'1': 'updated_at', '3': 17, '4': 1, '5': 9, '10': 'updatedAt'},
   ],
 };
@@ -248,14 +188,7 @@ final $typed_data.Uint8List createAccountRequestDescriptor = $convert.base64Deco
 const CreateAccountResponse$json = {
   '1': 'CreateAccountResponse',
   '2': [
-    {
-      '1': 'account',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.accounts.Account',
-      '10': 'account'
-    },
+    {'1': 'account', '3': 1, '4': 1, '5': 11, '6': '.accounts.Account', '10': 'account'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
   ],
 };
@@ -286,14 +219,7 @@ final $typed_data.Uint8List getAccountsRequestDescriptor = $convert.base64Decode
 const GetAccountsResponse$json = {
   '1': 'GetAccountsResponse',
   '2': [
-    {
-      '1': 'accounts',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.accounts.Account',
-      '10': 'accounts'
-    },
+    {'1': 'accounts', '3': 1, '4': 3, '5': 11, '6': '.accounts.Account', '10': 'accounts'},
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
   ],
 };
@@ -319,14 +245,7 @@ final $typed_data.Uint8List getAccountRequestDescriptor = $convert.base64Decode(
 const GetAccountResponse$json = {
   '1': 'GetAccountResponse',
   '2': [
-    {
-      '1': 'account',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.accounts.Account',
-      '10': 'account'
-    },
+    {'1': 'account', '3': 1, '4': 1, '5': 11, '6': '.accounts.Account', '10': 'account'},
   ],
 };
 
@@ -344,31 +263,22 @@ const GetAccountByNumberRequest$json = {
 };
 
 /// Descriptor for `GetAccountByNumberRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getAccountByNumberRequestDescriptor =
-    $convert.base64Decode(
-        'ChlHZXRBY2NvdW50QnlOdW1iZXJSZXF1ZXN0EiUKDmFjY291bnRfbnVtYmVyGAEgASgJUg1hY2'
-        'NvdW50TnVtYmVy');
+final $typed_data.Uint8List getAccountByNumberRequestDescriptor = $convert.base64Decode(
+    'ChlHZXRBY2NvdW50QnlOdW1iZXJSZXF1ZXN0EiUKDmFjY291bnRfbnVtYmVyGAEgASgJUg1hY2'
+    'NvdW50TnVtYmVy');
 
 @$core.Deprecated('Use getAccountByNumberResponseDescriptor instead')
 const GetAccountByNumberResponse$json = {
   '1': 'GetAccountByNumberResponse',
   '2': [
-    {
-      '1': 'account',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.accounts.Account',
-      '10': 'account'
-    },
+    {'1': 'account', '3': 1, '4': 1, '5': 11, '6': '.accounts.Account', '10': 'account'},
   ],
 };
 
 /// Descriptor for `GetAccountByNumberResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getAccountByNumberResponseDescriptor =
-    $convert.base64Decode(
-        'ChpHZXRBY2NvdW50QnlOdW1iZXJSZXNwb25zZRIrCgdhY2NvdW50GAEgASgLMhEuYWNjb3VudH'
-        'MuQWNjb3VudFIHYWNjb3VudA==');
+final $typed_data.Uint8List getAccountByNumberResponseDescriptor = $convert.base64Decode(
+    'ChpHZXRBY2NvdW50QnlOdW1iZXJSZXNwb25zZRIrCgdhY2NvdW50GAEgASgLMhEuYWNjb3VudH'
+    'MuQWNjb3VudFIHYWNjb3VudA==');
 
 @$core.Deprecated('Use updateAccountRequestDescriptor instead')
 const UpdateAccountRequest$json = {
@@ -393,14 +303,7 @@ final $typed_data.Uint8List updateAccountRequestDescriptor = $convert.base64Deco
 const UpdateAccountResponse$json = {
   '1': 'UpdateAccountResponse',
   '2': [
-    {
-      '1': 'account',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.accounts.Account',
-      '10': 'account'
-    },
+    {'1': 'account', '3': 1, '4': 1, '5': 11, '6': '.accounts.Account', '10': 'account'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
   ],
 };
@@ -453,13 +356,7 @@ const GetBalanceResponse$json = {
   '1': 'GetBalanceResponse',
   '2': [
     {'1': 'balance', '3': 1, '4': 1, '5': 1, '10': 'balance'},
-    {
-      '1': 'available_balance',
-      '3': 2,
-      '4': 1,
-      '5': 1,
-      '10': 'availableBalance'
-    },
+    {'1': 'available_balance', '3': 2, '4': 1, '5': 1, '10': 'availableBalance'},
     {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'last_updated', '3': 4, '4': 1, '5': 9, '10': 'lastUpdated'},
   ],
@@ -496,21 +393,8 @@ const UpdateBalanceResponse$json = {
   '1': 'UpdateBalanceResponse',
   '2': [
     {'1': 'new_balance', '3': 1, '4': 1, '5': 1, '10': 'newBalance'},
-    {
-      '1': 'available_balance',
-      '3': 2,
-      '4': 1,
-      '5': 1,
-      '10': 'availableBalance'
-    },
-    {
-      '1': 'transaction',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.accounts.Transaction',
-      '10': 'transaction'
-    },
+    {'1': 'available_balance', '3': 2, '4': 1, '5': 1, '10': 'availableBalance'},
+    {'1': 'transaction', '3': 3, '4': 1, '5': 11, '6': '.accounts.Transaction', '10': 'transaction'},
   ],
 };
 
@@ -547,14 +431,7 @@ final $typed_data.Uint8List getTransactionsRequestDescriptor = $convert.base64De
 const GetTransactionsResponse$json = {
   '1': 'GetTransactionsResponse',
   '2': [
-    {
-      '1': 'transactions',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.accounts.Transaction',
-      '10': 'transactions'
-    },
+    {'1': 'transactions', '3': 1, '4': 3, '5': 11, '6': '.accounts.Transaction', '10': 'transactions'},
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
     {'1': 'total_credits', '3': 3, '4': 1, '5': 1, '10': 'totalCredits'},
     {'1': 'total_debits', '3': 4, '4': 1, '5': 1, '10': 'totalDebits'},
@@ -589,14 +466,7 @@ final $typed_data.Uint8List freezeAccountRequestDescriptor = $convert.base64Deco
 const FreezeAccountResponse$json = {
   '1': 'FreezeAccountResponse',
   '2': [
-    {
-      '1': 'account',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.accounts.Account',
-      '10': 'account'
-    },
+    {'1': 'account', '3': 1, '4': 1, '5': 11, '6': '.accounts.Account', '10': 'account'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
   ],
 };
@@ -616,32 +486,23 @@ const UnfreezeAccountRequest$json = {
 };
 
 /// Descriptor for `UnfreezeAccountRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List unfreezeAccountRequestDescriptor =
-    $convert.base64Decode(
-        'ChZVbmZyZWV6ZUFjY291bnRSZXF1ZXN0Eh0KCmFjY291bnRfaWQYASABKAlSCWFjY291bnRJZB'
-        'IfCgt1bmZyb3plbl9ieRgCIAEoCVIKdW5mcm96ZW5CeQ==');
+final $typed_data.Uint8List unfreezeAccountRequestDescriptor = $convert.base64Decode(
+    'ChZVbmZyZWV6ZUFjY291bnRSZXF1ZXN0Eh0KCmFjY291bnRfaWQYASABKAlSCWFjY291bnRJZB'
+    'IfCgt1bmZyb3plbl9ieRgCIAEoCVIKdW5mcm96ZW5CeQ==');
 
 @$core.Deprecated('Use unfreezeAccountResponseDescriptor instead')
 const UnfreezeAccountResponse$json = {
   '1': 'UnfreezeAccountResponse',
   '2': [
-    {
-      '1': 'account',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.accounts.Account',
-      '10': 'account'
-    },
+    {'1': 'account', '3': 1, '4': 1, '5': 11, '6': '.accounts.Account', '10': 'account'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
   ],
 };
 
 /// Descriptor for `UnfreezeAccountResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List unfreezeAccountResponseDescriptor =
-    $convert.base64Decode(
-        'ChdVbmZyZWV6ZUFjY291bnRSZXNwb25zZRIrCgdhY2NvdW50GAEgASgLMhEuYWNjb3VudHMuQW'
-        'Njb3VudFIHYWNjb3VudBIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
+final $typed_data.Uint8List unfreezeAccountResponseDescriptor = $convert.base64Decode(
+    'ChdVbmZyZWV6ZUFjY291bnRSZXNwb25zZRIrCgdhY2NvdW50GAEgASgLMhEuYWNjb3VudHMuQW'
+    'Njb3VudFIHYWNjb3VudBIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
 
 @$core.Deprecated('Use autoSaveDescriptor instead')
 const AutoSave$json = {
@@ -698,23 +559,15 @@ final $typed_data.Uint8List createAutoSaveRequestDescriptor = $convert.base64Dec
 const CreateAutoSaveResponse$json = {
   '1': 'CreateAutoSaveResponse',
   '2': [
-    {
-      '1': 'autosave',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.accounts.AutoSave',
-      '10': 'autosave'
-    },
+    {'1': 'autosave', '3': 1, '4': 1, '5': 11, '6': '.accounts.AutoSave', '10': 'autosave'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
   ],
 };
 
 /// Descriptor for `CreateAutoSaveResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List createAutoSaveResponseDescriptor =
-    $convert.base64Decode(
-        'ChZDcmVhdGVBdXRvU2F2ZVJlc3BvbnNlEi4KCGF1dG9zYXZlGAEgASgLMhIuYWNjb3VudHMuQX'
-        'V0b1NhdmVSCGF1dG9zYXZlEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2U=');
+final $typed_data.Uint8List createAutoSaveResponseDescriptor = $convert.base64Decode(
+    'ChZDcmVhdGVBdXRvU2F2ZVJlc3BvbnNlEi4KCGF1dG9zYXZlGAEgASgLMhIuYWNjb3VudHMuQX'
+    'V0b1NhdmVSCGF1dG9zYXZlEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2U=');
 
 @$core.Deprecated('Use getAutoSavesRequestDescriptor instead')
 const GetAutoSavesRequest$json = {
@@ -734,14 +587,7 @@ final $typed_data.Uint8List getAutoSavesRequestDescriptor = $convert.base64Decod
 const GetAutoSavesResponse$json = {
   '1': 'GetAutoSavesResponse',
   '2': [
-    {
-      '1': 'autosaves',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.accounts.AutoSave',
-      '10': 'autosaves'
-    },
+    {'1': 'autosaves', '3': 1, '4': 3, '5': 11, '6': '.accounts.AutoSave', '10': 'autosaves'},
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
   ],
 };
@@ -774,23 +620,15 @@ final $typed_data.Uint8List updateAutoSaveRequestDescriptor = $convert.base64Dec
 const UpdateAutoSaveResponse$json = {
   '1': 'UpdateAutoSaveResponse',
   '2': [
-    {
-      '1': 'autosave',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.accounts.AutoSave',
-      '10': 'autosave'
-    },
+    {'1': 'autosave', '3': 1, '4': 1, '5': 11, '6': '.accounts.AutoSave', '10': 'autosave'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
   ],
 };
 
 /// Descriptor for `UpdateAutoSaveResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateAutoSaveResponseDescriptor =
-    $convert.base64Decode(
-        'ChZVcGRhdGVBdXRvU2F2ZVJlc3BvbnNlEi4KCGF1dG9zYXZlGAEgASgLMhIuYWNjb3VudHMuQX'
-        'V0b1NhdmVSCGF1dG9zYXZlEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2U=');
+final $typed_data.Uint8List updateAutoSaveResponseDescriptor = $convert.base64Decode(
+    'ChZVcGRhdGVBdXRvU2F2ZVJlc3BvbnNlEi4KCGF1dG9zYXZlGAEgASgLMhIuYWNjb3VudHMuQX'
+    'V0b1NhdmVSCGF1dG9zYXZlEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2U=');
 
 @$core.Deprecated('Use deleteAutoSaveRequestDescriptor instead')
 const DeleteAutoSaveRequest$json = {
@@ -815,10 +653,9 @@ const DeleteAutoSaveResponse$json = {
 };
 
 /// Descriptor for `DeleteAutoSaveResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deleteAutoSaveResponseDescriptor =
-    $convert.base64Decode(
-        'ChZEZWxldGVBdXRvU2F2ZVJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGAoHbW'
-        'Vzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
+final $typed_data.Uint8List deleteAutoSaveResponseDescriptor = $convert.base64Decode(
+    'ChZEZWxldGVBdXRvU2F2ZVJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGAoHbW'
+    'Vzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
 
 @$core.Deprecated('Use lockFundsDescriptor instead')
 const LockFunds$json = {
@@ -879,29 +716,9 @@ final $typed_data.Uint8List createLockFundsRequestDescriptor = $convert.base64De
 const CreateLockFundsResponse$json = {
   '1': 'CreateLockFundsResponse',
   '2': [
-    {
-      '1': 'lockfunds',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.accounts.LockFunds',
-      '10': 'lockfunds'
-    },
-    {
-      '1': 'transaction',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.accounts.Transaction',
-      '10': 'transaction'
-    },
-    {
-      '1': 'new_available_balance',
-      '3': 3,
-      '4': 1,
-      '5': 1,
-      '10': 'newAvailableBalance'
-    },
+    {'1': 'lockfunds', '3': 1, '4': 1, '5': 11, '6': '.accounts.LockFunds', '10': 'lockfunds'},
+    {'1': 'transaction', '3': 2, '4': 1, '5': 11, '6': '.accounts.Transaction', '10': 'transaction'},
+    {'1': 'new_available_balance', '3': 3, '4': 1, '5': 1, '10': 'newAvailableBalance'},
     {'1': 'message', '3': 4, '4': 1, '5': 9, '10': 'message'},
   ],
 };
@@ -931,22 +748,9 @@ final $typed_data.Uint8List getLockFundsRequestDescriptor = $convert.base64Decod
 const GetLockFundsResponse$json = {
   '1': 'GetLockFundsResponse',
   '2': [
-    {
-      '1': 'lockfunds',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.accounts.LockFunds',
-      '10': 'lockfunds'
-    },
+    {'1': 'lockfunds', '3': 1, '4': 3, '5': 11, '6': '.accounts.LockFunds', '10': 'lockfunds'},
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
-    {
-      '1': 'total_locked_amount',
-      '3': 3,
-      '4': 1,
-      '5': 1,
-      '10': 'totalLockedAmount'
-    },
+    {'1': 'total_locked_amount', '3': 3, '4': 1, '5': 1, '10': 'totalLockedAmount'},
   ],
 };
 
@@ -975,31 +779,11 @@ final $typed_data.Uint8List unlockFundsRequestDescriptor = $convert.base64Decode
 const UnlockFundsResponse$json = {
   '1': 'UnlockFundsResponse',
   '2': [
-    {
-      '1': 'lockfunds',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.accounts.LockFunds',
-      '10': 'lockfunds'
-    },
-    {
-      '1': 'transaction',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.accounts.Transaction',
-      '10': 'transaction'
-    },
+    {'1': 'lockfunds', '3': 1, '4': 1, '5': 11, '6': '.accounts.LockFunds', '10': 'lockfunds'},
+    {'1': 'transaction', '3': 2, '4': 1, '5': 11, '6': '.accounts.Transaction', '10': 'transaction'},
     {'1': 'penalty_amount', '3': 3, '4': 1, '5': 1, '10': 'penaltyAmount'},
     {'1': 'released_amount', '3': 4, '4': 1, '5': 1, '10': 'releasedAmount'},
-    {
-      '1': 'new_available_balance',
-      '3': 5,
-      '4': 1,
-      '5': 1,
-      '10': 'newAvailableBalance'
-    },
+    {'1': 'new_available_balance', '3': 5, '4': 1, '5': 1, '10': 'newAvailableBalance'},
     {'1': 'message', '3': 6, '4': 1, '5': 9, '10': 'message'},
   ],
 };
@@ -1021,61 +805,19 @@ const PiggyVaultConfigProto$json = {
     {'1': 'lock_type', '3': 2, '4': 1, '5': 9, '10': 'lockType'},
     {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'display_name', '3': 4, '4': 1, '5': 9, '10': 'displayName'},
-    {
-      '1': 'base_interest_rate',
-      '3': 5,
-      '4': 1,
-      '5': 1,
-      '10': 'baseInterestRate'
-    },
+    {'1': 'base_interest_rate', '3': 5, '4': 1, '5': 1, '10': 'baseInterestRate'},
     {'1': 'max_interest_rate', '3': 6, '4': 1, '5': 1, '10': 'maxInterestRate'},
-    {
-      '1': 'early_withdrawal_penalty',
-      '3': 7,
-      '4': 1,
-      '5': 1,
-      '10': 'earlyWithdrawalPenalty'
-    },
+    {'1': 'early_withdrawal_penalty', '3': 7, '4': 1, '5': 1, '10': 'earlyWithdrawalPenalty'},
     {'1': 'min_duration_days', '3': 8, '4': 1, '5': 5, '10': 'minDurationDays'},
     {'1': 'max_duration_days', '3': 9, '4': 1, '5': 5, '10': 'maxDurationDays'},
     {'1': 'min_amount', '3': 10, '4': 1, '5': 1, '10': 'minAmount'},
     {'1': 'max_amount', '3': 11, '4': 1, '5': 1, '10': 'maxAmount'},
-    {
-      '1': 'allows_early_withdrawal',
-      '3': 12,
-      '4': 1,
-      '5': 8,
-      '10': 'allowsEarlyWithdrawal'
-    },
-    {
-      '1': 'supports_auto_renew',
-      '3': 13,
-      '4': 1,
-      '5': 8,
-      '10': 'supportsAutoRenew'
-    },
+    {'1': 'allows_early_withdrawal', '3': 12, '4': 1, '5': 8, '10': 'allowsEarlyWithdrawal'},
+    {'1': 'supports_auto_renew', '3': 13, '4': 1, '5': 8, '10': 'supportsAutoRenew'},
     {'1': 'supports_top_up', '3': 14, '4': 1, '5': 8, '10': 'supportsTopUp'},
-    {
-      '1': 'supports_auto_save',
-      '3': 15,
-      '4': 1,
-      '5': 8,
-      '10': 'supportsAutoSave'
-    },
-    {
-      '1': 'supports_upfront_interest',
-      '3': 16,
-      '4': 1,
-      '5': 8,
-      '10': 'supportsUpfrontInterest'
-    },
-    {
-      '1': 'duration_bonus_tiers',
-      '3': 17,
-      '4': 1,
-      '5': 9,
-      '10': 'durationBonusTiers'
-    },
+    {'1': 'supports_auto_save', '3': 15, '4': 1, '5': 8, '10': 'supportsAutoSave'},
+    {'1': 'supports_upfront_interest', '3': 16, '4': 1, '5': 8, '10': 'supportsUpfrontInterest'},
+    {'1': 'duration_bonus_tiers', '3': 17, '4': 1, '5': 9, '10': 'durationBonusTiers'},
     {'1': 'is_active', '3': 18, '4': 1, '5': 8, '10': 'isActive'},
     {'1': 'description', '3': 19, '4': 1, '5': 9, '10': 'description'},
   ],
@@ -1109,31 +851,22 @@ const GetPiggyVaultConfigRequest$json = {
 };
 
 /// Descriptor for `GetPiggyVaultConfigRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getPiggyVaultConfigRequestDescriptor =
-    $convert.base64Decode(
-        'ChpHZXRQaWdneVZhdWx0Q29uZmlnUmVxdWVzdBIbCglsb2NrX3R5cGUYASABKAlSCGxvY2tUeX'
-        'BlEhoKCGN1cnJlbmN5GAIgASgJUghjdXJyZW5jeQ==');
+final $typed_data.Uint8List getPiggyVaultConfigRequestDescriptor = $convert.base64Decode(
+    'ChpHZXRQaWdneVZhdWx0Q29uZmlnUmVxdWVzdBIbCglsb2NrX3R5cGUYASABKAlSCGxvY2tUeX'
+    'BlEhoKCGN1cnJlbmN5GAIgASgJUghjdXJyZW5jeQ==');
 
 @$core.Deprecated('Use getPiggyVaultConfigResponseDescriptor instead')
 const GetPiggyVaultConfigResponse$json = {
   '1': 'GetPiggyVaultConfigResponse',
   '2': [
-    {
-      '1': 'config',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.accounts.PiggyVaultConfigProto',
-      '10': 'config'
-    },
+    {'1': 'config', '3': 1, '4': 1, '5': 11, '6': '.accounts.PiggyVaultConfigProto', '10': 'config'},
   ],
 };
 
 /// Descriptor for `GetPiggyVaultConfigResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getPiggyVaultConfigResponseDescriptor =
-    $convert.base64Decode(
-        'ChtHZXRQaWdneVZhdWx0Q29uZmlnUmVzcG9uc2USNwoGY29uZmlnGAEgASgLMh8uYWNjb3VudH'
-        'MuUGlnZ3lWYXVsdENvbmZpZ1Byb3RvUgZjb25maWc=');
+final $typed_data.Uint8List getPiggyVaultConfigResponseDescriptor = $convert.base64Decode(
+    'ChtHZXRQaWdneVZhdWx0Q29uZmlnUmVzcG9uc2USNwoGY29uZmlnGAEgASgLMh8uYWNjb3VudH'
+    'MuUGlnZ3lWYXVsdENvbmZpZ1Byb3RvUgZjb25maWc=');
 
 @$core.Deprecated('Use getAllPiggyVaultConfigsRequestDescriptor instead')
 const GetAllPiggyVaultConfigsRequest$json = {
@@ -1144,31 +877,22 @@ const GetAllPiggyVaultConfigsRequest$json = {
 };
 
 /// Descriptor for `GetAllPiggyVaultConfigsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getAllPiggyVaultConfigsRequestDescriptor =
-    $convert.base64Decode(
-        'Ch5HZXRBbGxQaWdneVZhdWx0Q29uZmlnc1JlcXVlc3QSGgoIY3VycmVuY3kYASABKAlSCGN1cn'
-        'JlbmN5');
+final $typed_data.Uint8List getAllPiggyVaultConfigsRequestDescriptor = $convert.base64Decode(
+    'Ch5HZXRBbGxQaWdneVZhdWx0Q29uZmlnc1JlcXVlc3QSGgoIY3VycmVuY3kYASABKAlSCGN1cn'
+    'JlbmN5');
 
 @$core.Deprecated('Use getAllPiggyVaultConfigsResponseDescriptor instead')
 const GetAllPiggyVaultConfigsResponse$json = {
   '1': 'GetAllPiggyVaultConfigsResponse',
   '2': [
-    {
-      '1': 'configs',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.accounts.PiggyVaultConfigProto',
-      '10': 'configs'
-    },
+    {'1': 'configs', '3': 1, '4': 3, '5': 11, '6': '.accounts.PiggyVaultConfigProto', '10': 'configs'},
   ],
 };
 
 /// Descriptor for `GetAllPiggyVaultConfigsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getAllPiggyVaultConfigsResponseDescriptor =
-    $convert.base64Decode(
-        'Ch9HZXRBbGxQaWdneVZhdWx0Q29uZmlnc1Jlc3BvbnNlEjkKB2NvbmZpZ3MYASADKAsyHy5hY2'
-        'NvdW50cy5QaWdneVZhdWx0Q29uZmlnUHJvdG9SB2NvbmZpZ3M=');
+final $typed_data.Uint8List getAllPiggyVaultConfigsResponseDescriptor = $convert.base64Decode(
+    'Ch9HZXRBbGxQaWdneVZhdWx0Q29uZmlnc1Jlc3BvbnNlEjkKB2NvbmZpZ3MYASADKAsyHy5hY2'
+    'NvdW50cy5QaWdneVZhdWx0Q29uZmlnUHJvdG9SB2NvbmZpZ3M=');
 
 @$core.Deprecated('Use updatePiggyVaultConfigRequestDescriptor instead')
 const UpdatePiggyVaultConfigRequest$json = {
@@ -1176,61 +900,19 @@ const UpdatePiggyVaultConfigRequest$json = {
   '2': [
     {'1': 'lock_type', '3': 1, '4': 1, '5': 9, '10': 'lockType'},
     {'1': 'currency', '3': 2, '4': 1, '5': 9, '10': 'currency'},
-    {
-      '1': 'base_interest_rate',
-      '3': 3,
-      '4': 1,
-      '5': 1,
-      '10': 'baseInterestRate'
-    },
+    {'1': 'base_interest_rate', '3': 3, '4': 1, '5': 1, '10': 'baseInterestRate'},
     {'1': 'max_interest_rate', '3': 4, '4': 1, '5': 1, '10': 'maxInterestRate'},
-    {
-      '1': 'early_withdrawal_penalty',
-      '3': 5,
-      '4': 1,
-      '5': 1,
-      '10': 'earlyWithdrawalPenalty'
-    },
+    {'1': 'early_withdrawal_penalty', '3': 5, '4': 1, '5': 1, '10': 'earlyWithdrawalPenalty'},
     {'1': 'min_duration_days', '3': 6, '4': 1, '5': 5, '10': 'minDurationDays'},
     {'1': 'max_duration_days', '3': 7, '4': 1, '5': 5, '10': 'maxDurationDays'},
     {'1': 'min_amount', '3': 8, '4': 1, '5': 1, '10': 'minAmount'},
     {'1': 'max_amount', '3': 9, '4': 1, '5': 1, '10': 'maxAmount'},
-    {
-      '1': 'allows_early_withdrawal',
-      '3': 10,
-      '4': 1,
-      '5': 8,
-      '10': 'allowsEarlyWithdrawal'
-    },
-    {
-      '1': 'supports_auto_renew',
-      '3': 11,
-      '4': 1,
-      '5': 8,
-      '10': 'supportsAutoRenew'
-    },
+    {'1': 'allows_early_withdrawal', '3': 10, '4': 1, '5': 8, '10': 'allowsEarlyWithdrawal'},
+    {'1': 'supports_auto_renew', '3': 11, '4': 1, '5': 8, '10': 'supportsAutoRenew'},
     {'1': 'supports_top_up', '3': 12, '4': 1, '5': 8, '10': 'supportsTopUp'},
-    {
-      '1': 'supports_auto_save',
-      '3': 13,
-      '4': 1,
-      '5': 8,
-      '10': 'supportsAutoSave'
-    },
-    {
-      '1': 'supports_upfront_interest',
-      '3': 14,
-      '4': 1,
-      '5': 8,
-      '10': 'supportsUpfrontInterest'
-    },
-    {
-      '1': 'duration_bonus_tiers',
-      '3': 15,
-      '4': 1,
-      '5': 9,
-      '10': 'durationBonusTiers'
-    },
+    {'1': 'supports_auto_save', '3': 13, '4': 1, '5': 8, '10': 'supportsAutoSave'},
+    {'1': 'supports_upfront_interest', '3': 14, '4': 1, '5': 8, '10': 'supportsUpfrontInterest'},
+    {'1': 'duration_bonus_tiers', '3': 15, '4': 1, '5': 9, '10': 'durationBonusTiers'},
     {'1': 'is_active', '3': 16, '4': 1, '5': 8, '10': 'isActive'},
     {'1': 'description', '3': 17, '4': 1, '5': 9, '10': 'description'},
     {'1': 'display_name', '3': 18, '4': 1, '5': 9, '10': 'displayName'},
@@ -1259,24 +941,16 @@ final $typed_data.Uint8List updatePiggyVaultConfigRequestDescriptor = $convert.b
 const UpdatePiggyVaultConfigResponse$json = {
   '1': 'UpdatePiggyVaultConfigResponse',
   '2': [
-    {
-      '1': 'config',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.accounts.PiggyVaultConfigProto',
-      '10': 'config'
-    },
+    {'1': 'config', '3': 1, '4': 1, '5': 11, '6': '.accounts.PiggyVaultConfigProto', '10': 'config'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
   ],
 };
 
 /// Descriptor for `UpdatePiggyVaultConfigResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updatePiggyVaultConfigResponseDescriptor =
-    $convert.base64Decode(
-        'Ch5VcGRhdGVQaWdneVZhdWx0Q29uZmlnUmVzcG9uc2USNwoGY29uZmlnGAEgASgLMh8uYWNjb3'
-        'VudHMuUGlnZ3lWYXVsdENvbmZpZ1Byb3RvUgZjb25maWcSGAoHbWVzc2FnZRgCIAEoCVIHbWVz'
-        'c2FnZQ==');
+final $typed_data.Uint8List updatePiggyVaultConfigResponseDescriptor = $convert.base64Decode(
+    'Ch5VcGRhdGVQaWdneVZhdWx0Q29uZmlnUmVzcG9uc2USNwoGY29uZmlnGAEgASgLMh8uYWNjb3'
+    'VudHMuUGlnZ3lWYXVsdENvbmZpZ1Byb3RvUgZjb25maWcSGAoHbWVzc2FnZRgCIAEoCVIHbWVz'
+    'c2FnZQ==');
 
 @$core.Deprecated('Use topUpLockFundsRequestDescriptor instead')
 const TopUpLockFundsRequest$json = {
@@ -1299,29 +973,9 @@ final $typed_data.Uint8List topUpLockFundsRequestDescriptor = $convert.base64Dec
 const TopUpLockFundsResponse$json = {
   '1': 'TopUpLockFundsResponse',
   '2': [
-    {
-      '1': 'lockfunds',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.accounts.LockFunds',
-      '10': 'lockfunds'
-    },
-    {
-      '1': 'transaction',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.accounts.Transaction',
-      '10': 'transaction'
-    },
-    {
-      '1': 'new_available_balance',
-      '3': 3,
-      '4': 1,
-      '5': 1,
-      '10': 'newAvailableBalance'
-    },
+    {'1': 'lockfunds', '3': 1, '4': 1, '5': 11, '6': '.accounts.LockFunds', '10': 'lockfunds'},
+    {'1': 'transaction', '3': 2, '4': 1, '5': 11, '6': '.accounts.Transaction', '10': 'transaction'},
+    {'1': 'new_available_balance', '3': 3, '4': 1, '5': 1, '10': 'newAvailableBalance'},
     {'1': 'message', '3': 4, '4': 1, '5': 9, '10': 'message'},
   ],
 };
@@ -1383,24 +1037,16 @@ final $typed_data.Uint8List createLockFundAutoSaveRequestDescriptor = $convert.b
 const CreateLockFundAutoSaveResponse$json = {
   '1': 'CreateLockFundAutoSaveResponse',
   '2': [
-    {
-      '1': 'autosave',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.accounts.LockFundAutoSaveProto',
-      '10': 'autosave'
-    },
+    {'1': 'autosave', '3': 1, '4': 1, '5': 11, '6': '.accounts.LockFundAutoSaveProto', '10': 'autosave'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
   ],
 };
 
 /// Descriptor for `CreateLockFundAutoSaveResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List createLockFundAutoSaveResponseDescriptor =
-    $convert.base64Decode(
-        'Ch5DcmVhdGVMb2NrRnVuZEF1dG9TYXZlUmVzcG9uc2USOwoIYXV0b3NhdmUYASABKAsyHy5hY2'
-        'NvdW50cy5Mb2NrRnVuZEF1dG9TYXZlUHJvdG9SCGF1dG9zYXZlEhgKB21lc3NhZ2UYAiABKAlS'
-        'B21lc3NhZ2U=');
+final $typed_data.Uint8List createLockFundAutoSaveResponseDescriptor = $convert.base64Decode(
+    'Ch5DcmVhdGVMb2NrRnVuZEF1dG9TYXZlUmVzcG9uc2USOwoIYXV0b3NhdmUYASABKAsyHy5hY2'
+    'NvdW50cy5Mb2NrRnVuZEF1dG9TYXZlUHJvdG9SCGF1dG9zYXZlEhgKB21lc3NhZ2UYAiABKAlS'
+    'B21lc3NhZ2U=');
 
 @$core.Deprecated('Use getLockFundAutoSaveRequestDescriptor instead')
 const GetLockFundAutoSaveRequest$json = {
@@ -1411,31 +1057,22 @@ const GetLockFundAutoSaveRequest$json = {
 };
 
 /// Descriptor for `GetLockFundAutoSaveRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getLockFundAutoSaveRequestDescriptor =
-    $convert.base64Decode(
-        'ChpHZXRMb2NrRnVuZEF1dG9TYXZlUmVxdWVzdBIgCgxsb2NrX2Z1bmRfaWQYASABKAlSCmxvY2'
-        'tGdW5kSWQ=');
+final $typed_data.Uint8List getLockFundAutoSaveRequestDescriptor = $convert.base64Decode(
+    'ChpHZXRMb2NrRnVuZEF1dG9TYXZlUmVxdWVzdBIgCgxsb2NrX2Z1bmRfaWQYASABKAlSCmxvY2'
+    'tGdW5kSWQ=');
 
 @$core.Deprecated('Use getLockFundAutoSaveResponseDescriptor instead')
 const GetLockFundAutoSaveResponse$json = {
   '1': 'GetLockFundAutoSaveResponse',
   '2': [
-    {
-      '1': 'autosave',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.accounts.LockFundAutoSaveProto',
-      '10': 'autosave'
-    },
+    {'1': 'autosave', '3': 1, '4': 1, '5': 11, '6': '.accounts.LockFundAutoSaveProto', '10': 'autosave'},
   ],
 };
 
 /// Descriptor for `GetLockFundAutoSaveResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getLockFundAutoSaveResponseDescriptor =
-    $convert.base64Decode(
-        'ChtHZXRMb2NrRnVuZEF1dG9TYXZlUmVzcG9uc2USOwoIYXV0b3NhdmUYASABKAsyHy5hY2NvdW'
-        '50cy5Mb2NrRnVuZEF1dG9TYXZlUHJvdG9SCGF1dG9zYXZl');
+final $typed_data.Uint8List getLockFundAutoSaveResponseDescriptor = $convert.base64Decode(
+    'ChtHZXRMb2NrRnVuZEF1dG9TYXZlUmVzcG9uc2USOwoIYXV0b3NhdmUYASABKAsyHy5hY2NvdW'
+    '50cy5Mb2NrRnVuZEF1dG9TYXZlUHJvdG9SCGF1dG9zYXZl');
 
 @$core.Deprecated('Use updateLockFundAutoSaveRequestDescriptor instead')
 const UpdateLockFundAutoSaveRequest$json = {
@@ -1449,34 +1086,25 @@ const UpdateLockFundAutoSaveRequest$json = {
 };
 
 /// Descriptor for `UpdateLockFundAutoSaveRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateLockFundAutoSaveRequestDescriptor =
-    $convert.base64Decode(
-        'Ch1VcGRhdGVMb2NrRnVuZEF1dG9TYXZlUmVxdWVzdBIfCgthdXRvc2F2ZV9pZBgBIAEoCVIKYX'
-        'V0b3NhdmVJZBIWCgZhbW91bnQYAiABKAFSBmFtb3VudBIcCglmcmVxdWVuY3kYAyABKAlSCWZy'
-        'ZXF1ZW5jeRIWCgZzdGF0dXMYBCABKAlSBnN0YXR1cw==');
+final $typed_data.Uint8List updateLockFundAutoSaveRequestDescriptor = $convert.base64Decode(
+    'Ch1VcGRhdGVMb2NrRnVuZEF1dG9TYXZlUmVxdWVzdBIfCgthdXRvc2F2ZV9pZBgBIAEoCVIKYX'
+    'V0b3NhdmVJZBIWCgZhbW91bnQYAiABKAFSBmFtb3VudBIcCglmcmVxdWVuY3kYAyABKAlSCWZy'
+    'ZXF1ZW5jeRIWCgZzdGF0dXMYBCABKAlSBnN0YXR1cw==');
 
 @$core.Deprecated('Use updateLockFundAutoSaveResponseDescriptor instead')
 const UpdateLockFundAutoSaveResponse$json = {
   '1': 'UpdateLockFundAutoSaveResponse',
   '2': [
-    {
-      '1': 'autosave',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.accounts.LockFundAutoSaveProto',
-      '10': 'autosave'
-    },
+    {'1': 'autosave', '3': 1, '4': 1, '5': 11, '6': '.accounts.LockFundAutoSaveProto', '10': 'autosave'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
   ],
 };
 
 /// Descriptor for `UpdateLockFundAutoSaveResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateLockFundAutoSaveResponseDescriptor =
-    $convert.base64Decode(
-        'Ch5VcGRhdGVMb2NrRnVuZEF1dG9TYXZlUmVzcG9uc2USOwoIYXV0b3NhdmUYASABKAsyHy5hY2'
-        'NvdW50cy5Mb2NrRnVuZEF1dG9TYXZlUHJvdG9SCGF1dG9zYXZlEhgKB21lc3NhZ2UYAiABKAlS'
-        'B21lc3NhZ2U=');
+final $typed_data.Uint8List updateLockFundAutoSaveResponseDescriptor = $convert.base64Decode(
+    'Ch5VcGRhdGVMb2NrRnVuZEF1dG9TYXZlUmVzcG9uc2USOwoIYXV0b3NhdmUYASABKAsyHy5hY2'
+    'NvdW50cy5Mb2NrRnVuZEF1dG9TYXZlUHJvdG9SCGF1dG9zYXZlEhgKB21lc3NhZ2UYAiABKAlS'
+    'B21lc3NhZ2U=');
 
 @$core.Deprecated('Use deleteLockFundAutoSaveRequestDescriptor instead')
 const DeleteLockFundAutoSaveRequest$json = {
@@ -1487,10 +1115,9 @@ const DeleteLockFundAutoSaveRequest$json = {
 };
 
 /// Descriptor for `DeleteLockFundAutoSaveRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deleteLockFundAutoSaveRequestDescriptor =
-    $convert.base64Decode(
-        'Ch1EZWxldGVMb2NrRnVuZEF1dG9TYXZlUmVxdWVzdBIfCgthdXRvc2F2ZV9pZBgBIAEoCVIKYX'
-        'V0b3NhdmVJZA==');
+final $typed_data.Uint8List deleteLockFundAutoSaveRequestDescriptor = $convert.base64Decode(
+    'Ch1EZWxldGVMb2NrRnVuZEF1dG9TYXZlUmVxdWVzdBIfCgthdXRvc2F2ZV9pZBgBIAEoCVIKYX'
+    'V0b3NhdmVJZA==');
 
 @$core.Deprecated('Use deleteLockFundAutoSaveResponseDescriptor instead')
 const DeleteLockFundAutoSaveResponse$json = {
@@ -1502,10 +1129,9 @@ const DeleteLockFundAutoSaveResponse$json = {
 };
 
 /// Descriptor for `DeleteLockFundAutoSaveResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deleteLockFundAutoSaveResponseDescriptor =
-    $convert.base64Decode(
-        'Ch5EZWxldGVMb2NrRnVuZEF1dG9TYXZlUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2'
-        'VzcxIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
+final $typed_data.Uint8List deleteLockFundAutoSaveResponseDescriptor = $convert.base64Decode(
+    'Ch5EZWxldGVMb2NrRnVuZEF1dG9TYXZlUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2'
+    'VzcxIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
 
 @$core.Deprecated('Use createTransactionRequestDescriptor instead')
 const CreateTransactionRequest$json = {
@@ -1520,20 +1146,8 @@ const CreateTransactionRequest$json = {
     {'1': 'service_name', '3': 7, '4': 1, '5': 9, '10': 'serviceName'},
     {'1': 'reference', '3': 8, '4': 1, '5': 9, '10': 'reference'},
     {'1': 'status', '3': 9, '4': 1, '5': 9, '10': 'status'},
-    {
-      '1': 'counterparty_name',
-      '3': 10,
-      '4': 1,
-      '5': 9,
-      '10': 'counterpartyName'
-    },
-    {
-      '1': 'counterparty_account',
-      '3': 11,
-      '4': 1,
-      '5': 9,
-      '10': 'counterpartyAccount'
-    },
+    {'1': 'counterparty_name', '3': 10, '4': 1, '5': 9, '10': 'counterpartyName'},
+    {'1': 'counterparty_account', '3': 11, '4': 1, '5': 9, '10': 'counterpartyAccount'},
   ],
 };
 
@@ -1551,14 +1165,7 @@ final $typed_data.Uint8List createTransactionRequestDescriptor = $convert.base64
 const CreateTransactionResponse$json = {
   '1': 'CreateTransactionResponse',
   '2': [
-    {
-      '1': 'transaction',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.accounts.Transaction',
-      '10': 'transaction'
-    },
+    {'1': 'transaction', '3': 1, '4': 1, '5': 11, '6': '.accounts.Transaction', '10': 'transaction'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
   ],
 };
@@ -1579,11 +1186,10 @@ const UpdateTransactionStatusRequest$json = {
 };
 
 /// Descriptor for `UpdateTransactionStatusRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateTransactionStatusRequestDescriptor =
-    $convert.base64Decode(
-        'Ch5VcGRhdGVUcmFuc2FjdGlvblN0YXR1c1JlcXVlc3QSHAoJcmVmZXJlbmNlGAEgASgJUglyZW'
-        'ZlcmVuY2USFgoGc3RhdHVzGAIgASgJUgZzdGF0dXMSJQoOZmFpbHVyZV9yZWFzb24YAyABKAlS'
-        'DWZhaWx1cmVSZWFzb24=');
+final $typed_data.Uint8List updateTransactionStatusRequestDescriptor = $convert.base64Decode(
+    'Ch5VcGRhdGVUcmFuc2FjdGlvblN0YXR1c1JlcXVlc3QSHAoJcmVmZXJlbmNlGAEgASgJUglyZW'
+    'ZlcmVuY2USFgoGc3RhdHVzGAIgASgJUgZzdGF0dXMSJQoOZmFpbHVyZV9yZWFzb24YAyABKAlS'
+    'DWZhaWx1cmVSZWFzb24=');
 
 @$core.Deprecated('Use updateTransactionStatusResponseDescriptor instead')
 const UpdateTransactionStatusResponse$json = {
@@ -1595,10 +1201,9 @@ const UpdateTransactionStatusResponse$json = {
 };
 
 /// Descriptor for `UpdateTransactionStatusResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateTransactionStatusResponseDescriptor =
-    $convert.base64Decode(
-        'Ch9VcGRhdGVUcmFuc2FjdGlvblN0YXR1c1Jlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2'
-        'Nlc3MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
+final $typed_data.Uint8List updateTransactionStatusResponseDescriptor = $convert.base64Decode(
+    'Ch9VcGRhdGVUcmFuc2FjdGlvblN0YXR1c1Jlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2'
+    'Nlc3MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
 
 @$core.Deprecated('Use getTransactionHistoryRequestDescriptor instead')
 const GetTransactionHistoryRequest$json = {
@@ -1613,20 +1218,8 @@ const GetTransactionHistoryRequest$json = {
     {'1': 'end_date', '3': 7, '4': 1, '5': 9, '10': 'endDate'},
     {'1': 'limit', '3': 8, '4': 1, '5': 5, '10': 'limit'},
     {'1': 'offset', '3': 9, '4': 1, '5': 5, '10': 'offset'},
-    {
-      '1': 'include_external_banks',
-      '3': 10,
-      '4': 1,
-      '5': 8,
-      '10': 'includeExternalBanks'
-    },
-    {
-      '1': 'counterparty_account',
-      '3': 11,
-      '4': 1,
-      '5': 9,
-      '10': 'counterpartyAccount'
-    },
+    {'1': 'include_external_banks', '3': 10, '4': 1, '5': 8, '10': 'includeExternalBanks'},
+    {'1': 'counterparty_account', '3': 11, '4': 1, '5': 9, '10': 'counterpartyAccount'},
     {'1': 'locale', '3': 12, '4': 1, '5': 9, '10': 'locale'},
   ],
 };
@@ -1646,14 +1239,7 @@ final $typed_data.Uint8List getTransactionHistoryRequestDescriptor = $convert.ba
 const GetTransactionHistoryResponse$json = {
   '1': 'GetTransactionHistoryResponse',
   '2': [
-    {
-      '1': 'transactions',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.accounts.Transaction',
-      '10': 'transactions'
-    },
+    {'1': 'transactions', '3': 1, '4': 3, '5': 11, '6': '.accounts.Transaction', '10': 'transactions'},
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
     {'1': 'total_credits', '3': 3, '4': 1, '5': 1, '10': 'totalCredits'},
     {'1': 'total_debits', '3': 4, '4': 1, '5': 1, '10': 'totalDebits'},
@@ -1674,61 +1260,30 @@ const GetTransactionStatisticsRequest$json = {
     {'1': 'account_id', '3': 1, '4': 1, '5': 9, '10': 'accountId'},
     {'1': 'start_date', '3': 2, '4': 1, '5': 9, '10': 'startDate'},
     {'1': 'end_date', '3': 3, '4': 1, '5': 9, '10': 'endDate'},
-    {
-      '1': 'include_external_banks',
-      '3': 4,
-      '4': 1,
-      '5': 8,
-      '10': 'includeExternalBanks'
-    },
+    {'1': 'include_external_banks', '3': 4, '4': 1, '5': 8, '10': 'includeExternalBanks'},
     {'1': 'locale', '3': 5, '4': 1, '5': 9, '10': 'locale'},
   ],
 };
 
 /// Descriptor for `GetTransactionStatisticsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getTransactionStatisticsRequestDescriptor =
-    $convert.base64Decode(
-        'Ch9HZXRUcmFuc2FjdGlvblN0YXRpc3RpY3NSZXF1ZXN0Eh0KCmFjY291bnRfaWQYASABKAlSCW'
-        'FjY291bnRJZBIdCgpzdGFydF9kYXRlGAIgASgJUglzdGFydERhdGUSGQoIZW5kX2RhdGUYAyAB'
-        'KAlSB2VuZERhdGUSNAoWaW5jbHVkZV9leHRlcm5hbF9iYW5rcxgEIAEoCFIUaW5jbHVkZUV4dG'
-        'VybmFsQmFua3MSFgoGbG9jYWxlGAUgASgJUgZsb2NhbGU=');
+final $typed_data.Uint8List getTransactionStatisticsRequestDescriptor = $convert.base64Decode(
+    'Ch9HZXRUcmFuc2FjdGlvblN0YXRpc3RpY3NSZXF1ZXN0Eh0KCmFjY291bnRfaWQYASABKAlSCW'
+    'FjY291bnRJZBIdCgpzdGFydF9kYXRlGAIgASgJUglzdGFydERhdGUSGQoIZW5kX2RhdGUYAyAB'
+    'KAlSB2VuZERhdGUSNAoWaW5jbHVkZV9leHRlcm5hbF9iYW5rcxgEIAEoCFIUaW5jbHVkZUV4dG'
+    'VybmFsQmFua3MSFgoGbG9jYWxlGAUgASgJUgZsb2NhbGU=');
 
 @$core.Deprecated('Use getTransactionStatisticsResponseDescriptor instead')
 const GetTransactionStatisticsResponse$json = {
   '1': 'GetTransactionStatisticsResponse',
   '2': [
-    {
-      '1': 'total_transactions',
-      '3': 1,
-      '4': 1,
-      '5': 5,
-      '10': 'totalTransactions'
-    },
+    {'1': 'total_transactions', '3': 1, '4': 1, '5': 5, '10': 'totalTransactions'},
     {'1': 'total_credits', '3': 2, '4': 1, '5': 1, '10': 'totalCredits'},
     {'1': 'total_debits', '3': 3, '4': 1, '5': 1, '10': 'totalDebits'},
     {'1': 'net_balance', '3': 4, '4': 1, '5': 1, '10': 'netBalance'},
-    {
-      '1': 'transactions_by_service',
-      '3': 5,
-      '4': 3,
-      '5': 11,
-      '6':
-          '.accounts.GetTransactionStatisticsResponse.TransactionsByServiceEntry',
-      '10': 'transactionsByService'
-    },
-    {
-      '1': 'amount_by_service',
-      '3': 6,
-      '4': 3,
-      '5': 11,
-      '6': '.accounts.GetTransactionStatisticsResponse.AmountByServiceEntry',
-      '10': 'amountByService'
-    },
+    {'1': 'transactions_by_service', '3': 5, '4': 3, '5': 11, '6': '.accounts.GetTransactionStatisticsResponse.TransactionsByServiceEntry', '10': 'transactionsByService'},
+    {'1': 'amount_by_service', '3': 6, '4': 3, '5': 11, '6': '.accounts.GetTransactionStatisticsResponse.AmountByServiceEntry', '10': 'amountByService'},
   ],
-  '3': [
-    GetTransactionStatisticsResponse_TransactionsByServiceEntry$json,
-    GetTransactionStatisticsResponse_AmountByServiceEntry$json
-  ],
+  '3': [GetTransactionStatisticsResponse_TransactionsByServiceEntry$json, GetTransactionStatisticsResponse_AmountByServiceEntry$json],
 };
 
 @$core.Deprecated('Use getTransactionStatisticsResponseDescriptor instead')
@@ -1772,13 +1327,7 @@ const Transfer$json = {
     {'1': 'transfer_id', '3': 1, '4': 1, '5': 9, '10': 'transferId'},
     {'1': 'from_account_id', '3': 2, '4': 1, '5': 9, '10': 'fromAccountId'},
     {'1': 'to_account_id', '3': 3, '4': 1, '5': 9, '10': 'toAccountId'},
-    {
-      '1': 'from_account_number',
-      '3': 4,
-      '4': 1,
-      '5': 9,
-      '10': 'fromAccountNumber'
-    },
+    {'1': 'from_account_number', '3': 4, '4': 1, '5': 9, '10': 'fromAccountNumber'},
     {'1': 'to_account_number', '3': 5, '4': 1, '5': 9, '10': 'toAccountNumber'},
     {'1': 'amount', '3': 6, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'currency', '3': 7, '4': 1, '5': 9, '10': 'currency'},
@@ -1834,23 +1383,15 @@ final $typed_data.Uint8List createTransferRequestDescriptor = $convert.base64Dec
 const CreateTransferResponse$json = {
   '1': 'CreateTransferResponse',
   '2': [
-    {
-      '1': 'transfer',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.accounts.Transfer',
-      '10': 'transfer'
-    },
+    {'1': 'transfer', '3': 1, '4': 1, '5': 11, '6': '.accounts.Transfer', '10': 'transfer'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
   ],
 };
 
 /// Descriptor for `CreateTransferResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List createTransferResponseDescriptor =
-    $convert.base64Decode(
-        'ChZDcmVhdGVUcmFuc2ZlclJlc3BvbnNlEi4KCHRyYW5zZmVyGAEgASgLMhIuYWNjb3VudHMuVH'
-        'JhbnNmZXJSCHRyYW5zZmVyEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2U=');
+final $typed_data.Uint8List createTransferResponseDescriptor = $convert.base64Decode(
+    'ChZDcmVhdGVUcmFuc2ZlclJlc3BvbnNlEi4KCHRyYW5zZmVyGAEgASgLMhIuYWNjb3VudHMuVH'
+    'JhbnNmZXJSCHRyYW5zZmVyEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2U=');
 
 @$core.Deprecated('Use getTransferRequestDescriptor instead')
 const GetTransferRequest$json = {
@@ -1868,14 +1409,7 @@ final $typed_data.Uint8List getTransferRequestDescriptor = $convert.base64Decode
 const GetTransferResponse$json = {
   '1': 'GetTransferResponse',
   '2': [
-    {
-      '1': 'transfer',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.accounts.Transfer',
-      '10': 'transfer'
-    },
+    {'1': 'transfer', '3': 1, '4': 1, '5': 11, '6': '.accounts.Transfer', '10': 'transfer'},
   ],
 };
 
@@ -1917,25 +1451,17 @@ final $typed_data.Uint8List createVirtualAccountRequestDescriptor = $convert.bas
 const CreateVirtualAccountResponse$json = {
   '1': 'CreateVirtualAccountResponse',
   '2': [
-    {
-      '1': 'account',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.accounts.Account',
-      '10': 'account'
-    },
+    {'1': 'account', '3': 1, '4': 1, '5': 11, '6': '.accounts.Account', '10': 'account'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
     {'1': 'provider', '3': 3, '4': 1, '5': 9, '10': 'provider'},
   ],
 };
 
 /// Descriptor for `CreateVirtualAccountResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List createVirtualAccountResponseDescriptor =
-    $convert.base64Decode(
-        'ChxDcmVhdGVWaXJ0dWFsQWNjb3VudFJlc3BvbnNlEisKB2FjY291bnQYASABKAsyES5hY2NvdW'
-        '50cy5BY2NvdW50UgdhY2NvdW50EhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USGgoIcHJvdmlk'
-        'ZXIYAyABKAlSCHByb3ZpZGVy');
+final $typed_data.Uint8List createVirtualAccountResponseDescriptor = $convert.base64Decode(
+    'ChxDcmVhdGVWaXJ0dWFsQWNjb3VudFJlc3BvbnNlEisKB2FjY291bnQYASABKAsyES5hY2NvdW'
+    '50cy5BY2NvdW50UgdhY2NvdW50EhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USGgoIcHJvdmlk'
+    'ZXIYAyABKAlSCHByb3ZpZGVy');
 
 @$core.Deprecated('Use creditBalanceRequestDescriptor instead')
 const CreditBalanceRequest$json = {
@@ -1951,20 +1477,8 @@ const CreditBalanceRequest$json = {
     {'1': 'metadata', '3': 8, '4': 1, '5': 9, '10': 'metadata'},
     {'1': 'service_name', '3': 9, '4': 1, '5': 9, '10': 'serviceName'},
     {'1': 'idempotency_key', '3': 10, '4': 1, '5': 9, '10': 'idempotencyKey'},
-    {
-      '1': 'counterparty_name',
-      '3': 11,
-      '4': 1,
-      '5': 9,
-      '10': 'counterpartyName'
-    },
-    {
-      '1': 'counterparty_account',
-      '3': 12,
-      '4': 1,
-      '5': 9,
-      '10': 'counterpartyAccount'
-    },
+    {'1': 'counterparty_name', '3': 11, '4': 1, '5': 9, '10': 'counterpartyName'},
+    {'1': 'counterparty_account', '3': 12, '4': 1, '5': 9, '10': 'counterpartyAccount'},
   ],
 };
 
@@ -1988,13 +1502,7 @@ const CreditBalanceResponse$json = {
     {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
     {'1': 'transaction_id', '3': 4, '4': 1, '5': 9, '10': 'transactionId'},
     {'1': 'new_balance', '3': 5, '4': 1, '5': 3, '10': 'newBalance'},
-    {
-      '1': 'new_available_balance',
-      '3': 6,
-      '4': 1,
-      '5': 3,
-      '10': 'newAvailableBalance'
-    },
+    {'1': 'new_available_balance', '3': 6, '4': 1, '5': 3, '10': 'newAvailableBalance'},
   ],
 };
 
@@ -2022,20 +1530,8 @@ const DebitBalanceRequest$json = {
     {'1': 'idempotency_key', '3': 10, '4': 1, '5': 9, '10': 'idempotencyKey'},
     {'1': 'require_hold', '3': 11, '4': 1, '5': 8, '10': 'requireHold'},
     {'1': 'hold_id', '3': 12, '4': 1, '5': 9, '10': 'holdId'},
-    {
-      '1': 'counterparty_name',
-      '3': 13,
-      '4': 1,
-      '5': 9,
-      '10': 'counterpartyName'
-    },
-    {
-      '1': 'counterparty_account',
-      '3': 14,
-      '4': 1,
-      '5': 9,
-      '10': 'counterpartyAccount'
-    },
+    {'1': 'counterparty_name', '3': 13, '4': 1, '5': 9, '10': 'counterpartyName'},
+    {'1': 'counterparty_account', '3': 14, '4': 1, '5': 9, '10': 'counterpartyAccount'},
   ],
 };
 
@@ -2060,36 +1556,12 @@ const DebitBalanceResponse$json = {
     {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
     {'1': 'transaction_id', '3': 4, '4': 1, '5': 9, '10': 'transactionId'},
     {'1': 'new_balance', '3': 5, '4': 1, '5': 3, '10': 'newBalance'},
-    {
-      '1': 'new_available_balance',
-      '3': 6,
-      '4': 1,
-      '5': 3,
-      '10': 'newAvailableBalance'
-    },
+    {'1': 'new_available_balance', '3': 6, '4': 1, '5': 3, '10': 'newAvailableBalance'},
     {'1': 'daily_spent_today', '3': 7, '4': 1, '5': 3, '10': 'dailySpentToday'},
     {'1': 'monthly_spent', '3': 8, '4': 1, '5': 3, '10': 'monthlySpent'},
-    {
-      '1': 'remaining_daily_limit',
-      '3': 9,
-      '4': 1,
-      '5': 3,
-      '10': 'remainingDailyLimit'
-    },
-    {
-      '1': 'remaining_monthly_limit',
-      '3': 10,
-      '4': 1,
-      '5': 3,
-      '10': 'remainingMonthlyLimit'
-    },
-    {
-      '1': 'remaining_single_transaction_limit',
-      '3': 11,
-      '4': 1,
-      '5': 3,
-      '10': 'remainingSingleTransactionLimit'
-    },
+    {'1': 'remaining_daily_limit', '3': 9, '4': 1, '5': 3, '10': 'remainingDailyLimit'},
+    {'1': 'remaining_monthly_limit', '3': 10, '4': 1, '5': 3, '10': 'remainingMonthlyLimit'},
+    {'1': 'remaining_single_transaction_limit', '3': 11, '4': 1, '5': 3, '10': 'remainingSingleTransactionLimit'},
   ],
 };
 
@@ -2141,20 +1613,8 @@ const TransferBalanceResponse$json = {
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
     {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
-    {
-      '1': 'debit_transaction_id',
-      '3': 4,
-      '4': 1,
-      '5': 9,
-      '10': 'debitTransactionId'
-    },
-    {
-      '1': 'credit_transaction_id',
-      '3': 5,
-      '4': 1,
-      '5': 9,
-      '10': 'creditTransactionId'
-    },
+    {'1': 'debit_transaction_id', '3': 4, '4': 1, '5': 9, '10': 'debitTransactionId'},
+    {'1': 'credit_transaction_id', '3': 5, '4': 1, '5': 9, '10': 'creditTransactionId'},
     {'1': 'from_new_balance', '3': 6, '4': 1, '5': 3, '10': 'fromNewBalance'},
     {'1': 'to_new_balance', '3': 7, '4': 1, '5': 3, '10': 'toNewBalance'},
   ],
@@ -2179,13 +1639,7 @@ const HoldFundsRequest$json = {
     {'1': 'currency', '3': 4, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'reference', '3': 5, '4': 1, '5': 9, '10': 'reference'},
     {'1': 'reason', '3': 6, '4': 1, '5': 9, '10': 'reason'},
-    {
-      '1': 'expires_in_seconds',
-      '3': 7,
-      '4': 1,
-      '5': 5,
-      '10': 'expiresInSeconds'
-    },
+    {'1': 'expires_in_seconds', '3': 7, '4': 1, '5': 5, '10': 'expiresInSeconds'},
     {'1': 'service_name', '3': 8, '4': 1, '5': 9, '10': 'serviceName'},
     {'1': 'idempotency_key', '3': 9, '4': 1, '5': 9, '10': 'idempotencyKey'},
   ],
@@ -2208,13 +1662,7 @@ const HoldFundsResponse$json = {
     {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
     {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
     {'1': 'hold_id', '3': 4, '4': 1, '5': 9, '10': 'holdId'},
-    {
-      '1': 'new_available_balance',
-      '3': 5,
-      '4': 1,
-      '5': 3,
-      '10': 'newAvailableBalance'
-    },
+    {'1': 'new_available_balance', '3': 5, '4': 1, '5': 3, '10': 'newAvailableBalance'},
     {'1': 'expires_at', '3': 6, '4': 1, '5': 9, '10': 'expiresAt'},
   ],
 };
@@ -2284,13 +1732,7 @@ const ReleaseHoldResponse$json = {
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
     {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
-    {
-      '1': 'new_available_balance',
-      '3': 4,
-      '4': 1,
-      '5': 3,
-      '10': 'newAvailableBalance'
-    },
+    {'1': 'new_available_balance', '3': 4, '4': 1, '5': 3, '10': 'newAvailableBalance'},
   ],
 };
 
@@ -2310,13 +1752,7 @@ const PlatformWalletMsg$json = {
     {'1': 'wallet_name', '3': 3, '4': 1, '5': 9, '10': 'walletName'},
     {'1': 'currency', '3': 4, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'balance', '3': 5, '4': 1, '5': 3, '10': 'balance'},
-    {
-      '1': 'available_balance',
-      '3': 6,
-      '4': 1,
-      '5': 3,
-      '10': 'availableBalance'
-    },
+    {'1': 'available_balance', '3': 6, '4': 1, '5': 3, '10': 'availableBalance'},
     {'1': 'status', '3': 7, '4': 1, '5': 9, '10': 'status'},
     {'1': 'description', '3': 8, '4': 1, '5': 9, '10': 'description'},
     {'1': 'created_at', '3': 9, '4': 1, '5': 9, '10': 'createdAt'},
@@ -2345,20 +1781,8 @@ const PlatformWalletTransactionMsg$json = {
     {'1': 'amount', '3': 6, '4': 1, '5': 3, '10': 'amount'},
     {'1': 'balance_before', '3': 7, '4': 1, '5': 3, '10': 'balanceBefore'},
     {'1': 'balance_after', '3': 8, '4': 1, '5': 3, '10': 'balanceAfter'},
-    {
-      '1': 'counterparty_account_id',
-      '3': 9,
-      '4': 1,
-      '5': 9,
-      '10': 'counterpartyAccountId'
-    },
-    {
-      '1': 'counterparty_user_id',
-      '3': 10,
-      '4': 1,
-      '5': 9,
-      '10': 'counterpartyUserId'
-    },
+    {'1': 'counterparty_account_id', '3': 9, '4': 1, '5': 9, '10': 'counterpartyAccountId'},
+    {'1': 'counterparty_user_id', '3': 10, '4': 1, '5': 9, '10': 'counterpartyUserId'},
     {'1': 'description', '3': 11, '4': 1, '5': 9, '10': 'description'},
     {'1': 'metadata', '3': 12, '4': 1, '5': 9, '10': 'metadata'},
     {'1': 'service_name', '3': 13, '4': 1, '5': 9, '10': 'serviceName'},
@@ -2415,28 +1839,10 @@ const TransferToPlatformWalletResponse$json = {
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
     {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
-    {
-      '1': 'debit_transaction_id',
-      '3': 4,
-      '4': 1,
-      '5': 9,
-      '10': 'debitTransactionId'
-    },
-    {
-      '1': 'platform_transaction_id',
-      '3': 5,
-      '4': 1,
-      '5': 9,
-      '10': 'platformTransactionId'
-    },
+    {'1': 'debit_transaction_id', '3': 4, '4': 1, '5': 9, '10': 'debitTransactionId'},
+    {'1': 'platform_transaction_id', '3': 5, '4': 1, '5': 9, '10': 'platformTransactionId'},
     {'1': 'user_new_balance', '3': 6, '4': 1, '5': 3, '10': 'userNewBalance'},
-    {
-      '1': 'wallet_new_balance',
-      '3': 7,
-      '4': 1,
-      '5': 3,
-      '10': 'walletNewBalance'
-    },
+    {'1': 'wallet_new_balance', '3': 7, '4': 1, '5': 3, '10': 'walletNewBalance'},
   ],
 };
 
@@ -2484,28 +1890,10 @@ const TransferFromPlatformWalletResponse$json = {
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
     {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
-    {
-      '1': 'credit_transaction_id',
-      '3': 4,
-      '4': 1,
-      '5': 9,
-      '10': 'creditTransactionId'
-    },
-    {
-      '1': 'platform_transaction_id',
-      '3': 5,
-      '4': 1,
-      '5': 9,
-      '10': 'platformTransactionId'
-    },
+    {'1': 'credit_transaction_id', '3': 4, '4': 1, '5': 9, '10': 'creditTransactionId'},
+    {'1': 'platform_transaction_id', '3': 5, '4': 1, '5': 9, '10': 'platformTransactionId'},
     {'1': 'user_new_balance', '3': 6, '4': 1, '5': 3, '10': 'userNewBalance'},
-    {
-      '1': 'wallet_new_balance',
-      '3': 7,
-      '4': 1,
-      '5': 3,
-      '10': 'walletNewBalance'
-    },
+    {'1': 'wallet_new_balance', '3': 7, '4': 1, '5': 3, '10': 'walletNewBalance'},
   ],
 };
 
@@ -2531,21 +1919,9 @@ const CreditPlatformWalletRequest$json = {
     {'1': 'metadata', '3': 7, '4': 1, '5': 9, '10': 'metadata'},
     {'1': 'service_name', '3': 8, '4': 1, '5': 9, '10': 'serviceName'},
     {'1': 'idempotency_key', '3': 9, '4': 1, '5': 9, '10': 'idempotencyKey'},
-    {
-      '1': 'source_account_id',
-      '3': 10,
-      '4': 1,
-      '5': 9,
-      '10': 'sourceAccountId'
-    },
+    {'1': 'source_account_id', '3': 10, '4': 1, '5': 9, '10': 'sourceAccountId'},
     {'1': 'source_user_id', '3': 11, '4': 1, '5': 9, '10': 'sourceUserId'},
-    {
-      '1': 'source_payment_id',
-      '3': 12,
-      '4': 1,
-      '5': 9,
-      '10': 'sourcePaymentId'
-    },
+    {'1': 'source_payment_id', '3': 12, '4': 1, '5': 9, '10': 'sourcePaymentId'},
   ],
 };
 
@@ -2567,20 +1943,8 @@ const CreditPlatformWalletResponse$json = {
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
     {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
-    {
-      '1': 'platform_transaction_id',
-      '3': 4,
-      '4': 1,
-      '5': 9,
-      '10': 'platformTransactionId'
-    },
-    {
-      '1': 'wallet_new_balance',
-      '3': 5,
-      '4': 1,
-      '5': 3,
-      '10': 'walletNewBalance'
-    },
+    {'1': 'platform_transaction_id', '3': 4, '4': 1, '5': 9, '10': 'platformTransactionId'},
+    {'1': 'wallet_new_balance', '3': 5, '4': 1, '5': 3, '10': 'walletNewBalance'},
   ],
 };
 
@@ -2605,21 +1969,9 @@ const DebitPlatformWalletRequest$json = {
     {'1': 'metadata', '3': 7, '4': 1, '5': 9, '10': 'metadata'},
     {'1': 'service_name', '3': 8, '4': 1, '5': 9, '10': 'serviceName'},
     {'1': 'idempotency_key', '3': 9, '4': 1, '5': 9, '10': 'idempotencyKey'},
-    {
-      '1': 'source_account_id',
-      '3': 10,
-      '4': 1,
-      '5': 9,
-      '10': 'sourceAccountId'
-    },
+    {'1': 'source_account_id', '3': 10, '4': 1, '5': 9, '10': 'sourceAccountId'},
     {'1': 'source_user_id', '3': 11, '4': 1, '5': 9, '10': 'sourceUserId'},
-    {
-      '1': 'source_payment_id',
-      '3': 12,
-      '4': 1,
-      '5': 9,
-      '10': 'sourcePaymentId'
-    },
+    {'1': 'source_payment_id', '3': 12, '4': 1, '5': 9, '10': 'sourcePaymentId'},
   ],
 };
 
@@ -2641,20 +1993,8 @@ const DebitPlatformWalletResponse$json = {
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
     {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
-    {
-      '1': 'platform_transaction_id',
-      '3': 4,
-      '4': 1,
-      '5': 9,
-      '10': 'platformTransactionId'
-    },
-    {
-      '1': 'wallet_new_balance',
-      '3': 5,
-      '4': 1,
-      '5': 3,
-      '10': 'walletNewBalance'
-    },
+    {'1': 'platform_transaction_id', '3': 4, '4': 1, '5': 9, '10': 'platformTransactionId'},
+    {'1': 'wallet_new_balance', '3': 5, '4': 1, '5': 3, '10': 'walletNewBalance'},
   ],
 };
 
@@ -2676,31 +2016,22 @@ const GetPlatformWalletRequest$json = {
 };
 
 /// Descriptor for `GetPlatformWalletRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getPlatformWalletRequestDescriptor =
-    $convert.base64Decode(
-        'ChhHZXRQbGF0Zm9ybVdhbGxldFJlcXVlc3QSGwoJd2FsbGV0X2lkGAEgASgJUgh3YWxsZXRJZB'
-        'IfCgt3YWxsZXRfY29kZRgCIAEoCVIKd2FsbGV0Q29kZQ==');
+final $typed_data.Uint8List getPlatformWalletRequestDescriptor = $convert.base64Decode(
+    'ChhHZXRQbGF0Zm9ybVdhbGxldFJlcXVlc3QSGwoJd2FsbGV0X2lkGAEgASgJUgh3YWxsZXRJZB'
+    'IfCgt3YWxsZXRfY29kZRgCIAEoCVIKd2FsbGV0Q29kZQ==');
 
 @$core.Deprecated('Use getPlatformWalletResponseDescriptor instead')
 const GetPlatformWalletResponse$json = {
   '1': 'GetPlatformWalletResponse',
   '2': [
-    {
-      '1': 'wallet',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.accounts.PlatformWalletMsg',
-      '10': 'wallet'
-    },
+    {'1': 'wallet', '3': 1, '4': 1, '5': 11, '6': '.accounts.PlatformWalletMsg', '10': 'wallet'},
   ],
 };
 
 /// Descriptor for `GetPlatformWalletResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getPlatformWalletResponseDescriptor =
-    $convert.base64Decode(
-        'ChlHZXRQbGF0Zm9ybVdhbGxldFJlc3BvbnNlEjMKBndhbGxldBgBIAEoCzIbLmFjY291bnRzLl'
-        'BsYXRmb3JtV2FsbGV0TXNnUgZ3YWxsZXQ=');
+final $typed_data.Uint8List getPlatformWalletResponseDescriptor = $convert.base64Decode(
+    'ChlHZXRQbGF0Zm9ybVdhbGxldFJlc3BvbnNlEjMKBndhbGxldBgBIAEoCzIbLmFjY291bnRzLl'
+    'BsYXRmb3JtV2FsbGV0TXNnUgZ3YWxsZXQ=');
 
 @$core.Deprecated('Use getPlatformWalletTransactionsRequestDescriptor instead')
 const GetPlatformWalletTransactionsRequest$json = {
@@ -2718,36 +2049,27 @@ const GetPlatformWalletTransactionsRequest$json = {
 };
 
 /// Descriptor for `GetPlatformWalletTransactionsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getPlatformWalletTransactionsRequestDescriptor =
-    $convert.base64Decode(
-        'CiRHZXRQbGF0Zm9ybVdhbGxldFRyYW5zYWN0aW9uc1JlcXVlc3QSGwoJd2FsbGV0X2lkGAEgAS'
-        'gJUgh3YWxsZXRJZBIfCgt3YWxsZXRfY29kZRgCIAEoCVIKd2FsbGV0Q29kZRISCgR0eXBlGAMg'
-        'ASgJUgR0eXBlEhoKCGNhdGVnb3J5GAQgASgJUghjYXRlZ29yeRIdCgpzdGFydF9kYXRlGAUgAS'
-        'gJUglzdGFydERhdGUSGQoIZW5kX2RhdGUYBiABKAlSB2VuZERhdGUSFAoFbGltaXQYByABKAVS'
-        'BWxpbWl0EhYKBm9mZnNldBgIIAEoBVIGb2Zmc2V0');
+final $typed_data.Uint8List getPlatformWalletTransactionsRequestDescriptor = $convert.base64Decode(
+    'CiRHZXRQbGF0Zm9ybVdhbGxldFRyYW5zYWN0aW9uc1JlcXVlc3QSGwoJd2FsbGV0X2lkGAEgAS'
+    'gJUgh3YWxsZXRJZBIfCgt3YWxsZXRfY29kZRgCIAEoCVIKd2FsbGV0Q29kZRISCgR0eXBlGAMg'
+    'ASgJUgR0eXBlEhoKCGNhdGVnb3J5GAQgASgJUghjYXRlZ29yeRIdCgpzdGFydF9kYXRlGAUgAS'
+    'gJUglzdGFydERhdGUSGQoIZW5kX2RhdGUYBiABKAlSB2VuZERhdGUSFAoFbGltaXQYByABKAVS'
+    'BWxpbWl0EhYKBm9mZnNldBgIIAEoBVIGb2Zmc2V0');
 
 @$core.Deprecated('Use getPlatformWalletTransactionsResponseDescriptor instead')
 const GetPlatformWalletTransactionsResponse$json = {
   '1': 'GetPlatformWalletTransactionsResponse',
   '2': [
-    {
-      '1': 'transactions',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.accounts.PlatformWalletTransactionMsg',
-      '10': 'transactions'
-    },
+    {'1': 'transactions', '3': 1, '4': 3, '5': 11, '6': '.accounts.PlatformWalletTransactionMsg', '10': 'transactions'},
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
   ],
 };
 
 /// Descriptor for `GetPlatformWalletTransactionsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getPlatformWalletTransactionsResponseDescriptor =
-    $convert.base64Decode(
-        'CiVHZXRQbGF0Zm9ybVdhbGxldFRyYW5zYWN0aW9uc1Jlc3BvbnNlEkoKDHRyYW5zYWN0aW9ucx'
-        'gBIAMoCzImLmFjY291bnRzLlBsYXRmb3JtV2FsbGV0VHJhbnNhY3Rpb25Nc2dSDHRyYW5zYWN0'
-        'aW9ucxIUCgV0b3RhbBgCIAEoBVIFdG90YWw=');
+final $typed_data.Uint8List getPlatformWalletTransactionsResponseDescriptor = $convert.base64Decode(
+    'CiVHZXRQbGF0Zm9ybVdhbGxldFRyYW5zYWN0aW9uc1Jlc3BvbnNlEkoKDHRyYW5zYWN0aW9ucx'
+    'gBIAMoCzImLmFjY291bnRzLlBsYXRmb3JtV2FsbGV0VHJhbnNhY3Rpb25Nc2dSDHRyYW5zYWN0'
+    'aW9ucxIUCgV0b3RhbBgCIAEoBVIFdG90YWw=');
 
 @$core.Deprecated('Use periodTotalsDescriptor instead')
 const PeriodTotals$json = {
@@ -2756,13 +2078,7 @@ const PeriodTotals$json = {
     {'1': 'total_income', '3': 1, '4': 1, '5': 1, '10': 'totalIncome'},
     {'1': 'total_expenses', '3': 2, '4': 1, '5': 1, '10': 'totalExpenses'},
     {'1': 'net', '3': 3, '4': 1, '5': 1, '10': 'net'},
-    {
-      '1': 'transaction_count',
-      '3': 4,
-      '4': 1,
-      '5': 5,
-      '10': 'transactionCount'
-    },
+    {'1': 'transaction_count', '3': 4, '4': 1, '5': 5, '10': 'transactionCount'},
   ],
 };
 
@@ -2780,13 +2096,7 @@ const GetFinancialAnalyticsRequest$json = {
     {'1': 'period', '3': 2, '4': 1, '5': 9, '10': 'period'},
     {'1': 'start_date', '3': 3, '4': 1, '5': 9, '10': 'startDate'},
     {'1': 'end_date', '3': 4, '4': 1, '5': 9, '10': 'endDate'},
-    {
-      '1': 'include_external_banks',
-      '3': 5,
-      '4': 1,
-      '5': 8,
-      '10': 'includeExternalBanks'
-    },
+    {'1': 'include_external_banks', '3': 5, '4': 1, '5': 8, '10': 'includeExternalBanks'},
     {'1': 'locale', '3': 6, '4': 1, '5': 9, '10': 'locale'},
   ],
 };
@@ -2802,36 +2112,10 @@ final $typed_data.Uint8List getFinancialAnalyticsRequestDescriptor = $convert.ba
 const GetFinancialAnalyticsResponse$json = {
   '1': 'GetFinancialAnalyticsResponse',
   '2': [
-    {
-      '1': 'current_period',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.accounts.PeriodTotals',
-      '10': 'currentPeriod'
-    },
-    {
-      '1': 'previous_period',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.accounts.PeriodTotals',
-      '10': 'previousPeriod'
-    },
-    {
-      '1': 'income_change_percent',
-      '3': 3,
-      '4': 1,
-      '5': 1,
-      '10': 'incomeChangePercent'
-    },
-    {
-      '1': 'expense_change_percent',
-      '3': 4,
-      '4': 1,
-      '5': 1,
-      '10': 'expenseChangePercent'
-    },
+    {'1': 'current_period', '3': 1, '4': 1, '5': 11, '6': '.accounts.PeriodTotals', '10': 'currentPeriod'},
+    {'1': 'previous_period', '3': 2, '4': 1, '5': 11, '6': '.accounts.PeriodTotals', '10': 'previousPeriod'},
+    {'1': 'income_change_percent', '3': 3, '4': 1, '5': 1, '10': 'incomeChangePercent'},
+    {'1': 'expense_change_percent', '3': 4, '4': 1, '5': 1, '10': 'expenseChangePercent'},
     {'1': 'period_label', '3': 5, '4': 1, '5': 9, '10': 'periodLabel'},
   ],
 };
@@ -2851,13 +2135,7 @@ const SubCategoryItem$json = {
   '2': [
     {'1': 'name', '3': 1, '4': 1, '5': 9, '10': 'name'},
     {'1': 'amount', '3': 2, '4': 1, '5': 1, '10': 'amount'},
-    {
-      '1': 'transaction_count',
-      '3': 3,
-      '4': 1,
-      '5': 5,
-      '10': 'transactionCount'
-    },
+    {'1': 'transaction_count', '3': 3, '4': 1, '5': 5, '10': 'transactionCount'},
     {'1': 'percentage', '3': 4, '4': 1, '5': 1, '10': 'percentage'},
   ],
 };
@@ -2874,22 +2152,9 @@ const CategoryBreakdownItem$json = {
   '2': [
     {'1': 'category_name', '3': 1, '4': 1, '5': 9, '10': 'categoryName'},
     {'1': 'amount', '3': 2, '4': 1, '5': 1, '10': 'amount'},
-    {
-      '1': 'transaction_count',
-      '3': 3,
-      '4': 1,
-      '5': 5,
-      '10': 'transactionCount'
-    },
+    {'1': 'transaction_count', '3': 3, '4': 1, '5': 5, '10': 'transactionCount'},
     {'1': 'percentage', '3': 4, '4': 1, '5': 1, '10': 'percentage'},
-    {
-      '1': 'sub_categories',
-      '3': 5,
-      '4': 3,
-      '5': 11,
-      '6': '.accounts.SubCategoryItem',
-      '10': 'subCategories'
-    },
+    {'1': 'sub_categories', '3': 5, '4': 3, '5': 11, '6': '.accounts.SubCategoryItem', '10': 'subCategories'},
   ],
 };
 
@@ -2908,13 +2173,7 @@ const GetCategoryAnalyticsRequest$json = {
     {'1': 'account_id', '3': 1, '4': 1, '5': 9, '10': 'accountId'},
     {'1': 'start_date', '3': 2, '4': 1, '5': 9, '10': 'startDate'},
     {'1': 'end_date', '3': 3, '4': 1, '5': 9, '10': 'endDate'},
-    {
-      '1': 'include_external_banks',
-      '3': 4,
-      '4': 1,
-      '5': 8,
-      '10': 'includeExternalBanks'
-    },
+    {'1': 'include_external_banks', '3': 4, '4': 1, '5': 8, '10': 'includeExternalBanks'},
     {'1': 'locale', '3': 5, '4': 1, '5': 9, '10': 'locale'},
   ],
 };
@@ -2930,22 +2189,8 @@ final $typed_data.Uint8List getCategoryAnalyticsRequestDescriptor = $convert.bas
 const GetCategoryAnalyticsResponse$json = {
   '1': 'GetCategoryAnalyticsResponse',
   '2': [
-    {
-      '1': 'expense_categories',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.accounts.CategoryBreakdownItem',
-      '10': 'expenseCategories'
-    },
-    {
-      '1': 'income_categories',
-      '3': 2,
-      '4': 3,
-      '5': 11,
-      '6': '.accounts.CategoryBreakdownItem',
-      '10': 'incomeCategories'
-    },
+    {'1': 'expense_categories', '3': 1, '4': 3, '5': 11, '6': '.accounts.CategoryBreakdownItem', '10': 'expenseCategories'},
+    {'1': 'income_categories', '3': 2, '4': 3, '5': 11, '6': '.accounts.CategoryBreakdownItem', '10': 'incomeCategories'},
     {'1': 'total_expenses', '3': 3, '4': 1, '5': 1, '10': 'totalExpenses'},
     {'1': 'total_income', '3': 4, '4': 1, '5': 1, '10': 'totalIncome'},
   ],
@@ -2987,31 +2232,22 @@ const GetMonthlyTrendsRequest$json = {
 };
 
 /// Descriptor for `GetMonthlyTrendsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getMonthlyTrendsRequestDescriptor =
-    $convert.base64Decode(
-        'ChdHZXRNb250aGx5VHJlbmRzUmVxdWVzdBIdCgphY2NvdW50X2lkGAEgASgJUglhY2NvdW50SW'
-        'QSFgoGbW9udGhzGAIgASgFUgZtb250aHMSFgoGbG9jYWxlGAMgASgJUgZsb2NhbGU=');
+final $typed_data.Uint8List getMonthlyTrendsRequestDescriptor = $convert.base64Decode(
+    'ChdHZXRNb250aGx5VHJlbmRzUmVxdWVzdBIdCgphY2NvdW50X2lkGAEgASgJUglhY2NvdW50SW'
+    'QSFgoGbW9udGhzGAIgASgFUgZtb250aHMSFgoGbG9jYWxlGAMgASgJUgZsb2NhbGU=');
 
 @$core.Deprecated('Use getMonthlyTrendsResponseDescriptor instead')
 const GetMonthlyTrendsResponse$json = {
   '1': 'GetMonthlyTrendsResponse',
   '2': [
-    {
-      '1': 'months',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.accounts.MonthlyDataPoint',
-      '10': 'months'
-    },
+    {'1': 'months', '3': 1, '4': 3, '5': 11, '6': '.accounts.MonthlyDataPoint', '10': 'months'},
   ],
 };
 
 /// Descriptor for `GetMonthlyTrendsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getMonthlyTrendsResponseDescriptor =
-    $convert.base64Decode(
-        'ChhHZXRNb250aGx5VHJlbmRzUmVzcG9uc2USMgoGbW9udGhzGAEgAygLMhouYWNjb3VudHMuTW'
-        '9udGhseURhdGFQb2ludFIGbW9udGhz');
+final $typed_data.Uint8List getMonthlyTrendsResponseDescriptor = $convert.base64Decode(
+    'ChhHZXRNb250aGx5VHJlbmRzUmVzcG9uc2USMgoGbW9udGhzGAEgAygLMhouYWNjb3VudHMuTW'
+    '9udGhseURhdGFQb2ludFIGbW9udGhz');
 
 @$core.Deprecated('Use dailyExpensePointDescriptor instead')
 const DailyExpensePoint$json = {
@@ -3034,13 +2270,7 @@ const GetExpenseTimeSeriesRequest$json = {
     {'1': 'account_id', '3': 1, '4': 1, '5': 9, '10': 'accountId'},
     {'1': 'start_date', '3': 2, '4': 1, '5': 9, '10': 'startDate'},
     {'1': 'end_date', '3': 3, '4': 1, '5': 9, '10': 'endDate'},
-    {
-      '1': 'include_external_banks',
-      '3': 4,
-      '4': 1,
-      '5': 8,
-      '10': 'includeExternalBanks'
-    },
+    {'1': 'include_external_banks', '3': 4, '4': 1, '5': 8, '10': 'includeExternalBanks'},
     {'1': 'locale', '3': 5, '4': 1, '5': 9, '10': 'locale'},
   ],
 };
@@ -3056,14 +2286,7 @@ final $typed_data.Uint8List getExpenseTimeSeriesRequestDescriptor = $convert.bas
 const GetExpenseTimeSeriesResponse$json = {
   '1': 'GetExpenseTimeSeriesResponse',
   '2': [
-    {
-      '1': 'data_points',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.accounts.DailyExpensePoint',
-      '10': 'dataPoints'
-    },
+    {'1': 'data_points', '3': 1, '4': 3, '5': 11, '6': '.accounts.DailyExpensePoint', '10': 'dataPoints'},
     {'1': 'total_expenses', '3': 2, '4': 1, '5': 1, '10': 'totalExpenses'},
     {'1': 'daily_average', '3': 3, '4': 1, '5': 1, '10': 'dailyAverage'},
   ],
@@ -3081,13 +2304,7 @@ const UserCategoryMappingItem$json = {
   '1': 'UserCategoryMappingItem',
   '2': [
     {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
-    {
-      '1': 'original_category',
-      '3': 2,
-      '4': 1,
-      '5': 9,
-      '10': 'originalCategory'
-    },
+    {'1': 'original_category', '3': 2, '4': 1, '5': 9, '10': 'originalCategory'},
     {'1': 'custom_category', '3': 3, '4': 1, '5': 9, '10': 'customCategory'},
     {'1': 'display_order', '3': 4, '4': 1, '5': 5, '10': 'displayOrder'},
     {'1': 'parent_category', '3': 5, '4': 1, '5': 9, '10': 'parentCategory'},
@@ -3107,85 +2324,56 @@ const GetUserCategoryMappingsRequest$json = {
 };
 
 /// Descriptor for `GetUserCategoryMappingsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getUserCategoryMappingsRequestDescriptor =
-    $convert.base64Decode('Ch5HZXRVc2VyQ2F0ZWdvcnlNYXBwaW5nc1JlcXVlc3Q=');
+final $typed_data.Uint8List getUserCategoryMappingsRequestDescriptor = $convert.base64Decode(
+    'Ch5HZXRVc2VyQ2F0ZWdvcnlNYXBwaW5nc1JlcXVlc3Q=');
 
 @$core.Deprecated('Use getUserCategoryMappingsResponseDescriptor instead')
 const GetUserCategoryMappingsResponse$json = {
   '1': 'GetUserCategoryMappingsResponse',
   '2': [
-    {
-      '1': 'mappings',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.accounts.UserCategoryMappingItem',
-      '10': 'mappings'
-    },
+    {'1': 'mappings', '3': 1, '4': 3, '5': 11, '6': '.accounts.UserCategoryMappingItem', '10': 'mappings'},
   ],
 };
 
 /// Descriptor for `GetUserCategoryMappingsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getUserCategoryMappingsResponseDescriptor =
-    $convert.base64Decode(
-        'Ch9HZXRVc2VyQ2F0ZWdvcnlNYXBwaW5nc1Jlc3BvbnNlEj0KCG1hcHBpbmdzGAEgAygLMiEuYW'
-        'Njb3VudHMuVXNlckNhdGVnb3J5TWFwcGluZ0l0ZW1SCG1hcHBpbmdz');
+final $typed_data.Uint8List getUserCategoryMappingsResponseDescriptor = $convert.base64Decode(
+    'Ch9HZXRVc2VyQ2F0ZWdvcnlNYXBwaW5nc1Jlc3BvbnNlEj0KCG1hcHBpbmdzGAEgAygLMiEuYW'
+    'Njb3VudHMuVXNlckNhdGVnb3J5TWFwcGluZ0l0ZW1SCG1hcHBpbmdz');
 
 @$core.Deprecated('Use updateUserCategoryMappingRequestDescriptor instead')
 const UpdateUserCategoryMappingRequest$json = {
   '1': 'UpdateUserCategoryMappingRequest',
   '2': [
-    {
-      '1': 'original_category',
-      '3': 1,
-      '4': 1,
-      '5': 9,
-      '10': 'originalCategory'
-    },
+    {'1': 'original_category', '3': 1, '4': 1, '5': 9, '10': 'originalCategory'},
     {'1': 'custom_category', '3': 2, '4': 1, '5': 9, '10': 'customCategory'},
     {'1': 'parent_category', '3': 3, '4': 1, '5': 9, '10': 'parentCategory'},
   ],
 };
 
 /// Descriptor for `UpdateUserCategoryMappingRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateUserCategoryMappingRequestDescriptor =
-    $convert.base64Decode(
-        'CiBVcGRhdGVVc2VyQ2F0ZWdvcnlNYXBwaW5nUmVxdWVzdBIrChFvcmlnaW5hbF9jYXRlZ29yeR'
-        'gBIAEoCVIQb3JpZ2luYWxDYXRlZ29yeRInCg9jdXN0b21fY2F0ZWdvcnkYAiABKAlSDmN1c3Rv'
-        'bUNhdGVnb3J5EicKD3BhcmVudF9jYXRlZ29yeRgDIAEoCVIOcGFyZW50Q2F0ZWdvcnk=');
+final $typed_data.Uint8List updateUserCategoryMappingRequestDescriptor = $convert.base64Decode(
+    'CiBVcGRhdGVVc2VyQ2F0ZWdvcnlNYXBwaW5nUmVxdWVzdBIrChFvcmlnaW5hbF9jYXRlZ29yeR'
+    'gBIAEoCVIQb3JpZ2luYWxDYXRlZ29yeRInCg9jdXN0b21fY2F0ZWdvcnkYAiABKAlSDmN1c3Rv'
+    'bUNhdGVnb3J5EicKD3BhcmVudF9jYXRlZ29yeRgDIAEoCVIOcGFyZW50Q2F0ZWdvcnk=');
 
 @$core.Deprecated('Use updateUserCategoryMappingResponseDescriptor instead')
 const UpdateUserCategoryMappingResponse$json = {
   '1': 'UpdateUserCategoryMappingResponse',
   '2': [
-    {
-      '1': 'mapping',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.accounts.UserCategoryMappingItem',
-      '10': 'mapping'
-    },
+    {'1': 'mapping', '3': 1, '4': 1, '5': 11, '6': '.accounts.UserCategoryMappingItem', '10': 'mapping'},
   ],
 };
 
 /// Descriptor for `UpdateUserCategoryMappingResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateUserCategoryMappingResponseDescriptor =
-    $convert.base64Decode(
-        'CiFVcGRhdGVVc2VyQ2F0ZWdvcnlNYXBwaW5nUmVzcG9uc2USOwoHbWFwcGluZxgBIAEoCzIhLm'
-        'FjY291bnRzLlVzZXJDYXRlZ29yeU1hcHBpbmdJdGVtUgdtYXBwaW5n');
+final $typed_data.Uint8List updateUserCategoryMappingResponseDescriptor = $convert.base64Decode(
+    'CiFVcGRhdGVVc2VyQ2F0ZWdvcnlNYXBwaW5nUmVzcG9uc2USOwoHbWFwcGluZxgBIAEoCzIhLm'
+    'FjY291bnRzLlVzZXJDYXRlZ29yeU1hcHBpbmdJdGVtUgdtYXBwaW5n');
 
 @$core.Deprecated('Use categoryOrderItemDescriptor instead')
 const CategoryOrderItem$json = {
   '1': 'CategoryOrderItem',
   '2': [
-    {
-      '1': 'original_category',
-      '3': 1,
-      '4': 1,
-      '5': 9,
-      '10': 'originalCategory'
-    },
+    {'1': 'original_category', '3': 1, '4': 1, '5': 9, '10': 'originalCategory'},
     {'1': 'display_order', '3': 2, '4': 1, '5': 5, '10': 'displayOrder'},
   ],
 };
@@ -3199,22 +2387,14 @@ final $typed_data.Uint8List categoryOrderItemDescriptor = $convert.base64Decode(
 const ReorderCategoriesRequest$json = {
   '1': 'ReorderCategoriesRequest',
   '2': [
-    {
-      '1': 'orderings',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.accounts.CategoryOrderItem',
-      '10': 'orderings'
-    },
+    {'1': 'orderings', '3': 1, '4': 3, '5': 11, '6': '.accounts.CategoryOrderItem', '10': 'orderings'},
   ],
 };
 
 /// Descriptor for `ReorderCategoriesRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List reorderCategoriesRequestDescriptor =
-    $convert.base64Decode(
-        'ChhSZW9yZGVyQ2F0ZWdvcmllc1JlcXVlc3QSOQoJb3JkZXJpbmdzGAEgAygLMhsuYWNjb3VudH'
-        'MuQ2F0ZWdvcnlPcmRlckl0ZW1SCW9yZGVyaW5ncw==');
+final $typed_data.Uint8List reorderCategoriesRequestDescriptor = $convert.base64Decode(
+    'ChhSZW9yZGVyQ2F0ZWdvcmllc1JlcXVlc3QSOQoJb3JkZXJpbmdzGAEgAygLMhsuYWNjb3VudH'
+    'MuQ2F0ZWdvcnlPcmRlckl0ZW1SCW9yZGVyaW5ncw==');
 
 @$core.Deprecated('Use reorderCategoriesResponseDescriptor instead')
 const ReorderCategoriesResponse$json = {
@@ -3225,42 +2405,17 @@ const ReorderCategoriesResponse$json = {
 };
 
 /// Descriptor for `ReorderCategoriesResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List reorderCategoriesResponseDescriptor =
-    $convert.base64Decode(
-        'ChlSZW9yZGVyQ2F0ZWdvcmllc1Jlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3M=');
+final $typed_data.Uint8List reorderCategoriesResponseDescriptor = $convert.base64Decode(
+    'ChlSZW9yZGVyQ2F0ZWdvcmllc1Jlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3M=');
 
 @$core.Deprecated('Use updateSpendingLimitsRequestDescriptor instead')
 const UpdateSpendingLimitsRequest$json = {
   '1': 'UpdateSpendingLimitsRequest',
   '2': [
     {'1': 'account_id', '3': 1, '4': 1, '5': 9, '10': 'accountId'},
-    {
-      '1': 'daily_limit',
-      '3': 2,
-      '4': 1,
-      '5': 1,
-      '9': 0,
-      '10': 'dailyLimit',
-      '17': true
-    },
-    {
-      '1': 'monthly_limit',
-      '3': 3,
-      '4': 1,
-      '5': 1,
-      '9': 1,
-      '10': 'monthlyLimit',
-      '17': true
-    },
-    {
-      '1': 'single_transaction_limit',
-      '3': 4,
-      '4': 1,
-      '5': 1,
-      '9': 2,
-      '10': 'singleTransactionLimit',
-      '17': true
-    },
+    {'1': 'daily_limit', '3': 2, '4': 1, '5': 1, '9': 0, '10': 'dailyLimit', '17': true},
+    {'1': 'monthly_limit', '3': 3, '4': 1, '5': 1, '9': 1, '10': 'monthlyLimit', '17': true},
+    {'1': 'single_transaction_limit', '3': 4, '4': 1, '5': 1, '9': 2, '10': 'singleTransactionLimit', '17': true},
   ],
   '8': [
     {'1': '_daily_limit'},
@@ -3281,22 +2436,14 @@ final $typed_data.Uint8List updateSpendingLimitsRequestDescriptor = $convert.bas
 const UpdateSpendingLimitsResponse$json = {
   '1': 'UpdateSpendingLimitsResponse',
   '2': [
-    {
-      '1': 'account',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.accounts.Account',
-      '10': 'account'
-    },
+    {'1': 'account', '3': 1, '4': 1, '5': 11, '6': '.accounts.Account', '10': 'account'},
   ],
 };
 
 /// Descriptor for `UpdateSpendingLimitsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateSpendingLimitsResponseDescriptor =
-    $convert.base64Decode(
-        'ChxVcGRhdGVTcGVuZGluZ0xpbWl0c1Jlc3BvbnNlEisKB2FjY291bnQYASABKAsyES5hY2NvdW'
-        '50cy5BY2NvdW50UgdhY2NvdW50');
+final $typed_data.Uint8List updateSpendingLimitsResponseDescriptor = $convert.base64Decode(
+    'ChxVcGRhdGVTcGVuZGluZ0xpbWl0c1Jlc3BvbnNlEisKB2FjY291bnQYASABKAsyES5hY2NvdW'
+    '50cy5BY2NvdW50UgdhY2NvdW50');
 
 @$core.Deprecated('Use revealPINRequestDescriptor instead')
 const RevealPINRequest$json = {
@@ -3336,10 +2483,9 @@ const RevealCardDetailsRequest$json = {
 };
 
 /// Descriptor for `RevealCardDetailsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List revealCardDetailsRequestDescriptor =
-    $convert.base64Decode(
-        'ChhSZXZlYWxDYXJkRGV0YWlsc1JlcXVlc3QSHQoKYWNjb3VudF9pZBgBIAEoCVIJYWNjb3VudE'
-        'lkEicKD3RyYW5zYWN0aW9uX3BpbhgCIAEoCVIOdHJhbnNhY3Rpb25QaW4=');
+final $typed_data.Uint8List revealCardDetailsRequestDescriptor = $convert.base64Decode(
+    'ChhSZXZlYWxDYXJkRGV0YWlsc1JlcXVlc3QSHQoKYWNjb3VudF9pZBgBIAEoCVIJYWNjb3VudE'
+    'lkEicKD3RyYW5zYWN0aW9uX3BpbhgCIAEoCVIOdHJhbnNhY3Rpb25QaW4=');
 
 @$core.Deprecated('Use revealCardDetailsResponseDescriptor instead')
 const RevealCardDetailsResponse$json = {
@@ -3403,10 +2549,9 @@ const GenerateAccountConfirmationRequest$json = {
 };
 
 /// Descriptor for `GenerateAccountConfirmationRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List generateAccountConfirmationRequestDescriptor =
-    $convert.base64Decode(
-        'CiJHZW5lcmF0ZUFjY291bnRDb25maXJtYXRpb25SZXF1ZXN0Eh0KCmFjY291bnRfaWQYASABKA'
-        'lSCWFjY291bnRJZA==');
+final $typed_data.Uint8List generateAccountConfirmationRequestDescriptor = $convert.base64Decode(
+    'CiJHZW5lcmF0ZUFjY291bnRDb25maXJtYXRpb25SZXF1ZXN0Eh0KCmFjY291bnRfaWQYASABKA'
+    'lSCWFjY291bnRJZA==');
 
 @$core.Deprecated('Use generateAccountConfirmationResponseDescriptor instead')
 const GenerateAccountConfirmationResponse$json = {
@@ -3420,11 +2565,10 @@ const GenerateAccountConfirmationResponse$json = {
 };
 
 /// Descriptor for `GenerateAccountConfirmationResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List generateAccountConfirmationResponseDescriptor =
-    $convert.base64Decode(
-        'CiNHZW5lcmF0ZUFjY291bnRDb25maXJtYXRpb25SZXNwb25zZRIfCgtkb2N1bWVudF9pZBgBIA'
-        'EoCVIKZG9jdW1lbnRJZBIhCgxkb3dubG9hZF91cmwYAiABKAlSC2Rvd25sb2FkVXJsEh8KC3Zh'
-        'bGlkX3VudGlsGAMgASgDUgp2YWxpZFVudGlsEhgKB21lc3NhZ2UYBCABKAlSB21lc3NhZ2U=');
+final $typed_data.Uint8List generateAccountConfirmationResponseDescriptor = $convert.base64Decode(
+    'CiNHZW5lcmF0ZUFjY291bnRDb25maXJtYXRpb25SZXNwb25zZRIfCgtkb2N1bWVudF9pZBgBIA'
+    'EoCVIKZG9jdW1lbnRJZBIhCgxkb3dubG9hZF91cmwYAiABKAlSC2Rvd25sb2FkVXJsEh8KC3Zh'
+    'bGlkX3VudGlsGAMgASgDUgp2YWxpZFVudGlsEhgKB21lc3NhZ2UYBCABKAlSB21lc3NhZ2U=');
 
 @$core.Deprecated('Use generateProofOfFundsRequestDescriptor instead')
 const GenerateProofOfFundsRequest$json = {
@@ -3435,10 +2579,9 @@ const GenerateProofOfFundsRequest$json = {
 };
 
 /// Descriptor for `GenerateProofOfFundsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List generateProofOfFundsRequestDescriptor =
-    $convert.base64Decode(
-        'ChtHZW5lcmF0ZVByb29mT2ZGdW5kc1JlcXVlc3QSHQoKYWNjb3VudF9pZBgBIAEoCVIJYWNjb3'
-        'VudElk');
+final $typed_data.Uint8List generateProofOfFundsRequestDescriptor = $convert.base64Decode(
+    'ChtHZW5lcmF0ZVByb29mT2ZGdW5kc1JlcXVlc3QSHQoKYWNjb3VudF9pZBgBIAEoCVIJYWNjb3'
+    'VudElk');
 
 @$core.Deprecated('Use generateProofOfFundsResponseDescriptor instead')
 const GenerateProofOfFundsResponse$json = {
@@ -3467,34 +2610,10 @@ const UpdateSecuritySettingsRequest$json = {
   '2': [
     {'1': 'account_id', '3': 1, '4': 1, '5': 9, '10': 'accountId'},
     {'1': 'enable_3d_secure', '3': 2, '4': 1, '5': 8, '10': 'enable3dSecure'},
-    {
-      '1': 'enable_contactless',
-      '3': 3,
-      '4': 1,
-      '5': 8,
-      '10': 'enableContactless'
-    },
-    {
-      '1': 'enable_online_payments',
-      '3': 4,
-      '4': 1,
-      '5': 8,
-      '10': 'enableOnlinePayments'
-    },
-    {
-      '1': 'enable_atm_withdrawals',
-      '3': 5,
-      '4': 1,
-      '5': 8,
-      '10': 'enableAtmWithdrawals'
-    },
-    {
-      '1': 'enable_international_payments',
-      '3': 6,
-      '4': 1,
-      '5': 8,
-      '10': 'enableInternationalPayments'
-    },
+    {'1': 'enable_contactless', '3': 3, '4': 1, '5': 8, '10': 'enableContactless'},
+    {'1': 'enable_online_payments', '3': 4, '4': 1, '5': 8, '10': 'enableOnlinePayments'},
+    {'1': 'enable_atm_withdrawals', '3': 5, '4': 1, '5': 8, '10': 'enableAtmWithdrawals'},
+    {'1': 'enable_international_payments', '3': 6, '4': 1, '5': 8, '10': 'enableInternationalPayments'},
   ],
 };
 
@@ -3511,44 +2630,13 @@ final $typed_data.Uint8List updateSecuritySettingsRequestDescriptor = $convert.b
 const UpdateSecuritySettingsResponse$json = {
   '1': 'UpdateSecuritySettingsResponse',
   '2': [
-    {
-      '1': 'account',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.accounts.Account',
-      '10': 'account'
-    },
+    {'1': 'account', '3': 1, '4': 1, '5': 11, '6': '.accounts.Account', '10': 'account'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
     {'1': 'enable_3d_secure', '3': 3, '4': 1, '5': 8, '10': 'enable3dSecure'},
-    {
-      '1': 'enable_contactless',
-      '3': 4,
-      '4': 1,
-      '5': 8,
-      '10': 'enableContactless'
-    },
-    {
-      '1': 'enable_online_payments',
-      '3': 5,
-      '4': 1,
-      '5': 8,
-      '10': 'enableOnlinePayments'
-    },
-    {
-      '1': 'enable_atm_withdrawals',
-      '3': 6,
-      '4': 1,
-      '5': 8,
-      '10': 'enableAtmWithdrawals'
-    },
-    {
-      '1': 'enable_international_payments',
-      '3': 7,
-      '4': 1,
-      '5': 8,
-      '10': 'enableInternationalPayments'
-    },
+    {'1': 'enable_contactless', '3': 4, '4': 1, '5': 8, '10': 'enableContactless'},
+    {'1': 'enable_online_payments', '3': 5, '4': 1, '5': 8, '10': 'enableOnlinePayments'},
+    {'1': 'enable_atm_withdrawals', '3': 6, '4': 1, '5': 8, '10': 'enableAtmWithdrawals'},
+    {'1': 'enable_international_payments', '3': 7, '4': 1, '5': 8, '10': 'enableInternationalPayments'},
   ],
 };
 
@@ -3600,22 +2688,10 @@ const CreditToClearingResponse$json = {
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
     {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
-    {
-      '1': 'clearing_record_id',
-      '3': 4,
-      '4': 1,
-      '5': 9,
-      '10': 'clearingRecordId'
-    },
+    {'1': 'clearing_record_id', '3': 4, '4': 1, '5': 9, '10': 'clearingRecordId'},
     {'1': 'transaction_id', '3': 5, '4': 1, '5': 9, '10': 'transactionId'},
     {'1': 'new_balance', '3': 6, '4': 1, '5': 3, '10': 'newBalance'},
-    {
-      '1': 'new_available_balance',
-      '3': 7,
-      '4': 1,
-      '5': 3,
-      '10': 'newAvailableBalance'
-    },
+    {'1': 'new_available_balance', '3': 7, '4': 1, '5': 3, '10': 'newAvailableBalance'},
     {'1': 'clears_at', '3': 8, '4': 1, '5': 9, '10': 'clearsAt'},
   ],
 };
@@ -3633,13 +2709,7 @@ final $typed_data.Uint8List creditToClearingResponseDescriptor = $convert.base64
 const ClearDepositRequest$json = {
   '1': 'ClearDepositRequest',
   '2': [
-    {
-      '1': 'clearing_record_id',
-      '3': 1,
-      '4': 1,
-      '5': 9,
-      '10': 'clearingRecordId'
-    },
+    {'1': 'clearing_record_id', '3': 1, '4': 1, '5': 9, '10': 'clearingRecordId'},
     {'1': 'service_name', '3': 2, '4': 1, '5': 9, '10': 'serviceName'},
   ],
 };
@@ -3656,13 +2726,7 @@ const ClearDepositResponse$json = {
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
     {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
-    {
-      '1': 'new_available_balance',
-      '3': 4,
-      '4': 1,
-      '5': 3,
-      '10': 'newAvailableBalance'
-    },
+    {'1': 'new_available_balance', '3': 4, '4': 1, '5': 3, '10': 'newAvailableBalance'},
   ],
 };
 
@@ -3677,24 +2741,17 @@ final $typed_data.Uint8List clearDepositResponseDescriptor = $convert.base64Deco
 const ReverseClearingDepositRequest$json = {
   '1': 'ReverseClearingDepositRequest',
   '2': [
-    {
-      '1': 'clearing_record_id',
-      '3': 1,
-      '4': 1,
-      '5': 9,
-      '10': 'clearingRecordId'
-    },
+    {'1': 'clearing_record_id', '3': 1, '4': 1, '5': 9, '10': 'clearingRecordId'},
     {'1': 'reason', '3': 2, '4': 1, '5': 9, '10': 'reason'},
     {'1': 'service_name', '3': 3, '4': 1, '5': 9, '10': 'serviceName'},
   ],
 };
 
 /// Descriptor for `ReverseClearingDepositRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List reverseClearingDepositRequestDescriptor =
-    $convert.base64Decode(
-        'Ch1SZXZlcnNlQ2xlYXJpbmdEZXBvc2l0UmVxdWVzdBIsChJjbGVhcmluZ19yZWNvcmRfaWQYAS'
-        'ABKAlSEGNsZWFyaW5nUmVjb3JkSWQSFgoGcmVhc29uGAIgASgJUgZyZWFzb24SIQoMc2Vydmlj'
-        'ZV9uYW1lGAMgASgJUgtzZXJ2aWNlTmFtZQ==');
+final $typed_data.Uint8List reverseClearingDepositRequestDescriptor = $convert.base64Decode(
+    'Ch1SZXZlcnNlQ2xlYXJpbmdEZXBvc2l0UmVxdWVzdBIsChJjbGVhcmluZ19yZWNvcmRfaWQYAS'
+    'ABKAlSEGNsZWFyaW5nUmVjb3JkSWQSFgoGcmVhc29uGAIgASgJUgZyZWFzb24SIQoMc2Vydmlj'
+    'ZV9uYW1lGAMgASgJUgtzZXJ2aWNlTmFtZQ==');
 
 @$core.Deprecated('Use reverseClearingDepositResponseDescriptor instead')
 const ReverseClearingDepositResponse$json = {
@@ -3708,11 +2765,10 @@ const ReverseClearingDepositResponse$json = {
 };
 
 /// Descriptor for `ReverseClearingDepositResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List reverseClearingDepositResponseDescriptor =
-    $convert.base64Decode(
-        'Ch5SZXZlcnNlQ2xlYXJpbmdEZXBvc2l0UmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2'
-        'VzcxIdCgplcnJvcl9jb2RlGAIgASgJUgllcnJvckNvZGUSIwoNZXJyb3JfbWVzc2FnZRgDIAEo'
-        'CVIMZXJyb3JNZXNzYWdlEh8KC25ld19iYWxhbmNlGAQgASgDUgpuZXdCYWxhbmNl');
+final $typed_data.Uint8List reverseClearingDepositResponseDescriptor = $convert.base64Decode(
+    'Ch5SZXZlcnNlQ2xlYXJpbmdEZXBvc2l0UmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2'
+    'VzcxIdCgplcnJvcl9jb2RlGAIgASgJUgllcnJvckNvZGUSIwoNZXJyb3JfbWVzc2FnZRgDIAEo'
+    'CVIMZXJyb3JNZXNzYWdlEh8KC25ld19iYWxhbmNlGAQgASgDUgpuZXdCYWxhbmNl');
 
 @$core.Deprecated('Use adminSearchAccountsRequestDescriptor instead')
 const AdminSearchAccountsRequest$json = {
@@ -3726,33 +2782,24 @@ const AdminSearchAccountsRequest$json = {
 };
 
 /// Descriptor for `AdminSearchAccountsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List adminSearchAccountsRequestDescriptor =
-    $convert.base64Decode(
-        'ChpBZG1pblNlYXJjaEFjY291bnRzUmVxdWVzdBIUCgVxdWVyeRgBIAEoCVIFcXVlcnkSHwoLc2'
-        'VhcmNoX3R5cGUYAiABKAlSCnNlYXJjaFR5cGUSEgoEcGFnZRgDIAEoBVIEcGFnZRIZCghwZXJf'
-        'cGFnZRgEIAEoBVIHcGVyUGFnZQ==');
+final $typed_data.Uint8List adminSearchAccountsRequestDescriptor = $convert.base64Decode(
+    'ChpBZG1pblNlYXJjaEFjY291bnRzUmVxdWVzdBIUCgVxdWVyeRgBIAEoCVIFcXVlcnkSHwoLc2'
+    'VhcmNoX3R5cGUYAiABKAlSCnNlYXJjaFR5cGUSEgoEcGFnZRgDIAEoBVIEcGFnZRIZCghwZXJf'
+    'cGFnZRgEIAEoBVIHcGVyUGFnZQ==');
 
 @$core.Deprecated('Use adminSearchAccountsResponseDescriptor instead')
 const AdminSearchAccountsResponse$json = {
   '1': 'AdminSearchAccountsResponse',
   '2': [
-    {
-      '1': 'accounts',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.accounts.AdminAccountSummary',
-      '10': 'accounts'
-    },
+    {'1': 'accounts', '3': 1, '4': 3, '5': 11, '6': '.accounts.AdminAccountSummary', '10': 'accounts'},
     {'1': 'total', '3': 2, '4': 1, '5': 3, '10': 'total'},
   ],
 };
 
 /// Descriptor for `AdminSearchAccountsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List adminSearchAccountsResponseDescriptor =
-    $convert.base64Decode(
-        'ChtBZG1pblNlYXJjaEFjY291bnRzUmVzcG9uc2USOQoIYWNjb3VudHMYASADKAsyHS5hY2NvdW'
-        '50cy5BZG1pbkFjY291bnRTdW1tYXJ5UghhY2NvdW50cxIUCgV0b3RhbBgCIAEoA1IFdG90YWw=');
+final $typed_data.Uint8List adminSearchAccountsResponseDescriptor = $convert.base64Decode(
+    'ChtBZG1pblNlYXJjaEFjY291bnRzUmVzcG9uc2USOQoIYWNjb3VudHMYASADKAsyHS5hY2NvdW'
+    '50cy5BZG1pbkFjY291bnRTdW1tYXJ5UghhY2NvdW50cxIUCgV0b3RhbBgCIAEoA1IFdG90YWw=');
 
 @$core.Deprecated('Use adminAccountSummaryDescriptor instead')
 const AdminAccountSummary$json = {
@@ -3762,13 +2809,7 @@ const AdminAccountSummary$json = {
     {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
     {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'balance', '3': 4, '4': 1, '5': 3, '10': 'balance'},
-    {
-      '1': 'available_balance',
-      '3': 5,
-      '4': 1,
-      '5': 3,
-      '10': 'availableBalance'
-    },
+    {'1': 'available_balance', '3': 5, '4': 1, '5': 3, '10': 'availableBalance'},
     {'1': 'reserved_balance', '3': 6, '4': 1, '5': 3, '10': 'reservedBalance'},
     {'1': 'status', '3': 7, '4': 1, '5': 9, '10': 'status'},
     {'1': 'account_type', '3': 8, '4': 1, '5': 9, '10': 'accountType'},
@@ -3798,61 +2839,22 @@ const AdminGetAccountDetailRequest$json = {
 };
 
 /// Descriptor for `AdminGetAccountDetailRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List adminGetAccountDetailRequestDescriptor =
-    $convert.base64Decode(
-        'ChxBZG1pbkdldEFjY291bnREZXRhaWxSZXF1ZXN0Eh0KCmFjY291bnRfaWQYASABKAlSCWFjY2'
-        '91bnRJZA==');
+final $typed_data.Uint8List adminGetAccountDetailRequestDescriptor = $convert.base64Decode(
+    'ChxBZG1pbkdldEFjY291bnREZXRhaWxSZXF1ZXN0Eh0KCmFjY291bnRfaWQYASABKAlSCWFjY2'
+    '91bnRJZA==');
 
 @$core.Deprecated('Use adminAccountDetailResponseDescriptor instead')
 const AdminAccountDetailResponse$json = {
   '1': 'AdminAccountDetailResponse',
   '2': [
-    {
-      '1': 'account',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.accounts.AdminAccountSummary',
-      '10': 'account'
-    },
-    {
-      '1': 'pending_clearing_amount',
-      '3': 2,
-      '4': 1,
-      '5': 3,
-      '10': 'pendingClearingAmount'
-    },
-    {
-      '1': 'active_holds_count',
-      '3': 3,
-      '4': 1,
-      '5': 5,
-      '10': 'activeHoldsCount'
-    },
-    {
-      '1': 'active_holds_amount',
-      '3': 4,
-      '4': 1,
-      '5': 3,
-      '10': 'activeHoldsAmount'
-    },
-    {
-      '1': 'pending_clearing_count',
-      '3': 5,
-      '4': 1,
-      '5': 5,
-      '10': 'pendingClearingCount'
-    },
+    {'1': 'account', '3': 1, '4': 1, '5': 11, '6': '.accounts.AdminAccountSummary', '10': 'account'},
+    {'1': 'pending_clearing_amount', '3': 2, '4': 1, '5': 3, '10': 'pendingClearingAmount'},
+    {'1': 'active_holds_count', '3': 3, '4': 1, '5': 5, '10': 'activeHoldsCount'},
+    {'1': 'active_holds_amount', '3': 4, '4': 1, '5': 3, '10': 'activeHoldsAmount'},
+    {'1': 'pending_clearing_count', '3': 5, '4': 1, '5': 5, '10': 'pendingClearingCount'},
     {'1': 'kyc_tier', '3': 6, '4': 1, '5': 9, '10': 'kycTier'},
     {'1': 'locale', '3': 7, '4': 1, '5': 9, '10': 'locale'},
-    {
-      '1': 'virtual_accounts',
-      '3': 8,
-      '4': 3,
-      '5': 11,
-      '6': '.accounts.AdminVirtualAccount',
-      '10': 'virtualAccounts'
-    },
+    {'1': 'virtual_accounts', '3': 8, '4': 3, '5': 11, '6': '.accounts.AdminVirtualAccount', '10': 'virtualAccounts'},
   ],
 };
 
@@ -3902,35 +2904,26 @@ const AdminGetAccountTransactionsRequest$json = {
 };
 
 /// Descriptor for `AdminGetAccountTransactionsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List adminGetAccountTransactionsRequestDescriptor =
-    $convert.base64Decode(
-        'CiJBZG1pbkdldEFjY291bnRUcmFuc2FjdGlvbnNSZXF1ZXN0Eh0KCmFjY291bnRfaWQYASABKA'
-        'lSCWFjY291bnRJZBISCgR0eXBlGAIgASgJUgR0eXBlEhoKCGNhdGVnb3J5GAMgASgJUghjYXRl'
-        'Z29yeRIbCglmcm9tX2RhdGUYBCABKAlSCGZyb21EYXRlEhcKB3RvX2RhdGUYBSABKAlSBnRvRG'
-        'F0ZRISCgRwYWdlGAYgASgFUgRwYWdlEhkKCHBlcl9wYWdlGAcgASgFUgdwZXJQYWdl');
+final $typed_data.Uint8List adminGetAccountTransactionsRequestDescriptor = $convert.base64Decode(
+    'CiJBZG1pbkdldEFjY291bnRUcmFuc2FjdGlvbnNSZXF1ZXN0Eh0KCmFjY291bnRfaWQYASABKA'
+    'lSCWFjY291bnRJZBISCgR0eXBlGAIgASgJUgR0eXBlEhoKCGNhdGVnb3J5GAMgASgJUghjYXRl'
+    'Z29yeRIbCglmcm9tX2RhdGUYBCABKAlSCGZyb21EYXRlEhcKB3RvX2RhdGUYBSABKAlSBnRvRG'
+    'F0ZRISCgRwYWdlGAYgASgFUgRwYWdlEhkKCHBlcl9wYWdlGAcgASgFUgdwZXJQYWdl');
 
 @$core.Deprecated('Use adminAccountTransactionsResponseDescriptor instead')
 const AdminAccountTransactionsResponse$json = {
   '1': 'AdminAccountTransactionsResponse',
   '2': [
-    {
-      '1': 'transactions',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.accounts.AdminTransaction',
-      '10': 'transactions'
-    },
+    {'1': 'transactions', '3': 1, '4': 3, '5': 11, '6': '.accounts.AdminTransaction', '10': 'transactions'},
     {'1': 'total', '3': 2, '4': 1, '5': 3, '10': 'total'},
   ],
 };
 
 /// Descriptor for `AdminAccountTransactionsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List adminAccountTransactionsResponseDescriptor =
-    $convert.base64Decode(
-        'CiBBZG1pbkFjY291bnRUcmFuc2FjdGlvbnNSZXNwb25zZRI+Cgx0cmFuc2FjdGlvbnMYASADKA'
-        'syGi5hY2NvdW50cy5BZG1pblRyYW5zYWN0aW9uUgx0cmFuc2FjdGlvbnMSFAoFdG90YWwYAiAB'
-        'KANSBXRvdGFs');
+final $typed_data.Uint8List adminAccountTransactionsResponseDescriptor = $convert.base64Decode(
+    'CiBBZG1pbkFjY291bnRUcmFuc2FjdGlvbnNSZXNwb25zZRI+Cgx0cmFuc2FjdGlvbnMYASADKA'
+    'syGi5hY2NvdW50cy5BZG1pblRyYW5zYWN0aW9uUgx0cmFuc2FjdGlvbnMSFAoFdG90YWwYAiAB'
+    'KANSBXRvdGFs');
 
 @$core.Deprecated('Use adminTransactionDescriptor instead')
 const AdminTransaction$json = {
@@ -3973,33 +2966,24 @@ const AdminGetAccountHoldsRequest$json = {
 };
 
 /// Descriptor for `AdminGetAccountHoldsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List adminGetAccountHoldsRequestDescriptor =
-    $convert.base64Decode(
-        'ChtBZG1pbkdldEFjY291bnRIb2xkc1JlcXVlc3QSHQoKYWNjb3VudF9pZBgBIAEoCVIJYWNjb3'
-        'VudElkEhYKBnN0YXR1cxgCIAEoCVIGc3RhdHVzEhIKBHBhZ2UYAyABKAVSBHBhZ2USGQoIcGVy'
-        'X3BhZ2UYBCABKAVSB3BlclBhZ2U=');
+final $typed_data.Uint8List adminGetAccountHoldsRequestDescriptor = $convert.base64Decode(
+    'ChtBZG1pbkdldEFjY291bnRIb2xkc1JlcXVlc3QSHQoKYWNjb3VudF9pZBgBIAEoCVIJYWNjb3'
+    'VudElkEhYKBnN0YXR1cxgCIAEoCVIGc3RhdHVzEhIKBHBhZ2UYAyABKAVSBHBhZ2USGQoIcGVy'
+    'X3BhZ2UYBCABKAVSB3BlclBhZ2U=');
 
 @$core.Deprecated('Use adminAccountHoldsResponseDescriptor instead')
 const AdminAccountHoldsResponse$json = {
   '1': 'AdminAccountHoldsResponse',
   '2': [
-    {
-      '1': 'holds',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.accounts.AdminHold',
-      '10': 'holds'
-    },
+    {'1': 'holds', '3': 1, '4': 3, '5': 11, '6': '.accounts.AdminHold', '10': 'holds'},
     {'1': 'total', '3': 2, '4': 1, '5': 3, '10': 'total'},
   ],
 };
 
 /// Descriptor for `AdminAccountHoldsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List adminAccountHoldsResponseDescriptor =
-    $convert.base64Decode(
-        'ChlBZG1pbkFjY291bnRIb2xkc1Jlc3BvbnNlEikKBWhvbGRzGAEgAygLMhMuYWNjb3VudHMuQW'
-        'RtaW5Ib2xkUgVob2xkcxIUCgV0b3RhbBgCIAEoA1IFdG90YWw=');
+final $typed_data.Uint8List adminAccountHoldsResponseDescriptor = $convert.base64Decode(
+    'ChlBZG1pbkFjY291bnRIb2xkc1Jlc3BvbnNlEikKBWhvbGRzGAEgAygLMhMuYWNjb3VudHMuQW'
+    'RtaW5Ib2xkUgVob2xkcxIUCgV0b3RhbBgCIAEoA1IFdG90YWw=');
 
 @$core.Deprecated('Use adminHoldDescriptor instead')
 const AdminHold$json = {
@@ -4044,33 +3028,24 @@ const AdminGetAccountClearingRequest$json = {
 };
 
 /// Descriptor for `AdminGetAccountClearingRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List adminGetAccountClearingRequestDescriptor =
-    $convert.base64Decode(
-        'Ch5BZG1pbkdldEFjY291bnRDbGVhcmluZ1JlcXVlc3QSHQoKYWNjb3VudF9pZBgBIAEoCVIJYW'
-        'Njb3VudElkEhYKBnN0YXR1cxgCIAEoCVIGc3RhdHVzEhIKBHBhZ2UYAyABKAVSBHBhZ2USGQoI'
-        'cGVyX3BhZ2UYBCABKAVSB3BlclBhZ2U=');
+final $typed_data.Uint8List adminGetAccountClearingRequestDescriptor = $convert.base64Decode(
+    'Ch5BZG1pbkdldEFjY291bnRDbGVhcmluZ1JlcXVlc3QSHQoKYWNjb3VudF9pZBgBIAEoCVIJYW'
+    'Njb3VudElkEhYKBnN0YXR1cxgCIAEoCVIGc3RhdHVzEhIKBHBhZ2UYAyABKAVSBHBhZ2USGQoI'
+    'cGVyX3BhZ2UYBCABKAVSB3BlclBhZ2U=');
 
 @$core.Deprecated('Use adminAccountClearingResponseDescriptor instead')
 const AdminAccountClearingResponse$json = {
   '1': 'AdminAccountClearingResponse',
   '2': [
-    {
-      '1': 'records',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.accounts.AdminClearingRecord',
-      '10': 'records'
-    },
+    {'1': 'records', '3': 1, '4': 3, '5': 11, '6': '.accounts.AdminClearingRecord', '10': 'records'},
     {'1': 'total', '3': 2, '4': 1, '5': 3, '10': 'total'},
   ],
 };
 
 /// Descriptor for `AdminAccountClearingResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List adminAccountClearingResponseDescriptor =
-    $convert.base64Decode(
-        'ChxBZG1pbkFjY291bnRDbGVhcmluZ1Jlc3BvbnNlEjcKB3JlY29yZHMYASADKAsyHS5hY2NvdW'
-        '50cy5BZG1pbkNsZWFyaW5nUmVjb3JkUgdyZWNvcmRzEhQKBXRvdGFsGAIgASgDUgV0b3RhbA==');
+final $typed_data.Uint8List adminAccountClearingResponseDescriptor = $convert.base64Decode(
+    'ChxBZG1pbkFjY291bnRDbGVhcmluZ1Jlc3BvbnNlEjcKB3JlY29yZHMYASADKAsyHS5hY2NvdW'
+    '50cy5BZG1pbkNsZWFyaW5nUmVjb3JkUgdyZWNvcmRzEhQKBXRvdGFsGAIgASgDUgV0b3RhbA==');
 
 @$core.Deprecated('Use adminListAllHoldsRequestDescriptor instead')
 const AdminListAllHoldsRequest$json = {
@@ -4094,23 +3069,15 @@ final $typed_data.Uint8List adminListAllHoldsRequestDescriptor = $convert.base64
 const AdminListAllHoldsResponse$json = {
   '1': 'AdminListAllHoldsResponse',
   '2': [
-    {
-      '1': 'holds',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.accounts.AdminHold',
-      '10': 'holds'
-    },
+    {'1': 'holds', '3': 1, '4': 3, '5': 11, '6': '.accounts.AdminHold', '10': 'holds'},
     {'1': 'total', '3': 2, '4': 1, '5': 3, '10': 'total'},
   ],
 };
 
 /// Descriptor for `AdminListAllHoldsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List adminListAllHoldsResponseDescriptor =
-    $convert.base64Decode(
-        'ChlBZG1pbkxpc3RBbGxIb2xkc1Jlc3BvbnNlEikKBWhvbGRzGAEgAygLMhMuYWNjb3VudHMuQW'
-        'RtaW5Ib2xkUgVob2xkcxIUCgV0b3RhbBgCIAEoA1IFdG90YWw=');
+final $typed_data.Uint8List adminListAllHoldsResponseDescriptor = $convert.base64Decode(
+    'ChlBZG1pbkxpc3RBbGxIb2xkc1Jlc3BvbnNlEikKBWhvbGRzGAEgAygLMhMuYWNjb3VudHMuQW'
+    'RtaW5Ib2xkUgVob2xkcxIUCgV0b3RhbBgCIAEoA1IFdG90YWw=');
 
 @$core.Deprecated('Use adminGetStaleHoldsRequestDescriptor instead')
 const AdminGetStaleHoldsRequest$json = {
@@ -4122,32 +3089,23 @@ const AdminGetStaleHoldsRequest$json = {
 };
 
 /// Descriptor for `AdminGetStaleHoldsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List adminGetStaleHoldsRequestDescriptor =
-    $convert.base64Decode(
-        'ChlBZG1pbkdldFN0YWxlSG9sZHNSZXF1ZXN0EhIKBHBhZ2UYASABKAVSBHBhZ2USGQoIcGVyX3'
-        'BhZ2UYAiABKAVSB3BlclBhZ2U=');
+final $typed_data.Uint8List adminGetStaleHoldsRequestDescriptor = $convert.base64Decode(
+    'ChlBZG1pbkdldFN0YWxlSG9sZHNSZXF1ZXN0EhIKBHBhZ2UYASABKAVSBHBhZ2USGQoIcGVyX3'
+    'BhZ2UYAiABKAVSB3BlclBhZ2U=');
 
 @$core.Deprecated('Use adminGetStaleHoldsResponseDescriptor instead')
 const AdminGetStaleHoldsResponse$json = {
   '1': 'AdminGetStaleHoldsResponse',
   '2': [
-    {
-      '1': 'holds',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.accounts.AdminHold',
-      '10': 'holds'
-    },
+    {'1': 'holds', '3': 1, '4': 3, '5': 11, '6': '.accounts.AdminHold', '10': 'holds'},
     {'1': 'total', '3': 2, '4': 1, '5': 3, '10': 'total'},
   ],
 };
 
 /// Descriptor for `AdminGetStaleHoldsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List adminGetStaleHoldsResponseDescriptor =
-    $convert.base64Decode(
-        'ChpBZG1pbkdldFN0YWxlSG9sZHNSZXNwb25zZRIpCgVob2xkcxgBIAMoCzITLmFjY291bnRzLk'
-        'FkbWluSG9sZFIFaG9sZHMSFAoFdG90YWwYAiABKANSBXRvdGFs');
+final $typed_data.Uint8List adminGetStaleHoldsResponseDescriptor = $convert.base64Decode(
+    'ChpBZG1pbkdldFN0YWxlSG9sZHNSZXNwb25zZRIpCgVob2xkcxgBIAMoCzITLmFjY291bnRzLk'
+    'FkbWluSG9sZFIFaG9sZHMSFAoFdG90YWwYAiABKANSBXRvdGFs');
 
 @$core.Deprecated('Use adminGetAllPlatformWalletsRequestDescriptor instead')
 const AdminGetAllPlatformWalletsRequest$json = {
@@ -4155,29 +3113,21 @@ const AdminGetAllPlatformWalletsRequest$json = {
 };
 
 /// Descriptor for `AdminGetAllPlatformWalletsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List adminGetAllPlatformWalletsRequestDescriptor =
-    $convert.base64Decode('CiFBZG1pbkdldEFsbFBsYXRmb3JtV2FsbGV0c1JlcXVlc3Q=');
+final $typed_data.Uint8List adminGetAllPlatformWalletsRequestDescriptor = $convert.base64Decode(
+    'CiFBZG1pbkdldEFsbFBsYXRmb3JtV2FsbGV0c1JlcXVlc3Q=');
 
 @$core.Deprecated('Use adminGetAllPlatformWalletsResponseDescriptor instead')
 const AdminGetAllPlatformWalletsResponse$json = {
   '1': 'AdminGetAllPlatformWalletsResponse',
   '2': [
-    {
-      '1': 'wallets',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.accounts.AdminPlatformWallet',
-      '10': 'wallets'
-    },
+    {'1': 'wallets', '3': 1, '4': 3, '5': 11, '6': '.accounts.AdminPlatformWallet', '10': 'wallets'},
   ],
 };
 
 /// Descriptor for `AdminGetAllPlatformWalletsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List adminGetAllPlatformWalletsResponseDescriptor =
-    $convert.base64Decode(
-        'CiJBZG1pbkdldEFsbFBsYXRmb3JtV2FsbGV0c1Jlc3BvbnNlEjcKB3dhbGxldHMYASADKAsyHS'
-        '5hY2NvdW50cy5BZG1pblBsYXRmb3JtV2FsbGV0Ugd3YWxsZXRz');
+final $typed_data.Uint8List adminGetAllPlatformWalletsResponseDescriptor = $convert.base64Decode(
+    'CiJBZG1pbkdldEFsbFBsYXRmb3JtV2FsbGV0c1Jlc3BvbnNlEjcKB3dhbGxldHMYASADKAsyHS'
+    '5hY2NvdW50cy5BZG1pblBsYXRmb3JtV2FsbGV0Ugd3YWxsZXRz');
 
 @$core.Deprecated('Use adminPlatformWalletDescriptor instead')
 const AdminPlatformWallet$json = {
@@ -4198,8 +3148,7 @@ final $typed_data.Uint8List adminPlatformWalletDescriptor = $convert.base64Decod
     'RlEhIKBG5hbWUYAyABKAlSBG5hbWUSGAoHYmFsYW5jZRgEIAEoA1IHYmFsYW5jZRIaCghjdXJy'
     'ZW5jeRgFIAEoCVIIY3VycmVuY3kSIAoLZGVzY3JpcHRpb24YBiABKAlSC2Rlc2NyaXB0aW9u');
 
-@$core.Deprecated(
-    'Use adminGetPlatformWalletTransactionsRequestDescriptor instead')
+@$core.Deprecated('Use adminGetPlatformWalletTransactionsRequestDescriptor instead')
 const AdminGetPlatformWalletTransactionsRequest$json = {
   '1': 'AdminGetPlatformWalletTransactionsRequest',
   '2': [
@@ -4210,36 +3159,25 @@ const AdminGetPlatformWalletTransactionsRequest$json = {
 };
 
 /// Descriptor for `AdminGetPlatformWalletTransactionsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List
-    adminGetPlatformWalletTransactionsRequestDescriptor = $convert.base64Decode(
-        'CilBZG1pbkdldFBsYXRmb3JtV2FsbGV0VHJhbnNhY3Rpb25zUmVxdWVzdBIfCgt3YWxsZXRfY2'
-        '9kZRgBIAEoCVIKd2FsbGV0Q29kZRISCgRwYWdlGAIgASgFUgRwYWdlEhkKCHBlcl9wYWdlGAMg'
-        'ASgFUgdwZXJQYWdl');
+final $typed_data.Uint8List adminGetPlatformWalletTransactionsRequestDescriptor = $convert.base64Decode(
+    'CilBZG1pbkdldFBsYXRmb3JtV2FsbGV0VHJhbnNhY3Rpb25zUmVxdWVzdBIfCgt3YWxsZXRfY2'
+    '9kZRgBIAEoCVIKd2FsbGV0Q29kZRISCgRwYWdlGAIgASgFUgRwYWdlEhkKCHBlcl9wYWdlGAMg'
+    'ASgFUgdwZXJQYWdl');
 
-@$core.Deprecated(
-    'Use adminGetPlatformWalletTransactionsResponseDescriptor instead')
+@$core.Deprecated('Use adminGetPlatformWalletTransactionsResponseDescriptor instead')
 const AdminGetPlatformWalletTransactionsResponse$json = {
   '1': 'AdminGetPlatformWalletTransactionsResponse',
   '2': [
-    {
-      '1': 'transactions',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.accounts.AdminTransaction',
-      '10': 'transactions'
-    },
+    {'1': 'transactions', '3': 1, '4': 3, '5': 11, '6': '.accounts.AdminTransaction', '10': 'transactions'},
     {'1': 'total', '3': 2, '4': 1, '5': 3, '10': 'total'},
   ],
 };
 
 /// Descriptor for `AdminGetPlatformWalletTransactionsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List
-    adminGetPlatformWalletTransactionsResponseDescriptor =
-    $convert.base64Decode(
-        'CipBZG1pbkdldFBsYXRmb3JtV2FsbGV0VHJhbnNhY3Rpb25zUmVzcG9uc2USPgoMdHJhbnNhY3'
-        'Rpb25zGAEgAygLMhouYWNjb3VudHMuQWRtaW5UcmFuc2FjdGlvblIMdHJhbnNhY3Rpb25zEhQK'
-        'BXRvdGFsGAIgASgDUgV0b3RhbA==');
+final $typed_data.Uint8List adminGetPlatformWalletTransactionsResponseDescriptor = $convert.base64Decode(
+    'CipBZG1pbkdldFBsYXRmb3JtV2FsbGV0VHJhbnNhY3Rpb25zUmVzcG9uc2USPgoMdHJhbnNhY3'
+    'Rpb25zGAEgAygLMhouYWNjb3VudHMuQWRtaW5UcmFuc2FjdGlvblIMdHJhbnNhY3Rpb25zEhQK'
+    'BXRvdGFsGAIgASgDUgV0b3RhbA==');
 
 @$core.Deprecated('Use adminGetClearingRecordsRequestDescriptor instead')
 const AdminGetClearingRecordsRequest$json = {
@@ -4253,34 +3191,25 @@ const AdminGetClearingRecordsRequest$json = {
 };
 
 /// Descriptor for `AdminGetClearingRecordsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List adminGetClearingRecordsRequestDescriptor =
-    $convert.base64Decode(
-        'Ch5BZG1pbkdldENsZWFyaW5nUmVjb3Jkc1JlcXVlc3QSFgoGc3RhdHVzGAEgASgJUgZzdGF0dX'
-        'MSHQoKYWNjb3VudF9pZBgCIAEoCVIJYWNjb3VudElkEhIKBHBhZ2UYAyABKAVSBHBhZ2USGQoI'
-        'cGVyX3BhZ2UYBCABKAVSB3BlclBhZ2U=');
+final $typed_data.Uint8List adminGetClearingRecordsRequestDescriptor = $convert.base64Decode(
+    'Ch5BZG1pbkdldENsZWFyaW5nUmVjb3Jkc1JlcXVlc3QSFgoGc3RhdHVzGAEgASgJUgZzdGF0dX'
+    'MSHQoKYWNjb3VudF9pZBgCIAEoCVIJYWNjb3VudElkEhIKBHBhZ2UYAyABKAVSBHBhZ2USGQoI'
+    'cGVyX3BhZ2UYBCABKAVSB3BlclBhZ2U=');
 
 @$core.Deprecated('Use adminGetClearingRecordsResponseDescriptor instead')
 const AdminGetClearingRecordsResponse$json = {
   '1': 'AdminGetClearingRecordsResponse',
   '2': [
-    {
-      '1': 'records',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.accounts.AdminClearingRecord',
-      '10': 'records'
-    },
+    {'1': 'records', '3': 1, '4': 3, '5': 11, '6': '.accounts.AdminClearingRecord', '10': 'records'},
     {'1': 'total', '3': 2, '4': 1, '5': 3, '10': 'total'},
   ],
 };
 
 /// Descriptor for `AdminGetClearingRecordsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List adminGetClearingRecordsResponseDescriptor =
-    $convert.base64Decode(
-        'Ch9BZG1pbkdldENsZWFyaW5nUmVjb3Jkc1Jlc3BvbnNlEjcKB3JlY29yZHMYASADKAsyHS5hY2'
-        'NvdW50cy5BZG1pbkNsZWFyaW5nUmVjb3JkUgdyZWNvcmRzEhQKBXRvdGFsGAIgASgDUgV0b3Rh'
-        'bA==');
+final $typed_data.Uint8List adminGetClearingRecordsResponseDescriptor = $convert.base64Decode(
+    'Ch9BZG1pbkdldENsZWFyaW5nUmVjb3Jkc1Jlc3BvbnNlEjcKB3JlY29yZHMYASADKAsyHS5hY2'
+    'NvdW50cy5BZG1pbkNsZWFyaW5nUmVjb3JkUgdyZWNvcmRzEhQKBXRvdGFsGAIgASgDUgV0b3Rh'
+    'bA==');
 
 @$core.Deprecated('Use adminClearingRecordDescriptor instead')
 const AdminClearingRecord$json = {
@@ -4321,8 +3250,8 @@ const AdminGetClearingHealthRequest$json = {
 };
 
 /// Descriptor for `AdminGetClearingHealthRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List adminGetClearingHealthRequestDescriptor =
-    $convert.base64Decode('Ch1BZG1pbkdldENsZWFyaW5nSGVhbHRoUmVxdWVzdA==');
+final $typed_data.Uint8List adminGetClearingHealthRequestDescriptor = $convert.base64Decode(
+    'Ch1BZG1pbkdldENsZWFyaW5nSGVhbHRoUmVxdWVzdA==');
 
 @$core.Deprecated('Use adminGetClearingHealthResponseDescriptor instead')
 const AdminGetClearingHealthResponse$json = {
@@ -4371,10 +3300,9 @@ const AdminFreezeAccountResponse$json = {
 };
 
 /// Descriptor for `AdminFreezeAccountResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List adminFreezeAccountResponseDescriptor =
-    $convert.base64Decode(
-        'ChpBZG1pbkZyZWV6ZUFjY291bnRSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEh'
-        'gKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2U=');
+final $typed_data.Uint8List adminFreezeAccountResponseDescriptor = $convert.base64Decode(
+    'ChpBZG1pbkZyZWV6ZUFjY291bnRSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEh'
+    'gKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2U=');
 
 @$core.Deprecated('Use adminUnfreezeAccountRequestDescriptor instead')
 const AdminUnfreezeAccountRequest$json = {
@@ -4387,11 +3315,10 @@ const AdminUnfreezeAccountRequest$json = {
 };
 
 /// Descriptor for `AdminUnfreezeAccountRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List adminUnfreezeAccountRequestDescriptor =
-    $convert.base64Decode(
-        'ChtBZG1pblVuZnJlZXplQWNjb3VudFJlcXVlc3QSHQoKYWNjb3VudF9pZBgBIAEoCVIJYWNjb3'
-        'VudElkEhYKBnJlYXNvbhgCIAEoCVIGcmVhc29uEiIKDWFkbWluX3VzZXJfaWQYAyABKAlSC2Fk'
-        'bWluVXNlcklk');
+final $typed_data.Uint8List adminUnfreezeAccountRequestDescriptor = $convert.base64Decode(
+    'ChtBZG1pblVuZnJlZXplQWNjb3VudFJlcXVlc3QSHQoKYWNjb3VudF9pZBgBIAEoCVIJYWNjb3'
+    'VudElkEhYKBnJlYXNvbhgCIAEoCVIGcmVhc29uEiIKDWFkbWluX3VzZXJfaWQYAyABKAlSC2Fk'
+    'bWluVXNlcklk');
 
 @$core.Deprecated('Use adminUnfreezeAccountResponseDescriptor instead')
 const AdminUnfreezeAccountResponse$json = {
@@ -4403,7 +3330,7 @@ const AdminUnfreezeAccountResponse$json = {
 };
 
 /// Descriptor for `AdminUnfreezeAccountResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List adminUnfreezeAccountResponseDescriptor =
-    $convert.base64Decode(
-        'ChxBZG1pblVuZnJlZXplQWNjb3VudFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3'
-        'MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
+final $typed_data.Uint8List adminUnfreezeAccountResponseDescriptor = $convert.base64Decode(
+    'ChxBZG1pblVuZnJlZXplQWNjb3VudFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3'
+    'MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
+

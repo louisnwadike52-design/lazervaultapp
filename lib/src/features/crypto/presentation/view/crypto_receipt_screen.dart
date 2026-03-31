@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:share_plus/share_plus.dart';
-import 'crypto_confirmation_screen.dart';
+import '../models/crypto_transaction_models.dart';
 import 'crypto_transaction_history_screen.dart';
 
 class CryptoReceiptScreen extends StatefulWidget {
@@ -395,10 +395,8 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
           _buildDetailRow('Blockchain Network', _getBlockchainNetwork()),
           SizedBox(height: 12.h),
           _buildDetailRow('Exchange Rate', '1 ${widget.receipt.transactionDetails.cryptoSymbol} = ${CurrencySymbols.currentSymbol}${widget.receipt.transactionDetails.pricePerUnit.toStringAsFixed(2)}'),
-          if (widget.receipt.transactionDetails.type == CryptoTransactionType.buy) ...[
-            SizedBox(height: 12.h),
-            _buildDetailRow('Wallet Address', '1A2B3C...XYZ789', canCopy: true),
-          ],
+          SizedBox(height: 12.h),
+          _buildDetailRow('Custody', 'Managed by licensed partner'),
         ],
       ),
     );
@@ -709,6 +707,4 @@ class CryptoTransactionReceipt {
     required this.timestamp,
     required this.status,
   });
-}
-
-enum CryptoTransactionStatus { completed, pending, failed } 
+} 

@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../../core/services/injection_container.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/utils/debouncer.dart';
+import '../../../../../core/utils/user_search_query.dart';
 import '../cubit/tag_pay_cubit.dart';
 import '../cubit/tag_pay_state.dart';
 
@@ -46,7 +47,7 @@ class _SearchUsersViewState extends State<_SearchUsersView> {
       return;
     }
 
-    final cleanQuery = query.replaceAll('@', '').replaceAll('\$', '');
+    final cleanQuery = normalizeLazerVaultUserSearchQuery(query);
     if (cleanQuery.length < 2) {
       setState(() => _isSearching = false);
       return;

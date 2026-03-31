@@ -7,6 +7,7 @@ import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
 import '../../domain/entities/crypto_entity.dart' as entities;
+import '../models/crypto_transaction_models.dart';
 import 'crypto_confirmation_screen.dart';
 import 'crypto_receipt_screen.dart';
 

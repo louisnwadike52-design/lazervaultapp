@@ -3,9 +3,13 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
+import 'package:lazervault/src/features/investments/presentation/models/invest_asset_hub_config.dart';
+import 'package:lazervault/src/features/investments/presentation/navigation/invest_route_args.dart';
+import 'package:lazervault/src/features/investments/presentation/theme/invest_trading_ui.dart';
+
 import '../../domain/entities/stock_entity.dart';
-import '../../../../../core/types/app_routes.dart';
-import '../../../../../core/utils/currency_formatter.dart';
 
 class StockTradeReceiptScreen extends StatefulWidget {
   const StockTradeReceiptScreen({super.key});
@@ -30,6 +34,8 @@ class _StockTradeReceiptScreenState extends State<StockTradeReceiptScreen>
   DateTime _transactionDate = DateTime.now();
   String _paymentMethod = '';
   Map<String, dynamic> _paymentDetails = {};
+  String? _investCollectionId;
+  late Color _hubAccent;
 
   @override
   void initState() {
@@ -50,6 +56,9 @@ class _StockTradeReceiptScreenState extends State<StockTradeReceiptScreen>
     _transactionDate = args['transactionDate'] ?? DateTime.now();
     _paymentMethod = args['paymentMethod'] ?? '';
     _paymentDetails = args['paymentDetails'] ?? {};
+    _investCollectionId = args['investCollection'] as String?;
+    _hubAccent = InvestAssetHubConfig.forCollectionId(_investCollectionId)
+        .accentColor;
   }
 
   void _setupAnimations() {
@@ -80,7 +89,7 @@ class _StockTradeReceiptScreenState extends State<StockTradeReceiptScreen>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Share functionality coming soon'),
-        backgroundColor: Colors.blue,
+        backgroundColor: _hubAccent,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -91,7 +100,7 @@ class _StockTradeReceiptScreenState extends State<StockTradeReceiptScreen>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Receipt downloaded successfully'),
-        backgroundColor: Colors.green,
+        backgroundColor: InvestTradingUi.buy,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -102,25 +111,18 @@ class _StockTradeReceiptScreenState extends State<StockTradeReceiptScreen>
   }
 
   void _goToPortfolio() {
-    Get.offAllNamed(AppRoutes.stocks);
+    Get.offAllNamed(
+      AppRoutes.stockPortfolio,
+      arguments: InvestRouteArgs.hub(_investCollectionId),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F23),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF1A1A3E),
-              const Color(0xFF0F0F23),
-              const Color(0xFF0A0A1A),
-            ],
-          ),
-        ),
+      backgroundColor: InvestTradingUi.background,
+      body: DecoratedBox(
+        decoration: BoxDecoration(gradient: InvestTradingUi.scaffoldGradient),
         child: SafeArea(
           child: Column(
             children: [
@@ -164,42 +166,41 @@ class _StockTradeReceiptScreenState extends State<StockTradeReceiptScreen>
           Container(
             height: 40.h,
             width: 40.w,
-            decoration: BoxDecoration(
-              color: Colors.grey[900],
-              borderRadius: BorderRadius.circular(12.r),
+            decoration: InvestTradingUi.cardDecoration(
+              color: InvestTradingUi.surfaceElevated,
             ),
             child: IconButton(
               onPressed: () => Navigator.of(context).pop(),
               icon: Icon(
-                Icons.close,
-                color: Colors.white,
-                size: 20.sp,
+                Icons.close_rounded,
+                color: InvestTradingUi.textPrimary,
+                size: 22.sp,
               ),
             ),
           ),
           SizedBox(width: 16.w),
           Expanded(
             child: Text(
-              'Transaction Receipt',
+              'Receipt',
               style: GoogleFonts.inter(
-                color: Colors.white,
+                color: InvestTradingUi.textPrimary,
                 fontSize: 20.sp,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.3,
               ),
             ),
           ),
           Container(
             height: 40.h,
             width: 40.w,
-            decoration: BoxDecoration(
-              color: Colors.grey[900],
-              borderRadius: BorderRadius.circular(12.r),
+            decoration: InvestTradingUi.cardDecoration(
+              color: InvestTradingUi.surfaceElevated,
             ),
             child: IconButton(
               onPressed: _shareReceipt,
               icon: Icon(
-                Icons.share,
-                color: Colors.white,
+                Icons.ios_share_rounded,
+                color: InvestTradingUi.textPrimary,
                 size: 20.sp,
               ),
             ),
@@ -214,24 +215,16 @@ class _StockTradeReceiptScreenState extends State<StockTradeReceiptScreen>
       width: 100.w,
       height: 100.h,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            const Color(0xFF4CAF50),
-            const Color(0xFF45A049),
-          ],
-        ),
+        color: InvestTradingUi.buy.withValues(alpha: 0.15),
         shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF4CAF50).withValues(alpha: 0.4),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
+        border: Border.all(
+          color: InvestTradingUi.buy.withValues(alpha: 0.45),
+          width: 2,
+        ),
       ),
       child: Icon(
-        Icons.check,
-        color: Colors.white,
+        Icons.check_rounded,
+        color: InvestTradingUi.buy,
         size: 50.sp,
       ),
     );
@@ -241,20 +234,21 @@ class _StockTradeReceiptScreenState extends State<StockTradeReceiptScreen>
     return Column(
       children: [
         Text(
-          'Transaction Successful!',
+          'All set',
           style: GoogleFonts.inter(
-            color: Colors.white,
+            color: InvestTradingUi.textPrimary,
             fontSize: 24.sp,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w800,
           ),
           textAlign: TextAlign.center,
         ),
         SizedBox(height: 8.h),
         Text(
-          'Your $_tradeType order has been executed successfully',
+          'Your ${_tradeType.toUpperCase()} order has settled',
           style: GoogleFonts.inter(
-            color: Colors.grey[400],
-            fontSize: 16.sp,
+            color: InvestTradingUi.textSecondary,
+            fontSize: 15.sp,
+            height: 1.35,
           ),
           textAlign: TextAlign.center,
         ),
@@ -266,19 +260,14 @@ class _StockTradeReceiptScreenState extends State<StockTradeReceiptScreen>
     return Container(
       padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF2A2A3E).withValues(alpha: 0.9),
-            const Color(0xFF1F1F35).withValues(alpha: 0.9),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(24.r),        boxShadow: [
+        color: InvestTradingUi.surfaceElevated,
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+        boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+            color: Colors.black.withValues(alpha: 0.35),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
           ),
         ],
       ),
@@ -289,11 +278,11 @@ class _StockTradeReceiptScreenState extends State<StockTradeReceiptScreen>
           SizedBox(height: 24.h),
           _buildTransactionDetails(),
           SizedBox(height: 20.h),
-          Divider(color: Colors.grey[600]),
+          Divider(color: InvestTradingUi.border),
           SizedBox(height: 20.h),
           _buildPaymentDetails(),
           SizedBox(height: 20.h),
-          Divider(color: Colors.grey[600]),
+          Divider(color: InvestTradingUi.border),
           SizedBox(height: 20.h),
           _buildTransactionInfo(),
         ],
@@ -371,28 +360,30 @@ class _StockTradeReceiptScreenState extends State<StockTradeReceiptScreen>
                   Text(
                     _selectedStock!.symbol,
                     style: GoogleFonts.inter(
-                      color: Colors.white,
+                      color: InvestTradingUi.textPrimary,
                       fontSize: 20.sp,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
                   SizedBox(width: 8.w),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: _tradeType == 'buy' 
-                            ? [const Color(0xFF4CAF50), const Color(0xFF45A049)]
-                            : [const Color(0xFFE53E3E), const Color(0xFFD53F3F)],
-                      ),
-                      borderRadius: BorderRadius.circular(8.r),
+                      color: _tradeType == 'buy'
+                          ? InvestTradingUi.buy
+                          : InvestTradingUi.sell,
+                      borderRadius: BorderRadius.circular(10.r),
                     ),
                     child: Text(
                       _tradeType.toUpperCase(),
                       style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w700,
+                        color: _tradeType == 'buy'
+                            ? Colors.black
+                            : Colors.white,
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.6,
                       ),
                     ),
                   ),
@@ -402,7 +393,7 @@ class _StockTradeReceiptScreenState extends State<StockTradeReceiptScreen>
               Text(
                 _selectedStock!.name,
                 style: GoogleFonts.inter(
-                  color: Colors.grey[400],
+                  color: InvestTradingUi.textSecondary,
                   fontSize: 14.sp,
                 ),
                 maxLines: 1,
@@ -420,16 +411,22 @@ class _StockTradeReceiptScreenState extends State<StockTradeReceiptScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Transaction Details',
+          'Transaction details',
           style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w600,
+            color: InvestTradingUi.textPrimary,
+            fontSize: 17.sp,
+            fontWeight: FontWeight.w700,
           ),
         ),
         SizedBox(height: 16.h),
         _buildDetailRow('Shares', '$_shares'),
-        _buildDetailRow('Price per Share', CurrencySymbols.formatAmountWithCurrency(_amount / _shares, _selectedStock?.currency ?? 'USD')),
+        _buildDetailRow(
+          'Price / share',
+          _shares > 0
+              ? CurrencySymbols.formatAmountWithCurrency(
+                  _amount / _shares, _selectedStock?.currency ?? 'USD')
+              : '—',
+        ),
         _buildDetailRow('Subtotal', CurrencySymbols.formatAmountWithCurrency(_amount, _selectedStock?.currency ?? 'USD')),
         _buildDetailRow('Trading Fees', CurrencySymbols.formatAmountWithCurrency(_fees, _selectedStock?.currency ?? 'USD')),
         SizedBox(height: 12.h),
@@ -443,19 +440,21 @@ class _StockTradeReceiptScreenState extends State<StockTradeReceiptScreen>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Total Amount',
+                'Total',
                 style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 16.sp,
+                  color: InvestTradingUi.textPrimary,
+                  fontSize: 15.sp,
                   fontWeight: FontWeight.w700,
                 ),
               ),
               Text(
-                CurrencySymbols.formatAmountWithCurrency(_total, _selectedStock?.currency ?? 'USD'),
+                CurrencySymbols.formatAmountWithCurrency(
+                    _total, _selectedStock?.currency ?? 'USD'),
                 style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w700,
+                  color: InvestTradingUi.textPrimary,
+                  fontSize: 19.sp,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.3,
                 ),
               ),
             ],
@@ -470,11 +469,11 @@ class _StockTradeReceiptScreenState extends State<StockTradeReceiptScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Payment Details',
+          'Payment',
           style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w600,
+            color: InvestTradingUi.textPrimary,
+            fontSize: 17.sp,
+            fontWeight: FontWeight.w700,
           ),
         ),
         SizedBox(height: 16.h),
@@ -492,11 +491,11 @@ class _StockTradeReceiptScreenState extends State<StockTradeReceiptScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Transaction Information',
+          'Reference',
           style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w600,
+            color: InvestTradingUi.textPrimary,
+            fontSize: 17.sp,
+            fontWeight: FontWeight.w700,
           ),
         ),
         SizedBox(height: 16.h),
@@ -519,7 +518,7 @@ class _StockTradeReceiptScreenState extends State<StockTradeReceiptScreen>
             child: Text(
               label,
               style: GoogleFonts.inter(
-                color: Colors.grey[400],
+                color: InvestTradingUi.textSecondary,
                 fontSize: 14.sp,
               ),
             ),
@@ -529,9 +528,9 @@ class _StockTradeReceiptScreenState extends State<StockTradeReceiptScreen>
             child: Text(
               value,
               style: GoogleFonts.inter(
-                color: Colors.white,
+                color: InvestTradingUi.textPrimary,
                 fontSize: 14.sp,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
               ),
               textAlign: TextAlign.right,
             ),
@@ -545,79 +544,44 @@ class _StockTradeReceiptScreenState extends State<StockTradeReceiptScreen>
     return Row(
       children: [
         Expanded(
-          child: Container(
-            decoration: BoxDecoration(
-              color: const Color(0xFF2A2A3E),
-              borderRadius: BorderRadius.circular(16.r),
-              boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+          child: OutlinedButton.icon(
+            onPressed: _downloadReceipt,
+            style: OutlinedButton.styleFrom(
+              foregroundColor: InvestTradingUi.textPrimary,
+              side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+              padding: EdgeInsets.symmetric(vertical: 14.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14.r),
+              ),
             ),
-            child: ElevatedButton.icon(
-              onPressed: _downloadReceipt,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                padding: EdgeInsets.symmetric(vertical: 16.h),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16.r),
-                ),
-              ),
-              icon: Icon(
-                Icons.download,
-                color: Colors.white,
-                size: 20.sp,
-              ),
-              label: Text(
-                'Download',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
-                ),
+            icon: Icon(Icons.download_rounded, size: 20.sp),
+            label: Text(
+              'Download',
+              style: GoogleFonts.inter(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
         ),
         SizedBox(width: 12.w),
         Expanded(
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFF4A90E2),
-                  const Color(0xFF357ABD),
-                ],
+          child: FilledButton.icon(
+            onPressed: _shareReceipt,
+            style: FilledButton.styleFrom(
+              backgroundColor: _hubAccent,
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(vertical: 14.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14.r),
               ),
-              borderRadius: BorderRadius.circular(16.r),
             ),
-            child: ElevatedButton.icon(
-              onPressed: _shareReceipt,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                padding: EdgeInsets.symmetric(vertical: 16.h),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16.r),
-                ),
-              ),
-              icon: Icon(
-                Icons.share,
-                color: Colors.white,
-                size: 20.sp,
-              ),
-              label: Text(
-                'Share',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
-                ),
+            icon: Icon(Icons.ios_share_rounded, size: 20.sp),
+            label: Text(
+              'Share',
+              style: GoogleFonts.inter(
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -628,69 +592,49 @@ class _StockTradeReceiptScreenState extends State<StockTradeReceiptScreen>
 
   Widget _buildBottomButtons() {
     return Container(
-      padding: EdgeInsets.all(16.w),
+      padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 16.h),
+      decoration: InvestTradingUi.bottomBarDecoration,
       child: Column(
         children: [
-          Container(
+          SizedBox(
             width: double.infinity,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFF4CAF50),
-                  const Color(0xFF45A049),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(16.r),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF4CAF50).withValues(alpha: 0.4),
-                  blurRadius: 16,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: ElevatedButton(
+            child: FilledButton(
               onPressed: _goToPortfolio,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                elevation: 0,
+              style: FilledButton.styleFrom(
+                backgroundColor: InvestTradingUi.buy,
+                foregroundColor: Colors.black,
                 padding: EdgeInsets.symmetric(vertical: 16.h),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16.r),
+                  borderRadius: BorderRadius.circular(14.r),
                 ),
               ),
               child: Text(
-                'View Portfolio',
+                'View portfolio',
                 style: GoogleFonts.inter(
-                  color: Colors.white,
                   fontSize: 16.sp,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
             ),
           ),
           SizedBox(height: 12.h),
-          Container(
+          SizedBox(
             width: double.infinity,
-            decoration: BoxDecoration(
-              color: const Color(0xFF2A2A3E),
-              borderRadius: BorderRadius.circular(16.r),            ),
-            child: ElevatedButton(
+            child: OutlinedButton(
               onPressed: _goToHome,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                elevation: 0,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: InvestTradingUi.textPrimary,
+                side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
                 padding: EdgeInsets.symmetric(vertical: 16.h),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16.r),
+                  borderRadius: BorderRadius.circular(14.r),
                 ),
               ),
               child: Text(
-                'Back to Home',
+                'Home',
                 style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),

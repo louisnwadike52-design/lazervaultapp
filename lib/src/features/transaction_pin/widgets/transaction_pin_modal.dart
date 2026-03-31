@@ -122,11 +122,11 @@ class TransactionPinModalState extends State<TransactionPinModal>
   }
 
   /// Transition to processing phase (called by mixin after PIN verified)
-  void setProcessing() {
+  void setProcessing({String? message}) {
     if (!mounted) return;
     setState(() {
       _phase = PinModalPhase.processing;
-      _statusMessage = 'Processing Transfer...';
+      _statusMessage = message ?? 'Processing...';
     });
     if (!_pulseController.isAnimating) {
       _pulseController.repeat(reverse: true);
@@ -134,12 +134,12 @@ class TransactionPinModalState extends State<TransactionPinModal>
   }
 
   /// Transition to success phase (called by mixin after transfer succeeds)
-  void setSuccess() {
+  void setSuccess({String? message}) {
     if (!mounted) return;
     _pulseController.stop();
     setState(() {
       _phase = PinModalPhase.success;
-      _statusMessage = 'Transfer Successful!';
+      _statusMessage = message ?? 'PIN Verified';
     });
     _checkController.forward();
   }

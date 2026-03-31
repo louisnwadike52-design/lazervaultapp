@@ -84,15 +84,22 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
     final transactionId = 'GRP-PAY-$idPrefix';
 
     // Validate PIN
-    final pinResult = await validatePinOnly(
+    String? verificationToken;
+
+    final success = await validateTransactionPin(
       context: context,
       transactionId: transactionId,
       transactionType: 'group_contribution_payment',
       amount: amount,
       currency: widget.contribution?.currency ?? 'USD',
+      title: 'Confirm Payment',
+      message: 'Confirm group contribution payment of ${widget.contribution?.currency ?? 'USD'} ${amount.toStringAsFixed(2)}',
+      onPinValidated: (token) async {
+        verificationToken = token;
+      },
     );
 
-    if (pinResult == null || !pinResult.success) return;
+    if (!success || verificationToken == null) return;
 
     setState(() {
       _isProcessing = true;
@@ -111,7 +118,7 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
           amount: amount,
           currency: widget.contribution?.currency ?? 'USD',
           notes: notes.isEmpty ? null : notes,
-          transactionPin: pinResult.verificationToken ?? '',
+          transactionPin: verificationToken!,
           sourceAccountId: _selectedAccountId,
           idempotencyKey: idempotencyKey,
         );

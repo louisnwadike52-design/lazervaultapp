@@ -186,6 +186,44 @@ class AirtimeTransactionDetailsLoaded extends AirtimeState {
   List<Object?> get props => [transaction];
 }
 
+// Airtime Transfer states
+class AirtimeTransferProcessing extends AirtimeState {
+  final AirtimeTransaction transaction;
+  final double progress;
+  final String currentStep;
+
+  const AirtimeTransferProcessing({
+    required this.transaction,
+    this.progress = 0.1,
+    this.currentStep = 'Initializing transfer...',
+  });
+
+  @override
+  List<Object?> get props => [transaction, progress, currentStep];
+}
+
+class AirtimeTransferSuccess extends AirtimeState {
+  final AirtimeTransaction transaction;
+
+  const AirtimeTransferSuccess({required this.transaction});
+
+  @override
+  List<Object?> get props => [transaction];
+}
+
+class AirtimeTransferFailed extends AirtimeState {
+  final String message;
+  final AirtimeTransaction? transaction;
+
+  const AirtimeTransferFailed({
+    required this.message,
+    this.transaction,
+  });
+
+  @override
+  List<Object?> get props => [message, transaction];
+}
+
 // Error state
 class AirtimeError extends AirtimeState {
   final String message;

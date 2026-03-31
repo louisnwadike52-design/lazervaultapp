@@ -14,6 +14,9 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/lifestyle/presentation/cubit/lifestyle_cubit.dart';
 import 'package:lazervault/src/features/lifestyle/presentation/screens/lifestyle_screen.dart';
 
+/// Set to `true` to show the voice banking setup bottom sheet when the dashboard loads.
+const bool _kShowVoiceSetupDashboardPrompt = false;
+
 class DashboardScreen extends StatefulWidget {
   static final List<Screen> tabItems = [
     ScreenName.dashboard,
@@ -58,7 +61,6 @@ class _DashboardScreenState extends State<DashboardScreen>
         TabController(length: DashboardScreen.tabItems.length, vsync: this);
     _tabController.addListener(_onTabChanged);
 
-    // Check and show voice setup prompt after dashboard loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkAndShowVoiceSetup();
       _checkAutoOpenVoiceSheet();
@@ -67,6 +69,8 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   /// Check if voice setup is needed and show modal prompt
   Future<void> _checkAndShowVoiceSetup() async {
+    if (!_kShowVoiceSetupDashboardPrompt) return;
+
     // Skip setup prompt if we're auto-opening the voice sheet (enrollment just completed)
     if (_autoOpenVoiceSheetRequested) return;
 

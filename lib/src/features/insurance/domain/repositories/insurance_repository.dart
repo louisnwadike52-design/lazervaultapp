@@ -47,6 +47,7 @@ abstract class InsuranceRepository {
     required String idempotencyKey,
     required Map<String, String> formData,
     required String locale,
+    String? transactionId,
   });
   Future<InsurancePurchaseResult> getInsurancePurchaseStatus({required String reference});
 

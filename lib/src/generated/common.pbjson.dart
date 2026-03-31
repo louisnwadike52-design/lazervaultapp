@@ -1,14 +1,13 @@
-// This is a generated file - do not edit.
 //
-// Generated from common.proto.
-
-// @dart = 3.3
+//  Generated code. Do not modify.
+//  source: common.proto
+//
+// @dart = 2.12
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: curly_braces_in_flow_control_structures
-// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
-// ignore_for_file: non_constant_identifier_names, unused_import
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -115,26 +114,13 @@ const User$json = {
     {'1': 'role', '3': 7, '4': 1, '5': 9, '10': 'role'},
     {'1': 'verified', '3': 8, '4': 1, '5': 8, '10': 'verified'},
     {'1': 'is_email_verified', '3': 9, '4': 1, '5': 8, '10': 'isEmailVerified'},
-    {
-      '1': 'created_at',
-      '3': 10,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'createdAt'
-    },
-    {
-      '1': 'updated_at',
-      '3': 11,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'updatedAt'
-    },
+    {'1': 'created_at', '3': 10, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    {'1': 'updated_at', '3': 11, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
     {'1': 'language', '3': 12, '4': 1, '5': 9, '10': 'language'},
     {'1': 'currency', '3': 13, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'country', '3': 14, '4': 1, '5': 9, '10': 'country'},
     {'1': 'profile_picture', '3': 15, '4': 1, '5': 9, '10': 'profilePicture'},
+    {'1': 'roles', '3': 16, '4': 3, '5': 9, '10': 'roles'},
   ],
 };
 
@@ -149,32 +135,14 @@ final $typed_data.Uint8List userDescriptor = $convert.base64Decode(
     'CyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgl1cGRhdGVkQXQSGgoIbGFuZ3VhZ2'
     'UYDCABKAlSCGxhbmd1YWdlEhoKCGN1cnJlbmN5GA0gASgJUghjdXJyZW5jeRIYCgdjb3VudHJ5'
     'GA4gASgJUgdjb3VudHJ5EicKD3Byb2ZpbGVfcGljdHVyZRgPIAEoCVIOcHJvZmlsZVBpY3R1cm'
-    'U=');
+    'USFAoFcm9sZXMYECADKAlSBXJvbGVz');
 
 @$core.Deprecated('Use dataDescriptor instead')
 const Data$json = {
   '1': 'Data',
   '2': [
-    {
-      '1': 'user',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.User',
-      '9': 0,
-      '10': 'user',
-      '17': true
-    },
-    {
-      '1': 'session',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.Session',
-      '9': 1,
-      '10': 'session',
-      '17': true
-    },
+    {'1': 'user', '3': 1, '4': 1, '5': 11, '6': '.common.User', '9': 0, '10': 'user', '17': true},
+    {'1': 'session', '3': 2, '4': 1, '5': 11, '6': '.common.Session', '9': 1, '10': 'session', '17': true},
   ],
   '8': [
     {'1': '_user'},
@@ -184,8 +152,9 @@ const Data$json = {
 
 /// Descriptor for `Data`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List dataDescriptor = $convert.base64Decode(
-    'CgREYXRhEiEKBHVzZXIYASABKAsyCC5wYi5Vc2VySABSBHVzZXKIAQESKgoHc2Vzc2lvbhgCIA'
-    'EoCzILLnBiLlNlc3Npb25IAVIHc2Vzc2lvbogBAUIHCgVfdXNlckIKCghfc2Vzc2lvbg==');
+    'CgREYXRhEiUKBHVzZXIYASABKAsyDC5jb21tb24uVXNlckgAUgR1c2VyiAEBEi4KB3Nlc3Npb2'
+    '4YAiABKAsyDy5jb21tb24uU2Vzc2lvbkgBUgdzZXNzaW9uiAEBQgcKBV91c2VyQgoKCF9zZXNz'
+    'aW9u');
 
 @$core.Deprecated('Use sessionDescriptor instead')
 const Session$json = {
@@ -195,22 +164,8 @@ const Session$json = {
     {'1': 'user_id', '3': 2, '4': 1, '5': 4, '10': 'userId'},
     {'1': 'access_token', '3': 3, '4': 1, '5': 9, '10': 'accessToken'},
     {'1': 'refresh_token', '3': 4, '4': 1, '5': 9, '10': 'refreshToken'},
-    {
-      '1': 'access_token_expires_at',
-      '3': 5,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'accessTokenExpiresAt'
-    },
-    {
-      '1': 'refresh_token_expires_at',
-      '3': 6,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'refreshTokenExpiresAt'
-    },
+    {'1': 'access_token_expires_at', '3': 5, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'accessTokenExpiresAt'},
+    {'1': 'refresh_token_expires_at', '3': 6, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'refreshTokenExpiresAt'},
   ],
 };
 
@@ -242,3 +197,4 @@ final $typed_data.Uint8List paginationInfoDescriptor = $convert.base64Decode(
     'RvdGFsX3BhZ2VzGAIgASgFUgp0b3RhbFBhZ2VzEh8KC3RvdGFsX2l0ZW1zGAMgASgFUgp0b3Rh'
     'bEl0ZW1zEiQKDml0ZW1zX3Blcl9wYWdlGAQgASgFUgxpdGVtc1BlclBhZ2USGQoIaGFzX25leH'
     'QYBSABKAhSB2hhc05leHQSGQoIaGFzX3ByZXYYBiABKAhSB2hhc1ByZXY=');
+

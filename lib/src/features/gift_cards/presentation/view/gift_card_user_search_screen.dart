@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../../core/services/injection_container.dart';
 import '../../../../../core/utils/debouncer.dart';
+import '../../../../../core/utils/user_search_query.dart';
 import '../../../profile/cubit/profile_cubit.dart';
 import '../../../tag_pay/domain/entities/user_search_result_entity.dart';
 
@@ -50,8 +51,8 @@ class _GiftCardUserSearchScreenState extends State<GiftCardUserSearchScreen> {
       return;
     }
 
-    final cleanQuery = query.replaceAll('@', '').replaceAll('\$', '');
-    if (cleanQuery.length < 2) {
+    final normalized = normalizeLazerVaultUserSearchQuery(query);
+    if (normalized.length < 2) {
       setState(() {
         _isSearching = false;
         _results = [];
@@ -65,7 +66,7 @@ class _GiftCardUserSearchScreenState extends State<GiftCardUserSearchScreen> {
     });
 
     try {
-      final results = await _profileCubit.searchUsers(cleanQuery, limit: 15);
+      final results = await _profileCubit.searchUsers(query, limit: 15);
       if (mounted) {
         setState(() {
           _results = results;

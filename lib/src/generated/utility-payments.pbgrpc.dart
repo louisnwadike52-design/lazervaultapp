@@ -1,14 +1,13 @@
-// This is a generated file - do not edit.
 //
-// Generated from utility-payments.proto.
-
-// @dart = 3.3
+//  Generated code. Do not modify.
+//  source: utility-payments.proto
+//
+// @dart = 2.12
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: curly_braces_in_flow_control_structures
-// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
-// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 import 'dart:async' as $async;
 import 'dart:core' as $core;
@@ -20,467 +19,302 @@ import 'utility-payments.pb.dart' as $0;
 
 export 'utility-payments.pb.dart';
 
-/// Utility Payments Service - Bill payments, airtime, and smart payment features
 @$pb.GrpcServiceName('utilitypayments.UtilityPaymentsService')
 class UtilityPaymentsServiceClient extends $grpc.Client {
-  /// The hostname for this service.
-  static const $core.String defaultHost = '';
+  static final _$payElectricityBill = $grpc.ClientMethod<$0.PayElectricityBillRequest, $0.PayElectricityBillResponse>(
+      '/utilitypayments.UtilityPaymentsService/PayElectricityBill',
+      ($0.PayElectricityBillRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.PayElectricityBillResponse.fromBuffer(value));
+  static final _$payWaterBill = $grpc.ClientMethod<$0.PayWaterBillRequest, $0.PayWaterBillResponse>(
+      '/utilitypayments.UtilityPaymentsService/PayWaterBill',
+      ($0.PayWaterBillRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.PayWaterBillResponse.fromBuffer(value));
+  static final _$payInternetBill = $grpc.ClientMethod<$0.PayInternetBillRequest, $0.PayInternetBillResponse>(
+      '/utilitypayments.UtilityPaymentsService/PayInternetBill',
+      ($0.PayInternetBillRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.PayInternetBillResponse.fromBuffer(value));
+  static final _$buyAirtime = $grpc.ClientMethod<$0.BuyAirtimeRequest, $0.BuyAirtimeResponse>(
+      '/utilitypayments.UtilityPaymentsService/BuyAirtime',
+      ($0.BuyAirtimeRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.BuyAirtimeResponse.fromBuffer(value));
+  static final _$buyData = $grpc.ClientMethod<$0.BuyDataRequest, $0.BuyDataResponse>(
+      '/utilitypayments.UtilityPaymentsService/BuyData',
+      ($0.BuyDataRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.BuyDataResponse.fromBuffer(value));
+  static final _$getDataPlans = $grpc.ClientMethod<$0.GetDataPlansRequest, $0.GetDataPlansResponse>(
+      '/utilitypayments.UtilityPaymentsService/GetDataPlans',
+      ($0.GetDataPlansRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetDataPlansResponse.fromBuffer(value));
+  static final _$barcodePay = $grpc.ClientMethod<$0.BarcodePayRequest, $0.BarcodePayResponse>(
+      '/utilitypayments.UtilityPaymentsService/BarcodePay',
+      ($0.BarcodePayRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.BarcodePayResponse.fromBuffer(value));
+  static final _$scanToPay = $grpc.ClientMethod<$0.ScanToPayRequest, $0.ScanToPayResponse>(
+      '/utilitypayments.UtilityPaymentsService/ScanToPay',
+      ($0.ScanToPayRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.ScanToPayResponse.fromBuffer(value));
+  static final _$getBillPaymentHistory = $grpc.ClientMethod<$0.GetBillPaymentHistoryRequest, $0.GetBillPaymentHistoryResponse>(
+      '/utilitypayments.UtilityPaymentsService/GetBillPaymentHistory',
+      ($0.GetBillPaymentHistoryRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetBillPaymentHistoryResponse.fromBuffer(value));
+  static final _$getBillProviders = $grpc.ClientMethod<$0.GetBillProvidersRequest, $0.GetBillProvidersResponse>(
+      '/utilitypayments.UtilityPaymentsService/GetBillProviders',
+      ($0.GetBillProvidersRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetBillProvidersResponse.fromBuffer(value));
+  static final _$getAirtimeProviders = $grpc.ClientMethod<$0.GetAirtimeProvidersRequest, $0.GetAirtimeProvidersResponse>(
+      '/utilitypayments.UtilityPaymentsService/GetAirtimeProviders',
+      ($0.GetAirtimeProvidersRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetAirtimeProvidersResponse.fromBuffer(value));
+  static final _$verifyBill = $grpc.ClientMethod<$0.VerifyBillRequest, $0.VerifyBillResponse>(
+      '/utilitypayments.UtilityPaymentsService/VerifyBill',
+      ($0.VerifyBillRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.VerifyBillResponse.fromBuffer(value));
+  static final _$validateSmartCard = $grpc.ClientMethod<$0.ValidateSmartCardRequest, $0.ValidateSmartCardResponse>(
+      '/utilitypayments.UtilityPaymentsService/ValidateSmartCard',
+      ($0.ValidateSmartCardRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.ValidateSmartCardResponse.fromBuffer(value));
+  static final _$getTVPackages = $grpc.ClientMethod<$0.GetTVPackagesRequest, $0.GetTVPackagesResponse>(
+      '/utilitypayments.UtilityPaymentsService/GetTVPackages',
+      ($0.GetTVPackagesRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetTVPackagesResponse.fromBuffer(value));
+  static final _$payCableTVBill = $grpc.ClientMethod<$0.PayCableTVBillRequest, $0.PayCableTVBillResponse>(
+      '/utilitypayments.UtilityPaymentsService/PayCableTVBill',
+      ($0.PayCableTVBillRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.PayCableTVBillResponse.fromBuffer(value));
+  static final _$getCableTVProviders = $grpc.ClientMethod<$0.GetCableTVProvidersRequest, $0.GetCableTVProvidersResponse>(
+      '/utilitypayments.UtilityPaymentsService/GetCableTVProviders',
+      ($0.GetCableTVProvidersRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetCableTVProvidersResponse.fromBuffer(value));
+  static final _$getInternetProviders = $grpc.ClientMethod<$0.GetInternetProvidersRequest, $0.GetInternetProvidersResponse>(
+      '/utilitypayments.UtilityPaymentsService/GetInternetProviders',
+      ($0.GetInternetProvidersRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetInternetProvidersResponse.fromBuffer(value));
+  static final _$validateInternetAccount = $grpc.ClientMethod<$0.ValidateInternetAccountRequest, $0.ValidateInternetAccountResponse>(
+      '/utilitypayments.UtilityPaymentsService/ValidateInternetAccount',
+      ($0.ValidateInternetAccountRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.ValidateInternetAccountResponse.fromBuffer(value));
+  static final _$getInternetPackages = $grpc.ClientMethod<$0.GetInternetPackagesRequest, $0.GetInternetPackagesResponse>(
+      '/utilitypayments.UtilityPaymentsService/GetInternetPackages',
+      ($0.GetInternetPackagesRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetInternetPackagesResponse.fromBuffer(value));
+  static final _$purchaseEducationPin = $grpc.ClientMethod<$0.PurchaseEducationPinRequest, $0.PurchaseEducationPinResponse>(
+      '/utilitypayments.UtilityPaymentsService/PurchaseEducationPin',
+      ($0.PurchaseEducationPinRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.PurchaseEducationPinResponse.fromBuffer(value));
+  static final _$getEducationProviders = $grpc.ClientMethod<$0.GetEducationProvidersRequest, $0.GetEducationProvidersResponse>(
+      '/utilitypayments.UtilityPaymentsService/GetEducationProviders',
+      ($0.GetEducationProvidersRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetEducationProvidersResponse.fromBuffer(value));
+  static final _$getActiveSubscriptions = $grpc.ClientMethod<$0.GetActiveSubscriptionsRequest, $0.GetActiveSubscriptionsResponse>(
+      '/utilitypayments.UtilityPaymentsService/GetActiveSubscriptions',
+      ($0.GetActiveSubscriptionsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetActiveSubscriptionsResponse.fromBuffer(value));
+  static final _$getSubscriptionSummary = $grpc.ClientMethod<$0.GetSubscriptionSummaryRequest, $0.GetSubscriptionSummaryResponse>(
+      '/utilitypayments.UtilityPaymentsService/GetSubscriptionSummary',
+      ($0.GetSubscriptionSummaryRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetSubscriptionSummaryResponse.fromBuffer(value));
+  static final _$getSubscriptionSpending = $grpc.ClientMethod<$0.GetSubscriptionSpendingRequest, $0.GetSubscriptionSpendingResponse>(
+      '/utilitypayments.UtilityPaymentsService/GetSubscriptionSpending',
+      ($0.GetSubscriptionSpendingRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetSubscriptionSpendingResponse.fromBuffer(value));
+  static final _$enableAutoRenew = $grpc.ClientMethod<$0.EnableAutoRenewRequest, $0.EnableAutoRenewResponse>(
+      '/utilitypayments.UtilityPaymentsService/EnableAutoRenew',
+      ($0.EnableAutoRenewRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.EnableAutoRenewResponse.fromBuffer(value));
+  static final _$disableAutoRenew = $grpc.ClientMethod<$0.DisableAutoRenewRequest, $0.DisableAutoRenewResponse>(
+      '/utilitypayments.UtilityPaymentsService/DisableAutoRenew',
+      ($0.DisableAutoRenewRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.DisableAutoRenewResponse.fromBuffer(value));
+  static final _$getAutoRenewSubscriptions = $grpc.ClientMethod<$0.GetAutoRenewSubscriptionsRequest, $0.GetAutoRenewSubscriptionsResponse>(
+      '/utilitypayments.UtilityPaymentsService/GetAutoRenewSubscriptions',
+      ($0.GetAutoRenewSubscriptionsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetAutoRenewSubscriptionsResponse.fromBuffer(value));
+  static final _$updateAutoRenewPlan = $grpc.ClientMethod<$0.UpdateAutoRenewPlanRequest, $0.UpdateAutoRenewPlanResponse>(
+      '/utilitypayments.UtilityPaymentsService/UpdateAutoRenewPlan',
+      ($0.UpdateAutoRenewPlanRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.UpdateAutoRenewPlanResponse.fromBuffer(value));
+  static final _$transferAirtime = $grpc.ClientMethod<$0.TransferAirtimeRequest, $0.TransferAirtimeResponse>(
+      '/utilitypayments.UtilityPaymentsService/TransferAirtime',
+      ($0.TransferAirtimeRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.TransferAirtimeResponse.fromBuffer(value));
+  static final _$getAirtimeTransferRates = $grpc.ClientMethod<$0.GetAirtimeTransferRatesRequest, $0.GetAirtimeTransferRatesResponse>(
+      '/utilitypayments.UtilityPaymentsService/GetAirtimeTransferRates',
+      ($0.GetAirtimeTransferRatesRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetAirtimeTransferRatesResponse.fromBuffer(value));
+  static final _$getAirtimeTransferHistory = $grpc.ClientMethod<$0.GetAirtimeTransferHistoryRequest, $0.GetAirtimeTransferHistoryResponse>(
+      '/utilitypayments.UtilityPaymentsService/GetAirtimeTransferHistory',
+      ($0.GetAirtimeTransferHistoryRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetAirtimeTransferHistoryResponse.fromBuffer(value));
+  static final _$getAirtimeToCashRates = $grpc.ClientMethod<$0.GetAirtimeToCashRatesRequest, $0.GetAirtimeToCashRatesResponse>(
+      '/utilitypayments.UtilityPaymentsService/GetAirtimeToCashRates',
+      ($0.GetAirtimeToCashRatesRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetAirtimeToCashRatesResponse.fromBuffer(value));
+  static final _$requestAirtimeToCashOTP = $grpc.ClientMethod<$0.RequestAirtimeToCashOTPRequest, $0.RequestAirtimeToCashOTPResponse>(
+      '/utilitypayments.UtilityPaymentsService/RequestAirtimeToCashOTP',
+      ($0.RequestAirtimeToCashOTPRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.RequestAirtimeToCashOTPResponse.fromBuffer(value));
+  static final _$verifyAirtimeToCashOTP = $grpc.ClientMethod<$0.VerifyAirtimeToCashOTPRequest, $0.VerifyAirtimeToCashOTPResponse>(
+      '/utilitypayments.UtilityPaymentsService/VerifyAirtimeToCashOTP',
+      ($0.VerifyAirtimeToCashOTPRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.VerifyAirtimeToCashOTPResponse.fromBuffer(value));
+  static final _$convertAirtimeToCash = $grpc.ClientMethod<$0.ConvertAirtimeToCashRequest, $0.ConvertAirtimeToCashResponse>(
+      '/utilitypayments.UtilityPaymentsService/ConvertAirtimeToCash',
+      ($0.ConvertAirtimeToCashRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.ConvertAirtimeToCashResponse.fromBuffer(value));
+  static final _$getAirtimeToCashHistory = $grpc.ClientMethod<$0.GetAirtimeToCashHistoryRequest, $0.GetAirtimeToCashHistoryResponse>(
+      '/utilitypayments.UtilityPaymentsService/GetAirtimeToCashHistory',
+      ($0.GetAirtimeToCashHistoryRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetAirtimeToCashHistoryResponse.fromBuffer(value));
 
-  /// OAuth scopes needed for the client.
-  static const $core.List<$core.String> oauthScopes = [
-    '',
-  ];
+  UtilityPaymentsServiceClient($grpc.ClientChannel channel,
+      {$grpc.CallOptions? options,
+      $core.Iterable<$grpc.ClientInterceptor>? interceptors})
+      : super(channel, options: options,
+        interceptors: interceptors);
 
-  UtilityPaymentsServiceClient(super.channel,
-      {super.options, super.interceptors});
-
-  /// Pay electricity bill (payElectricityBill from AppServiceName)
-  $grpc.ResponseFuture<$0.PayElectricityBillResponse> payElectricityBill(
-    $0.PayElectricityBillRequest request, {
-    $grpc.CallOptions? options,
-  }) {
+  $grpc.ResponseFuture<$0.PayElectricityBillResponse> payElectricityBill($0.PayElectricityBillRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$payElectricityBill, request, options: options);
   }
 
-  /// Pay water bill
-  $grpc.ResponseFuture<$0.PayWaterBillResponse> payWaterBill(
-    $0.PayWaterBillRequest request, {
-    $grpc.CallOptions? options,
-  }) {
+  $grpc.ResponseFuture<$0.PayWaterBillResponse> payWaterBill($0.PayWaterBillRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$payWaterBill, request, options: options);
   }
 
-  /// Pay internet/cable bill
-  $grpc.ResponseFuture<$0.PayInternetBillResponse> payInternetBill(
-    $0.PayInternetBillRequest request, {
-    $grpc.CallOptions? options,
-  }) {
+  $grpc.ResponseFuture<$0.PayInternetBillResponse> payInternetBill($0.PayInternetBillRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$payInternetBill, request, options: options);
   }
 
-  /// Buy airtime/data (airtime from AppServiceName)
-  $grpc.ResponseFuture<$0.BuyAirtimeResponse> buyAirtime(
-    $0.BuyAirtimeRequest request, {
-    $grpc.CallOptions? options,
-  }) {
+  $grpc.ResponseFuture<$0.BuyAirtimeResponse> buyAirtime($0.BuyAirtimeRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$buyAirtime, request, options: options);
   }
 
-  /// Buy data bundle (dedicated data purchase via eBills Africa)
-  $grpc.ResponseFuture<$0.BuyDataResponse> buyData(
-    $0.BuyDataRequest request, {
-    $grpc.CallOptions? options,
-  }) {
+  $grpc.ResponseFuture<$0.BuyDataResponse> buyData($0.BuyDataRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$buyData, request, options: options);
   }
 
-  /// Get available data plans for a network
-  $grpc.ResponseFuture<$0.GetDataPlansResponse> getDataPlans(
-    $0.GetDataPlansRequest request, {
-    $grpc.CallOptions? options,
-  }) {
+  $grpc.ResponseFuture<$0.GetDataPlansResponse> getDataPlans($0.GetDataPlansRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getDataPlans, request, options: options);
   }
 
-  /// Pay by scanning barcode (barcodeQuickPay from AppServiceName)
-  $grpc.ResponseFuture<$0.BarcodePayResponse> barcodePay(
-    $0.BarcodePayRequest request, {
-    $grpc.CallOptions? options,
-  }) {
+  $grpc.ResponseFuture<$0.BarcodePayResponse> barcodePay($0.BarcodePayRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$barcodePay, request, options: options);
   }
 
-  /// AI-powered scan to pay (aiScanToPay from AppServiceName)
-  $grpc.ResponseFuture<$0.ScanToPayResponse> scanToPay(
-    $0.ScanToPayRequest request, {
-    $grpc.CallOptions? options,
-  }) {
+  $grpc.ResponseFuture<$0.ScanToPayResponse> scanToPay($0.ScanToPayRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$scanToPay, request, options: options);
   }
 
-  /// Get bill payment history
-  $grpc.ResponseFuture<$0.GetBillPaymentHistoryResponse> getBillPaymentHistory(
-    $0.GetBillPaymentHistoryRequest request, {
-    $grpc.CallOptions? options,
-  }) {
+  $grpc.ResponseFuture<$0.GetBillPaymentHistoryResponse> getBillPaymentHistory($0.GetBillPaymentHistoryRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getBillPaymentHistory, request, options: options);
   }
 
-  /// Get bill providers
-  $grpc.ResponseFuture<$0.GetBillProvidersResponse> getBillProviders(
-    $0.GetBillProvidersRequest request, {
-    $grpc.CallOptions? options,
-  }) {
+  $grpc.ResponseFuture<$0.GetBillProvidersResponse> getBillProviders($0.GetBillProvidersRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getBillProviders, request, options: options);
   }
 
-  /// Get airtime providers
-  $grpc.ResponseFuture<$0.GetAirtimeProvidersResponse> getAirtimeProviders(
-    $0.GetAirtimeProvidersRequest request, {
-    $grpc.CallOptions? options,
-  }) {
+  $grpc.ResponseFuture<$0.GetAirtimeProvidersResponse> getAirtimeProviders($0.GetAirtimeProvidersRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getAirtimeProviders, request, options: options);
   }
 
-  /// Verify bill details before payment
-  $grpc.ResponseFuture<$0.VerifyBillResponse> verifyBill(
-    $0.VerifyBillRequest request, {
-    $grpc.CallOptions? options,
-  }) {
+  $grpc.ResponseFuture<$0.VerifyBillResponse> verifyBill($0.VerifyBillRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$verifyBill, request, options: options);
   }
 
-  /// Validate smart card number
-  $grpc.ResponseFuture<$0.ValidateSmartCardResponse> validateSmartCard(
-    $0.ValidateSmartCardRequest request, {
-    $grpc.CallOptions? options,
-  }) {
+  $grpc.ResponseFuture<$0.ValidateSmartCardResponse> validateSmartCard($0.ValidateSmartCardRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$validateSmartCard, request, options: options);
   }
 
-  /// Get TV packages for a provider
-  $grpc.ResponseFuture<$0.GetTVPackagesResponse> getTVPackages(
-    $0.GetTVPackagesRequest request, {
-    $grpc.CallOptions? options,
-  }) {
+  $grpc.ResponseFuture<$0.GetTVPackagesResponse> getTVPackages($0.GetTVPackagesRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getTVPackages, request, options: options);
   }
 
-  /// Pay cable TV bill
-  $grpc.ResponseFuture<$0.PayCableTVBillResponse> payCableTVBill(
-    $0.PayCableTVBillRequest request, {
-    $grpc.CallOptions? options,
-  }) {
+  $grpc.ResponseFuture<$0.PayCableTVBillResponse> payCableTVBill($0.PayCableTVBillRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$payCableTVBill, request, options: options);
   }
 
-  /// Get cable TV providers
-  $grpc.ResponseFuture<$0.GetCableTVProvidersResponse> getCableTVProviders(
-    $0.GetCableTVProvidersRequest request, {
-    $grpc.CallOptions? options,
-  }) {
+  $grpc.ResponseFuture<$0.GetCableTVProvidersResponse> getCableTVProviders($0.GetCableTVProvidersRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getCableTVProviders, request, options: options);
   }
 
-  /// Get internet providers (Smile, Spectranet)
-  $grpc.ResponseFuture<$0.GetInternetProvidersResponse> getInternetProviders(
-    $0.GetInternetProvidersRequest request, {
-    $grpc.CallOptions? options,
-  }) {
+  $grpc.ResponseFuture<$0.GetInternetProvidersResponse> getInternetProviders($0.GetInternetProvidersRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getInternetProviders, request, options: options);
   }
 
-  /// Validate internet account number
-  $grpc.ResponseFuture<$0.ValidateInternetAccountResponse>
-      validateInternetAccount(
-    $0.ValidateInternetAccountRequest request, {
-    $grpc.CallOptions? options,
-  }) {
-    return $createUnaryCall(_$validateInternetAccount, request,
-        options: options);
+  $grpc.ResponseFuture<$0.ValidateInternetAccountResponse> validateInternetAccount($0.ValidateInternetAccountRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$validateInternetAccount, request, options: options);
   }
 
-  /// Get internet packages for a provider
-  $grpc.ResponseFuture<$0.GetInternetPackagesResponse> getInternetPackages(
-    $0.GetInternetPackagesRequest request, {
-    $grpc.CallOptions? options,
-  }) {
+  $grpc.ResponseFuture<$0.GetInternetPackagesResponse> getInternetPackages($0.GetInternetPackagesRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getInternetPackages, request, options: options);
   }
 
-  /// Purchase education PIN (WAEC, JAMB)
-  $grpc.ResponseFuture<$0.PurchaseEducationPinResponse> purchaseEducationPin(
-    $0.PurchaseEducationPinRequest request, {
-    $grpc.CallOptions? options,
-  }) {
+  $grpc.ResponseFuture<$0.PurchaseEducationPinResponse> purchaseEducationPin($0.PurchaseEducationPinRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$purchaseEducationPin, request, options: options);
   }
 
-  /// Get education providers
-  $grpc.ResponseFuture<$0.GetEducationProvidersResponse> getEducationProviders(
-    $0.GetEducationProvidersRequest request, {
-    $grpc.CallOptions? options,
-  }) {
+  $grpc.ResponseFuture<$0.GetEducationProvidersResponse> getEducationProviders($0.GetEducationProvidersRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getEducationProviders, request, options: options);
   }
 
-  /// Get active subscriptions for a user
-  $grpc.ResponseFuture<$0.GetActiveSubscriptionsResponse>
-      getActiveSubscriptions(
-    $0.GetActiveSubscriptionsRequest request, {
-    $grpc.CallOptions? options,
-  }) {
-    return $createUnaryCall(_$getActiveSubscriptions, request,
-        options: options);
+  $grpc.ResponseFuture<$0.GetActiveSubscriptionsResponse> getActiveSubscriptions($0.GetActiveSubscriptionsRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getActiveSubscriptions, request, options: options);
   }
 
-  /// Get subscription summary (counts, monthly spend)
-  $grpc.ResponseFuture<$0.GetSubscriptionSummaryResponse>
-      getSubscriptionSummary(
-    $0.GetSubscriptionSummaryRequest request, {
-    $grpc.CallOptions? options,
-  }) {
-    return $createUnaryCall(_$getSubscriptionSummary, request,
-        options: options);
+  $grpc.ResponseFuture<$0.GetSubscriptionSummaryResponse> getSubscriptionSummary($0.GetSubscriptionSummaryRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getSubscriptionSummary, request, options: options);
   }
 
-  /// Get subscription spending analytics
-  $grpc.ResponseFuture<$0.GetSubscriptionSpendingResponse>
-      getSubscriptionSpending(
-    $0.GetSubscriptionSpendingRequest request, {
-    $grpc.CallOptions? options,
-  }) {
-    return $createUnaryCall(_$getSubscriptionSpending, request,
-        options: options);
+  $grpc.ResponseFuture<$0.GetSubscriptionSpendingResponse> getSubscriptionSpending($0.GetSubscriptionSpendingRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getSubscriptionSpending, request, options: options);
   }
 
-  /// Enable auto-renewal for a data subscription
-  $grpc.ResponseFuture<$0.EnableAutoRenewResponse> enableAutoRenew(
-    $0.EnableAutoRenewRequest request, {
-    $grpc.CallOptions? options,
-  }) {
+  $grpc.ResponseFuture<$0.EnableAutoRenewResponse> enableAutoRenew($0.EnableAutoRenewRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$enableAutoRenew, request, options: options);
   }
 
-  /// Disable auto-renewal for a subscription
-  $grpc.ResponseFuture<$0.DisableAutoRenewResponse> disableAutoRenew(
-    $0.DisableAutoRenewRequest request, {
-    $grpc.CallOptions? options,
-  }) {
+  $grpc.ResponseFuture<$0.DisableAutoRenewResponse> disableAutoRenew($0.DisableAutoRenewRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$disableAutoRenew, request, options: options);
   }
 
-  /// Get all auto-renew enabled subscriptions for a user
-  $grpc.ResponseFuture<$0.GetAutoRenewSubscriptionsResponse>
-      getAutoRenewSubscriptions(
-    $0.GetAutoRenewSubscriptionsRequest request, {
-    $grpc.CallOptions? options,
-  }) {
-    return $createUnaryCall(_$getAutoRenewSubscriptions, request,
-        options: options);
+  $grpc.ResponseFuture<$0.GetAutoRenewSubscriptionsResponse> getAutoRenewSubscriptions($0.GetAutoRenewSubscriptionsRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getAutoRenewSubscriptions, request, options: options);
   }
 
-  /// Update the plan used for auto-renewal
-  $grpc.ResponseFuture<$0.UpdateAutoRenewPlanResponse> updateAutoRenewPlan(
-    $0.UpdateAutoRenewPlanRequest request, {
-    $grpc.CallOptions? options,
-  }) {
+  $grpc.ResponseFuture<$0.UpdateAutoRenewPlanResponse> updateAutoRenewPlan($0.UpdateAutoRenewPlanRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$updateAutoRenewPlan, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetAirtimeToCashRatesResponse> getAirtimeToCashRates(
-    $0.GetAirtimeToCashRatesRequest request, {
-    $grpc.CallOptions? options,
-  }) {
+  $grpc.ResponseFuture<$0.TransferAirtimeResponse> transferAirtime($0.TransferAirtimeRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$transferAirtime, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetAirtimeTransferRatesResponse> getAirtimeTransferRates($0.GetAirtimeTransferRatesRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getAirtimeTransferRates, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetAirtimeTransferHistoryResponse> getAirtimeTransferHistory($0.GetAirtimeTransferHistoryRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getAirtimeTransferHistory, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetAirtimeToCashRatesResponse> getAirtimeToCashRates($0.GetAirtimeToCashRatesRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getAirtimeToCashRates, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.RequestAirtimeToCashOTPResponse>
-      requestAirtimeToCashOTP(
-    $0.RequestAirtimeToCashOTPRequest request, {
-    $grpc.CallOptions? options,
-  }) {
-    return $createUnaryCall(_$requestAirtimeToCashOTP, request,
-        options: options);
+  $grpc.ResponseFuture<$0.RequestAirtimeToCashOTPResponse> requestAirtimeToCashOTP($0.RequestAirtimeToCashOTPRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$requestAirtimeToCashOTP, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.VerifyAirtimeToCashOTPResponse>
-      verifyAirtimeToCashOTP(
-    $0.VerifyAirtimeToCashOTPRequest request, {
-    $grpc.CallOptions? options,
-  }) {
-    return $createUnaryCall(_$verifyAirtimeToCashOTP, request,
-        options: options);
+  $grpc.ResponseFuture<$0.VerifyAirtimeToCashOTPResponse> verifyAirtimeToCashOTP($0.VerifyAirtimeToCashOTPRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$verifyAirtimeToCashOTP, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.ConvertAirtimeToCashResponse> convertAirtimeToCash(
-    $0.ConvertAirtimeToCashRequest request, {
-    $grpc.CallOptions? options,
-  }) {
+  $grpc.ResponseFuture<$0.ConvertAirtimeToCashResponse> convertAirtimeToCash($0.ConvertAirtimeToCashRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$convertAirtimeToCash, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetAirtimeToCashHistoryResponse>
-      getAirtimeToCashHistory(
-    $0.GetAirtimeToCashHistoryRequest request, {
-    $grpc.CallOptions? options,
-  }) {
-    return $createUnaryCall(_$getAirtimeToCashHistory, request,
-        options: options);
+  $grpc.ResponseFuture<$0.GetAirtimeToCashHistoryResponse> getAirtimeToCashHistory($0.GetAirtimeToCashHistoryRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getAirtimeToCashHistory, request, options: options);
   }
-
-  // method descriptors
-
-  static final _$payElectricityBill = $grpc.ClientMethod<
-          $0.PayElectricityBillRequest, $0.PayElectricityBillResponse>(
-      '/utilitypayments.UtilityPaymentsService/PayElectricityBill',
-      ($0.PayElectricityBillRequest value) => value.writeToBuffer(),
-      $0.PayElectricityBillResponse.fromBuffer);
-  static final _$payWaterBill =
-      $grpc.ClientMethod<$0.PayWaterBillRequest, $0.PayWaterBillResponse>(
-          '/utilitypayments.UtilityPaymentsService/PayWaterBill',
-          ($0.PayWaterBillRequest value) => value.writeToBuffer(),
-          $0.PayWaterBillResponse.fromBuffer);
-  static final _$payInternetBill =
-      $grpc.ClientMethod<$0.PayInternetBillRequest, $0.PayInternetBillResponse>(
-          '/utilitypayments.UtilityPaymentsService/PayInternetBill',
-          ($0.PayInternetBillRequest value) => value.writeToBuffer(),
-          $0.PayInternetBillResponse.fromBuffer);
-  static final _$buyAirtime =
-      $grpc.ClientMethod<$0.BuyAirtimeRequest, $0.BuyAirtimeResponse>(
-          '/utilitypayments.UtilityPaymentsService/BuyAirtime',
-          ($0.BuyAirtimeRequest value) => value.writeToBuffer(),
-          $0.BuyAirtimeResponse.fromBuffer);
-  static final _$buyData =
-      $grpc.ClientMethod<$0.BuyDataRequest, $0.BuyDataResponse>(
-          '/utilitypayments.UtilityPaymentsService/BuyData',
-          ($0.BuyDataRequest value) => value.writeToBuffer(),
-          $0.BuyDataResponse.fromBuffer);
-  static final _$getDataPlans =
-      $grpc.ClientMethod<$0.GetDataPlansRequest, $0.GetDataPlansResponse>(
-          '/utilitypayments.UtilityPaymentsService/GetDataPlans',
-          ($0.GetDataPlansRequest value) => value.writeToBuffer(),
-          $0.GetDataPlansResponse.fromBuffer);
-  static final _$barcodePay =
-      $grpc.ClientMethod<$0.BarcodePayRequest, $0.BarcodePayResponse>(
-          '/utilitypayments.UtilityPaymentsService/BarcodePay',
-          ($0.BarcodePayRequest value) => value.writeToBuffer(),
-          $0.BarcodePayResponse.fromBuffer);
-  static final _$scanToPay =
-      $grpc.ClientMethod<$0.ScanToPayRequest, $0.ScanToPayResponse>(
-          '/utilitypayments.UtilityPaymentsService/ScanToPay',
-          ($0.ScanToPayRequest value) => value.writeToBuffer(),
-          $0.ScanToPayResponse.fromBuffer);
-  static final _$getBillPaymentHistory = $grpc.ClientMethod<
-          $0.GetBillPaymentHistoryRequest, $0.GetBillPaymentHistoryResponse>(
-      '/utilitypayments.UtilityPaymentsService/GetBillPaymentHistory',
-      ($0.GetBillPaymentHistoryRequest value) => value.writeToBuffer(),
-      $0.GetBillPaymentHistoryResponse.fromBuffer);
-  static final _$getBillProviders = $grpc.ClientMethod<
-          $0.GetBillProvidersRequest, $0.GetBillProvidersResponse>(
-      '/utilitypayments.UtilityPaymentsService/GetBillProviders',
-      ($0.GetBillProvidersRequest value) => value.writeToBuffer(),
-      $0.GetBillProvidersResponse.fromBuffer);
-  static final _$getAirtimeProviders = $grpc.ClientMethod<
-          $0.GetAirtimeProvidersRequest, $0.GetAirtimeProvidersResponse>(
-      '/utilitypayments.UtilityPaymentsService/GetAirtimeProviders',
-      ($0.GetAirtimeProvidersRequest value) => value.writeToBuffer(),
-      $0.GetAirtimeProvidersResponse.fromBuffer);
-  static final _$verifyBill =
-      $grpc.ClientMethod<$0.VerifyBillRequest, $0.VerifyBillResponse>(
-          '/utilitypayments.UtilityPaymentsService/VerifyBill',
-          ($0.VerifyBillRequest value) => value.writeToBuffer(),
-          $0.VerifyBillResponse.fromBuffer);
-  static final _$validateSmartCard = $grpc.ClientMethod<
-          $0.ValidateSmartCardRequest, $0.ValidateSmartCardResponse>(
-      '/utilitypayments.UtilityPaymentsService/ValidateSmartCard',
-      ($0.ValidateSmartCardRequest value) => value.writeToBuffer(),
-      $0.ValidateSmartCardResponse.fromBuffer);
-  static final _$getTVPackages =
-      $grpc.ClientMethod<$0.GetTVPackagesRequest, $0.GetTVPackagesResponse>(
-          '/utilitypayments.UtilityPaymentsService/GetTVPackages',
-          ($0.GetTVPackagesRequest value) => value.writeToBuffer(),
-          $0.GetTVPackagesResponse.fromBuffer);
-  static final _$payCableTVBill =
-      $grpc.ClientMethod<$0.PayCableTVBillRequest, $0.PayCableTVBillResponse>(
-          '/utilitypayments.UtilityPaymentsService/PayCableTVBill',
-          ($0.PayCableTVBillRequest value) => value.writeToBuffer(),
-          $0.PayCableTVBillResponse.fromBuffer);
-  static final _$getCableTVProviders = $grpc.ClientMethod<
-          $0.GetCableTVProvidersRequest, $0.GetCableTVProvidersResponse>(
-      '/utilitypayments.UtilityPaymentsService/GetCableTVProviders',
-      ($0.GetCableTVProvidersRequest value) => value.writeToBuffer(),
-      $0.GetCableTVProvidersResponse.fromBuffer);
-  static final _$getInternetProviders = $grpc.ClientMethod<
-          $0.GetInternetProvidersRequest, $0.GetInternetProvidersResponse>(
-      '/utilitypayments.UtilityPaymentsService/GetInternetProviders',
-      ($0.GetInternetProvidersRequest value) => value.writeToBuffer(),
-      $0.GetInternetProvidersResponse.fromBuffer);
-  static final _$validateInternetAccount = $grpc.ClientMethod<
-          $0.ValidateInternetAccountRequest,
-          $0.ValidateInternetAccountResponse>(
-      '/utilitypayments.UtilityPaymentsService/ValidateInternetAccount',
-      ($0.ValidateInternetAccountRequest value) => value.writeToBuffer(),
-      $0.ValidateInternetAccountResponse.fromBuffer);
-  static final _$getInternetPackages = $grpc.ClientMethod<
-          $0.GetInternetPackagesRequest, $0.GetInternetPackagesResponse>(
-      '/utilitypayments.UtilityPaymentsService/GetInternetPackages',
-      ($0.GetInternetPackagesRequest value) => value.writeToBuffer(),
-      $0.GetInternetPackagesResponse.fromBuffer);
-  static final _$purchaseEducationPin = $grpc.ClientMethod<
-          $0.PurchaseEducationPinRequest, $0.PurchaseEducationPinResponse>(
-      '/utilitypayments.UtilityPaymentsService/PurchaseEducationPin',
-      ($0.PurchaseEducationPinRequest value) => value.writeToBuffer(),
-      $0.PurchaseEducationPinResponse.fromBuffer);
-  static final _$getEducationProviders = $grpc.ClientMethod<
-          $0.GetEducationProvidersRequest, $0.GetEducationProvidersResponse>(
-      '/utilitypayments.UtilityPaymentsService/GetEducationProviders',
-      ($0.GetEducationProvidersRequest value) => value.writeToBuffer(),
-      $0.GetEducationProvidersResponse.fromBuffer);
-  static final _$getActiveSubscriptions = $grpc.ClientMethod<
-          $0.GetActiveSubscriptionsRequest, $0.GetActiveSubscriptionsResponse>(
-      '/utilitypayments.UtilityPaymentsService/GetActiveSubscriptions',
-      ($0.GetActiveSubscriptionsRequest value) => value.writeToBuffer(),
-      $0.GetActiveSubscriptionsResponse.fromBuffer);
-  static final _$getSubscriptionSummary = $grpc.ClientMethod<
-          $0.GetSubscriptionSummaryRequest, $0.GetSubscriptionSummaryResponse>(
-      '/utilitypayments.UtilityPaymentsService/GetSubscriptionSummary',
-      ($0.GetSubscriptionSummaryRequest value) => value.writeToBuffer(),
-      $0.GetSubscriptionSummaryResponse.fromBuffer);
-  static final _$getSubscriptionSpending = $grpc.ClientMethod<
-          $0.GetSubscriptionSpendingRequest,
-          $0.GetSubscriptionSpendingResponse>(
-      '/utilitypayments.UtilityPaymentsService/GetSubscriptionSpending',
-      ($0.GetSubscriptionSpendingRequest value) => value.writeToBuffer(),
-      $0.GetSubscriptionSpendingResponse.fromBuffer);
-  static final _$enableAutoRenew =
-      $grpc.ClientMethod<$0.EnableAutoRenewRequest, $0.EnableAutoRenewResponse>(
-          '/utilitypayments.UtilityPaymentsService/EnableAutoRenew',
-          ($0.EnableAutoRenewRequest value) => value.writeToBuffer(),
-          $0.EnableAutoRenewResponse.fromBuffer);
-  static final _$disableAutoRenew = $grpc.ClientMethod<
-          $0.DisableAutoRenewRequest, $0.DisableAutoRenewResponse>(
-      '/utilitypayments.UtilityPaymentsService/DisableAutoRenew',
-      ($0.DisableAutoRenewRequest value) => value.writeToBuffer(),
-      $0.DisableAutoRenewResponse.fromBuffer);
-  static final _$getAutoRenewSubscriptions = $grpc.ClientMethod<
-          $0.GetAutoRenewSubscriptionsRequest,
-          $0.GetAutoRenewSubscriptionsResponse>(
-      '/utilitypayments.UtilityPaymentsService/GetAutoRenewSubscriptions',
-      ($0.GetAutoRenewSubscriptionsRequest value) => value.writeToBuffer(),
-      $0.GetAutoRenewSubscriptionsResponse.fromBuffer);
-  static final _$updateAutoRenewPlan = $grpc.ClientMethod<
-          $0.UpdateAutoRenewPlanRequest, $0.UpdateAutoRenewPlanResponse>(
-      '/utilitypayments.UtilityPaymentsService/UpdateAutoRenewPlan',
-      ($0.UpdateAutoRenewPlanRequest value) => value.writeToBuffer(),
-      $0.UpdateAutoRenewPlanResponse.fromBuffer);
-  static final _$getAirtimeToCashRates = $grpc.ClientMethod<
-          $0.GetAirtimeToCashRatesRequest, $0.GetAirtimeToCashRatesResponse>(
-      '/utilitypayments.UtilityPaymentsService/GetAirtimeToCashRates',
-      ($0.GetAirtimeToCashRatesRequest value) => value.writeToBuffer(),
-      $0.GetAirtimeToCashRatesResponse.fromBuffer);
-  static final _$requestAirtimeToCashOTP = $grpc.ClientMethod<
-          $0.RequestAirtimeToCashOTPRequest,
-          $0.RequestAirtimeToCashOTPResponse>(
-      '/utilitypayments.UtilityPaymentsService/RequestAirtimeToCashOTP',
-      ($0.RequestAirtimeToCashOTPRequest value) => value.writeToBuffer(),
-      $0.RequestAirtimeToCashOTPResponse.fromBuffer);
-  static final _$verifyAirtimeToCashOTP = $grpc.ClientMethod<
-          $0.VerifyAirtimeToCashOTPRequest, $0.VerifyAirtimeToCashOTPResponse>(
-      '/utilitypayments.UtilityPaymentsService/VerifyAirtimeToCashOTP',
-      ($0.VerifyAirtimeToCashOTPRequest value) => value.writeToBuffer(),
-      $0.VerifyAirtimeToCashOTPResponse.fromBuffer);
-  static final _$convertAirtimeToCash = $grpc.ClientMethod<
-          $0.ConvertAirtimeToCashRequest, $0.ConvertAirtimeToCashResponse>(
-      '/utilitypayments.UtilityPaymentsService/ConvertAirtimeToCash',
-      ($0.ConvertAirtimeToCashRequest value) => value.writeToBuffer(),
-      $0.ConvertAirtimeToCashResponse.fromBuffer);
-  static final _$getAirtimeToCashHistory = $grpc.ClientMethod<
-          $0.GetAirtimeToCashHistoryRequest,
-          $0.GetAirtimeToCashHistoryResponse>(
-      '/utilitypayments.UtilityPaymentsService/GetAirtimeToCashHistory',
-      ($0.GetAirtimeToCashHistoryRequest value) => value.writeToBuffer(),
-      $0.GetAirtimeToCashHistoryResponse.fromBuffer);
 }
 
 @$pb.GrpcServiceName('utilitypayments.UtilityPaymentsService')
@@ -488,32 +322,26 @@ abstract class UtilityPaymentsServiceBase extends $grpc.Service {
   $core.String get $name => 'utilitypayments.UtilityPaymentsService';
 
   UtilityPaymentsServiceBase() {
-    $addMethod($grpc.ServiceMethod<$0.PayElectricityBillRequest,
-            $0.PayElectricityBillResponse>(
+    $addMethod($grpc.ServiceMethod<$0.PayElectricityBillRequest, $0.PayElectricityBillResponse>(
         'PayElectricityBill',
         payElectricityBill_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $0.PayElectricityBillRequest.fromBuffer(value),
+        ($core.List<$core.int> value) => $0.PayElectricityBillRequest.fromBuffer(value),
         ($0.PayElectricityBillResponse value) => value.writeToBuffer()));
-    $addMethod(
-        $grpc.ServiceMethod<$0.PayWaterBillRequest, $0.PayWaterBillResponse>(
-            'PayWaterBill',
-            payWaterBill_Pre,
-            false,
-            false,
-            ($core.List<$core.int> value) =>
-                $0.PayWaterBillRequest.fromBuffer(value),
-            ($0.PayWaterBillResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.PayInternetBillRequest,
-            $0.PayInternetBillResponse>(
+    $addMethod($grpc.ServiceMethod<$0.PayWaterBillRequest, $0.PayWaterBillResponse>(
+        'PayWaterBill',
+        payWaterBill_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.PayWaterBillRequest.fromBuffer(value),
+        ($0.PayWaterBillResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.PayInternetBillRequest, $0.PayInternetBillResponse>(
         'PayInternetBill',
         payInternetBill_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $0.PayInternetBillRequest.fromBuffer(value),
+        ($core.List<$core.int> value) => $0.PayInternetBillRequest.fromBuffer(value),
         ($0.PayInternetBillResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.BuyAirtimeRequest, $0.BuyAirtimeResponse>(
         'BuyAirtime',
@@ -529,15 +357,13 @@ abstract class UtilityPaymentsServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.BuyDataRequest.fromBuffer(value),
         ($0.BuyDataResponse value) => value.writeToBuffer()));
-    $addMethod(
-        $grpc.ServiceMethod<$0.GetDataPlansRequest, $0.GetDataPlansResponse>(
-            'GetDataPlans',
-            getDataPlans_Pre,
-            false,
-            false,
-            ($core.List<$core.int> value) =>
-                $0.GetDataPlansRequest.fromBuffer(value),
-            ($0.GetDataPlansResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetDataPlansRequest, $0.GetDataPlansResponse>(
+        'GetDataPlans',
+        getDataPlans_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetDataPlansRequest.fromBuffer(value),
+        ($0.GetDataPlansResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.BarcodePayRequest, $0.BarcodePayResponse>(
         'BarcodePay',
         barcodePay_Pre,
@@ -552,32 +378,26 @@ abstract class UtilityPaymentsServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.ScanToPayRequest.fromBuffer(value),
         ($0.ScanToPayResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetBillPaymentHistoryRequest,
-            $0.GetBillPaymentHistoryResponse>(
+    $addMethod($grpc.ServiceMethod<$0.GetBillPaymentHistoryRequest, $0.GetBillPaymentHistoryResponse>(
         'GetBillPaymentHistory',
         getBillPaymentHistory_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $0.GetBillPaymentHistoryRequest.fromBuffer(value),
+        ($core.List<$core.int> value) => $0.GetBillPaymentHistoryRequest.fromBuffer(value),
         ($0.GetBillPaymentHistoryResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetBillProvidersRequest,
-            $0.GetBillProvidersResponse>(
+    $addMethod($grpc.ServiceMethod<$0.GetBillProvidersRequest, $0.GetBillProvidersResponse>(
         'GetBillProviders',
         getBillProviders_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $0.GetBillProvidersRequest.fromBuffer(value),
+        ($core.List<$core.int> value) => $0.GetBillProvidersRequest.fromBuffer(value),
         ($0.GetBillProvidersResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetAirtimeProvidersRequest,
-            $0.GetAirtimeProvidersResponse>(
+    $addMethod($grpc.ServiceMethod<$0.GetAirtimeProvidersRequest, $0.GetAirtimeProvidersResponse>(
         'GetAirtimeProviders',
         getAirtimeProviders_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $0.GetAirtimeProvidersRequest.fromBuffer(value),
+        ($core.List<$core.int> value) => $0.GetAirtimeProvidersRequest.fromBuffer(value),
         ($0.GetAirtimeProvidersResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.VerifyBillRequest, $0.VerifyBillResponse>(
         'VerifyBill',
@@ -586,486 +406,354 @@ abstract class UtilityPaymentsServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.VerifyBillRequest.fromBuffer(value),
         ($0.VerifyBillResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.ValidateSmartCardRequest,
-            $0.ValidateSmartCardResponse>(
+    $addMethod($grpc.ServiceMethod<$0.ValidateSmartCardRequest, $0.ValidateSmartCardResponse>(
         'ValidateSmartCard',
         validateSmartCard_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $0.ValidateSmartCardRequest.fromBuffer(value),
+        ($core.List<$core.int> value) => $0.ValidateSmartCardRequest.fromBuffer(value),
         ($0.ValidateSmartCardResponse value) => value.writeToBuffer()));
-    $addMethod(
-        $grpc.ServiceMethod<$0.GetTVPackagesRequest, $0.GetTVPackagesResponse>(
-            'GetTVPackages',
-            getTVPackages_Pre,
-            false,
-            false,
-            ($core.List<$core.int> value) =>
-                $0.GetTVPackagesRequest.fromBuffer(value),
-            ($0.GetTVPackagesResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.PayCableTVBillRequest,
-            $0.PayCableTVBillResponse>(
+    $addMethod($grpc.ServiceMethod<$0.GetTVPackagesRequest, $0.GetTVPackagesResponse>(
+        'GetTVPackages',
+        getTVPackages_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetTVPackagesRequest.fromBuffer(value),
+        ($0.GetTVPackagesResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.PayCableTVBillRequest, $0.PayCableTVBillResponse>(
         'PayCableTVBill',
         payCableTVBill_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $0.PayCableTVBillRequest.fromBuffer(value),
+        ($core.List<$core.int> value) => $0.PayCableTVBillRequest.fromBuffer(value),
         ($0.PayCableTVBillResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetCableTVProvidersRequest,
-            $0.GetCableTVProvidersResponse>(
+    $addMethod($grpc.ServiceMethod<$0.GetCableTVProvidersRequest, $0.GetCableTVProvidersResponse>(
         'GetCableTVProviders',
         getCableTVProviders_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $0.GetCableTVProvidersRequest.fromBuffer(value),
+        ($core.List<$core.int> value) => $0.GetCableTVProvidersRequest.fromBuffer(value),
         ($0.GetCableTVProvidersResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetInternetProvidersRequest,
-            $0.GetInternetProvidersResponse>(
+    $addMethod($grpc.ServiceMethod<$0.GetInternetProvidersRequest, $0.GetInternetProvidersResponse>(
         'GetInternetProviders',
         getInternetProviders_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $0.GetInternetProvidersRequest.fromBuffer(value),
+        ($core.List<$core.int> value) => $0.GetInternetProvidersRequest.fromBuffer(value),
         ($0.GetInternetProvidersResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.ValidateInternetAccountRequest,
-            $0.ValidateInternetAccountResponse>(
+    $addMethod($grpc.ServiceMethod<$0.ValidateInternetAccountRequest, $0.ValidateInternetAccountResponse>(
         'ValidateInternetAccount',
         validateInternetAccount_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $0.ValidateInternetAccountRequest.fromBuffer(value),
+        ($core.List<$core.int> value) => $0.ValidateInternetAccountRequest.fromBuffer(value),
         ($0.ValidateInternetAccountResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetInternetPackagesRequest,
-            $0.GetInternetPackagesResponse>(
+    $addMethod($grpc.ServiceMethod<$0.GetInternetPackagesRequest, $0.GetInternetPackagesResponse>(
         'GetInternetPackages',
         getInternetPackages_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $0.GetInternetPackagesRequest.fromBuffer(value),
+        ($core.List<$core.int> value) => $0.GetInternetPackagesRequest.fromBuffer(value),
         ($0.GetInternetPackagesResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.PurchaseEducationPinRequest,
-            $0.PurchaseEducationPinResponse>(
+    $addMethod($grpc.ServiceMethod<$0.PurchaseEducationPinRequest, $0.PurchaseEducationPinResponse>(
         'PurchaseEducationPin',
         purchaseEducationPin_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $0.PurchaseEducationPinRequest.fromBuffer(value),
+        ($core.List<$core.int> value) => $0.PurchaseEducationPinRequest.fromBuffer(value),
         ($0.PurchaseEducationPinResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetEducationProvidersRequest,
-            $0.GetEducationProvidersResponse>(
+    $addMethod($grpc.ServiceMethod<$0.GetEducationProvidersRequest, $0.GetEducationProvidersResponse>(
         'GetEducationProviders',
         getEducationProviders_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $0.GetEducationProvidersRequest.fromBuffer(value),
+        ($core.List<$core.int> value) => $0.GetEducationProvidersRequest.fromBuffer(value),
         ($0.GetEducationProvidersResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetActiveSubscriptionsRequest,
-            $0.GetActiveSubscriptionsResponse>(
+    $addMethod($grpc.ServiceMethod<$0.GetActiveSubscriptionsRequest, $0.GetActiveSubscriptionsResponse>(
         'GetActiveSubscriptions',
         getActiveSubscriptions_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $0.GetActiveSubscriptionsRequest.fromBuffer(value),
+        ($core.List<$core.int> value) => $0.GetActiveSubscriptionsRequest.fromBuffer(value),
         ($0.GetActiveSubscriptionsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetSubscriptionSummaryRequest,
-            $0.GetSubscriptionSummaryResponse>(
+    $addMethod($grpc.ServiceMethod<$0.GetSubscriptionSummaryRequest, $0.GetSubscriptionSummaryResponse>(
         'GetSubscriptionSummary',
         getSubscriptionSummary_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $0.GetSubscriptionSummaryRequest.fromBuffer(value),
+        ($core.List<$core.int> value) => $0.GetSubscriptionSummaryRequest.fromBuffer(value),
         ($0.GetSubscriptionSummaryResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetSubscriptionSpendingRequest,
-            $0.GetSubscriptionSpendingResponse>(
+    $addMethod($grpc.ServiceMethod<$0.GetSubscriptionSpendingRequest, $0.GetSubscriptionSpendingResponse>(
         'GetSubscriptionSpending',
         getSubscriptionSpending_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $0.GetSubscriptionSpendingRequest.fromBuffer(value),
+        ($core.List<$core.int> value) => $0.GetSubscriptionSpendingRequest.fromBuffer(value),
         ($0.GetSubscriptionSpendingResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.EnableAutoRenewRequest,
-            $0.EnableAutoRenewResponse>(
+    $addMethod($grpc.ServiceMethod<$0.EnableAutoRenewRequest, $0.EnableAutoRenewResponse>(
         'EnableAutoRenew',
         enableAutoRenew_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $0.EnableAutoRenewRequest.fromBuffer(value),
+        ($core.List<$core.int> value) => $0.EnableAutoRenewRequest.fromBuffer(value),
         ($0.EnableAutoRenewResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.DisableAutoRenewRequest,
-            $0.DisableAutoRenewResponse>(
+    $addMethod($grpc.ServiceMethod<$0.DisableAutoRenewRequest, $0.DisableAutoRenewResponse>(
         'DisableAutoRenew',
         disableAutoRenew_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $0.DisableAutoRenewRequest.fromBuffer(value),
+        ($core.List<$core.int> value) => $0.DisableAutoRenewRequest.fromBuffer(value),
         ($0.DisableAutoRenewResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetAutoRenewSubscriptionsRequest,
-            $0.GetAutoRenewSubscriptionsResponse>(
+    $addMethod($grpc.ServiceMethod<$0.GetAutoRenewSubscriptionsRequest, $0.GetAutoRenewSubscriptionsResponse>(
         'GetAutoRenewSubscriptions',
         getAutoRenewSubscriptions_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $0.GetAutoRenewSubscriptionsRequest.fromBuffer(value),
+        ($core.List<$core.int> value) => $0.GetAutoRenewSubscriptionsRequest.fromBuffer(value),
         ($0.GetAutoRenewSubscriptionsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.UpdateAutoRenewPlanRequest,
-            $0.UpdateAutoRenewPlanResponse>(
+    $addMethod($grpc.ServiceMethod<$0.UpdateAutoRenewPlanRequest, $0.UpdateAutoRenewPlanResponse>(
         'UpdateAutoRenewPlan',
         updateAutoRenewPlan_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $0.UpdateAutoRenewPlanRequest.fromBuffer(value),
+        ($core.List<$core.int> value) => $0.UpdateAutoRenewPlanRequest.fromBuffer(value),
         ($0.UpdateAutoRenewPlanResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetAirtimeToCashRatesRequest,
-            $0.GetAirtimeToCashRatesResponse>(
+    $addMethod($grpc.ServiceMethod<$0.TransferAirtimeRequest, $0.TransferAirtimeResponse>(
+        'TransferAirtime',
+        transferAirtime_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.TransferAirtimeRequest.fromBuffer(value),
+        ($0.TransferAirtimeResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetAirtimeTransferRatesRequest, $0.GetAirtimeTransferRatesResponse>(
+        'GetAirtimeTransferRates',
+        getAirtimeTransferRates_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetAirtimeTransferRatesRequest.fromBuffer(value),
+        ($0.GetAirtimeTransferRatesResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetAirtimeTransferHistoryRequest, $0.GetAirtimeTransferHistoryResponse>(
+        'GetAirtimeTransferHistory',
+        getAirtimeTransferHistory_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetAirtimeTransferHistoryRequest.fromBuffer(value),
+        ($0.GetAirtimeTransferHistoryResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetAirtimeToCashRatesRequest, $0.GetAirtimeToCashRatesResponse>(
         'GetAirtimeToCashRates',
         getAirtimeToCashRates_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $0.GetAirtimeToCashRatesRequest.fromBuffer(value),
+        ($core.List<$core.int> value) => $0.GetAirtimeToCashRatesRequest.fromBuffer(value),
         ($0.GetAirtimeToCashRatesResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.RequestAirtimeToCashOTPRequest,
-            $0.RequestAirtimeToCashOTPResponse>(
+    $addMethod($grpc.ServiceMethod<$0.RequestAirtimeToCashOTPRequest, $0.RequestAirtimeToCashOTPResponse>(
         'RequestAirtimeToCashOTP',
         requestAirtimeToCashOTP_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $0.RequestAirtimeToCashOTPRequest.fromBuffer(value),
+        ($core.List<$core.int> value) => $0.RequestAirtimeToCashOTPRequest.fromBuffer(value),
         ($0.RequestAirtimeToCashOTPResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.VerifyAirtimeToCashOTPRequest,
-            $0.VerifyAirtimeToCashOTPResponse>(
+    $addMethod($grpc.ServiceMethod<$0.VerifyAirtimeToCashOTPRequest, $0.VerifyAirtimeToCashOTPResponse>(
         'VerifyAirtimeToCashOTP',
         verifyAirtimeToCashOTP_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $0.VerifyAirtimeToCashOTPRequest.fromBuffer(value),
+        ($core.List<$core.int> value) => $0.VerifyAirtimeToCashOTPRequest.fromBuffer(value),
         ($0.VerifyAirtimeToCashOTPResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.ConvertAirtimeToCashRequest,
-            $0.ConvertAirtimeToCashResponse>(
+    $addMethod($grpc.ServiceMethod<$0.ConvertAirtimeToCashRequest, $0.ConvertAirtimeToCashResponse>(
         'ConvertAirtimeToCash',
         convertAirtimeToCash_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $0.ConvertAirtimeToCashRequest.fromBuffer(value),
+        ($core.List<$core.int> value) => $0.ConvertAirtimeToCashRequest.fromBuffer(value),
         ($0.ConvertAirtimeToCashResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetAirtimeToCashHistoryRequest,
-            $0.GetAirtimeToCashHistoryResponse>(
+    $addMethod($grpc.ServiceMethod<$0.GetAirtimeToCashHistoryRequest, $0.GetAirtimeToCashHistoryResponse>(
         'GetAirtimeToCashHistory',
         getAirtimeToCashHistory_Pre,
         false,
         false,
-        ($core.List<$core.int> value) =>
-            $0.GetAirtimeToCashHistoryRequest.fromBuffer(value),
+        ($core.List<$core.int> value) => $0.GetAirtimeToCashHistoryRequest.fromBuffer(value),
         ($0.GetAirtimeToCashHistoryResponse value) => value.writeToBuffer()));
   }
 
-  $async.Future<$0.PayElectricityBillResponse> payElectricityBill_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.PayElectricityBillRequest> $request) async {
-    return payElectricityBill($call, await $request);
+  $async.Future<$0.PayElectricityBillResponse> payElectricityBill_Pre($grpc.ServiceCall call, $async.Future<$0.PayElectricityBillRequest> request) async {
+    return payElectricityBill(call, await request);
   }
 
-  $async.Future<$0.PayElectricityBillResponse> payElectricityBill(
-      $grpc.ServiceCall call, $0.PayElectricityBillRequest request);
-
-  $async.Future<$0.PayWaterBillResponse> payWaterBill_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.PayWaterBillRequest> $request) async {
-    return payWaterBill($call, await $request);
+  $async.Future<$0.PayWaterBillResponse> payWaterBill_Pre($grpc.ServiceCall call, $async.Future<$0.PayWaterBillRequest> request) async {
+    return payWaterBill(call, await request);
   }
 
-  $async.Future<$0.PayWaterBillResponse> payWaterBill(
-      $grpc.ServiceCall call, $0.PayWaterBillRequest request);
-
-  $async.Future<$0.PayInternetBillResponse> payInternetBill_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.PayInternetBillRequest> $request) async {
-    return payInternetBill($call, await $request);
+  $async.Future<$0.PayInternetBillResponse> payInternetBill_Pre($grpc.ServiceCall call, $async.Future<$0.PayInternetBillRequest> request) async {
+    return payInternetBill(call, await request);
   }
 
-  $async.Future<$0.PayInternetBillResponse> payInternetBill(
-      $grpc.ServiceCall call, $0.PayInternetBillRequest request);
-
-  $async.Future<$0.BuyAirtimeResponse> buyAirtime_Pre($grpc.ServiceCall $call,
-      $async.Future<$0.BuyAirtimeRequest> $request) async {
-    return buyAirtime($call, await $request);
+  $async.Future<$0.BuyAirtimeResponse> buyAirtime_Pre($grpc.ServiceCall call, $async.Future<$0.BuyAirtimeRequest> request) async {
+    return buyAirtime(call, await request);
   }
 
-  $async.Future<$0.BuyAirtimeResponse> buyAirtime(
-      $grpc.ServiceCall call, $0.BuyAirtimeRequest request);
-
-  $async.Future<$0.BuyDataResponse> buyData_Pre($grpc.ServiceCall $call,
-      $async.Future<$0.BuyDataRequest> $request) async {
-    return buyData($call, await $request);
+  $async.Future<$0.BuyDataResponse> buyData_Pre($grpc.ServiceCall call, $async.Future<$0.BuyDataRequest> request) async {
+    return buyData(call, await request);
   }
 
-  $async.Future<$0.BuyDataResponse> buyData(
-      $grpc.ServiceCall call, $0.BuyDataRequest request);
-
-  $async.Future<$0.GetDataPlansResponse> getDataPlans_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.GetDataPlansRequest> $request) async {
-    return getDataPlans($call, await $request);
+  $async.Future<$0.GetDataPlansResponse> getDataPlans_Pre($grpc.ServiceCall call, $async.Future<$0.GetDataPlansRequest> request) async {
+    return getDataPlans(call, await request);
   }
 
-  $async.Future<$0.GetDataPlansResponse> getDataPlans(
-      $grpc.ServiceCall call, $0.GetDataPlansRequest request);
-
-  $async.Future<$0.BarcodePayResponse> barcodePay_Pre($grpc.ServiceCall $call,
-      $async.Future<$0.BarcodePayRequest> $request) async {
-    return barcodePay($call, await $request);
+  $async.Future<$0.BarcodePayResponse> barcodePay_Pre($grpc.ServiceCall call, $async.Future<$0.BarcodePayRequest> request) async {
+    return barcodePay(call, await request);
   }
 
-  $async.Future<$0.BarcodePayResponse> barcodePay(
-      $grpc.ServiceCall call, $0.BarcodePayRequest request);
-
-  $async.Future<$0.ScanToPayResponse> scanToPay_Pre($grpc.ServiceCall $call,
-      $async.Future<$0.ScanToPayRequest> $request) async {
-    return scanToPay($call, await $request);
+  $async.Future<$0.ScanToPayResponse> scanToPay_Pre($grpc.ServiceCall call, $async.Future<$0.ScanToPayRequest> request) async {
+    return scanToPay(call, await request);
   }
 
-  $async.Future<$0.ScanToPayResponse> scanToPay(
-      $grpc.ServiceCall call, $0.ScanToPayRequest request);
-
-  $async.Future<$0.GetBillPaymentHistoryResponse> getBillPaymentHistory_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.GetBillPaymentHistoryRequest> $request) async {
-    return getBillPaymentHistory($call, await $request);
+  $async.Future<$0.GetBillPaymentHistoryResponse> getBillPaymentHistory_Pre($grpc.ServiceCall call, $async.Future<$0.GetBillPaymentHistoryRequest> request) async {
+    return getBillPaymentHistory(call, await request);
   }
 
-  $async.Future<$0.GetBillPaymentHistoryResponse> getBillPaymentHistory(
-      $grpc.ServiceCall call, $0.GetBillPaymentHistoryRequest request);
-
-  $async.Future<$0.GetBillProvidersResponse> getBillProviders_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.GetBillProvidersRequest> $request) async {
-    return getBillProviders($call, await $request);
+  $async.Future<$0.GetBillProvidersResponse> getBillProviders_Pre($grpc.ServiceCall call, $async.Future<$0.GetBillProvidersRequest> request) async {
+    return getBillProviders(call, await request);
   }
 
-  $async.Future<$0.GetBillProvidersResponse> getBillProviders(
-      $grpc.ServiceCall call, $0.GetBillProvidersRequest request);
-
-  $async.Future<$0.GetAirtimeProvidersResponse> getAirtimeProviders_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.GetAirtimeProvidersRequest> $request) async {
-    return getAirtimeProviders($call, await $request);
+  $async.Future<$0.GetAirtimeProvidersResponse> getAirtimeProviders_Pre($grpc.ServiceCall call, $async.Future<$0.GetAirtimeProvidersRequest> request) async {
+    return getAirtimeProviders(call, await request);
   }
 
-  $async.Future<$0.GetAirtimeProvidersResponse> getAirtimeProviders(
-      $grpc.ServiceCall call, $0.GetAirtimeProvidersRequest request);
-
-  $async.Future<$0.VerifyBillResponse> verifyBill_Pre($grpc.ServiceCall $call,
-      $async.Future<$0.VerifyBillRequest> $request) async {
-    return verifyBill($call, await $request);
+  $async.Future<$0.VerifyBillResponse> verifyBill_Pre($grpc.ServiceCall call, $async.Future<$0.VerifyBillRequest> request) async {
+    return verifyBill(call, await request);
   }
 
-  $async.Future<$0.VerifyBillResponse> verifyBill(
-      $grpc.ServiceCall call, $0.VerifyBillRequest request);
-
-  $async.Future<$0.ValidateSmartCardResponse> validateSmartCard_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.ValidateSmartCardRequest> $request) async {
-    return validateSmartCard($call, await $request);
+  $async.Future<$0.ValidateSmartCardResponse> validateSmartCard_Pre($grpc.ServiceCall call, $async.Future<$0.ValidateSmartCardRequest> request) async {
+    return validateSmartCard(call, await request);
   }
 
-  $async.Future<$0.ValidateSmartCardResponse> validateSmartCard(
-      $grpc.ServiceCall call, $0.ValidateSmartCardRequest request);
-
-  $async.Future<$0.GetTVPackagesResponse> getTVPackages_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.GetTVPackagesRequest> $request) async {
-    return getTVPackages($call, await $request);
+  $async.Future<$0.GetTVPackagesResponse> getTVPackages_Pre($grpc.ServiceCall call, $async.Future<$0.GetTVPackagesRequest> request) async {
+    return getTVPackages(call, await request);
   }
 
-  $async.Future<$0.GetTVPackagesResponse> getTVPackages(
-      $grpc.ServiceCall call, $0.GetTVPackagesRequest request);
-
-  $async.Future<$0.PayCableTVBillResponse> payCableTVBill_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.PayCableTVBillRequest> $request) async {
-    return payCableTVBill($call, await $request);
+  $async.Future<$0.PayCableTVBillResponse> payCableTVBill_Pre($grpc.ServiceCall call, $async.Future<$0.PayCableTVBillRequest> request) async {
+    return payCableTVBill(call, await request);
   }
 
-  $async.Future<$0.PayCableTVBillResponse> payCableTVBill(
-      $grpc.ServiceCall call, $0.PayCableTVBillRequest request);
-
-  $async.Future<$0.GetCableTVProvidersResponse> getCableTVProviders_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.GetCableTVProvidersRequest> $request) async {
-    return getCableTVProviders($call, await $request);
+  $async.Future<$0.GetCableTVProvidersResponse> getCableTVProviders_Pre($grpc.ServiceCall call, $async.Future<$0.GetCableTVProvidersRequest> request) async {
+    return getCableTVProviders(call, await request);
   }
 
-  $async.Future<$0.GetCableTVProvidersResponse> getCableTVProviders(
-      $grpc.ServiceCall call, $0.GetCableTVProvidersRequest request);
-
-  $async.Future<$0.GetInternetProvidersResponse> getInternetProviders_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.GetInternetProvidersRequest> $request) async {
-    return getInternetProviders($call, await $request);
+  $async.Future<$0.GetInternetProvidersResponse> getInternetProviders_Pre($grpc.ServiceCall call, $async.Future<$0.GetInternetProvidersRequest> request) async {
+    return getInternetProviders(call, await request);
   }
 
-  $async.Future<$0.GetInternetProvidersResponse> getInternetProviders(
-      $grpc.ServiceCall call, $0.GetInternetProvidersRequest request);
-
-  $async.Future<$0.ValidateInternetAccountResponse> validateInternetAccount_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.ValidateInternetAccountRequest> $request) async {
-    return validateInternetAccount($call, await $request);
+  $async.Future<$0.ValidateInternetAccountResponse> validateInternetAccount_Pre($grpc.ServiceCall call, $async.Future<$0.ValidateInternetAccountRequest> request) async {
+    return validateInternetAccount(call, await request);
   }
 
-  $async.Future<$0.ValidateInternetAccountResponse> validateInternetAccount(
-      $grpc.ServiceCall call, $0.ValidateInternetAccountRequest request);
-
-  $async.Future<$0.GetInternetPackagesResponse> getInternetPackages_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.GetInternetPackagesRequest> $request) async {
-    return getInternetPackages($call, await $request);
+  $async.Future<$0.GetInternetPackagesResponse> getInternetPackages_Pre($grpc.ServiceCall call, $async.Future<$0.GetInternetPackagesRequest> request) async {
+    return getInternetPackages(call, await request);
   }
 
-  $async.Future<$0.GetInternetPackagesResponse> getInternetPackages(
-      $grpc.ServiceCall call, $0.GetInternetPackagesRequest request);
-
-  $async.Future<$0.PurchaseEducationPinResponse> purchaseEducationPin_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.PurchaseEducationPinRequest> $request) async {
-    return purchaseEducationPin($call, await $request);
+  $async.Future<$0.PurchaseEducationPinResponse> purchaseEducationPin_Pre($grpc.ServiceCall call, $async.Future<$0.PurchaseEducationPinRequest> request) async {
+    return purchaseEducationPin(call, await request);
   }
 
-  $async.Future<$0.PurchaseEducationPinResponse> purchaseEducationPin(
-      $grpc.ServiceCall call, $0.PurchaseEducationPinRequest request);
-
-  $async.Future<$0.GetEducationProvidersResponse> getEducationProviders_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.GetEducationProvidersRequest> $request) async {
-    return getEducationProviders($call, await $request);
+  $async.Future<$0.GetEducationProvidersResponse> getEducationProviders_Pre($grpc.ServiceCall call, $async.Future<$0.GetEducationProvidersRequest> request) async {
+    return getEducationProviders(call, await request);
   }
 
-  $async.Future<$0.GetEducationProvidersResponse> getEducationProviders(
-      $grpc.ServiceCall call, $0.GetEducationProvidersRequest request);
-
-  $async.Future<$0.GetActiveSubscriptionsResponse> getActiveSubscriptions_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.GetActiveSubscriptionsRequest> $request) async {
-    return getActiveSubscriptions($call, await $request);
+  $async.Future<$0.GetActiveSubscriptionsResponse> getActiveSubscriptions_Pre($grpc.ServiceCall call, $async.Future<$0.GetActiveSubscriptionsRequest> request) async {
+    return getActiveSubscriptions(call, await request);
   }
 
-  $async.Future<$0.GetActiveSubscriptionsResponse> getActiveSubscriptions(
-      $grpc.ServiceCall call, $0.GetActiveSubscriptionsRequest request);
-
-  $async.Future<$0.GetSubscriptionSummaryResponse> getSubscriptionSummary_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.GetSubscriptionSummaryRequest> $request) async {
-    return getSubscriptionSummary($call, await $request);
+  $async.Future<$0.GetSubscriptionSummaryResponse> getSubscriptionSummary_Pre($grpc.ServiceCall call, $async.Future<$0.GetSubscriptionSummaryRequest> request) async {
+    return getSubscriptionSummary(call, await request);
   }
 
-  $async.Future<$0.GetSubscriptionSummaryResponse> getSubscriptionSummary(
-      $grpc.ServiceCall call, $0.GetSubscriptionSummaryRequest request);
-
-  $async.Future<$0.GetSubscriptionSpendingResponse> getSubscriptionSpending_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.GetSubscriptionSpendingRequest> $request) async {
-    return getSubscriptionSpending($call, await $request);
+  $async.Future<$0.GetSubscriptionSpendingResponse> getSubscriptionSpending_Pre($grpc.ServiceCall call, $async.Future<$0.GetSubscriptionSpendingRequest> request) async {
+    return getSubscriptionSpending(call, await request);
   }
 
-  $async.Future<$0.GetSubscriptionSpendingResponse> getSubscriptionSpending(
-      $grpc.ServiceCall call, $0.GetSubscriptionSpendingRequest request);
-
-  $async.Future<$0.EnableAutoRenewResponse> enableAutoRenew_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.EnableAutoRenewRequest> $request) async {
-    return enableAutoRenew($call, await $request);
+  $async.Future<$0.EnableAutoRenewResponse> enableAutoRenew_Pre($grpc.ServiceCall call, $async.Future<$0.EnableAutoRenewRequest> request) async {
+    return enableAutoRenew(call, await request);
   }
 
-  $async.Future<$0.EnableAutoRenewResponse> enableAutoRenew(
-      $grpc.ServiceCall call, $0.EnableAutoRenewRequest request);
-
-  $async.Future<$0.DisableAutoRenewResponse> disableAutoRenew_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.DisableAutoRenewRequest> $request) async {
-    return disableAutoRenew($call, await $request);
+  $async.Future<$0.DisableAutoRenewResponse> disableAutoRenew_Pre($grpc.ServiceCall call, $async.Future<$0.DisableAutoRenewRequest> request) async {
+    return disableAutoRenew(call, await request);
   }
 
-  $async.Future<$0.DisableAutoRenewResponse> disableAutoRenew(
-      $grpc.ServiceCall call, $0.DisableAutoRenewRequest request);
-
-  $async.Future<$0.GetAutoRenewSubscriptionsResponse>
-      getAutoRenewSubscriptions_Pre($grpc.ServiceCall $call,
-          $async.Future<$0.GetAutoRenewSubscriptionsRequest> $request) async {
-    return getAutoRenewSubscriptions($call, await $request);
+  $async.Future<$0.GetAutoRenewSubscriptionsResponse> getAutoRenewSubscriptions_Pre($grpc.ServiceCall call, $async.Future<$0.GetAutoRenewSubscriptionsRequest> request) async {
+    return getAutoRenewSubscriptions(call, await request);
   }
 
-  $async.Future<$0.GetAutoRenewSubscriptionsResponse> getAutoRenewSubscriptions(
-      $grpc.ServiceCall call, $0.GetAutoRenewSubscriptionsRequest request);
-
-  $async.Future<$0.UpdateAutoRenewPlanResponse> updateAutoRenewPlan_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.UpdateAutoRenewPlanRequest> $request) async {
-    return updateAutoRenewPlan($call, await $request);
+  $async.Future<$0.UpdateAutoRenewPlanResponse> updateAutoRenewPlan_Pre($grpc.ServiceCall call, $async.Future<$0.UpdateAutoRenewPlanRequest> request) async {
+    return updateAutoRenewPlan(call, await request);
   }
 
-  $async.Future<$0.UpdateAutoRenewPlanResponse> updateAutoRenewPlan(
-      $grpc.ServiceCall call, $0.UpdateAutoRenewPlanRequest request);
-
-  $async.Future<$0.GetAirtimeToCashRatesResponse> getAirtimeToCashRates_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.GetAirtimeToCashRatesRequest> $request) async {
-    return getAirtimeToCashRates($call, await $request);
+  $async.Future<$0.TransferAirtimeResponse> transferAirtime_Pre($grpc.ServiceCall call, $async.Future<$0.TransferAirtimeRequest> request) async {
+    return transferAirtime(call, await request);
   }
 
-  $async.Future<$0.GetAirtimeToCashRatesResponse> getAirtimeToCashRates(
-      $grpc.ServiceCall call, $0.GetAirtimeToCashRatesRequest request);
-
-  $async.Future<$0.RequestAirtimeToCashOTPResponse> requestAirtimeToCashOTP_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.RequestAirtimeToCashOTPRequest> $request) async {
-    return requestAirtimeToCashOTP($call, await $request);
+  $async.Future<$0.GetAirtimeTransferRatesResponse> getAirtimeTransferRates_Pre($grpc.ServiceCall call, $async.Future<$0.GetAirtimeTransferRatesRequest> request) async {
+    return getAirtimeTransferRates(call, await request);
   }
 
-  $async.Future<$0.RequestAirtimeToCashOTPResponse> requestAirtimeToCashOTP(
-      $grpc.ServiceCall call, $0.RequestAirtimeToCashOTPRequest request);
-
-  $async.Future<$0.VerifyAirtimeToCashOTPResponse> verifyAirtimeToCashOTP_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.VerifyAirtimeToCashOTPRequest> $request) async {
-    return verifyAirtimeToCashOTP($call, await $request);
+  $async.Future<$0.GetAirtimeTransferHistoryResponse> getAirtimeTransferHistory_Pre($grpc.ServiceCall call, $async.Future<$0.GetAirtimeTransferHistoryRequest> request) async {
+    return getAirtimeTransferHistory(call, await request);
   }
 
-  $async.Future<$0.VerifyAirtimeToCashOTPResponse> verifyAirtimeToCashOTP(
-      $grpc.ServiceCall call, $0.VerifyAirtimeToCashOTPRequest request);
-
-  $async.Future<$0.ConvertAirtimeToCashResponse> convertAirtimeToCash_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.ConvertAirtimeToCashRequest> $request) async {
-    return convertAirtimeToCash($call, await $request);
+  $async.Future<$0.GetAirtimeToCashRatesResponse> getAirtimeToCashRates_Pre($grpc.ServiceCall call, $async.Future<$0.GetAirtimeToCashRatesRequest> request) async {
+    return getAirtimeToCashRates(call, await request);
   }
 
-  $async.Future<$0.ConvertAirtimeToCashResponse> convertAirtimeToCash(
-      $grpc.ServiceCall call, $0.ConvertAirtimeToCashRequest request);
-
-  $async.Future<$0.GetAirtimeToCashHistoryResponse> getAirtimeToCashHistory_Pre(
-      $grpc.ServiceCall $call,
-      $async.Future<$0.GetAirtimeToCashHistoryRequest> $request) async {
-    return getAirtimeToCashHistory($call, await $request);
+  $async.Future<$0.RequestAirtimeToCashOTPResponse> requestAirtimeToCashOTP_Pre($grpc.ServiceCall call, $async.Future<$0.RequestAirtimeToCashOTPRequest> request) async {
+    return requestAirtimeToCashOTP(call, await request);
   }
 
-  $async.Future<$0.GetAirtimeToCashHistoryResponse> getAirtimeToCashHistory(
-      $grpc.ServiceCall call, $0.GetAirtimeToCashHistoryRequest request);
+  $async.Future<$0.VerifyAirtimeToCashOTPResponse> verifyAirtimeToCashOTP_Pre($grpc.ServiceCall call, $async.Future<$0.VerifyAirtimeToCashOTPRequest> request) async {
+    return verifyAirtimeToCashOTP(call, await request);
+  }
+
+  $async.Future<$0.ConvertAirtimeToCashResponse> convertAirtimeToCash_Pre($grpc.ServiceCall call, $async.Future<$0.ConvertAirtimeToCashRequest> request) async {
+    return convertAirtimeToCash(call, await request);
+  }
+
+  $async.Future<$0.GetAirtimeToCashHistoryResponse> getAirtimeToCashHistory_Pre($grpc.ServiceCall call, $async.Future<$0.GetAirtimeToCashHistoryRequest> request) async {
+    return getAirtimeToCashHistory(call, await request);
+  }
+
+  $async.Future<$0.PayElectricityBillResponse> payElectricityBill($grpc.ServiceCall call, $0.PayElectricityBillRequest request);
+  $async.Future<$0.PayWaterBillResponse> payWaterBill($grpc.ServiceCall call, $0.PayWaterBillRequest request);
+  $async.Future<$0.PayInternetBillResponse> payInternetBill($grpc.ServiceCall call, $0.PayInternetBillRequest request);
+  $async.Future<$0.BuyAirtimeResponse> buyAirtime($grpc.ServiceCall call, $0.BuyAirtimeRequest request);
+  $async.Future<$0.BuyDataResponse> buyData($grpc.ServiceCall call, $0.BuyDataRequest request);
+  $async.Future<$0.GetDataPlansResponse> getDataPlans($grpc.ServiceCall call, $0.GetDataPlansRequest request);
+  $async.Future<$0.BarcodePayResponse> barcodePay($grpc.ServiceCall call, $0.BarcodePayRequest request);
+  $async.Future<$0.ScanToPayResponse> scanToPay($grpc.ServiceCall call, $0.ScanToPayRequest request);
+  $async.Future<$0.GetBillPaymentHistoryResponse> getBillPaymentHistory($grpc.ServiceCall call, $0.GetBillPaymentHistoryRequest request);
+  $async.Future<$0.GetBillProvidersResponse> getBillProviders($grpc.ServiceCall call, $0.GetBillProvidersRequest request);
+  $async.Future<$0.GetAirtimeProvidersResponse> getAirtimeProviders($grpc.ServiceCall call, $0.GetAirtimeProvidersRequest request);
+  $async.Future<$0.VerifyBillResponse> verifyBill($grpc.ServiceCall call, $0.VerifyBillRequest request);
+  $async.Future<$0.ValidateSmartCardResponse> validateSmartCard($grpc.ServiceCall call, $0.ValidateSmartCardRequest request);
+  $async.Future<$0.GetTVPackagesResponse> getTVPackages($grpc.ServiceCall call, $0.GetTVPackagesRequest request);
+  $async.Future<$0.PayCableTVBillResponse> payCableTVBill($grpc.ServiceCall call, $0.PayCableTVBillRequest request);
+  $async.Future<$0.GetCableTVProvidersResponse> getCableTVProviders($grpc.ServiceCall call, $0.GetCableTVProvidersRequest request);
+  $async.Future<$0.GetInternetProvidersResponse> getInternetProviders($grpc.ServiceCall call, $0.GetInternetProvidersRequest request);
+  $async.Future<$0.ValidateInternetAccountResponse> validateInternetAccount($grpc.ServiceCall call, $0.ValidateInternetAccountRequest request);
+  $async.Future<$0.GetInternetPackagesResponse> getInternetPackages($grpc.ServiceCall call, $0.GetInternetPackagesRequest request);
+  $async.Future<$0.PurchaseEducationPinResponse> purchaseEducationPin($grpc.ServiceCall call, $0.PurchaseEducationPinRequest request);
+  $async.Future<$0.GetEducationProvidersResponse> getEducationProviders($grpc.ServiceCall call, $0.GetEducationProvidersRequest request);
+  $async.Future<$0.GetActiveSubscriptionsResponse> getActiveSubscriptions($grpc.ServiceCall call, $0.GetActiveSubscriptionsRequest request);
+  $async.Future<$0.GetSubscriptionSummaryResponse> getSubscriptionSummary($grpc.ServiceCall call, $0.GetSubscriptionSummaryRequest request);
+  $async.Future<$0.GetSubscriptionSpendingResponse> getSubscriptionSpending($grpc.ServiceCall call, $0.GetSubscriptionSpendingRequest request);
+  $async.Future<$0.EnableAutoRenewResponse> enableAutoRenew($grpc.ServiceCall call, $0.EnableAutoRenewRequest request);
+  $async.Future<$0.DisableAutoRenewResponse> disableAutoRenew($grpc.ServiceCall call, $0.DisableAutoRenewRequest request);
+  $async.Future<$0.GetAutoRenewSubscriptionsResponse> getAutoRenewSubscriptions($grpc.ServiceCall call, $0.GetAutoRenewSubscriptionsRequest request);
+  $async.Future<$0.UpdateAutoRenewPlanResponse> updateAutoRenewPlan($grpc.ServiceCall call, $0.UpdateAutoRenewPlanRequest request);
+  $async.Future<$0.TransferAirtimeResponse> transferAirtime($grpc.ServiceCall call, $0.TransferAirtimeRequest request);
+  $async.Future<$0.GetAirtimeTransferRatesResponse> getAirtimeTransferRates($grpc.ServiceCall call, $0.GetAirtimeTransferRatesRequest request);
+  $async.Future<$0.GetAirtimeTransferHistoryResponse> getAirtimeTransferHistory($grpc.ServiceCall call, $0.GetAirtimeTransferHistoryRequest request);
+  $async.Future<$0.GetAirtimeToCashRatesResponse> getAirtimeToCashRates($grpc.ServiceCall call, $0.GetAirtimeToCashRatesRequest request);
+  $async.Future<$0.RequestAirtimeToCashOTPResponse> requestAirtimeToCashOTP($grpc.ServiceCall call, $0.RequestAirtimeToCashOTPRequest request);
+  $async.Future<$0.VerifyAirtimeToCashOTPResponse> verifyAirtimeToCashOTP($grpc.ServiceCall call, $0.VerifyAirtimeToCashOTPRequest request);
+  $async.Future<$0.ConvertAirtimeToCashResponse> convertAirtimeToCash($grpc.ServiceCall call, $0.ConvertAirtimeToCashRequest request);
+  $async.Future<$0.GetAirtimeToCashHistoryResponse> getAirtimeToCashHistory($grpc.ServiceCall call, $0.GetAirtimeToCashHistoryRequest request);
 }

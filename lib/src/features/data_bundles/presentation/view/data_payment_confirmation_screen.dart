@@ -46,38 +46,45 @@ class _DataPaymentConfirmationScreenState
     final transactionId = const Uuid().v4();
     final idempotencyKey = const Uuid().v4();
 
+    String? verificationToken;
+
     final success = await validateTransactionPin(
       context: context,
       transactionId: transactionId,
       transactionType: 'data_purchase',
       amount: plan.price,
       currency: 'NGN',
-      title: 'Confirm Data Purchase',
-      message:
-          'Confirm purchase of ${plan.name} for \u20A6${_currencyFormat.format(plan.price)}?',
-      onPinValidated: (verificationToken) async {
-        Get.toNamed(
-          AppRoutes.dataBundlesPaymentProcessing,
-          arguments: {
-            'plan': plan,
-            'network': network,
-            'networkName': networkName,
-            'networkColor': networkColorValue,
-            'phoneNumber': phoneNumber,
-            'transactionId': transactionId,
-            'verificationToken': verificationToken,
-            'idempotencyKey': idempotencyKey,
-            'autoRenewEnabled': _autoRenewEnabled,
-          },
-        );
+      title: 'Confirm Payment',
+      message: 'Confirm data bundle purchase of \u20A6${plan.price.toStringAsFixed(0)}',
+      showProcessingPhase: false,
+      onPinValidated: (token) async {
+        verificationToken = token;
       },
     );
 
-    if (!success) {
+    if (!success || verificationToken == null) {
       setState(() {
         _isProcessing = false;
       });
+      return;
     }
+    if (!mounted) return;
+
+    // Navigate AFTER modal is dismissed
+    Get.offNamed(
+      AppRoutes.dataBundlesPaymentProcessing,
+      arguments: {
+        'plan': plan,
+        'network': network,
+        'networkName': networkName,
+        'networkColor': networkColorValue,
+        'phoneNumber': phoneNumber,
+        'transactionId': transactionId,
+        'verificationToken': verificationToken!,
+        'idempotencyKey': idempotencyKey,
+        'autoRenewEnabled': _autoRenewEnabled,
+      },
+    );
   }
 
   @override

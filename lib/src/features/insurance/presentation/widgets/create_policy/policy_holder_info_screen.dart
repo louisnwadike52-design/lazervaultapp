@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 import '../../cubit/create_policy_cubit.dart';
 import 'validation_status_icon.dart';
 import '../../../../../core/utils/form_field_validators.dart';
@@ -29,6 +31,7 @@ class _PolicyHolderInfoScreenState extends State<PolicyHolderInfoScreen>
 
   ValidationStatus _emailStatus = ValidationStatus.neutral;
   ValidationStatus _phoneStatus = ValidationStatus.neutral;
+  CountryLocale _selectedCountry = CountryLocales.all.first; // Nigeria default
 
   @override
   void initState() {
@@ -38,7 +41,22 @@ class _PolicyHolderInfoScreenState extends State<PolicyHolderInfoScreen>
     final cubit = context.read<CreatePolicyCubit>();
     _nameController = TextEditingController(text: cubit.policyHolderName);
     _emailController = TextEditingController(text: cubit.policyHolderEmail);
-    _phoneController = TextEditingController(text: cubit.policyHolderPhone);
+
+    // Strip country dial code from pre-filled phone to show local digits only
+    final prefillPhone = cubit.policyHolderPhone;
+    String localPhone = prefillPhone;
+    if (prefillPhone.isNotEmpty) {
+      final sortedCountries = List<CountryLocale>.from(CountryLocales.all)
+        ..sort((a, b) => b.dialCode.length.compareTo(a.dialCode.length));
+      for (final c in sortedCountries) {
+        if (prefillPhone.startsWith(c.dialCode)) {
+          _selectedCountry = c;
+          localPhone = prefillPhone.substring(c.dialCode.length);
+          break;
+        }
+      }
+    }
+    _phoneController = TextEditingController(text: localPhone);
 
     // Set initial validation status if fields are pre-filled
     if (cubit.policyHolderEmail.isNotEmpty) {
@@ -46,8 +64,9 @@ class _PolicyHolderInfoScreenState extends State<PolicyHolderInfoScreen>
           ? ValidationStatus.valid
           : ValidationStatus.invalid;
     }
-    if (cubit.policyHolderPhone.isNotEmpty) {
-      _phoneStatus = FormFieldValidators.isValidPhoneFormat(cubit.policyHolderPhone)
+    if (localPhone.isNotEmpty) {
+      final stripped = localPhone.startsWith('0') ? localPhone.substring(1) : localPhone;
+      _phoneStatus = (stripped.length >= 7 && stripped.length <= 14)
           ? ValidationStatus.valid
           : ValidationStatus.invalid;
     }
@@ -63,8 +82,12 @@ class _PolicyHolderInfoScreenState extends State<PolicyHolderInfoScreen>
     });
 
     _phoneController.addListener(() {
-      _validatePhoneRealTime(_phoneController.text);
-      context.read<CreatePolicyCubit>().updatePolicyHolderPhone(_phoneController.text);
+      final local = _phoneController.text.replaceAll(RegExp(r'[^\d]'), '');
+      final stripped = local.startsWith('0') ? local.substring(1) : local;
+      _validatePhoneRealTime(stripped);
+      // Always send full E.164 phone to cubit
+      final fullPhone = '${_selectedCountry.dialCode}$stripped';
+      context.read<CreatePolicyCubit>().updatePolicyHolderPhone(fullPhone);
     });
 
     // Animations
@@ -109,11 +132,11 @@ class _PolicyHolderInfoScreenState extends State<PolicyHolderInfoScreen>
     });
   }
 
-  void _validatePhoneRealTime(String phone) {
+  void _validatePhoneRealTime(String localDigits) {
     setState(() {
-      if (phone.isEmpty) {
+      if (localDigits.isEmpty) {
         _phoneStatus = ValidationStatus.neutral;
-      } else if (FormFieldValidators.isValidPhoneFormat(phone)) {
+      } else if (localDigits.length >= 7 && localDigits.length <= 14) {
         _phoneStatus = ValidationStatus.valid;
       } else {
         _phoneStatus = ValidationStatus.invalid;
@@ -386,6 +409,117 @@ class _PolicyHolderInfoScreenState extends State<PolicyHolderInfoScreen>
     );
   }
 
+  void _showCountryCodePicker() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        String searchQuery = '';
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            final filtered = searchQuery.isEmpty
+                ? CountryLocales.all
+                : CountryLocales.search(searchQuery);
+            return DraggableScrollableSheet(
+              initialChildSize: 0.7,
+              maxChildSize: 0.9,
+              minChildSize: 0.4,
+              builder: (context, scrollController) {
+                return Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1F1F1F),
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
+                        width: 40.w, height: 4.h,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2D2D2D),
+                          borderRadius: BorderRadius.circular(2.r),
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Select Country Code',
+                              style: GoogleFonts.inter(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w700)),
+                            GestureDetector(
+                              onTap: () => Navigator.pop(context),
+                              child: Icon(Icons.close, color: const Color(0xFF9CA3AF), size: 24.sp),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+                        child: TextField(
+                          onChanged: (v) => setSheetState(() => searchQuery = v),
+                          style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
+                          decoration: InputDecoration(
+                            hintText: 'Search country...',
+                            hintStyle: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 14.sp),
+                            prefixIcon: Icon(Icons.search, color: const Color(0xFF6B7280), size: 20.sp),
+                            filled: true, fillColor: const Color(0xFF0A0A0A),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r), borderSide: BorderSide.none),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: ListView.builder(
+                          controller: scrollController,
+                          padding: EdgeInsets.symmetric(horizontal: 20.w),
+                          itemCount: filtered.length,
+                          itemBuilder: (context, index) {
+                            final country = filtered[index];
+                            final isSelected = country.countryCode == _selectedCountry.countryCode;
+                            return GestureDetector(
+                              onTap: () {
+                                setState(() => _selectedCountry = country);
+                                // Re-trigger cubit update with new dial code
+                                final local = _phoneController.text.replaceAll(RegExp(r'[^\d]'), '');
+                                final stripped = local.startsWith('0') ? local.substring(1) : local;
+                                context.read<CreatePolicyCubit>().updatePolicyHolderPhone('${country.dialCode}$stripped');
+                                Navigator.pop(context);
+                              },
+                              child: Container(
+                                margin: EdgeInsets.only(bottom: 8.h),
+                                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+                                decoration: BoxDecoration(
+                                  color: isSelected ? const Color(0xFF3B82F6).withValues(alpha: 0.1) : const Color(0xFF0A0A0A),
+                                  borderRadius: BorderRadius.circular(12.r),
+                                  border: isSelected ? Border.all(color: const Color(0xFF3B82F6), width: 1.5) : null,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Text(country.flag, style: TextStyle(fontSize: 24.sp)),
+                                    SizedBox(width: 12.w),
+                                    Expanded(child: Text(country.countryName, style: GoogleFonts.inter(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w500))),
+                                    Text(country.dialCode, style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                                    if (isSelected) ...[SizedBox(width: 8.w), Icon(Icons.check_circle, color: const Color(0xFF3B82F6), size: 20.sp)],
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
   Widget _buildPhoneField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -413,66 +547,88 @@ class _PolicyHolderInfoScreenState extends State<PolicyHolderInfoScreen>
           ],
         ),
         SizedBox(height: 12.h),
-        TextFormField(
-          controller: _phoneController,
-          keyboardType: TextInputType.phone,
-          style: GoogleFonts.inter(
-            fontSize: 15.sp,
-            fontWeight: FontWeight.w500,
-            color: Colors.white,
-          ),
-          decoration: InputDecoration(
-            hintText: '+1 234 567 8900',
-            hintStyle: GoogleFonts.inter(
-              fontSize: 15.sp,
-              fontWeight: FontWeight.w400,
-              color: Colors.grey[500],
-            ),
-            prefixIcon: Icon(
-              Icons.phone_outlined,
-              size: 20.sp,
-              color: Colors.white.withValues(alpha: 0.6),
-            ),
-            suffixIcon: Padding(
-              padding: EdgeInsets.only(right: 12.w),
-              child: ValidationStatusIcon(status: _phoneStatus),
-            ),
-            filled: true,
-            fillColor: _phoneStatus.getBackgroundTint() ??
+        Container(
+          decoration: BoxDecoration(
+            color: _phoneStatus.getBackgroundTint() ??
                 Colors.white.withValues(alpha: 0.05),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(
-                color: Colors.white.withValues(alpha: 0.1),
-                width: 1.5,
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(
+              color: _phoneStatus.getBorderColor(
+                neutralColor: Colors.white.withValues(alpha: 0.1),
               ),
+              width: 1.5,
             ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(
-                color: _phoneStatus.getBorderColor(
-                  neutralColor: Colors.white.withValues(alpha: 0.1),
+          ),
+          child: Row(
+            children: [
+              // Country code selector
+              GestureDetector(
+                onTap: _showCountryCodePicker,
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
+                  decoration: const BoxDecoration(
+                    border: Border(
+                      right: BorderSide(color: Color(0xFF2D2D2D), width: 1),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(_selectedCountry.flag, style: TextStyle(fontSize: 20.sp)),
+                      SizedBox(width: 6.w),
+                      Text(
+                        _selectedCountry.dialCode,
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(width: 4.w),
+                      Icon(Icons.keyboard_arrow_down, color: const Color(0xFF6B7280), size: 18.sp),
+                    ],
+                  ),
                 ),
-                width: 1.5,
               ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(
-                color: _phoneStatus.getBorderColor(
-                  neutralColor: const Color(0xFF6366F1),
+              // Local phone number input
+              Expanded(
+                child: TextField(
+                  controller: _phoneController,
+                  keyboardType: TextInputType.phone,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(11),
+                  ],
+                  style: GoogleFonts.inter(
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: '08012345678',
+                    hintStyle: GoogleFonts.inter(
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.grey[500],
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
+                    suffixIcon: Padding(
+                      padding: EdgeInsets.only(right: 12.w),
+                      child: ValidationStatusIcon(status: _phoneStatus),
+                    ),
+                  ),
                 ),
-                width: 1.5,
               ),
-            ),
+            ],
           ),
         ),
         Padding(
           padding: EdgeInsets.only(top: 8.h, left: 4.w),
           child: Text(
             _phoneStatus == ValidationStatus.invalid
-                ? 'Phone must start with + and be at least 8 characters'
-                : 'Include country code (e.g., +1 for US)',
+                ? 'Enter at least 7 digits'
+                : 'Enter your local phone number',
             style: GoogleFonts.inter(
               fontSize: 12.sp,
               fontWeight: FontWeight.w400,

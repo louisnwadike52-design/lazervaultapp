@@ -48,7 +48,19 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
   @override
   void initState() {
     super.initState();
-    context.read<ExchangeCubit>().loadHome();
+    final cubit = context.read<ExchangeCubit>();
+    final args = Get.arguments;
+    if (args is Map) {
+      final from = args['fromCurrency'] as String?;
+      final to = args['toCurrency'] as String?;
+      if (from != null &&
+          to != null &&
+          from.isNotEmpty &&
+          to.isNotEmpty) {
+        cubit.setCurrencyPair(from, to);
+      }
+    }
+    cubit.loadHome();
     _amountController.addListener(_onAmountChanged);
   }
 
@@ -498,46 +510,53 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
     // The cubit always fetches a fresh rate inside convertCurrency(),
     // so we don't block on expired cached rate here.
 
-    await validateTransactionPin(
+    String? verificationToken;
+
+    final success = await validateTransactionPin(
       context: context,
       transactionId: 'exchange-${DateTime.now().millisecondsSinceEpoch}',
       transactionType: 'exchange_conversion',
       amount: cubit.amount,
       currency: cubit.fromCurrency,
-      onPinValidated: (verificationToken) async {
-        pinModalKey.currentState?.setProcessing();
-
-        await cubit.convertCurrency(verificationToken: verificationToken);
-
-        final currentState = cubit.state;
-        if (currentState is ExchangeSuccess) {
-          pinModalKey.currentState?.setSuccess();
-          await Future.delayed(const Duration(milliseconds: 800));
-          if (mounted) Navigator.of(context).pop();
-          Get.offNamed(
-            AppRoutes.exchangeReceipt,
-            arguments: currentState.transaction,
-          );
-        } else if (currentState is ExchangeProcessing) {
-          pinModalKey.currentState?.setSuccess();
-          await Future.delayed(const Duration(milliseconds: 800));
-          if (mounted) Navigator.of(context).pop();
-          Get.offNamed(
-            AppRoutes.exchangeProcessing,
-            arguments: {
-              'transactionId': currentState.transactionId,
-              'isConversion': currentState.isConversion,
-            },
-          );
-        } else if (currentState is ExchangeError) {
-          final errorMsg = currentState.message;
-          // Restore home state to prevent BlocConsumer from rebuilding
-          // with error state while PIN modal is still active
-          cubit.restoreHomeState();
-          throw Exception(errorMsg);
-        }
+      title: 'Confirm Exchange',
+      message: 'Confirm currency exchange of ${cubit.fromCurrency} ${cubit.amount.toStringAsFixed(2)}',
+      onPinValidated: (token) async {
+        verificationToken = token;
       },
     );
+
+    if (!success || verificationToken == null) return;
+    if (!mounted) return;
+
+    // Execute conversion AFTER modal is dismissed
+    await cubit.convertCurrency(verificationToken: verificationToken!);
+
+    final currentState = cubit.state;
+    if (currentState is ExchangeSuccess) {
+      Get.offNamed(
+        AppRoutes.exchangeReceipt,
+        arguments: currentState.transaction,
+      );
+    } else if (currentState is ExchangeProcessing) {
+      Get.offNamed(
+        AppRoutes.exchangeProcessing,
+        arguments: {
+          'transactionId': currentState.transactionId,
+          'isConversion': currentState.isConversion,
+        },
+      );
+    } else if (currentState is ExchangeError) {
+      cubit.restoreHomeState();
+      if (mounted) {
+        Get.snackbar(
+          'Exchange Failed',
+          currentState.message,
+          backgroundColor: const Color(0xFFEF4444),
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+        );
+      }
+    }
   }
 
   @override

@@ -37,9 +37,17 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
   void _loadArguments() {
     final args = Get.arguments as Map<String, dynamic>?;
     if (args != null) {
-      transaction = args['transaction'];
-      isSuccess = args['isSuccess'] ?? false;
-      errorMessage = args['errorMessage'];
+      transaction = args['transaction'] as AirtimeTransaction?;
+      errorMessage = args['errorMessage'] as String?;
+      // Derive success from the actual transaction status, not a separate flag.
+      // "completed" = success, "processing"/"pending" = in progress, "failed" = failure.
+      if (transaction != null) {
+        isSuccess = !transaction!.isFailed;
+      } else {
+        // No transaction object (e.g. network error before backend responded)
+        isSuccess = false;
+        errorMessage ??= 'Payment could not be completed';
+      }
     }
   }
 
@@ -195,6 +203,31 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
   }
 
   Widget _buildStatusSection() {
+    final isProcessing = transaction?.isPending ?? false;
+
+    // Determine icon, color, title, and message from actual status
+    final Color statusColor;
+    final IconData statusIcon;
+    final String statusTitle;
+    final String statusMessage;
+
+    if (transaction != null && transaction!.isFailed) {
+      statusColor = const Color(0xFFEF4444);
+      statusIcon = Icons.close;
+      statusTitle = 'Payment Failed';
+      statusMessage = errorMessage ?? 'Something went wrong with your payment';
+    } else if (isProcessing) {
+      statusColor = const Color(0xFF3B82F6);
+      statusIcon = Icons.schedule;
+      statusTitle = 'Payment Processing';
+      statusMessage = 'Your airtime purchase is being processed by the network provider. This usually completes within a few seconds.';
+    } else {
+      statusColor = const Color(0xFF10B981);
+      statusIcon = Icons.check;
+      statusTitle = 'Payment Successful!';
+      statusMessage = 'Your airtime purchase has been completed successfully';
+    }
+
     return Column(
       children: [
         // Status icon
@@ -203,17 +236,17 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
           height: 100.w,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: isSuccess ? Color(0xFF10B981) : Color(0xFFEF4444),
+            color: statusColor,
             boxShadow: [
               BoxShadow(
-                color: (isSuccess ? Color(0xFF10B981) : Color(0xFFEF4444)).withValues(alpha: 0.3),
+                color: statusColor.withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: Offset(0, 8),
               ),
             ],
           ),
           child: Icon(
-            isSuccess ? Icons.check : Icons.close,
+            statusIcon,
             color: Colors.white,
             size: 48.sp,
           ),
@@ -223,7 +256,7 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
 
         // Status title
         Text(
-          isSuccess ? 'Payment Successful!' : 'Payment Failed',
+          statusTitle,
           style: TextStyle(
             fontSize: 28.sp,
             fontWeight: FontWeight.w700,
@@ -236,9 +269,7 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
 
         // Status message
         Text(
-          isSuccess
-            ? 'Your airtime purchase has been completed successfully'
-            : errorMessage ?? 'Something went wrong with your payment',
+          statusMessage,
           style: TextStyle(
             fontSize: 14.sp,
             color: Colors.white.withValues(alpha: 0.6),
@@ -379,7 +410,7 @@ class _AirtimePaymentConfirmationScreenState extends State<AirtimePaymentConfirm
           _buildReceiptRow('Date & Time', DateFormat('MMM dd, yyyy • hh:mm a').format(transaction!.createdAt)),
           _buildDivider(),
           _buildReceiptRow('Status', transaction!.status.displayName,
-            valueColor: isSuccess ? Color(0xFF10B981) : Color(0xFFEF4444)),
+            valueColor: transaction!.status.color),
 
           if (transaction!.fee != null || transaction!.discount != null) ...[
             SizedBox(height: 16.h),

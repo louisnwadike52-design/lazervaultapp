@@ -1079,15 +1079,24 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
     final transactionId = widget.isPrePayment
         ? 'INV-SVC-FEE-${DateTime.now().millisecondsSinceEpoch}'
         : 'INV-PAY-${(widget.invoice!.id.length >= 8 ? widget.invoice!.id.substring(0, 8) : widget.invoice!.id)}';
-    final pinResult = await validatePinOnly(
+    String? verificationToken;
+
+    final success = await validateTransactionPin(
       context: context,
       transactionId: transactionId,
       transactionType: widget.isPrePayment ? 'invoice_service_fee' : 'invoice_payment',
       amount: widget.serviceFee,
       currency: widget.invoice?.currency ?? 'NGN',
+      title: widget.isPrePayment ? 'Confirm Service Fee' : 'Confirm Payment',
+      message: widget.isPrePayment
+          ? 'Confirm service fee payment of ${widget.invoice?.currency ?? 'NGN'} ${widget.serviceFee.toStringAsFixed(2)}'
+          : 'Confirm invoice payment of ${widget.invoice?.currency ?? 'NGN'} ${widget.serviceFee.toStringAsFixed(2)}',
+      onPinValidated: (token) async {
+        verificationToken = token;
+      },
     );
 
-    if (pinResult == null || !pinResult.success) return;
+    if (!success || verificationToken == null) return;
 
     // Set the selected account on AccountManager so x-account-id metadata is sent
     if (_selectedAccountId.isNotEmpty) {
@@ -1106,7 +1115,7 @@ class _InvoicePaymentScreenState extends State<InvoicePaymentScreen>
       await cubit.unlockInvoice(
         widget.invoice!.id,
         accountId: _selectedAccountId.isNotEmpty ? _selectedAccountId : null,
-        verificationToken: pinResult.verificationToken,
+        verificationToken: verificationToken,
         transactionId: transactionId,
       );
     } else {

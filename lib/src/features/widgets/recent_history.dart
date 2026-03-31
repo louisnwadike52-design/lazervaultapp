@@ -65,11 +65,13 @@ class _RecentHistoryState extends State<RecentHistory> {
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
                   'Recent Transactions',
                   style: TextStyle(
                     fontSize: 16.sp,
+                    height: 1.15,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF1A1A1A),
                     fontFamily: 'Inter',
@@ -81,6 +83,7 @@ class _RecentHistoryState extends State<RecentHistory> {
                     'See all',
                     style: TextStyle(
                       fontSize: 14.sp,
+                      height: 1.15,
                       fontWeight: FontWeight.w500,
                       color: const Color(0xFF581CD9),
                       fontFamily: 'Inter',
@@ -89,7 +92,7 @@ class _RecentHistoryState extends State<RecentHistory> {
                 ),
               ],
             ),
-            SizedBox(height: 8.h),
+            SizedBox(height: 18.h),
             const RecentHistoryList(),
           ],
         ),

@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import '../../domain/entities/stock_entity.dart';
 import '../../cubit/stock_cubit.dart';
 import '../../cubit/stock_state.dart';
 import '../widgets/market_index_card.dart';
@@ -27,10 +28,21 @@ class _StocksHomeScreenState extends State<StocksHomeScreen>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+  String? _investCollection;
+
+  static const Map<String, List<String>> _kCuratedByCollection = {
+    'etf': ['VOO', 'VTI', 'QQQ', 'IWM'],
+    'bond_etf': ['BND', 'VCIT', 'VGIT'],
+    'reit_etf': ['VNQ', 'SCHH', 'XLRE'],
+  };
 
   @override
   void initState() {
     super.initState();
+    final args = Get.arguments;
+    if (args is Map && args['investCollection'] is String) {
+      _investCollection = args['investCollection'] as String;
+    }
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -139,35 +151,42 @@ class _StocksHomeScreenState extends State<StocksHomeScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Markets',
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 28.sp,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.5,
-                  ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Markets',
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 28.sp,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                    ),
+                    ServiceVoiceButton(
+                      serviceName: 'stocks',
+                    ),
+                    SizedBox(width: 8.w),
+                    MicroserviceChatIcon(
+                      serviceName: 'Stocks',
+                      sourceContext: 'investments',
+                      icon: Icons.chat_bubble_outline,
+                      iconColor: const Color(0xFF3B82F6),
+                    ),
+                  ],
                 ),
                 SizedBox(height: 2.h),
                 Text(
-                  'Trade stocks & manage portfolio',
+                  'Stocks, ETFs & funds — execution in your trading currency',
                   style: GoogleFonts.inter(
                     color: const Color(0xFF94A3B8),
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w400,
                   ),
                 ),
-                            ServiceVoiceButton(
-                serviceName: 'stocks',
-              ),
-              SizedBox(width: 8.w),
-              MicroserviceChatIcon(
-                serviceName: 'Stocks',
-                sourceContext: 'investments',
-                icon: Icons.chat_bubble_outline,
-                iconColor: const Color(0xFF3B82F6),
-              ),
-],
+              ],
             ),
           ),
           _buildNotificationButton(),
@@ -254,6 +273,10 @@ class _StocksHomeScreenState extends State<StocksHomeScreen>
             physics: const AlwaysScrollableScrollPhysics(),
             children: [
               SizedBox(height: 8.h),
+              if (_investCollection != null) ...[
+                _buildCuratedCollectionBanner(),
+                SizedBox(height: 16.h),
+              ],
               _buildQuickActions(),
               SizedBox(height: 24.h),
               _buildMarketIndices(),
@@ -311,6 +334,64 @@ class _StocksHomeScreenState extends State<StocksHomeScreen>
     );
   }
 
+  Widget _buildCuratedCollectionBanner() {
+    final key = _investCollection!;
+    final symbols = _kCuratedByCollection[key] ?? const <String>[];
+    final title = switch (key) {
+      'etf' => 'US equity ETFs',
+      'bond_etf' => 'Bond / fixed-income ETFs',
+      'reit_etf' => 'Real estate (REIT) ETFs',
+      _ => 'Discover',
+    };
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        SizedBox(height: 4.h),
+        Text(
+          'Yields and prices move with markets. Past performance does not guarantee future results.',
+          style: GoogleFonts.inter(
+            color: const Color(0xFF94A3B8),
+            fontSize: 11.sp,
+            height: 1.3,
+          ),
+        ),
+        SizedBox(height: 12.h),
+        Wrap(
+          spacing: 8.w,
+          runSpacing: 8.h,
+          children: symbols
+              .map(
+                (sym) => ActionChip(
+                  label: Text(
+                    sym,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13.sp,
+                    ),
+                  ),
+                  backgroundColor: const Color(0xFF1E293B),
+                  side: BorderSide(color: Colors.white.withValues(alpha: 0.12)),
+                  onPressed: () => Get.toNamed(
+                    AppRoutes.stockDetails,
+                    arguments: Stock.navigationStub(sym),
+                  ),
+                ),
+              )
+              .toList(),
+        ),
+      ],
+    );
+  }
+
   Widget _buildQuickActions() {
     return Container(
       padding: EdgeInsets.all(16.w),
@@ -322,9 +403,23 @@ class _StocksHomeScreenState extends State<StocksHomeScreen>
           width: 1,
         ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+      child: Wrap(
+        alignment: WrapAlignment.spaceBetween,
+        spacing: 12.w,
+        runSpacing: 12.h,
         children: [
+          QuickActionButton(
+            icon: Icons.currency_exchange,
+            label: 'FX',
+            color: const Color(0xFF06B6D4),
+            onTap: () => Get.toNamed(
+              AppRoutes.exchangeHome,
+              arguments: {
+                'fromCurrency': 'NGN',
+                'toCurrency': 'USD',
+              },
+            ),
+          ),
           QuickActionButton(
             icon: Icons.show_chart,
             label: 'Trade',

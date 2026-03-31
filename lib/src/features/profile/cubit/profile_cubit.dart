@@ -3,6 +3,7 @@ import 'package:lazervault/core/services/currency_sync_service.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_state.dart';
+import 'package:lazervault/core/utils/user_search_query.dart';
 import 'package:lazervault/src/features/profile/domain/repositories/i_profile_repository.dart';
 import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
 
@@ -217,7 +218,11 @@ class ProfileCubit extends Cubit<ProfileState> {
   }
 
   Future<List<UserSearchResultEntity>> searchUsers(String query, {int limit = 10}) async {
-    return await _repository.searchUsers(query: query, limit: limit);
+    final q = normalizeLazerVaultUserSearchQuery(query);
+    if (q.length < 2) {
+      return [];
+    }
+    return _repository.searchUsers(query: q, limit: limit);
   }
 
   void resetState() {

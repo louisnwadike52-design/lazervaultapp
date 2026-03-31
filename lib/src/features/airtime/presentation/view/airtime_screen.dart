@@ -18,7 +18,7 @@ class AirtimeScreen extends StatefulWidget {
 }
 
 class _AirtimeScreenState extends State<AirtimeScreen> {
-  bool _isBuyMode = true; // true = Buy Airtime, false = Sell (Airtime to Cash)
+  int _selectedTab = 0; // 0 = Buy, 1 = Transfer, 2 = Sell (Airtime to Cash)
 
   @override
   void initState() {
@@ -54,18 +54,20 @@ class _AirtimeScreenState extends State<AirtimeScreen> {
                     children: [
                       SizedBox(height: 16.h),
 
-                      // Buy / Sell Toggle
-                      _buildBuySellToggle(),
+                      // Buy / Transfer / Sell Toggle
+                      _buildTabToggle(),
 
                       SizedBox(height: 20.h),
 
                       // Content based on mode
-                      if (_isBuyMode) ...[
+                      if (_selectedTab == 0) ...[
                         QuickActionsCard(),
                         SizedBox(height: 24.h),
                         NetworkProvidersCard(),
                         SizedBox(height: 24.h),
                         RecentTransactionsCard(),
+                      ] else if (_selectedTab == 1) ...[
+                        _buildTransferContent(),
                       ] else ...[
                         _buildSellContent(),
                       ],
@@ -82,7 +84,7 @@ class _AirtimeScreenState extends State<AirtimeScreen> {
     );
   }
 
-  Widget _buildBuySellToggle() {
+  Widget _buildTabToggle() {
     return Container(
       padding: EdgeInsets.all(4.w),
       decoration: BoxDecoration(
@@ -91,84 +93,187 @@ class _AirtimeScreenState extends State<AirtimeScreen> {
       ),
       child: Row(
         children: [
-          Expanded(
-            child: GestureDetector(
-              onTap: () => setState(() => _isBuyMode = true),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding: EdgeInsets.symmetric(vertical: 12.h),
-                decoration: BoxDecoration(
-                  color: _isBuyMode
-                      ? const Color(0xFF3B82F6)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10.r),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.phone_android,
-                      color: _isBuyMode
-                          ? Colors.white
-                          : const Color(0xFF9CA3AF),
-                      size: 18.sp,
-                    ),
-                    SizedBox(width: 6.w),
-                    Text(
-                      'Buy Airtime',
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600,
-                        color: _isBuyMode
-                            ? Colors.white
-                            : const Color(0xFF9CA3AF),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            child: GestureDetector(
-              onTap: () => setState(() => _isBuyMode = false),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding: EdgeInsets.symmetric(vertical: 12.h),
-                decoration: BoxDecoration(
-                  color: !_isBuyMode
-                      ? const Color(0xFF10B981)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10.r),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.currency_exchange,
-                      color: !_isBuyMode
-                          ? Colors.white
-                          : const Color(0xFF9CA3AF),
-                      size: 18.sp,
-                    ),
-                    SizedBox(width: 6.w),
-                    Text(
-                      'Sell Airtime',
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600,
-                        color: !_isBuyMode
-                            ? Colors.white
-                            : const Color(0xFF9CA3AF),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+          _buildTabItem(0, Icons.phone_android, 'Buy', const Color(0xFF3B82F6)),
+          _buildTabItem(1, Icons.send, 'Transfer', const Color(0xFFFB923C)),
+          _buildTabItem(2, Icons.currency_exchange, 'Sell', const Color(0xFF10B981)),
         ],
       ),
+    );
+  }
+
+  Widget _buildTabItem(int index, IconData icon, String label, Color activeColor) {
+    final isActive = _selectedTab == index;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _selectedTab = index),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: EdgeInsets.symmetric(vertical: 12.h),
+          decoration: BoxDecoration(
+            color: isActive ? activeColor : Colors.transparent,
+            borderRadius: BorderRadius.circular(10.r),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                color: isActive ? Colors.white : const Color(0xFF9CA3AF),
+                size: 18.sp,
+              ),
+              SizedBox(width: 4.w),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                  color: isActive ? Colors.white : const Color(0xFF9CA3AF),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTransferContent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Info banner
+        Container(
+          padding: EdgeInsets.all(16.w),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFFFB923C), Color(0xFFEA580C)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(14.r),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 44.w,
+                height: 44.w,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Icon(
+                  Icons.send,
+                  color: Colors.white,
+                  size: 22.sp,
+                ),
+              ),
+              SizedBox(width: 14.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Transfer Airtime',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      'Send airtime directly to any phone number from your wallet balance.',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.85),
+                        fontSize: 12.sp,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        SizedBox(height: 20.h),
+
+        // Commission info card
+        Container(
+          padding: EdgeInsets.all(14.w),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(
+              color: const Color(0xFFFB923C).withValues(alpha: 0.3),
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.info_outline,
+                color: const Color(0xFFFB923C),
+                size: 20.sp,
+              ),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: Text(
+                  'Commission: 4-5% + \u20A625 flat fee. Min \u20A650 · Max \u20A650,000 per transfer.',
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: const Color(0xFF9CA3AF),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        SizedBox(height: 20.h),
+
+        // How it works
+        Text(
+          'How it works',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        SizedBox(height: 12.h),
+        _buildStep('1', 'Enter recipient details', 'Phone number and network provider'),
+        SizedBox(height: 10.h),
+        _buildStep('2', 'Enter transfer amount', 'Commission is calculated automatically'),
+        SizedBox(height: 10.h),
+        _buildStep('3', 'Review & confirm', 'Verify details and enter your PIN'),
+        SizedBox(height: 10.h),
+        _buildStep('4', 'Airtime delivered', 'Recipient gets airtime instantly'),
+
+        SizedBox(height: 24.h),
+
+        // Transfer Now button
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: () => Get.toNamed(AppRoutes.airtimeTransfer),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFB923C),
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(vertical: 16.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14.r),
+              ),
+              elevation: 0,
+            ),
+            child: Text(
+              'Transfer Airtime Now',
+              style: TextStyle(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -378,9 +483,11 @@ class _AirtimeScreenState extends State<AirtimeScreen> {
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  _isBuyMode
+                  _selectedTab == 0
                       ? 'Buy airtime for yourself or others'
-                      : 'Convert your airtime to cash',
+                      : _selectedTab == 1
+                          ? 'Send airtime to any number'
+                          : 'Convert your airtime to cash',
                   style: TextStyle(
                     fontSize: 14.sp,
                     color: Colors.white.withValues(alpha: 0.6),

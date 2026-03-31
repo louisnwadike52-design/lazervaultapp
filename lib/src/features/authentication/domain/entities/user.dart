@@ -9,6 +9,7 @@ class User extends Equatable {
   final String? phoneNumber;
   final String? username; // Tag pay username
   final String? role;
+  final List<String>? roles;
   final bool verified;
   final bool isEmailVerified;
   final DateTime createdAt;
@@ -29,6 +30,7 @@ class User extends Equatable {
     this.phoneNumber,
     this.username,
     this.role,
+    this.roles,
     required this.verified,
     required this.isEmailVerified,
     required this.createdAt,
@@ -51,6 +53,7 @@ class User extends Equatable {
     phoneNumber: null,
     username: null,
     role: null,
+    roles: null,
     verified: false,
     isEmailVerified: false,
     createdAt: DateTime.fromMillisecondsSinceEpoch(0),
@@ -79,6 +82,7 @@ class User extends Equatable {
         phoneNumber,
         username,
         role,
+        roles,
         verified,
         isEmailVerified,
         createdAt,

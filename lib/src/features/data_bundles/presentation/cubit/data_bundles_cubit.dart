@@ -29,64 +29,68 @@ class DataBundlesCubit extends Cubit<DataBundlesState> {
     required String verificationToken,
     required String idempotencyKey,
   }) async {
-    if (isClosed) return;
+    try {
+      if (isClosed) return;
 
-    emit(DataBundlesPaymentProcessing(
-      progress: 0.1,
-      currentStep: 'Validating phone number...',
-    ));
+      // Step 0: Payment Initiated
+      emit(DataBundlesPaymentProcessing(
+        progress: 0.1,
+        currentStep: 'Payment Initiated',
+      ));
 
-    await Future.delayed(const Duration(milliseconds: 600));
-    if (isClosed) return;
+      // Step 1: Confirming Details
+      await Future.delayed(Duration.zero); // Yield to allow UI to render step 0
+      if (isClosed) return;
+      emit(DataBundlesPaymentProcessing(
+        progress: 0.3,
+        currentStep: 'Confirming Details',
+      ));
 
-    emit(DataBundlesPaymentProcessing(
-      progress: 0.3,
-      currentStep: 'Checking account balance...',
-    ));
+      // Step 2: Processing Payment — actual gRPC call
+      await Future.delayed(Duration.zero); // Yield to allow UI to render step 1
+      if (isClosed) return;
+      emit(DataBundlesPaymentProcessing(
+        progress: 0.5,
+        currentStep: 'Processing Payment',
+      ));
 
-    await Future.delayed(const Duration(milliseconds: 500));
-    if (isClosed) return;
+      final result = await repository.buyData(
+        phoneNumber: phoneNumber,
+        network: network,
+        variationId: variationId,
+        amount: amount,
+        transactionId: transactionId,
+        verificationToken: verificationToken,
+        idempotencyKey: idempotencyKey,
+      );
 
-    emit(DataBundlesPaymentProcessing(
-      progress: 0.5,
-      currentStep: 'Processing with provider...',
-    ));
+      if (isClosed) return;
 
-    final result = await repository.buyData(
-      phoneNumber: phoneNumber,
-      network: network,
-      variationId: variationId,
-      amount: amount,
-      transactionId: transactionId,
-      verificationToken: verificationToken,
-      idempotencyKey: idempotencyKey,
-    );
-
-    if (isClosed) return;
-
-    emit(DataBundlesPaymentProcessing(
-      progress: 0.8,
-      currentStep: 'Finalizing transaction...',
-    ));
-
-    await Future.delayed(const Duration(milliseconds: 400));
-    if (isClosed) return;
-
-    result.fold(
-      (failure) => emit(DataBundlesPaymentFailed(message: failure.message)),
-      (purchase) {
-        if (purchase.isCompleted) {
-          emit(DataBundlesPaymentSuccess(purchase: purchase));
-        } else if (purchase.isFailed) {
-          emit(DataBundlesPaymentFailed(
-            message: 'Payment failed. Please try again.',
-          ));
-        } else {
-          // Pending - treat as success for now, user can check status later
-          emit(DataBundlesPaymentSuccess(purchase: purchase));
-        }
-      },
-    );
+      result.fold(
+        (failure) => emit(DataBundlesPaymentFailed(message: failure.message)),
+        (purchase) {
+          if (purchase.isFailed) {
+            emit(DataBundlesPaymentFailed(
+              message: 'Payment failed. Please try again.',
+            ));
+          } else {
+            // Step 3: Data Delivered
+            emit(DataBundlesPaymentProcessing(
+              progress: 1.0,
+              currentStep: 'Data Delivered',
+            ));
+            emit(DataBundlesPaymentSuccess(purchase: purchase));
+          }
+        },
+      );
+    } catch (e) {
+      if (isClosed) return;
+      emit(DataBundlesPaymentFailed(
+        message: e.toString().contains('StatusCode')
+            ? 'Connection error. Please check your network and try again.'
+            : 'An unexpected error occurred. Please try again.',
+      ));
+    }
   }
 
   void reset() {

@@ -238,6 +238,30 @@ service UtilityPaymentsService {
     };
   }
 
+  // === AIRTIME TRANSFER ===
+
+  // Transfer airtime from user's wallet to recipient's phone (with platform commission)
+  rpc TransferAirtime(TransferAirtimeRequest) returns (TransferAirtimeResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/transferairtime"
+      body: "*"
+    };
+  }
+
+  // Get airtime transfer commission rates
+  rpc GetAirtimeTransferRates(GetAirtimeTransferRatesRequest) returns (GetAirtimeTransferRatesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/airtimetransferrates"
+    };
+  }
+
+  // Get airtime transfer history
+  rpc GetAirtimeTransferHistory(GetAirtimeTransferHistoryRequest) returns (GetAirtimeTransferHistoryResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/airtimetransferhistory"
+    };
+  }
+
   // === AIRTIME-TO-CASH ===
 
   rpc GetAirtimeToCashRates(GetAirtimeToCashRatesRequest) returns (GetAirtimeToCashRatesResponse) {
@@ -876,6 +900,82 @@ message UpdateAutoRenewPlanResponse {
   bool success = 1;
   string message = 2;
   ActiveSubscription subscription = 3;
+}
+
+// ===== AIRTIME TRANSFER =====
+
+message TransferAirtimeRequest {
+  string sender_phone = 1;
+  string recipient_phone = 2;
+  string network = 3;
+  double amount = 4;
+  string country_code = 5;
+  string operator_id = 6;
+  string transaction_id = 7;
+  string verification_token = 8;
+  string idempotency_key = 9;
+  string recipient_name = 10;
+  string transfer_note = 11;
+}
+
+message TransferAirtimeResponse {
+  BillPayment payment = 1;
+  double new_balance = 2;
+  string recipient_phone = 3;
+  string recipient_name = 4;
+  double amount_sent = 5;
+  double commission = 6;
+  double total_charged = 7;
+  string provider_reference = 8;
+  string message = 9;
+}
+
+message AirtimeTransferRate {
+  string network = 1;
+  double commission_rate = 2;
+  double flat_fee = 3;
+  double min_amount = 4;
+  double max_amount = 5;
+  bool is_available = 6;
+  string currency = 7;
+}
+
+message GetAirtimeTransferRatesRequest {
+  string country_code = 1;
+}
+
+message GetAirtimeTransferRatesResponse {
+  repeated AirtimeTransferRate rates = 1;
+}
+
+message AirtimeTransfer {
+  string id = 1;
+  string user_id = 2;
+  string account_id = 3;
+  string sender_phone = 4;
+  string recipient_phone = 5;
+  string recipient_name = 6;
+  string network = 7;
+  double amount = 8;
+  double commission = 9;
+  double total_charged = 10;
+  string status = 11;
+  string provider_reference = 12;
+  string reference = 13;
+  string transfer_note = 14;
+  string failure_reason = 15;
+  string created_at = 16;
+  string completed_at = 17;
+}
+
+message GetAirtimeTransferHistoryRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+}
+
+message GetAirtimeTransferHistoryResponse {
+  repeated AirtimeTransfer transfers = 1;
+  int64 total_count = 2;
 }
 
 // ===== AIRTIME-TO-CASH =====

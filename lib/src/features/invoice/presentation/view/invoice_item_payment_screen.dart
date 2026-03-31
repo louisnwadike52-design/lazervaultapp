@@ -773,15 +773,22 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
     final transactionId = 'INV-PAY-$idPrefix';
     final idempotencyKey = const Uuid().v4();
 
-    final pinResult = await validatePinOnly(
+    String? verificationToken;
+
+    final success = await validateTransactionPin(
       context: context,
       transactionId: transactionId,
       transactionType: 'invoice_item_payment',
       amount: _totalAmount,
       currency: widget.invoice.currency,
+      title: 'Confirm Payment',
+      message: 'Confirm invoice payment of ${widget.invoice.currency} ${_totalAmount.toStringAsFixed(2)}',
+      onPinValidated: (token) async {
+        verificationToken = token;
+      },
     );
 
-    if (pinResult == null || !pinResult.success) return;
+    if (!success || verificationToken == null) return;
 
     if (_selectedAccountId.isNotEmpty) {
       GetIt.I<AccountManager>().setActiveAccount(_selectedAccountId);
@@ -793,7 +800,7 @@ class _InvoiceItemPaymentScreenState extends State<InvoiceItemPaymentScreen>
           widget.invoice.id,
           _selectedAccountId,
           pin: '',
-          verificationToken: pinResult.verificationToken ?? '',
+          verificationToken: verificationToken!,
           transactionId: transactionId,
           idempotencyKey: idempotencyKey,
         );

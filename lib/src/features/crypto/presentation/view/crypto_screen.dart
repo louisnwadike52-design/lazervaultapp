@@ -8,17 +8,16 @@ import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
 import '../../domain/entities/crypto_entity.dart';
-import '../../domain/entities/crypto_wallet_entity.dart';
-import '../../data/models/crypto_model.dart';
+import '../models/crypto_transaction_models.dart';
+import 'all_assets_screen.dart';
 import '../widgets/crypto_search_bar.dart';
 import '../widgets/voice_input_widget.dart';
 import 'crypto_detail_screen.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import '../../../../../core/services/injection_container.dart';
 import '../../../../core/grpc/voice_grpc_client.dart';
-import 'buy_crypto_screen.dart';
-import 'sell_crypto_screen.dart';
 import 'swap_crypto_screen.dart';
+import 'user_holdings_screen.dart';
 import 'price_alerts_screen.dart';
 import 'lazervault_card_screen.dart';
 import 'crypto_transaction_history_screen.dart';
@@ -29,6 +28,7 @@ import 'secure_wallet_screen.dart';
 import 'pro_exchange_screen.dart';
 import 'learn_earn_screen.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import '../widgets/crypto_shimmer_loading.dart';
 
 class CryptoScreen extends StatefulWidget {
   const CryptoScreen({super.key});
@@ -75,9 +75,9 @@ class _CryptoScreenState extends State<CryptoScreen>
                   _buildTopBar(),
                   if (state is CryptosLoaded) ...[
                     _buildPortfolioOverview(state),
-                    if (state.wallets.isNotEmpty) _buildWalletsSection(state),
                     _buildQuickActions(),
                     _buildWarningMessage(),
+                    _buildSupportedAssetsSection(state),
                     _buildMarketOverview(state),
                     _buildWatchlistSection(state),
                     _buildRecentTransactionsSection(state.transactions),
@@ -88,12 +88,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                     _buildTopMoversSection(state),
                     _buildFooter(),
                   ] else if (state is CryptoLoading) ...[
-                    SizedBox(height: 200.h),
-                    const Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Color.fromARGB(255, 78, 3, 208)),
-                      ),
-                    ),
+                    const CryptoShimmerLoading(),
                   ] else if (state is CryptoError) ...[
                     _buildErrorState(state),
                   ],
@@ -319,120 +314,6 @@ class _CryptoScreenState extends State<CryptoScreen>
     );
   }
 
-  Widget _buildWalletsSection(CryptosLoaded state) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(24.r),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Stablecoin Wallets',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-                decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                child: Text(
-                  '${state.wallets.length} wallets',
-                  style: TextStyle(
-                    color: const Color.fromARGB(255, 78, 3, 208),
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 16.h),
-          for (int i = 0; i < state.wallets.length; i++)
-            Padding(
-              padding: EdgeInsets.only(bottom: i < state.wallets.length - 1 ? 10.h : 0),
-              child: _buildWalletItem(state.wallets[i]),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildWalletItem(CryptoWalletEntity wallet) {
-    return Container(
-      padding: EdgeInsets.all(12.w),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 40.w,
-            height: 40.h,
-            decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(10.r),
-            ),
-            child: Center(
-              child: Text(
-                wallet.cryptoSymbol,
-                style: TextStyle(
-                  color: const Color(0xFF10B981),
-                  fontSize: 11.sp,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  wallet.cryptoName,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                SizedBox(height: 2.h),
-                Text(
-                  '${wallet.chainDisplayName} \u2022 ${wallet.truncatedAddress}',
-                  style: TextStyle(
-                    color: Colors.grey[400],
-                    fontSize: 12.sp,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Text(
-            wallet.balance.toStringAsFixed(2),
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildQuickActions() {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -474,14 +355,26 @@ class _CryptoScreenState extends State<CryptoScreen>
           case 'Buy':
             Get.to(() => BlocProvider.value(
               value: cryptoCubit,
-              child: const BuyCryptoScreen(),
+              child: const AllAssetsScreen(mode: AssetSelectionMode.buy),
             ));
             break;
           case 'Sell':
-            Get.to(() => BlocProvider.value(
-              value: cryptoCubit,
-              child: const SellCryptoScreen(),
-            ));
+            final state = cryptoCubit.state;
+            if (state is CryptosLoaded && state.holdings.isNotEmpty) {
+              Get.to(() => BlocProvider.value(
+                value: cryptoCubit,
+                child: const UserHoldingsScreen(),
+              ));
+            } else {
+              Get.snackbar(
+                'No Holdings',
+                "You don't have any crypto holdings to sell yet. Buy some crypto first!",
+                backgroundColor: const Color(0xFF1F1F1F),
+                colorText: Colors.white,
+                snackPosition: SnackPosition.TOP,
+                duration: const Duration(seconds: 3),
+              );
+            }
             break;
           case 'Swap':
             Get.to(() => BlocProvider.value(
@@ -660,6 +553,26 @@ class _CryptoScreenState extends State<CryptoScreen>
         }
 
   Widget _buildWatchlistSection(CryptosLoaded state) {
+    // Resolve watchlist crypto IDs to actual Crypto objects
+    final watchlistCryptos = <Crypto>[];
+    for (final watchlist in state.watchlists) {
+      for (final cryptoId in watchlist.cryptoIds) {
+        final match = state.cryptos.cast<Crypto?>().firstWhere(
+          (c) => c?.id == cryptoId,
+          orElse: () => null,
+        );
+        if (match != null && !watchlistCryptos.any((c) => c.id == match.id)) {
+          watchlistCryptos.add(match);
+        }
+      }
+    }
+    // Also include favorited cryptos
+    for (final crypto in state.cryptos) {
+      if (crypto.isFavorite && !watchlistCryptos.any((c) => c.id == crypto.id)) {
+        watchlistCryptos.add(crypto);
+      }
+    }
+
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                     padding: EdgeInsets.all(20.w),
@@ -694,17 +607,11 @@ class _CryptoScreenState extends State<CryptoScreen>
             ],
           ),
           SizedBox(height: 16.h),
-          if (state.cryptos.isNotEmpty) ...[
-            for (int i = 0; i < (state.cryptos.length > 3 ? 3 : state.cryptos.length); i++)
+          if (watchlistCryptos.isNotEmpty) ...[
+            for (int i = 0; i < (watchlistCryptos.length > 3 ? 3 : watchlistCryptos.length); i++)
               Padding(
                 padding: EdgeInsets.only(bottom: i < 2 ? 12.h : 0),
-                child: _buildWatchlistItem(
-                  state.cryptos[i].name,
-                  state.cryptos[i].symbol,
-                  '${CurrencySymbols.currentSymbol}${state.cryptos[i].currentPrice.toStringAsFixed(2)}',
-                  state.cryptos[i].priceChangePercentage24h,
-                  Icons.star_rounded,
-                ),
+                child: _buildWatchlistItem(watchlistCryptos[i]),
               ),
           ] else
             Text(
@@ -719,34 +626,9 @@ class _CryptoScreenState extends State<CryptoScreen>
           );
         }
 
-  Widget _buildWatchlistItem(
-    String name,
-    String symbol,
-    String price,
-    double change,
-    IconData icon,
-  ) {
+  Widget _buildWatchlistItem(Crypto crypto) {
     return GestureDetector(
-      onTap: () {
-        // Create a crypto object and navigate to crypto details
-        final crypto = Crypto(
-          id: symbol.toLowerCase(),
-          name: name,
-          symbol: symbol.toLowerCase(),
-          image: 'default.png',
-          currentPrice: double.tryParse(price.replaceAll(CurrencySymbols.currentSymbol, '').replaceAll(',', '')) ?? 0.0,
-          marketCap: 0.0,
-          marketCapRank: 0,
-          totalVolume: 0.0,
-          high24h: 0.0,
-          low24h: 0.0,
-          priceChange24h: 0.0,
-          priceChangePercentage24h: change,
-          circulatingSupply: 0.0,
-          lastUpdated: DateTime.now(),
-        );
-        Get.toNamed(AppRoutes.cryptoDetails, arguments: crypto);
-      },
+      onTap: () => Get.toNamed(AppRoutes.cryptoDetails, arguments: crypto),
       child: Container(
         padding: EdgeInsets.all(12.w),
         decoration: BoxDecoration(
@@ -755,14 +637,14 @@ class _CryptoScreenState extends State<CryptoScreen>
         ),
         child: Row(
           children: [
-            Icon(icon, color: Colors.amber, size: 24.sp),
+            Icon(Icons.star_rounded, color: Colors.amber, size: 24.sp),
             SizedBox(width: 12.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    name,
+                    crypto.name,
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 16.sp,
@@ -770,7 +652,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                     ),
                   ),
                   Text(
-                    symbol,
+                    crypto.symbol.toUpperCase(),
                     style: TextStyle(
                       color: Colors.grey[400],
                       fontSize: 12.sp,
@@ -783,7 +665,7 @@ class _CryptoScreenState extends State<CryptoScreen>
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  price,
+                  '${CurrencySymbols.currentSymbol}${crypto.currentPrice.toStringAsFixed(2)}',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 16.sp,
@@ -793,14 +675,14 @@ class _CryptoScreenState extends State<CryptoScreen>
                 Row(
                   children: [
                     Icon(
-                      change >= 0 ? Icons.arrow_upward : Icons.arrow_downward,
-                      color: change >= 0 ? Colors.green : Colors.red,
+                      crypto.priceChangePercentage24h >= 0 ? Icons.arrow_upward : Icons.arrow_downward,
+                      color: crypto.priceChangePercentage24h >= 0 ? Colors.green : Colors.red,
                       size: 12.sp,
                     ),
                     Text(
-                      '${change.abs().toStringAsFixed(2)}%',
+                      '${crypto.priceChangePercentage24h.abs().toStringAsFixed(2)}%',
                       style: TextStyle(
-                        color: change >= 0 ? Colors.green : Colors.red,
+                        color: crypto.priceChangePercentage24h >= 0 ? Colors.green : Colors.red,
                         fontSize: 12.sp,
                         fontWeight: FontWeight.w500,
                       ),
@@ -887,7 +769,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                     Text(
                       'View All',
                       style: TextStyle(
-                        color: const Color.fromARGB(255, 78, 3, 208),
+                        color: Colors.white.withValues(alpha: 0.7),
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w500,
                       ),
@@ -895,7 +777,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                     SizedBox(width: 4.w),
                     Icon(
                       Icons.arrow_forward_ios,
-                      color: const Color.fromARGB(255, 78, 3, 208),
+                      color: Colors.white.withValues(alpha: 0.7),
                       size: 14.sp,
                     ),
                   ],
@@ -1417,6 +1299,12 @@ class _CryptoScreenState extends State<CryptoScreen>
   }
 
   Widget _buildMarketOverview(CryptosLoaded state) {
+    // Derive market trend from average 24h price change of loaded cryptos
+    final avgChange = state.cryptos.isNotEmpty
+        ? state.cryptos.fold(0.0, (sum, c) => sum + c.priceChangePercentage24h) / state.cryptos.length
+        : 0.0;
+    final isMarketUp = avgChange >= 0;
+
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       padding: EdgeInsets.all(20.w),
@@ -1437,7 +1325,7 @@ class _CryptoScreenState extends State<CryptoScreen>
             offset: Offset(0, 2),
           ),
         ],
-        
+
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1465,13 +1353,13 @@ class _CryptoScreenState extends State<CryptoScreen>
                 child: Row(
         children: [
           Icon(
-                      Icons.trending_up,
-                      color: Colors.green,
+                      isMarketUp ? Icons.trending_up : Icons.trending_down,
+                      color: isMarketUp ? Colors.green : Colors.red,
                       size: 16.sp,
                     ),
                     SizedBox(width: 4.w),
           Text(
-                      'Market is up',
+                      'Market is ${isMarketUp ? 'up' : 'down'} ${avgChange.abs().toStringAsFixed(1)}%',
                       style: TextStyle(
               color: Colors.white,
                         fontSize: 12.sp,
@@ -1511,25 +1399,49 @@ class _CryptoScreenState extends State<CryptoScreen>
             ],
           ),
           SizedBox(height: 24.h),
-          Text(
-            'Trending Coins',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Trending Coins',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              if (state.trendingCryptos.length > 3)
+                GestureDetector(
+                  onTap: () => _showTrendingCryptosSheet(state.trendingCryptos),
+                  child: Row(
+                    children: [
+                      Text(
+                        'View All',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.7),
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      SizedBox(width: 4.w),
+                      Icon(
+                        Icons.arrow_forward_ios,
+                        color: Colors.white.withValues(alpha: 0.7),
+                        size: 14.sp,
+                      ),
+                    ],
+                  ),
+                ),
+            ],
           ),
           SizedBox(height: 16.h),
           if (state.trendingCryptos.isNotEmpty) ...[
             for (int i = 0; i < (state.trendingCryptos.length > 3 ? 3 : state.trendingCryptos.length); i++)
               Padding(
                 padding: EdgeInsets.only(bottom: i < 2 ? 12.h : 0),
-                child: _buildTrendingCoin(
-                  state.trendingCryptos[i].name,
-                  state.trendingCryptos[i].symbol,
-                  '${CurrencySymbols.currentSymbol}${state.trendingCryptos[i].currentPrice.toStringAsFixed(2)}',
-                  state.trendingCryptos[i].priceChangePercentage24h,
-                  Colors.orange,
+                child: _buildCryptoListTile(
+                  state.trendingCryptos[i],
+                  iconColor: Colors.orange,
                 ),
               ),
           ] else ...[
@@ -1546,6 +1458,280 @@ class _CryptoScreenState extends State<CryptoScreen>
           ],
         ],
       ),
+    );
+  }
+
+  // ──────────────── Supported Assets Section ────────────────
+  Widget _buildSupportedAssetsSection(CryptosLoaded state) {
+    final assets = state.cryptos;
+    final displayCount = assets.length > 5 ? 5 : assets.length;
+
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(24.r),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Supported Assets',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  final cryptoCubit = context.read<CryptoCubit>();
+                  Get.to(() => BlocProvider.value(
+                    value: cryptoCubit,
+                    child: const AllAssetsScreen(),
+                  ));
+                },
+                child: Row(
+                  children: [
+                    Text(
+                      'View All',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    SizedBox(width: 4.w),
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      color: Colors.white.withValues(alpha: 0.7),
+                      size: 14.sp,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16.h),
+          if (assets.isNotEmpty) ...[
+            for (int i = 0; i < displayCount; i++)
+              Padding(
+                padding: EdgeInsets.only(bottom: i < displayCount - 1 ? 12.h : 0),
+                child: _buildCryptoListTile(
+                  assets[i],
+                  iconColor: const Color.fromARGB(255, 78, 3, 208),
+                ),
+              ),
+          ] else
+            Text(
+              'No assets available',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.5),
+                fontSize: 14.sp,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // ──────────────── Trending Cryptos Bottom Sheet ────────────────
+  void _showTrendingCryptosSheet(List<Crypto> trendingCryptos) {
+    Get.bottomSheet(
+      Container(
+        height: Get.height * 0.7,
+        decoration: BoxDecoration(
+          color: const Color(0xFF0A0A0A),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24.r),
+            topRight: Radius.circular(24.r),
+          ),
+        ),
+        child: Column(
+          children: [
+            Container(
+              margin: EdgeInsets.only(top: 12.h),
+              width: 40.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: Colors.grey[600],
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.all(20.w),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Trending Coins',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => Get.back(),
+                    child: Icon(Icons.close, color: Colors.white, size: 24.sp),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                itemCount: trendingCryptos.length,
+                itemBuilder: (context, index) {
+                  final crypto = trendingCryptos[index];
+                  return Padding(
+                    padding: EdgeInsets.only(bottom: 12.h),
+                    child: _buildCryptoListTile(
+                      crypto,
+                      iconColor: Colors.orange,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+      isScrollControlled: true,
+    );
+  }
+
+  // ──────────────── Top Movers Bottom Sheet ────────────────
+  void _showTopMoversSheet(CryptosLoaded state) {
+    final gainers = _sortedGainers(state);
+    final losers = _sortedLosers(state);
+
+    Get.bottomSheet(
+      StatefulBuilder(
+        builder: (context, setSheetState) {
+          bool showGainers = true;
+          return Container(
+            height: Get.height * 0.75,
+            decoration: BoxDecoration(
+              color: const Color(0xFF0A0A0A),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(24.r),
+                topRight: Radius.circular(24.r),
+              ),
+            ),
+            child: Column(
+              children: [
+                Container(
+                  margin: EdgeInsets.only(top: 12.h),
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[600],
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(20.w),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Top Movers',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => Get.back(),
+                        child: Icon(Icons.close, color: Colors.white, size: 24.sp),
+                      ),
+                    ],
+                  ),
+                ),
+                // Toggle tabs
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  child: StatefulBuilder(
+                    builder: (context, setTabState) {
+                      return Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () => setTabState(() => showGainers = true),
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(vertical: 12.h),
+                                    decoration: BoxDecoration(
+                                      color: showGainers ? const Color(0xFF1F1F1F) : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(24.r),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        'Top Gainers (${gainers.length})',
+                                        style: TextStyle(
+                                          color: showGainers ? Colors.green : Colors.grey[400],
+                                          fontSize: 14.sp,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 12.w),
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () => setTabState(() => showGainers = false),
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(vertical: 12.h),
+                                    decoration: BoxDecoration(
+                                      color: !showGainers ? const Color(0xFF1F1F1F) : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(24.r),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        'Top Losers (${losers.length})',
+                                        style: TextStyle(
+                                          color: !showGainers ? Colors.red : Colors.grey[400],
+                                          fontSize: 14.sp,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 16.h),
+                          SizedBox(
+                            height: Get.height * 0.75 - 200.h,
+                            child: ListView.builder(
+                              itemCount: showGainers ? gainers.length : losers.length,
+                              itemBuilder: (context, index) {
+                                final crypto = showGainers ? gainers[index] : losers[index];
+                                return _buildMoverItem(crypto);
+                              },
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+      isScrollControlled: true,
     );
   }
 
@@ -1671,25 +1857,51 @@ class _CryptoScreenState extends State<CryptoScreen>
   }
 
   Widget _buildCryptoCardsRow(CryptosLoaded state) {
+    // Find BTC and ETH from loaded cryptos
+    final btc = state.cryptos.cast<Crypto?>().firstWhere(
+      (c) => c?.symbol.toUpperCase() == 'BTC', orElse: () => state.cryptos.isNotEmpty ? state.cryptos[0] : null);
+    final eth = state.cryptos.cast<Crypto?>().firstWhere(
+      (c) => c?.symbol.toUpperCase() == 'ETH', orElse: () => state.cryptos.length > 1 ? state.cryptos[1] : null);
+
+    // Generate sparkline from price history or derive from 24h change
+    List<double> sparklineFromCrypto(Crypto? crypto) {
+      if (crypto == null) return [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5];
+      if (crypto.priceHistory.isNotEmpty) {
+        final points = crypto.priceHistory.take(7).map((p) => p.price).toList();
+        if (points.isEmpty) return [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5];
+        final minP = points.reduce((a, b) => a < b ? a : b);
+        final maxP = points.reduce((a, b) => a > b ? a : b);
+        final range = maxP - minP;
+        if (range == 0) return List.filled(points.length, 0.5);
+        return points.map((p) => (p - minP) / range).toList();
+      }
+      // Derive from 24h change direction
+      final change = crypto.priceChangePercentage24h;
+      if (change >= 0) return [0.3, 0.35, 0.4, 0.45, 0.5, 0.6, 0.7];
+      return [0.7, 0.6, 0.5, 0.45, 0.4, 0.35, 0.3];
+    }
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 8.w),
       child: Row(
         children: [
           Expanded(
             child: _buildCryptoCard(
-              'BTC',
-              state.cryptos.isNotEmpty ? '${CurrencySymbols.currentSymbol}${state.cryptos[0].currentPrice.toStringAsFixed(2)}' : '--',
-              state.cryptos.isNotEmpty ? state.cryptos[0].priceChangePercentage24h : 0.0,
-              [0.2, 0.3, 0.5, 0.4, 0.6, 0.5, 0.7],
+              btc,
+              btc?.symbol.toUpperCase() ?? 'BTC',
+              btc != null ? '${CurrencySymbols.currentSymbol}${btc.currentPrice.toStringAsFixed(2)}' : '--',
+              btc?.priceChangePercentage24h ?? 0.0,
+              sparklineFromCrypto(btc),
               Colors.orange,
             ),
           ),
           Expanded(
             child: _buildCryptoCard(
-              'ETH',
-              state.cryptos.length > 1 ? '${CurrencySymbols.currentSymbol}${state.cryptos[1].currentPrice.toStringAsFixed(2)}' : '--',
-              state.cryptos.length > 1 ? state.cryptos[1].priceChangePercentage24h : 0.0,
-              [0.4, 0.5, 0.3, 0.6, 0.4, 0.5, 0.3],
+              eth,
+              eth?.symbol.toUpperCase() ?? 'ETH',
+              eth != null ? '${CurrencySymbols.currentSymbol}${eth.currentPrice.toStringAsFixed(2)}' : '--',
+              eth?.priceChangePercentage24h ?? 0.0,
+              sparklineFromCrypto(eth),
               const Color.fromARGB(255, 78, 3, 208),
             ),
           ),
@@ -1715,7 +1927,27 @@ class _CryptoScreenState extends State<CryptoScreen>
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              Icon(Icons.chevron_right, color: Colors.white, size: 20.sp),
+              GestureDetector(
+                onTap: () => _showTopMoversSheet(state),
+                child: Row(
+                  children: [
+                    Text(
+                      'View All',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    SizedBox(width: 4.w),
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      color: Colors.white.withValues(alpha: 0.7),
+                      size: 14.sp,
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
           SizedBox(height: 16.h),
@@ -1912,41 +2144,15 @@ class _CryptoScreenState extends State<CryptoScreen>
     );
   }
 
-  Widget _buildTrendingCoin(
-    String name,
-    String symbol,
-    String price,
-    double change,
-    Color iconColor,
-  ) {
-    return GestureDetector(
-      onTap: () {
-        // Find the crypto from state and navigate to crypto details
-        final state = context.read<CryptoCubit>().state;
-        if (state is CryptosLoaded) {
-          final crypto = state.cryptos.firstWhere(
-            (c) => c.symbol.toUpperCase() == symbol.toUpperCase(),
-            orElse: () => CryptoModel(
-              id: symbol.toLowerCase(),
-              name: name,
-              symbol: symbol.toLowerCase(),
-              image: 'default.png',
-              currentPrice: double.tryParse(price.replaceAll(CurrencySymbols.currentSymbol, '').replaceAll(',', '')) ?? 0.0,
-              marketCap: 0.0,
-              marketCapRank: 0,
-              totalVolume: 0.0,
-              high24h: 0.0,
-              low24h: 0.0,
-              priceChange24h: 0.0,
-              priceChangePercentage24h: change,
-              circulatingSupply: 0.0,
-              lastUpdated: DateTime.now(),
-            ),
-          );
-          Get.toNamed(AppRoutes.cryptoDetails, arguments: crypto);
-        }
-      },
-      child: Container(
+  /// Reusable crypto list tile — navigates to details with the REAL Crypto object.
+  Widget _buildCryptoListTile(Crypto crypto, {Color iconColor = Colors.orange}) {
+    final change = crypto.priceChangePercentage24h;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => Get.toNamed(AppRoutes.cryptoDetails, arguments: crypto),
+        borderRadius: BorderRadius.circular(16.r),
+        child: Container(
         padding: EdgeInsets.all(12.w),
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.05),
@@ -1972,7 +2178,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                    name,
+                    crypto.name,
                     style: TextStyle(
                         color: Colors.white,
                       fontSize: 16.sp,
@@ -1980,7 +2186,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                       ),
                     ),
                     Text(
-                    symbol,
+                    crypto.symbol.toUpperCase(),
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.7),
                         fontSize: 12.sp,
@@ -1993,7 +2199,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                  price,
+                  '${CurrencySymbols.currentSymbol}${crypto.currentPrice.toStringAsFixed(2)}',
                   style: TextStyle(
                       color: Colors.white,
                     fontSize: 16.sp,
@@ -2022,10 +2228,12 @@ class _CryptoScreenState extends State<CryptoScreen>
         ],
         ),
       ),
-    );
+    ),
+  );
   }
 
   Widget _buildCryptoCard(
+    Crypto? cryptoObj,
     String symbol,
     String price,
     double change,
@@ -2034,29 +2242,8 @@ class _CryptoScreenState extends State<CryptoScreen>
   ) {
     return GestureDetector(
       onTap: () {
-        // Find the crypto from state and navigate to crypto details
-        final state = context.read<CryptoCubit>().state;
-        if (state is CryptosLoaded) {
-          final crypto = state.cryptos.firstWhere(
-            (c) => c.symbol.toUpperCase() == symbol,
-            orElse: () => CryptoModel(
-              id: symbol.toLowerCase(),
-              name: symbol,
-              symbol: symbol.toLowerCase(),
-              image: 'default.png',
-              currentPrice: double.tryParse(price.replaceAll(CurrencySymbols.currentSymbol, '').replaceAll(',', '')) ?? 0.0,
-              marketCap: 0.0,
-              marketCapRank: 0,
-              totalVolume: 0.0,
-              high24h: 0.0,
-              low24h: 0.0,
-              priceChange24h: 0.0,
-              priceChangePercentage24h: change,
-              circulatingSupply: 0.0,
-              lastUpdated: DateTime.now(),
-            ),
-          );
-          Get.toNamed(AppRoutes.cryptoDetails, arguments: crypto);
+        if (cryptoObj != null) {
+          Get.toNamed(AppRoutes.cryptoDetails, arguments: cryptoObj);
         }
       },
       child: Container(
@@ -2147,9 +2334,23 @@ class _CryptoScreenState extends State<CryptoScreen>
     );
   }
 
+  List<Crypto> _sortedGainers(CryptosLoaded state) {
+    return state.cryptos
+        .where((c) => c.priceChangePercentage24h > 0)
+        .toList()
+      ..sort((a, b) => b.priceChangePercentage24h.compareTo(a.priceChangePercentage24h));
+  }
+
+  List<Crypto> _sortedLosers(CryptosLoaded state) {
+    return state.cryptos
+        .where((c) => c.priceChangePercentage24h < 0)
+        .toList()
+      ..sort((a, b) => a.priceChangePercentage24h.compareTo(b.priceChangePercentage24h));
+  }
+
   List<Widget> _buildTopGainers(CryptosLoaded state) {
-    final gainers = state.cryptos.where((crypto) => crypto.priceChangePercentage24h > 0).take(3).toList();
-    
+    final gainers = _sortedGainers(state).take(3).toList();
+
     if (gainers.isEmpty) {
       return [
         Padding(
@@ -2162,18 +2363,12 @@ class _CryptoScreenState extends State<CryptoScreen>
       ];
     }
 
-    return gainers.map((crypto) => _buildMoverItem(
-      crypto.symbol,
-      crypto.name,
-      '${CurrencySymbols.currentSymbol}${crypto.currentPrice.toStringAsFixed(2)}',
-      crypto.priceChangePercentage24h,
-      Icons.currency_exchange,
-    )).toList();
+    return gainers.map((crypto) => _buildMoverItem(crypto)).toList();
   }
 
   List<Widget> _buildTopLosers(CryptosLoaded state) {
-    final losers = state.cryptos.where((crypto) => crypto.priceChangePercentage24h < 0).take(3).toList();
-    
+    final losers = _sortedLosers(state).take(3).toList();
+
     if (losers.isEmpty) {
       return [
         Padding(
@@ -2186,43 +2381,13 @@ class _CryptoScreenState extends State<CryptoScreen>
       ];
     }
 
-    return losers.map((crypto) => _buildMoverItem(
-      crypto.symbol,
-      crypto.name,
-      '${CurrencySymbols.currentSymbol}${crypto.currentPrice.toStringAsFixed(2)}',
-      crypto.priceChangePercentage24h,
-      Icons.currency_exchange,
-    )).toList();
+    return losers.map((crypto) => _buildMoverItem(crypto)).toList();
   }
 
-  Widget _buildMoverItem(
-    String symbol,
-    String name,
-    String price,
-    double change,
-    IconData icon,
-  ) {
+  Widget _buildMoverItem(Crypto crypto) {
+    final change = crypto.priceChangePercentage24h;
     return GestureDetector(
-      onTap: () {
-        // Create a crypto object and navigate to crypto details
-        final crypto = Crypto(
-          id: symbol.toLowerCase(),
-          name: name,
-          symbol: symbol.toLowerCase(),
-          image: 'default.png',
-          currentPrice: double.tryParse(price.replaceAll(CurrencySymbols.currentSymbol, '').replaceAll(',', '')) ?? 0.0,
-          marketCap: 0.0,
-          marketCapRank: 0,
-          totalVolume: 0.0,
-          high24h: 0.0,
-          low24h: 0.0,
-          priceChange24h: 0.0,
-          priceChangePercentage24h: change,
-          circulatingSupply: 0.0,
-          lastUpdated: DateTime.now(),
-        );
-        Get.toNamed(AppRoutes.cryptoDetails, arguments: crypto);
-      },
+      onTap: () => Get.toNamed(AppRoutes.cryptoDetails, arguments: crypto),
         child: Container(
         margin: EdgeInsets.only(bottom: 12.h),
         padding: EdgeInsets.all(16.w),
@@ -2238,7 +2403,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                 color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: const Color.fromARGB(255, 78, 3, 208), size: 20.sp),
+              child: Icon(Icons.currency_exchange, color: const Color.fromARGB(255, 78, 3, 208), size: 20.sp),
             ),
             SizedBox(width: 12.w),
             Expanded(
@@ -2246,7 +2411,7 @@ class _CryptoScreenState extends State<CryptoScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                    name,
+                    crypto.name,
                     style: TextStyle(
                   color: Colors.white,
                       fontSize: 16.sp,
@@ -2254,7 +2419,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                     ),
                   ),
                   Text(
-                    symbol,
+                    crypto.symbol.toUpperCase(),
                     style: TextStyle(
                       color: Colors.grey[400],
                       fontSize: 12.sp,
@@ -2267,7 +2432,7 @@ class _CryptoScreenState extends State<CryptoScreen>
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  price,
+                  '${CurrencySymbols.currentSymbol}${crypto.currentPrice.toStringAsFixed(2)}',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 16.sp,

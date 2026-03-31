@@ -1,14 +1,13 @@
-// This is a generated file - do not edit.
 //
-// Generated from lock_funds.proto.
-
-// @dart = 3.3
+//  Generated code. Do not modify.
+//  source: lock_funds.proto
+//
+// @dart = 2.12
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: curly_braces_in_flow_control_structures
-// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
-// ignore_for_file: non_constant_identifier_names, unused_import
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -56,95 +55,29 @@ const LockFund$json = {
   '2': [
     {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
     {'1': 'user_id', '3': 2, '4': 1, '5': 4, '10': 'userId'},
-    {
-      '1': 'lock_type',
-      '3': 3,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.LockType',
-      '10': 'lockType'
-    },
+    {'1': 'lock_type', '3': 3, '4': 1, '5': 14, '6': '.pb.LockType', '10': 'lockType'},
     {'1': 'amount', '3': 4, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'currency', '3': 5, '4': 1, '5': 9, '10': 'currency'},
-    {
-      '1': 'lock_duration_days',
-      '3': 6,
-      '4': 1,
-      '5': 5,
-      '10': 'lockDurationDays'
-    },
+    {'1': 'lock_duration_days', '3': 6, '4': 1, '5': 5, '10': 'lockDurationDays'},
     {'1': 'interest_rate', '3': 7, '4': 1, '5': 1, '10': 'interestRate'},
-    {
-      '1': 'locked_at',
-      '3': 8,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'lockedAt'
-    },
-    {
-      '1': 'unlock_at',
-      '3': 9,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'unlockAt'
-    },
-    {
-      '1': 'status',
-      '3': 10,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.LockStatus',
-      '10': 'status'
-    },
+    {'1': 'locked_at', '3': 8, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'lockedAt'},
+    {'1': 'unlock_at', '3': 9, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'unlockAt'},
+    {'1': 'status', '3': 10, '4': 1, '5': 14, '6': '.pb.LockStatus', '10': 'status'},
     {'1': 'auto_renew', '3': 11, '4': 1, '5': 8, '10': 'autoRenew'},
     {'1': 'goal_name', '3': 12, '4': 1, '5': 9, '10': 'goalName'},
     {'1': 'goal_description', '3': 13, '4': 1, '5': 9, '10': 'goalDescription'},
-    {
-      '1': 'early_unlock_penalty_percent',
-      '3': 14,
-      '4': 1,
-      '5': 1,
-      '10': 'earlyUnlockPenaltyPercent'
-    },
+    {'1': 'early_unlock_penalty_percent', '3': 14, '4': 1, '5': 1, '10': 'earlyUnlockPenaltyPercent'},
     {'1': 'accrued_interest', '3': 15, '4': 1, '5': 1, '10': 'accruedInterest'},
     {'1': 'payment_method', '3': 16, '4': 1, '5': 9, '10': 'paymentMethod'},
     {'1': 'transaction_id', '3': 17, '4': 1, '5': 9, '10': 'transactionId'},
-    {
-      '1': 'created_at',
-      '3': 18,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'createdAt'
-    },
-    {
-      '1': 'updated_at',
-      '3': 19,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'updatedAt'
-    },
+    {'1': 'created_at', '3': 18, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    {'1': 'updated_at', '3': 19, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
     {'1': 'days_remaining', '3': 20, '4': 1, '5': 5, '10': 'daysRemaining'},
     {'1': 'progress_percent', '3': 21, '4': 1, '5': 1, '10': 'progressPercent'},
     {'1': 'total_value', '3': 22, '4': 1, '5': 1, '10': 'totalValue'},
     {'1': 'can_unlock_early', '3': 23, '4': 1, '5': 8, '10': 'canUnlockEarly'},
-    {
-      '1': 'source_account_id',
-      '3': 24,
-      '4': 1,
-      '5': 9,
-      '10': 'sourceAccountId'
-    },
-    {
-      '1': 'destination_account_id',
-      '3': 25,
-      '4': 1,
-      '5': 9,
-      '10': 'destinationAccountId'
-    },
+    {'1': 'source_account_id', '3': 24, '4': 1, '5': 9, '10': 'sourceAccountId'},
+    {'1': 'destination_account_id', '3': 25, '4': 1, '5': 9, '10': 'destinationAccountId'},
   ],
 };
 
@@ -182,14 +115,7 @@ const LockTransaction$json = {
     {'1': 'currency', '3': 6, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'payment_method', '3': 7, '4': 1, '5': 9, '10': 'paymentMethod'},
     {'1': 'status', '3': 8, '4': 1, '5': 9, '10': 'status'},
-    {
-      '1': 'transaction_date',
-      '3': 9,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'transactionDate'
-    },
+    {'1': 'transaction_date', '3': 9, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'transactionDate'},
     {'1': 'description', '3': 10, '4': 1, '5': 9, '10': 'description'},
   ],
 };
@@ -212,61 +138,19 @@ const PiggyVaultConfig$json = {
     {'1': 'lock_type', '3': 2, '4': 1, '5': 9, '10': 'lockType'},
     {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'display_name', '3': 4, '4': 1, '5': 9, '10': 'displayName'},
-    {
-      '1': 'base_interest_rate',
-      '3': 5,
-      '4': 1,
-      '5': 1,
-      '10': 'baseInterestRate'
-    },
+    {'1': 'base_interest_rate', '3': 5, '4': 1, '5': 1, '10': 'baseInterestRate'},
     {'1': 'max_interest_rate', '3': 6, '4': 1, '5': 1, '10': 'maxInterestRate'},
-    {
-      '1': 'early_withdrawal_penalty',
-      '3': 7,
-      '4': 1,
-      '5': 1,
-      '10': 'earlyWithdrawalPenalty'
-    },
+    {'1': 'early_withdrawal_penalty', '3': 7, '4': 1, '5': 1, '10': 'earlyWithdrawalPenalty'},
     {'1': 'min_duration_days', '3': 8, '4': 1, '5': 5, '10': 'minDurationDays'},
     {'1': 'max_duration_days', '3': 9, '4': 1, '5': 5, '10': 'maxDurationDays'},
     {'1': 'min_amount', '3': 10, '4': 1, '5': 1, '10': 'minAmount'},
     {'1': 'max_amount', '3': 11, '4': 1, '5': 1, '10': 'maxAmount'},
-    {
-      '1': 'allows_early_withdrawal',
-      '3': 12,
-      '4': 1,
-      '5': 8,
-      '10': 'allowsEarlyWithdrawal'
-    },
-    {
-      '1': 'supports_auto_renew',
-      '3': 13,
-      '4': 1,
-      '5': 8,
-      '10': 'supportsAutoRenew'
-    },
+    {'1': 'allows_early_withdrawal', '3': 12, '4': 1, '5': 8, '10': 'allowsEarlyWithdrawal'},
+    {'1': 'supports_auto_renew', '3': 13, '4': 1, '5': 8, '10': 'supportsAutoRenew'},
     {'1': 'supports_top_up', '3': 14, '4': 1, '5': 8, '10': 'supportsTopUp'},
-    {
-      '1': 'supports_auto_save',
-      '3': 15,
-      '4': 1,
-      '5': 8,
-      '10': 'supportsAutoSave'
-    },
-    {
-      '1': 'supports_upfront_interest',
-      '3': 16,
-      '4': 1,
-      '5': 8,
-      '10': 'supportsUpfrontInterest'
-    },
-    {
-      '1': 'duration_bonus_tiers',
-      '3': 17,
-      '4': 1,
-      '5': 9,
-      '10': 'durationBonusTiers'
-    },
+    {'1': 'supports_auto_save', '3': 15, '4': 1, '5': 8, '10': 'supportsAutoSave'},
+    {'1': 'supports_upfront_interest', '3': 16, '4': 1, '5': 8, '10': 'supportsUpfrontInterest'},
+    {'1': 'duration_bonus_tiers', '3': 17, '4': 1, '5': 9, '10': 'durationBonusTiers'},
     {'1': 'is_active', '3': 18, '4': 1, '5': 8, '10': 'isActive'},
     {'1': 'description', '3': 19, '4': 1, '5': 9, '10': 'description'},
   ],
@@ -320,23 +204,10 @@ final $typed_data.Uint8List lockFundAutoSaveDescriptor = $convert.base64Decode(
 const CreateLockFundRequest$json = {
   '1': 'CreateLockFundRequest',
   '2': [
-    {
-      '1': 'lock_type',
-      '3': 1,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.LockType',
-      '10': 'lockType'
-    },
+    {'1': 'lock_type', '3': 1, '4': 1, '5': 14, '6': '.pb.LockType', '10': 'lockType'},
     {'1': 'amount', '3': 2, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
-    {
-      '1': 'lock_duration_days',
-      '3': 4,
-      '4': 1,
-      '5': 5,
-      '10': 'lockDurationDays'
-    },
+    {'1': 'lock_duration_days', '3': 4, '4': 1, '5': 5, '10': 'lockDurationDays'},
     {'1': 'auto_renew', '3': 5, '4': 1, '5': 8, '10': 'autoRenew'},
     {'1': 'goal_name', '3': 6, '4': 1, '5': 9, '10': 'goalName'},
     {'1': 'goal_description', '3': 7, '4': 1, '5': 9, '10': 'goalDescription'},
@@ -363,14 +234,7 @@ const CreateLockFundResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'lock_fund',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.LockFund',
-      '10': 'lockFund'
-    },
+    {'1': 'lock_fund', '3': 3, '4': 1, '5': 11, '6': '.pb.LockFund', '10': 'lockFund'},
     {'1': 'payment_url', '3': 4, '4': 1, '5': 9, '10': 'paymentUrl'},
   ],
 };
@@ -385,14 +249,7 @@ final $typed_data.Uint8List createLockFundResponseDescriptor = $convert.base64De
 const GetLockFundsRequest$json = {
   '1': 'GetLockFundsRequest',
   '2': [
-    {
-      '1': 'status',
-      '3': 1,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.LockStatus',
-      '10': 'status'
-    },
+    {'1': 'status', '3': 1, '4': 1, '5': 14, '6': '.pb.LockStatus', '10': 'status'},
     {'1': 'page', '3': 2, '4': 1, '5': 5, '10': 'page'},
     {'1': 'per_page', '3': 3, '4': 1, '5': 5, '10': 'perPage'},
   ],
@@ -407,38 +264,13 @@ final $typed_data.Uint8List getLockFundsRequestDescriptor = $convert.base64Decod
 const GetLockFundsResponse$json = {
   '1': 'GetLockFundsResponse',
   '2': [
-    {
-      '1': 'lock_funds',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.LockFund',
-      '10': 'lockFunds'
-    },
+    {'1': 'lock_funds', '3': 1, '4': 3, '5': 11, '6': '.pb.LockFund', '10': 'lockFunds'},
     {'1': 'total_count', '3': 2, '4': 1, '5': 5, '10': 'totalCount'},
     {'1': 'page', '3': 3, '4': 1, '5': 5, '10': 'page'},
     {'1': 'total_pages', '3': 4, '4': 1, '5': 5, '10': 'totalPages'},
-    {
-      '1': 'total_locked_amount',
-      '3': 5,
-      '4': 1,
-      '5': 1,
-      '10': 'totalLockedAmount'
-    },
-    {
-      '1': 'total_accrued_interest',
-      '3': 6,
-      '4': 1,
-      '5': 1,
-      '10': 'totalAccruedInterest'
-    },
-    {
-      '1': 'active_locks_count',
-      '3': 7,
-      '4': 1,
-      '5': 5,
-      '10': 'activeLocksCount'
-    },
+    {'1': 'total_locked_amount', '3': 5, '4': 1, '5': 1, '10': 'totalLockedAmount'},
+    {'1': 'total_accrued_interest', '3': 6, '4': 1, '5': 1, '10': 'totalAccruedInterest'},
+    {'1': 'active_locks_count', '3': 7, '4': 1, '5': 5, '10': 'activeLocksCount'},
   ],
 };
 
@@ -468,14 +300,7 @@ const GetLockFundResponse$json = {
   '1': 'GetLockFundResponse',
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
-    {
-      '1': 'lock_fund',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.LockFund',
-      '10': 'lockFund'
-    },
+    {'1': 'lock_fund', '3': 2, '4': 1, '5': 11, '6': '.pb.LockFund', '10': 'lockFund'},
   ],
 };
 
@@ -489,21 +314,9 @@ const UnlockFundRequest$json = {
   '1': 'UnlockFundRequest',
   '2': [
     {'1': 'lock_fund_id', '3': 1, '4': 1, '5': 9, '10': 'lockFundId'},
-    {
-      '1': 'force_early_unlock',
-      '3': 2,
-      '4': 1,
-      '5': 8,
-      '10': 'forceEarlyUnlock'
-    },
+    {'1': 'force_early_unlock', '3': 2, '4': 1, '5': 8, '10': 'forceEarlyUnlock'},
     {'1': 'transaction_pin', '3': 3, '4': 1, '5': 9, '10': 'transactionPin'},
-    {
-      '1': 'destination_account_id',
-      '3': 4,
-      '4': 1,
-      '5': 9,
-      '10': 'destinationAccountId'
-    },
+    {'1': 'destination_account_id', '3': 4, '4': 1, '5': 9, '10': 'destinationAccountId'},
   ],
 };
 
@@ -523,21 +336,8 @@ const UnlockFundResponse$json = {
     {'1': 'amount_returned', '3': 3, '4': 1, '5': 1, '10': 'amountReturned'},
     {'1': 'penalty_amount', '3': 4, '4': 1, '5': 1, '10': 'penaltyAmount'},
     {'1': 'interest_earned', '3': 5, '4': 1, '5': 1, '10': 'interestEarned'},
-    {
-      '1': 'updated_lock_fund',
-      '3': 6,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.LockFund',
-      '10': 'updatedLockFund'
-    },
-    {
-      '1': 'credited_account_id',
-      '3': 7,
-      '4': 1,
-      '5': 9,
-      '10': 'creditedAccountId'
-    },
+    {'1': 'updated_lock_fund', '3': 6, '4': 1, '5': 11, '6': '.pb.LockFund', '10': 'updatedLockFund'},
+    {'1': 'credited_account_id', '3': 7, '4': 1, '5': 9, '10': 'creditedAccountId'},
   ],
 };
 
@@ -573,14 +373,7 @@ const TopUpLockFundResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'updated_lock_fund',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.LockFund',
-      '10': 'updatedLockFund'
-    },
+    {'1': 'updated_lock_fund', '3': 3, '4': 1, '5': 11, '6': '.pb.LockFund', '10': 'updatedLockFund'},
     {'1': 'new_balance', '3': 4, '4': 1, '5': 1, '10': 'newBalance'},
   ],
 };
@@ -603,23 +396,15 @@ const GetLockTransactionsRequest$json = {
 };
 
 /// Descriptor for `GetLockTransactionsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getLockTransactionsRequestDescriptor =
-    $convert.base64Decode(
-        'ChpHZXRMb2NrVHJhbnNhY3Rpb25zUmVxdWVzdBIgCgxsb2NrX2Z1bmRfaWQYASABKAlSCmxvY2'
-        'tGdW5kSWQSEgoEcGFnZRgCIAEoBVIEcGFnZRIZCghwZXJfcGFnZRgDIAEoBVIHcGVyUGFnZQ==');
+final $typed_data.Uint8List getLockTransactionsRequestDescriptor = $convert.base64Decode(
+    'ChpHZXRMb2NrVHJhbnNhY3Rpb25zUmVxdWVzdBIgCgxsb2NrX2Z1bmRfaWQYASABKAlSCmxvY2'
+    'tGdW5kSWQSEgoEcGFnZRgCIAEoBVIEcGFnZRIZCghwZXJfcGFnZRgDIAEoBVIHcGVyUGFnZQ==');
 
 @$core.Deprecated('Use getLockTransactionsResponseDescriptor instead')
 const GetLockTransactionsResponse$json = {
   '1': 'GetLockTransactionsResponse',
   '2': [
-    {
-      '1': 'transactions',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.LockTransaction',
-      '10': 'transactions'
-    },
+    {'1': 'transactions', '3': 1, '4': 3, '5': 11, '6': '.pb.LockTransaction', '10': 'transactions'},
     {'1': 'total_count', '3': 2, '4': 1, '5': 5, '10': 'totalCount'},
     {'1': 'page', '3': 3, '4': 1, '5': 5, '10': 'page'},
     {'1': 'total_pages', '3': 4, '4': 1, '5': 5, '10': 'totalPages'},
@@ -637,22 +422,9 @@ final $typed_data.Uint8List getLockTransactionsResponseDescriptor = $convert.bas
 const CalculateInterestRequest$json = {
   '1': 'CalculateInterestRequest',
   '2': [
-    {
-      '1': 'lock_type',
-      '3': 1,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.LockType',
-      '10': 'lockType'
-    },
+    {'1': 'lock_type', '3': 1, '4': 1, '5': 14, '6': '.pb.LockType', '10': 'lockType'},
     {'1': 'amount', '3': 2, '4': 1, '5': 1, '10': 'amount'},
-    {
-      '1': 'lock_duration_days',
-      '3': 3,
-      '4': 1,
-      '5': 5,
-      '10': 'lockDurationDays'
-    },
+    {'1': 'lock_duration_days', '3': 3, '4': 1, '5': 5, '10': 'lockDurationDays'},
   ],
 };
 
@@ -667,13 +439,7 @@ const CalculateInterestResponse$json = {
   '1': 'CalculateInterestResponse',
   '2': [
     {'1': 'interest_rate', '3': 1, '4': 1, '5': 1, '10': 'interestRate'},
-    {
-      '1': 'estimated_interest',
-      '3': 2,
-      '4': 1,
-      '5': 1,
-      '10': 'estimatedInterest'
-    },
+    {'1': 'estimated_interest', '3': 2, '4': 1, '5': 1, '10': 'estimatedInterest'},
     {'1': 'total_return', '3': 3, '4': 1, '5': 1, '10': 'totalReturn'},
     {'1': 'apy', '3': 4, '4': 1, '5': 1, '10': 'apy'},
   ],
@@ -705,14 +471,7 @@ const RenewLockFundResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'renewed_lock_fund',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.LockFund',
-      '10': 'renewedLockFund'
-    },
+    {'1': 'renewed_lock_fund', '3': 3, '4': 1, '5': 11, '6': '.pb.LockFund', '10': 'renewedLockFund'},
   ],
 };
 
@@ -761,31 +520,22 @@ const GetPiggyVaultConfigsRequest$json = {
 };
 
 /// Descriptor for `GetPiggyVaultConfigsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getPiggyVaultConfigsRequestDescriptor =
-    $convert.base64Decode(
-        'ChtHZXRQaWdneVZhdWx0Q29uZmlnc1JlcXVlc3QSGgoIY3VycmVuY3kYASABKAlSCGN1cnJlbm'
-        'N5');
+final $typed_data.Uint8List getPiggyVaultConfigsRequestDescriptor = $convert.base64Decode(
+    'ChtHZXRQaWdneVZhdWx0Q29uZmlnc1JlcXVlc3QSGgoIY3VycmVuY3kYASABKAlSCGN1cnJlbm'
+    'N5');
 
 @$core.Deprecated('Use getPiggyVaultConfigsResponseDescriptor instead')
 const GetPiggyVaultConfigsResponse$json = {
   '1': 'GetPiggyVaultConfigsResponse',
   '2': [
-    {
-      '1': 'configs',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.PiggyVaultConfig',
-      '10': 'configs'
-    },
+    {'1': 'configs', '3': 1, '4': 3, '5': 11, '6': '.pb.PiggyVaultConfig', '10': 'configs'},
   ],
 };
 
 /// Descriptor for `GetPiggyVaultConfigsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getPiggyVaultConfigsResponseDescriptor =
-    $convert.base64Decode(
-        'ChxHZXRQaWdneVZhdWx0Q29uZmlnc1Jlc3BvbnNlEi4KB2NvbmZpZ3MYASADKAsyFC5wYi5QaW'
-        'dneVZhdWx0Q29uZmlnUgdjb25maWdz');
+final $typed_data.Uint8List getPiggyVaultConfigsResponseDescriptor = $convert.base64Decode(
+    'ChxHZXRQaWdneVZhdWx0Q29uZmlnc1Jlc3BvbnNlEi4KB2NvbmZpZ3MYASADKAsyFC5wYi5QaW'
+    'dneVZhdWx0Q29uZmlnUgdjb25maWdz');
 
 @$core.Deprecated('Use createLockFundAutoSaveRequestDescriptor instead')
 const CreateLockFundAutoSaveRequest$json = {
@@ -810,23 +560,15 @@ const CreateLockFundAutoSaveResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'autosave',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.LockFundAutoSave',
-      '10': 'autosave'
-    },
+    {'1': 'autosave', '3': 3, '4': 1, '5': 11, '6': '.pb.LockFundAutoSave', '10': 'autosave'},
   ],
 };
 
 /// Descriptor for `CreateLockFundAutoSaveResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List createLockFundAutoSaveResponseDescriptor =
-    $convert.base64Decode(
-        'Ch5DcmVhdGVMb2NrRnVuZEF1dG9TYXZlUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2'
-        'VzcxIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdlEjAKCGF1dG9zYXZlGAMgASgLMhQucGIuTG9j'
-        'a0Z1bmRBdXRvU2F2ZVIIYXV0b3NhdmU=');
+final $typed_data.Uint8List createLockFundAutoSaveResponseDescriptor = $convert.base64Decode(
+    'Ch5DcmVhdGVMb2NrRnVuZEF1dG9TYXZlUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2'
+    'VzcxIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdlEjAKCGF1dG9zYXZlGAMgASgLMhQucGIuTG9j'
+    'a0Z1bmRBdXRvU2F2ZVIIYXV0b3NhdmU=');
 
 @$core.Deprecated('Use getLockFundAutoSaveRequestDescriptor instead')
 const GetLockFundAutoSaveRequest$json = {
@@ -837,31 +579,22 @@ const GetLockFundAutoSaveRequest$json = {
 };
 
 /// Descriptor for `GetLockFundAutoSaveRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getLockFundAutoSaveRequestDescriptor =
-    $convert.base64Decode(
-        'ChpHZXRMb2NrRnVuZEF1dG9TYXZlUmVxdWVzdBIgCgxsb2NrX2Z1bmRfaWQYASABKAlSCmxvY2'
-        'tGdW5kSWQ=');
+final $typed_data.Uint8List getLockFundAutoSaveRequestDescriptor = $convert.base64Decode(
+    'ChpHZXRMb2NrRnVuZEF1dG9TYXZlUmVxdWVzdBIgCgxsb2NrX2Z1bmRfaWQYASABKAlSCmxvY2'
+    'tGdW5kSWQ=');
 
 @$core.Deprecated('Use getLockFundAutoSaveResponseDescriptor instead')
 const GetLockFundAutoSaveResponse$json = {
   '1': 'GetLockFundAutoSaveResponse',
   '2': [
-    {
-      '1': 'autosave',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.LockFundAutoSave',
-      '10': 'autosave'
-    },
+    {'1': 'autosave', '3': 1, '4': 1, '5': 11, '6': '.pb.LockFundAutoSave', '10': 'autosave'},
   ],
 };
 
 /// Descriptor for `GetLockFundAutoSaveResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getLockFundAutoSaveResponseDescriptor =
-    $convert.base64Decode(
-        'ChtHZXRMb2NrRnVuZEF1dG9TYXZlUmVzcG9uc2USMAoIYXV0b3NhdmUYASABKAsyFC5wYi5Mb2'
-        'NrRnVuZEF1dG9TYXZlUghhdXRvc2F2ZQ==');
+final $typed_data.Uint8List getLockFundAutoSaveResponseDescriptor = $convert.base64Decode(
+    'ChtHZXRMb2NrRnVuZEF1dG9TYXZlUmVzcG9uc2USMAoIYXV0b3NhdmUYASABKAsyFC5wYi5Mb2'
+    'NrRnVuZEF1dG9TYXZlUghhdXRvc2F2ZQ==');
 
 @$core.Deprecated('Use updateLockFundAutoSaveRequestDescriptor instead')
 const UpdateLockFundAutoSaveRequest$json = {
@@ -875,11 +608,10 @@ const UpdateLockFundAutoSaveRequest$json = {
 };
 
 /// Descriptor for `UpdateLockFundAutoSaveRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateLockFundAutoSaveRequestDescriptor =
-    $convert.base64Decode(
-        'Ch1VcGRhdGVMb2NrRnVuZEF1dG9TYXZlUmVxdWVzdBIfCgthdXRvc2F2ZV9pZBgBIAEoCVIKYX'
-        'V0b3NhdmVJZBIWCgZhbW91bnQYAiABKAFSBmFtb3VudBIcCglmcmVxdWVuY3kYAyABKAlSCWZy'
-        'ZXF1ZW5jeRIWCgZzdGF0dXMYBCABKAlSBnN0YXR1cw==');
+final $typed_data.Uint8List updateLockFundAutoSaveRequestDescriptor = $convert.base64Decode(
+    'Ch1VcGRhdGVMb2NrRnVuZEF1dG9TYXZlUmVxdWVzdBIfCgthdXRvc2F2ZV9pZBgBIAEoCVIKYX'
+    'V0b3NhdmVJZBIWCgZhbW91bnQYAiABKAFSBmFtb3VudBIcCglmcmVxdWVuY3kYAyABKAlSCWZy'
+    'ZXF1ZW5jeRIWCgZzdGF0dXMYBCABKAlSBnN0YXR1cw==');
 
 @$core.Deprecated('Use updateLockFundAutoSaveResponseDescriptor instead')
 const UpdateLockFundAutoSaveResponse$json = {
@@ -887,23 +619,15 @@ const UpdateLockFundAutoSaveResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'autosave',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.LockFundAutoSave',
-      '10': 'autosave'
-    },
+    {'1': 'autosave', '3': 3, '4': 1, '5': 11, '6': '.pb.LockFundAutoSave', '10': 'autosave'},
   ],
 };
 
 /// Descriptor for `UpdateLockFundAutoSaveResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateLockFundAutoSaveResponseDescriptor =
-    $convert.base64Decode(
-        'Ch5VcGRhdGVMb2NrRnVuZEF1dG9TYXZlUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2'
-        'VzcxIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdlEjAKCGF1dG9zYXZlGAMgASgLMhQucGIuTG9j'
-        'a0Z1bmRBdXRvU2F2ZVIIYXV0b3NhdmU=');
+final $typed_data.Uint8List updateLockFundAutoSaveResponseDescriptor = $convert.base64Decode(
+    'Ch5VcGRhdGVMb2NrRnVuZEF1dG9TYXZlUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2'
+    'VzcxIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdlEjAKCGF1dG9zYXZlGAMgASgLMhQucGIuTG9j'
+    'a0Z1bmRBdXRvU2F2ZVIIYXV0b3NhdmU=');
 
 @$core.Deprecated('Use deleteLockFundAutoSaveRequestDescriptor instead')
 const DeleteLockFundAutoSaveRequest$json = {
@@ -914,10 +638,9 @@ const DeleteLockFundAutoSaveRequest$json = {
 };
 
 /// Descriptor for `DeleteLockFundAutoSaveRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deleteLockFundAutoSaveRequestDescriptor =
-    $convert.base64Decode(
-        'Ch1EZWxldGVMb2NrRnVuZEF1dG9TYXZlUmVxdWVzdBIfCgthdXRvc2F2ZV9pZBgBIAEoCVIKYX'
-        'V0b3NhdmVJZA==');
+final $typed_data.Uint8List deleteLockFundAutoSaveRequestDescriptor = $convert.base64Decode(
+    'Ch1EZWxldGVMb2NrRnVuZEF1dG9TYXZlUmVxdWVzdBIfCgthdXRvc2F2ZV9pZBgBIAEoCVIKYX'
+    'V0b3NhdmVJZA==');
 
 @$core.Deprecated('Use deleteLockFundAutoSaveResponseDescriptor instead')
 const DeleteLockFundAutoSaveResponse$json = {
@@ -929,7 +652,7 @@ const DeleteLockFundAutoSaveResponse$json = {
 };
 
 /// Descriptor for `DeleteLockFundAutoSaveResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deleteLockFundAutoSaveResponseDescriptor =
-    $convert.base64Decode(
-        'Ch5EZWxldGVMb2NrRnVuZEF1dG9TYXZlUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2'
-        'VzcxIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
+final $typed_data.Uint8List deleteLockFundAutoSaveResponseDescriptor = $convert.base64Decode(
+    'Ch5EZWxldGVMb2NrRnVuZEF1dG9TYXZlUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2'
+    'VzcxIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
+
