@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package ai_scan;
+package pb;
 
 option go_package = "github.com/yourusername/lazervault/pb";
 

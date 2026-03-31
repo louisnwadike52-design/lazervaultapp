@@ -131,7 +131,8 @@ class CryptoRemoteDataSourceImpl implements CryptoRemoteDataSource {
         name: 'getGlobalMarketData',
         error: e,
       );
-      throw Exception(CryptoErrorMessages.translate(e as Exception, operation: 'get global market data'));
+      final exception = e is Exception ? e : Exception(e.toString());
+      throw Exception(CryptoErrorMessages.translate(exception, operation: 'get global market data'));
     }
   }
 

@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../cubit/stock_cubit.dart';
-import '../../cubit/stock_state.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import '../../domain/entities/stock_entity.dart';
-import 'stock_trade_receipt_screen.dart';
 import '../widgets/stock_selector_bottom_sheet.dart';
 import '../../../../../core/utils/currency_formatter.dart';
 
@@ -23,12 +20,20 @@ class BuyStockScreen extends StatefulWidget {
 
 class _BuyStockScreenState extends State<BuyStockScreen>
     with SingleTickerProviderStateMixin {
+  static const double _kDisplayFeeRate = 0.0025; // ~25 bps; server applies tiers
+
   late TabController _tabController;
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _sharesController = TextEditingController();
   String _selectedPaymentMethod = 'wallet';
   int _currentStep = 0;
   Stock? _selectedStock;
+
+  String _tradeCurrency(Stock? s) {
+    final c = s?.currency.trim() ?? '';
+    if (c.isEmpty) return 'USD';
+    return c.toUpperCase();
+  }
 
   @override
   void initState() {
@@ -62,21 +67,26 @@ class _BuyStockScreenState extends State<BuyStockScreen>
   void _placeOrder() {
     final amount = double.tryParse(_amountController.text) ?? 0;
     final shares = double.tryParse(_sharesController.text) ?? 0;
-
-    context.read<StockCubit>().placeBuyOrder(
-      stockSymbol: _selectedStock?.symbol ?? '',
-      quantity: shares.toInt(),
-      price: _selectedStock?.currentPrice ?? 0,
-      paymentMethod: _selectedPaymentMethod,
+    if (_selectedStock == null || shares <= 0 || amount <= 0) {
+      Get.snackbar('Invalid order', 'Enter amount and select a stock');
+      return;
+    }
+    final fees = amount * _kDisplayFeeRate;
+    Get.toNamed(
+      AppRoutes.stockTradeReview,
+      arguments: {
+        'stock': _selectedStock,
+        'tradeType': 'buy',
+        'amount': amount,
+        'shares': shares.ceil(),
+        'sharesExact': shares,
+        'fees': fees,
+        'estimatedTotal': amount + fees,
+        'paymentMethod': _selectedPaymentMethod,
+        'paymentDetails': <String, dynamic>{},
+        'orderType': OrderType.market,
+      },
     );
-
-    Get.to(() => StockTradeReceiptScreen(
-      type: 'buy',
-      stock: _selectedStock,
-      quantity: shares.toInt(),
-      price: _selectedStock?.currentPrice ?? 0,
-      totalValue: amount,
-    ));
   }
 
   @override
@@ -189,6 +199,7 @@ class _BuyStockScreenState extends State<BuyStockScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(height: 16.h),
+            _buildFxFundBanner(),
             _buildInputTypeToggle(),
             SizedBox(height: 24.h),
             _buildStockSelector(),
@@ -205,6 +216,64 @@ class _BuyStockScreenState extends State<BuyStockScreen>
             SizedBox(height: 24.h),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildFxFundBanner() {
+    final ccy = _tradeCurrency(_selectedStock);
+    if (ccy != 'USD') return const SizedBox.shrink();
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(12.w),
+      margin: EdgeInsets.only(bottom: 8.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: const Color(0xFF3B82F6).withValues(alpha: 0.35),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'US trades use your USD wallet',
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+              fontSize: 13.sp,
+            ),
+          ),
+          SizedBox(height: 4.h),
+          Text(
+            'Convert NGN→USD in Exchange (platform rates) before buying if needed.',
+            style: GoogleFonts.inter(
+              color: const Color(0xFF9CA3AF),
+              fontSize: 11.sp,
+              height: 1.35,
+            ),
+          ),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton(
+              onPressed: () => Get.toNamed(
+                AppRoutes.exchangeHome,
+                arguments: {
+                  'fromCurrency': 'NGN',
+                  'toCurrency': 'USD',
+                },
+              ),
+              child: Text(
+                'Open Exchange',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF3B82F6),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -544,7 +613,8 @@ class _BuyStockScreenState extends State<BuyStockScreen>
   Widget _buildOrderSummary() {
     final amount = double.tryParse(_amountController.text) ?? 0;
     final shares = double.tryParse(_sharesController.text) ?? 0;
-    final fee = amount * 0.01; // 1% fee
+    final ccy = _tradeCurrency(_selectedStock);
+    final fee = amount * _kDisplayFeeRate;
     final total = amount + fee;
 
     return Container(
@@ -568,12 +638,13 @@ class _BuyStockScreenState extends State<BuyStockScreen>
           _buildSummaryItem('Stock', _selectedStock?.symbol ?? '-'),
           _buildSummaryItem('Shares', shares.toStringAsFixed(2)),
           _buildSummaryItem('Price', _selectedStock != null
-              ? CurrencySymbols.formatAmountWithCurrency(_selectedStock!.currentPrice, 'NGN')
+              ? CurrencySymbols.formatAmountWithCurrency(_selectedStock!.currentPrice, ccy)
               : '-'),
-          _buildSummaryItem('Subtotal', CurrencySymbols.formatAmountWithCurrency(amount, 'NGN')),
-          _buildSummaryItem('Fee (1%)', CurrencySymbols.formatAmountWithCurrency(fee, 'NGN')),
+          _buildSummaryItem('Subtotal', CurrencySymbols.formatAmountWithCurrency(amount, ccy)),
+          _buildSummaryItem('Est. platform fee (~0.25%)',
+              CurrencySymbols.formatAmountWithCurrency(fee, ccy)),
           Divider(color: Colors.white.withValues(alpha: 0.1)),
-          _buildSummaryItem('Total', CurrencySymbols.formatAmountWithCurrency(total, 'NGN'),
+          _buildSummaryItem('Total', CurrencySymbols.formatAmountWithCurrency(total, ccy),
               isTotal: true),
         ],
       ),
@@ -650,7 +721,7 @@ class _BuyStockScreenState extends State<BuyStockScreen>
   Widget _buildReviewStep() {
     final amount = double.tryParse(_amountController.text) ?? 0;
     final shares = double.tryParse(_sharesController.text) ?? 0;
-    final fee = amount * 0.01;
+    final fee = amount * _kDisplayFeeRate;
     final total = amount + fee;
 
     return Expanded(
@@ -744,17 +815,33 @@ class _BuyStockScreenState extends State<BuyStockScreen>
           Divider(color: Colors.white.withValues(alpha: 0.1)),
           SizedBox(height: 16.h),
           _buildReviewItem('Shares to Buy', shares.toStringAsFixed(2)),
-          _buildReviewItem('Price per Share',
-              CurrencySymbols.formatAmountWithCurrency(_selectedStock?.currentPrice ?? 0, 'NGN')),
-          _buildReviewItem('Subtotal',
-              CurrencySymbols.formatAmountWithCurrency(amount, 'NGN')),
-          _buildReviewItem('Transaction Fee',
-              CurrencySymbols.formatAmountWithCurrency(fee, 'NGN')),
+          _buildReviewItem(
+              'Price per Share',
+              CurrencySymbols.formatAmountWithCurrency(
+                _selectedStock?.currentPrice ?? 0,
+                _tradeCurrency(_selectedStock),
+              )),
+          _buildReviewItem(
+              'Subtotal',
+              CurrencySymbols.formatAmountWithCurrency(
+                amount,
+                _tradeCurrency(_selectedStock),
+              )),
+          _buildReviewItem(
+              'Est. platform fee',
+              CurrencySymbols.formatAmountWithCurrency(
+                fee,
+                _tradeCurrency(_selectedStock),
+              )),
           SizedBox(height: 16.h),
           Divider(color: Colors.white.withValues(alpha: 0.1)),
           SizedBox(height: 16.h),
-          _buildReviewItem('Total Amount',
-              CurrencySymbols.formatAmountWithCurrency(total, 'NGN'),
+          _buildReviewItem(
+              'Total Amount',
+              CurrencySymbols.formatAmountWithCurrency(
+                total,
+                _tradeCurrency(_selectedStock),
+              ),
               isTotal: true),
         ],
       ),

@@ -12,6 +12,8 @@ import '../../domain/entities/country.dart';
 import '../widgets/airtime_step_indicator.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class RecipientInputScreen extends StatefulWidget {
   const RecipientInputScreen({super.key});
@@ -30,6 +32,7 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
   Country? selectedCountry;
   bool isPhoneValid = false;
   bool _isBuyForSelf = false; // When true, phone is auto-filled and read-only
+  CountryLocale _selectedDialCountry = CountryLocales.all.first; // Nigeria default
 
   @override
   void initState() {
@@ -44,6 +47,14 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
       selectedProvider = args['networkProvider'] as NetworkProvider?;
       selectedCountry = args['country'] as Country?;
       _isBuyForSelf = args['isBuyForSelf'] as bool? ?? false;
+
+      // Sync dial country with airtime country selection
+      if (selectedCountry != null) {
+        final match = CountryLocales.all.where(
+          (c) => c.countryCode == selectedCountry!.code,
+        ).firstOrNull;
+        if (match != null) _selectedDialCountry = match;
+      }
 
       if (_isBuyForSelf) {
         // Auto-fill logged-in user's phone number (read-only)
@@ -120,9 +131,10 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
 
   void _onPhoneChanged() async {
     if (!mounted) return;
-    final phoneNumber = _phoneController.text;
+    final phoneNumber = _phoneController.text.replaceAll(RegExp(r'[^\d]'), '');
+    final stripped = phoneNumber.startsWith('0') ? phoneNumber.substring(1) : phoneNumber;
 
-    final newIsValid = phoneNumber.length >= 10;
+    final newIsValid = stripped.length >= 7;
     if (newIsValid != isPhoneValid) {
       setState(() {
         isPhoneValid = newIsValid;
@@ -259,21 +271,31 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
     );
   }
 
-  void _validateAndProceed() {
-    final phoneNumber = _phoneController.text.trim();
+  /// Build full E.164 phone number with country dial code.
+  String _buildFullPhone() {
+    final local = _phoneController.text.trim().replaceAll(RegExp(r'[^\d]'), '');
+    final stripped = local.startsWith('0') ? local.substring(1) : local;
+    return '${_selectedDialCountry.dialCode}$stripped';
+  }
 
-    if (phoneNumber.isEmpty) {
+  void _validateAndProceed() {
+    final localDigits = _phoneController.text.trim().replaceAll(RegExp(r'[^\d]'), '');
+
+    if (localDigits.isEmpty) {
       _showError('Please enter a phone number');
       return;
     }
 
-    if (phoneNumber.length < 10) {
+    // Strip leading 0 for length check (local format)
+    final stripped = localDigits.startsWith('0') ? localDigits.substring(1) : localDigits;
+    if (stripped.length < 7) {
       _showError('Please enter a valid phone number');
       return;
     }
 
+    final fullPhone = _buildFullPhone();
     final countryCode = selectedCountry?.code ?? 'NG';
-    context.read<AirtimeCubit>().validatePhoneNumber(phoneNumber, countryCode);
+    context.read<AirtimeCubit>().validatePhoneNumber(fullPhone, countryCode);
   }
 
   void _showError(String message) {
@@ -525,55 +547,85 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
           decoration: BoxDecoration(
             color: const Color(0xFF1F1F1F),
             borderRadius: BorderRadius.circular(14.r),
-          ),
-          child: TextField(
-            controller: _phoneController,
-            focusNode: _phoneFocusNode,
-            readOnly: _isBuyForSelf,
-            enabled: !_isBuyForSelf,
-            keyboardType: TextInputType.phone,
-            inputFormatters: [
-              FilteringTextInputFormatter.digitsOnly,
-              LengthLimitingTextInputFormatter(11),
-            ],
-            style: TextStyle(
-              fontSize: 16.sp,
-              color: _isBuyForSelf ? const Color(0xFF9CA3AF) : Colors.white,
-              fontWeight: FontWeight.w500,
+            border: Border.all(
+              color: const Color(0xFF2D2D2D),
+              width: 1,
             ),
-            decoration: InputDecoration(
-              hintText: '08012345678',
-              hintStyle: TextStyle(
-                color: const Color(0xFF9CA3AF).withValues(alpha: 0.5),
-                fontSize: 16.sp,
+          ),
+          child: Row(
+            children: [
+              // Country code prefix (display only — country is set earlier in flow)
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
+                decoration: const BoxDecoration(
+                  border: Border(
+                    right: BorderSide(
+                      color: Color(0xFF2D2D2D),
+                      width: 1,
+                    ),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _selectedDialCountry.flag,
+                      style: TextStyle(fontSize: 20.sp),
+                    ),
+                    SizedBox(width: 6.w),
+                    Text(
+                      _selectedDialCountry.dialCode,
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              prefixIcon: Container(
-                padding: EdgeInsets.all(12.w),
-                child: Text(
-                  selectedCountry?.dialCode ?? '+234',
+              // Phone number input
+              Expanded(
+                child: TextField(
+                  controller: _phoneController,
+                  focusNode: _phoneFocusNode,
+                  readOnly: _isBuyForSelf,
+                  enabled: !_isBuyForSelf,
+                  keyboardType: TextInputType.phone,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(11),
+                  ],
                   style: TextStyle(
                     fontSize: 16.sp,
-                    color: const Color(0xFF9CA3AF),
+                    color: _isBuyForSelf ? const Color(0xFF9CA3AF) : Colors.white,
                     fontWeight: FontWeight.w500,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: '8012345678',
+                    hintStyle: TextStyle(
+                      color: const Color(0xFF9CA3AF).withValues(alpha: 0.5),
+                      fontSize: 16.sp,
+                    ),
+                    suffixIcon: _isBuyForSelf
+                        ? Padding(
+                            padding: EdgeInsets.all(12.w),
+                            child: Icon(
+                              Icons.lock_outline,
+                              color: const Color(0xFF9CA3AF),
+                              size: 18.sp,
+                            ),
+                          )
+                        : null,
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 14.w,
+                      vertical: 16.h,
+                    ),
                   ),
                 ),
               ),
-              suffixIcon: _isBuyForSelf
-                  ? Padding(
-                      padding: EdgeInsets.all(12.w),
-                      child: Icon(
-                        Icons.lock_outline,
-                        color: const Color(0xFF9CA3AF),
-                        size: 18.sp,
-                      ),
-                    )
-                  : null,
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: 16.w,
-                vertical: 16.h,
-              ),
-            ),
+            ],
           ),
         ),
       ],

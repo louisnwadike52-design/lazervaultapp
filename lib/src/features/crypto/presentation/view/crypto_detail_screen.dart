@@ -15,10 +15,18 @@ import 'sell_crypto_screen.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import '../../../../../core/services/injection_container.dart';
 
+/// Controls which action buttons appear on the detail screen.
+enum CryptoDetailEntryMode { full, buyOnly, sellOnly }
+
 class CryptoDetailScreen extends StatefulWidget {
   final Crypto crypto;
+  final CryptoDetailEntryMode entryMode;
 
-  const CryptoDetailScreen({super.key, required this.crypto});
+  const CryptoDetailScreen({
+    super.key,
+    required this.crypto,
+    this.entryMode = CryptoDetailEntryMode.full,
+  });
 
   @override
   State<CryptoDetailScreen> createState() => _CryptoDetailScreenState();
@@ -50,7 +58,7 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
   }
 
   void _setupTabController() {
-    _tabController = TabController(length: 2, vsync: this); // Changed from 3 to 2 tabs
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   void _loadCryptoDetails() {
@@ -103,6 +111,7 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
                   children: [
                     _buildOverviewTab(),
                     _buildStatsTab(),
+                    _buildNewsTab(),
                   ],
                 ),
               ),
@@ -162,6 +171,8 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
                 setState(() {
                   _isInWatchlist = !_isInWatchlist;
                 });
+                // Persist to backend
+                context.read<CryptoCubit>().toggleFavorite(widget.crypto.id);
               },
               child: Container(
                 padding: EdgeInsets.all(8.w),
@@ -213,6 +224,7 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
         tabs: const [
           Tab(text: 'Overview'),
           Tab(text: 'Stats'),
+          Tab(text: 'News'),
         ],
       ),
     );
@@ -234,8 +246,12 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
               _buildAdvancedChart(priceHistory),
               _buildActionButtons(),
               _buildKeyDataPoints(),
+              SizedBox(height: 16.h),
               _buildMarketStats(),
+              SizedBox(height: 16.h),
               _buildPortfolioSection(),
+              _buildAboutSection(),
+              SizedBox(height: 24.h),
             ],
           ),
         );
@@ -625,59 +641,66 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
   }
 
   Widget _buildActionButtons() {
+    final showBuy = widget.entryMode == CryptoDetailEntryMode.full ||
+        widget.entryMode == CryptoDetailEntryMode.buyOnly;
+    final showSell = widget.entryMode == CryptoDetailEntryMode.full ||
+        widget.entryMode == CryptoDetailEntryMode.sellOnly;
+
     return Container(
       margin: EdgeInsets.all(16.w),
       child: Row(
         children: [
-          Expanded(
-            child: GestureDetector(
-              onTap: () => _navigateToBuyScreen(),
-              child: Container(
-                padding: EdgeInsets.symmetric(vertical: 16.h),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.green, Colors.green.withValues(alpha: 0.8)],
+          if (showBuy)
+            Expanded(
+              child: GestureDetector(
+                onTap: () => _navigateToBuyScreen(),
+                child: Container(
+                  padding: EdgeInsets.symmetric(vertical: 16.h),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.green, Colors.green.withValues(alpha: 0.8)],
+                    ),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                child: Center(
-                  child: Text(
-                    'Buy',
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.bold,
+                  child: Center(
+                    child: Text(
+                      'Buy',
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: GestureDetector(
-              onTap: () => _navigateToSellScreen(),
-              child: Container(
-                padding: EdgeInsets.symmetric(vertical: 16.h),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.red, Colors.red.withValues(alpha: 0.8)],
+          if (showBuy && showSell) SizedBox(width: 12.w),
+          if (showSell)
+            Expanded(
+              child: GestureDetector(
+                onTap: () => _navigateToSellScreen(),
+                child: Container(
+                  padding: EdgeInsets.symmetric(vertical: 16.h),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.red, Colors.red.withValues(alpha: 0.8)],
+                    ),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                child: Center(
-                  child: Text(
-                    'Sell',
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.bold,
+                  child: Center(
+                    child: Text(
+                      'Sell',
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -1193,6 +1216,291 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
     );
   }
 
+  Widget _buildAboutSection() {
+    return Container(
+      margin: EdgeInsets.all(16.w),
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.info_outline, color: _getCryptoColor(), size: 20.sp),
+              SizedBox(width: 8.w),
+              Text(
+                'About ${widget.crypto.name}',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12.h),
+          Text(
+            'Trade ${widget.crypto.name} (${widget.crypto.symbol.toUpperCase()}) securely through LazerVault with our licensed crypto partner Quidax. '
+            '${widget.crypto.name} is ranked #${widget.crypto.marketCapRank} by market capitalization.',
+            style: GoogleFonts.inter(
+              color: Colors.grey[400],
+              fontSize: 13.sp,
+              height: 1.5,
+            ),
+          ),
+          SizedBox(height: 12.h),
+          Row(
+            children: [
+              _buildAboutChip('Rank #${widget.crypto.marketCapRank}'),
+              SizedBox(width: 8.w),
+              _buildAboutChip(widget.crypto.symbol.toUpperCase()),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAboutChip(String label) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+      decoration: BoxDecoration(
+        color: _getCryptoColor().withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(8.r),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.inter(
+          color: _getCryptoColor(),
+          fontSize: 12.sp,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNewsTab() {
+    return BlocBuilder<CryptoCubit, CryptoState>(
+      builder: (context, state) {
+        if (state is CryptoDetailsLoaded && state.isLoadingNews) {
+          return _buildNewsShimmer();
+        }
+
+        final news = state is CryptoDetailsLoaded ? state.news : <CryptoNews>[];
+
+        if (news.isEmpty) {
+          return Center(
+            child: Padding(
+              padding: EdgeInsets.all(32.w),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.newspaper, size: 48.sp, color: Colors.grey[600]),
+                  SizedBox(height: 12.h),
+                  Text(
+                    'No news available',
+                    style: GoogleFonts.inter(
+                      color: Colors.grey[400],
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    'News for ${widget.crypto.name} will appear here',
+                    style: GoogleFonts.inter(
+                      color: Colors.grey[600],
+                      fontSize: 13.sp,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        return ListView.builder(
+          padding: EdgeInsets.all(16.w),
+          itemCount: news.length,
+          itemBuilder: (context, index) => _buildNewsItem(news[index]),
+        );
+      },
+    );
+  }
+
+  Widget _buildNewsItem(CryptoNews newsItem) {
+    final sentimentColor = switch (newsItem.sentiment) {
+      'positive' => Colors.green,
+      'negative' => Colors.red,
+      _ => Colors.grey,
+    };
+
+    final timeAgo = _formatTimeAgo(newsItem.publishedAt);
+
+    return GestureDetector(
+      onTap: () {
+        // Open news URL in browser
+        // launchUrl(Uri.parse(newsItem.url));
+      },
+      child: Container(
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              newsItem.title,
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+                height: 1.4,
+              ),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
+            SizedBox(height: 10.h),
+            Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                  decoration: BoxDecoration(
+                    color: sentimentColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(6.r),
+                  ),
+                  child: Text(
+                    newsItem.sentiment,
+                    style: GoogleFonts.inter(
+                      color: sentimentColor,
+                      fontSize: 11.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                Icon(Icons.source, size: 12.sp, color: Colors.grey[500]),
+                SizedBox(width: 4.w),
+                Expanded(
+                  child: Text(
+                    newsItem.source,
+                    style: GoogleFonts.inter(
+                      color: Colors.grey[500],
+                      fontSize: 12.sp,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Text(
+                  timeAgo,
+                  style: GoogleFonts.inter(
+                    color: Colors.grey[600],
+                    fontSize: 12.sp,
+                  ),
+                ),
+              ],
+            ),
+            if (newsItem.votesPositive > 0 || newsItem.votesNegative > 0) ...[
+              SizedBox(height: 8.h),
+              Row(
+                children: [
+                  Icon(Icons.thumb_up_alt_outlined, size: 14.sp, color: Colors.green.withValues(alpha: 0.7)),
+                  SizedBox(width: 4.w),
+                  Text(
+                    '${newsItem.votesPositive}',
+                    style: GoogleFonts.inter(color: Colors.grey[500], fontSize: 12.sp),
+                  ),
+                  SizedBox(width: 12.w),
+                  Icon(Icons.thumb_down_alt_outlined, size: 14.sp, color: Colors.red.withValues(alpha: 0.7)),
+                  SizedBox(width: 4.w),
+                  Text(
+                    '${newsItem.votesNegative}',
+                    style: GoogleFonts.inter(color: Colors.grey[500], fontSize: 12.sp),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNewsShimmer() {
+    return ListView.builder(
+      padding: EdgeInsets.all(16.w),
+      itemCount: 5,
+      itemBuilder: (context, index) => Container(
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFF2A2A3E).withValues(alpha: 0.8),
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 14.h,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.grey[800],
+                borderRadius: BorderRadius.circular(4.r),
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Container(
+              height: 14.h,
+              width: 200.w,
+              decoration: BoxDecoration(
+                color: Colors.grey[800],
+                borderRadius: BorderRadius.circular(4.r),
+              ),
+            ),
+            SizedBox(height: 12.h),
+            Row(
+              children: [
+                Container(
+                  height: 20.h,
+                  width: 60.w,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[800],
+                    borderRadius: BorderRadius.circular(6.r),
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                Container(
+                  height: 12.h,
+                  width: 80.w,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[800],
+                    borderRadius: BorderRadius.circular(4.r),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatTimeAgo(DateTime dateTime) {
+    final diff = DateTime.now().difference(dateTime);
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    if (diff.inDays < 7) return '${diff.inDays}d ago';
+    return '${(diff.inDays / 7).floor()}w ago';
+  }
+
   Color _getCryptoColor() {
     switch (widget.crypto.symbol.toLowerCase()) {
       case 'btc':
@@ -1227,17 +1535,30 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
     Get.to(
       () => BlocProvider(
         create: (context) => serviceLocator<CryptoCubit>(),
-        child: BuyCryptoScreen(selectedCrypto: widget.crypto),
+        child: BuyCryptoScreen(selectedCrypto: widget.crypto, lockAsset: true),
       ),
       transition: Transition.rightToLeft,
     );
   }
 
   void _navigateToSellScreen() {
+    // Look up user's holding for this crypto
+    final cubitState = context.read<CryptoCubit>().state;
+    CryptoHolding? holding;
+    if (cubitState is CryptosLoaded) {
+      holding = cubitState.holdings.cast<CryptoHolding?>().firstWhere(
+        (h) => h?.cryptoId == widget.crypto.id ||
+            h?.cryptoSymbol.toLowerCase() == widget.crypto.symbol.toLowerCase(),
+        orElse: () => null,
+      );
+    }
     Get.to(
       () => BlocProvider(
         create: (context) => serviceLocator<CryptoCubit>(),
-        child: const SellCryptoScreen(),
+        child: SellCryptoScreen(
+          selectedHolding: holding,
+          lockHolding: holding != null,
+        ),
       ),
       transition: Transition.rightToLeft,
     );

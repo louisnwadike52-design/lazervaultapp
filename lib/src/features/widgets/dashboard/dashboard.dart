@@ -24,6 +24,7 @@ import 'package:lazervault/src/features/group_account/presentation/cubit/group_a
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_cubit.dart';
 import 'package:lazervault/src/features/family_account/presentation/cubit/family_account_state.dart';
 import 'package:lazervault/src/features/family_account/domain/entities/family_account_entities.dart';
+import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:get/get.dart';
@@ -91,6 +92,33 @@ class _DashboardState extends State<Dashboard> {
     return 'NGN';
   }
 
+  /// Summaries list from cubit when data is available (including post–WebSocket updates).
+  List<AccountSummaryEntity>? _accountSummariesFromState(
+      AccountCardsSummaryState state) {
+    if (state is AccountCardsSummaryLoaded) {
+      return state.accountSummaries;
+    }
+    if (state is AccountBalanceUpdated) {
+      return state.accountSummaries;
+    }
+    return null;
+  }
+
+  /// True when the account currently shown in the top carousel is Family & Friends.
+  bool _activeCarouselAccountIsFamily(
+    List<AccountSummaryEntity> summaries,
+    String? activeAccountId,
+  ) {
+    if (activeAccountId == null || activeAccountId.isEmpty) return false;
+    for (final a in summaries) {
+      if (a.id == activeAccountId) {
+        return a.isFamilyAccount ||
+            a.accountTypeEnum == VirtualAccountType.family;
+      }
+    }
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -114,7 +142,7 @@ class _DashboardState extends State<Dashboard> {
                         SizedBox(height: 16.0.h),
                         _buildFamilyFriendsCTA(),
                         InviteFriends(),
-                        SizedBox(height: 8.0.h),
+                        SizedBox(height: 16.0.h),
                         RecentHistory(),
                         SizedBox(height: 16.0.h),
                         BlocProvider(
@@ -244,109 +272,126 @@ class _DashboardState extends State<Dashboard> {
   }
 
   /// CTA card for creating Family & Friends accounts (max 3).
-  /// Only visible when the user has fewer than 3 family accounts.
+  /// Only visible when the Family & Friends account card is active in the top carousel
+  /// (same selection as [AccountManager] / [AccountCarousel]) and user has fewer than 3 family accounts.
   Widget _buildFamilyFriendsCTA() {
+    final accountManager = serviceLocator<AccountManager>();
+
     return BlocBuilder<AccountCardsSummaryCubit, AccountCardsSummaryState>(
       builder: (context, state) {
-        if (state is! AccountCardsSummaryLoaded) return const SizedBox.shrink();
+        final summaries = _accountSummariesFromState(state);
+        if (summaries == null || summaries.isEmpty) {
+          return const SizedBox.shrink();
+        }
 
-        final familyCount = state.accountSummaries
-            .where((a) => a.accountTypeEnum == VirtualAccountType.family)
-            .length;
+        return StreamBuilder<String?>(
+          stream: accountManager.accountIdStream,
+          initialData: accountManager.activeAccountId,
+          builder: (context, snapshot) {
+            final activeId = snapshot.data;
+            if (!_activeCarouselAccountIsFamily(summaries, activeId)) {
+              return const SizedBox.shrink();
+            }
 
-        if (familyCount >= 3) return const SizedBox.shrink();
+            final familyCount = summaries
+                .where((a) => a.accountTypeEnum == VirtualAccountType.family)
+                .length;
 
-        final slotsRemaining = 3 - familyCount;
+            if (familyCount >= 3) return const SizedBox.shrink();
 
-        return Padding(
-          padding: EdgeInsets.only(bottom: 16.h),
-          child: Container(
-            padding: EdgeInsets.all(20.w),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFF1A1A3E), Color(0xFF2D2B6B)],
-              ),
-              borderRadius: BorderRadius.circular(20.r),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF1A1A3E).withValues(alpha: 0.3),
-                  blurRadius: 15,
-                  offset: const Offset(0, 5),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 52.w,
-                  height: 52.w,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.12),
-                    shape: BoxShape.circle,
+            final slotsRemaining = 3 - familyCount;
+
+            return Padding(
+              padding: EdgeInsets.only(bottom: 16.h),
+              child: Container(
+                padding: EdgeInsets.all(20.w),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFF1A1A3E), Color(0xFF2D2B6B)],
                   ),
-                  child: Icon(
-                    Icons.family_restroom,
-                    color: Colors.white.withValues(alpha: 0.9),
-                    size: 28.sp,
-                  ),
+                  borderRadius: BorderRadius.circular(20.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF1A1A3E).withValues(alpha: 0.3),
+                      blurRadius: 15,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
                 ),
-                SizedBox(width: 16.w),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Family & Friends',
-                        style: TextStyle(
+                child: Row(
+                  children: [
+                    Container(
+                      width: 52.w,
+                      height: 52.w,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.family_restroom,
+                        color: Colors.white.withValues(alpha: 0.9),
+                        size: 28.sp,
+                      ),
+                    ),
+                    SizedBox(width: 16.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Family & Friends',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 4.h),
+                          Text(
+                            'Share & manage money together. $slotsRemaining ${slotsRemaining == 1 ? 'slot' : 'slots'} available.',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.7),
+                              fontSize: 12.sp,
+                              height: 1.3,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(width: 12.w),
+                    GestureDetector(
+                      onTap: () {
+                        if (Get.isBottomSheetOpen == true) return;
+                        _showCreateFamilyAccountSheet(context);
+                      },
+                      child: Container(
+                        width: 40.w,
+                        height: 40.w,
+                        decoration: BoxDecoration(
                           color: Colors.white,
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.bold,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.15),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          Icons.add_rounded,
+                          color: const Color(0xFF1A1A3E),
+                          size: 24.sp,
                         ),
                       ),
-                      SizedBox(height: 4.h),
-                      Text(
-                        'Share & manage money together. $slotsRemaining ${slotsRemaining == 1 ? 'slot' : 'slots'} available.',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.7),
-                          fontSize: 12.sp,
-                          height: 1.3,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(width: 12.w),
-                GestureDetector(
-                  onTap: () {
-                    if (Get.isBottomSheetOpen == true) return;
-                    _showCreateFamilyAccountSheet(context);
-                  },
-                  child: Container(
-                    width: 40.w,
-                    height: 40.w,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.15),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
                     ),
-                    child: Icon(
-                      Icons.add_rounded,
-                      color: const Color(0xFF1A1A3E),
-                      size: 24.sp,
-                    ),
-                  ),
+                  ],
                 ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );

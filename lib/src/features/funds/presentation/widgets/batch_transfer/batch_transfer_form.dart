@@ -13,6 +13,7 @@ import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/utils/currency_utils.dart';
 import 'package:lazervault/core/utils/debouncer.dart';
+import 'package:lazervault/core/utils/user_search_query.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/funds/domain/entities/batch_transfer_entity.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
@@ -147,7 +148,7 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
   void _onUserSearchChanged(String query) {
     _userSearchDebouncer.cancel();
 
-    final cleanQuery = query.replaceAll('@', '').replaceAll('\$', '').trim();
+    final cleanQuery = normalizeLazerVaultUserSearchQuery(query);
 
     if (cleanQuery.isEmpty || cleanQuery.length < 2) {
       setState(() {
@@ -629,7 +630,7 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
           ? _buildErrorRetryState(
               message: _userSearchError!,
               onRetry: () => _performUserSearch(
-                _userSearchController.text.replaceAll('@', '').replaceAll('\$', '').trim(),
+                normalizeLazerVaultUserSearchQuery(_userSearchController.text),
               ),
             )
           : _buildEmptySearchState(

@@ -307,9 +307,7 @@ import 'package:lazervault/src/features/stocks/domain/usecases/get_portfolio_use
 import 'package:lazervault/src/features/stocks/domain/usecases/place_order_usecase.dart';
 import 'package:lazervault/src/features/stocks/domain/usecases/get_watchlists_usecase.dart';
 import 'package:lazervault/src/features/stocks/cubit/stock_cubit.dart';
-import 'package:lazervault/src/features/stocks/presentation/view/stocks_screen.dart' as StockFeature;
 import 'package:lazervault/src/features/stocks/presentation/view/stock_details_screen.dart';
-import 'package:lazervault/src/features/stocks/presentation/view/stock_trade_amount_screen.dart';
 import 'package:lazervault/src/features/stocks/presentation/view/stock_trade_payment_screen.dart';
 import 'package:lazervault/src/features/stocks/presentation/view/stock_trade_review_screen.dart';
 import 'package:lazervault/src/features/stocks/presentation/view/stock_trade_receipt_screen.dart';
@@ -473,6 +471,8 @@ import 'package:lazervault/src/features/airtime_to_cash/presentation/cubit/airti
 // End Airtime Imports
 
 import 'package:lazervault/src/features/investments/presentation/view/investments_screen.dart';
+import 'package:lazervault/src/features/investments/data/datasources/multi_asset_data_source.dart';
+import 'package:lazervault/src/features/investments/presentation/cubit/multi_asset_cubit.dart';
 
 // AI Scan to Pay Imports
 import 'package:lazervault/src/features/ai_scan_to_pay/data/datasources/ai_scan_remote_datasource.dart';
@@ -1564,7 +1564,7 @@ Future<void> init() async {
 
   // ================== Feature: Stocks ==================
 
-  // Stocks gRPC Channel Manager - Uses Investment Gateway (8090)
+  // Stocks gRPC Channel Manager - Uses Investment Gateway (see PORTS_CONFIG investment_gateway_grpc)
   serviceLocator.registerLazySingleton<GrpcChannelManager>(
     () => GrpcChannelManager(
       channel: serviceLocator<ClientChannel>(instanceName: 'investmentChannel'),
@@ -1572,24 +1572,24 @@ Future<void> init() async {
     ),
   );
 
-  // Data Sources - Default to gRPC, fall back to HTTP if explicitly set
+  // Data Sources — default: gRPC via investment-gateway (investments.proto).
+  // HTTP fallback must target investment-gateway REST (e.g. :9090/api/v1), not core-gateway.
   serviceLocator.registerLazySingleton<IStockRemoteDataSource>(
     () {
       final useHttp = dotenv.env['USE_STOCKS_HTTP']?.toLowerCase() == 'true';
 
       if (useHttp) {
-        // Use HTTP implementation (legacy fallback)
         return StockRemoteDataSourceRealImpl(
           client: serviceLocator<http.Client>(),
-          baseUrl: dotenv.env['STOCKS_API_URL'] ?? 'http://10.0.2.2:8081/api/v1',
+          baseUrl: dotenv.env['STOCKS_API_URL'] ??
+              dotenv.env['INVESTMENT_GATEWAY_HTTP_URL'] ??
+              'http://10.0.2.2:9090/api/v1',
           secureStorage: serviceLocator<SecureStorageService>(),
         );
-      } else {
-        // Use gRPC implementation (default)
-        return StockRemoteDataSourceGrpcImpl(
-          channelManager: serviceLocator<GrpcChannelManager>(),
-        );
       }
+      return StockRemoteDataSourceGrpcImpl(
+        channelManager: serviceLocator<GrpcChannelManager>(),
+      );
     },
   );
 
@@ -1647,6 +1647,22 @@ Future<void> init() async {
     repository: serviceLocator<CryptoRepository>(),
   ));
 
+
+  // ================== Feature: Multi-Asset (T-Bills, Mutual Funds, FX Quotes) ==================
+
+  serviceLocator.registerLazySingleton<IMultiAssetDataSource>(
+    () => MultiAssetDataSourceImpl(
+      client: serviceLocator<http.Client>(),
+      getToken: () async {
+        final token = await serviceLocator<SecureStorageService>().getAccessToken();
+        return token ?? '';
+      },
+    ),
+  );
+
+  serviceLocator.registerFactory(() => MultiAssetCubit(
+    dataSource: serviceLocator<IMultiAssetDataSource>(),
+  ));
 
   // ================== Feature: Crowdfund ==================
 
@@ -2189,10 +2205,11 @@ Future<void> init() async {
           (currencyCode, _) => CurrencyDepositScreen(currencyCode: currencyCode))
       ..registerFactory(() => GiftCardsScreen())
       ..registerFactory(() => MyGiftCardsScreen())
-      ..registerFactory(() => StockFeature.StocksScreen())
-      ..registerFactoryParam<StockDetailsScreen, Stock, void>(
-          (stock, _) => StockDetailsScreen(stock: stock))
-      ..registerFactory(() => StockTradeAmountScreen())
+      ..registerFactoryParam<StockDetailsScreen, Stock, String?>(
+          (stock, investCollectionId) => StockDetailsScreen(
+                stock: stock,
+                investCollectionId: investCollectionId,
+              ))
       ..registerFactory(() => StockTradePaymentScreen())
       ..registerFactory(() => StockTradeReviewScreen())
       ..registerFactory(() => StockTradeReceiptScreen())
@@ -2470,7 +2487,6 @@ Future<void> init() async {
     () => CreatePolicyCubit(
       repository: serviceLocator<InsuranceRepository>(),
       cacheManager: serviceLocator<SWRCacheManager>(),
-      mutationQueue: serviceLocator<MutationQueue>(),
       localeManager: serviceLocator<LocaleManager>(),
     ),
   );

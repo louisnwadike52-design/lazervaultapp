@@ -60,8 +60,12 @@ class GrpcChannelFactory {
   static ClientChannel createFinancialChannel() => createCommerceChannel();
 
   /// Creates Transfer Gateway gRPC channel (Payments, Transfers)
-  /// gRPC Port: 50076
-  /// This is the PRIMARY channel for Send Funds/Transfers (via Core-Payment-Service)
+  /// This is the PRIMARY channel for Send Funds/Transfers (via Core-Payment-Service).
+  ///
+  /// Canonical local ports (keep in sync with backend):
+  /// - [PORTS_CONFIG.json]: `transfer_gateway_grpc` (50076), `transfer_gateway_http` (8084)
+  /// - [scripts/service-discovery.sh]: `TRANSFER_GATEWAY_GRPC_PORT`, `TRANSFER_GATEWAY_HTTP_PORT`
+  /// - [start_all_local_no_docker.sh]: `transfer-gateway:8084:50076`
   static ClientChannel createTransferChannel() {
     final host = dotenv.env['TRANSFER_GRPC_HOST'] ?? '10.0.2.2';
     final port = int.parse(dotenv.env['TRANSFER_GRPC_PORT'] ?? '50076');

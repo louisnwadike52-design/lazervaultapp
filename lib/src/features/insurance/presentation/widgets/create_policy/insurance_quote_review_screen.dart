@@ -26,6 +26,18 @@ class _InsuranceQuoteReviewScreenState
   Timer? _countdownTimer;
   Duration _remaining = Duration.zero;
 
+  String _currencySymbol(String currency) {
+    final c = currency.toLowerCase().trim();
+    if (c == 'ngn' || c.contains('naira')) return '\u20A6';
+    if (c == 'usd' || c.contains('dollar')) return '\$';
+    if (c == 'gbp' || c.contains('pound')) return '\u00A3';
+    if (c == 'eur' || c.contains('euro')) return '\u20AC';
+    if (c == 'ghs' || c.contains('cedi')) return '\u20B5';
+    if (c == 'kes' || c.contains('shilling')) return 'KSh';
+    if (c == 'zar' || c.contains('rand')) return 'R';
+    return currency;
+  }
+
   @override
   void dispose() {
     _countdownTimer?.cancel();
@@ -157,7 +169,7 @@ class _InsuranceQuoteReviewScreenState
               child: Column(children: [
                 Text('Premium', style: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w500, color: Colors.white70)),
                 SizedBox(height: 4.h),
-                Text('${quote.currency} ${formatter.format(quote.premium)}',
+                Text('${_currencySymbol(quote.currency)}${formatter.format(quote.premium)}',
                   style: GoogleFonts.inter(fontSize: 28.sp, fontWeight: FontWeight.w800, color: Colors.white)),
                 if (quote.validUntil != null) ...[
                   SizedBox(height: 8.h),

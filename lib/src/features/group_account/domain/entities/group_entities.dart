@@ -240,6 +240,8 @@ class GroupMember extends Equatable {
   final String? phoneNumber;
   final bool isPartial;
   final String? userUsername;
+  final bool emailMatchesSearchQuery;
+  final bool phoneMatchesSearchQueryExact;
 
   const GroupMember({
     required this.id,
@@ -254,6 +256,8 @@ class GroupMember extends Equatable {
     this.phoneNumber,
     this.isPartial = false,
     this.userUsername,
+    this.emailMatchesSearchQuery = false,
+    this.phoneMatchesSearchQueryExact = false,
   });
 
   @override
@@ -270,6 +274,8 @@ class GroupMember extends Equatable {
         phoneNumber,
         isPartial,
         userUsername,
+        emailMatchesSearchQuery,
+        phoneMatchesSearchQueryExact,
       ];
 
   GroupMember copyWith({
@@ -285,6 +291,8 @@ class GroupMember extends Equatable {
     String? phoneNumber,
     bool? isPartial,
     String? userUsername,
+    bool? emailMatchesSearchQuery,
+    bool? phoneMatchesSearchQueryExact,
   }) {
     return GroupMember(
       id: id ?? this.id,
@@ -299,6 +307,10 @@ class GroupMember extends Equatable {
       phoneNumber: phoneNumber ?? this.phoneNumber,
       isPartial: isPartial ?? this.isPartial,
       userUsername: userUsername ?? this.userUsername,
+      emailMatchesSearchQuery:
+          emailMatchesSearchQuery ?? this.emailMatchesSearchQuery,
+      phoneMatchesSearchQueryExact:
+          phoneMatchesSearchQueryExact ?? this.phoneMatchesSearchQueryExact,
     );
   }
 

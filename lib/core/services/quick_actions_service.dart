@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:quick_actions/quick_actions.dart';
@@ -47,7 +49,7 @@ class QuickActionsService {
 
     // Register dynamic shortcuts (supplements native static shortcuts).
     // These appear even if the user hasn't configured static shortcuts correctly.
-    try {
+    unawaited(
       _quickActions.setShortcutItems([
         const ShortcutItem(
           type: QuickActionTypes.sendMoney,
@@ -69,12 +71,12 @@ class QuickActionsService {
           localizedTitle: 'Bills Hub',
           icon: 'ic_pay_bills',
         ),
-      ]);
-    } catch (e) {
-      // Dynamic shortcuts may fail on some Android versions/emulators.
-      // Log but don't fail initialization - shortcuts are optional feature.
-      debugPrint('[QuickActions] Failed to set dynamic shortcuts: $e');
-    }
+      ]).catchError((Object e, StackTrace stackTrace) {
+        // Dynamic shortcuts may fail on some Android versions/emulators.
+        // Log but don't fail initialization - shortcuts are optional feature.
+        debugPrint('[QuickActions] Failed to set dynamic shortcuts: $e');
+      }),
+    );
   }
 
   /// If a shortcut was tapped while the app was cold-starting, process it now.

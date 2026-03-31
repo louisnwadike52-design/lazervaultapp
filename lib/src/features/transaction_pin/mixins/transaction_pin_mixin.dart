@@ -140,18 +140,26 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
             try {
               await onPinValidated(result.verificationToken!);
 
-              // Show success phase briefly, then dismiss
-              _pinModalKey.currentState?.setSuccess();
-              await Future.delayed(const Duration(milliseconds: 800));
-              if (mounted) {
-                try { Navigator.of(context).pop(); } catch (_) {}
+              // Only dismiss modal if it's still showing (callback may have navigated away)
+              if (_pinModalKey.currentState != null) {
+                _pinModalKey.currentState?.setSuccess(
+                  message: showProcessingPhase
+                      ? 'Transaction Successful!'
+                      : 'PIN Verified',
+                );
+                await Future.delayed(const Duration(milliseconds: 800));
+                if (mounted) {
+                  try { Navigator.of(context).pop(); } catch (_) {}
+                }
               }
               return true;
             } catch (e) {
-              _pinModalKey.currentState?.setFailed(e.toString().replaceAll('Exception: ', ''));
-              await Future.delayed(const Duration(seconds: 2));
-              if (mounted) {
-                try { Navigator.of(context).pop(); } catch (_) {}
+              if (_pinModalKey.currentState != null) {
+                _pinModalKey.currentState?.setFailed(e.toString().replaceAll('Exception: ', ''));
+                await Future.delayed(const Duration(seconds: 2));
+                if (mounted) {
+                  try { Navigator.of(context).pop(); } catch (_) {}
+                }
               }
               return false;
             }

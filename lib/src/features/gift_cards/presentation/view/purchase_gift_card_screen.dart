@@ -609,7 +609,9 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
           ? 'Purchase ${widget.brand.name} $_recipientCurrency ${_formatAmount(amount)} gift card for $_senderCurrency ${_formatAmount(senderAmt)}?'
           : 'Confirm purchase of $displayCurrency ${_formatAmount(displayAmount)} ${widget.brand.name} gift card?';
 
-      await validateTransactionPin(
+      String? verificationToken;
+
+      final success = await validateTransactionPin(
         context: context,
         transactionId: transactionId,
         transactionType: 'gift_card_purchase',
@@ -617,23 +619,28 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
         currency: displayCurrency,
         title: 'Confirm Gift Card Purchase',
         message: confirmMessage,
-        onPinValidated: (verificationToken) async {
-          setState(() => _isPurchasing = true);
-          Get.offNamed(
-            AppRoutes.giftCardPurchaseProcessing,
-            arguments: GiftCardPurchaseArgs(
-              brand: widget.brand,
-              amount: amount,
-              transactionId: transactionId,
-              verificationToken: verificationToken,
-              productId: widget.brand.productId > 0 ? widget.brand.productId : null,
-              countryCode: widget.brand.countryCode.isNotEmpty ? widget.brand.countryCode : null,
-              providerName: widget.brand.providerName.isNotEmpty ? widget.brand.providerName : null,
-              senderAmount: senderAmt,
-              senderCurrency: isMultiCur ? _senderCurrency : null,
-            ),
-          );
+        onPinValidated: (token) async {
+          verificationToken = token;
         },
+      );
+
+      if (!success || verificationToken == null) return;
+      if (!mounted) return;
+
+      setState(() => _isPurchasing = true);
+      Get.offNamed(
+        AppRoutes.giftCardPurchaseProcessing,
+        arguments: GiftCardPurchaseArgs(
+          brand: widget.brand,
+          amount: amount,
+          transactionId: transactionId,
+          verificationToken: verificationToken!,
+          productId: widget.brand.productId > 0 ? widget.brand.productId : null,
+          countryCode: widget.brand.countryCode.isNotEmpty ? widget.brand.countryCode : null,
+          providerName: widget.brand.providerName.isNotEmpty ? widget.brand.providerName : null,
+          senderAmount: senderAmt,
+          senderCurrency: isMultiCur ? _senderCurrency : null,
+        ),
       );
     }
   }

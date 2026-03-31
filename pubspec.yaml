@@ -66,8 +66,8 @@ dependencies:
   printing: ^5.13.4
   barcode: ^2.2.9
   barcode_widget: ^2.0.4
-  mobile_scanner: ^7.1.4
-  nfc_manager: ^4.1.1
+  mobile_scanner: ^7.2.0
+  nfc_manager: ^4.2.0
   nfc_manager_ndef: ^1.1.0
   local_auth: ^2.3.0
   lottie: ^3.3.1
@@ -78,7 +78,7 @@ dependencies:
   emoji_picker_flutter: ^4.3.0
   file_picker: ^8.0.0  # Using 8.x for Android build compatibility (10.x has Kotlin plugin issues)
   image_picker: ^1.1.2
-  camera: ^0.11.0+2
+  camera: ^0.11.4
   sqflite: ^2.4.2
   path: ^1.9.1
   sms_autofill: ^2.4.1
@@ -102,14 +102,14 @@ dependencies:
   connectivity_plus: ^6.1.4
   qr_flutter: ^4.1.0
   logger: ^2.5.0
-  freezed_annotation: ^2.4.1
+  freezed_annotation: ^3.1.0
   web_socket_channel: ^3.0.1
   json_annotation: ^4.8.1
   uuid: ^4.5.1
   crypto: ^3.0.3  # SHA256 hashing for mutation queue deduplication
   device_info_plus: ^11.4.0
   livekit_components: ^1.2.1
-  shared_preferences: ^2.5.3
+  shared_preferences: ^2.5.5
   path_provider: ^2.1.5
   country_flags: ^3.3.0
   intl_phone_field: ^3.2.0
@@ -125,6 +125,7 @@ dependencies:
   quick_actions: ^1.0.7  # App icon long-press shortcuts (Send Money, Scan to Pay, etc.)
   flutter_widget_from_html_core: ^0.17.0
   table_calendar: ^3.1.2
+  ndef_record: ^1.4.2
   # webview_cookie_manager: ^2.0.6  # Removed - incompatible with current Flutter version and not used
 
 dev_dependencies:
@@ -143,9 +144,9 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
-  protoc_plugin: ^22.0.1
+  protoc_plugin: ^22.4.0
   # grpc_generator: ^1.0.0
-  freezed: ^2.4.6
+  freezed: ^3.2.5
   json_serializable: ^6.7.1
 
 dependency_overrides:

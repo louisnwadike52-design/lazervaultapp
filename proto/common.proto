@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package pb;
+package common;
 option go_package = "lazervaultGo/pb";
 
 import "google/protobuf/timestamp.proto";
@@ -22,6 +22,7 @@ message User {
     string currency = 13;
     string country = 14;
     string profile_picture = 15;
+    repeated string roles = 16;
   }
   
   

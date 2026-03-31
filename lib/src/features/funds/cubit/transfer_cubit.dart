@@ -218,6 +218,8 @@ class TransferCubit extends Cubit<TransferState> {
       totalAmount: Int64(amountMinor + feeMinor),
       createdAt: result.createdAt ?? DateTime.now(),
       scheduledAt: result.scheduledAt,
+      providerReference: result.providerReference,
+      internalReference: result.reference,
     );
   }
 }

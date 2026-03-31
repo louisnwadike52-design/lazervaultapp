@@ -3,21 +3,26 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 
+import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/investments/presentation/models/invest_asset_hub_config.dart';
+import 'package:lazervault/src/features/investments/presentation/theme/invest_trading_ui.dart';
 import '../../domain/entities/stock_entity.dart';
 import '../widgets/trade/trade_action_selector_screen.dart';
 import '../widgets/trade/trade_quantity_screen.dart';
 import '../widgets/trade/trade_review_screen.dart';
-import 'stock_trade_processing_screen.dart';
+import '../widgets/trade/trading_shell.dart';
 
 /// Multi-step stock trade placement carousel following insurance pattern
 class CreateStockTradeCarousel extends StatefulWidget {
   final Stock stock;
   final OrderSide? initialSide;
+  final String? investCollectionId;
 
   const CreateStockTradeCarousel({
     super.key,
     required this.stock,
     this.initialSide,
+    this.investCollectionId,
   });
 
   @override
@@ -26,6 +31,9 @@ class CreateStockTradeCarousel extends StatefulWidget {
 
 class _CreateStockTradeCarouselState extends State<CreateStockTradeCarousel>
     with SingleTickerProviderStateMixin {
+  late final InvestAssetHubConfig _hub =
+      InvestAssetHubConfig.forCollectionId(widget.investCollectionId);
+
   late PageController _pageController;
   int _currentPage = 0;
   final int _totalPages = 3;
@@ -38,8 +46,8 @@ class _CreateStockTradeCarouselState extends State<CreateStockTradeCarousel>
   double? _stopPrice;
 
   final List<String> _pageNames = [
-    'Action & Type',
-    'Quantity',
+    'Set up',
+    'Size',
     'Review',
   ];
 
@@ -116,15 +124,27 @@ class _CreateStockTradeCarouselState extends State<CreateStockTradeCarousel>
   }
 
   Future<void> _placeOrder() async {
-    // Navigate to processing screen
-    Get.to(() => StockTradeProcessingScreen(
-      stock: widget.stock,
-      orderSide: _orderSide,
-      orderType: _orderType,
-      quantity: _quantity,
-      limitPrice: _limitPrice,
-      stopPrice: _stopPrice,
-    ));
+    final px = widget.stock.currentPrice;
+    final gross = px * _quantity;
+    final fees = gross * 0.0025;
+    Get.toNamed(
+      AppRoutes.stockTradeReview,
+      arguments: {
+        'stock': widget.stock,
+        'investCollection': widget.investCollectionId,
+        'tradeType': _orderSide == OrderSide.buy ? 'buy' : 'sell',
+        'amount': gross,
+        'shares': _quantity,
+        'sharesExact': _quantity.toDouble(),
+        'fees': fees,
+        'estimatedTotal': _orderSide == OrderSide.buy ? gross + fees : gross - fees,
+        'paymentMethod': 'wallet',
+        'paymentDetails': <String, dynamic>{},
+        'orderType': _orderType,
+        'limitPrice': _limitPrice,
+        'stopPrice': _stopPrice,
+      },
+    );
   }
 
   void _goToPreviousPage() {
@@ -142,24 +162,43 @@ class _CreateStockTradeCarouselState extends State<CreateStockTradeCarousel>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.red,
+        backgroundColor: InvestTradingUi.sell,
         behavior: SnackBarBehavior.floating,
       ),
     );
   }
 
+  Color get _barFillColor => _currentPage == _totalPages - 1
+      ? (_orderSide == OrderSide.buy
+          ? InvestTradingUi.buy
+          : InvestTradingUi.sell)
+      : _hub.accentColor;
+
+  Color get _primaryCtaBg => _currentPage == _totalPages - 1
+      ? (_orderSide == OrderSide.buy
+          ? InvestTradingUi.buy
+          : InvestTradingUi.sell)
+      : _hub.accentColor;
+
+  Color get _primaryCtaFg =>
+      _currentPage == _totalPages - 1 && _orderSide == OrderSide.buy
+          ? Colors.black
+          : Colors.white;
+
   @override
   Widget build(BuildContext context) {
+    final accent = _hub.accentColor;
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
+      backgroundColor: InvestTradingUi.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1A1A1A),
+        backgroundColor: InvestTradingUi.surface,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
           icon: Icon(
-            Icons.arrow_back,
-            color: Colors.white,
-            size: 24.sp,
+            Icons.arrow_back_ios_new_rounded,
+            color: InvestTradingUi.textPrimary,
+            size: 20.sp,
           ),
           onPressed: _goToPreviousPage,
         ),
@@ -167,67 +206,31 @@ class _CreateStockTradeCarouselState extends State<CreateStockTradeCarousel>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Trade ${widget.stock.symbol}',
-              style: GoogleFonts.inter(
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
+              _hub.appBarScrolledTitle,
+              style: InvestTradingUi.eyebrow(accent),
             ),
             SizedBox(height: 2.h),
             Text(
-              'Step ${_currentPage + 1} of $_totalPages - ${_pageNames[_currentPage]}',
+              '${widget.stock.symbol} · ${_pageNames[_currentPage]}',
               style: GoogleFonts.inter(
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey[400],
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w700,
+                color: InvestTradingUi.textPrimary,
               ),
+            ),
+            Text(
+              'Step ${_currentPage + 1} of $_totalPages',
+              style: InvestTradingUi.labelMuted(),
             ),
           ],
         ),
         bottom: PreferredSize(
-          preferredSize: Size.fromHeight(60.h),
-          child: Column(
-            children: [
-              // Linear progress bar
-              Container(
-                width: MediaQuery.of(context).size.width,
-                height: 4.h,
-                color: Colors.white.withValues(alpha: 0.1),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  width: (MediaQuery.of(context).size.width) * ((_currentPage + 1) / _totalPages),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: _currentPage == _totalPages - 1
-                          ? [Colors.green, Colors.green.shade700]
-                          : [const Color(0xFF6366F1), const Color.fromARGB(255, 78, 3, 208)],
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 16.h),
-              // Dot indicators
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  _totalPages,
-                  (index) => AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    width: _currentPage == index ? 24.w : 8.w,
-                    height: 8.h,
-                    margin: EdgeInsets.symmetric(horizontal: 4.w),
-                    decoration: BoxDecoration(
-                      color: _currentPage == index
-                          ? const Color(0xFF6366F1)
-                          : Colors.white.withValues(alpha: 0.3),
-                      borderRadius: BorderRadius.circular(4.r),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 16.h),
-            ],
+          preferredSize: Size.fromHeight(56.h),
+          child: TradingCarouselStepBar(
+            currentPage: _currentPage,
+            totalPages: _totalPages,
+            accentColor: accent,
+            barFillColor: _barFillColor,
           ),
         ),
       ),
@@ -243,6 +246,7 @@ class _CreateStockTradeCarouselState extends State<CreateStockTradeCarousel>
                   stock: widget.stock,
                   initialSide: _orderSide,
                   initialType: _orderType,
+                  accentColor: accent,
                   onChanged: (side, type) {
                     setState(() {
                       _orderSide = side;
@@ -254,6 +258,7 @@ class _CreateStockTradeCarouselState extends State<CreateStockTradeCarousel>
                   stock: widget.stock,
                   orderSide: _orderSide,
                   orderType: _orderType,
+                  accentColor: accent,
                   initialQuantity: _quantity,
                   initialLimitPrice: _limitPrice,
                   initialStopPrice: _stopPrice,
@@ -269,6 +274,7 @@ class _CreateStockTradeCarouselState extends State<CreateStockTradeCarousel>
                   stock: widget.stock,
                   orderSide: _orderSide,
                   orderType: _orderType,
+                  accentColor: accent,
                   quantity: _quantity,
                   limitPrice: _limitPrice,
                   stopPrice: _stopPrice,
@@ -276,70 +282,14 @@ class _CreateStockTradeCarouselState extends State<CreateStockTradeCarousel>
               ],
             ),
           ),
-          // Action buttons
-          Container(
-            padding: EdgeInsets.all(20.w),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1A1A1A),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.2),
-                  blurRadius: 10,
-                  offset: const Offset(0, -5),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                if (_currentPage > 0) ...[
-                  Expanded(
-                    flex: 1,
-                    child: OutlinedButton(
-                      onPressed: _goToPreviousPage,
-                      style: OutlinedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 16.h),
-                        side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                      ),
-                      child: Text(
-                        'Back',
-                        style: GoogleFonts.inter(
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 12.w),
-                ],
-                Expanded(
-                  flex: 2,
-                  child: ElevatedButton(
-                    onPressed: _goToNextPage,
-                    style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 16.h),
-                      backgroundColor: _currentPage == _totalPages - 1
-                          ? Colors.green
-                          : const Color(0xFF6366F1),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                    ),
-                    child: Text(
-                      _currentPage == _totalPages - 1 ? 'Place Order' : 'Continue',
-                      style: GoogleFonts.inter(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+          TradingOrderStepFooter(
+            showBack: _currentPage > 0,
+            onBack: _goToPreviousPage,
+            onPrimary: _goToNextPage,
+            primaryLabel:
+                _currentPage == _totalPages - 1 ? 'Place order' : 'Continue',
+            primaryBackground: _primaryCtaBg,
+            primaryForeground: _primaryCtaFg,
           ),
         ],
       ),

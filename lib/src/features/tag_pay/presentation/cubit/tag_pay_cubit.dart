@@ -3,6 +3,7 @@ import 'package:grpc/grpc.dart';
 import '../../../../../core/offline/mutation_queue.dart';
 import '../../../../../core/offline/mutation.dart';
 import 'package:lazervault/core/utils/grpc_error_handler.dart';
+import 'package:lazervault/core/utils/user_search_query.dart';
 import '../../domain/entities/user_tag_entity.dart';
 import '../../domain/repositories/tag_pay_repository.dart';
 import '../../domain/entities/user_search_result_entity.dart';
@@ -460,7 +461,11 @@ class TagPayCubit extends Cubit<TagPayState> {
   }
 
   Future<List<UserSearchResultEntity>> searchUsers(String query, {int limit = 10}) async {
-    return await repository.searchUsers(query: query, limit: limit);
+    final q = normalizeLazerVaultUserSearchQuery(query);
+    if (q.length < 2) {
+      return [];
+    }
+    return repository.searchUsers(query: q, limit: limit);
   }
 
   /// Load home screen data: both incoming and outgoing tags for both tabs.

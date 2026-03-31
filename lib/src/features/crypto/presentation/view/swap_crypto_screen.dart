@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
 import '../../domain/entities/crypto_entity.dart';
+import '../models/crypto_transaction_models.dart';
 import 'crypto_confirmation_screen.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
@@ -44,7 +45,11 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
 
   List<Crypto> get _availableCryptos {
     final state = context.read<CryptoCubit>().state;
-    return state is CryptosLoaded ? state.cryptos : [];
+    if (state is CryptosLoaded) {
+      // Use Quidax-supported assets for swap selection
+      return state.supportedAssets.isNotEmpty ? state.supportedAssets : state.cryptos;
+    }
+    return [];
   }
 
   @override

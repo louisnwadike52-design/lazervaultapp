@@ -1,14 +1,13 @@
-// This is a generated file - do not edit.
 //
-// Generated from whatsapp.proto.
-
-// @dart = 3.3
+//  Generated code. Do not modify.
+//  source: whatsapp.proto
+//
+// @dart = 2.12
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: curly_braces_in_flow_control_structures
-// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
-// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 import 'dart:core' as $core;
 
@@ -16,64 +15,54 @@ import 'package:protobuf/protobuf.dart' as $pb;
 
 import 'google/protobuf/timestamp.pb.dart' as $1;
 
-export 'package:protobuf/protobuf.dart' show GeneratedMessageGenericExtensions;
-
 class InitiateLinkingRequest extends $pb.GeneratedMessage {
   factory InitiateLinkingRequest({
     $core.String? phoneNumber,
   }) {
-    final result = create();
-    if (phoneNumber != null) result.phoneNumber = phoneNumber;
-    return result;
+    final $result = create();
+    if (phoneNumber != null) {
+      $result.phoneNumber = phoneNumber;
+    }
+    return $result;
   }
+  InitiateLinkingRequest._() : super();
+  factory InitiateLinkingRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory InitiateLinkingRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  InitiateLinkingRequest._();
-
-  factory InitiateLinkingRequest.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory InitiateLinkingRequest.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'InitiateLinkingRequest',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InitiateLinkingRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'phoneNumber')
-    ..hasRequiredFields = false;
+    ..hasRequiredFields = false
+  ;
 
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  InitiateLinkingRequest clone() =>
-      InitiateLinkingRequest()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  InitiateLinkingRequest copyWith(
-          void Function(InitiateLinkingRequest) updates) =>
-      super.copyWith((message) => updates(message as InitiateLinkingRequest))
-          as InitiateLinkingRequest;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  InitiateLinkingRequest clone() => InitiateLinkingRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  InitiateLinkingRequest copyWith(void Function(InitiateLinkingRequest) updates) => super.copyWith((message) => updates(message as InitiateLinkingRequest)) as InitiateLinkingRequest;
 
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static InitiateLinkingRequest create() => InitiateLinkingRequest._();
-  @$core.override
   InitiateLinkingRequest createEmptyInstance() => create();
-  static $pb.PbList<InitiateLinkingRequest> createRepeated() =>
-      $pb.PbList<InitiateLinkingRequest>();
+  static $pb.PbList<InitiateLinkingRequest> createRepeated() => $pb.PbList<InitiateLinkingRequest>();
   @$core.pragma('dart2js:noInline')
-  static InitiateLinkingRequest getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<InitiateLinkingRequest>(create);
+  static InitiateLinkingRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<InitiateLinkingRequest>(create);
   static InitiateLinkingRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get phoneNumber => $_getSZ(0);
   @$pb.TagNumber(1)
-  set phoneNumber($core.String value) => $_setString(0, value);
+  set phoneNumber($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasPhoneNumber() => $_has(0);
   @$pb.TagNumber(1)
-  void clearPhoneNumber() => $_clearField(1);
+  void clearPhoneNumber() => clearField(1);
 }
 
 class InitiateLinkingResponse extends $pb.GeneratedMessage {
@@ -82,81 +71,76 @@ class InitiateLinkingResponse extends $pb.GeneratedMessage {
     $core.String? message,
     $1.Timestamp? expiresAt,
   }) {
-    final result = create();
-    if (otpReference != null) result.otpReference = otpReference;
-    if (message != null) result.message = message;
-    if (expiresAt != null) result.expiresAt = expiresAt;
-    return result;
+    final $result = create();
+    if (otpReference != null) {
+      $result.otpReference = otpReference;
+    }
+    if (message != null) {
+      $result.message = message;
+    }
+    if (expiresAt != null) {
+      $result.expiresAt = expiresAt;
+    }
+    return $result;
   }
+  InitiateLinkingResponse._() : super();
+  factory InitiateLinkingResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory InitiateLinkingResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  InitiateLinkingResponse._();
-
-  factory InitiateLinkingResponse.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory InitiateLinkingResponse.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'InitiateLinkingResponse',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InitiateLinkingResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'otpReference')
     ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOM<$1.Timestamp>(3, _omitFieldNames ? '' : 'expiresAt',
-        subBuilder: $1.Timestamp.create)
-    ..hasRequiredFields = false;
+    ..aOM<$1.Timestamp>(3, _omitFieldNames ? '' : 'expiresAt', subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
 
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  InitiateLinkingResponse clone() =>
-      InitiateLinkingResponse()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  InitiateLinkingResponse copyWith(
-          void Function(InitiateLinkingResponse) updates) =>
-      super.copyWith((message) => updates(message as InitiateLinkingResponse))
-          as InitiateLinkingResponse;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  InitiateLinkingResponse clone() => InitiateLinkingResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  InitiateLinkingResponse copyWith(void Function(InitiateLinkingResponse) updates) => super.copyWith((message) => updates(message as InitiateLinkingResponse)) as InitiateLinkingResponse;
 
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static InitiateLinkingResponse create() => InitiateLinkingResponse._();
-  @$core.override
   InitiateLinkingResponse createEmptyInstance() => create();
-  static $pb.PbList<InitiateLinkingResponse> createRepeated() =>
-      $pb.PbList<InitiateLinkingResponse>();
+  static $pb.PbList<InitiateLinkingResponse> createRepeated() => $pb.PbList<InitiateLinkingResponse>();
   @$core.pragma('dart2js:noInline')
-  static InitiateLinkingResponse getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<InitiateLinkingResponse>(create);
+  static InitiateLinkingResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<InitiateLinkingResponse>(create);
   static InitiateLinkingResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get otpReference => $_getSZ(0);
   @$pb.TagNumber(1)
-  set otpReference($core.String value) => $_setString(0, value);
+  set otpReference($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasOtpReference() => $_has(0);
   @$pb.TagNumber(1)
-  void clearOtpReference() => $_clearField(1);
+  void clearOtpReference() => clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get message => $_getSZ(1);
   @$pb.TagNumber(2)
-  set message($core.String value) => $_setString(1, value);
+  set message($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(2)
   $core.bool hasMessage() => $_has(1);
   @$pb.TagNumber(2)
-  void clearMessage() => $_clearField(2);
+  void clearMessage() => clearField(2);
 
   @$pb.TagNumber(3)
   $1.Timestamp get expiresAt => $_getN(2);
   @$pb.TagNumber(3)
-  set expiresAt($1.Timestamp value) => $_setField(3, value);
+  set expiresAt($1.Timestamp v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasExpiresAt() => $_has(2);
   @$pb.TagNumber(3)
-  void clearExpiresAt() => $_clearField(3);
+  void clearExpiresAt() => clearField(3);
   @$pb.TagNumber(3)
   $1.Timestamp ensureExpiresAt() => $_ensure(2);
 }
@@ -166,68 +150,63 @@ class VerifyLinkingRequest extends $pb.GeneratedMessage {
     $core.String? phoneNumber,
     $core.String? otpCode,
   }) {
-    final result = create();
-    if (phoneNumber != null) result.phoneNumber = phoneNumber;
-    if (otpCode != null) result.otpCode = otpCode;
-    return result;
+    final $result = create();
+    if (phoneNumber != null) {
+      $result.phoneNumber = phoneNumber;
+    }
+    if (otpCode != null) {
+      $result.otpCode = otpCode;
+    }
+    return $result;
   }
+  VerifyLinkingRequest._() : super();
+  factory VerifyLinkingRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory VerifyLinkingRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  VerifyLinkingRequest._();
-
-  factory VerifyLinkingRequest.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory VerifyLinkingRequest.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'VerifyLinkingRequest',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyLinkingRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'phoneNumber')
     ..aOS(2, _omitFieldNames ? '' : 'otpCode')
-    ..hasRequiredFields = false;
+    ..hasRequiredFields = false
+  ;
 
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  VerifyLinkingRequest clone() =>
-      VerifyLinkingRequest()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  VerifyLinkingRequest copyWith(void Function(VerifyLinkingRequest) updates) =>
-      super.copyWith((message) => updates(message as VerifyLinkingRequest))
-          as VerifyLinkingRequest;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  VerifyLinkingRequest clone() => VerifyLinkingRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  VerifyLinkingRequest copyWith(void Function(VerifyLinkingRequest) updates) => super.copyWith((message) => updates(message as VerifyLinkingRequest)) as VerifyLinkingRequest;
 
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static VerifyLinkingRequest create() => VerifyLinkingRequest._();
-  @$core.override
   VerifyLinkingRequest createEmptyInstance() => create();
-  static $pb.PbList<VerifyLinkingRequest> createRepeated() =>
-      $pb.PbList<VerifyLinkingRequest>();
+  static $pb.PbList<VerifyLinkingRequest> createRepeated() => $pb.PbList<VerifyLinkingRequest>();
   @$core.pragma('dart2js:noInline')
-  static VerifyLinkingRequest getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<VerifyLinkingRequest>(create);
+  static VerifyLinkingRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<VerifyLinkingRequest>(create);
   static VerifyLinkingRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get phoneNumber => $_getSZ(0);
   @$pb.TagNumber(1)
-  set phoneNumber($core.String value) => $_setString(0, value);
+  set phoneNumber($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasPhoneNumber() => $_has(0);
   @$pb.TagNumber(1)
-  void clearPhoneNumber() => $_clearField(1);
+  void clearPhoneNumber() => clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get otpCode => $_getSZ(1);
   @$pb.TagNumber(2)
-  set otpCode($core.String value) => $_setString(1, value);
+  set otpCode($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(2)
   $core.bool hasOtpCode() => $_has(1);
   @$pb.TagNumber(2)
-  void clearOtpCode() => $_clearField(2);
+  void clearOtpCode() => clearField(2);
 }
 
 class VerifyLinkingResponse extends $pb.GeneratedMessage {
@@ -236,81 +215,76 @@ class VerifyLinkingResponse extends $pb.GeneratedMessage {
     $core.String? message,
     WhatsAppUser? whatsappUser,
   }) {
-    final result = create();
-    if (success != null) result.success = success;
-    if (message != null) result.message = message;
-    if (whatsappUser != null) result.whatsappUser = whatsappUser;
-    return result;
+    final $result = create();
+    if (success != null) {
+      $result.success = success;
+    }
+    if (message != null) {
+      $result.message = message;
+    }
+    if (whatsappUser != null) {
+      $result.whatsappUser = whatsappUser;
+    }
+    return $result;
   }
+  VerifyLinkingResponse._() : super();
+  factory VerifyLinkingResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory VerifyLinkingResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  VerifyLinkingResponse._();
-
-  factory VerifyLinkingResponse.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory VerifyLinkingResponse.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'VerifyLinkingResponse',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyLinkingResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
     ..aOB(1, _omitFieldNames ? '' : 'success')
     ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOM<WhatsAppUser>(3, _omitFieldNames ? '' : 'whatsappUser',
-        subBuilder: WhatsAppUser.create)
-    ..hasRequiredFields = false;
+    ..aOM<WhatsAppUser>(3, _omitFieldNames ? '' : 'whatsappUser', subBuilder: WhatsAppUser.create)
+    ..hasRequiredFields = false
+  ;
 
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  VerifyLinkingResponse clone() =>
-      VerifyLinkingResponse()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  VerifyLinkingResponse copyWith(
-          void Function(VerifyLinkingResponse) updates) =>
-      super.copyWith((message) => updates(message as VerifyLinkingResponse))
-          as VerifyLinkingResponse;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  VerifyLinkingResponse clone() => VerifyLinkingResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  VerifyLinkingResponse copyWith(void Function(VerifyLinkingResponse) updates) => super.copyWith((message) => updates(message as VerifyLinkingResponse)) as VerifyLinkingResponse;
 
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static VerifyLinkingResponse create() => VerifyLinkingResponse._();
-  @$core.override
   VerifyLinkingResponse createEmptyInstance() => create();
-  static $pb.PbList<VerifyLinkingResponse> createRepeated() =>
-      $pb.PbList<VerifyLinkingResponse>();
+  static $pb.PbList<VerifyLinkingResponse> createRepeated() => $pb.PbList<VerifyLinkingResponse>();
   @$core.pragma('dart2js:noInline')
-  static VerifyLinkingResponse getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<VerifyLinkingResponse>(create);
+  static VerifyLinkingResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<VerifyLinkingResponse>(create);
   static VerifyLinkingResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.bool get success => $_getBF(0);
   @$pb.TagNumber(1)
-  set success($core.bool value) => $_setBool(0, value);
+  set success($core.bool v) { $_setBool(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasSuccess() => $_has(0);
   @$pb.TagNumber(1)
-  void clearSuccess() => $_clearField(1);
+  void clearSuccess() => clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get message => $_getSZ(1);
   @$pb.TagNumber(2)
-  set message($core.String value) => $_setString(1, value);
+  set message($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(2)
   $core.bool hasMessage() => $_has(1);
   @$pb.TagNumber(2)
-  void clearMessage() => $_clearField(2);
+  void clearMessage() => clearField(2);
 
   @$pb.TagNumber(3)
   WhatsAppUser get whatsappUser => $_getN(2);
   @$pb.TagNumber(3)
-  set whatsappUser(WhatsAppUser value) => $_setField(3, value);
+  set whatsappUser(WhatsAppUser v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasWhatsappUser() => $_has(2);
   @$pb.TagNumber(3)
-  void clearWhatsappUser() => $_clearField(3);
+  void clearWhatsappUser() => clearField(3);
   @$pb.TagNumber(3)
   WhatsAppUser ensureWhatsappUser() => $_ensure(2);
 }
@@ -319,57 +293,50 @@ class UnlinkAccountRequest extends $pb.GeneratedMessage {
   factory UnlinkAccountRequest({
     $core.String? userId,
   }) {
-    final result = create();
-    if (userId != null) result.userId = userId;
-    return result;
+    final $result = create();
+    if (userId != null) {
+      $result.userId = userId;
+    }
+    return $result;
   }
+  UnlinkAccountRequest._() : super();
+  factory UnlinkAccountRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UnlinkAccountRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  UnlinkAccountRequest._();
-
-  factory UnlinkAccountRequest.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory UnlinkAccountRequest.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'UnlinkAccountRequest',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UnlinkAccountRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..hasRequiredFields = false;
+    ..hasRequiredFields = false
+  ;
 
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  UnlinkAccountRequest clone() =>
-      UnlinkAccountRequest()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  UnlinkAccountRequest copyWith(void Function(UnlinkAccountRequest) updates) =>
-      super.copyWith((message) => updates(message as UnlinkAccountRequest))
-          as UnlinkAccountRequest;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UnlinkAccountRequest clone() => UnlinkAccountRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UnlinkAccountRequest copyWith(void Function(UnlinkAccountRequest) updates) => super.copyWith((message) => updates(message as UnlinkAccountRequest)) as UnlinkAccountRequest;
 
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static UnlinkAccountRequest create() => UnlinkAccountRequest._();
-  @$core.override
   UnlinkAccountRequest createEmptyInstance() => create();
-  static $pb.PbList<UnlinkAccountRequest> createRepeated() =>
-      $pb.PbList<UnlinkAccountRequest>();
+  static $pb.PbList<UnlinkAccountRequest> createRepeated() => $pb.PbList<UnlinkAccountRequest>();
   @$core.pragma('dart2js:noInline')
-  static UnlinkAccountRequest getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<UnlinkAccountRequest>(create);
+  static UnlinkAccountRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UnlinkAccountRequest>(create);
   static UnlinkAccountRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get userId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set userId($core.String value) => $_setString(0, value);
+  set userId($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasUserId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearUserId() => $_clearField(1);
+  void clearUserId() => clearField(1);
 }
 
 class UnlinkAccountResponse extends $pb.GeneratedMessage {
@@ -377,109 +344,94 @@ class UnlinkAccountResponse extends $pb.GeneratedMessage {
     $core.bool? success,
     $core.String? message,
   }) {
-    final result = create();
-    if (success != null) result.success = success;
-    if (message != null) result.message = message;
-    return result;
+    final $result = create();
+    if (success != null) {
+      $result.success = success;
+    }
+    if (message != null) {
+      $result.message = message;
+    }
+    return $result;
   }
+  UnlinkAccountResponse._() : super();
+  factory UnlinkAccountResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UnlinkAccountResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  UnlinkAccountResponse._();
-
-  factory UnlinkAccountResponse.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory UnlinkAccountResponse.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'UnlinkAccountResponse',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UnlinkAccountResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
     ..aOB(1, _omitFieldNames ? '' : 'success')
     ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..hasRequiredFields = false;
+    ..hasRequiredFields = false
+  ;
 
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  UnlinkAccountResponse clone() =>
-      UnlinkAccountResponse()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  UnlinkAccountResponse copyWith(
-          void Function(UnlinkAccountResponse) updates) =>
-      super.copyWith((message) => updates(message as UnlinkAccountResponse))
-          as UnlinkAccountResponse;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UnlinkAccountResponse clone() => UnlinkAccountResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UnlinkAccountResponse copyWith(void Function(UnlinkAccountResponse) updates) => super.copyWith((message) => updates(message as UnlinkAccountResponse)) as UnlinkAccountResponse;
 
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static UnlinkAccountResponse create() => UnlinkAccountResponse._();
-  @$core.override
   UnlinkAccountResponse createEmptyInstance() => create();
-  static $pb.PbList<UnlinkAccountResponse> createRepeated() =>
-      $pb.PbList<UnlinkAccountResponse>();
+  static $pb.PbList<UnlinkAccountResponse> createRepeated() => $pb.PbList<UnlinkAccountResponse>();
   @$core.pragma('dart2js:noInline')
-  static UnlinkAccountResponse getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<UnlinkAccountResponse>(create);
+  static UnlinkAccountResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UnlinkAccountResponse>(create);
   static UnlinkAccountResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.bool get success => $_getBF(0);
   @$pb.TagNumber(1)
-  set success($core.bool value) => $_setBool(0, value);
+  set success($core.bool v) { $_setBool(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasSuccess() => $_has(0);
   @$pb.TagNumber(1)
-  void clearSuccess() => $_clearField(1);
+  void clearSuccess() => clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get message => $_getSZ(1);
   @$pb.TagNumber(2)
-  set message($core.String value) => $_setString(1, value);
+  set message($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(2)
   $core.bool hasMessage() => $_has(1);
   @$pb.TagNumber(2)
-  void clearMessage() => $_clearField(2);
+  void clearMessage() => clearField(2);
 }
 
 class GetLinkStatusRequest extends $pb.GeneratedMessage {
   factory GetLinkStatusRequest() => create();
+  GetLinkStatusRequest._() : super();
+  factory GetLinkStatusRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetLinkStatusRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  GetLinkStatusRequest._();
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetLinkStatusRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..hasRequiredFields = false
+  ;
 
-  factory GetLinkStatusRequest.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory GetLinkStatusRequest.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetLinkStatusRequest clone() => GetLinkStatusRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetLinkStatusRequest copyWith(void Function(GetLinkStatusRequest) updates) => super.copyWith((message) => updates(message as GetLinkStatusRequest)) as GetLinkStatusRequest;
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'GetLinkStatusRequest',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  GetLinkStatusRequest clone() =>
-      GetLinkStatusRequest()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  GetLinkStatusRequest copyWith(void Function(GetLinkStatusRequest) updates) =>
-      super.copyWith((message) => updates(message as GetLinkStatusRequest))
-          as GetLinkStatusRequest;
-
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static GetLinkStatusRequest create() => GetLinkStatusRequest._();
-  @$core.override
   GetLinkStatusRequest createEmptyInstance() => create();
-  static $pb.PbList<GetLinkStatusRequest> createRepeated() =>
-      $pb.PbList<GetLinkStatusRequest>();
+  static $pb.PbList<GetLinkStatusRequest> createRepeated() => $pb.PbList<GetLinkStatusRequest>();
   @$core.pragma('dart2js:noInline')
-  static GetLinkStatusRequest getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<GetLinkStatusRequest>(create);
+  static GetLinkStatusRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetLinkStatusRequest>(create);
   static GetLinkStatusRequest? _defaultInstance;
 }
 
@@ -487,59 +439,50 @@ class GetLinkStatusResponse extends $pb.GeneratedMessage {
   factory GetLinkStatusResponse({
     WhatsAppUser? whatsappUser,
   }) {
-    final result = create();
-    if (whatsappUser != null) result.whatsappUser = whatsappUser;
-    return result;
+    final $result = create();
+    if (whatsappUser != null) {
+      $result.whatsappUser = whatsappUser;
+    }
+    return $result;
   }
+  GetLinkStatusResponse._() : super();
+  factory GetLinkStatusResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetLinkStatusResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  GetLinkStatusResponse._();
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetLinkStatusResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..aOM<WhatsAppUser>(1, _omitFieldNames ? '' : 'whatsappUser', subBuilder: WhatsAppUser.create)
+    ..hasRequiredFields = false
+  ;
 
-  factory GetLinkStatusResponse.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory GetLinkStatusResponse.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetLinkStatusResponse clone() => GetLinkStatusResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetLinkStatusResponse copyWith(void Function(GetLinkStatusResponse) updates) => super.copyWith((message) => updates(message as GetLinkStatusResponse)) as GetLinkStatusResponse;
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'GetLinkStatusResponse',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
-    ..aOM<WhatsAppUser>(1, _omitFieldNames ? '' : 'whatsappUser',
-        subBuilder: WhatsAppUser.create)
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  GetLinkStatusResponse clone() =>
-      GetLinkStatusResponse()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  GetLinkStatusResponse copyWith(
-          void Function(GetLinkStatusResponse) updates) =>
-      super.copyWith((message) => updates(message as GetLinkStatusResponse))
-          as GetLinkStatusResponse;
-
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static GetLinkStatusResponse create() => GetLinkStatusResponse._();
-  @$core.override
   GetLinkStatusResponse createEmptyInstance() => create();
-  static $pb.PbList<GetLinkStatusResponse> createRepeated() =>
-      $pb.PbList<GetLinkStatusResponse>();
+  static $pb.PbList<GetLinkStatusResponse> createRepeated() => $pb.PbList<GetLinkStatusResponse>();
   @$core.pragma('dart2js:noInline')
-  static GetLinkStatusResponse getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<GetLinkStatusResponse>(create);
+  static GetLinkStatusResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetLinkStatusResponse>(create);
   static GetLinkStatusResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   WhatsAppUser get whatsappUser => $_getN(0);
   @$pb.TagNumber(1)
-  set whatsappUser(WhatsAppUser value) => $_setField(1, value);
+  set whatsappUser(WhatsAppUser v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasWhatsappUser() => $_has(0);
   @$pb.TagNumber(1)
-  void clearWhatsappUser() => $_clearField(1);
+  void clearWhatsappUser() => clearField(1);
   @$pb.TagNumber(1)
   WhatsAppUser ensureWhatsappUser() => $_ensure(0);
 }
@@ -549,62 +492,57 @@ class WebhookRequest extends $pb.GeneratedMessage {
     $core.String? object,
     $core.Iterable<WebhookEntry>? entry,
   }) {
-    final result = create();
-    if (object != null) result.object = object;
-    if (entry != null) result.entry.addAll(entry);
-    return result;
+    final $result = create();
+    if (object != null) {
+      $result.object = object;
+    }
+    if (entry != null) {
+      $result.entry.addAll(entry);
+    }
+    return $result;
   }
+  WebhookRequest._() : super();
+  factory WebhookRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory WebhookRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  WebhookRequest._();
-
-  factory WebhookRequest.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory WebhookRequest.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'WebhookRequest',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'WebhookRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'object')
-    ..pc<WebhookEntry>(2, _omitFieldNames ? '' : 'entry', $pb.PbFieldType.PM,
-        subBuilder: WebhookEntry.create)
-    ..hasRequiredFields = false;
+    ..pc<WebhookEntry>(2, _omitFieldNames ? '' : 'entry', $pb.PbFieldType.PM, subBuilder: WebhookEntry.create)
+    ..hasRequiredFields = false
+  ;
 
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
   WebhookRequest clone() => WebhookRequest()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  WebhookRequest copyWith(void Function(WebhookRequest) updates) =>
-      super.copyWith((message) => updates(message as WebhookRequest))
-          as WebhookRequest;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  WebhookRequest copyWith(void Function(WebhookRequest) updates) => super.copyWith((message) => updates(message as WebhookRequest)) as WebhookRequest;
 
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static WebhookRequest create() => WebhookRequest._();
-  @$core.override
   WebhookRequest createEmptyInstance() => create();
-  static $pb.PbList<WebhookRequest> createRepeated() =>
-      $pb.PbList<WebhookRequest>();
+  static $pb.PbList<WebhookRequest> createRepeated() => $pb.PbList<WebhookRequest>();
   @$core.pragma('dart2js:noInline')
-  static WebhookRequest getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<WebhookRequest>(create);
+  static WebhookRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<WebhookRequest>(create);
   static WebhookRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get object => $_getSZ(0);
   @$pb.TagNumber(1)
-  set object($core.String value) => $_setString(0, value);
+  set object($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasObject() => $_has(0);
   @$pb.TagNumber(1)
-  void clearObject() => $_clearField(1);
+  void clearObject() => clearField(1);
 
   @$pb.TagNumber(2)
-  $pb.PbList<WebhookEntry> get entry => $_getList(1);
+  $core.List<WebhookEntry> get entry => $_getList(1);
 }
 
 class WebhookEntry extends $pb.GeneratedMessage {
@@ -612,62 +550,57 @@ class WebhookEntry extends $pb.GeneratedMessage {
     $core.String? id,
     $core.Iterable<WebhookChange>? changes,
   }) {
-    final result = create();
-    if (id != null) result.id = id;
-    if (changes != null) result.changes.addAll(changes);
-    return result;
+    final $result = create();
+    if (id != null) {
+      $result.id = id;
+    }
+    if (changes != null) {
+      $result.changes.addAll(changes);
+    }
+    return $result;
   }
+  WebhookEntry._() : super();
+  factory WebhookEntry.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory WebhookEntry.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  WebhookEntry._();
-
-  factory WebhookEntry.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory WebhookEntry.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'WebhookEntry',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'WebhookEntry', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..pc<WebhookChange>(2, _omitFieldNames ? '' : 'changes', $pb.PbFieldType.PM,
-        subBuilder: WebhookChange.create)
-    ..hasRequiredFields = false;
+    ..pc<WebhookChange>(2, _omitFieldNames ? '' : 'changes', $pb.PbFieldType.PM, subBuilder: WebhookChange.create)
+    ..hasRequiredFields = false
+  ;
 
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
   WebhookEntry clone() => WebhookEntry()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  WebhookEntry copyWith(void Function(WebhookEntry) updates) =>
-      super.copyWith((message) => updates(message as WebhookEntry))
-          as WebhookEntry;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  WebhookEntry copyWith(void Function(WebhookEntry) updates) => super.copyWith((message) => updates(message as WebhookEntry)) as WebhookEntry;
 
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static WebhookEntry create() => WebhookEntry._();
-  @$core.override
   WebhookEntry createEmptyInstance() => create();
-  static $pb.PbList<WebhookEntry> createRepeated() =>
-      $pb.PbList<WebhookEntry>();
+  static $pb.PbList<WebhookEntry> createRepeated() => $pb.PbList<WebhookEntry>();
   @$core.pragma('dart2js:noInline')
-  static WebhookEntry getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<WebhookEntry>(create);
+  static WebhookEntry getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<WebhookEntry>(create);
   static WebhookEntry? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get id => $_getSZ(0);
   @$pb.TagNumber(1)
-  set id($core.String value) => $_setString(0, value);
+  set id($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearId() => $_clearField(1);
+  void clearId() => clearField(1);
 
   @$pb.TagNumber(2)
-  $pb.PbList<WebhookChange> get changes => $_getList(1);
+  $core.List<WebhookChange> get changes => $_getList(1);
 }
 
 class WebhookChange extends $pb.GeneratedMessage {
@@ -675,68 +608,63 @@ class WebhookChange extends $pb.GeneratedMessage {
     $core.String? field_1,
     WebhookValue? value,
   }) {
-    final result = create();
-    if (field_1 != null) result.field_1 = field_1;
-    if (value != null) result.value = value;
-    return result;
+    final $result = create();
+    if (field_1 != null) {
+      $result.field_1 = field_1;
+    }
+    if (value != null) {
+      $result.value = value;
+    }
+    return $result;
   }
+  WebhookChange._() : super();
+  factory WebhookChange.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory WebhookChange.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  WebhookChange._();
-
-  factory WebhookChange.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory WebhookChange.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'WebhookChange',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'WebhookChange', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'field')
-    ..aOM<WebhookValue>(2, _omitFieldNames ? '' : 'value',
-        subBuilder: WebhookValue.create)
-    ..hasRequiredFields = false;
+    ..aOM<WebhookValue>(2, _omitFieldNames ? '' : 'value', subBuilder: WebhookValue.create)
+    ..hasRequiredFields = false
+  ;
 
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
   WebhookChange clone() => WebhookChange()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  WebhookChange copyWith(void Function(WebhookChange) updates) =>
-      super.copyWith((message) => updates(message as WebhookChange))
-          as WebhookChange;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  WebhookChange copyWith(void Function(WebhookChange) updates) => super.copyWith((message) => updates(message as WebhookChange)) as WebhookChange;
 
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static WebhookChange create() => WebhookChange._();
-  @$core.override
   WebhookChange createEmptyInstance() => create();
-  static $pb.PbList<WebhookChange> createRepeated() =>
-      $pb.PbList<WebhookChange>();
+  static $pb.PbList<WebhookChange> createRepeated() => $pb.PbList<WebhookChange>();
   @$core.pragma('dart2js:noInline')
-  static WebhookChange getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<WebhookChange>(create);
+  static WebhookChange getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<WebhookChange>(create);
   static WebhookChange? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get field_1 => $_getSZ(0);
   @$pb.TagNumber(1)
-  set field_1($core.String value) => $_setString(0, value);
+  set field_1($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasField_1() => $_has(0);
   @$pb.TagNumber(1)
-  void clearField_1() => $_clearField(1);
+  void clearField_1() => clearField(1);
 
   @$pb.TagNumber(2)
   WebhookValue get value => $_getN(1);
   @$pb.TagNumber(2)
-  set value(WebhookValue value) => $_setField(2, value);
+  set value(WebhookValue v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasValue() => $_has(1);
   @$pb.TagNumber(2)
-  void clearValue() => $_clearField(2);
+  void clearValue() => clearField(2);
   @$pb.TagNumber(2)
   WebhookValue ensureValue() => $_ensure(1);
 }
@@ -749,91 +677,86 @@ class WebhookValue extends $pb.GeneratedMessage {
     $core.Iterable<WebhookMessage>? messages,
     $core.Iterable<WebhookStatus>? statuses,
   }) {
-    final result = create();
-    if (messagingProduct != null) result.messagingProduct = messagingProduct;
-    if (metadata != null) result.metadata = metadata;
-    if (contacts != null) result.contacts.addAll(contacts);
-    if (messages != null) result.messages.addAll(messages);
-    if (statuses != null) result.statuses.addAll(statuses);
-    return result;
+    final $result = create();
+    if (messagingProduct != null) {
+      $result.messagingProduct = messagingProduct;
+    }
+    if (metadata != null) {
+      $result.metadata = metadata;
+    }
+    if (contacts != null) {
+      $result.contacts.addAll(contacts);
+    }
+    if (messages != null) {
+      $result.messages.addAll(messages);
+    }
+    if (statuses != null) {
+      $result.statuses.addAll(statuses);
+    }
+    return $result;
   }
+  WebhookValue._() : super();
+  factory WebhookValue.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory WebhookValue.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  WebhookValue._();
-
-  factory WebhookValue.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory WebhookValue.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'WebhookValue',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'WebhookValue', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'messagingProduct')
-    ..aOM<WebhookMetadata>(2, _omitFieldNames ? '' : 'metadata',
-        subBuilder: WebhookMetadata.create)
-    ..pc<WebhookContact>(
-        3, _omitFieldNames ? '' : 'contacts', $pb.PbFieldType.PM,
-        subBuilder: WebhookContact.create)
-    ..pc<WebhookMessage>(
-        4, _omitFieldNames ? '' : 'messages', $pb.PbFieldType.PM,
-        subBuilder: WebhookMessage.create)
-    ..pc<WebhookStatus>(
-        5, _omitFieldNames ? '' : 'statuses', $pb.PbFieldType.PM,
-        subBuilder: WebhookStatus.create)
-    ..hasRequiredFields = false;
+    ..aOM<WebhookMetadata>(2, _omitFieldNames ? '' : 'metadata', subBuilder: WebhookMetadata.create)
+    ..pc<WebhookContact>(3, _omitFieldNames ? '' : 'contacts', $pb.PbFieldType.PM, subBuilder: WebhookContact.create)
+    ..pc<WebhookMessage>(4, _omitFieldNames ? '' : 'messages', $pb.PbFieldType.PM, subBuilder: WebhookMessage.create)
+    ..pc<WebhookStatus>(5, _omitFieldNames ? '' : 'statuses', $pb.PbFieldType.PM, subBuilder: WebhookStatus.create)
+    ..hasRequiredFields = false
+  ;
 
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
   WebhookValue clone() => WebhookValue()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  WebhookValue copyWith(void Function(WebhookValue) updates) =>
-      super.copyWith((message) => updates(message as WebhookValue))
-          as WebhookValue;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  WebhookValue copyWith(void Function(WebhookValue) updates) => super.copyWith((message) => updates(message as WebhookValue)) as WebhookValue;
 
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static WebhookValue create() => WebhookValue._();
-  @$core.override
   WebhookValue createEmptyInstance() => create();
-  static $pb.PbList<WebhookValue> createRepeated() =>
-      $pb.PbList<WebhookValue>();
+  static $pb.PbList<WebhookValue> createRepeated() => $pb.PbList<WebhookValue>();
   @$core.pragma('dart2js:noInline')
-  static WebhookValue getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<WebhookValue>(create);
+  static WebhookValue getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<WebhookValue>(create);
   static WebhookValue? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get messagingProduct => $_getSZ(0);
   @$pb.TagNumber(1)
-  set messagingProduct($core.String value) => $_setString(0, value);
+  set messagingProduct($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasMessagingProduct() => $_has(0);
   @$pb.TagNumber(1)
-  void clearMessagingProduct() => $_clearField(1);
+  void clearMessagingProduct() => clearField(1);
 
   @$pb.TagNumber(2)
   WebhookMetadata get metadata => $_getN(1);
   @$pb.TagNumber(2)
-  set metadata(WebhookMetadata value) => $_setField(2, value);
+  set metadata(WebhookMetadata v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasMetadata() => $_has(1);
   @$pb.TagNumber(2)
-  void clearMetadata() => $_clearField(2);
+  void clearMetadata() => clearField(2);
   @$pb.TagNumber(2)
   WebhookMetadata ensureMetadata() => $_ensure(1);
 
   @$pb.TagNumber(3)
-  $pb.PbList<WebhookContact> get contacts => $_getList(2);
+  $core.List<WebhookContact> get contacts => $_getList(2);
 
   @$pb.TagNumber(4)
-  $pb.PbList<WebhookMessage> get messages => $_getList(3);
+  $core.List<WebhookMessage> get messages => $_getList(3);
 
   @$pb.TagNumber(5)
-  $pb.PbList<WebhookStatus> get statuses => $_getList(4);
+  $core.List<WebhookStatus> get statuses => $_getList(4);
 }
 
 class WebhookMetadata extends $pb.GeneratedMessage {
@@ -841,68 +764,63 @@ class WebhookMetadata extends $pb.GeneratedMessage {
     $core.String? displayPhoneNumber,
     $core.String? phoneNumberId,
   }) {
-    final result = create();
-    if (displayPhoneNumber != null)
-      result.displayPhoneNumber = displayPhoneNumber;
-    if (phoneNumberId != null) result.phoneNumberId = phoneNumberId;
-    return result;
+    final $result = create();
+    if (displayPhoneNumber != null) {
+      $result.displayPhoneNumber = displayPhoneNumber;
+    }
+    if (phoneNumberId != null) {
+      $result.phoneNumberId = phoneNumberId;
+    }
+    return $result;
   }
+  WebhookMetadata._() : super();
+  factory WebhookMetadata.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory WebhookMetadata.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  WebhookMetadata._();
-
-  factory WebhookMetadata.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory WebhookMetadata.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'WebhookMetadata',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'WebhookMetadata', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'displayPhoneNumber')
     ..aOS(2, _omitFieldNames ? '' : 'phoneNumberId')
-    ..hasRequiredFields = false;
+    ..hasRequiredFields = false
+  ;
 
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
   WebhookMetadata clone() => WebhookMetadata()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  WebhookMetadata copyWith(void Function(WebhookMetadata) updates) =>
-      super.copyWith((message) => updates(message as WebhookMetadata))
-          as WebhookMetadata;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  WebhookMetadata copyWith(void Function(WebhookMetadata) updates) => super.copyWith((message) => updates(message as WebhookMetadata)) as WebhookMetadata;
 
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static WebhookMetadata create() => WebhookMetadata._();
-  @$core.override
   WebhookMetadata createEmptyInstance() => create();
-  static $pb.PbList<WebhookMetadata> createRepeated() =>
-      $pb.PbList<WebhookMetadata>();
+  static $pb.PbList<WebhookMetadata> createRepeated() => $pb.PbList<WebhookMetadata>();
   @$core.pragma('dart2js:noInline')
-  static WebhookMetadata getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<WebhookMetadata>(create);
+  static WebhookMetadata getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<WebhookMetadata>(create);
   static WebhookMetadata? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get displayPhoneNumber => $_getSZ(0);
   @$pb.TagNumber(1)
-  set displayPhoneNumber($core.String value) => $_setString(0, value);
+  set displayPhoneNumber($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasDisplayPhoneNumber() => $_has(0);
   @$pb.TagNumber(1)
-  void clearDisplayPhoneNumber() => $_clearField(1);
+  void clearDisplayPhoneNumber() => clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get phoneNumberId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set phoneNumberId($core.String value) => $_setString(1, value);
+  set phoneNumberId($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(2)
   $core.bool hasPhoneNumberId() => $_has(1);
   @$pb.TagNumber(2)
-  void clearPhoneNumberId() => $_clearField(2);
+  void clearPhoneNumberId() => clearField(2);
 }
 
 class WebhookContact extends $pb.GeneratedMessage {
@@ -910,67 +828,63 @@ class WebhookContact extends $pb.GeneratedMessage {
     $core.String? profileName,
     $core.String? waId,
   }) {
-    final result = create();
-    if (profileName != null) result.profileName = profileName;
-    if (waId != null) result.waId = waId;
-    return result;
+    final $result = create();
+    if (profileName != null) {
+      $result.profileName = profileName;
+    }
+    if (waId != null) {
+      $result.waId = waId;
+    }
+    return $result;
   }
+  WebhookContact._() : super();
+  factory WebhookContact.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory WebhookContact.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  WebhookContact._();
-
-  factory WebhookContact.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory WebhookContact.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'WebhookContact',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'WebhookContact', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'profileName')
     ..aOS(2, _omitFieldNames ? '' : 'waId')
-    ..hasRequiredFields = false;
+    ..hasRequiredFields = false
+  ;
 
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
   WebhookContact clone() => WebhookContact()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  WebhookContact copyWith(void Function(WebhookContact) updates) =>
-      super.copyWith((message) => updates(message as WebhookContact))
-          as WebhookContact;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  WebhookContact copyWith(void Function(WebhookContact) updates) => super.copyWith((message) => updates(message as WebhookContact)) as WebhookContact;
 
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static WebhookContact create() => WebhookContact._();
-  @$core.override
   WebhookContact createEmptyInstance() => create();
-  static $pb.PbList<WebhookContact> createRepeated() =>
-      $pb.PbList<WebhookContact>();
+  static $pb.PbList<WebhookContact> createRepeated() => $pb.PbList<WebhookContact>();
   @$core.pragma('dart2js:noInline')
-  static WebhookContact getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<WebhookContact>(create);
+  static WebhookContact getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<WebhookContact>(create);
   static WebhookContact? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get profileName => $_getSZ(0);
   @$pb.TagNumber(1)
-  set profileName($core.String value) => $_setString(0, value);
+  set profileName($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasProfileName() => $_has(0);
   @$pb.TagNumber(1)
-  void clearProfileName() => $_clearField(1);
+  void clearProfileName() => clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get waId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set waId($core.String value) => $_setString(1, value);
+  set waId($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(2)
   $core.bool hasWaId() => $_has(1);
   @$pb.TagNumber(2)
-  void clearWaId() => $_clearField(2);
+  void clearWaId() => clearField(2);
 }
 
 class WebhookMessage extends $pb.GeneratedMessage {
@@ -982,115 +896,117 @@ class WebhookMessage extends $pb.GeneratedMessage {
     WebhookTextMessage? text,
     WebhookInteractiveMessage? interactive,
   }) {
-    final result = create();
-    if (from != null) result.from = from;
-    if (id != null) result.id = id;
-    if (timestamp != null) result.timestamp = timestamp;
-    if (type != null) result.type = type;
-    if (text != null) result.text = text;
-    if (interactive != null) result.interactive = interactive;
-    return result;
+    final $result = create();
+    if (from != null) {
+      $result.from = from;
+    }
+    if (id != null) {
+      $result.id = id;
+    }
+    if (timestamp != null) {
+      $result.timestamp = timestamp;
+    }
+    if (type != null) {
+      $result.type = type;
+    }
+    if (text != null) {
+      $result.text = text;
+    }
+    if (interactive != null) {
+      $result.interactive = interactive;
+    }
+    return $result;
   }
+  WebhookMessage._() : super();
+  factory WebhookMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory WebhookMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  WebhookMessage._();
-
-  factory WebhookMessage.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory WebhookMessage.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'WebhookMessage',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'WebhookMessage', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'from')
     ..aOS(2, _omitFieldNames ? '' : 'id')
     ..aOS(3, _omitFieldNames ? '' : 'timestamp')
     ..aOS(4, _omitFieldNames ? '' : 'type')
-    ..aOM<WebhookTextMessage>(5, _omitFieldNames ? '' : 'text',
-        subBuilder: WebhookTextMessage.create)
-    ..aOM<WebhookInteractiveMessage>(6, _omitFieldNames ? '' : 'interactive',
-        subBuilder: WebhookInteractiveMessage.create)
-    ..hasRequiredFields = false;
+    ..aOM<WebhookTextMessage>(5, _omitFieldNames ? '' : 'text', subBuilder: WebhookTextMessage.create)
+    ..aOM<WebhookInteractiveMessage>(6, _omitFieldNames ? '' : 'interactive', subBuilder: WebhookInteractiveMessage.create)
+    ..hasRequiredFields = false
+  ;
 
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
   WebhookMessage clone() => WebhookMessage()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  WebhookMessage copyWith(void Function(WebhookMessage) updates) =>
-      super.copyWith((message) => updates(message as WebhookMessage))
-          as WebhookMessage;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  WebhookMessage copyWith(void Function(WebhookMessage) updates) => super.copyWith((message) => updates(message as WebhookMessage)) as WebhookMessage;
 
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static WebhookMessage create() => WebhookMessage._();
-  @$core.override
   WebhookMessage createEmptyInstance() => create();
-  static $pb.PbList<WebhookMessage> createRepeated() =>
-      $pb.PbList<WebhookMessage>();
+  static $pb.PbList<WebhookMessage> createRepeated() => $pb.PbList<WebhookMessage>();
   @$core.pragma('dart2js:noInline')
-  static WebhookMessage getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<WebhookMessage>(create);
+  static WebhookMessage getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<WebhookMessage>(create);
   static WebhookMessage? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get from => $_getSZ(0);
   @$pb.TagNumber(1)
-  set from($core.String value) => $_setString(0, value);
+  set from($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasFrom() => $_has(0);
   @$pb.TagNumber(1)
-  void clearFrom() => $_clearField(1);
+  void clearFrom() => clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get id => $_getSZ(1);
   @$pb.TagNumber(2)
-  set id($core.String value) => $_setString(1, value);
+  set id($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(2)
   $core.bool hasId() => $_has(1);
   @$pb.TagNumber(2)
-  void clearId() => $_clearField(2);
+  void clearId() => clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get timestamp => $_getSZ(2);
   @$pb.TagNumber(3)
-  set timestamp($core.String value) => $_setString(2, value);
+  set timestamp($core.String v) { $_setString(2, v); }
   @$pb.TagNumber(3)
   $core.bool hasTimestamp() => $_has(2);
   @$pb.TagNumber(3)
-  void clearTimestamp() => $_clearField(3);
+  void clearTimestamp() => clearField(3);
 
   @$pb.TagNumber(4)
   $core.String get type => $_getSZ(3);
   @$pb.TagNumber(4)
-  set type($core.String value) => $_setString(3, value);
+  set type($core.String v) { $_setString(3, v); }
   @$pb.TagNumber(4)
   $core.bool hasType() => $_has(3);
   @$pb.TagNumber(4)
-  void clearType() => $_clearField(4);
+  void clearType() => clearField(4);
 
   @$pb.TagNumber(5)
   WebhookTextMessage get text => $_getN(4);
   @$pb.TagNumber(5)
-  set text(WebhookTextMessage value) => $_setField(5, value);
+  set text(WebhookTextMessage v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasText() => $_has(4);
   @$pb.TagNumber(5)
-  void clearText() => $_clearField(5);
+  void clearText() => clearField(5);
   @$pb.TagNumber(5)
   WebhookTextMessage ensureText() => $_ensure(4);
 
   @$pb.TagNumber(6)
   WebhookInteractiveMessage get interactive => $_getN(5);
   @$pb.TagNumber(6)
-  set interactive(WebhookInteractiveMessage value) => $_setField(6, value);
+  set interactive(WebhookInteractiveMessage v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasInteractive() => $_has(5);
   @$pb.TagNumber(6)
-  void clearInteractive() => $_clearField(6);
+  void clearInteractive() => clearField(6);
   @$pb.TagNumber(6)
   WebhookInteractiveMessage ensureInteractive() => $_ensure(5);
 }
@@ -1099,56 +1015,50 @@ class WebhookTextMessage extends $pb.GeneratedMessage {
   factory WebhookTextMessage({
     $core.String? body,
   }) {
-    final result = create();
-    if (body != null) result.body = body;
-    return result;
+    final $result = create();
+    if (body != null) {
+      $result.body = body;
+    }
+    return $result;
   }
+  WebhookTextMessage._() : super();
+  factory WebhookTextMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory WebhookTextMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  WebhookTextMessage._();
-
-  factory WebhookTextMessage.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory WebhookTextMessage.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'WebhookTextMessage',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'WebhookTextMessage', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'body')
-    ..hasRequiredFields = false;
+    ..hasRequiredFields = false
+  ;
 
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
   WebhookTextMessage clone() => WebhookTextMessage()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  WebhookTextMessage copyWith(void Function(WebhookTextMessage) updates) =>
-      super.copyWith((message) => updates(message as WebhookTextMessage))
-          as WebhookTextMessage;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  WebhookTextMessage copyWith(void Function(WebhookTextMessage) updates) => super.copyWith((message) => updates(message as WebhookTextMessage)) as WebhookTextMessage;
 
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static WebhookTextMessage create() => WebhookTextMessage._();
-  @$core.override
   WebhookTextMessage createEmptyInstance() => create();
-  static $pb.PbList<WebhookTextMessage> createRepeated() =>
-      $pb.PbList<WebhookTextMessage>();
+  static $pb.PbList<WebhookTextMessage> createRepeated() => $pb.PbList<WebhookTextMessage>();
   @$core.pragma('dart2js:noInline')
-  static WebhookTextMessage getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<WebhookTextMessage>(create);
+  static WebhookTextMessage getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<WebhookTextMessage>(create);
   static WebhookTextMessage? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get body => $_getSZ(0);
   @$pb.TagNumber(1)
-  set body($core.String value) => $_setString(0, value);
+  set body($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasBody() => $_has(0);
   @$pb.TagNumber(1)
-  void clearBody() => $_clearField(1);
+  void clearBody() => clearField(1);
 }
 
 class WebhookInteractiveMessage extends $pb.GeneratedMessage {
@@ -1157,84 +1067,78 @@ class WebhookInteractiveMessage extends $pb.GeneratedMessage {
     WebhookButtonReply? buttonReply,
     WebhookListReply? listReply,
   }) {
-    final result = create();
-    if (type != null) result.type = type;
-    if (buttonReply != null) result.buttonReply = buttonReply;
-    if (listReply != null) result.listReply = listReply;
-    return result;
+    final $result = create();
+    if (type != null) {
+      $result.type = type;
+    }
+    if (buttonReply != null) {
+      $result.buttonReply = buttonReply;
+    }
+    if (listReply != null) {
+      $result.listReply = listReply;
+    }
+    return $result;
   }
+  WebhookInteractiveMessage._() : super();
+  factory WebhookInteractiveMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory WebhookInteractiveMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  WebhookInteractiveMessage._();
-
-  factory WebhookInteractiveMessage.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory WebhookInteractiveMessage.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'WebhookInteractiveMessage',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'WebhookInteractiveMessage', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'type')
-    ..aOM<WebhookButtonReply>(2, _omitFieldNames ? '' : 'buttonReply',
-        subBuilder: WebhookButtonReply.create)
-    ..aOM<WebhookListReply>(3, _omitFieldNames ? '' : 'listReply',
-        subBuilder: WebhookListReply.create)
-    ..hasRequiredFields = false;
+    ..aOM<WebhookButtonReply>(2, _omitFieldNames ? '' : 'buttonReply', subBuilder: WebhookButtonReply.create)
+    ..aOM<WebhookListReply>(3, _omitFieldNames ? '' : 'listReply', subBuilder: WebhookListReply.create)
+    ..hasRequiredFields = false
+  ;
 
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  WebhookInteractiveMessage clone() =>
-      WebhookInteractiveMessage()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  WebhookInteractiveMessage copyWith(
-          void Function(WebhookInteractiveMessage) updates) =>
-      super.copyWith((message) => updates(message as WebhookInteractiveMessage))
-          as WebhookInteractiveMessage;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  WebhookInteractiveMessage clone() => WebhookInteractiveMessage()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  WebhookInteractiveMessage copyWith(void Function(WebhookInteractiveMessage) updates) => super.copyWith((message) => updates(message as WebhookInteractiveMessage)) as WebhookInteractiveMessage;
 
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static WebhookInteractiveMessage create() => WebhookInteractiveMessage._();
-  @$core.override
   WebhookInteractiveMessage createEmptyInstance() => create();
-  static $pb.PbList<WebhookInteractiveMessage> createRepeated() =>
-      $pb.PbList<WebhookInteractiveMessage>();
+  static $pb.PbList<WebhookInteractiveMessage> createRepeated() => $pb.PbList<WebhookInteractiveMessage>();
   @$core.pragma('dart2js:noInline')
-  static WebhookInteractiveMessage getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<WebhookInteractiveMessage>(create);
+  static WebhookInteractiveMessage getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<WebhookInteractiveMessage>(create);
   static WebhookInteractiveMessage? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get type => $_getSZ(0);
   @$pb.TagNumber(1)
-  set type($core.String value) => $_setString(0, value);
+  set type($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasType() => $_has(0);
   @$pb.TagNumber(1)
-  void clearType() => $_clearField(1);
+  void clearType() => clearField(1);
 
   @$pb.TagNumber(2)
   WebhookButtonReply get buttonReply => $_getN(1);
   @$pb.TagNumber(2)
-  set buttonReply(WebhookButtonReply value) => $_setField(2, value);
+  set buttonReply(WebhookButtonReply v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasButtonReply() => $_has(1);
   @$pb.TagNumber(2)
-  void clearButtonReply() => $_clearField(2);
+  void clearButtonReply() => clearField(2);
   @$pb.TagNumber(2)
   WebhookButtonReply ensureButtonReply() => $_ensure(1);
 
   @$pb.TagNumber(3)
   WebhookListReply get listReply => $_getN(2);
   @$pb.TagNumber(3)
-  set listReply(WebhookListReply value) => $_setField(3, value);
+  set listReply(WebhookListReply v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasListReply() => $_has(2);
   @$pb.TagNumber(3)
-  void clearListReply() => $_clearField(3);
+  void clearListReply() => clearField(3);
   @$pb.TagNumber(3)
   WebhookListReply ensureListReply() => $_ensure(2);
 }
@@ -1244,67 +1148,63 @@ class WebhookButtonReply extends $pb.GeneratedMessage {
     $core.String? id,
     $core.String? title,
   }) {
-    final result = create();
-    if (id != null) result.id = id;
-    if (title != null) result.title = title;
-    return result;
+    final $result = create();
+    if (id != null) {
+      $result.id = id;
+    }
+    if (title != null) {
+      $result.title = title;
+    }
+    return $result;
   }
+  WebhookButtonReply._() : super();
+  factory WebhookButtonReply.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory WebhookButtonReply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  WebhookButtonReply._();
-
-  factory WebhookButtonReply.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory WebhookButtonReply.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'WebhookButtonReply',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'WebhookButtonReply', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'id')
     ..aOS(2, _omitFieldNames ? '' : 'title')
-    ..hasRequiredFields = false;
+    ..hasRequiredFields = false
+  ;
 
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
   WebhookButtonReply clone() => WebhookButtonReply()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  WebhookButtonReply copyWith(void Function(WebhookButtonReply) updates) =>
-      super.copyWith((message) => updates(message as WebhookButtonReply))
-          as WebhookButtonReply;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  WebhookButtonReply copyWith(void Function(WebhookButtonReply) updates) => super.copyWith((message) => updates(message as WebhookButtonReply)) as WebhookButtonReply;
 
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static WebhookButtonReply create() => WebhookButtonReply._();
-  @$core.override
   WebhookButtonReply createEmptyInstance() => create();
-  static $pb.PbList<WebhookButtonReply> createRepeated() =>
-      $pb.PbList<WebhookButtonReply>();
+  static $pb.PbList<WebhookButtonReply> createRepeated() => $pb.PbList<WebhookButtonReply>();
   @$core.pragma('dart2js:noInline')
-  static WebhookButtonReply getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<WebhookButtonReply>(create);
+  static WebhookButtonReply getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<WebhookButtonReply>(create);
   static WebhookButtonReply? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get id => $_getSZ(0);
   @$pb.TagNumber(1)
-  set id($core.String value) => $_setString(0, value);
+  set id($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearId() => $_clearField(1);
+  void clearId() => clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get title => $_getSZ(1);
   @$pb.TagNumber(2)
-  set title($core.String value) => $_setString(1, value);
+  set title($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(2)
   $core.bool hasTitle() => $_has(1);
   @$pb.TagNumber(2)
-  void clearTitle() => $_clearField(2);
+  void clearTitle() => clearField(2);
 }
 
 class WebhookListReply extends $pb.GeneratedMessage {
@@ -1313,78 +1213,76 @@ class WebhookListReply extends $pb.GeneratedMessage {
     $core.String? title,
     $core.String? description,
   }) {
-    final result = create();
-    if (id != null) result.id = id;
-    if (title != null) result.title = title;
-    if (description != null) result.description = description;
-    return result;
+    final $result = create();
+    if (id != null) {
+      $result.id = id;
+    }
+    if (title != null) {
+      $result.title = title;
+    }
+    if (description != null) {
+      $result.description = description;
+    }
+    return $result;
   }
+  WebhookListReply._() : super();
+  factory WebhookListReply.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory WebhookListReply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  WebhookListReply._();
-
-  factory WebhookListReply.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory WebhookListReply.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'WebhookListReply',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'WebhookListReply', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'id')
     ..aOS(2, _omitFieldNames ? '' : 'title')
     ..aOS(3, _omitFieldNames ? '' : 'description')
-    ..hasRequiredFields = false;
+    ..hasRequiredFields = false
+  ;
 
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
   WebhookListReply clone() => WebhookListReply()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  WebhookListReply copyWith(void Function(WebhookListReply) updates) =>
-      super.copyWith((message) => updates(message as WebhookListReply))
-          as WebhookListReply;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  WebhookListReply copyWith(void Function(WebhookListReply) updates) => super.copyWith((message) => updates(message as WebhookListReply)) as WebhookListReply;
 
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static WebhookListReply create() => WebhookListReply._();
-  @$core.override
   WebhookListReply createEmptyInstance() => create();
-  static $pb.PbList<WebhookListReply> createRepeated() =>
-      $pb.PbList<WebhookListReply>();
+  static $pb.PbList<WebhookListReply> createRepeated() => $pb.PbList<WebhookListReply>();
   @$core.pragma('dart2js:noInline')
-  static WebhookListReply getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<WebhookListReply>(create);
+  static WebhookListReply getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<WebhookListReply>(create);
   static WebhookListReply? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get id => $_getSZ(0);
   @$pb.TagNumber(1)
-  set id($core.String value) => $_setString(0, value);
+  set id($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearId() => $_clearField(1);
+  void clearId() => clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get title => $_getSZ(1);
   @$pb.TagNumber(2)
-  set title($core.String value) => $_setString(1, value);
+  set title($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(2)
   $core.bool hasTitle() => $_has(1);
   @$pb.TagNumber(2)
-  void clearTitle() => $_clearField(2);
+  void clearTitle() => clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get description => $_getSZ(2);
   @$pb.TagNumber(3)
-  set description($core.String value) => $_setString(2, value);
+  set description($core.String v) { $_setString(2, v); }
   @$pb.TagNumber(3)
   $core.bool hasDescription() => $_has(2);
   @$pb.TagNumber(3)
-  void clearDescription() => $_clearField(3);
+  void clearDescription() => clearField(3);
 }
 
 class WebhookStatus extends $pb.GeneratedMessage {
@@ -1394,145 +1292,139 @@ class WebhookStatus extends $pb.GeneratedMessage {
     $core.String? timestamp,
     $core.String? recipientId,
   }) {
-    final result = create();
-    if (id != null) result.id = id;
-    if (status != null) result.status = status;
-    if (timestamp != null) result.timestamp = timestamp;
-    if (recipientId != null) result.recipientId = recipientId;
-    return result;
+    final $result = create();
+    if (id != null) {
+      $result.id = id;
+    }
+    if (status != null) {
+      $result.status = status;
+    }
+    if (timestamp != null) {
+      $result.timestamp = timestamp;
+    }
+    if (recipientId != null) {
+      $result.recipientId = recipientId;
+    }
+    return $result;
   }
+  WebhookStatus._() : super();
+  factory WebhookStatus.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory WebhookStatus.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  WebhookStatus._();
-
-  factory WebhookStatus.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory WebhookStatus.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'WebhookStatus',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'WebhookStatus', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'id')
     ..aOS(2, _omitFieldNames ? '' : 'status')
     ..aOS(3, _omitFieldNames ? '' : 'timestamp')
     ..aOS(4, _omitFieldNames ? '' : 'recipientId')
-    ..hasRequiredFields = false;
+    ..hasRequiredFields = false
+  ;
 
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
   WebhookStatus clone() => WebhookStatus()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  WebhookStatus copyWith(void Function(WebhookStatus) updates) =>
-      super.copyWith((message) => updates(message as WebhookStatus))
-          as WebhookStatus;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  WebhookStatus copyWith(void Function(WebhookStatus) updates) => super.copyWith((message) => updates(message as WebhookStatus)) as WebhookStatus;
 
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static WebhookStatus create() => WebhookStatus._();
-  @$core.override
   WebhookStatus createEmptyInstance() => create();
-  static $pb.PbList<WebhookStatus> createRepeated() =>
-      $pb.PbList<WebhookStatus>();
+  static $pb.PbList<WebhookStatus> createRepeated() => $pb.PbList<WebhookStatus>();
   @$core.pragma('dart2js:noInline')
-  static WebhookStatus getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<WebhookStatus>(create);
+  static WebhookStatus getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<WebhookStatus>(create);
   static WebhookStatus? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get id => $_getSZ(0);
   @$pb.TagNumber(1)
-  set id($core.String value) => $_setString(0, value);
+  set id($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearId() => $_clearField(1);
+  void clearId() => clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get status => $_getSZ(1);
   @$pb.TagNumber(2)
-  set status($core.String value) => $_setString(1, value);
+  set status($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(2)
   $core.bool hasStatus() => $_has(1);
   @$pb.TagNumber(2)
-  void clearStatus() => $_clearField(2);
+  void clearStatus() => clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get timestamp => $_getSZ(2);
   @$pb.TagNumber(3)
-  set timestamp($core.String value) => $_setString(2, value);
+  set timestamp($core.String v) { $_setString(2, v); }
   @$pb.TagNumber(3)
   $core.bool hasTimestamp() => $_has(2);
   @$pb.TagNumber(3)
-  void clearTimestamp() => $_clearField(3);
+  void clearTimestamp() => clearField(3);
 
   @$pb.TagNumber(4)
   $core.String get recipientId => $_getSZ(3);
   @$pb.TagNumber(4)
-  set recipientId($core.String value) => $_setString(3, value);
+  set recipientId($core.String v) { $_setString(3, v); }
   @$pb.TagNumber(4)
   $core.bool hasRecipientId() => $_has(3);
   @$pb.TagNumber(4)
-  void clearRecipientId() => $_clearField(4);
+  void clearRecipientId() => clearField(4);
 }
 
 class WebhookResponse extends $pb.GeneratedMessage {
   factory WebhookResponse({
     $core.String? status,
   }) {
-    final result = create();
-    if (status != null) result.status = status;
-    return result;
+    final $result = create();
+    if (status != null) {
+      $result.status = status;
+    }
+    return $result;
   }
+  WebhookResponse._() : super();
+  factory WebhookResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory WebhookResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  WebhookResponse._();
-
-  factory WebhookResponse.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory WebhookResponse.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'WebhookResponse',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'WebhookResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'status')
-    ..hasRequiredFields = false;
+    ..hasRequiredFields = false
+  ;
 
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
   WebhookResponse clone() => WebhookResponse()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  WebhookResponse copyWith(void Function(WebhookResponse) updates) =>
-      super.copyWith((message) => updates(message as WebhookResponse))
-          as WebhookResponse;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  WebhookResponse copyWith(void Function(WebhookResponse) updates) => super.copyWith((message) => updates(message as WebhookResponse)) as WebhookResponse;
 
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static WebhookResponse create() => WebhookResponse._();
-  @$core.override
   WebhookResponse createEmptyInstance() => create();
-  static $pb.PbList<WebhookResponse> createRepeated() =>
-      $pb.PbList<WebhookResponse>();
+  static $pb.PbList<WebhookResponse> createRepeated() => $pb.PbList<WebhookResponse>();
   @$core.pragma('dart2js:noInline')
-  static WebhookResponse getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<WebhookResponse>(create);
+  static WebhookResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<WebhookResponse>(create);
   static WebhookResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get status => $_getSZ(0);
   @$pb.TagNumber(1)
-  set status($core.String value) => $_setString(0, value);
+  set status($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasStatus() => $_has(0);
   @$pb.TagNumber(1)
-  void clearStatus() => $_clearField(1);
+  void clearStatus() => clearField(1);
 }
 
 class VerifyWebhookRequest extends $pb.GeneratedMessage {
@@ -1541,250 +1433,226 @@ class VerifyWebhookRequest extends $pb.GeneratedMessage {
     $core.String? hubVerifyToken,
     $core.String? hubChallenge,
   }) {
-    final result = create();
-    if (hubMode != null) result.hubMode = hubMode;
-    if (hubVerifyToken != null) result.hubVerifyToken = hubVerifyToken;
-    if (hubChallenge != null) result.hubChallenge = hubChallenge;
-    return result;
+    final $result = create();
+    if (hubMode != null) {
+      $result.hubMode = hubMode;
+    }
+    if (hubVerifyToken != null) {
+      $result.hubVerifyToken = hubVerifyToken;
+    }
+    if (hubChallenge != null) {
+      $result.hubChallenge = hubChallenge;
+    }
+    return $result;
   }
+  VerifyWebhookRequest._() : super();
+  factory VerifyWebhookRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory VerifyWebhookRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  VerifyWebhookRequest._();
-
-  factory VerifyWebhookRequest.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory VerifyWebhookRequest.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'VerifyWebhookRequest',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyWebhookRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'hubMode')
     ..aOS(2, _omitFieldNames ? '' : 'hubVerifyToken')
     ..aOS(3, _omitFieldNames ? '' : 'hubChallenge')
-    ..hasRequiredFields = false;
+    ..hasRequiredFields = false
+  ;
 
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  VerifyWebhookRequest clone() =>
-      VerifyWebhookRequest()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  VerifyWebhookRequest copyWith(void Function(VerifyWebhookRequest) updates) =>
-      super.copyWith((message) => updates(message as VerifyWebhookRequest))
-          as VerifyWebhookRequest;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  VerifyWebhookRequest clone() => VerifyWebhookRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  VerifyWebhookRequest copyWith(void Function(VerifyWebhookRequest) updates) => super.copyWith((message) => updates(message as VerifyWebhookRequest)) as VerifyWebhookRequest;
 
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static VerifyWebhookRequest create() => VerifyWebhookRequest._();
-  @$core.override
   VerifyWebhookRequest createEmptyInstance() => create();
-  static $pb.PbList<VerifyWebhookRequest> createRepeated() =>
-      $pb.PbList<VerifyWebhookRequest>();
+  static $pb.PbList<VerifyWebhookRequest> createRepeated() => $pb.PbList<VerifyWebhookRequest>();
   @$core.pragma('dart2js:noInline')
-  static VerifyWebhookRequest getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<VerifyWebhookRequest>(create);
+  static VerifyWebhookRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<VerifyWebhookRequest>(create);
   static VerifyWebhookRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get hubMode => $_getSZ(0);
   @$pb.TagNumber(1)
-  set hubMode($core.String value) => $_setString(0, value);
+  set hubMode($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasHubMode() => $_has(0);
   @$pb.TagNumber(1)
-  void clearHubMode() => $_clearField(1);
+  void clearHubMode() => clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get hubVerifyToken => $_getSZ(1);
   @$pb.TagNumber(2)
-  set hubVerifyToken($core.String value) => $_setString(1, value);
+  set hubVerifyToken($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(2)
   $core.bool hasHubVerifyToken() => $_has(1);
   @$pb.TagNumber(2)
-  void clearHubVerifyToken() => $_clearField(2);
+  void clearHubVerifyToken() => clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get hubChallenge => $_getSZ(2);
   @$pb.TagNumber(3)
-  set hubChallenge($core.String value) => $_setString(2, value);
+  set hubChallenge($core.String v) { $_setString(2, v); }
   @$pb.TagNumber(3)
   $core.bool hasHubChallenge() => $_has(2);
   @$pb.TagNumber(3)
-  void clearHubChallenge() => $_clearField(3);
+  void clearHubChallenge() => clearField(3);
 }
 
 class VerifyWebhookResponse extends $pb.GeneratedMessage {
   factory VerifyWebhookResponse({
     $core.String? challenge,
   }) {
-    final result = create();
-    if (challenge != null) result.challenge = challenge;
-    return result;
+    final $result = create();
+    if (challenge != null) {
+      $result.challenge = challenge;
+    }
+    return $result;
   }
+  VerifyWebhookResponse._() : super();
+  factory VerifyWebhookResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory VerifyWebhookResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  VerifyWebhookResponse._();
-
-  factory VerifyWebhookResponse.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory VerifyWebhookResponse.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'VerifyWebhookResponse',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyWebhookResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'challenge')
-    ..hasRequiredFields = false;
+    ..hasRequiredFields = false
+  ;
 
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  VerifyWebhookResponse clone() =>
-      VerifyWebhookResponse()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  VerifyWebhookResponse copyWith(
-          void Function(VerifyWebhookResponse) updates) =>
-      super.copyWith((message) => updates(message as VerifyWebhookResponse))
-          as VerifyWebhookResponse;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  VerifyWebhookResponse clone() => VerifyWebhookResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  VerifyWebhookResponse copyWith(void Function(VerifyWebhookResponse) updates) => super.copyWith((message) => updates(message as VerifyWebhookResponse)) as VerifyWebhookResponse;
 
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static VerifyWebhookResponse create() => VerifyWebhookResponse._();
-  @$core.override
   VerifyWebhookResponse createEmptyInstance() => create();
-  static $pb.PbList<VerifyWebhookResponse> createRepeated() =>
-      $pb.PbList<VerifyWebhookResponse>();
+  static $pb.PbList<VerifyWebhookResponse> createRepeated() => $pb.PbList<VerifyWebhookResponse>();
   @$core.pragma('dart2js:noInline')
-  static VerifyWebhookResponse getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<VerifyWebhookResponse>(create);
+  static VerifyWebhookResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<VerifyWebhookResponse>(create);
   static VerifyWebhookResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get challenge => $_getSZ(0);
   @$pb.TagNumber(1)
-  set challenge($core.String value) => $_setString(0, value);
+  set challenge($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasChallenge() => $_has(0);
   @$pb.TagNumber(1)
-  void clearChallenge() => $_clearField(1);
+  void clearChallenge() => clearField(1);
 }
 
 class GetSessionRequest extends $pb.GeneratedMessage {
   factory GetSessionRequest({
     $core.String? sessionId,
   }) {
-    final result = create();
-    if (sessionId != null) result.sessionId = sessionId;
-    return result;
+    final $result = create();
+    if (sessionId != null) {
+      $result.sessionId = sessionId;
+    }
+    return $result;
   }
+  GetSessionRequest._() : super();
+  factory GetSessionRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetSessionRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  GetSessionRequest._();
-
-  factory GetSessionRequest.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory GetSessionRequest.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'GetSessionRequest',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSessionRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'sessionId')
-    ..hasRequiredFields = false;
+    ..hasRequiredFields = false
+  ;
 
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
   GetSessionRequest clone() => GetSessionRequest()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  GetSessionRequest copyWith(void Function(GetSessionRequest) updates) =>
-      super.copyWith((message) => updates(message as GetSessionRequest))
-          as GetSessionRequest;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetSessionRequest copyWith(void Function(GetSessionRequest) updates) => super.copyWith((message) => updates(message as GetSessionRequest)) as GetSessionRequest;
 
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static GetSessionRequest create() => GetSessionRequest._();
-  @$core.override
   GetSessionRequest createEmptyInstance() => create();
-  static $pb.PbList<GetSessionRequest> createRepeated() =>
-      $pb.PbList<GetSessionRequest>();
+  static $pb.PbList<GetSessionRequest> createRepeated() => $pb.PbList<GetSessionRequest>();
   @$core.pragma('dart2js:noInline')
-  static GetSessionRequest getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<GetSessionRequest>(create);
+  static GetSessionRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetSessionRequest>(create);
   static GetSessionRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get sessionId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set sessionId($core.String value) => $_setString(0, value);
+  set sessionId($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasSessionId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearSessionId() => $_clearField(1);
+  void clearSessionId() => clearField(1);
 }
 
 class GetSessionResponse extends $pb.GeneratedMessage {
   factory GetSessionResponse({
     WhatsAppSession? session,
   }) {
-    final result = create();
-    if (session != null) result.session = session;
-    return result;
+    final $result = create();
+    if (session != null) {
+      $result.session = session;
+    }
+    return $result;
   }
+  GetSessionResponse._() : super();
+  factory GetSessionResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetSessionResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  GetSessionResponse._();
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSessionResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..aOM<WhatsAppSession>(1, _omitFieldNames ? '' : 'session', subBuilder: WhatsAppSession.create)
+    ..hasRequiredFields = false
+  ;
 
-  factory GetSessionResponse.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory GetSessionResponse.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'GetSessionResponse',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
-    ..aOM<WhatsAppSession>(1, _omitFieldNames ? '' : 'session',
-        subBuilder: WhatsAppSession.create)
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
   GetSessionResponse clone() => GetSessionResponse()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  GetSessionResponse copyWith(void Function(GetSessionResponse) updates) =>
-      super.copyWith((message) => updates(message as GetSessionResponse))
-          as GetSessionResponse;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetSessionResponse copyWith(void Function(GetSessionResponse) updates) => super.copyWith((message) => updates(message as GetSessionResponse)) as GetSessionResponse;
 
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static GetSessionResponse create() => GetSessionResponse._();
-  @$core.override
   GetSessionResponse createEmptyInstance() => create();
-  static $pb.PbList<GetSessionResponse> createRepeated() =>
-      $pb.PbList<GetSessionResponse>();
+  static $pb.PbList<GetSessionResponse> createRepeated() => $pb.PbList<GetSessionResponse>();
   @$core.pragma('dart2js:noInline')
-  static GetSessionResponse getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<GetSessionResponse>(create);
+  static GetSessionResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetSessionResponse>(create);
   static GetSessionResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   WhatsAppSession get session => $_getN(0);
   @$pb.TagNumber(1)
-  set session(WhatsAppSession value) => $_setField(1, value);
+  set session(WhatsAppSession v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasSession() => $_has(0);
   @$pb.TagNumber(1)
-  void clearSession() => $_clearField(1);
+  void clearSession() => clearField(1);
   @$pb.TagNumber(1)
   WhatsAppSession ensureSession() => $_ensure(0);
 }
@@ -1797,104 +1665,104 @@ class WhatsAppSession extends $pb.GeneratedMessage {
     $1.Timestamp? expiresAt,
     $1.Timestamp? lastActivityAt,
   }) {
-    final result = create();
-    if (id != null) result.id = id;
-    if (whatsappUserId != null) result.whatsappUserId = whatsappUserId;
-    if (isAuthenticated != null) result.isAuthenticated = isAuthenticated;
-    if (expiresAt != null) result.expiresAt = expiresAt;
-    if (lastActivityAt != null) result.lastActivityAt = lastActivityAt;
-    return result;
+    final $result = create();
+    if (id != null) {
+      $result.id = id;
+    }
+    if (whatsappUserId != null) {
+      $result.whatsappUserId = whatsappUserId;
+    }
+    if (isAuthenticated != null) {
+      $result.isAuthenticated = isAuthenticated;
+    }
+    if (expiresAt != null) {
+      $result.expiresAt = expiresAt;
+    }
+    if (lastActivityAt != null) {
+      $result.lastActivityAt = lastActivityAt;
+    }
+    return $result;
   }
+  WhatsAppSession._() : super();
+  factory WhatsAppSession.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory WhatsAppSession.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  WhatsAppSession._();
-
-  factory WhatsAppSession.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory WhatsAppSession.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'WhatsAppSession',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'WhatsAppSession', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'id')
     ..aOS(2, _omitFieldNames ? '' : 'whatsappUserId')
     ..aOB(3, _omitFieldNames ? '' : 'isAuthenticated')
-    ..aOM<$1.Timestamp>(4, _omitFieldNames ? '' : 'expiresAt',
-        subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(5, _omitFieldNames ? '' : 'lastActivityAt',
-        subBuilder: $1.Timestamp.create)
-    ..hasRequiredFields = false;
+    ..aOM<$1.Timestamp>(4, _omitFieldNames ? '' : 'expiresAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(5, _omitFieldNames ? '' : 'lastActivityAt', subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
 
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
   WhatsAppSession clone() => WhatsAppSession()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  WhatsAppSession copyWith(void Function(WhatsAppSession) updates) =>
-      super.copyWith((message) => updates(message as WhatsAppSession))
-          as WhatsAppSession;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  WhatsAppSession copyWith(void Function(WhatsAppSession) updates) => super.copyWith((message) => updates(message as WhatsAppSession)) as WhatsAppSession;
 
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static WhatsAppSession create() => WhatsAppSession._();
-  @$core.override
   WhatsAppSession createEmptyInstance() => create();
-  static $pb.PbList<WhatsAppSession> createRepeated() =>
-      $pb.PbList<WhatsAppSession>();
+  static $pb.PbList<WhatsAppSession> createRepeated() => $pb.PbList<WhatsAppSession>();
   @$core.pragma('dart2js:noInline')
-  static WhatsAppSession getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<WhatsAppSession>(create);
+  static WhatsAppSession getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<WhatsAppSession>(create);
   static WhatsAppSession? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get id => $_getSZ(0);
   @$pb.TagNumber(1)
-  set id($core.String value) => $_setString(0, value);
+  set id($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearId() => $_clearField(1);
+  void clearId() => clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get whatsappUserId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set whatsappUserId($core.String value) => $_setString(1, value);
+  set whatsappUserId($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(2)
   $core.bool hasWhatsappUserId() => $_has(1);
   @$pb.TagNumber(2)
-  void clearWhatsappUserId() => $_clearField(2);
+  void clearWhatsappUserId() => clearField(2);
 
   @$pb.TagNumber(3)
   $core.bool get isAuthenticated => $_getBF(2);
   @$pb.TagNumber(3)
-  set isAuthenticated($core.bool value) => $_setBool(2, value);
+  set isAuthenticated($core.bool v) { $_setBool(2, v); }
   @$pb.TagNumber(3)
   $core.bool hasIsAuthenticated() => $_has(2);
   @$pb.TagNumber(3)
-  void clearIsAuthenticated() => $_clearField(3);
+  void clearIsAuthenticated() => clearField(3);
 
   @$pb.TagNumber(4)
   $1.Timestamp get expiresAt => $_getN(3);
   @$pb.TagNumber(4)
-  set expiresAt($1.Timestamp value) => $_setField(4, value);
+  set expiresAt($1.Timestamp v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasExpiresAt() => $_has(3);
   @$pb.TagNumber(4)
-  void clearExpiresAt() => $_clearField(4);
+  void clearExpiresAt() => clearField(4);
   @$pb.TagNumber(4)
   $1.Timestamp ensureExpiresAt() => $_ensure(3);
 
   @$pb.TagNumber(5)
   $1.Timestamp get lastActivityAt => $_getN(4);
   @$pb.TagNumber(5)
-  set lastActivityAt($1.Timestamp value) => $_setField(5, value);
+  set lastActivityAt($1.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasLastActivityAt() => $_has(4);
   @$pb.TagNumber(5)
-  void clearLastActivityAt() => $_clearField(5);
+  void clearLastActivityAt() => clearField(5);
   @$pb.TagNumber(5)
   $1.Timestamp ensureLastActivityAt() => $_ensure(4);
 }
@@ -1903,58 +1771,50 @@ class InvalidateSessionRequest extends $pb.GeneratedMessage {
   factory InvalidateSessionRequest({
     $core.String? sessionId,
   }) {
-    final result = create();
-    if (sessionId != null) result.sessionId = sessionId;
-    return result;
+    final $result = create();
+    if (sessionId != null) {
+      $result.sessionId = sessionId;
+    }
+    return $result;
   }
+  InvalidateSessionRequest._() : super();
+  factory InvalidateSessionRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory InvalidateSessionRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  InvalidateSessionRequest._();
-
-  factory InvalidateSessionRequest.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory InvalidateSessionRequest.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'InvalidateSessionRequest',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InvalidateSessionRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'sessionId')
-    ..hasRequiredFields = false;
+    ..hasRequiredFields = false
+  ;
 
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  InvalidateSessionRequest clone() =>
-      InvalidateSessionRequest()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  InvalidateSessionRequest copyWith(
-          void Function(InvalidateSessionRequest) updates) =>
-      super.copyWith((message) => updates(message as InvalidateSessionRequest))
-          as InvalidateSessionRequest;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  InvalidateSessionRequest clone() => InvalidateSessionRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  InvalidateSessionRequest copyWith(void Function(InvalidateSessionRequest) updates) => super.copyWith((message) => updates(message as InvalidateSessionRequest)) as InvalidateSessionRequest;
 
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static InvalidateSessionRequest create() => InvalidateSessionRequest._();
-  @$core.override
   InvalidateSessionRequest createEmptyInstance() => create();
-  static $pb.PbList<InvalidateSessionRequest> createRepeated() =>
-      $pb.PbList<InvalidateSessionRequest>();
+  static $pb.PbList<InvalidateSessionRequest> createRepeated() => $pb.PbList<InvalidateSessionRequest>();
   @$core.pragma('dart2js:noInline')
-  static InvalidateSessionRequest getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<InvalidateSessionRequest>(create);
+  static InvalidateSessionRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<InvalidateSessionRequest>(create);
   static InvalidateSessionRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get sessionId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set sessionId($core.String value) => $_setString(0, value);
+  set sessionId($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasSessionId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearSessionId() => $_clearField(1);
+  void clearSessionId() => clearField(1);
 }
 
 class InvalidateSessionResponse extends $pb.GeneratedMessage {
@@ -1962,69 +1822,63 @@ class InvalidateSessionResponse extends $pb.GeneratedMessage {
     $core.bool? success,
     $core.String? message,
   }) {
-    final result = create();
-    if (success != null) result.success = success;
-    if (message != null) result.message = message;
-    return result;
+    final $result = create();
+    if (success != null) {
+      $result.success = success;
+    }
+    if (message != null) {
+      $result.message = message;
+    }
+    return $result;
   }
+  InvalidateSessionResponse._() : super();
+  factory InvalidateSessionResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory InvalidateSessionResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  InvalidateSessionResponse._();
-
-  factory InvalidateSessionResponse.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory InvalidateSessionResponse.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'InvalidateSessionResponse',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InvalidateSessionResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
     ..aOB(1, _omitFieldNames ? '' : 'success')
     ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..hasRequiredFields = false;
+    ..hasRequiredFields = false
+  ;
 
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  InvalidateSessionResponse clone() =>
-      InvalidateSessionResponse()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  InvalidateSessionResponse copyWith(
-          void Function(InvalidateSessionResponse) updates) =>
-      super.copyWith((message) => updates(message as InvalidateSessionResponse))
-          as InvalidateSessionResponse;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  InvalidateSessionResponse clone() => InvalidateSessionResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  InvalidateSessionResponse copyWith(void Function(InvalidateSessionResponse) updates) => super.copyWith((message) => updates(message as InvalidateSessionResponse)) as InvalidateSessionResponse;
 
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static InvalidateSessionResponse create() => InvalidateSessionResponse._();
-  @$core.override
   InvalidateSessionResponse createEmptyInstance() => create();
-  static $pb.PbList<InvalidateSessionResponse> createRepeated() =>
-      $pb.PbList<InvalidateSessionResponse>();
+  static $pb.PbList<InvalidateSessionResponse> createRepeated() => $pb.PbList<InvalidateSessionResponse>();
   @$core.pragma('dart2js:noInline')
-  static InvalidateSessionResponse getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<InvalidateSessionResponse>(create);
+  static InvalidateSessionResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<InvalidateSessionResponse>(create);
   static InvalidateSessionResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.bool get success => $_getBF(0);
   @$pb.TagNumber(1)
-  set success($core.bool value) => $_setBool(0, value);
+  set success($core.bool v) { $_setBool(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasSuccess() => $_has(0);
   @$pb.TagNumber(1)
-  void clearSuccess() => $_clearField(1);
+  void clearSuccess() => clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get message => $_getSZ(1);
   @$pb.TagNumber(2)
-  set message($core.String value) => $_setString(1, value);
+  set message($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(2)
   $core.bool hasMessage() => $_has(1);
   @$pb.TagNumber(2)
-  void clearMessage() => $_clearField(2);
+  void clearMessage() => clearField(2);
 }
 
 class UpdateSecuritySettingsRequest extends $pb.GeneratedMessage {
@@ -2034,204 +1888,172 @@ class UpdateSecuritySettingsRequest extends $pb.GeneratedMessage {
     $core.bool? requirePinForAll,
     $core.double? biometricThreshold,
   }) {
-    final result = create();
-    if (dailyTransactionLimit != null)
-      result.dailyTransactionLimit = dailyTransactionLimit;
-    if (perTransactionLimit != null)
-      result.perTransactionLimit = perTransactionLimit;
-    if (requirePinForAll != null) result.requirePinForAll = requirePinForAll;
-    if (biometricThreshold != null)
-      result.biometricThreshold = biometricThreshold;
-    return result;
+    final $result = create();
+    if (dailyTransactionLimit != null) {
+      $result.dailyTransactionLimit = dailyTransactionLimit;
+    }
+    if (perTransactionLimit != null) {
+      $result.perTransactionLimit = perTransactionLimit;
+    }
+    if (requirePinForAll != null) {
+      $result.requirePinForAll = requirePinForAll;
+    }
+    if (biometricThreshold != null) {
+      $result.biometricThreshold = biometricThreshold;
+    }
+    return $result;
   }
+  UpdateSecuritySettingsRequest._() : super();
+  factory UpdateSecuritySettingsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateSecuritySettingsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  UpdateSecuritySettingsRequest._();
-
-  factory UpdateSecuritySettingsRequest.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory UpdateSecuritySettingsRequest.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'UpdateSecuritySettingsRequest',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
-    ..a<$core.double>(
-        1, _omitFieldNames ? '' : 'dailyTransactionLimit', $pb.PbFieldType.OD)
-    ..a<$core.double>(
-        2, _omitFieldNames ? '' : 'perTransactionLimit', $pb.PbFieldType.OD)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateSecuritySettingsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..a<$core.double>(1, _omitFieldNames ? '' : 'dailyTransactionLimit', $pb.PbFieldType.OD)
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'perTransactionLimit', $pb.PbFieldType.OD)
     ..aOB(3, _omitFieldNames ? '' : 'requirePinForAll')
-    ..a<$core.double>(
-        4, _omitFieldNames ? '' : 'biometricThreshold', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false;
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'biometricThreshold', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
 
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  UpdateSecuritySettingsRequest clone() =>
-      UpdateSecuritySettingsRequest()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  UpdateSecuritySettingsRequest copyWith(
-          void Function(UpdateSecuritySettingsRequest) updates) =>
-      super.copyWith(
-              (message) => updates(message as UpdateSecuritySettingsRequest))
-          as UpdateSecuritySettingsRequest;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UpdateSecuritySettingsRequest clone() => UpdateSecuritySettingsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UpdateSecuritySettingsRequest copyWith(void Function(UpdateSecuritySettingsRequest) updates) => super.copyWith((message) => updates(message as UpdateSecuritySettingsRequest)) as UpdateSecuritySettingsRequest;
 
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static UpdateSecuritySettingsRequest create() =>
-      UpdateSecuritySettingsRequest._();
-  @$core.override
+  static UpdateSecuritySettingsRequest create() => UpdateSecuritySettingsRequest._();
   UpdateSecuritySettingsRequest createEmptyInstance() => create();
-  static $pb.PbList<UpdateSecuritySettingsRequest> createRepeated() =>
-      $pb.PbList<UpdateSecuritySettingsRequest>();
+  static $pb.PbList<UpdateSecuritySettingsRequest> createRepeated() => $pb.PbList<UpdateSecuritySettingsRequest>();
   @$core.pragma('dart2js:noInline')
-  static UpdateSecuritySettingsRequest getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<UpdateSecuritySettingsRequest>(create);
+  static UpdateSecuritySettingsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateSecuritySettingsRequest>(create);
   static UpdateSecuritySettingsRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.double get dailyTransactionLimit => $_getN(0);
   @$pb.TagNumber(1)
-  set dailyTransactionLimit($core.double value) => $_setDouble(0, value);
+  set dailyTransactionLimit($core.double v) { $_setDouble(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasDailyTransactionLimit() => $_has(0);
   @$pb.TagNumber(1)
-  void clearDailyTransactionLimit() => $_clearField(1);
+  void clearDailyTransactionLimit() => clearField(1);
 
   @$pb.TagNumber(2)
   $core.double get perTransactionLimit => $_getN(1);
   @$pb.TagNumber(2)
-  set perTransactionLimit($core.double value) => $_setDouble(1, value);
+  set perTransactionLimit($core.double v) { $_setDouble(1, v); }
   @$pb.TagNumber(2)
   $core.bool hasPerTransactionLimit() => $_has(1);
   @$pb.TagNumber(2)
-  void clearPerTransactionLimit() => $_clearField(2);
+  void clearPerTransactionLimit() => clearField(2);
 
   @$pb.TagNumber(3)
   $core.bool get requirePinForAll => $_getBF(2);
   @$pb.TagNumber(3)
-  set requirePinForAll($core.bool value) => $_setBool(2, value);
+  set requirePinForAll($core.bool v) { $_setBool(2, v); }
   @$pb.TagNumber(3)
   $core.bool hasRequirePinForAll() => $_has(2);
   @$pb.TagNumber(3)
-  void clearRequirePinForAll() => $_clearField(3);
+  void clearRequirePinForAll() => clearField(3);
 
   @$pb.TagNumber(4)
   $core.double get biometricThreshold => $_getN(3);
   @$pb.TagNumber(4)
-  set biometricThreshold($core.double value) => $_setDouble(3, value);
+  set biometricThreshold($core.double v) { $_setDouble(3, v); }
   @$pb.TagNumber(4)
   $core.bool hasBiometricThreshold() => $_has(3);
   @$pb.TagNumber(4)
-  void clearBiometricThreshold() => $_clearField(4);
+  void clearBiometricThreshold() => clearField(4);
 }
 
 class UpdateSecuritySettingsResponse extends $pb.GeneratedMessage {
   factory UpdateSecuritySettingsResponse({
     SecuritySettings? settings,
   }) {
-    final result = create();
-    if (settings != null) result.settings = settings;
-    return result;
+    final $result = create();
+    if (settings != null) {
+      $result.settings = settings;
+    }
+    return $result;
   }
+  UpdateSecuritySettingsResponse._() : super();
+  factory UpdateSecuritySettingsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateSecuritySettingsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  UpdateSecuritySettingsResponse._();
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateSecuritySettingsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..aOM<SecuritySettings>(1, _omitFieldNames ? '' : 'settings', subBuilder: SecuritySettings.create)
+    ..hasRequiredFields = false
+  ;
 
-  factory UpdateSecuritySettingsResponse.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory UpdateSecuritySettingsResponse.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UpdateSecuritySettingsResponse clone() => UpdateSecuritySettingsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UpdateSecuritySettingsResponse copyWith(void Function(UpdateSecuritySettingsResponse) updates) => super.copyWith((message) => updates(message as UpdateSecuritySettingsResponse)) as UpdateSecuritySettingsResponse;
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'UpdateSecuritySettingsResponse',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
-    ..aOM<SecuritySettings>(1, _omitFieldNames ? '' : 'settings',
-        subBuilder: SecuritySettings.create)
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  UpdateSecuritySettingsResponse clone() =>
-      UpdateSecuritySettingsResponse()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  UpdateSecuritySettingsResponse copyWith(
-          void Function(UpdateSecuritySettingsResponse) updates) =>
-      super.copyWith(
-              (message) => updates(message as UpdateSecuritySettingsResponse))
-          as UpdateSecuritySettingsResponse;
-
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static UpdateSecuritySettingsResponse create() =>
-      UpdateSecuritySettingsResponse._();
-  @$core.override
+  static UpdateSecuritySettingsResponse create() => UpdateSecuritySettingsResponse._();
   UpdateSecuritySettingsResponse createEmptyInstance() => create();
-  static $pb.PbList<UpdateSecuritySettingsResponse> createRepeated() =>
-      $pb.PbList<UpdateSecuritySettingsResponse>();
+  static $pb.PbList<UpdateSecuritySettingsResponse> createRepeated() => $pb.PbList<UpdateSecuritySettingsResponse>();
   @$core.pragma('dart2js:noInline')
-  static UpdateSecuritySettingsResponse getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<UpdateSecuritySettingsResponse>(create);
+  static UpdateSecuritySettingsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateSecuritySettingsResponse>(create);
   static UpdateSecuritySettingsResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   SecuritySettings get settings => $_getN(0);
   @$pb.TagNumber(1)
-  set settings(SecuritySettings value) => $_setField(1, value);
+  set settings(SecuritySettings v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasSettings() => $_has(0);
   @$pb.TagNumber(1)
-  void clearSettings() => $_clearField(1);
+  void clearSettings() => clearField(1);
   @$pb.TagNumber(1)
   SecuritySettings ensureSettings() => $_ensure(0);
 }
 
 class GetSecuritySettingsRequest extends $pb.GeneratedMessage {
   factory GetSecuritySettingsRequest() => create();
+  GetSecuritySettingsRequest._() : super();
+  factory GetSecuritySettingsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetSecuritySettingsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  GetSecuritySettingsRequest._();
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSecuritySettingsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..hasRequiredFields = false
+  ;
 
-  factory GetSecuritySettingsRequest.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory GetSecuritySettingsRequest.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetSecuritySettingsRequest clone() => GetSecuritySettingsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetSecuritySettingsRequest copyWith(void Function(GetSecuritySettingsRequest) updates) => super.copyWith((message) => updates(message as GetSecuritySettingsRequest)) as GetSecuritySettingsRequest;
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'GetSecuritySettingsRequest',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  GetSecuritySettingsRequest clone() =>
-      GetSecuritySettingsRequest()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  GetSecuritySettingsRequest copyWith(
-          void Function(GetSecuritySettingsRequest) updates) =>
-      super.copyWith(
-              (message) => updates(message as GetSecuritySettingsRequest))
-          as GetSecuritySettingsRequest;
-
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static GetSecuritySettingsRequest create() => GetSecuritySettingsRequest._();
-  @$core.override
   GetSecuritySettingsRequest createEmptyInstance() => create();
-  static $pb.PbList<GetSecuritySettingsRequest> createRepeated() =>
-      $pb.PbList<GetSecuritySettingsRequest>();
+  static $pb.PbList<GetSecuritySettingsRequest> createRepeated() => $pb.PbList<GetSecuritySettingsRequest>();
   @$core.pragma('dart2js:noInline')
-  static GetSecuritySettingsRequest getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<GetSecuritySettingsRequest>(create);
+  static GetSecuritySettingsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetSecuritySettingsRequest>(create);
   static GetSecuritySettingsRequest? _defaultInstance;
 }
 
@@ -2239,61 +2061,50 @@ class GetSecuritySettingsResponse extends $pb.GeneratedMessage {
   factory GetSecuritySettingsResponse({
     SecuritySettings? settings,
   }) {
-    final result = create();
-    if (settings != null) result.settings = settings;
-    return result;
+    final $result = create();
+    if (settings != null) {
+      $result.settings = settings;
+    }
+    return $result;
   }
+  GetSecuritySettingsResponse._() : super();
+  factory GetSecuritySettingsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetSecuritySettingsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  GetSecuritySettingsResponse._();
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSecuritySettingsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..aOM<SecuritySettings>(1, _omitFieldNames ? '' : 'settings', subBuilder: SecuritySettings.create)
+    ..hasRequiredFields = false
+  ;
 
-  factory GetSecuritySettingsResponse.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory GetSecuritySettingsResponse.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetSecuritySettingsResponse clone() => GetSecuritySettingsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetSecuritySettingsResponse copyWith(void Function(GetSecuritySettingsResponse) updates) => super.copyWith((message) => updates(message as GetSecuritySettingsResponse)) as GetSecuritySettingsResponse;
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'GetSecuritySettingsResponse',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
-    ..aOM<SecuritySettings>(1, _omitFieldNames ? '' : 'settings',
-        subBuilder: SecuritySettings.create)
-    ..hasRequiredFields = false;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  GetSecuritySettingsResponse clone() =>
-      GetSecuritySettingsResponse()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  GetSecuritySettingsResponse copyWith(
-          void Function(GetSecuritySettingsResponse) updates) =>
-      super.copyWith(
-              (message) => updates(message as GetSecuritySettingsResponse))
-          as GetSecuritySettingsResponse;
-
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static GetSecuritySettingsResponse create() =>
-      GetSecuritySettingsResponse._();
-  @$core.override
+  static GetSecuritySettingsResponse create() => GetSecuritySettingsResponse._();
   GetSecuritySettingsResponse createEmptyInstance() => create();
-  static $pb.PbList<GetSecuritySettingsResponse> createRepeated() =>
-      $pb.PbList<GetSecuritySettingsResponse>();
+  static $pb.PbList<GetSecuritySettingsResponse> createRepeated() => $pb.PbList<GetSecuritySettingsResponse>();
   @$core.pragma('dart2js:noInline')
-  static GetSecuritySettingsResponse getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<GetSecuritySettingsResponse>(create);
+  static GetSecuritySettingsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetSecuritySettingsResponse>(create);
   static GetSecuritySettingsResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   SecuritySettings get settings => $_getN(0);
   @$pb.TagNumber(1)
-  set settings(SecuritySettings value) => $_setField(1, value);
+  set settings(SecuritySettings v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasSettings() => $_has(0);
   @$pb.TagNumber(1)
-  void clearSettings() => $_clearField(1);
+  void clearSettings() => clearField(1);
   @$pb.TagNumber(1)
   SecuritySettings ensureSettings() => $_ensure(0);
 }
@@ -2305,95 +2116,89 @@ class SecuritySettings extends $pb.GeneratedMessage {
     $core.bool? requirePinForAll,
     $core.double? biometricThreshold,
   }) {
-    final result = create();
-    if (dailyTransactionLimit != null)
-      result.dailyTransactionLimit = dailyTransactionLimit;
-    if (perTransactionLimit != null)
-      result.perTransactionLimit = perTransactionLimit;
-    if (requirePinForAll != null) result.requirePinForAll = requirePinForAll;
-    if (biometricThreshold != null)
-      result.biometricThreshold = biometricThreshold;
-    return result;
+    final $result = create();
+    if (dailyTransactionLimit != null) {
+      $result.dailyTransactionLimit = dailyTransactionLimit;
+    }
+    if (perTransactionLimit != null) {
+      $result.perTransactionLimit = perTransactionLimit;
+    }
+    if (requirePinForAll != null) {
+      $result.requirePinForAll = requirePinForAll;
+    }
+    if (biometricThreshold != null) {
+      $result.biometricThreshold = biometricThreshold;
+    }
+    return $result;
   }
+  SecuritySettings._() : super();
+  factory SecuritySettings.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory SecuritySettings.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  SecuritySettings._();
-
-  factory SecuritySettings.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory SecuritySettings.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'SecuritySettings',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
-    ..a<$core.double>(
-        1, _omitFieldNames ? '' : 'dailyTransactionLimit', $pb.PbFieldType.OD)
-    ..a<$core.double>(
-        2, _omitFieldNames ? '' : 'perTransactionLimit', $pb.PbFieldType.OD)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SecuritySettings', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..a<$core.double>(1, _omitFieldNames ? '' : 'dailyTransactionLimit', $pb.PbFieldType.OD)
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'perTransactionLimit', $pb.PbFieldType.OD)
     ..aOB(3, _omitFieldNames ? '' : 'requirePinForAll')
-    ..a<$core.double>(
-        4, _omitFieldNames ? '' : 'biometricThreshold', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false;
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'biometricThreshold', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
 
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
   SecuritySettings clone() => SecuritySettings()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  SecuritySettings copyWith(void Function(SecuritySettings) updates) =>
-      super.copyWith((message) => updates(message as SecuritySettings))
-          as SecuritySettings;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  SecuritySettings copyWith(void Function(SecuritySettings) updates) => super.copyWith((message) => updates(message as SecuritySettings)) as SecuritySettings;
 
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static SecuritySettings create() => SecuritySettings._();
-  @$core.override
   SecuritySettings createEmptyInstance() => create();
-  static $pb.PbList<SecuritySettings> createRepeated() =>
-      $pb.PbList<SecuritySettings>();
+  static $pb.PbList<SecuritySettings> createRepeated() => $pb.PbList<SecuritySettings>();
   @$core.pragma('dart2js:noInline')
-  static SecuritySettings getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<SecuritySettings>(create);
+  static SecuritySettings getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SecuritySettings>(create);
   static SecuritySettings? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.double get dailyTransactionLimit => $_getN(0);
   @$pb.TagNumber(1)
-  set dailyTransactionLimit($core.double value) => $_setDouble(0, value);
+  set dailyTransactionLimit($core.double v) { $_setDouble(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasDailyTransactionLimit() => $_has(0);
   @$pb.TagNumber(1)
-  void clearDailyTransactionLimit() => $_clearField(1);
+  void clearDailyTransactionLimit() => clearField(1);
 
   @$pb.TagNumber(2)
   $core.double get perTransactionLimit => $_getN(1);
   @$pb.TagNumber(2)
-  set perTransactionLimit($core.double value) => $_setDouble(1, value);
+  set perTransactionLimit($core.double v) { $_setDouble(1, v); }
   @$pb.TagNumber(2)
   $core.bool hasPerTransactionLimit() => $_has(1);
   @$pb.TagNumber(2)
-  void clearPerTransactionLimit() => $_clearField(2);
+  void clearPerTransactionLimit() => clearField(2);
 
   @$pb.TagNumber(3)
   $core.bool get requirePinForAll => $_getBF(2);
   @$pb.TagNumber(3)
-  set requirePinForAll($core.bool value) => $_setBool(2, value);
+  set requirePinForAll($core.bool v) { $_setBool(2, v); }
   @$pb.TagNumber(3)
   $core.bool hasRequirePinForAll() => $_has(2);
   @$pb.TagNumber(3)
-  void clearRequirePinForAll() => $_clearField(3);
+  void clearRequirePinForAll() => clearField(3);
 
   @$pb.TagNumber(4)
   $core.double get biometricThreshold => $_getN(3);
   @$pb.TagNumber(4)
-  set biometricThreshold($core.double value) => $_setDouble(3, value);
+  set biometricThreshold($core.double v) { $_setDouble(3, v); }
   @$pb.TagNumber(4)
   $core.bool hasBiometricThreshold() => $_has(3);
   @$pb.TagNumber(4)
-  void clearBiometricThreshold() => $_clearField(4);
+  void clearBiometricThreshold() => clearField(4);
 }
 
 class GetAuditLogsRequest extends $pb.GeneratedMessage {
@@ -2403,89 +2208,89 @@ class GetAuditLogsRequest extends $pb.GeneratedMessage {
     $core.String? startDate,
     $core.String? endDate,
   }) {
-    final result = create();
-    if (page != null) result.page = page;
-    if (pageSize != null) result.pageSize = pageSize;
-    if (startDate != null) result.startDate = startDate;
-    if (endDate != null) result.endDate = endDate;
-    return result;
+    final $result = create();
+    if (page != null) {
+      $result.page = page;
+    }
+    if (pageSize != null) {
+      $result.pageSize = pageSize;
+    }
+    if (startDate != null) {
+      $result.startDate = startDate;
+    }
+    if (endDate != null) {
+      $result.endDate = endDate;
+    }
+    return $result;
   }
+  GetAuditLogsRequest._() : super();
+  factory GetAuditLogsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetAuditLogsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  GetAuditLogsRequest._();
-
-  factory GetAuditLogsRequest.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory GetAuditLogsRequest.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'GetAuditLogsRequest',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetAuditLogsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
     ..a<$core.int>(1, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
     ..a<$core.int>(2, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
     ..aOS(3, _omitFieldNames ? '' : 'startDate')
     ..aOS(4, _omitFieldNames ? '' : 'endDate')
-    ..hasRequiredFields = false;
+    ..hasRequiredFields = false
+  ;
 
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
   GetAuditLogsRequest clone() => GetAuditLogsRequest()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  GetAuditLogsRequest copyWith(void Function(GetAuditLogsRequest) updates) =>
-      super.copyWith((message) => updates(message as GetAuditLogsRequest))
-          as GetAuditLogsRequest;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetAuditLogsRequest copyWith(void Function(GetAuditLogsRequest) updates) => super.copyWith((message) => updates(message as GetAuditLogsRequest)) as GetAuditLogsRequest;
 
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static GetAuditLogsRequest create() => GetAuditLogsRequest._();
-  @$core.override
   GetAuditLogsRequest createEmptyInstance() => create();
-  static $pb.PbList<GetAuditLogsRequest> createRepeated() =>
-      $pb.PbList<GetAuditLogsRequest>();
+  static $pb.PbList<GetAuditLogsRequest> createRepeated() => $pb.PbList<GetAuditLogsRequest>();
   @$core.pragma('dart2js:noInline')
-  static GetAuditLogsRequest getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<GetAuditLogsRequest>(create);
+  static GetAuditLogsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetAuditLogsRequest>(create);
   static GetAuditLogsRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.int get page => $_getIZ(0);
   @$pb.TagNumber(1)
-  set page($core.int value) => $_setSignedInt32(0, value);
+  set page($core.int v) { $_setSignedInt32(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasPage() => $_has(0);
   @$pb.TagNumber(1)
-  void clearPage() => $_clearField(1);
+  void clearPage() => clearField(1);
 
   @$pb.TagNumber(2)
   $core.int get pageSize => $_getIZ(1);
   @$pb.TagNumber(2)
-  set pageSize($core.int value) => $_setSignedInt32(1, value);
+  set pageSize($core.int v) { $_setSignedInt32(1, v); }
   @$pb.TagNumber(2)
   $core.bool hasPageSize() => $_has(1);
   @$pb.TagNumber(2)
-  void clearPageSize() => $_clearField(2);
+  void clearPageSize() => clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get startDate => $_getSZ(2);
   @$pb.TagNumber(3)
-  set startDate($core.String value) => $_setString(2, value);
+  set startDate($core.String v) { $_setString(2, v); }
   @$pb.TagNumber(3)
   $core.bool hasStartDate() => $_has(2);
   @$pb.TagNumber(3)
-  void clearStartDate() => $_clearField(3);
+  void clearStartDate() => clearField(3);
 
   @$pb.TagNumber(4)
   $core.String get endDate => $_getSZ(3);
   @$pb.TagNumber(4)
-  set endDate($core.String value) => $_setString(3, value);
+  set endDate($core.String v) { $_setString(3, v); }
   @$pb.TagNumber(4)
   $core.bool hasEndDate() => $_has(3);
   @$pb.TagNumber(4)
-  void clearEndDate() => $_clearField(4);
+  void clearEndDate() => clearField(4);
 }
 
 class GetAuditLogsResponse extends $pb.GeneratedMessage {
@@ -2493,63 +2298,57 @@ class GetAuditLogsResponse extends $pb.GeneratedMessage {
     $core.Iterable<AuditLog>? logs,
     $core.int? total,
   }) {
-    final result = create();
-    if (logs != null) result.logs.addAll(logs);
-    if (total != null) result.total = total;
-    return result;
+    final $result = create();
+    if (logs != null) {
+      $result.logs.addAll(logs);
+    }
+    if (total != null) {
+      $result.total = total;
+    }
+    return $result;
   }
+  GetAuditLogsResponse._() : super();
+  factory GetAuditLogsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetAuditLogsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  GetAuditLogsResponse._();
-
-  factory GetAuditLogsResponse.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory GetAuditLogsResponse.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'GetAuditLogsResponse',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
-    ..pc<AuditLog>(1, _omitFieldNames ? '' : 'logs', $pb.PbFieldType.PM,
-        subBuilder: AuditLog.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetAuditLogsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..pc<AuditLog>(1, _omitFieldNames ? '' : 'logs', $pb.PbFieldType.PM, subBuilder: AuditLog.create)
     ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false;
+    ..hasRequiredFields = false
+  ;
 
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  GetAuditLogsResponse clone() =>
-      GetAuditLogsResponse()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  GetAuditLogsResponse copyWith(void Function(GetAuditLogsResponse) updates) =>
-      super.copyWith((message) => updates(message as GetAuditLogsResponse))
-          as GetAuditLogsResponse;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetAuditLogsResponse clone() => GetAuditLogsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetAuditLogsResponse copyWith(void Function(GetAuditLogsResponse) updates) => super.copyWith((message) => updates(message as GetAuditLogsResponse)) as GetAuditLogsResponse;
 
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static GetAuditLogsResponse create() => GetAuditLogsResponse._();
-  @$core.override
   GetAuditLogsResponse createEmptyInstance() => create();
-  static $pb.PbList<GetAuditLogsResponse> createRepeated() =>
-      $pb.PbList<GetAuditLogsResponse>();
+  static $pb.PbList<GetAuditLogsResponse> createRepeated() => $pb.PbList<GetAuditLogsResponse>();
   @$core.pragma('dart2js:noInline')
-  static GetAuditLogsResponse getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<GetAuditLogsResponse>(create);
+  static GetAuditLogsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetAuditLogsResponse>(create);
   static GetAuditLogsResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $pb.PbList<AuditLog> get logs => $_getList(0);
+  $core.List<AuditLog> get logs => $_getList(0);
 
   @$pb.TagNumber(2)
   $core.int get total => $_getIZ(1);
   @$pb.TagNumber(2)
-  set total($core.int value) => $_setSignedInt32(1, value);
+  set total($core.int v) { $_setSignedInt32(1, v); }
   @$pb.TagNumber(2)
   $core.bool hasTotal() => $_has(1);
   @$pb.TagNumber(2)
-  void clearTotal() => $_clearField(2);
+  void clearTotal() => clearField(2);
 }
 
 class AuditLog extends $pb.GeneratedMessage {
@@ -2560,99 +2359,102 @@ class AuditLog extends $pb.GeneratedMessage {
     $core.String? status,
     $1.Timestamp? createdAt,
   }) {
-    final result = create();
-    if (id != null) result.id = id;
-    if (action != null) result.action = action;
-    if (serviceType != null) result.serviceType = serviceType;
-    if (status != null) result.status = status;
-    if (createdAt != null) result.createdAt = createdAt;
-    return result;
+    final $result = create();
+    if (id != null) {
+      $result.id = id;
+    }
+    if (action != null) {
+      $result.action = action;
+    }
+    if (serviceType != null) {
+      $result.serviceType = serviceType;
+    }
+    if (status != null) {
+      $result.status = status;
+    }
+    if (createdAt != null) {
+      $result.createdAt = createdAt;
+    }
+    return $result;
   }
+  AuditLog._() : super();
+  factory AuditLog.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory AuditLog.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  AuditLog._();
-
-  factory AuditLog.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory AuditLog.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'AuditLog',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AuditLog', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'id')
     ..aOS(2, _omitFieldNames ? '' : 'action')
     ..aOS(3, _omitFieldNames ? '' : 'serviceType')
     ..aOS(4, _omitFieldNames ? '' : 'status')
-    ..aOM<$1.Timestamp>(5, _omitFieldNames ? '' : 'createdAt',
-        subBuilder: $1.Timestamp.create)
-    ..hasRequiredFields = false;
+    ..aOM<$1.Timestamp>(5, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
 
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
   AuditLog clone() => AuditLog()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  AuditLog copyWith(void Function(AuditLog) updates) =>
-      super.copyWith((message) => updates(message as AuditLog)) as AuditLog;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  AuditLog copyWith(void Function(AuditLog) updates) => super.copyWith((message) => updates(message as AuditLog)) as AuditLog;
 
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static AuditLog create() => AuditLog._();
-  @$core.override
   AuditLog createEmptyInstance() => create();
   static $pb.PbList<AuditLog> createRepeated() => $pb.PbList<AuditLog>();
   @$core.pragma('dart2js:noInline')
-  static AuditLog getDefault() =>
-      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AuditLog>(create);
+  static AuditLog getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AuditLog>(create);
   static AuditLog? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get id => $_getSZ(0);
   @$pb.TagNumber(1)
-  set id($core.String value) => $_setString(0, value);
+  set id($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearId() => $_clearField(1);
+  void clearId() => clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get action => $_getSZ(1);
   @$pb.TagNumber(2)
-  set action($core.String value) => $_setString(1, value);
+  set action($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(2)
   $core.bool hasAction() => $_has(1);
   @$pb.TagNumber(2)
-  void clearAction() => $_clearField(2);
+  void clearAction() => clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get serviceType => $_getSZ(2);
   @$pb.TagNumber(3)
-  set serviceType($core.String value) => $_setString(2, value);
+  set serviceType($core.String v) { $_setString(2, v); }
   @$pb.TagNumber(3)
   $core.bool hasServiceType() => $_has(2);
   @$pb.TagNumber(3)
-  void clearServiceType() => $_clearField(3);
+  void clearServiceType() => clearField(3);
 
   @$pb.TagNumber(4)
   $core.String get status => $_getSZ(3);
   @$pb.TagNumber(4)
-  set status($core.String value) => $_setString(3, value);
+  set status($core.String v) { $_setString(3, v); }
   @$pb.TagNumber(4)
   $core.bool hasStatus() => $_has(3);
   @$pb.TagNumber(4)
-  void clearStatus() => $_clearField(4);
+  void clearStatus() => clearField(4);
 
   @$pb.TagNumber(5)
   $1.Timestamp get createdAt => $_getN(4);
   @$pb.TagNumber(5)
-  set createdAt($1.Timestamp value) => $_setField(5, value);
+  set createdAt($1.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasCreatedAt() => $_has(4);
   @$pb.TagNumber(5)
-  void clearCreatedAt() => $_clearField(5);
+  void clearCreatedAt() => clearField(5);
   @$pb.TagNumber(5)
   $1.Timestamp ensureCreatedAt() => $_ensure(4);
 }
@@ -2667,131 +2469,134 @@ class WhatsAppUser extends $pb.GeneratedMessage {
     $1.Timestamp? linkedAt,
     $1.Timestamp? lastActiveAt,
   }) {
-    final result = create();
-    if (id != null) result.id = id;
-    if (userId != null) result.userId = userId;
-    if (phoneNumber != null) result.phoneNumber = phoneNumber;
-    if (whatsappId != null) result.whatsappId = whatsappId;
-    if (linkStatus != null) result.linkStatus = linkStatus;
-    if (linkedAt != null) result.linkedAt = linkedAt;
-    if (lastActiveAt != null) result.lastActiveAt = lastActiveAt;
-    return result;
+    final $result = create();
+    if (id != null) {
+      $result.id = id;
+    }
+    if (userId != null) {
+      $result.userId = userId;
+    }
+    if (phoneNumber != null) {
+      $result.phoneNumber = phoneNumber;
+    }
+    if (whatsappId != null) {
+      $result.whatsappId = whatsappId;
+    }
+    if (linkStatus != null) {
+      $result.linkStatus = linkStatus;
+    }
+    if (linkedAt != null) {
+      $result.linkedAt = linkedAt;
+    }
+    if (lastActiveAt != null) {
+      $result.lastActiveAt = lastActiveAt;
+    }
+    return $result;
   }
+  WhatsAppUser._() : super();
+  factory WhatsAppUser.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory WhatsAppUser.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  WhatsAppUser._();
-
-  factory WhatsAppUser.fromBuffer($core.List<$core.int> data,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(data, registry);
-  factory WhatsAppUser.fromJson($core.String json,
-          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
-      _omitMessageNames ? '' : 'WhatsAppUser',
-      package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'),
-      createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'WhatsAppUser', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'id')
     ..aOS(2, _omitFieldNames ? '' : 'userId')
     ..aOS(3, _omitFieldNames ? '' : 'phoneNumber')
     ..aOS(4, _omitFieldNames ? '' : 'whatsappId')
     ..aOS(5, _omitFieldNames ? '' : 'linkStatus')
-    ..aOM<$1.Timestamp>(6, _omitFieldNames ? '' : 'linkedAt',
-        subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(7, _omitFieldNames ? '' : 'lastActiveAt',
-        subBuilder: $1.Timestamp.create)
-    ..hasRequiredFields = false;
+    ..aOM<$1.Timestamp>(6, _omitFieldNames ? '' : 'linkedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(7, _omitFieldNames ? '' : 'lastActiveAt', subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
 
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
   WhatsAppUser clone() => WhatsAppUser()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  WhatsAppUser copyWith(void Function(WhatsAppUser) updates) =>
-      super.copyWith((message) => updates(message as WhatsAppUser))
-          as WhatsAppUser;
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  WhatsAppUser copyWith(void Function(WhatsAppUser) updates) => super.copyWith((message) => updates(message as WhatsAppUser)) as WhatsAppUser;
 
-  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static WhatsAppUser create() => WhatsAppUser._();
-  @$core.override
   WhatsAppUser createEmptyInstance() => create();
-  static $pb.PbList<WhatsAppUser> createRepeated() =>
-      $pb.PbList<WhatsAppUser>();
+  static $pb.PbList<WhatsAppUser> createRepeated() => $pb.PbList<WhatsAppUser>();
   @$core.pragma('dart2js:noInline')
-  static WhatsAppUser getDefault() => _defaultInstance ??=
-      $pb.GeneratedMessage.$_defaultFor<WhatsAppUser>(create);
+  static WhatsAppUser getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<WhatsAppUser>(create);
   static WhatsAppUser? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get id => $_getSZ(0);
   @$pb.TagNumber(1)
-  set id($core.String value) => $_setString(0, value);
+  set id($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearId() => $_clearField(1);
+  void clearId() => clearField(1);
 
   @$pb.TagNumber(2)
   $core.String get userId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set userId($core.String value) => $_setString(1, value);
+  set userId($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(2)
   $core.bool hasUserId() => $_has(1);
   @$pb.TagNumber(2)
-  void clearUserId() => $_clearField(2);
+  void clearUserId() => clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get phoneNumber => $_getSZ(2);
   @$pb.TagNumber(3)
-  set phoneNumber($core.String value) => $_setString(2, value);
+  set phoneNumber($core.String v) { $_setString(2, v); }
   @$pb.TagNumber(3)
   $core.bool hasPhoneNumber() => $_has(2);
   @$pb.TagNumber(3)
-  void clearPhoneNumber() => $_clearField(3);
+  void clearPhoneNumber() => clearField(3);
 
   @$pb.TagNumber(4)
   $core.String get whatsappId => $_getSZ(3);
   @$pb.TagNumber(4)
-  set whatsappId($core.String value) => $_setString(3, value);
+  set whatsappId($core.String v) { $_setString(3, v); }
   @$pb.TagNumber(4)
   $core.bool hasWhatsappId() => $_has(3);
   @$pb.TagNumber(4)
-  void clearWhatsappId() => $_clearField(4);
+  void clearWhatsappId() => clearField(4);
 
   @$pb.TagNumber(5)
   $core.String get linkStatus => $_getSZ(4);
   @$pb.TagNumber(5)
-  set linkStatus($core.String value) => $_setString(4, value);
+  set linkStatus($core.String v) { $_setString(4, v); }
   @$pb.TagNumber(5)
   $core.bool hasLinkStatus() => $_has(4);
   @$pb.TagNumber(5)
-  void clearLinkStatus() => $_clearField(5);
+  void clearLinkStatus() => clearField(5);
 
   @$pb.TagNumber(6)
   $1.Timestamp get linkedAt => $_getN(5);
   @$pb.TagNumber(6)
-  set linkedAt($1.Timestamp value) => $_setField(6, value);
+  set linkedAt($1.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasLinkedAt() => $_has(5);
   @$pb.TagNumber(6)
-  void clearLinkedAt() => $_clearField(6);
+  void clearLinkedAt() => clearField(6);
   @$pb.TagNumber(6)
   $1.Timestamp ensureLinkedAt() => $_ensure(5);
 
   @$pb.TagNumber(7)
   $1.Timestamp get lastActiveAt => $_getN(6);
   @$pb.TagNumber(7)
-  set lastActiveAt($1.Timestamp value) => $_setField(7, value);
+  set lastActiveAt($1.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasLastActiveAt() => $_has(6);
   @$pb.TagNumber(7)
-  void clearLastActiveAt() => $_clearField(7);
+  void clearLastActiveAt() => clearField(7);
   @$pb.TagNumber(7)
   $1.Timestamp ensureLastActiveAt() => $_ensure(6);
 }
 
-const $core.bool _omitFieldNames =
-    $core.bool.fromEnvironment('protobuf.omit_field_names');
-const $core.bool _omitMessageNames =
-    $core.bool.fromEnvironment('protobuf.omit_message_names');
+
+const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
+const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');

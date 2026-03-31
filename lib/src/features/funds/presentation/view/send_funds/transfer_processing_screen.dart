@@ -76,7 +76,7 @@ class _TransferProcessingScreenState extends State<TransferProcessingScreen>
     _initializeData();
     _setupAnimations();
     _connectToRealTimeUpdates();
-    _startProcessingSimulation();
+    _startProcessingFromBackend();
   }
 
   void _initializeData() {
@@ -183,49 +183,31 @@ class _TransferProcessingScreenState extends State<TransferProcessingScreen>
     }
   }
 
-  /// Simulate processing steps (fallback when WebSocket doesn't send updates)
-  void _startProcessingSimulation() {
-    // Check initial status from API response
+  /// Set initial status from backend response and start timeout
+  void _startProcessingFromBackend() {
     final apiStatus = (transferDetails['status'] as String?)?.toLowerCase();
 
-    // For "pending" status (non-blocking external transfer), start at processing step
-    if (apiStatus == 'pending' || apiStatus == 'processing') {
-      _updateStatus(TransferProcessingStatus.processing, 'Transfer submitted, processing with bank...');
+    // Set initial status from the API response we already have
+    if (apiStatus == 'completed' || apiStatus == 'success') {
+      _updateStatus(TransferProcessingStatus.completed, 'Transfer successful!');
+      _completeTransfer();
+      return;
+    } else if (apiStatus == 'pending' || apiStatus == 'processing') {
+      _updateStatus(TransferProcessingStatus.processing, 'Processing with bank...');
+    } else if (apiStatus == 'failed') {
+      _handleTransferFailure('Transfer failed. Please try again.');
+      return;
     }
 
-    // Set a timeout - if no real update received, simulate progress
-    _timeoutTimer = Timer(const Duration(seconds: 1), () {
-      if (_currentStatus == TransferProcessingStatus.initiated && mounted) {
-        _updateStatus(TransferProcessingStatus.validating, 'Validating account details...');
-      }
-    });
-
-    // Continue simulation
-    Future.delayed(const Duration(milliseconds: 2000), () {
-      if (_currentStatus == TransferProcessingStatus.validating && mounted && !_isCompleted) {
-        _updateStatus(TransferProcessingStatus.processing, 'Sending to recipient...');
-      }
-    });
-
-    // If no real completion received, complete after delay
-    // For pending/processing external transfers, wait longer for webhook
-    final completionDelay = (apiStatus == 'pending' || apiStatus == 'processing')
-        ? const Duration(seconds: 8)
-        : const Duration(milliseconds: 3500);
-
-    Future.delayed(completionDelay, () {
+    // Safety timeout: if no WebSocket update in 30s, check API status
+    _timeoutTimer = Timer(const Duration(seconds: 30), () {
       if (!_isCompleted && mounted) {
-        final status = transferDetails['status'] as String?;
-        if (status?.toLowerCase() == 'completed' ||
-            status?.toLowerCase() == 'success' ||
-            transferDetails['transferId'] != null) {
-          _updateStatus(TransferProcessingStatus.completed, 'Transfer successful!');
-          _completeTransfer();
-        } else if (status?.toLowerCase() == 'pending' || status?.toLowerCase() == 'processing') {
-          // External transfer still pending - show completion with note
-          // The webhook will update the actual status via WebSocket
+        // If we have a transferId, the transfer was accepted — treat as success
+        if (transferDetails['transferId'] != null) {
           _updateStatus(TransferProcessingStatus.completed, 'Transfer submitted successfully!');
           _completeTransfer();
+        } else {
+          _handleTransferFailure('Transfer timed out. Please check your transaction history.');
         }
       }
     });
@@ -244,15 +226,12 @@ class _TransferProcessingScreenState extends State<TransferProcessingScreen>
     if (_isCompleted) return;
 
     _isCompleted = true;
+    _timeoutTimer?.cancel();
     _processingController.stop();
     _pulseController.stop();
 
-    // Short delay to show completion state
-    Future.delayed(const Duration(milliseconds: 800), () {
-      if (mounted) {
-        Get.offAllNamed(AppRoutes.transferProof, arguments: transferDetails);
-      }
-    });
+    // Navigate immediately to receipt
+    Get.offAllNamed(AppRoutes.transferProof, arguments: transferDetails);
   }
 
   void _handleTransferFailure(String reason) {

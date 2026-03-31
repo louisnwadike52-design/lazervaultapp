@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/debouncer.dart';
+import 'package:lazervault/core/utils/user_search_query.dart';
 import 'package:lazervault/src/features/tag_pay/presentation/cubit/tag_pay_cubit.dart';
 import 'package:lazervault/src/features/tag_pay/presentation/cubit/tag_pay_state.dart';
 import 'package:lazervault/src/features/tag_pay/domain/entities/tag_pay_entity.dart';
@@ -877,7 +878,7 @@ class _SearchUsersSheetState extends State<_SearchUsersSheet> {
   }
 
   void _onSearch(String query) {
-    final cleanQuery = query.replaceAll('@', '').replaceAll('\$', '');
+    final cleanQuery = normalizeLazerVaultUserSearchQuery(query);
     if (cleanQuery.length < 2) return;
     _debouncer.run(() {
       if (mounted) {

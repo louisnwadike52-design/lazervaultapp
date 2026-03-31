@@ -1,14 +1,13 @@
-// This is a generated file - do not edit.
 //
-// Generated from giftcards.proto.
-
-// @dart = 3.3
+//  Generated code. Do not modify.
+//  source: giftcards.proto
+//
+// @dart = 2.12
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: curly_braces_in_flow_control_structures
-// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
-// ignore_for_file: non_constant_identifier_names, unused_import
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -34,49 +33,19 @@ const GiftCard$json = {
     {'1': 'metadata', '3': 18, '4': 1, '5': 9, '10': 'metadata'},
     {'1': 'created_at', '3': 19, '4': 1, '5': 9, '10': 'createdAt'},
     {'1': 'updated_at', '3': 20, '4': 1, '5': 9, '10': 'updatedAt'},
-    {
-      '1': 'provider_transaction_id',
-      '3': 21,
-      '4': 1,
-      '5': 9,
-      '10': 'providerTransactionId'
-    },
+    {'1': 'provider_transaction_id', '3': 21, '4': 1, '5': 9, '10': 'providerTransactionId'},
     {'1': 'redemption_code', '3': 22, '4': 1, '5': 9, '10': 'redemptionCode'},
     {'1': 'redemption_pin', '3': 23, '4': 1, '5': 9, '10': 'redemptionPin'},
     {'1': 'country_code', '3': 24, '4': 1, '5': 9, '10': 'countryCode'},
     {'1': 'logo_url', '3': 25, '4': 1, '5': 9, '10': 'logoUrl'},
-    {
-      '1': 'provider_product_id',
-      '3': 26,
-      '4': 1,
-      '5': 3,
-      '10': 'providerProductId'
-    },
-    {
-      '1': 'discount_percentage',
-      '3': 27,
-      '4': 1,
-      '5': 1,
-      '10': 'discountPercentage'
-    },
+    {'1': 'provider_product_id', '3': 26, '4': 1, '5': 3, '10': 'providerProductId'},
+    {'1': 'discount_percentage', '3': 27, '4': 1, '5': 1, '10': 'discountPercentage'},
     {'1': 'sender_amount', '3': 28, '4': 1, '5': 1, '10': 'senderAmount'},
     {'1': 'sender_currency', '3': 29, '4': 1, '5': 9, '10': 'senderCurrency'},
-    {
-      '1': 'transferred_from_id',
-      '3': 30,
-      '4': 1,
-      '5': 9,
-      '10': 'transferredFromId'
-    },
+    {'1': 'transferred_from_id', '3': 30, '4': 1, '5': 9, '10': 'transferredFromId'},
     {'1': 'sender_user_id', '3': 31, '4': 1, '5': 9, '10': 'senderUserId'},
     {'1': 'transfer_type', '3': 32, '4': 1, '5': 9, '10': 'transferType'},
-    {
-      '1': 'redemption_instructions',
-      '3': 33,
-      '4': 1,
-      '5': 9,
-      '10': 'redemptionInstructions'
-    },
+    {'1': 'redemption_instructions', '3': 33, '4': 1, '5': 9, '10': 'redemptionInstructions'},
   ],
   '9': [
     {'1': 6, '2': 7},
@@ -122,83 +91,21 @@ const GiftCardBrand$json = {
     {'1': 'min_amount', '3': 7, '4': 1, '5': 1, '10': 'minAmount'},
     {'1': 'max_amount', '3': 8, '4': 1, '5': 1, '10': 'maxAmount'},
     {'1': 'is_active', '3': 9, '4': 1, '5': 8, '10': 'isActive'},
-    {
-      '1': 'terms_and_conditions',
-      '3': 10,
-      '4': 1,
-      '5': 9,
-      '10': 'termsAndConditions'
-    },
+    {'1': 'terms_and_conditions', '3': 10, '4': 1, '5': 9, '10': 'termsAndConditions'},
     {'1': 'provider_name', '3': 17, '4': 1, '5': 9, '10': 'providerName'},
     {'1': 'product_id', '3': 11, '4': 1, '5': 3, '10': 'productId'},
     {'1': 'country_code', '3': 12, '4': 1, '5': 9, '10': 'countryCode'},
-    {
-      '1': 'fixed_denominations',
-      '3': 13,
-      '4': 3,
-      '5': 11,
-      '6': '.giftcards.GiftCardDenomination',
-      '10': 'fixedDenominations'
-    },
-    {
-      '1': 'discount_percentage',
-      '3': 14,
-      '4': 1,
-      '5': 1,
-      '10': 'discountPercentage'
-    },
+    {'1': 'fixed_denominations', '3': 13, '4': 3, '5': 11, '6': '.giftcards.GiftCardDenomination', '10': 'fixedDenominations'},
+    {'1': 'discount_percentage', '3': 14, '4': 1, '5': 1, '10': 'discountPercentage'},
     {'1': 'currency_code', '3': 15, '4': 1, '5': 9, '10': 'currencyCode'},
-    {
-      '1': 'redemption_instructions',
-      '3': 16,
-      '4': 1,
-      '5': 9,
-      '10': 'redemptionInstructions'
-    },
-    {
-      '1': 'sender_currency_code',
-      '3': 18,
-      '4': 1,
-      '5': 9,
-      '10': 'senderCurrencyCode'
-    },
-    {
-      '1': 'sender_denominations',
-      '3': 19,
-      '4': 3,
-      '5': 1,
-      '10': 'senderDenominations'
-    },
-    {
-      '1': 'min_sender_amount',
-      '3': 20,
-      '4': 1,
-      '5': 1,
-      '10': 'minSenderAmount'
-    },
-    {
-      '1': 'max_sender_amount',
-      '3': 21,
-      '4': 1,
-      '5': 1,
-      '10': 'maxSenderAmount'
-    },
+    {'1': 'redemption_instructions', '3': 16, '4': 1, '5': 9, '10': 'redemptionInstructions'},
+    {'1': 'sender_currency_code', '3': 18, '4': 1, '5': 9, '10': 'senderCurrencyCode'},
+    {'1': 'sender_denominations', '3': 19, '4': 3, '5': 1, '10': 'senderDenominations'},
+    {'1': 'min_sender_amount', '3': 20, '4': 1, '5': 1, '10': 'minSenderAmount'},
+    {'1': 'max_sender_amount', '3': 21, '4': 1, '5': 1, '10': 'maxSenderAmount'},
     {'1': 'sender_fee', '3': 22, '4': 1, '5': 1, '10': 'senderFee'},
-    {
-      '1': 'sender_fee_percentage',
-      '3': 23,
-      '4': 1,
-      '5': 1,
-      '10': 'senderFeePercentage'
-    },
-    {
-      '1': 'fixed_sender_denominations',
-      '3': 24,
-      '4': 3,
-      '5': 11,
-      '6': '.giftcards.GiftCardDenomination',
-      '10': 'fixedSenderDenominations'
-    },
+    {'1': 'sender_fee_percentage', '3': 23, '4': 1, '5': 1, '10': 'senderFeePercentage'},
+    {'1': 'fixed_sender_denominations', '3': 24, '4': 3, '5': 11, '6': '.giftcards.GiftCardDenomination', '10': 'fixedSenderDenominations'},
   ],
 };
 
@@ -251,13 +158,7 @@ const GiftCardTransaction$json = {
     {'1': 'balance_after', '3': 7, '4': 1, '5': 1, '10': 'balanceAfter'},
     {'1': 'description', '3': 8, '4': 1, '5': 9, '10': 'description'},
     {'1': 'created_at', '3': 9, '4': 1, '5': 9, '10': 'createdAt'},
-    {
-      '1': 'provider_transaction_id',
-      '3': 10,
-      '4': 1,
-      '5': 9,
-      '10': 'providerTransactionId'
-    },
+    {'1': 'provider_transaction_id', '3': 10, '4': 1, '5': 9, '10': 'providerTransactionId'},
     {'1': 'reference', '3': 11, '4': 1, '5': 9, '10': 'reference'},
   ],
 };
@@ -284,13 +185,7 @@ const BuyGiftCardRequest$json = {
     {'1': 'recipient_name', '3': 5, '4': 1, '5': 9, '10': 'recipientName'},
     {'1': 'gift_message', '3': 6, '4': 1, '5': 9, '10': 'giftMessage'},
     {'1': 'transaction_id', '3': 7, '4': 1, '5': 9, '10': 'transactionId'},
-    {
-      '1': 'verification_token',
-      '3': 8,
-      '4': 1,
-      '5': 9,
-      '10': 'verificationToken'
-    },
+    {'1': 'verification_token', '3': 8, '4': 1, '5': 9, '10': 'verificationToken'},
     {'1': 'provider_name', '3': 15, '4': 1, '5': 9, '10': 'providerName'},
     {'1': 'idempotency_key', '3': 9, '4': 1, '5': 9, '10': 'idempotencyKey'},
     {'1': 'sender_name', '3': 10, '4': 1, '5': 9, '10': 'senderName'},
@@ -322,33 +217,14 @@ final $typed_data.Uint8List buyGiftCardRequestDescriptor = $convert.base64Decode
 const BuyGiftCardResponse$json = {
   '1': 'BuyGiftCardResponse',
   '2': [
-    {
-      '1': 'gift_card',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.giftcards.GiftCard',
-      '10': 'giftCard'
-    },
+    {'1': 'gift_card', '3': 1, '4': 1, '5': 11, '6': '.giftcards.GiftCard', '10': 'giftCard'},
     {'1': 'new_balance', '3': 2, '4': 1, '5': 1, '10': 'newBalance'},
     {'1': 'message', '3': 3, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'provider_transaction_id',
-      '3': 4,
-      '4': 1,
-      '5': 9,
-      '10': 'providerTransactionId'
-    },
+    {'1': 'provider_transaction_id', '3': 4, '4': 1, '5': 9, '10': 'providerTransactionId'},
     {'1': 'sender_amount', '3': 5, '4': 1, '5': 1, '10': 'senderAmount'},
     {'1': 'sender_currency', '3': 6, '4': 1, '5': 9, '10': 'senderCurrency'},
     {'1': 'recipient_amount', '3': 7, '4': 1, '5': 1, '10': 'recipientAmount'},
-    {
-      '1': 'recipient_currency',
-      '3': 8,
-      '4': 1,
-      '5': 9,
-      '10': 'recipientCurrency'
-    },
+    {'1': 'recipient_currency', '3': 8, '4': 1, '5': 9, '10': 'recipientCurrency'},
   ],
 };
 
@@ -384,13 +260,7 @@ const GetRedeemCodeResponse$json = {
     {'1': 'redemption_code', '3': 2, '4': 1, '5': 9, '10': 'redemptionCode'},
     {'1': 'redemption_pin', '3': 3, '4': 1, '5': 9, '10': 'redemptionPin'},
     {'1': 'brand_name', '3': 4, '4': 1, '5': 9, '10': 'brandName'},
-    {
-      '1': 'redemption_instructions',
-      '3': 5,
-      '4': 1,
-      '5': 9,
-      '10': 'redemptionInstructions'
-    },
+    {'1': 'redemption_instructions', '3': 5, '4': 1, '5': 9, '10': 'redemptionInstructions'},
     {'1': 'status', '3': 6, '4': 1, '5': 9, '10': 'status'},
     {'1': 'message', '3': 7, '4': 1, '5': 9, '10': 'message'},
   ],
@@ -426,14 +296,7 @@ final $typed_data.Uint8List getGiftCardsRequestDescriptor = $convert.base64Decod
 const GetGiftCardsResponse$json = {
   '1': 'GetGiftCardsResponse',
   '2': [
-    {
-      '1': 'gift_cards',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.giftcards.GiftCard',
-      '10': 'giftCards'
-    },
+    {'1': 'gift_cards', '3': 1, '4': 3, '5': 11, '6': '.giftcards.GiftCard', '10': 'giftCards'},
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
     {'1': 'total_value', '3': 3, '4': 1, '5': 1, '10': 'totalValue'},
   ],
@@ -461,14 +324,7 @@ final $typed_data.Uint8List getGiftCardRequestDescriptor = $convert.base64Decode
 const GetGiftCardResponse$json = {
   '1': 'GetGiftCardResponse',
   '2': [
-    {
-      '1': 'gift_card',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.giftcards.GiftCard',
-      '10': 'giftCard'
-    },
+    {'1': 'gift_card', '3': 1, '4': 1, '5': 11, '6': '.giftcards.GiftCard', '10': 'giftCard'},
   ],
 };
 
@@ -486,13 +342,7 @@ const TransferGiftCardRequest$json = {
     {'1': 'recipient_name', '3': 3, '4': 1, '5': 9, '10': 'recipientName'},
     {'1': 'message', '3': 4, '4': 1, '5': 9, '10': 'message'},
     {'1': 'transaction_id', '3': 5, '4': 1, '5': 9, '10': 'transactionId'},
-    {
-      '1': 'verification_token',
-      '3': 6,
-      '4': 1,
-      '5': 9,
-      '10': 'verificationToken'
-    },
+    {'1': 'verification_token', '3': 6, '4': 1, '5': 9, '10': 'verificationToken'},
     {'1': 'recipient_user_id', '3': 7, '4': 1, '5': 9, '10': 'recipientUserId'},
     {'1': 'transfer_type', '3': 8, '4': 1, '5': 9, '10': 'transferType'},
   ],
@@ -511,23 +361,9 @@ final $typed_data.Uint8List transferGiftCardRequestDescriptor = $convert.base64D
 const TransferGiftCardResponse$json = {
   '1': 'TransferGiftCardResponse',
   '2': [
-    {
-      '1': 'gift_card',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.giftcards.GiftCard',
-      '10': 'giftCard'
-    },
+    {'1': 'gift_card', '3': 1, '4': 1, '5': 11, '6': '.giftcards.GiftCard', '10': 'giftCard'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'recipient_gift_card',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.giftcards.GiftCard',
-      '10': 'recipientGiftCard'
-    },
+    {'1': 'recipient_gift_card', '3': 3, '4': 1, '5': 11, '6': '.giftcards.GiftCard', '10': 'recipientGiftCard'},
   ],
 };
 
@@ -562,14 +398,7 @@ final $typed_data.Uint8List getGiftCardBrandsRequestDescriptor = $convert.base64
 const GetGiftCardBrandsResponse$json = {
   '1': 'GetGiftCardBrandsResponse',
   '2': [
-    {
-      '1': 'brands',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.giftcards.GiftCardBrand',
-      '10': 'brands'
-    },
+    {'1': 'brands', '3': 1, '4': 3, '5': 11, '6': '.giftcards.GiftCardBrand', '10': 'brands'},
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
     {'1': 'total_pages', '3': 3, '4': 1, '5': 5, '10': 'totalPages'},
     {'1': 'current_page', '3': 4, '4': 1, '5': 5, '10': 'currentPage'},
@@ -610,24 +439,16 @@ final $typed_data.Uint8List getGiftCardHistoryRequestDescriptor = $convert.base6
 const GetGiftCardHistoryResponse$json = {
   '1': 'GetGiftCardHistoryResponse',
   '2': [
-    {
-      '1': 'transactions',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.giftcards.GiftCardTransaction',
-      '10': 'transactions'
-    },
+    {'1': 'transactions', '3': 1, '4': 3, '5': 11, '6': '.giftcards.GiftCardTransaction', '10': 'transactions'},
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
   ],
 };
 
 /// Descriptor for `GetGiftCardHistoryResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getGiftCardHistoryResponseDescriptor =
-    $convert.base64Decode(
-        'ChpHZXRHaWZ0Q2FyZEhpc3RvcnlSZXNwb25zZRJCCgx0cmFuc2FjdGlvbnMYASADKAsyHi5naW'
-        'Z0Y2FyZHMuR2lmdENhcmRUcmFuc2FjdGlvblIMdHJhbnNhY3Rpb25zEhQKBXRvdGFsGAIgASgF'
-        'UgV0b3RhbA==');
+final $typed_data.Uint8List getGiftCardHistoryResponseDescriptor = $convert.base64Decode(
+    'ChpHZXRHaWZ0Q2FyZEhpc3RvcnlSZXNwb25zZRJCCgx0cmFuc2FjdGlvbnMYASADKAsyHi5naW'
+    'Z0Y2FyZHMuR2lmdENhcmRUcmFuc2FjdGlvblIMdHJhbnNhY3Rpb25zEhQKBXRvdGFsGAIgASgF'
+    'UgV0b3RhbA==');
 
 @$core.Deprecated('Use sellableCardDescriptor instead')
 const SellableCard$json = {
@@ -695,58 +516,29 @@ const GiftCardSale$json = {
     {'1': 'submitted_at', '3': 15, '4': 1, '5': 9, '10': 'submittedAt'},
     {'1': 'reviewed_at', '3': 16, '4': 1, '5': 9, '10': 'reviewedAt'},
     {'1': 'paid_at', '3': 17, '4': 1, '5': 9, '10': 'paidAt'},
-    {'1': 'created_at', '3': 18, '4': 1, '5': 9, '10': 'createdAt'},
-    {'1': 'updated_at', '3': 19, '4': 1, '5': 9, '10': 'updatedAt'},
-    {'1': 'image_urls', '3': 20, '4': 3, '5': 9, '10': 'imageUrls'},
-    {'1': 'ocr_brand', '3': 21, '4': 1, '5': 9, '10': 'ocrBrand'},
-    {'1': 'ocr_card_number', '3': 22, '4': 1, '5': 9, '10': 'ocrCardNumber'},
-    {'1': 'ocr_pin', '3': 23, '4': 1, '5': 9, '10': 'ocrPin'},
-    {'1': 'ocr_denomination', '3': 24, '4': 1, '5': 1, '10': 'ocrDenomination'},
-    {'1': 'ocr_currency', '3': 25, '4': 1, '5': 9, '10': 'ocrCurrency'},
-    {
-      '1': 'admin_reviewer_id',
-      '3': 26,
-      '4': 1,
-      '5': 9,
-      '10': 'adminReviewerId'
-    },
-    {'1': 'rejection_reason', '3': 27, '4': 1, '5': 9, '10': 'rejectionReason'},
-    {'1': 'admin_notes', '3': 28, '4': 1, '5': 9, '10': 'adminNotes'},
-    {'1': 'card_pin', '3': 29, '4': 1, '5': 9, '10': 'cardPin'},
-    {
-      '1': 'exit_rate_percent',
-      '3': 30,
-      '4': 1,
-      '5': 1,
-      '10': 'exitRatePercent'
-    },
-    {
-      '1': 'base_margin_percent',
-      '3': 31,
-      '4': 1,
-      '5': 1,
-      '10': 'baseMarginPercent'
-    },
-    {
-      '1': 'risk_buffer_percent',
-      '3': 32,
-      '4': 1,
-      '5': 1,
-      '10': 'riskBufferPercent'
-    },
-    {
-      '1': 'commission_amount',
-      '3': 33,
-      '4': 1,
-      '5': 1,
-      '10': 'commissionAmount'
-    },
-    {'1': 'risk_score', '3': 34, '4': 1, '5': 5, '10': 'riskScore'},
-    {'1': 'risk_level', '3': 35, '4': 1, '5': 9, '10': 'riskLevel'},
-    {'1': 'risk_flags', '3': 36, '4': 3, '5': 9, '10': 'riskFlags'},
-    {'1': 'risk_action', '3': 37, '4': 1, '5': 9, '10': 'riskAction'},
-    {'1': 'card_country', '3': 38, '4': 1, '5': 9, '10': 'cardCountry'},
-    {'1': 'card_format', '3': 39, '4': 1, '5': 9, '10': 'cardFormat'},
+    {'1': 'payout_error', '3': 18, '4': 1, '5': 9, '10': 'payoutError'},
+    {'1': 'created_at', '3': 19, '4': 1, '5': 9, '10': 'createdAt'},
+    {'1': 'updated_at', '3': 20, '4': 1, '5': 9, '10': 'updatedAt'},
+    {'1': 'image_urls', '3': 21, '4': 3, '5': 9, '10': 'imageUrls'},
+    {'1': 'ocr_brand', '3': 22, '4': 1, '5': 9, '10': 'ocrBrand'},
+    {'1': 'ocr_card_number', '3': 23, '4': 1, '5': 9, '10': 'ocrCardNumber'},
+    {'1': 'ocr_pin', '3': 24, '4': 1, '5': 9, '10': 'ocrPin'},
+    {'1': 'ocr_denomination', '3': 25, '4': 1, '5': 1, '10': 'ocrDenomination'},
+    {'1': 'ocr_currency', '3': 26, '4': 1, '5': 9, '10': 'ocrCurrency'},
+    {'1': 'admin_reviewer_id', '3': 27, '4': 1, '5': 9, '10': 'adminReviewerId'},
+    {'1': 'rejection_reason', '3': 28, '4': 1, '5': 9, '10': 'rejectionReason'},
+    {'1': 'admin_notes', '3': 29, '4': 1, '5': 9, '10': 'adminNotes'},
+    {'1': 'card_pin', '3': 30, '4': 1, '5': 9, '10': 'cardPin'},
+    {'1': 'exit_rate_percent', '3': 31, '4': 1, '5': 1, '10': 'exitRatePercent'},
+    {'1': 'base_margin_percent', '3': 32, '4': 1, '5': 1, '10': 'baseMarginPercent'},
+    {'1': 'risk_buffer_percent', '3': 33, '4': 1, '5': 1, '10': 'riskBufferPercent'},
+    {'1': 'commission_amount', '3': 34, '4': 1, '5': 1, '10': 'commissionAmount'},
+    {'1': 'risk_score', '3': 35, '4': 1, '5': 5, '10': 'riskScore'},
+    {'1': 'risk_level', '3': 36, '4': 1, '5': 9, '10': 'riskLevel'},
+    {'1': 'risk_flags', '3': 37, '4': 3, '5': 9, '10': 'riskFlags'},
+    {'1': 'risk_action', '3': 38, '4': 1, '5': 9, '10': 'riskAction'},
+    {'1': 'card_country', '3': 39, '4': 1, '5': 9, '10': 'cardCountry'},
+    {'1': 'card_format', '3': 40, '4': 1, '5': 9, '10': 'cardFormat'},
   ],
 };
 
@@ -762,21 +554,21 @@ final $typed_data.Uint8List giftCardSaleDescriptor = $convert.base64Decode(
     'RlclNhbGVJZBIjCg1wcm92aWRlcl9uYW1lGA0gASgJUgxwcm92aWRlck5hbWUSHAoJcmVmZXJl'
     'bmNlGA4gASgJUglyZWZlcmVuY2USIQoMc3VibWl0dGVkX2F0GA8gASgJUgtzdWJtaXR0ZWRBdB'
     'IfCgtyZXZpZXdlZF9hdBgQIAEoCVIKcmV2aWV3ZWRBdBIXCgdwYWlkX2F0GBEgASgJUgZwYWlk'
-    'QXQSHQoKY3JlYXRlZF9hdBgSIAEoCVIJY3JlYXRlZEF0Eh0KCnVwZGF0ZWRfYXQYEyABKAlSCX'
-    'VwZGF0ZWRBdBIdCgppbWFnZV91cmxzGBQgAygJUglpbWFnZVVybHMSGwoJb2NyX2JyYW5kGBUg'
-    'ASgJUghvY3JCcmFuZBImCg9vY3JfY2FyZF9udW1iZXIYFiABKAlSDW9jckNhcmROdW1iZXISFw'
-    'oHb2NyX3BpbhgXIAEoCVIGb2NyUGluEikKEG9jcl9kZW5vbWluYXRpb24YGCABKAFSD29jckRl'
-    'bm9taW5hdGlvbhIhCgxvY3JfY3VycmVuY3kYGSABKAlSC29jckN1cnJlbmN5EioKEWFkbWluX3'
-    'Jldmlld2VyX2lkGBogASgJUg9hZG1pblJldmlld2VySWQSKQoQcmVqZWN0aW9uX3JlYXNvbhgb'
-    'IAEoCVIPcmVqZWN0aW9uUmVhc29uEh8KC2FkbWluX25vdGVzGBwgASgJUgphZG1pbk5vdGVzEh'
-    'kKCGNhcmRfcGluGB0gASgJUgdjYXJkUGluEioKEWV4aXRfcmF0ZV9wZXJjZW50GB4gASgBUg9l'
-    'eGl0UmF0ZVBlcmNlbnQSLgoTYmFzZV9tYXJnaW5fcGVyY2VudBgfIAEoAVIRYmFzZU1hcmdpbl'
-    'BlcmNlbnQSLgoTcmlza19idWZmZXJfcGVyY2VudBggIAEoAVIRcmlza0J1ZmZlclBlcmNlbnQS'
-    'KwoRY29tbWlzc2lvbl9hbW91bnQYISABKAFSEGNvbW1pc3Npb25BbW91bnQSHQoKcmlza19zY2'
-    '9yZRgiIAEoBVIJcmlza1Njb3JlEh0KCnJpc2tfbGV2ZWwYIyABKAlSCXJpc2tMZXZlbBIdCgpy'
-    'aXNrX2ZsYWdzGCQgAygJUglyaXNrRmxhZ3MSHwoLcmlza19hY3Rpb24YJSABKAlSCnJpc2tBY3'
-    'Rpb24SIQoMY2FyZF9jb3VudHJ5GCYgASgJUgtjYXJkQ291bnRyeRIfCgtjYXJkX2Zvcm1hdBgn'
-    'IAEoCVIKY2FyZEZvcm1hdA==');
+    'QXQSIQoMcGF5b3V0X2Vycm9yGBIgASgJUgtwYXlvdXRFcnJvchIdCgpjcmVhdGVkX2F0GBMgAS'
+    'gJUgljcmVhdGVkQXQSHQoKdXBkYXRlZF9hdBgUIAEoCVIJdXBkYXRlZEF0Eh0KCmltYWdlX3Vy'
+    'bHMYFSADKAlSCWltYWdlVXJscxIbCglvY3JfYnJhbmQYFiABKAlSCG9jckJyYW5kEiYKD29jcl'
+    '9jYXJkX251bWJlchgXIAEoCVINb2NyQ2FyZE51bWJlchIXCgdvY3JfcGluGBggASgJUgZvY3JQ'
+    'aW4SKQoQb2NyX2Rlbm9taW5hdGlvbhgZIAEoAVIPb2NyRGVub21pbmF0aW9uEiEKDG9jcl9jdX'
+    'JyZW5jeRgaIAEoCVILb2NyQ3VycmVuY3kSKgoRYWRtaW5fcmV2aWV3ZXJfaWQYGyABKAlSD2Fk'
+    'bWluUmV2aWV3ZXJJZBIpChByZWplY3Rpb25fcmVhc29uGBwgASgJUg9yZWplY3Rpb25SZWFzb2'
+    '4SHwoLYWRtaW5fbm90ZXMYHSABKAlSCmFkbWluTm90ZXMSGQoIY2FyZF9waW4YHiABKAlSB2Nh'
+    'cmRQaW4SKgoRZXhpdF9yYXRlX3BlcmNlbnQYHyABKAFSD2V4aXRSYXRlUGVyY2VudBIuChNiYX'
+    'NlX21hcmdpbl9wZXJjZW50GCAgASgBUhFiYXNlTWFyZ2luUGVyY2VudBIuChNyaXNrX2J1ZmZl'
+    'cl9wZXJjZW50GCEgASgBUhFyaXNrQnVmZmVyUGVyY2VudBIrChFjb21taXNzaW9uX2Ftb3VudB'
+    'giIAEoAVIQY29tbWlzc2lvbkFtb3VudBIdCgpyaXNrX3Njb3JlGCMgASgFUglyaXNrU2NvcmUS'
+    'HQoKcmlza19sZXZlbBgkIAEoCVIJcmlza0xldmVsEh0KCnJpc2tfZmxhZ3MYJSADKAlSCXJpc2'
+    'tGbGFncxIfCgtyaXNrX2FjdGlvbhgmIAEoCVIKcmlza0FjdGlvbhIhCgxjYXJkX2NvdW50cnkY'
+    'JyABKAlSC2NhcmRDb3VudHJ5Eh8KC2NhcmRfZm9ybWF0GCggASgJUgpjYXJkRm9ybWF0');
 
 @$core.Deprecated('Use getSellableCardsRequestDescriptor instead')
 const GetSellableCardsRequest$json = {
@@ -787,32 +579,23 @@ const GetSellableCardsRequest$json = {
 };
 
 /// Descriptor for `GetSellableCardsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getSellableCardsRequestDescriptor =
-    $convert.base64Decode(
-        'ChdHZXRTZWxsYWJsZUNhcmRzUmVxdWVzdBIhCgxjb3VudHJ5X2NvZGUYASABKAlSC2NvdW50cn'
-        'lDb2Rl');
+final $typed_data.Uint8List getSellableCardsRequestDescriptor = $convert.base64Decode(
+    'ChdHZXRTZWxsYWJsZUNhcmRzUmVxdWVzdBIhCgxjb3VudHJ5X2NvZGUYASABKAlSC2NvdW50cn'
+    'lDb2Rl');
 
 @$core.Deprecated('Use getSellableCardsResponseDescriptor instead')
 const GetSellableCardsResponse$json = {
   '1': 'GetSellableCardsResponse',
   '2': [
-    {
-      '1': 'cards',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.giftcards.SellableCard',
-      '10': 'cards'
-    },
+    {'1': 'cards', '3': 1, '4': 3, '5': 11, '6': '.giftcards.SellableCard', '10': 'cards'},
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
   ],
 };
 
 /// Descriptor for `GetSellableCardsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getSellableCardsResponseDescriptor =
-    $convert.base64Decode(
-        'ChhHZXRTZWxsYWJsZUNhcmRzUmVzcG9uc2USLQoFY2FyZHMYASADKAsyFy5naWZ0Y2FyZHMuU2'
-        'VsbGFibGVDYXJkUgVjYXJkcxIUCgV0b3RhbBgCIAEoBVIFdG90YWw=');
+final $typed_data.Uint8List getSellableCardsResponseDescriptor = $convert.base64Decode(
+    'ChhHZXRTZWxsYWJsZUNhcmRzUmVzcG9uc2USLQoFY2FyZHMYASADKAsyFy5naWZ0Y2FyZHMuU2'
+    'VsbGFibGVDYXJkUgVjYXJkcxIUCgV0b3RhbBgCIAEoBVIFdG90YWw=');
 
 @$core.Deprecated('Use getSellRateRequestDescriptor instead')
 const GetSellRateRequest$json = {
@@ -832,14 +615,7 @@ final $typed_data.Uint8List getSellRateRequestDescriptor = $convert.base64Decode
 const GetSellRateResponse$json = {
   '1': 'GetSellRateResponse',
   '2': [
-    {
-      '1': 'rate',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.giftcards.SellRate',
-      '10': 'rate'
-    },
+    {'1': 'rate', '3': 1, '4': 1, '5': 11, '6': '.giftcards.SellRate', '10': 'rate'},
   ],
 };
 
@@ -860,13 +636,7 @@ const SellGiftCardRequest$json = {
     {'1': 'images', '3': 6, '4': 3, '5': 9, '10': 'images'},
     {'1': 'idempotency_key', '3': 7, '4': 1, '5': 9, '10': 'idempotencyKey'},
     {'1': 'transaction_id', '3': 8, '4': 1, '5': 9, '10': 'transactionId'},
-    {
-      '1': 'verification_token',
-      '3': 9,
-      '4': 1,
-      '5': 9,
-      '10': 'verificationToken'
-    },
+    {'1': 'verification_token', '3': 9, '4': 1, '5': 9, '10': 'verificationToken'},
     {'1': 'provider_name', '3': 10, '4': 1, '5': 9, '10': 'providerName'},
     {'1': 'image_urls', '3': 11, '4': 3, '5': 9, '10': 'imageUrls'},
     {'1': 'image_keys', '3': 12, '4': 3, '5': 9, '10': 'imageKeys'},
@@ -877,6 +647,7 @@ const SellGiftCardRequest$json = {
     {'1': 'ocr_currency', '3': 17, '4': 1, '5': 9, '10': 'ocrCurrency'},
     {'1': 'card_country', '3': 18, '4': 1, '5': 9, '10': 'cardCountry'},
     {'1': 'card_format', '3': 19, '4': 1, '5': 9, '10': 'cardFormat'},
+    {'1': 'ocr_confidence', '3': 20, '4': 1, '5': 1, '10': 'ocrConfidence'},
   ],
 };
 
@@ -893,20 +664,14 @@ final $typed_data.Uint8List sellGiftCardRequestDescriptor = $convert.base64Decod
     'CG9jckJyYW5kEiYKD29jcl9jYXJkX251bWJlchgOIAEoCVINb2NyQ2FyZE51bWJlchIXCgdvY3'
     'JfcGluGA8gASgJUgZvY3JQaW4SKQoQb2NyX2Rlbm9taW5hdGlvbhgQIAEoAVIPb2NyRGVub21p'
     'bmF0aW9uEiEKDG9jcl9jdXJyZW5jeRgRIAEoCVILb2NyQ3VycmVuY3kSIQoMY2FyZF9jb3VudH'
-    'J5GBIgASgJUgtjYXJkQ291bnRyeRIfCgtjYXJkX2Zvcm1hdBgTIAEoCVIKY2FyZEZvcm1hdA==');
+    'J5GBIgASgJUgtjYXJkQ291bnRyeRIfCgtjYXJkX2Zvcm1hdBgTIAEoCVIKY2FyZEZvcm1hdBIl'
+    'Cg5vY3JfY29uZmlkZW5jZRgUIAEoAVINb2NyQ29uZmlkZW5jZQ==');
 
 @$core.Deprecated('Use sellGiftCardResponseDescriptor instead')
 const SellGiftCardResponse$json = {
   '1': 'SellGiftCardResponse',
   '2': [
-    {
-      '1': 'sale',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.giftcards.GiftCardSale',
-      '10': 'sale'
-    },
+    {'1': 'sale', '3': 1, '4': 1, '5': 11, '6': '.giftcards.GiftCardSale', '10': 'sale'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
   ],
 };
@@ -925,22 +690,14 @@ const GetSellStatusRequest$json = {
 };
 
 /// Descriptor for `GetSellStatusRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getSellStatusRequestDescriptor =
-    $convert.base64Decode(
-        'ChRHZXRTZWxsU3RhdHVzUmVxdWVzdBIXCgdzYWxlX2lkGAEgASgJUgZzYWxlSWQ=');
+final $typed_data.Uint8List getSellStatusRequestDescriptor = $convert.base64Decode(
+    'ChRHZXRTZWxsU3RhdHVzUmVxdWVzdBIXCgdzYWxlX2lkGAEgASgJUgZzYWxlSWQ=');
 
 @$core.Deprecated('Use getSellStatusResponseDescriptor instead')
 const GetSellStatusResponse$json = {
   '1': 'GetSellStatusResponse',
   '2': [
-    {
-      '1': 'sale',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.giftcards.GiftCardSale',
-      '10': 'sale'
-    },
+    {'1': 'sale', '3': 1, '4': 1, '5': 11, '6': '.giftcards.GiftCardSale', '10': 'sale'},
   ],
 };
 
@@ -968,14 +725,7 @@ final $typed_data.Uint8List getMySalesRequestDescriptor = $convert.base64Decode(
 const GetMySalesResponse$json = {
   '1': 'GetMySalesResponse',
   '2': [
-    {
-      '1': 'sales',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.giftcards.GiftCardSale',
-      '10': 'sales'
-    },
+    {'1': 'sales', '3': 1, '4': 3, '5': 11, '6': '.giftcards.GiftCardSale', '10': 'sales'},
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
   ],
 };
@@ -1011,10 +761,9 @@ const UploadSellImageResponse$json = {
 };
 
 /// Descriptor for `UploadSellImageResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List uploadSellImageResponseDescriptor =
-    $convert.base64Decode(
-        'ChdVcGxvYWRTZWxsSW1hZ2VSZXNwb25zZRIbCglpbWFnZV91cmwYASABKAlSCGltYWdlVXJsEh'
-        'sKCWltYWdlX2tleRgCIAEoCVIIaW1hZ2VLZXk=');
+final $typed_data.Uint8List uploadSellImageResponseDescriptor = $convert.base64Decode(
+    'ChdVcGxvYWRTZWxsSW1hZ2VSZXNwb25zZRIbCglpbWFnZV91cmwYASABKAlSCGltYWdlVXJsEh'
+    'sKCWltYWdlX2tleRgCIAEoCVIIaW1hZ2VLZXk=');
 
 @$core.Deprecated('Use extractCardDetailsRequestDescriptor instead')
 const ExtractCardDetailsRequest$json = {
@@ -1025,10 +774,9 @@ const ExtractCardDetailsRequest$json = {
 };
 
 /// Descriptor for `ExtractCardDetailsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List extractCardDetailsRequestDescriptor =
-    $convert.base64Decode(
-        'ChlFeHRyYWN0Q2FyZERldGFpbHNSZXF1ZXN0Eh0KCmltYWdlX3VybHMYASADKAlSCWltYWdlVX'
-        'Jscw==');
+final $typed_data.Uint8List extractCardDetailsRequestDescriptor = $convert.base64Decode(
+    'ChlFeHRyYWN0Q2FyZERldGFpbHNSZXF1ZXN0Eh0KCmltYWdlX3VybHMYASADKAlSCWltYWdlVX'
+    'Jscw==');
 
 @$core.Deprecated('Use extractCardDetailsResponseDescriptor instead')
 const ExtractCardDetailsResponse$json = {
@@ -1063,32 +811,23 @@ const AdminListPendingSalesRequest$json = {
 };
 
 /// Descriptor for `AdminListPendingSalesRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List adminListPendingSalesRequestDescriptor =
-    $convert.base64Decode(
-        'ChxBZG1pbkxpc3RQZW5kaW5nU2FsZXNSZXF1ZXN0EhYKBnN0YXR1cxgBIAEoCVIGc3RhdHVzEh'
-        'QKBWxpbWl0GAIgASgFUgVsaW1pdBIWCgZvZmZzZXQYAyABKAVSBm9mZnNldA==');
+final $typed_data.Uint8List adminListPendingSalesRequestDescriptor = $convert.base64Decode(
+    'ChxBZG1pbkxpc3RQZW5kaW5nU2FsZXNSZXF1ZXN0EhYKBnN0YXR1cxgBIAEoCVIGc3RhdHVzEh'
+    'QKBWxpbWl0GAIgASgFUgVsaW1pdBIWCgZvZmZzZXQYAyABKAVSBm9mZnNldA==');
 
 @$core.Deprecated('Use adminListPendingSalesResponseDescriptor instead')
 const AdminListPendingSalesResponse$json = {
   '1': 'AdminListPendingSalesResponse',
   '2': [
-    {
-      '1': 'sales',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.giftcards.GiftCardSale',
-      '10': 'sales'
-    },
+    {'1': 'sales', '3': 1, '4': 3, '5': 11, '6': '.giftcards.GiftCardSale', '10': 'sales'},
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
   ],
 };
 
 /// Descriptor for `AdminListPendingSalesResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List adminListPendingSalesResponseDescriptor =
-    $convert.base64Decode(
-        'Ch1BZG1pbkxpc3RQZW5kaW5nU2FsZXNSZXNwb25zZRItCgVzYWxlcxgBIAMoCzIXLmdpZnRjYX'
-        'Jkcy5HaWZ0Q2FyZFNhbGVSBXNhbGVzEhQKBXRvdGFsGAIgASgFUgV0b3RhbA==');
+final $typed_data.Uint8List adminListPendingSalesResponseDescriptor = $convert.base64Decode(
+    'Ch1BZG1pbkxpc3RQZW5kaW5nU2FsZXNSZXNwb25zZRItCgVzYWxlcxgBIAMoCzIXLmdpZnRjYX'
+    'Jkcy5HaWZ0Q2FyZFNhbGVSBXNhbGVzEhQKBXRvdGFsGAIgASgFUgV0b3RhbA==');
 
 @$core.Deprecated('Use adminGetSaleDetailRequestDescriptor instead')
 const AdminGetSaleDetailRequest$json = {
@@ -1099,29 +838,15 @@ const AdminGetSaleDetailRequest$json = {
 };
 
 /// Descriptor for `AdminGetSaleDetailRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List adminGetSaleDetailRequestDescriptor =
-    $convert.base64Decode(
-        'ChlBZG1pbkdldFNhbGVEZXRhaWxSZXF1ZXN0EhcKB3NhbGVfaWQYASABKAlSBnNhbGVJZA==');
+final $typed_data.Uint8List adminGetSaleDetailRequestDescriptor = $convert.base64Decode(
+    'ChlBZG1pbkdldFNhbGVEZXRhaWxSZXF1ZXN0EhcKB3NhbGVfaWQYASABKAlSBnNhbGVJZA==');
 
 @$core.Deprecated('Use adminGetSaleDetailResponseDescriptor instead')
 const AdminGetSaleDetailResponse$json = {
   '1': 'AdminGetSaleDetailResponse',
   '2': [
-    {
-      '1': 'sale',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.giftcards.GiftCardSale',
-      '10': 'sale'
-    },
-    {
-      '1': 'image_download_urls',
-      '3': 2,
-      '4': 3,
-      '5': 9,
-      '10': 'imageDownloadUrls'
-    },
+    {'1': 'sale', '3': 1, '4': 1, '5': 11, '6': '.giftcards.GiftCardSale', '10': 'sale'},
+    {'1': 'image_download_urls', '3': 2, '4': 3, '5': 9, '10': 'imageDownloadUrls'},
     {'1': 'user_email', '3': 3, '4': 1, '5': 9, '10': 'userEmail'},
     {'1': 'user_name', '3': 4, '4': 1, '5': 9, '10': 'userName'},
   ],
@@ -1144,32 +869,49 @@ const AdminApproveSaleRequest$json = {
 };
 
 /// Descriptor for `AdminApproveSaleRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List adminApproveSaleRequestDescriptor =
-    $convert.base64Decode(
-        'ChdBZG1pbkFwcHJvdmVTYWxlUmVxdWVzdBIXCgdzYWxlX2lkGAEgASgJUgZzYWxlSWQSHwoLYW'
-        'RtaW5fbm90ZXMYAiABKAlSCmFkbWluTm90ZXM=');
+final $typed_data.Uint8List adminApproveSaleRequestDescriptor = $convert.base64Decode(
+    'ChdBZG1pbkFwcHJvdmVTYWxlUmVxdWVzdBIXCgdzYWxlX2lkGAEgASgJUgZzYWxlSWQSHwoLYW'
+    'RtaW5fbm90ZXMYAiABKAlSCmFkbWluTm90ZXM=');
 
 @$core.Deprecated('Use adminApproveSaleResponseDescriptor instead')
 const AdminApproveSaleResponse$json = {
   '1': 'AdminApproveSaleResponse',
   '2': [
-    {
-      '1': 'sale',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.giftcards.GiftCardSale',
-      '10': 'sale'
-    },
+    {'1': 'sale', '3': 1, '4': 1, '5': 11, '6': '.giftcards.GiftCardSale', '10': 'sale'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
   ],
 };
 
 /// Descriptor for `AdminApproveSaleResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List adminApproveSaleResponseDescriptor =
-    $convert.base64Decode(
-        'ChhBZG1pbkFwcHJvdmVTYWxlUmVzcG9uc2USKwoEc2FsZRgBIAEoCzIXLmdpZnRjYXJkcy5HaW'
-        'Z0Q2FyZFNhbGVSBHNhbGUSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
+final $typed_data.Uint8List adminApproveSaleResponseDescriptor = $convert.base64Decode(
+    'ChhBZG1pbkFwcHJvdmVTYWxlUmVzcG9uc2USKwoEc2FsZRgBIAEoCzIXLmdpZnRjYXJkcy5HaW'
+    'Z0Q2FyZFNhbGVSBHNhbGUSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
+
+@$core.Deprecated('Use adminProcessPayoutRequestDescriptor instead')
+const AdminProcessPayoutRequest$json = {
+  '1': 'AdminProcessPayoutRequest',
+  '2': [
+    {'1': 'sale_id', '3': 1, '4': 1, '5': 9, '10': 'saleId'},
+  ],
+};
+
+/// Descriptor for `AdminProcessPayoutRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminProcessPayoutRequestDescriptor = $convert.base64Decode(
+    'ChlBZG1pblByb2Nlc3NQYXlvdXRSZXF1ZXN0EhcKB3NhbGVfaWQYASABKAlSBnNhbGVJZA==');
+
+@$core.Deprecated('Use adminProcessPayoutResponseDescriptor instead')
+const AdminProcessPayoutResponse$json = {
+  '1': 'AdminProcessPayoutResponse',
+  '2': [
+    {'1': 'sale', '3': 1, '4': 1, '5': 11, '6': '.giftcards.GiftCardSale', '10': 'sale'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `AdminProcessPayoutResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminProcessPayoutResponseDescriptor = $convert.base64Decode(
+    'ChpBZG1pblByb2Nlc3NQYXlvdXRSZXNwb25zZRIrCgRzYWxlGAEgASgLMhcuZ2lmdGNhcmRzLk'
+    'dpZnRDYXJkU2FsZVIEc2FsZRIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
 
 @$core.Deprecated('Use adminRejectSaleRequestDescriptor instead')
 const AdminRejectSaleRequest$json = {
@@ -1190,23 +932,15 @@ final $typed_data.Uint8List adminRejectSaleRequestDescriptor = $convert.base64De
 const AdminRejectSaleResponse$json = {
   '1': 'AdminRejectSaleResponse',
   '2': [
-    {
-      '1': 'sale',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.giftcards.GiftCardSale',
-      '10': 'sale'
-    },
+    {'1': 'sale', '3': 1, '4': 1, '5': 11, '6': '.giftcards.GiftCardSale', '10': 'sale'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
   ],
 };
 
 /// Descriptor for `AdminRejectSaleResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List adminRejectSaleResponseDescriptor =
-    $convert.base64Decode(
-        'ChdBZG1pblJlamVjdFNhbGVSZXNwb25zZRIrCgRzYWxlGAEgASgLMhcuZ2lmdGNhcmRzLkdpZn'
-        'RDYXJkU2FsZVIEc2FsZRIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
+final $typed_data.Uint8List adminRejectSaleResponseDescriptor = $convert.base64Decode(
+    'ChdBZG1pblJlamVjdFNhbGVSZXNwb25zZRIrCgRzYWxlGAEgASgLMhcuZ2lmdGNhcmRzLkdpZn'
+    'RDYXJkU2FsZVIEc2FsZRIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
 
 @$core.Deprecated('Use sellRateConfigDescriptor instead')
 const SellRateConfig$json = {
@@ -1222,27 +956,9 @@ const SellRateConfig$json = {
     {'1': 'countries', '3': 8, '4': 3, '5': 9, '10': 'countries'},
     {'1': 'min_denomination', '3': 9, '4': 1, '5': 1, '10': 'minDenomination'},
     {'1': 'max_denomination', '3': 10, '4': 1, '5': 1, '10': 'maxDenomination'},
-    {
-      '1': 'buy_rate_percentage',
-      '3': 11,
-      '4': 1,
-      '5': 1,
-      '10': 'buyRatePercentage'
-    },
-    {
-      '1': 'commission_percentage',
-      '3': 12,
-      '4': 1,
-      '5': 1,
-      '10': 'commissionPercentage'
-    },
-    {
-      '1': 'payout_rate_percentage',
-      '3': 13,
-      '4': 1,
-      '5': 1,
-      '10': 'payoutRatePercentage'
-    },
+    {'1': 'buy_rate_percentage', '3': 11, '4': 1, '5': 1, '10': 'buyRatePercentage'},
+    {'1': 'commission_percentage', '3': 12, '4': 1, '5': 1, '10': 'commissionPercentage'},
+    {'1': 'payout_rate_percentage', '3': 13, '4': 1, '5': 1, '10': 'payoutRatePercentage'},
     {'1': 'payout_currency', '3': 14, '4': 1, '5': 9, '10': 'payoutCurrency'},
     {'1': 'card_type', '3': 15, '4': 1, '5': 9, '10': 'cardType'},
     {'1': 'is_active', '3': 16, '4': 1, '5': 8, '10': 'isActive'},
@@ -1287,23 +1003,15 @@ final $typed_data.Uint8List adminListSellRatesRequestDescriptor = $convert.base6
 const AdminListSellRatesResponse$json = {
   '1': 'AdminListSellRatesResponse',
   '2': [
-    {
-      '1': 'rates',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.giftcards.SellRateConfig',
-      '10': 'rates'
-    },
+    {'1': 'rates', '3': 1, '4': 3, '5': 11, '6': '.giftcards.SellRateConfig', '10': 'rates'},
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
   ],
 };
 
 /// Descriptor for `AdminListSellRatesResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List adminListSellRatesResponseDescriptor =
-    $convert.base64Decode(
-        'ChpBZG1pbkxpc3RTZWxsUmF0ZXNSZXNwb25zZRIvCgVyYXRlcxgBIAMoCzIZLmdpZnRjYXJkcy'
-        '5TZWxsUmF0ZUNvbmZpZ1IFcmF0ZXMSFAoFdG90YWwYAiABKAVSBXRvdGFs');
+final $typed_data.Uint8List adminListSellRatesResponseDescriptor = $convert.base64Decode(
+    'ChpBZG1pbkxpc3RTZWxsUmF0ZXNSZXNwb25zZRIvCgVyYXRlcxgBIAMoCzIZLmdpZnRjYXJkcy'
+    '5TZWxsUmF0ZUNvbmZpZ1IFcmF0ZXMSFAoFdG90YWwYAiABKAVSBXRvdGFs');
 
 @$core.Deprecated('Use adminCreateSellRateRequestDescriptor instead')
 const AdminCreateSellRateRequest$json = {
@@ -1318,27 +1026,9 @@ const AdminCreateSellRateRequest$json = {
     {'1': 'countries', '3': 7, '4': 3, '5': 9, '10': 'countries'},
     {'1': 'min_denomination', '3': 8, '4': 1, '5': 1, '10': 'minDenomination'},
     {'1': 'max_denomination', '3': 9, '4': 1, '5': 1, '10': 'maxDenomination'},
-    {
-      '1': 'buy_rate_percentage',
-      '3': 10,
-      '4': 1,
-      '5': 1,
-      '10': 'buyRatePercentage'
-    },
-    {
-      '1': 'commission_percentage',
-      '3': 11,
-      '4': 1,
-      '5': 1,
-      '10': 'commissionPercentage'
-    },
-    {
-      '1': 'payout_rate_percentage',
-      '3': 12,
-      '4': 1,
-      '5': 1,
-      '10': 'payoutRatePercentage'
-    },
+    {'1': 'buy_rate_percentage', '3': 10, '4': 1, '5': 1, '10': 'buyRatePercentage'},
+    {'1': 'commission_percentage', '3': 11, '4': 1, '5': 1, '10': 'commissionPercentage'},
+    {'1': 'payout_rate_percentage', '3': 12, '4': 1, '5': 1, '10': 'payoutRatePercentage'},
     {'1': 'payout_currency', '3': 13, '4': 1, '5': 9, '10': 'payoutCurrency'},
     {'1': 'card_type', '3': 14, '4': 1, '5': 9, '10': 'cardType'},
   ],
@@ -1362,23 +1052,15 @@ final $typed_data.Uint8List adminCreateSellRateRequestDescriptor = $convert.base
 const AdminCreateSellRateResponse$json = {
   '1': 'AdminCreateSellRateResponse',
   '2': [
-    {
-      '1': 'rate',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.giftcards.SellRateConfig',
-      '10': 'rate'
-    },
+    {'1': 'rate', '3': 1, '4': 1, '5': 11, '6': '.giftcards.SellRateConfig', '10': 'rate'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
   ],
 };
 
 /// Descriptor for `AdminCreateSellRateResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List adminCreateSellRateResponseDescriptor =
-    $convert.base64Decode(
-        'ChtBZG1pbkNyZWF0ZVNlbGxSYXRlUmVzcG9uc2USLQoEcmF0ZRgBIAEoCzIZLmdpZnRjYXJkcy'
-        '5TZWxsUmF0ZUNvbmZpZ1IEcmF0ZRIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
+final $typed_data.Uint8List adminCreateSellRateResponseDescriptor = $convert.base64Decode(
+    'ChtBZG1pbkNyZWF0ZVNlbGxSYXRlUmVzcG9uc2USLQoEcmF0ZRgBIAEoCzIZLmdpZnRjYXJkcy'
+    '5TZWxsUmF0ZUNvbmZpZ1IEcmF0ZRIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
 
 @$core.Deprecated('Use adminUpdateSellRateRequestDescriptor instead')
 const AdminUpdateSellRateRequest$json = {
@@ -1394,27 +1076,9 @@ const AdminUpdateSellRateRequest$json = {
     {'1': 'countries', '3': 8, '4': 3, '5': 9, '10': 'countries'},
     {'1': 'min_denomination', '3': 9, '4': 1, '5': 1, '10': 'minDenomination'},
     {'1': 'max_denomination', '3': 10, '4': 1, '5': 1, '10': 'maxDenomination'},
-    {
-      '1': 'buy_rate_percentage',
-      '3': 11,
-      '4': 1,
-      '5': 1,
-      '10': 'buyRatePercentage'
-    },
-    {
-      '1': 'commission_percentage',
-      '3': 12,
-      '4': 1,
-      '5': 1,
-      '10': 'commissionPercentage'
-    },
-    {
-      '1': 'payout_rate_percentage',
-      '3': 13,
-      '4': 1,
-      '5': 1,
-      '10': 'payoutRatePercentage'
-    },
+    {'1': 'buy_rate_percentage', '3': 11, '4': 1, '5': 1, '10': 'buyRatePercentage'},
+    {'1': 'commission_percentage', '3': 12, '4': 1, '5': 1, '10': 'commissionPercentage'},
+    {'1': 'payout_rate_percentage', '3': 13, '4': 1, '5': 1, '10': 'payoutRatePercentage'},
     {'1': 'payout_currency', '3': 14, '4': 1, '5': 9, '10': 'payoutCurrency'},
     {'1': 'card_type', '3': 15, '4': 1, '5': 9, '10': 'cardType'},
     {'1': 'is_active', '3': 16, '4': 1, '5': 8, '10': 'isActive'},
@@ -1439,23 +1103,15 @@ final $typed_data.Uint8List adminUpdateSellRateRequestDescriptor = $convert.base
 const AdminUpdateSellRateResponse$json = {
   '1': 'AdminUpdateSellRateResponse',
   '2': [
-    {
-      '1': 'rate',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.giftcards.SellRateConfig',
-      '10': 'rate'
-    },
+    {'1': 'rate', '3': 1, '4': 1, '5': 11, '6': '.giftcards.SellRateConfig', '10': 'rate'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
   ],
 };
 
 /// Descriptor for `AdminUpdateSellRateResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List adminUpdateSellRateResponseDescriptor =
-    $convert.base64Decode(
-        'ChtBZG1pblVwZGF0ZVNlbGxSYXRlUmVzcG9uc2USLQoEcmF0ZRgBIAEoCzIZLmdpZnRjYXJkcy'
-        '5TZWxsUmF0ZUNvbmZpZ1IEcmF0ZRIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
+final $typed_data.Uint8List adminUpdateSellRateResponseDescriptor = $convert.base64Decode(
+    'ChtBZG1pblVwZGF0ZVNlbGxSYXRlUmVzcG9uc2USLQoEcmF0ZRgBIAEoCzIZLmdpZnRjYXJkcy'
+    '5TZWxsUmF0ZUNvbmZpZ1IEcmF0ZRIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
 
 @$core.Deprecated('Use adminToggleSellRateRequestDescriptor instead')
 const AdminToggleSellRateRequest$json = {
@@ -1467,10 +1123,9 @@ const AdminToggleSellRateRequest$json = {
 };
 
 /// Descriptor for `AdminToggleSellRateRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List adminToggleSellRateRequestDescriptor =
-    $convert.base64Decode(
-        'ChpBZG1pblRvZ2dsZVNlbGxSYXRlUmVxdWVzdBIOCgJpZBgBIAEoCVICaWQSGwoJaXNfYWN0aX'
-        'ZlGAIgASgIUghpc0FjdGl2ZQ==');
+final $typed_data.Uint8List adminToggleSellRateRequestDescriptor = $convert.base64Decode(
+    'ChpBZG1pblRvZ2dsZVNlbGxSYXRlUmVxdWVzdBIOCgJpZBgBIAEoCVICaWQSGwoJaXNfYWN0aX'
+    'ZlGAIgASgIUghpc0FjdGl2ZQ==');
 
 @$core.Deprecated('Use adminToggleSellRateResponseDescriptor instead')
 const AdminToggleSellRateResponse$json = {
@@ -1481,10 +1136,9 @@ const AdminToggleSellRateResponse$json = {
 };
 
 /// Descriptor for `AdminToggleSellRateResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List adminToggleSellRateResponseDescriptor =
-    $convert.base64Decode(
-        'ChtBZG1pblRvZ2dsZVNlbGxSYXRlUmVzcG9uc2USGAoHbWVzc2FnZRgBIAEoCVIHbWVzc2FnZQ'
-        '==');
+final $typed_data.Uint8List adminToggleSellRateResponseDescriptor = $convert.base64Decode(
+    'ChtBZG1pblRvZ2dsZVNlbGxSYXRlUmVzcG9uc2USGAoHbWVzc2FnZRgBIAEoCVIHbWVzc2FnZQ'
+    '==');
 
 @$core.Deprecated('Use giftCardCountryDescriptor instead')
 const GiftCardCountry$json = {
@@ -1510,26 +1164,19 @@ const GetSupportedCountriesRequest$json = {
 };
 
 /// Descriptor for `GetSupportedCountriesRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getSupportedCountriesRequestDescriptor =
-    $convert.base64Decode('ChxHZXRTdXBwb3J0ZWRDb3VudHJpZXNSZXF1ZXN0');
+final $typed_data.Uint8List getSupportedCountriesRequestDescriptor = $convert.base64Decode(
+    'ChxHZXRTdXBwb3J0ZWRDb3VudHJpZXNSZXF1ZXN0');
 
 @$core.Deprecated('Use getSupportedCountriesResponseDescriptor instead')
 const GetSupportedCountriesResponse$json = {
   '1': 'GetSupportedCountriesResponse',
   '2': [
-    {
-      '1': 'countries',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.giftcards.GiftCardCountry',
-      '10': 'countries'
-    },
+    {'1': 'countries', '3': 1, '4': 3, '5': 11, '6': '.giftcards.GiftCardCountry', '10': 'countries'},
   ],
 };
 
 /// Descriptor for `GetSupportedCountriesResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getSupportedCountriesResponseDescriptor =
-    $convert.base64Decode(
-        'Ch1HZXRTdXBwb3J0ZWRDb3VudHJpZXNSZXNwb25zZRI4Cgljb3VudHJpZXMYASADKAsyGi5naW'
-        'Z0Y2FyZHMuR2lmdENhcmRDb3VudHJ5Ugljb3VudHJpZXM=');
+final $typed_data.Uint8List getSupportedCountriesResponseDescriptor = $convert.base64Decode(
+    'Ch1HZXRTdXBwb3J0ZWRDb3VudHJpZXNSZXNwb25zZRI4Cgljb3VudHJpZXMYASADKAsyGi5naW'
+    'Z0Y2FyZHMuR2lmdENhcmRDb3VudHJ5Ugljb3VudHJpZXM=');
+

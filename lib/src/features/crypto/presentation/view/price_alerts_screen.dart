@@ -2,1074 +2,442 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
+import '../../../../../core/services/injection_container.dart';
+import '../../../../core/grpc/crypto_grpc_client.dart';
+import '../../../../generated/crypto.pb.dart';
+
+const _bg = Color(0xFF0A0A0A);
+const _card = Color(0xFF1F1F1F);
+const _accent = Color.fromARGB(255, 78, 3, 208);
+const _divider = Color(0xFF2D2D2D);
+const _sub = Color(0xFF9CA3AF);
+const _green = Color(0xFF10B981);
+const _red = Color(0xFFEF4444);
+
+TextStyle _inter(double size, {FontWeight w = FontWeight.w400, Color c = Colors.white}) =>
+    GoogleFonts.inter(fontSize: size.sp, fontWeight: w, color: c);
+
+String _fmtPrice(double p) =>
+    p >= 1 ? p.toStringAsFixed(2) : (p >= 0.01 ? p.toStringAsFixed(4) : p.toStringAsFixed(6));
 
 class PriceAlertsScreen extends StatefulWidget {
   const PriceAlertsScreen({super.key});
-
   @override
   State<PriceAlertsScreen> createState() => _PriceAlertsScreenState();
 }
 
 class _PriceAlertsScreenState extends State<PriceAlertsScreen> {
-  // Price alerts - will be populated from backend when feature is ready
-  final List<PriceAlert> _alerts = [];
+  final CryptoGrpcClient _client = serviceLocator<CryptoGrpcClient>();
+  List<PriceAlert> _active = [], _triggered = [];
+  bool _loading = true;
+  String? _error;
+
+  @override
+  void initState() { super.initState(); _load(); }
+
+  Future<void> _load() async {
+    setState(() { _loading = true; _error = null; });
+    try {
+      final res = await _client.getPriceAlerts(activeOnly: false);
+      final all = res.alerts.toList();
+      setState(() {
+        _active = all.where((a) => a.isActive && !a.isTriggered).toList();
+        _triggered = all.where((a) => a.isTriggered).toList();
+        _loading = false;
+      });
+    } catch (_) {
+      setState(() { _error = 'Failed to load alerts'; _loading = false; });
+    }
+  }
+
+  Future<void> _delete(String id) async {
+    try {
+      await _client.deletePriceAlert(id);
+      await _load();
+      Get.snackbar('Deleted', 'Price alert removed',
+          backgroundColor: _card, colorText: Colors.white, snackPosition: SnackPosition.BOTTOM);
+    } catch (_) {
+      Get.snackbar('Error', 'Could not delete alert',
+          backgroundColor: _red.withValues(alpha: 0.9), colorText: Colors.white, snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+
+  void _showCreate() => showModalBottomSheet(
+    context: context, isScrollControlled: true, backgroundColor: Colors.transparent,
+    builder: (_) => _CreateSheet(client: _client, onCreated: _load),
+  );
 
   @override
   Widget build(BuildContext context) {
+    final empty = !_loading && _active.isEmpty && _triggered.isEmpty;
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.all(20.w),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildComingSoonBanner(),
-                    SizedBox(height: 24.h),
-                    _buildActiveAlertsSection(),
-                    SizedBox(height: 24.h),
-                    _buildInactiveAlertsSection(),
-                    SizedBox(height: 24.h),
-                    _buildAlertStats(),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+      backgroundColor: _bg,
       floatingActionButton: FloatingActionButton(
-        onPressed: _showCreateAlertBottomSheet,
-        backgroundColor: const Color.fromARGB(255, 78, 3, 208),
-        child: Icon(Icons.add_alert, color: Colors.white, size: 24.sp),
+        onPressed: _showCreate, backgroundColor: _accent,
+        child: const Icon(Icons.add, color: Colors.white),
       ),
-    );
-  }
-
-  Widget _buildComingSoonBanner() {
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
-            const Color(0xFF1F1F1F),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.rocket_launch, color: const Color.fromARGB(255, 78, 3, 208), size: 28.sp),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Coming Soon',
-                  style: GoogleFonts.inter(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  'Real-time price alerts with push notifications are being developed.',
-                  style: GoogleFonts.inter(
-                    fontSize: 13.sp,
-                    color: Colors.white.withValues(alpha: 0.7),
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-      child: Row(
-        children: [
-          Container(
-            padding: EdgeInsets.all(8.w),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: GestureDetector(
+      body: SafeArea(child: Column(children: [
+        // App bar
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+          child: Row(children: [
+            GestureDetector(
               onTap: () => Get.back(),
-              child: Icon(
-                Icons.arrow_back,
-                color: Colors.white,
-                size: 20.sp,
+              child: Container(
+                padding: EdgeInsets.all(8.w),
+                decoration: BoxDecoration(color: _card, borderRadius: BorderRadius.circular(12.r)),
+                child: Icon(Icons.arrow_back, color: Colors.white, size: 20.sp),
               ),
             ),
-          ),
-          SizedBox(width: 16.w),
-          Expanded(
-            child: Text(
-              'Price Alerts',
-              style: GoogleFonts.inter(
-                fontSize: 20.sp,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-          ),
-          Container(
-            padding: EdgeInsets.all(8.w),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Icon(
-              Icons.settings,
-              color: Colors.white,
-              size: 20.sp,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActiveAlertsSection() {
-    final activeAlerts = _alerts.where((alert) => alert.isActive).toList();
-    
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Active Alerts (${activeAlerts.length})',
-                style: GoogleFonts.inter(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-              Icon(
-                Icons.notifications_active,
-                color: const Color.fromARGB(255, 78, 3, 208),
-                size: 20.sp,
-              ),
-            ],
-          ),
-          SizedBox(height: 16.h),
-          if (activeAlerts.isEmpty)
-            _buildEmptyState('No active alerts', 'Create your first price alert to get notified')
-          else
-            ...activeAlerts.map((alert) => _buildAlertCard(alert)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInactiveAlertsSection() {
-    final inactiveAlerts = _alerts.where((alert) => !alert.isActive).toList();
-    
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Inactive Alerts (${inactiveAlerts.length})',
-                style: GoogleFonts.inter(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-              Icon(
-                Icons.notifications_off,
-                color: Colors.grey,
-                size: 20.sp,
-              ),
-            ],
-          ),
-          SizedBox(height: 16.h),
-          if (inactiveAlerts.isEmpty)
-            _buildEmptyState('No inactive alerts', 'All your alerts are currently active')
-          else
-            ...inactiveAlerts.map((alert) => _buildAlertCard(alert)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmptyState(String title, String subtitle) {
-    return Container(
-      padding: EdgeInsets.all(24.w),
-      child: Column(
-        children: [
-          Icon(
-            Icons.notifications_none,
-            color: Colors.white.withValues(alpha: 0.3),
-            size: 48.sp,
-          ),
-          SizedBox(height: 12.h),
-          Text(
-            title,
-            style: GoogleFonts.inter(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.white.withValues(alpha: 0.7),
-            ),
-          ),
-          SizedBox(height: 4.h),
-          Text(
-            subtitle,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              fontSize: 14.sp,
-              color: Colors.white.withValues(alpha: 0.5),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAlertCard(PriceAlert alert) {
-    final isTriggered = alert.alertType == AlertType.above 
-        ? alert.currentPrice >= alert.targetPrice 
-        : alert.currentPrice <= alert.targetPrice;
-    
-    return Container(
-      margin: EdgeInsets.only(bottom: 12.h),
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: alert.isActive 
-            ? (isTriggered ? Colors.green.withValues(alpha: 0.1) : const Color(0xFF0A0A0A))
-            : Colors.grey.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 40.w,
-                height: 40.w,
-                decoration: BoxDecoration(
-                  color: Colors.orange.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(20.r),
-                ),
-                child: Icon(
-                  Icons.currency_bitcoin,
-                  color: Colors.orange,
-                  size: 24.sp,
-                ),
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      alert.cryptoName,
-                      style: GoogleFonts.inter(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                    Text(
-                      '${alert.alertType == AlertType.above ? 'Above' : 'Below'} ${CurrencySymbols.currentSymbol}${alert.targetPrice.toStringAsFixed(2)}',
-                      style: GoogleFonts.inter(
-                        fontSize: 12.sp,
-                        color: Colors.white.withValues(alpha: 0.6),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    '${CurrencySymbols.currentSymbol}${alert.currentPrice.toStringAsFixed(2)}',
-                    style: GoogleFonts.inter(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                  if (isTriggered)
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-                      decoration: BoxDecoration(
-                        color: Colors.green,
-                        borderRadius: BorderRadius.circular(10.r),
-                      ),
-                      child: Text(
-                        'TRIGGERED',
-                        style: GoogleFonts.inter(
-                          fontSize: 10.sp,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-              SizedBox(width: 12.w),
-              Switch(
-                value: alert.isActive,
-                onChanged: (value) => _toggleAlert(alert.id, value),
-                activeThumbColor: const Color.fromARGB(255, 78, 3, 208),
-              ),
-            ],
-          ),
-          SizedBox(height: 12.h),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Created ${_formatDate(alert.createdAt)}',
-                style: GoogleFonts.inter(
-                  fontSize: 12.sp,
-                  color: Colors.white.withValues(alpha: 0.5),
-                ),
-              ),
-              Row(
-                children: [
-                  GestureDetector(
-                    onTap: () => _editAlert(alert),
-                    child: Container(
-                      padding: EdgeInsets.all(6.w),
-                      decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(6.r),
-                      ),
-                      child: Icon(
-                        Icons.edit,
-                        color: const Color.fromARGB(255, 78, 3, 208),
-                        size: 16.sp,
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 8.w),
-                  GestureDetector(
-                    onTap: () => _deleteAlert(alert.id),
-                    child: Container(
-                      padding: EdgeInsets.all(6.w),
-                      decoration: BoxDecoration(
-                        color: Colors.red.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(6.r),
-                      ),
-                      child: Icon(
-                        Icons.delete,
-                        color: Colors.red,
-                        size: 16.sp,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAlertStats() {
-    final totalAlerts = _alerts.length;
-    final activeAlerts = _alerts.where((alert) => alert.isActive).length;
-    final triggeredAlerts = _alerts.where((alert) {
-      final isTriggered = alert.alertType == AlertType.above 
-          ? alert.currentPrice >= alert.targetPrice 
-          : alert.currentPrice <= alert.targetPrice;
-      return isTriggered && alert.isActive;
-    }).length;
-
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Alert Statistics',
-            style: GoogleFonts.inter(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: 16.h),
-          Row(
-            children: [
-              Expanded(child: _buildStatCard('Total', totalAlerts.toString(), Icons.notifications)),
-              SizedBox(width: 12.w),
-              Expanded(child: _buildStatCard('Active', activeAlerts.toString(), Icons.notifications_active)),
-              SizedBox(width: 12.w),
-              Expanded(child: _buildStatCard('Triggered', triggeredAlerts.toString(), Icons.notification_important)),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatCard(String label, String value, IconData icon) {
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0A0A0A),
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: const Color.fromARGB(255, 78, 3, 208), size: 24.sp),
-          SizedBox(height: 8.h),
-          Text(
-            value,
-            style: GoogleFonts.inter(
-              fontSize: 20.sp,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              fontSize: 12.sp,
-              color: Colors.white.withValues(alpha: 0.6),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showCreateAlertBottomSheet() {
-    Get.bottomSheet(
-      CreateAlertBottomSheet(
-        onAlertCreated: (alert) {
-          setState(() {
-            _alerts.add(alert);
-          });
-        },
-      ),
-      isScrollControlled: true,
-    );
-  }
-
-  void _toggleAlert(String alertId, bool isActive) {
-    setState(() {
-      final alertIndex = _alerts.indexWhere((alert) => alert.id == alertId);
-      if (alertIndex != -1) {
-        _alerts[alertIndex] = _alerts[alertIndex].copyWith(isActive: isActive);
-      }
-    });
-  }
-
-  void _editAlert(PriceAlert alert) {
-    Get.bottomSheet(
-      CreateAlertBottomSheet(
-        alertToEdit: alert,
-        onAlertCreated: (updatedAlert) {
-          setState(() {
-            final alertIndex = _alerts.indexWhere((a) => a.id == alert.id);
-            if (alertIndex != -1) {
-              _alerts[alertIndex] = updatedAlert;
-            }
-          });
-        },
-      ),
-      isScrollControlled: true,
-    );
-  }
-
-  void _deleteAlert(String alertId) {
-    Get.dialog(
-      Dialog(
-        backgroundColor: Colors.transparent,
-        child: Container(
-          padding: EdgeInsets.all(24.w),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1F1F1F),
-            borderRadius: BorderRadius.circular(16.r),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.warning_amber_rounded,
-                color: Colors.orange,
-                size: 48.sp,
-              ),
-              SizedBox(height: 16.h),
-              Text(
-                'Delete Alert',
-                style: GoogleFonts.inter(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              SizedBox(height: 8.h),
-              Text(
-                'Are you sure you want to delete this price alert?',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  fontSize: 14.sp,
-                  color: Colors.white.withValues(alpha: 0.8),
-                ),
-              ),
-              SizedBox(height: 24.h),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => Get.back(),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey[700],
-                        padding: EdgeInsets.symmetric(vertical: 12.h),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.r),
-                        ),
-                      ),
-                      child: Text(
-                        'Cancel',
-                        style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 12.w),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          _alerts.removeWhere((alert) => alert.id == alertId);
-                        });
-                        Get.back();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        padding: EdgeInsets.symmetric(vertical: 12.h),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.r),
-                        ),
-                      ),
-                      child: Text(
-                        'Delete',
-                        style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+            SizedBox(width: 16.w),
+            Text('Price Alerts', style: _inter(20, w: FontWeight.bold)),
+          ]),
         ),
-      ),
+        Expanded(child: RefreshIndicator(
+          color: _accent, backgroundColor: _card, onRefresh: _load,
+          child: _loading ? _shimmer() : _error != null ? _errView() : empty ? _emptyView() : _list(),
+        )),
+      ])),
     );
   }
 
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final difference = now.difference(date);
-    
-    if (difference.inDays > 0) {
-      return '${difference.inDays} day${difference.inDays > 1 ? 's' : ''} ago';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours} hour${difference.inHours > 1 ? 's' : ''} ago';
-    } else {
-      return '${difference.inMinutes} minute${difference.inMinutes > 1 ? 's' : ''} ago';
-    }
-  }
+  Widget _shimmer() => Shimmer.fromColors(
+    baseColor: _card, highlightColor: _divider,
+    child: ListView.builder(
+      padding: EdgeInsets.symmetric(horizontal: 20.w), itemCount: 5,
+      itemBuilder: (_, __) => Container(
+        height: 76.h, margin: EdgeInsets.only(bottom: 12.h),
+        decoration: BoxDecoration(color: _card, borderRadius: BorderRadius.circular(14.r)),
+      ),
+    ),
+  );
+
+  Widget _errView() => ListView(children: [
+    SizedBox(height: 120.h),
+    Center(child: Column(children: [
+      Icon(Icons.error_outline, color: _red, size: 48.sp),
+      SizedBox(height: 16.h),
+      Text(_error!, style: _inter(16, c: _sub)),
+      SizedBox(height: 16.h),
+      TextButton(onPressed: _load, child: Text('Retry', style: _inter(14, c: _accent))),
+    ])),
+  ]);
+
+  Widget _emptyView() => ListView(children: [
+    SizedBox(height: 100.h),
+    Center(child: Column(children: [
+      Container(
+        width: 80.w, height: 80.w,
+        decoration: BoxDecoration(color: _accent.withValues(alpha: 0.15), shape: BoxShape.circle),
+        child: Icon(Icons.notifications_active, color: _accent, size: 40.sp),
+      ),
+      SizedBox(height: 24.h),
+      Text('Set your first price alert', style: _inter(20, w: FontWeight.w600)),
+      SizedBox(height: 8.h),
+      Padding(
+        padding: EdgeInsets.symmetric(horizontal: 48.w),
+        child: Text('Get notified when crypto prices hit your target. Tap + to create one.',
+          textAlign: TextAlign.center, style: _inter(14, c: _sub)),
+      ),
+    ])),
+  ]);
+
+  Widget _sectionLabel(String title, int count) => Row(children: [
+    Text(title, style: _inter(14, w: FontWeight.w600, c: _sub)),
+    SizedBox(width: 6.w),
+    Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+      decoration: BoxDecoration(color: _divider, borderRadius: BorderRadius.circular(10.r)),
+      child: Text('$count', style: _inter(12, w: FontWeight.w500, c: _sub)),
+    ),
+  ]);
+
+  Widget _list() => ListView(padding: EdgeInsets.symmetric(horizontal: 20.w), children: [
+    if (_active.isNotEmpty) ...[
+      _sectionLabel('Active', _active.length), SizedBox(height: 8.h),
+      ..._active.map((a) => _Tile(alert: a, onDelete: () => _delete(a.id))),
+    ],
+    if (_triggered.isNotEmpty) ...[
+      SizedBox(height: 20.h),
+      _sectionLabel('Triggered', _triggered.length), SizedBox(height: 8.h),
+      ..._triggered.map((a) => _Tile(alert: a, triggered: true, onDelete: () => _delete(a.id))),
+    ],
+    SizedBox(height: 80.h),
+  ]);
 }
 
-class CreateAlertBottomSheet extends StatefulWidget {
-  final PriceAlert? alertToEdit;
-  final Function(PriceAlert) onAlertCreated;
-
-  const CreateAlertBottomSheet({
-    super.key,
-    this.alertToEdit,
-    required this.onAlertCreated,
-  });
-
-  @override
-  State<CreateAlertBottomSheet> createState() => _CreateAlertBottomSheetState();
-}
-
-class _CreateAlertBottomSheetState extends State<CreateAlertBottomSheet> {
-  final TextEditingController _priceController = TextEditingController();
-  String _selectedCrypto = 'BTC';
-  AlertType _selectedAlertType = AlertType.above;
-  
-  final List<Map<String, dynamic>> _cryptoOptions = [
-    {'symbol': 'BTC', 'name': 'Bitcoin', 'price': 70000.0},
-    {'symbol': 'ETH', 'name': 'Ethereum', 'price': 1544.0},
-    {'symbol': 'SOL', 'name': 'Solana', 'price': 156.78},
-    {'symbol': 'ADA', 'name': 'Cardano', 'price': 0.89},
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.alertToEdit != null) {
-      _selectedCrypto = widget.alertToEdit!.cryptoSymbol;
-      _selectedAlertType = widget.alertToEdit!.alertType;
-      _priceController.text = widget.alertToEdit!.targetPrice.toString();
-    }
-  }
+// --- Alert tile with swipe-to-delete ---
+class _Tile extends StatelessWidget {
+  final PriceAlert alert;
+  final bool triggered;
+  final VoidCallback onDelete;
+  const _Tile({required this.alert, this.triggered = false, required this.onDelete});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 600.h,
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                widget.alertToEdit != null ? 'Edit Alert' : 'Create Price Alert',
-                style: GoogleFonts.inter(
-                  fontSize: 20.sp,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              GestureDetector(
-                onTap: () => Get.back(),
-                child: Icon(Icons.close, color: Colors.white, size: 24.sp),
-              ),
-            ],
-          ),
-          SizedBox(height: 24.h),
-          _buildCryptoSelector(),
-          SizedBox(height: 20.h),
-          _buildAlertTypeSelector(),
-          SizedBox(height: 20.h),
-          _buildPriceInput(),
-          SizedBox(height: 24.h),
-          _buildCreateButton(),
-        ],
-      ),
-    );
-  }
+    final above = alert.direction.toLowerCase() == 'above';
+    final dirColor = above ? _green : _red;
+    final sym = CurrencySymbols.getSymbol(alert.fiatCurrency);
 
-  Widget _buildCryptoSelector() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Select Cryptocurrency',
-          style: GoogleFonts.inter(
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
-        SizedBox(height: 12.h),
-        SizedBox(
-          height: 200.h,
-          child: ListView.builder(
-            itemCount: _cryptoOptions.length,
-            itemBuilder: (context, index) {
-              final crypto = _cryptoOptions[index];
-              final isSelected = _selectedCrypto == crypto['symbol'];
-              
-              return GestureDetector(
-                onTap: () => setState(() => _selectedCrypto = crypto['symbol']),
-                child: Container(
-                  margin: EdgeInsets.only(bottom: 8.h),
-                  padding: EdgeInsets.all(12.w),
-                  decoration: BoxDecoration(
-                    color: isSelected ? const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2) : const Color(0xFF0A0A0A),
-                    borderRadius: BorderRadius.circular(12.r),
-                    boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
+    return Dismissible(
+      key: Key(alert.id),
+      direction: DismissDirection.endToStart,
+      confirmDismiss: (_) => showDialog<bool>(context: context, builder: (ctx) => AlertDialog(
+        backgroundColor: _card,
+        title: Text('Delete Alert', style: _inter(16, w: FontWeight.w600)),
+        content: Text('Remove this price alert?', style: _inter(14, c: _sub)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Cancel', style: _inter(14, c: _sub))),
+          TextButton(onPressed: () => Navigator.pop(ctx, true),
+            child: Text('Delete', style: _inter(14, c: _red))),
         ],
-        
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 32.w,
-                        height: 32.w,
-                        decoration: BoxDecoration(
-                          color: Colors.orange.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(16.r),
-                        ),
-                        child: Icon(Icons.currency_bitcoin, color: Colors.orange, size: 20.sp),
-                      ),
-                      SizedBox(width: 12.w),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              crypto['name'],
-                              style: GoogleFonts.inter(
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                              ),
-                            ),
-                            Text(
-                              crypto['symbol'],
-                              style: GoogleFonts.inter(
-                                fontSize: 12.sp,
-                                color: Colors.white.withValues(alpha: 0.6),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Text(
-                        '${CurrencySymbols.currentSymbol}${crypto['price'].toStringAsFixed(2)}',
-                        style: GoogleFonts.inter(
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
+      )),
+      onDismissed: (_) => onDelete(),
+      background: Container(
+        alignment: Alignment.centerRight, padding: EdgeInsets.only(right: 20.w),
+        margin: EdgeInsets.only(bottom: 10.h),
+        decoration: BoxDecoration(color: _red.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(14.r)),
+        child: Icon(Icons.delete_outline, color: _red, size: 24.sp),
+      ),
+      child: Opacity(
+        opacity: triggered ? 0.5 : 1.0,
+        child: Container(
+          margin: EdgeInsets.only(bottom: 10.h),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+          decoration: BoxDecoration(
+            color: _card, borderRadius: BorderRadius.circular(14.r),
+            border: Border.all(color: _divider),
           ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAlertTypeSelector() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Alert Type',
-          style: GoogleFonts.inter(
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
-        SizedBox(height: 12.h),
-        Row(
-          children: [
-            Expanded(
-              child: GestureDetector(
-                onTap: () => setState(() => _selectedAlertType = AlertType.above),
-                child: Container(
-                  padding: EdgeInsets.all(16.w),
-                  decoration: BoxDecoration(
-                    color: _selectedAlertType == AlertType.above 
-                        ? const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2) 
-                        : const Color(0xFF0A0A0A),
-                    borderRadius: BorderRadius.circular(12.r),
-                    boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
-                  ),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.arrow_upward,
-                        color: Colors.green,
-                        size: 24.sp,
-                      ),
-                      SizedBox(height: 4.h),
-                      Text(
-                        'Above',
-                        style: GoogleFonts.inter(
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+          child: Row(children: [
+            // Symbol badge
+            Container(
+              width: 40.w, height: 40.w, alignment: Alignment.center,
+              decoration: BoxDecoration(color: _accent.withValues(alpha: 0.15), shape: BoxShape.circle),
+              child: Text(
+                alert.cryptoSymbol.toUpperCase().substring(0, alert.cryptoSymbol.length > 2 ? 2 : alert.cryptoSymbol.length),
+                style: _inter(13, w: FontWeight.w700, c: _accent),
               ),
             ),
             SizedBox(width: 12.w),
-            Expanded(
-              child: GestureDetector(
-                onTap: () => setState(() => _selectedAlertType = AlertType.below),
-                child: Container(
-                  padding: EdgeInsets.all(16.w),
-                  decoration: BoxDecoration(
-                    color: _selectedAlertType == AlertType.below 
-                        ? const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2) 
-                        : const Color(0xFF0A0A0A),
-                    borderRadius: BorderRadius.circular(12.r),
-                    boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
-                  ),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.arrow_downward,
-                        color: Colors.red,
-                        size: 24.sp,
-                      ),
-                      SizedBox(height: 4.h),
-                      Text(
-                        'Below',
-                        style: GoogleFonts.inter(
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(alert.cryptoSymbol.toUpperCase(), style: _inter(15, w: FontWeight.w600)),
+              SizedBox(height: 2.h),
+              Text(
+                triggered && alert.hasTriggeredAt() ? 'Triggered ${_ts(alert.triggeredAt)}' : alert.cryptoId,
+                style: _inter(12, c: _sub),
               ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPriceInput() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Target Price (GBP)',
-          style: GoogleFonts.inter(
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
-        SizedBox(height: 12.h),
-        TextField(
-          controller: _priceController,
-          keyboardType: TextInputType.number,
-          style: GoogleFonts.inter(
-            fontSize: 18.sp,
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-          ),
-          decoration: InputDecoration(
-            hintText: '0.00',
-            hintStyle: GoogleFonts.inter(
-              fontSize: 18.sp,
-              color: Colors.white.withValues(alpha: 0.3),
-            ),
-            prefixIcon: Padding(
-              padding: EdgeInsets.only(left: 16.w, top: 16.h),
-              child: Text(
-                CurrencySymbols.currentSymbol,
-                style: GoogleFonts.inter(
-                  fontSize: 18.sp,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            filled: true,
-            fillColor: const Color(0xFF0A0A0A),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide.none,
-            ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCreateButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: _createAlert,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color.fromARGB(255, 78, 3, 208),
-          padding: EdgeInsets.symmetric(vertical: 16.h),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.r),
-          ),
-          elevation: 0,
-        ),
-        child: Text(
-          widget.alertToEdit != null ? 'Update Alert' : 'Create Alert',
-          style: GoogleFonts.inter(
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
+            ])),
+            Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+              Text('$sym${_fmtPrice(alert.targetPrice)}', style: _inter(15, w: FontWeight.w600)),
+              SizedBox(height: 2.h),
+              Row(mainAxisSize: MainAxisSize.min, children: [
+                Icon(above ? Icons.arrow_upward : Icons.arrow_downward, color: dirColor, size: 14.sp),
+                SizedBox(width: 2.w),
+                Text(above ? 'Above' : 'Below', style: _inter(12, w: FontWeight.w500, c: dirColor)),
+              ]),
+            ]),
+          ]),
         ),
       ),
     );
   }
 
-  void _createAlert() {
-    if (_priceController.text.isEmpty) return;
-    
-    final targetPrice = double.tryParse(_priceController.text);
-    if (targetPrice == null) return;
-    
-    final selectedCryptoData = _cryptoOptions.firstWhere(
-      (crypto) => crypto['symbol'] == _selectedCrypto,
-    );
-    
-    final alert = PriceAlert(
-      id: widget.alertToEdit?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
-      cryptoSymbol: _selectedCrypto,
-      cryptoName: selectedCryptoData['name'],
-      targetPrice: targetPrice,
-      currentPrice: selectedCryptoData['price'],
-      alertType: _selectedAlertType,
-      isActive: true,
-      createdAt: widget.alertToEdit?.createdAt ?? DateTime.now(),
-    );
-    
-    widget.onAlertCreated(alert);
-    Get.back();
+  String _ts(dynamic ts) {
+    try {
+      final d = DateTime.now().difference(ts.toDateTime());
+      if (d.inMinutes < 60) return '${d.inMinutes}m ago';
+      if (d.inHours < 24) return '${d.inHours}h ago';
+      return '${d.inDays}d ago';
+    } catch (_) { return ''; }
   }
 }
 
-// Price Alert Model
-class PriceAlert {
-  final String id;
-  final String cryptoSymbol;
-  final String cryptoName;
-  final double targetPrice;
-  final double currentPrice;
-  final AlertType alertType;
-  final bool isActive;
-  final DateTime createdAt;
-
-  const PriceAlert({
-    required this.id,
-    required this.cryptoSymbol,
-    required this.cryptoName,
-    required this.targetPrice,
-    required this.currentPrice,
-    required this.alertType,
-    required this.isActive,
-    required this.createdAt,
-  });
-
-  PriceAlert copyWith({
-    String? id,
-    String? cryptoSymbol,
-    String? cryptoName,
-    double? targetPrice,
-    double? currentPrice,
-    AlertType? alertType,
-    bool? isActive,
-    DateTime? createdAt,
-  }) {
-    return PriceAlert(
-      id: id ?? this.id,
-      cryptoSymbol: cryptoSymbol ?? this.cryptoSymbol,
-      cryptoName: cryptoName ?? this.cryptoName,
-      targetPrice: targetPrice ?? this.targetPrice,
-      currentPrice: currentPrice ?? this.currentPrice,
-      alertType: alertType ?? this.alertType,
-      isActive: isActive ?? this.isActive,
-      createdAt: createdAt ?? this.createdAt,
-    );
-  }
+// --- Create alert bottom sheet ---
+class _CreateSheet extends StatefulWidget {
+  final CryptoGrpcClient client;
+  final VoidCallback onCreated;
+  const _CreateSheet({required this.client, required this.onCreated});
+  @override
+  State<_CreateSheet> createState() => _CreateSheetState();
 }
 
-enum AlertType { above, below } 
+class _CreateSheetState extends State<_CreateSheet> {
+  final _priceCtrl = TextEditingController();
+  final _searchCtrl = TextEditingController();
+  List<CryptoMessage> _assets = [], _filtered = [];
+  CryptoMessage? _selected;
+  String _dir = 'above';
+  bool _loadingAssets = false, _creating = false, _picking = false;
+
+  @override
+  void initState() { super.initState(); _loadAssets(); }
+  @override
+  void dispose() { _priceCtrl.dispose(); _searchCtrl.dispose(); super.dispose(); }
+
+  Future<void> _loadAssets() async {
+    setState(() => _loadingAssets = true);
+    try {
+      final r = await widget.client.getSupportedAssets(perPage: 100, vsCurrency: 'usd');
+      setState(() { _assets = r.assets.toList(); _filtered = _assets; _loadingAssets = false; });
+    } catch (_) { setState(() => _loadingAssets = false); }
+  }
+
+  void _filter(String q) {
+    final lq = q.toLowerCase();
+    setState(() => _filtered = _assets.where((a) =>
+        a.name.toLowerCase().contains(lq) || a.symbol.toLowerCase().contains(lq)).toList());
+  }
+
+  Future<void> _create() async {
+    if (_selected == null) return;
+    final price = double.tryParse(_priceCtrl.text);
+    if (price == null || price <= 0) {
+      Get.snackbar('Invalid', 'Enter a valid target price',
+          backgroundColor: _card, colorText: Colors.white, snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+    setState(() => _creating = true);
+    try {
+      await widget.client.createPriceAlert(
+          cryptoId: _selected!.id, targetPrice: price, direction: _dir, fiatCurrency: 'USD');
+      widget.onCreated();
+      if (mounted) Navigator.pop(context);
+      Get.snackbar('Alert Created',
+          '${_selected!.symbol.toUpperCase()} ${_dir == 'above' ? 'above' : 'below'} \$${_fmtPrice(price)}',
+          backgroundColor: _card, colorText: Colors.white, snackPosition: SnackPosition.BOTTOM);
+    } catch (_) {
+      setState(() => _creating = false);
+      Get.snackbar('Error', 'Could not create alert',
+          backgroundColor: _red.withValues(alpha: 0.9), colorText: Colors.white, snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+
+  InputDecoration _inputDeco({String? hint, String? prefix, Widget? prefixIcon}) => InputDecoration(
+    hintText: hint, hintStyle: _inter(14, c: _sub),
+    prefixText: prefix, prefixStyle: _inter(16, c: _sub), prefixIcon: prefixIcon,
+    filled: true, fillColor: _bg, contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r), borderSide: BorderSide(color: _divider)),
+    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r), borderSide: BorderSide(color: _divider)),
+    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r), borderSide: BorderSide(color: _accent)),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final bottom = MediaQuery.of(context).viewInsets.bottom;
+    return Container(
+      padding: EdgeInsets.only(bottom: bottom),
+      decoration: BoxDecoration(color: _card, borderRadius: BorderRadius.vertical(top: Radius.circular(24.r))),
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
+          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+            // Handle
+            Center(child: Container(width: 40.w, height: 4.h,
+              decoration: BoxDecoration(color: _divider, borderRadius: BorderRadius.circular(2.r)))),
+            SizedBox(height: 20.h),
+            Text('Create Price Alert', style: _inter(18, w: FontWeight.bold)),
+            SizedBox(height: 20.h),
+            // Asset selector
+            Text('Asset', style: _inter(13, w: FontWeight.w500, c: _sub)),
+            SizedBox(height: 8.h),
+            GestureDetector(
+              onTap: () => setState(() => _picking = true),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                decoration: BoxDecoration(color: _bg, borderRadius: BorderRadius.circular(12.r), border: Border.all(color: _divider)),
+                child: Row(children: [
+                  Expanded(child: Text(
+                    _selected != null ? '${_selected!.name} (${_selected!.symbol.toUpperCase()})' : 'Select cryptocurrency',
+                    style: _inter(14, c: _selected != null ? Colors.white : _sub),
+                  )),
+                  Icon(Icons.keyboard_arrow_down, color: _sub, size: 20.sp),
+                ]),
+              ),
+            ),
+            if (_picking) ...[
+              SizedBox(height: 8.h),
+              TextField(
+                controller: _searchCtrl, onChanged: _filter,
+                style: _inter(14), decoration: _inputDeco(hint: 'Search assets...', prefixIcon: Icon(Icons.search, color: _sub, size: 20.sp)),
+              ),
+              SizedBox(height: 4.h),
+              Container(
+                height: 180.h,
+                decoration: BoxDecoration(color: _bg, borderRadius: BorderRadius.circular(12.r), border: Border.all(color: _divider)),
+                child: _loadingAssets
+                  ? const Center(child: CircularProgressIndicator(color: _accent))
+                  : ListView.builder(
+                      padding: EdgeInsets.zero, itemCount: _filtered.length,
+                      itemBuilder: (_, i) {
+                        final a = _filtered[i];
+                        final sel = _selected?.id == a.id;
+                        return ListTile(
+                          dense: true, selected: sel, selectedTileColor: _accent.withValues(alpha: 0.1),
+                          leading: a.image.isNotEmpty
+                            ? CircleAvatar(radius: 14.r, backgroundImage: NetworkImage(a.image), backgroundColor: _divider)
+                            : CircleAvatar(radius: 14.r, backgroundColor: _accent.withValues(alpha: 0.15),
+                                child: Text(a.symbol.toUpperCase().substring(0, 1), style: _inter(12, w: FontWeight.w700, c: _accent))),
+                          title: Text(a.name, style: _inter(13)),
+                          trailing: Text(a.symbol.toUpperCase(), style: _inter(12, c: _sub)),
+                          onTap: () => setState(() { _selected = a; _picking = false; _searchCtrl.clear(); _filtered = _assets; }),
+                        );
+                      }),
+              ),
+            ],
+            SizedBox(height: 16.h),
+            // Target price
+            Text('Target Price (USD)', style: _inter(13, w: FontWeight.w500, c: _sub)),
+            SizedBox(height: 8.h),
+            TextField(
+              controller: _priceCtrl,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              style: _inter(16), decoration: _inputDeco(hint: '0.00', prefix: '\$ '),
+            ),
+            SizedBox(height: 16.h),
+            // Direction
+            Text('Direction', style: _inter(13, w: FontWeight.w500, c: _sub)),
+            SizedBox(height: 8.h),
+            Row(children: [
+              _dirChip('Above', 'above', _green), SizedBox(width: 12.w), _dirChip('Below', 'below', _red),
+            ]),
+            SizedBox(height: 24.h),
+            // Create button
+            SizedBox(width: double.infinity, height: 50.h, child: ElevatedButton(
+              onPressed: _creating || _selected == null ? null : _create,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _accent, disabledBackgroundColor: _accent.withValues(alpha: 0.3),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
+              ),
+              child: _creating
+                ? SizedBox(width: 22.w, height: 22.w, child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                : Text('Create Alert', style: _inter(16, w: FontWeight.w600)),
+            )),
+            SizedBox(height: 8.h),
+          ]),
+        ),
+      ),
+    );
+  }
+
+  Widget _dirChip(String label, String val, Color c) {
+    final sel = _dir == val;
+    return Expanded(child: GestureDetector(
+      onTap: () => setState(() => _dir = val),
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 12.h),
+        decoration: BoxDecoration(
+          color: sel ? c.withValues(alpha: 0.15) : _bg, borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: sel ? c : _divider, width: sel ? 1.5 : 1),
+        ),
+        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+          Icon(val == 'above' ? Icons.arrow_upward : Icons.arrow_downward, color: sel ? c : _sub, size: 16.sp),
+          SizedBox(width: 6.w),
+          Text(label, style: _inter(14, w: FontWeight.w600, c: sel ? c : _sub)),
+        ]),
+      ),
+    ));
+  }
+}

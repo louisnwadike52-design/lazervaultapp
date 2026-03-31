@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/src/features/investments/presentation/theme/invest_trading_ui.dart';
 
+/// Revolut-style compact action tile (flat surface + accent ring), not gradient pills.
 class QuickActionButton extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -18,48 +20,47 @@ class QuickActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 56.w,
-            height: 56.w,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  color,
-                  color.withValues(alpha: 0.7),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(16.r),
-              boxShadow: [
-                BoxShadow(
-                  color: color.withValues(alpha: 0.3),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16.r),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 6.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 56.w,
+                height: 56.w,
+                decoration: BoxDecoration(
+                  color: InvestTradingUi.surfaceElevated,
+                  borderRadius: BorderRadius.circular(16.r),
+                  border: Border.all(
+                    color: color.withValues(alpha: 0.4),
+                  ),
                 ),
-              ],
-            ),
-            child: Icon(
-              icon,
-              color: Colors.white,
-              size: 26.sp,
-            ),
+                child: Icon(
+                  icon,
+                  color: color,
+                  size: 26.sp,
+                ),
+              ),
+              SizedBox(height: 8.h),
+              Text(
+                label,
+                style: GoogleFonts.inter(
+                  color: InvestTradingUi.textSecondary,
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
           ),
-          SizedBox(height: 8.h),
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              color: const Color(0xFF94A3B8),
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

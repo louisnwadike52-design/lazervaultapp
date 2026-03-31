@@ -52,22 +52,12 @@ class AuthRepositoryImpl implements IAuthRepository {
         final user = response.data.user;
         final session = response.data.session;
 
-        final userModel = UserModel(
-          id: user.id,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          phoneNumber: user.hasPhone() ? user.phone : null,
-          username: user.username.isNotEmpty ? user.username : null,
-          verified: user.phoneVerified,
-          isEmailVerified: user.emailVerified,
-          profilePicture: user.profilePicture.isEmpty ? null : user.profilePicture,
-          createdAt: DateTime.tryParse(user.createdAt) ?? DateTime.now(),
-          updatedAt: DateTime.tryParse(user.updatedAt) ?? DateTime.now(),
-          signupStatus: user.signupStatus.isNotEmpty ? user.signupStatus : null,
-          hasPasscode: response.data.hasPasscode,
-          hasTransactionPin: response.data.hasTransactionPin,
-        );
+        final userModel = UserModel.fromAuthProto(user)
+            .copyWith(
+              hasPasscode: response.data.hasPasscode,
+              hasTransactionPin: response.data.hasTransactionPin,
+            )
+            .withRolesFromAccessToken(session.accessToken);
 
         final now = DateTime.now();
         final expiresAt = session.hasExpiresIn()
@@ -272,20 +262,8 @@ class AuthRepositoryImpl implements IAuthRepository {
 
       print('gRPC Signup successful. User created with tokens.');
 
-      // Convert user proto to model
-      final userModel = UserModel(
-        id: signupResponse.user.id,
-        email: signupResponse.user.email,
-        firstName: signupResponse.user.firstName,
-        lastName: signupResponse.user.lastName,
-        phoneNumber: signupResponse.user.phone,
-        username: signupResponse.user.username.isNotEmpty ? signupResponse.user.username : null,
-        verified: signupResponse.user.phoneVerified, // Use phoneVerified for overall verified status
-        isEmailVerified: signupResponse.user.emailVerified,
-        profilePicture: signupResponse.user.profilePicture.isEmpty ? null : signupResponse.user.profilePicture,
-        createdAt: DateTime.tryParse(signupResponse.user.createdAt) ?? DateTime.now(),
-        updatedAt: DateTime.tryParse(signupResponse.user.updatedAt) ?? DateTime.now(),
-      );
+      final userModel = UserModel.fromAuthProto(signupResponse.user)
+          .withRolesFromAccessToken(signupResponse.accessToken);
 
       // Create session model with tokens
       final now = DateTime.now();
@@ -589,7 +567,7 @@ class AuthRepositoryImpl implements IAuthRepository {
             createdAt: now,
             updatedAt: now,
             profilePicture: userAvatarUrl?.isNotEmpty == true ? userAvatarUrl : null,
-          );
+          ).withRolesFromAccessToken(accessToken);
 
           final sessionModel = SessionModel(
             id: userId,
@@ -687,21 +665,9 @@ class AuthRepositoryImpl implements IAuthRepository {
         // Check if user data is present
         UserModel userModel;
         if (response.hasUser()) {
-          userModel = UserModel(
-            id: response.user.id,
-            email: response.user.email,
-            firstName: response.user.firstName,
-            lastName: response.user.lastName,
-            phoneNumber: response.user.phone,
-            username: response.user.username.isNotEmpty ? response.user.username : null,
-            verified: response.user.phoneVerified, // Use phoneVerified for overall verified status
-            isEmailVerified: response.user.emailVerified,
-            profilePicture: response.user.profilePicture.isEmpty ? null : response.user.profilePicture,
-            createdAt: DateTime.tryParse(response.user.createdAt) ?? DateTime.now(),
-            updatedAt: DateTime.tryParse(response.user.updatedAt) ?? DateTime.now(),
-          );
+          userModel = UserModel.fromAuthProto(response.user)
+              .withRolesFromAccessToken(response.accessToken);
         } else {
-          // If no user data, create a minimal user model
           userModel = UserModel(
             id: '',
             email: '',
@@ -713,7 +679,7 @@ class AuthRepositoryImpl implements IAuthRepository {
             profilePicture: null,
             createdAt: DateTime.now(),
             updatedAt: DateTime.now(),
-          );
+          ).withRolesFromAccessToken(response.accessToken);
         }
 
         final now = DateTime.now();
@@ -758,19 +724,18 @@ class AuthRepositoryImpl implements IAuthRepository {
       if (response.valid) {
         print('Token is valid for user: ${response.email}');
 
-        // Create user model from validation response
         final userModel = UserModel(
           id: response.userId,
           email: response.email,
           firstName: '', // Not returned in validation response
           lastName: '', // Not returned in validation response
-          phoneNumber: '', // Not returned in validation response
-          verified: true, // Token is valid, assume verified
-          isEmailVerified: true, // Token validation implies email is verified
+          phoneNumber: '',
+          verified: true,
+          isEmailVerified: true,
           profilePicture: null,
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
-        );
+        ).withRolesFromAccessToken(accessToken);
 
         // Create a minimal session model
         final now = DateTime.now();

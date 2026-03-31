@@ -436,95 +436,101 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
 
     final moveTransactionId = const Uuid().v4();
 
-    await validateTransactionPin(
+    String? verificationToken;
+
+    final success = await validateTransactionPin(
       context: context,
       transactionId: moveTransactionId,
       transactionType: 'move_money_transfer',
       amount: amountNaira,
       currency: 'NGN',
-      fee: _feeCalculation?.totalFeeNaira,
-      totalAmount: _feeCalculation?.totalDebitNaira ?? amountNaira,
-      onPinValidated: (verificationToken) async {
-        pinModalKey.currentState?.setProcessing();
-
-        final authState = context.read<AuthenticationCubit>().state;
-        if (authState is! AuthenticationSuccess) {
-          throw Exception('Authentication required');
-        }
-
-        final cubit = context.read<MoveMoneyCubit>();
-        await cubit.initiateMoveTransfer(
-          userId: authState.profile.userId,
-          sourceLinkedAccountId: _sourceAccount!.id,
-          destinationLinkedAccountId: _destinationAccount!.id,
-          amount: amountKobo,
-          narration: _narrationController.text.isNotEmpty
-              ? _narrationController.text
-              : null,
-          verificationToken: verificationToken,
-          transactionId: moveTransactionId,
-          idempotencyKey: const Uuid().v4(),
-        );
-
-        final currentState = cubit.state;
-        if (currentState is MoveTransferInitiated) {
-          if (currentState.requiresAuthorization &&
-              currentState.paymentUrl != null &&
-              currentState.paymentUrl!.isNotEmpty) {
-            // No mandate — DirectPay fallback: open in-app WebView
-            pinModalKey.currentState?.setProcessing();
-            if (mounted) Navigator.of(context).pop(); // Close PIN modal
-
-            final authSuccess = await _handleDirectPayAuthorization(
-              currentState.paymentUrl!,
-            );
-
-            if (authSuccess) {
-              // Start polling transfer status
-              cubit.startPollingTransferStatus(
-                transferId: currentState.transfer.id,
-                userId: authState.profile.userId,
-              );
-              Get.offNamed('/move-money/receipt',
-                  arguments: currentState.transfer);
-            } else {
-              // WebView was cancelled/failed — check if transfer might still
-              // be processing server-side (user may have completed auth in
-              // browser but redirect wasn't detected).
-              Get.snackbar(
-                'Authorization Cancelled',
-                'Transfer may still be processing. Check transfer history for updates.',
-                snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: const Color(0xFF1F1F1F),
-                colorText: const Color(0xFFFB923C),
-                duration: const Duration(seconds: 5),
-                mainButton: TextButton(
-                  onPressed: () => Get.toNamed('/move-money/history'),
-                  child: Text(
-                    'View History',
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFF3B82F6),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              );
-            }
-          } else {
-            // Mandate active — transfer went through without WebView
-            pinModalKey.currentState?.setSuccess();
-            await Future.delayed(const Duration(milliseconds: 800));
-            if (mounted) Navigator.of(context).pop();
-            Get.offNamed('/move-money/receipt',
-                arguments: currentState.transfer);
-          }
-        } else if (currentState is MoveMoneyNeedsReauth) {
-          throw Exception(currentState.message);
-        } else if (currentState is MoveMoneyError) {
-          throw Exception(currentState.message);
-        }
+      title: 'Confirm Transfer',
+      message: 'Confirm move money transfer of NGN ${amountNaira.toStringAsFixed(2)}',
+      onPinValidated: (token) async {
+        verificationToken = token;
       },
     );
+
+    if (!success || verificationToken == null) return;
+    if (!mounted) return;
+
+    // Execute transfer AFTER modal is dismissed
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) {
+      Get.snackbar('Error', 'Authentication required',
+          backgroundColor: const Color(0xFFEF4444), colorText: Colors.white,
+          snackPosition: SnackPosition.TOP);
+      return;
+    }
+
+    final cubit = context.read<MoveMoneyCubit>();
+    await cubit.initiateMoveTransfer(
+      userId: authState.profile.userId,
+      sourceLinkedAccountId: _sourceAccount!.id,
+      destinationLinkedAccountId: _destinationAccount!.id,
+      amount: amountKobo,
+      narration: _narrationController.text.isNotEmpty
+          ? _narrationController.text
+          : null,
+      verificationToken: verificationToken!,
+      transactionId: moveTransactionId,
+      idempotencyKey: const Uuid().v4(),
+    );
+
+    if (!mounted) return;
+
+    final currentState = cubit.state;
+    if (currentState is MoveTransferInitiated) {
+      if (currentState.requiresAuthorization &&
+          currentState.paymentUrl != null &&
+          currentState.paymentUrl!.isNotEmpty) {
+        // No mandate — DirectPay fallback: open in-app WebView
+        final authSuccess = await _handleDirectPayAuthorization(
+          currentState.paymentUrl!,
+        );
+
+        if (authSuccess) {
+          // Start polling transfer status
+          cubit.startPollingTransferStatus(
+            transferId: currentState.transfer.id,
+            userId: authState.profile.userId,
+          );
+          Get.offNamed('/move-money/receipt',
+              arguments: currentState.transfer);
+        } else {
+          Get.snackbar(
+            'Authorization Cancelled',
+            'Transfer may still be processing. Check transfer history for updates.',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: const Color(0xFF1F1F1F),
+            colorText: const Color(0xFFFB923C),
+            duration: const Duration(seconds: 5),
+            mainButton: TextButton(
+              onPressed: () => Get.toNamed('/move-money/history'),
+              child: Text(
+                'View History',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF3B82F6),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          );
+        }
+      } else {
+        // Mandate active — transfer went through without WebView
+        Get.offNamed('/move-money/receipt',
+            arguments: currentState.transfer);
+      }
+    } else if (currentState is MoveMoneyNeedsReauth) {
+      Get.snackbar('Re-authorization Required', currentState.message,
+          backgroundColor: const Color(0xFFFB923C), colorText: Colors.white,
+          snackPosition: SnackPosition.TOP);
+    } else if (currentState is MoveMoneyError) {
+      Get.snackbar('Transfer Failed', currentState.message,
+          backgroundColor: const Color(0xFFEF4444), colorText: Colors.white,
+          snackPosition: SnackPosition.TOP);
+    }
   }
 
   // ---------------------------------------------------------------------------

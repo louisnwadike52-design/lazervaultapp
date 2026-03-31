@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:grpc/grpc.dart';
 
 import 'package:lazervault/core/exceptions/server_exception.dart';
@@ -28,6 +30,7 @@ class PaymentsTransferResult {
   final double? newBalance;  // New balance in major units
   final String? recipientName;
   final DateTime? scheduledAt;
+  final String? providerReference; // Flutterwave/provider tx reference for receipt compliance
 
   PaymentsTransferResult({
     required this.success,
@@ -42,12 +45,23 @@ class PaymentsTransferResult {
     this.newBalance,
     this.recipientName,
     this.scheduledAt,
+    this.providerReference,
   });
 
   /// Create result from SendFundsResponse (Transfer Gateway API)
   factory PaymentsTransferResult.fromSendFundsResponse(payments.SendFundsResponse response) {
     final hasPayment = response.hasPayment();
     final payment = hasPayment ? response.payment : null;
+
+    // Extract provider reference from payment metadata JSON
+    String? providerRef;
+    if (payment?.hasMetadata() == true && payment!.metadata.isNotEmpty) {
+      try {
+        final meta = jsonDecode(payment.metadata) as Map<String, dynamic>;
+        providerRef = meta['provider_reference'] as String? ??
+            meta['provider_ref'] as String?;
+      } catch (_) {}
+    }
 
     return PaymentsTransferResult(
       success: hasPayment,
@@ -63,6 +77,7 @@ class PaymentsTransferResult {
           : null,
       newBalance: response.hasNewBalance() ? response.newBalance : null,
       recipientName: response.hasRecipientName() ? response.recipientName : null,
+      providerReference: providerRef,
     );
   }
 }

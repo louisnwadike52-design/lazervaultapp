@@ -113,6 +113,7 @@ class TransferWebSocketService {
   }
 
   /// Connect using WebSocket protocol
+  /// Uses transfer-gateway **HTTP** port (default 8084), not gRPC 50076 — see PORTS_CONFIG.json / service-discovery.sh.
   Future<void> _connectWebSocket(String userId, String accessToken) async {
     final wsHost = dotenv.env['TRANSFER_WS_HOST'] ?? dotenv.env['TRANSFER_GRPC_HOST'] ?? '10.0.2.2';
     final wsPort = int.tryParse(dotenv.env['TRANSFER_WS_PORT'] ?? '8084') ?? 8084;
@@ -158,7 +159,7 @@ class TransferWebSocketService {
     print('TransferWebSocketService: WebSocket connected successfully');
   }
 
-  /// Connect using Server-Sent Events (SSE) - fallback
+  /// Connect using Server-Sent Events (SSE) - fallback (same host/port as WebSocket: transfer-gateway HTTP).
   Future<void> _connectSSE(String userId, String accessToken) async {
     final wsHost = dotenv.env['TRANSFER_WS_HOST'] ?? dotenv.env['TRANSFER_GRPC_HOST'] ?? '10.0.2.2';
     final wsPort = int.tryParse(dotenv.env['TRANSFER_WS_PORT'] ?? '8084') ?? 8084;

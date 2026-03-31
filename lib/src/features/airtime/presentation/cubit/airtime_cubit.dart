@@ -175,25 +175,36 @@ class AirtimeCubit extends Cubit<AirtimeState> {
         totalAmount: amount,
       );
 
+      // Step 0: Payment Initiated
       if (isClosed) return;
       emit(AirtimePaymentProcessing(
         transaction: tempTransaction,
-        progress: 0.2,
-        currentStep: 'Validating transaction...',
+        progress: 0.1,
+        currentStep: 'Payment Initiated',
       ));
 
-      await Future.delayed(const Duration(milliseconds: 500));
-      if (isClosed) return;
-      emit(AirtimePaymentProcessing(
-        transaction: tempTransaction,
-        progress: 0.4,
-        currentStep: 'Debiting your account...',
-      ));
-
-      // Set the selected account as active so gRPC metadata includes x-account-id
+      // Set active account for gRPC metadata
       if (sourceAccountId != null && _accountManager != null) {
         _accountManager!.setActiveAccount(sourceAccountId);
       }
+
+      // Step 1: Confirming Details
+      await Future.delayed(Duration.zero); // Yield to allow UI to render step 0
+      if (isClosed) return;
+      emit(AirtimePaymentProcessing(
+        transaction: tempTransaction,
+        progress: 0.3,
+        currentStep: 'Confirming Details',
+      ));
+
+      // Step 2: Processing Payment — actual gRPC call
+      await Future.delayed(Duration.zero); // Yield to allow UI to render step 1
+      if (isClosed) return;
+      emit(AirtimePaymentProcessing(
+        transaction: tempTransaction,
+        progress: 0.5,
+        currentStep: 'Processing Payment',
+      ));
 
       final transaction = await repository.purchaseAirtime(
         countryCode: countryCode,
@@ -214,8 +225,12 @@ class AirtimeCubit extends Cubit<AirtimeState> {
           transaction: transaction,
         ));
       } else {
-        // completed, processing, or pending — a successful gRPC response
-        // without an exception means the payment was accepted
+        // Step 3: Airtime Delivered
+        emit(AirtimePaymentProcessing(
+          transaction: transaction,
+          progress: 1.0,
+          currentStep: 'Airtime Delivered',
+        ));
         _cacheManager?.invalidatePattern('airtime_providers:');
         emit(AirtimePaymentSuccess(transaction: transaction));
       }
@@ -228,6 +243,91 @@ class AirtimeCubit extends Cubit<AirtimeState> {
         ));
       } else {
         emit(AirtimePaymentFailed(message: _friendlyErrorMessage(e)));
+      }
+    }
+  }
+
+  // Process airtime transfer with verification token
+  Future<void> processTransfer({
+    required String countryCode,
+    required String recipientPhone,
+    required String recipientName,
+    required String senderPhone,
+    required String network,
+    required double amount,
+    required String currency,
+    required String transactionId,
+    required String verificationToken,
+    required String sourceAccountId,
+    String? operatorId,
+    String? transferNote,
+  }) async {
+    try {
+      final userId = await _getCurrentUserId();
+      final tempTransaction = AirtimeTransaction(
+        id: transactionId,
+        transactionReference: 'processing',
+        networkProvider: NetworkProviderType.mtn,
+        recipientPhoneNumber: recipientPhone,
+        amount: amount,
+        currency: currency,
+        status: AirtimeTransactionStatus.processing,
+        createdAt: DateTime.now(),
+        userId: userId,
+        totalAmount: amount,
+      );
+
+      if (isClosed) return;
+      emit(AirtimeTransferProcessing(
+        transaction: tempTransaction,
+        progress: 0.2,
+        currentStep: 'Validating transfer...',
+      ));
+
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (isClosed) return;
+      emit(AirtimeTransferProcessing(
+        transaction: tempTransaction,
+        progress: 0.4,
+        currentStep: 'Reserving funds...',
+      ));
+
+      if (_accountManager != null) {
+        _accountManager!.setActiveAccount(sourceAccountId);
+      }
+
+      final transaction = await repository.transferAirtime(
+        countryCode: countryCode,
+        recipientPhone: recipientPhone,
+        recipientName: recipientName,
+        senderPhone: senderPhone,
+        network: network,
+        amount: amount,
+        currency: currency,
+        transactionId: transactionId,
+        verificationToken: verificationToken,
+        operatorId: operatorId,
+        transferNote: transferNote,
+      );
+
+      if (isClosed) return;
+      if (transaction.status == AirtimeTransactionStatus.failed) {
+        emit(AirtimeTransferFailed(
+          message: transaction.failureReason ?? 'Transfer failed',
+          transaction: transaction,
+        ));
+      } else {
+        _cacheManager?.invalidatePattern('airtime_providers:');
+        emit(AirtimeTransferSuccess(transaction: transaction));
+      }
+    } catch (e) {
+      if (isClosed) return;
+      if (_isNetworkError(e)) {
+        emit(const AirtimeTransferFailed(
+          message: 'No internet connection. Please check your network and try again.',
+        ));
+      } else {
+        emit(AirtimeTransferFailed(message: _friendlyErrorMessage(e)));
       }
     }
   }

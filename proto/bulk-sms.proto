@@ -1,0 +1,396 @@
+syntax = "proto3";
+
+package bulksms;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "bulk-sms-service/proto";
+
+// BulkSmsService provides bulk SMS messaging capabilities with multi-provider
+// support (Termii primary, Africa's Talking fallback) and sticky provider routing.
+service BulkSmsService {
+  // === PROVIDER & PACKAGE DISCOVERY ===
+
+  // Get available SMS providers
+  rpc GetSmsProviders(GetSmsProvidersRequest) returns (GetSmsProvidersResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/sms/providers"
+    };
+  }
+
+  // Get available SMS credit packages from the healthy provider
+  rpc GetSmsPackages(GetSmsPackagesRequest) returns (GetSmsPackagesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/sms/packages"
+    };
+  }
+
+  // Get user's SMS credit balance
+  rpc GetSmsBalance(GetSmsBalanceRequest) returns (GetSmsBalanceResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/sms/balance"
+    };
+  }
+
+  // === CREDIT PURCHASES ===
+
+  // Purchase SMS credits (requires transaction PIN)
+  rpc PurchaseSmsCredits(PurchaseSmsCreditRequest) returns (PurchaseSmsCreditResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/sms/credits/purchase"
+      body: "*"
+    };
+  }
+
+  // === CAMPAIGN OPERATIONS ===
+
+  // Send bulk SMS campaign (requires transaction PIN)
+  rpc SendBulkSms(SendBulkSmsRequest) returns (SendBulkSmsResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/sms/send"
+      body: "*"
+    };
+  }
+
+  // Schedule bulk SMS for future delivery
+  rpc ScheduleSms(ScheduleSmsRequest) returns (ScheduleSmsResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/sms/schedule"
+      body: "*"
+    };
+  }
+
+  // Cancel a scheduled SMS campaign
+  rpc CancelScheduledSms(CancelScheduledSmsRequest) returns (CancelScheduledSmsResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/sms/cancel"
+      body: "*"
+    };
+  }
+
+  // === STATUS & HISTORY ===
+
+  // Get campaign delivery status
+  rpc GetSmsCampaignStatus(GetSmsCampaignStatusRequest) returns (GetSmsCampaignStatusResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/sms/campaign/{campaign_id}/status"
+    };
+  }
+
+  // Get detailed delivery report for a campaign
+  rpc GetDeliveryReport(GetDeliveryReportRequest) returns (GetDeliveryReportResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/sms/campaign/{campaign_id}/delivery-report"
+    };
+  }
+
+  // Get SMS campaign history
+  rpc GetSmsHistory(GetSmsHistoryRequest) returns (GetSmsHistoryResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/sms/history"
+    };
+  }
+
+  // Get approved sender IDs for the user
+  rpc GetSenderIds(GetSenderIdsRequest) returns (GetSenderIdsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/sms/sender-ids"
+    };
+  }
+
+  // Request a new sender ID registration
+  rpc RequestSenderId(RequestSenderIdRequest) returns (RequestSenderIdResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/sms/sender-ids"
+      body: "*"
+    };
+  }
+}
+
+// ==================== ENUMS ====================
+
+enum CampaignStatus {
+  CAMPAIGN_STATUS_UNSPECIFIED = 0;
+  CAMPAIGN_STATUS_PENDING = 1;
+  CAMPAIGN_STATUS_SENDING = 2;
+  CAMPAIGN_STATUS_COMPLETED = 3;
+  CAMPAIGN_STATUS_FAILED = 4;
+  CAMPAIGN_STATUS_SCHEDULED = 5;
+  CAMPAIGN_STATUS_CANCELLED = 6;
+  CAMPAIGN_STATUS_PARTIALLY_COMPLETED = 7;
+}
+
+enum DeliveryStatus {
+  DELIVERY_STATUS_UNSPECIFIED = 0;
+  DELIVERY_STATUS_PENDING = 1;
+  DELIVERY_STATUS_SENT = 2;
+  DELIVERY_STATUS_DELIVERED = 3;
+  DELIVERY_STATUS_FAILED = 4;
+  DELIVERY_STATUS_DND_FILTERED = 5;
+  DELIVERY_STATUS_INVALID_NUMBER = 6;
+  DELIVERY_STATUS_REJECTED = 7;
+}
+
+enum SenderIdStatus {
+  SENDER_ID_STATUS_UNSPECIFIED = 0;
+  SENDER_ID_STATUS_PENDING = 1;
+  SENDER_ID_STATUS_APPROVED = 2;
+  SENDER_ID_STATUS_REJECTED = 3;
+}
+
+// ==================== CORE MESSAGES ====================
+
+message SmsProvider {
+  string id = 1;
+  string name = 2;
+  string display_name = 3;
+  repeated string supported_countries = 4;
+  bool is_active = 5;
+  bool supports_dnd = 6;
+  bool supports_scheduling = 7;
+  bool supports_unicode = 8;
+  bool supports_templates = 9;
+}
+
+message SmsPackage {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  int32 credit_count = 4;
+  int64 price_kobo = 5;
+  string currency = 6;
+  string provider_name = 7;
+  int32 validity_days = 8;
+  bool is_active = 9;
+  bool is_popular = 10;
+}
+
+message SmsRecipient {
+  string phone_number = 1;
+  string name = 2;
+  map<string, string> variables = 3;
+}
+
+message SmsCampaign {
+  string id = 1;
+  string user_id = 2;
+  string account_id = 3;
+  string provider_name = 4;
+  string sender_id = 5;
+  string message_template = 6;
+  int32 recipients_count = 7;
+  int32 delivered_count = 8;
+  int32 failed_count = 9;
+  int32 dnd_filtered_count = 10;
+  int32 pending_count = 11;
+  CampaignStatus status = 12;
+  int64 cost_kobo = 13;
+  string currency = 14;
+  string reference = 15;
+  google.protobuf.Timestamp created_at = 16;
+  google.protobuf.Timestamp scheduled_at = 17;
+  google.protobuf.Timestamp completed_at = 18;
+  int32 credits_used = 19;
+}
+
+message SmsDeliveryReport {
+  string id = 1;
+  string campaign_id = 2;
+  string phone_number = 3;
+  string recipient_name = 4;
+  DeliveryStatus status = 5;
+  string provider_message_id = 6;
+  google.protobuf.Timestamp sent_at = 7;
+  google.protobuf.Timestamp delivered_at = 8;
+  string failure_reason = 9;
+}
+
+message SmsBalance {
+  int32 credits_remaining = 1;
+  string provider_name = 2;
+  google.protobuf.Timestamp last_purchase_at = 3;
+}
+
+message SmsPurchase {
+  string id = 1;
+  string user_id = 2;
+  string account_id = 3;
+  string provider_name = 4;
+  string package_id = 5;
+  int32 credits_purchased = 6;
+  int64 amount_kobo = 7;
+  string currency = 8;
+  string reference = 9;
+  string status = 10;
+  google.protobuf.Timestamp created_at = 11;
+}
+
+message SenderId {
+  string id = 1;
+  string user_id = 2;
+  string sender_id = 3;
+  SenderIdStatus status = 4;
+  string country = 5;
+  google.protobuf.Timestamp requested_at = 6;
+  google.protobuf.Timestamp approved_at = 7;
+  string rejection_reason = 8;
+}
+
+message PaginationInfo {
+  int32 current_page = 1;
+  int32 total_pages = 2;
+  int32 total_items = 3;
+  int32 items_per_page = 4;
+  bool has_next = 5;
+  bool has_prev = 6;
+}
+
+// ==================== REQUEST / RESPONSE MESSAGES ====================
+
+// --- GetSmsProviders ---
+message GetSmsProvidersRequest {
+  string country = 1;
+}
+
+message GetSmsProvidersResponse {
+  repeated SmsProvider providers = 1;
+}
+
+// --- GetSmsPackages ---
+message GetSmsPackagesRequest {
+  string country = 1;
+  string currency = 2;
+}
+
+message GetSmsPackagesResponse {
+  repeated SmsPackage packages = 1;
+  string provider_name = 2; // Which provider served this listing (sticky provider)
+}
+
+// --- GetSmsBalance ---
+message GetSmsBalanceRequest {}
+
+message GetSmsBalanceResponse {
+  repeated SmsBalance balances = 1;
+  int32 total_credits = 2;
+}
+
+// --- PurchaseSmsCredits ---
+message PurchaseSmsCreditRequest {
+  string package_id = 1;
+  string provider_name = 2;       // Sticky: must match listing provider
+  string idempotency_key = 3;
+  string transaction_id = 4;      // For PIN verification
+  string verification_token = 5;  // From PIN verification
+  string currency = 6;
+}
+
+message PurchaseSmsCreditResponse {
+  SmsPurchase purchase = 1;
+  int32 new_credit_balance = 2;
+  double new_wallet_balance = 3;
+  string message = 4;
+}
+
+// --- SendBulkSms ---
+message SendBulkSmsRequest {
+  string provider_name = 1;       // Sticky: must match listing provider
+  string sender_id = 2;
+  string message_template = 3;    // Supports {{variable}} placeholders
+  repeated SmsRecipient recipients = 4;
+  string idempotency_key = 5;
+  string transaction_id = 6;      // For PIN verification
+  string verification_token = 7;  // From PIN verification
+}
+
+message SendBulkSmsResponse {
+  SmsCampaign campaign = 1;
+  int32 new_credit_balance = 2;
+  string message = 3;
+}
+
+// --- ScheduleSms ---
+message ScheduleSmsRequest {
+  string provider_name = 1;
+  string sender_id = 2;
+  string message_template = 3;
+  repeated SmsRecipient recipients = 4;
+  google.protobuf.Timestamp scheduled_at = 5;
+  string idempotency_key = 6;
+  string transaction_id = 7;
+  string verification_token = 8;
+}
+
+message ScheduleSmsResponse {
+  SmsCampaign campaign = 1;
+  int32 new_credit_balance = 2;
+  string message = 3;
+}
+
+// --- CancelScheduledSms ---
+message CancelScheduledSmsRequest {
+  string campaign_id = 1;
+}
+
+message CancelScheduledSmsResponse {
+  bool success = 1;
+  int32 credits_refunded = 2;
+  int32 new_credit_balance = 3;
+  string message = 4;
+}
+
+// --- GetSmsCampaignStatus ---
+message GetSmsCampaignStatusRequest {
+  string campaign_id = 1;
+}
+
+message GetSmsCampaignStatusResponse {
+  SmsCampaign campaign = 1;
+}
+
+// --- GetDeliveryReport ---
+message GetDeliveryReportRequest {
+  string campaign_id = 1;
+  int32 page = 2;
+  int32 page_size = 3;
+  string status_filter = 4; // Optional: filter by delivery status
+}
+
+message GetDeliveryReportResponse {
+  repeated SmsDeliveryReport reports = 1;
+  PaginationInfo pagination = 2;
+}
+
+// --- GetSmsHistory ---
+message GetSmsHistoryRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  string status_filter = 3;
+  string start_date = 4;
+  string end_date = 5;
+}
+
+message GetSmsHistoryResponse {
+  repeated SmsCampaign campaigns = 1;
+  PaginationInfo pagination = 2;
+}
+
+// --- GetSenderIds ---
+message GetSenderIdsRequest {}
+
+message GetSenderIdsResponse {
+  repeated SenderId sender_ids = 1;
+}
+
+// --- RequestSenderId ---
+message RequestSenderIdRequest {
+  string sender_id = 1;
+  string country = 2;
+  string purpose = 3; // Description of use case for NCC approval
+}
+
+message RequestSenderIdResponse {
+  SenderId sender_id = 1;
+  string message = 2;
+}

@@ -1,14 +1,13 @@
-// This is a generated file - do not edit.
 //
-// Generated from tag_pay.proto.
-
-// @dart = 3.3
+//  Generated code. Do not modify.
+//  source: tag_pay.proto
+//
+// @dart = 2.12
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: curly_braces_in_flow_control_structures
-// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
-// ignore_for_file: non_constant_identifier_names, unused_import
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -97,22 +96,8 @@ const TagPay$json = {
     {'1': 'display_name', '3': 4, '4': 1, '5': 9, '10': 'displayName'},
     {'1': 'avatar_url', '3': 5, '4': 1, '5': 9, '10': 'avatarUrl'},
     {'1': 'is_active', '3': 6, '4': 1, '5': 8, '10': 'isActive'},
-    {
-      '1': 'created_at',
-      '3': 7,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'createdAt'
-    },
-    {
-      '1': 'updated_at',
-      '3': 8,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'updatedAt'
-    },
+    {'1': 'created_at', '3': 7, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    {'1': 'updated_at', '3': 8, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
   ],
 };
 
@@ -139,39 +124,11 @@ const TagPayTransaction$json = {
     {'1': 'amount', '3': 8, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'currency', '3': 9, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'description', '3': 10, '4': 1, '5': 9, '10': 'description'},
-    {
-      '1': 'status',
-      '3': 11,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.TagPayTransactionStatus',
-      '10': 'status'
-    },
-    {
-      '1': 'type',
-      '3': 12,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.TagPayTransactionType',
-      '10': 'type'
-    },
+    {'1': 'status', '3': 11, '4': 1, '5': 14, '6': '.tag_pay.TagPayTransactionStatus', '10': 'status'},
+    {'1': 'type', '3': 12, '4': 1, '5': 14, '6': '.tag_pay.TagPayTransactionType', '10': 'type'},
     {'1': 'reference_number', '3': 13, '4': 1, '5': 9, '10': 'referenceNumber'},
-    {
-      '1': 'created_at',
-      '3': 14,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'createdAt'
-    },
-    {
-      '1': 'completed_at',
-      '3': 15,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'completedAt'
-    },
+    {'1': 'created_at', '3': 14, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    {'1': 'completed_at', '3': 15, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'completedAt'},
   ],
 };
 
@@ -183,11 +140,11 @@ final $typed_data.Uint8List tagPayTransactionDescriptor = $convert.base64Decode(
     'lkEigKEHJlY2VpdmVyX3RhZ19wYXkYBiABKAlSDnJlY2VpdmVyVGFnUGF5EiMKDXJlY2VpdmVy'
     'X25hbWUYByABKAlSDHJlY2VpdmVyTmFtZRIWCgZhbW91bnQYCCABKAFSBmFtb3VudBIaCghjdX'
     'JyZW5jeRgJIAEoCVIIY3VycmVuY3kSIAoLZGVzY3JpcHRpb24YCiABKAlSC2Rlc2NyaXB0aW9u'
-    'EjMKBnN0YXR1cxgLIAEoDjIbLnBiLlRhZ1BheVRyYW5zYWN0aW9uU3RhdHVzUgZzdGF0dXMSLQ'
-    'oEdHlwZRgMIAEoDjIZLnBiLlRhZ1BheVRyYW5zYWN0aW9uVHlwZVIEdHlwZRIpChByZWZlcmVu'
-    'Y2VfbnVtYmVyGA0gASgJUg9yZWZlcmVuY2VOdW1iZXISOQoKY3JlYXRlZF9hdBgOIAEoCzIaLm'
-    'dvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCWNyZWF0ZWRBdBI9Cgxjb21wbGV0ZWRfYXQYDyAB'
-    'KAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgtjb21wbGV0ZWRBdA==');
+    'EjgKBnN0YXR1cxgLIAEoDjIgLnRhZ19wYXkuVGFnUGF5VHJhbnNhY3Rpb25TdGF0dXNSBnN0YX'
+    'R1cxIyCgR0eXBlGAwgASgOMh4udGFnX3BheS5UYWdQYXlUcmFuc2FjdGlvblR5cGVSBHR5cGUS'
+    'KQoQcmVmZXJlbmNlX251bWJlchgNIAEoCVIPcmVmZXJlbmNlTnVtYmVyEjkKCmNyZWF0ZWRfYX'
+    'QYDiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgljcmVhdGVkQXQSPQoMY29tcGxl'
+    'dGVkX2F0GA8gASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFILY29tcGxldGVkQXQ=');
 
 @$core.Deprecated('Use moneyRequestDescriptor instead')
 const MoneyRequest$json = {
@@ -203,38 +160,10 @@ const MoneyRequest$json = {
     {'1': 'amount', '3': 8, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'currency', '3': 9, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'description', '3': 10, '4': 1, '5': 9, '10': 'description'},
-    {
-      '1': 'status',
-      '3': 11,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.MoneyRequestStatus',
-      '10': 'status'
-    },
-    {
-      '1': 'created_at',
-      '3': 12,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'createdAt'
-    },
-    {
-      '1': 'responded_at',
-      '3': 13,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'respondedAt'
-    },
-    {
-      '1': 'expires_at',
-      '3': 14,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'expiresAt'
-    },
+    {'1': 'status', '3': 11, '4': 1, '5': 14, '6': '.tag_pay.MoneyRequestStatus', '10': 'status'},
+    {'1': 'created_at', '3': 12, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    {'1': 'responded_at', '3': 13, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'respondedAt'},
+    {'1': 'expires_at', '3': 14, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'expiresAt'},
   ],
 };
 
@@ -246,11 +175,11 @@ final $typed_data.Uint8List moneyRequestDescriptor = $convert.base64Decode(
     'ABKAlSC3JlcXVlc3RlZUlkEioKEXJlcXVlc3RlZV90YWdfcGF5GAYgASgJUg9yZXF1ZXN0ZWVU'
     'YWdQYXkSJQoOcmVxdWVzdGVlX25hbWUYByABKAlSDXJlcXVlc3RlZU5hbWUSFgoGYW1vdW50GA'
     'ggASgBUgZhbW91bnQSGgoIY3VycmVuY3kYCSABKAlSCGN1cnJlbmN5EiAKC2Rlc2NyaXB0aW9u'
-    'GAogASgJUgtkZXNjcmlwdGlvbhIuCgZzdGF0dXMYCyABKA4yFi5wYi5Nb25leVJlcXVlc3RTdG'
-    'F0dXNSBnN0YXR1cxI5CgpjcmVhdGVkX2F0GAwgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVz'
-    'dGFtcFIJY3JlYXRlZEF0Ej0KDHJlc3BvbmRlZF9hdBgNIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi'
-    '5UaW1lc3RhbXBSC3Jlc3BvbmRlZEF0EjkKCmV4cGlyZXNfYXQYDiABKAsyGi5nb29nbGUucHJv'
-    'dG9idWYuVGltZXN0YW1wUglleHBpcmVzQXQ=');
+    'GAogASgJUgtkZXNjcmlwdGlvbhIzCgZzdGF0dXMYCyABKA4yGy50YWdfcGF5Lk1vbmV5UmVxdW'
+    'VzdFN0YXR1c1IGc3RhdHVzEjkKCmNyZWF0ZWRfYXQYDCABKAsyGi5nb29nbGUucHJvdG9idWYu'
+    'VGltZXN0YW1wUgljcmVhdGVkQXQSPQoMcmVzcG9uZGVkX2F0GA0gASgLMhouZ29vZ2xlLnByb3'
+    'RvYnVmLlRpbWVzdGFtcFILcmVzcG9uZGVkQXQSOQoKZXhwaXJlc19hdBgOIAEoCzIaLmdvb2ds'
+    'ZS5wcm90b2J1Zi5UaW1lc3RhbXBSCWV4cGlyZXNBdA==');
 
 @$core.Deprecated('Use userTagDescriptor instead')
 const UserTag$json = {
@@ -261,41 +190,14 @@ const UserTag$json = {
     {'1': 'tagger_tag_pay', '3': 3, '4': 1, '5': 9, '10': 'taggerTagPay'},
     {'1': 'tagger_name', '3': 4, '4': 1, '5': 9, '10': 'taggerName'},
     {'1': 'tagged_user_id', '3': 5, '4': 1, '5': 9, '10': 'taggedUserId'},
-    {
-      '1': 'tagged_user_tag_pay',
-      '3': 6,
-      '4': 1,
-      '5': 9,
-      '10': 'taggedUserTagPay'
-    },
+    {'1': 'tagged_user_tag_pay', '3': 6, '4': 1, '5': 9, '10': 'taggedUserTagPay'},
     {'1': 'tagged_user_name', '3': 7, '4': 1, '5': 9, '10': 'taggedUserName'},
     {'1': 'amount', '3': 8, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'currency', '3': 9, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'description', '3': 10, '4': 1, '5': 9, '10': 'description'},
-    {
-      '1': 'status',
-      '3': 11,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.TagStatus',
-      '10': 'status'
-    },
-    {
-      '1': 'created_at',
-      '3': 12,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'createdAt'
-    },
-    {
-      '1': 'paid_at',
-      '3': 13,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'paidAt'
-    },
+    {'1': 'status', '3': 11, '4': 1, '5': 14, '6': '.tag_pay.TagStatus', '10': 'status'},
+    {'1': 'created_at', '3': 12, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    {'1': 'paid_at', '3': 13, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'paidAt'},
   ],
 };
 
@@ -307,9 +209,9 @@ final $typed_data.Uint8List userTagDescriptor = $convert.base64Decode(
     'N0YWdnZWRfdXNlcl90YWdfcGF5GAYgASgJUhB0YWdnZWRVc2VyVGFnUGF5EigKEHRhZ2dlZF91'
     'c2VyX25hbWUYByABKAlSDnRhZ2dlZFVzZXJOYW1lEhYKBmFtb3VudBgIIAEoAVIGYW1vdW50Eh'
     'oKCGN1cnJlbmN5GAkgASgJUghjdXJyZW5jeRIgCgtkZXNjcmlwdGlvbhgKIAEoCVILZGVzY3Jp'
-    'cHRpb24SJQoGc3RhdHVzGAsgASgOMg0ucGIuVGFnU3RhdHVzUgZzdGF0dXMSOQoKY3JlYXRlZF'
-    '9hdBgMIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCWNyZWF0ZWRBdBIzCgdwYWlk'
-    'X2F0GA0gASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIGcGFpZEF0');
+    'cHRpb24SKgoGc3RhdHVzGAsgASgOMhIudGFnX3BheS5UYWdTdGF0dXNSBnN0YXR1cxI5Cgpjcm'
+    'VhdGVkX2F0GAwgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIJY3JlYXRlZEF0EjMK'
+    'B3BhaWRfYXQYDSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgZwYWlkQXQ=');
 
 @$core.Deprecated('Use createTagPayRequestDescriptor instead')
 const CreateTagPayRequest$json = {
@@ -333,21 +235,15 @@ const CreateTagPayResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'tag_pay',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.TagPay',
-      '10': 'tagPay'
-    },
+    {'1': 'tag_pay', '3': 3, '4': 1, '5': 11, '6': '.tag_pay.TagPay', '10': 'tagPay'},
   ],
 };
 
 /// Descriptor for `CreateTagPayResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List createTagPayResponseDescriptor = $convert.base64Decode(
     'ChRDcmVhdGVUYWdQYXlSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEhgKB21lc3'
-    'NhZ2UYAiABKAlSB21lc3NhZ2USIwoHdGFnX3BheRgDIAEoCzIKLnBiLlRhZ1BheVIGdGFnUGF5');
+    'NhZ2UYAiABKAlSB21lc3NhZ2USKAoHdGFnX3BheRgDIAEoCzIPLnRhZ19wYXkuVGFnUGF5UgZ0'
+    'YWdQYXk=');
 
 @$core.Deprecated('Use getTagPayRequestDescriptor instead')
 const GetTagPayRequest$json = {
@@ -367,21 +263,15 @@ const GetTagPayResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'tag_pay',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.TagPay',
-      '10': 'tagPay'
-    },
+    {'1': 'tag_pay', '3': 3, '4': 1, '5': 11, '6': '.tag_pay.TagPay', '10': 'tagPay'},
   ],
 };
 
 /// Descriptor for `GetTagPayResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getTagPayResponseDescriptor = $convert.base64Decode(
     'ChFHZXRUYWdQYXlSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEhgKB21lc3NhZ2'
-    'UYAiABKAlSB21lc3NhZ2USIwoHdGFnX3BheRgDIAEoCzIKLnBiLlRhZ1BheVIGdGFnUGF5');
+    'UYAiABKAlSB21lc3NhZ2USKAoHdGFnX3BheRgDIAEoCzIPLnRhZ19wYXkuVGFnUGF5UgZ0YWdQ'
+    'YXk=');
 
 @$core.Deprecated('Use checkTagPayAvailabilityRequestDescriptor instead')
 const CheckTagPayAvailabilityRequest$json = {
@@ -392,10 +282,9 @@ const CheckTagPayAvailabilityRequest$json = {
 };
 
 /// Descriptor for `CheckTagPayAvailabilityRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List checkTagPayAvailabilityRequestDescriptor =
-    $convert.base64Decode(
-        'Ch5DaGVja1RhZ1BheUF2YWlsYWJpbGl0eVJlcXVlc3QSFwoHdGFnX3BheRgBIAEoCVIGdGFnUG'
-        'F5');
+final $typed_data.Uint8List checkTagPayAvailabilityRequestDescriptor = $convert.base64Decode(
+    'Ch5DaGVja1RhZ1BheUF2YWlsYWJpbGl0eVJlcXVlc3QSFwoHdGFnX3BheRgBIAEoCVIGdGFnUG'
+    'F5');
 
 @$core.Deprecated('Use checkTagPayAvailabilityResponseDescriptor instead')
 const CheckTagPayAvailabilityResponse$json = {
@@ -408,11 +297,10 @@ const CheckTagPayAvailabilityResponse$json = {
 };
 
 /// Descriptor for `CheckTagPayAvailabilityResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List checkTagPayAvailabilityResponseDescriptor =
-    $convert.base64Decode(
-        'Ch9DaGVja1RhZ1BheUF2YWlsYWJpbGl0eVJlc3BvbnNlEhwKCWF2YWlsYWJsZRgBIAEoCFIJYX'
-        'ZhaWxhYmxlEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USIAoLc3VnZ2VzdGlvbnMYAyADKAlS'
-        'C3N1Z2dlc3Rpb25z');
+final $typed_data.Uint8List checkTagPayAvailabilityResponseDescriptor = $convert.base64Decode(
+    'Ch9DaGVja1RhZ1BheUF2YWlsYWJpbGl0eVJlc3BvbnNlEhwKCWF2YWlsYWJsZRgBIAEoCFIJYX'
+    'ZhaWxhYmxlEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USIAoLc3VnZ2VzdGlvbnMYAyADKAlS'
+    'C3N1Z2dlc3Rpb25z');
 
 @$core.Deprecated('Use searchTagPayRequestDescriptor instead')
 const SearchTagPayRequest$json = {
@@ -432,22 +320,15 @@ final $typed_data.Uint8List searchTagPayRequestDescriptor = $convert.base64Decod
 const SearchTagPayResponse$json = {
   '1': 'SearchTagPayResponse',
   '2': [
-    {
-      '1': 'results',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.TagPay',
-      '10': 'results'
-    },
+    {'1': 'results', '3': 1, '4': 3, '5': 11, '6': '.tag_pay.TagPay', '10': 'results'},
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
   ],
 };
 
 /// Descriptor for `SearchTagPayResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List searchTagPayResponseDescriptor = $convert.base64Decode(
-    'ChRTZWFyY2hUYWdQYXlSZXNwb25zZRIkCgdyZXN1bHRzGAEgAygLMgoucGIuVGFnUGF5UgdyZX'
-    'N1bHRzEhQKBXRvdGFsGAIgASgFUgV0b3RhbA==');
+    'ChRTZWFyY2hUYWdQYXlSZXNwb25zZRIpCgdyZXN1bHRzGAEgAygLMg8udGFnX3BheS5UYWdQYX'
+    'lSB3Jlc3VsdHMSFAoFdG90YWwYAiABKAVSBXRvdGFs');
 
 @$core.Deprecated('Use sendMoneyTagPayRequestDescriptor instead')
 const SendMoneyTagPayRequest$json = {
@@ -476,22 +357,15 @@ const SendMoneyTagPayResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'transaction',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.TagPayTransaction',
-      '10': 'transaction'
-    },
+    {'1': 'transaction', '3': 3, '4': 1, '5': 11, '6': '.tag_pay.TagPayTransaction', '10': 'transaction'},
   ],
 };
 
 /// Descriptor for `SendMoneyTagPayResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List sendMoneyTagPayResponseDescriptor = $convert.base64Decode(
     'ChdTZW5kTW9uZXlUYWdQYXlSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEhgKB2'
-    '1lc3NhZ2UYAiABKAlSB21lc3NhZ2USNwoLdHJhbnNhY3Rpb24YAyABKAsyFS5wYi5UYWdQYXlU'
-    'cmFuc2FjdGlvblILdHJhbnNhY3Rpb24=');
+    '1lc3NhZ2UYAiABKAlSB21lc3NhZ2USPAoLdHJhbnNhY3Rpb24YAyABKAsyGi50YWdfcGF5LlRh'
+    'Z1BheVRyYW5zYWN0aW9uUgt0cmFuc2FjdGlvbg==');
 
 @$core.Deprecated('Use requestMoneyTagPayRequestDescriptor instead')
 const RequestMoneyTagPayRequest$json = {
@@ -516,23 +390,15 @@ const RequestMoneyTagPayResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'money_request',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.MoneyRequest',
-      '10': 'moneyRequest'
-    },
+    {'1': 'money_request', '3': 3, '4': 1, '5': 11, '6': '.tag_pay.MoneyRequest', '10': 'moneyRequest'},
   ],
 };
 
 /// Descriptor for `RequestMoneyTagPayResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List requestMoneyTagPayResponseDescriptor =
-    $convert.base64Decode(
-        'ChpSZXF1ZXN0TW9uZXlUYWdQYXlSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEh'
-        'gKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USNQoNbW9uZXlfcmVxdWVzdBgDIAEoCzIQLnBiLk1v'
-        'bmV5UmVxdWVzdFIMbW9uZXlSZXF1ZXN0');
+final $typed_data.Uint8List requestMoneyTagPayResponseDescriptor = $convert.base64Decode(
+    'ChpSZXF1ZXN0TW9uZXlUYWdQYXlSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEh'
+    'gKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USOgoNbW9uZXlfcmVxdWVzdBgDIAEoCzIVLnRhZ19w'
+    'YXkuTW9uZXlSZXF1ZXN0Ugxtb25leVJlcXVlc3Q=');
 
 @$core.Deprecated('Use getTagPayTransactionsRequestDescriptor instead')
 const GetTagPayTransactionsRequest$json = {
@@ -540,36 +406,21 @@ const GetTagPayTransactionsRequest$json = {
   '2': [
     {'1': 'page', '3': 1, '4': 1, '5': 5, '10': 'page'},
     {'1': 'limit', '3': 2, '4': 1, '5': 5, '10': 'limit'},
-    {
-      '1': 'type',
-      '3': 3,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.TagPayTransactionType',
-      '10': 'type'
-    },
+    {'1': 'type', '3': 3, '4': 1, '5': 14, '6': '.tag_pay.TagPayTransactionType', '10': 'type'},
   ],
 };
 
 /// Descriptor for `GetTagPayTransactionsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getTagPayTransactionsRequestDescriptor =
-    $convert.base64Decode(
-        'ChxHZXRUYWdQYXlUcmFuc2FjdGlvbnNSZXF1ZXN0EhIKBHBhZ2UYASABKAVSBHBhZ2USFAoFbG'
-        'ltaXQYAiABKAVSBWxpbWl0Ei0KBHR5cGUYAyABKA4yGS5wYi5UYWdQYXlUcmFuc2FjdGlvblR5'
-        'cGVSBHR5cGU=');
+final $typed_data.Uint8List getTagPayTransactionsRequestDescriptor = $convert.base64Decode(
+    'ChxHZXRUYWdQYXlUcmFuc2FjdGlvbnNSZXF1ZXN0EhIKBHBhZ2UYASABKAVSBHBhZ2USFAoFbG'
+    'ltaXQYAiABKAVSBWxpbWl0EjIKBHR5cGUYAyABKA4yHi50YWdfcGF5LlRhZ1BheVRyYW5zYWN0'
+    'aW9uVHlwZVIEdHlwZQ==');
 
 @$core.Deprecated('Use getTagPayTransactionsResponseDescriptor instead')
 const GetTagPayTransactionsResponse$json = {
   '1': 'GetTagPayTransactionsResponse',
   '2': [
-    {
-      '1': 'transactions',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.TagPayTransaction',
-      '10': 'transactions'
-    },
+    {'1': 'transactions', '3': 1, '4': 3, '5': 11, '6': '.tag_pay.TagPayTransaction', '10': 'transactions'},
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
     {'1': 'page', '3': 3, '4': 1, '5': 5, '10': 'page'},
     {'1': 'total_pages', '3': 4, '4': 1, '5': 5, '10': 'totalPages'},
@@ -578,9 +429,10 @@ const GetTagPayTransactionsResponse$json = {
 
 /// Descriptor for `GetTagPayTransactionsResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getTagPayTransactionsResponseDescriptor = $convert.base64Decode(
-    'Ch1HZXRUYWdQYXlUcmFuc2FjdGlvbnNSZXNwb25zZRI5Cgx0cmFuc2FjdGlvbnMYASADKAsyFS'
-    '5wYi5UYWdQYXlUcmFuc2FjdGlvblIMdHJhbnNhY3Rpb25zEhQKBXRvdGFsGAIgASgFUgV0b3Rh'
-    'bBISCgRwYWdlGAMgASgFUgRwYWdlEh8KC3RvdGFsX3BhZ2VzGAQgASgFUgp0b3RhbFBhZ2Vz');
+    'Ch1HZXRUYWdQYXlUcmFuc2FjdGlvbnNSZXNwb25zZRI+Cgx0cmFuc2FjdGlvbnMYASADKAsyGi'
+    '50YWdfcGF5LlRhZ1BheVRyYW5zYWN0aW9uUgx0cmFuc2FjdGlvbnMSFAoFdG90YWwYAiABKAVS'
+    'BXRvdGFsEhIKBHBhZ2UYAyABKAVSBHBhZ2USHwoLdG90YWxfcGFnZXMYBCABKAVSCnRvdGFsUG'
+    'FnZXM=');
 
 @$core.Deprecated('Use acceptMoneyRequestRequestDescriptor instead')
 const AcceptMoneyRequestRequest$json = {
@@ -604,23 +456,15 @@ const AcceptMoneyRequestResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'transaction',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.TagPayTransaction',
-      '10': 'transaction'
-    },
+    {'1': 'transaction', '3': 3, '4': 1, '5': 11, '6': '.tag_pay.TagPayTransaction', '10': 'transaction'},
   ],
 };
 
 /// Descriptor for `AcceptMoneyRequestResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List acceptMoneyRequestResponseDescriptor =
-    $convert.base64Decode(
-        'ChpBY2NlcHRNb25leVJlcXVlc3RSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEh'
-        'gKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USNwoLdHJhbnNhY3Rpb24YAyABKAsyFS5wYi5UYWdQ'
-        'YXlUcmFuc2FjdGlvblILdHJhbnNhY3Rpb24=');
+final $typed_data.Uint8List acceptMoneyRequestResponseDescriptor = $convert.base64Decode(
+    'ChpBY2NlcHRNb25leVJlcXVlc3RSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEh'
+    'gKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USPAoLdHJhbnNhY3Rpb24YAyABKAsyGi50YWdfcGF5'
+    'LlRhZ1BheVRyYW5zYWN0aW9uUgt0cmFuc2FjdGlvbg==');
 
 @$core.Deprecated('Use declineMoneyRequestRequestDescriptor instead')
 const DeclineMoneyRequestRequest$json = {
@@ -632,10 +476,9 @@ const DeclineMoneyRequestRequest$json = {
 };
 
 /// Descriptor for `DeclineMoneyRequestRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List declineMoneyRequestRequestDescriptor =
-    $convert.base64Decode(
-        'ChpEZWNsaW5lTW9uZXlSZXF1ZXN0UmVxdWVzdBIdCgpyZXF1ZXN0X2lkGAEgASgJUglyZXF1ZX'
-        'N0SWQSFgoGcmVhc29uGAIgASgJUgZyZWFzb24=');
+final $typed_data.Uint8List declineMoneyRequestRequestDescriptor = $convert.base64Decode(
+    'ChpEZWNsaW5lTW9uZXlSZXF1ZXN0UmVxdWVzdBIdCgpyZXF1ZXN0X2lkGAEgASgJUglyZXF1ZX'
+    'N0SWQSFgoGcmVhc29uGAIgASgJUgZyZWFzb24=');
 
 @$core.Deprecated('Use declineMoneyRequestResponseDescriptor instead')
 const DeclineMoneyRequestResponse$json = {
@@ -647,10 +490,9 @@ const DeclineMoneyRequestResponse$json = {
 };
 
 /// Descriptor for `DeclineMoneyRequestResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List declineMoneyRequestResponseDescriptor =
-    $convert.base64Decode(
-        'ChtEZWNsaW5lTW9uZXlSZXF1ZXN0UmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2Vzcx'
-        'IYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
+final $typed_data.Uint8List declineMoneyRequestResponseDescriptor = $convert.base64Decode(
+    'ChtEZWNsaW5lTW9uZXlSZXF1ZXN0UmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2Vzcx'
+    'IYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
 
 @$core.Deprecated('Use getPendingMoneyRequestsRequestDescriptor instead')
 const GetPendingMoneyRequestsRequest$json = {
@@ -663,23 +505,15 @@ const GetPendingMoneyRequestsRequest$json = {
 };
 
 /// Descriptor for `GetPendingMoneyRequestsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getPendingMoneyRequestsRequestDescriptor =
-    $convert.base64Decode(
-        'Ch5HZXRQZW5kaW5nTW9uZXlSZXF1ZXN0c1JlcXVlc3QSEgoEcGFnZRgBIAEoBVIEcGFnZRIUCg'
-        'VsaW1pdBgCIAEoBVIFbGltaXQSGgoIaW5jb21pbmcYAyABKAhSCGluY29taW5n');
+final $typed_data.Uint8List getPendingMoneyRequestsRequestDescriptor = $convert.base64Decode(
+    'Ch5HZXRQZW5kaW5nTW9uZXlSZXF1ZXN0c1JlcXVlc3QSEgoEcGFnZRgBIAEoBVIEcGFnZRIUCg'
+    'VsaW1pdBgCIAEoBVIFbGltaXQSGgoIaW5jb21pbmcYAyABKAhSCGluY29taW5n');
 
 @$core.Deprecated('Use getPendingMoneyRequestsResponseDescriptor instead')
 const GetPendingMoneyRequestsResponse$json = {
   '1': 'GetPendingMoneyRequestsResponse',
   '2': [
-    {
-      '1': 'requests',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.MoneyRequest',
-      '10': 'requests'
-    },
+    {'1': 'requests', '3': 1, '4': 3, '5': 11, '6': '.tag_pay.MoneyRequest', '10': 'requests'},
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
     {'1': 'page', '3': 3, '4': 1, '5': 5, '10': 'page'},
     {'1': 'total_pages', '3': 4, '4': 1, '5': 5, '10': 'totalPages'},
@@ -687,23 +521,16 @@ const GetPendingMoneyRequestsResponse$json = {
 };
 
 /// Descriptor for `GetPendingMoneyRequestsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getPendingMoneyRequestsResponseDescriptor =
-    $convert.base64Decode(
-        'Ch9HZXRQZW5kaW5nTW9uZXlSZXF1ZXN0c1Jlc3BvbnNlEiwKCHJlcXVlc3RzGAEgAygLMhAucG'
-        'IuTW9uZXlSZXF1ZXN0UghyZXF1ZXN0cxIUCgV0b3RhbBgCIAEoBVIFdG90YWwSEgoEcGFnZRgD'
-        'IAEoBVIEcGFnZRIfCgt0b3RhbF9wYWdlcxgEIAEoBVIKdG90YWxQYWdlcw==');
+final $typed_data.Uint8List getPendingMoneyRequestsResponseDescriptor = $convert.base64Decode(
+    'Ch9HZXRQZW5kaW5nTW9uZXlSZXF1ZXN0c1Jlc3BvbnNlEjEKCHJlcXVlc3RzGAEgAygLMhUudG'
+    'FnX3BheS5Nb25leVJlcXVlc3RSCHJlcXVlc3RzEhQKBXRvdGFsGAIgASgFUgV0b3RhbBISCgRw'
+    'YWdlGAMgASgFUgRwYWdlEh8KC3RvdGFsX3BhZ2VzGAQgASgFUgp0b3RhbFBhZ2Vz');
 
 @$core.Deprecated('Use createTagRequestDescriptor instead')
 const CreateTagRequest$json = {
   '1': 'CreateTagRequest',
   '2': [
-    {
-      '1': 'tagged_user_tag_pay',
-      '3': 1,
-      '4': 1,
-      '5': 9,
-      '10': 'taggedUserTagPay'
-    },
+    {'1': 'tagged_user_tag_pay', '3': 1, '4': 1, '5': 9, '10': 'taggedUserTagPay'},
     {'1': 'amount', '3': 2, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'description', '3': 4, '4': 1, '5': 9, '10': 'description'},
@@ -722,14 +549,14 @@ const CreateTagResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'tag', '3': 3, '4': 1, '5': 11, '6': '.pb.UserTag', '10': 'tag'},
+    {'1': 'tag', '3': 3, '4': 1, '5': 11, '6': '.tag_pay.UserTag', '10': 'tag'},
   ],
 };
 
 /// Descriptor for `CreateTagResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List createTagResponseDescriptor = $convert.base64Decode(
     'ChFDcmVhdGVUYWdSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEhgKB21lc3NhZ2'
-    'UYAiABKAlSB21lc3NhZ2USHQoDdGFnGAMgASgLMgsucGIuVXNlclRhZ1IDdGFn');
+    'UYAiABKAlSB21lc3NhZ2USIgoDdGFnGAMgASgLMhAudGFnX3BheS5Vc2VyVGFnUgN0YWc=');
 
 @$core.Deprecated('Use getMyTagsRequestDescriptor instead')
 const GetMyTagsRequest$json = {
@@ -737,27 +564,20 @@ const GetMyTagsRequest$json = {
   '2': [
     {'1': 'page', '3': 1, '4': 1, '5': 5, '10': 'page'},
     {'1': 'limit', '3': 2, '4': 1, '5': 5, '10': 'limit'},
-    {
-      '1': 'status',
-      '3': 3,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.TagStatus',
-      '10': 'status'
-    },
+    {'1': 'status', '3': 3, '4': 1, '5': 14, '6': '.tag_pay.TagStatus', '10': 'status'},
   ],
 };
 
 /// Descriptor for `GetMyTagsRequest`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getMyTagsRequestDescriptor = $convert.base64Decode(
     'ChBHZXRNeVRhZ3NSZXF1ZXN0EhIKBHBhZ2UYASABKAVSBHBhZ2USFAoFbGltaXQYAiABKAVSBW'
-    'xpbWl0EiUKBnN0YXR1cxgDIAEoDjINLnBiLlRhZ1N0YXR1c1IGc3RhdHVz');
+    'xpbWl0EioKBnN0YXR1cxgDIAEoDjISLnRhZ19wYXkuVGFnU3RhdHVzUgZzdGF0dXM=');
 
 @$core.Deprecated('Use getMyTagsResponseDescriptor instead')
 const GetMyTagsResponse$json = {
   '1': 'GetMyTagsResponse',
   '2': [
-    {'1': 'tags', '3': 1, '4': 3, '5': 11, '6': '.pb.UserTag', '10': 'tags'},
+    {'1': 'tags', '3': 1, '4': 3, '5': 11, '6': '.tag_pay.UserTag', '10': 'tags'},
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
     {'1': 'page', '3': 3, '4': 1, '5': 5, '10': 'page'},
     {'1': 'total_pages', '3': 4, '4': 1, '5': 5, '10': 'totalPages'},
@@ -766,9 +586,9 @@ const GetMyTagsResponse$json = {
 
 /// Descriptor for `GetMyTagsResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getMyTagsResponseDescriptor = $convert.base64Decode(
-    'ChFHZXRNeVRhZ3NSZXNwb25zZRIfCgR0YWdzGAEgAygLMgsucGIuVXNlclRhZ1IEdGFncxIUCg'
-    'V0b3RhbBgCIAEoBVIFdG90YWwSEgoEcGFnZRgDIAEoBVIEcGFnZRIfCgt0b3RhbF9wYWdlcxgE'
-    'IAEoBVIKdG90YWxQYWdlcw==');
+    'ChFHZXRNeVRhZ3NSZXNwb25zZRIkCgR0YWdzGAEgAygLMhAudGFnX3BheS5Vc2VyVGFnUgR0YW'
+    'dzEhQKBXRvdGFsGAIgASgFUgV0b3RhbBISCgRwYWdlGAMgASgFUgRwYWdlEh8KC3RvdGFsX3Bh'
+    'Z2VzGAQgASgFUgp0b3RhbFBhZ2Vz');
 
 @$core.Deprecated('Use payTagRequestDescriptor instead')
 const PayTagRequest$json = {
@@ -792,22 +612,15 @@ const PayTagResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'transaction',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.TagPayTransaction',
-      '10': 'transaction'
-    },
+    {'1': 'transaction', '3': 3, '4': 1, '5': 11, '6': '.tag_pay.TagPayTransaction', '10': 'transaction'},
   ],
 };
 
 /// Descriptor for `PayTagResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List payTagResponseDescriptor = $convert.base64Decode(
     'Cg5QYXlUYWdSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEhgKB21lc3NhZ2UYAi'
-    'ABKAlSB21lc3NhZ2USNwoLdHJhbnNhY3Rpb24YAyABKAsyFS5wYi5UYWdQYXlUcmFuc2FjdGlv'
-    'blILdHJhbnNhY3Rpb24=');
+    'ABKAlSB21lc3NhZ2USPAoLdHJhbnNhY3Rpb24YAyABKAsyGi50YWdfcGF5LlRhZ1BheVRyYW5z'
+    'YWN0aW9uUgt0cmFuc2FjdGlvbg==');
 
 @$core.Deprecated('Use searchUsersForTagRequestDescriptor instead')
 const SearchUsersForTagRequest$json = {
@@ -819,10 +632,9 @@ const SearchUsersForTagRequest$json = {
 };
 
 /// Descriptor for `SearchUsersForTagRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List searchUsersForTagRequestDescriptor =
-    $convert.base64Decode(
-        'ChhTZWFyY2hVc2Vyc0ZvclRhZ1JlcXVlc3QSFAoFcXVlcnkYASABKAlSBXF1ZXJ5EhQKBWxpbW'
-        'l0GAIgASgFUgVsaW1pdA==');
+final $typed_data.Uint8List searchUsersForTagRequestDescriptor = $convert.base64Decode(
+    'ChhTZWFyY2hVc2Vyc0ZvclRhZ1JlcXVlc3QSFAoFcXVlcnkYASABKAlSBXF1ZXJ5EhQKBWxpbW'
+    'l0GAIgASgFUgVsaW1pdA==');
 
 @$core.Deprecated('Use userSearchResultDescriptor instead')
 const UserSearchResult$json = {
@@ -848,34 +660,20 @@ final $typed_data.Uint8List userSearchResultDescriptor = $convert.base64Decode(
 const SearchUsersForTagResponse$json = {
   '1': 'SearchUsersForTagResponse',
   '2': [
-    {
-      '1': 'users',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.UserSearchResult',
-      '10': 'users'
-    },
+    {'1': 'users', '3': 1, '4': 3, '5': 11, '6': '.tag_pay.UserSearchResult', '10': 'users'},
   ],
 };
 
 /// Descriptor for `SearchUsersForTagResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List searchUsersForTagResponseDescriptor =
-    $convert.base64Decode(
-        'ChlTZWFyY2hVc2Vyc0ZvclRhZ1Jlc3BvbnNlEioKBXVzZXJzGAEgAygLMhQucGIuVXNlclNlYX'
-        'JjaFJlc3VsdFIFdXNlcnM=');
+final $typed_data.Uint8List searchUsersForTagResponseDescriptor = $convert.base64Decode(
+    'ChlTZWFyY2hVc2Vyc0ZvclRhZ1Jlc3BvbnNlEi8KBXVzZXJzGAEgAygLMhkudGFnX3BheS5Vc2'
+    'VyU2VhcmNoUmVzdWx0UgV1c2Vycw==');
 
 @$core.Deprecated('Use batchCreateTagsRequestDescriptor instead')
 const BatchCreateTagsRequest$json = {
   '1': 'BatchCreateTagsRequest',
   '2': [
-    {
-      '1': 'tagged_user_tag_pays',
-      '3': 1,
-      '4': 3,
-      '5': 9,
-      '10': 'taggedUserTagPays'
-    },
+    {'1': 'tagged_user_tag_pays', '3': 1, '4': 3, '5': 9, '10': 'taggedUserTagPays'},
     {'1': 'amount', '3': 2, '4': 1, '5': 1, '10': 'amount'},
     {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'description', '3': 4, '4': 1, '5': 9, '10': 'description'},
@@ -894,7 +692,7 @@ const BatchCreateTagsResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'tags', '3': 3, '4': 3, '5': 11, '6': '.pb.UserTag', '10': 'tags'},
+    {'1': 'tags', '3': 3, '4': 3, '5': 11, '6': '.tag_pay.UserTag', '10': 'tags'},
     {'1': 'failed_users', '3': 4, '4': 3, '5': 9, '10': 'failedUsers'},
   ],
 };
@@ -902,5 +700,6 @@ const BatchCreateTagsResponse$json = {
 /// Descriptor for `BatchCreateTagsResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List batchCreateTagsResponseDescriptor = $convert.base64Decode(
     'ChdCYXRjaENyZWF0ZVRhZ3NSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEhgKB2'
-    '1lc3NhZ2UYAiABKAlSB21lc3NhZ2USHwoEdGFncxgDIAMoCzILLnBiLlVzZXJUYWdSBHRhZ3MS'
-    'IQoMZmFpbGVkX3VzZXJzGAQgAygJUgtmYWlsZWRVc2Vycw==');
+    '1lc3NhZ2UYAiABKAlSB21lc3NhZ2USJAoEdGFncxgDIAMoCzIQLnRhZ19wYXkuVXNlclRhZ1IE'
+    'dGFncxIhCgxmYWlsZWRfdXNlcnMYBCADKAlSC2ZhaWxlZFVzZXJz');
+

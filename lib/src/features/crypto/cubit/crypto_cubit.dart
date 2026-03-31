@@ -1,6 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../domain/entities/crypto_entity.dart';
-import '../domain/entities/crypto_wallet_entity.dart';
 import '../domain/entities/global_market_data.dart';
 import '../domain/repositories/crypto_repository.dart';
 import 'crypto_state.dart';
@@ -37,8 +36,15 @@ class CryptoCubit extends Cubit<CryptoState> {
         // CoinGecko rate limit or unavailable — continue without
       }
 
+      // Load Quidax-supported assets for buy/sell filtering
+      List<Crypto> supportedAssets = [];
+      try {
+        supportedAssets = await repository.getSupportedAssets();
+      } catch (e) {
+        // Non-critical — continue without
+      }
+
       // Authenticated data — graceful failure if not logged in
-      List<CryptoWalletEntity> wallets = [];
       List<CryptoWatchlist> watchlists = [];
       List<CryptoHolding> holdings = [];
       List<CryptoTransaction> transactions = [];
@@ -46,7 +52,6 @@ class CryptoCubit extends Cubit<CryptoState> {
         watchlists = await repository.getWatchlists();
         holdings = await repository.getHoldings();
         transactions = await repository.getTransactions();
-        wallets = await repository.getWallets();
       } catch (e) {
         // Auth calls failed (user not logged in) — continue with public data
       }
@@ -56,10 +61,10 @@ class CryptoCubit extends Cubit<CryptoState> {
         cryptos: cryptos,
         trendingCryptos: trendingCryptos,
         topCryptos: topCryptos,
+        supportedAssets: supportedAssets,
         watchlists: watchlists,
         holdings: holdings,
         transactions: transactions,
-        wallets: wallets,
         globalMarketData: globalMarketData,
       ));
     } catch (e) {
@@ -125,9 +130,34 @@ class CryptoCubit extends Cubit<CryptoState> {
         priceHistory: priceHistory,
         selectedTimeframe: timeframe,
       ));
+
+      // Load news asynchronously (non-blocking)
+      loadCryptoNews(crypto.symbol);
     } catch (e) {
       if (isClosed) return;
       emit(CryptoError(message: e.toString()));
+    }
+  }
+
+  Future<void> loadCryptoNews(String cryptoSymbol) async {
+    try {
+      final currentState = state;
+      if (currentState is! CryptoDetailsLoaded) return;
+      if (isClosed) return;
+      emit(currentState.copyWith(isLoadingNews: true));
+
+      final news = await repository.getCryptoNews(cryptoSymbol);
+      if (isClosed) return;
+      final postState = state;
+      if (postState is CryptoDetailsLoaded) {
+        emit(postState.copyWith(news: news, isLoadingNews: false));
+      }
+    } catch (e) {
+      if (isClosed) return;
+      final postState = state;
+      if (postState is CryptoDetailsLoaded) {
+        emit(postState.copyWith(isLoadingNews: false));
+      }
     }
   }
 
@@ -432,6 +462,19 @@ class CryptoCubit extends Cubit<CryptoState> {
     } catch (e) {
       if (isClosed) return;
       emit(CryptoError(message: e.toString()));
+    }
+  }
+
+  Future<void> loadSupportedAssets({int page = 1, int perPage = 50}) async {
+    try {
+      final assets = await repository.getSupportedAssets(page: page, perPage: perPage);
+      final currentState = state;
+      if (isClosed) return;
+      if (currentState is CryptosLoaded) {
+        emit(currentState.copyWith(supportedAssets: assets));
+      }
+    } catch (e) {
+      // Non-critical — don't emit error
     }
   }
 

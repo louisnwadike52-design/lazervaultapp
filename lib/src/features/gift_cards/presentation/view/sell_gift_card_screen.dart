@@ -1666,35 +1666,43 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
     final transactionId = 'SELL-${DateTime.now().millisecondsSinceEpoch}';
     final payoutAmount = _currentRate?.payoutAmount ?? _selectedDenomination!;
 
-    await validateTransactionPin(
+    String? verificationToken;
+
+    final success = await validateTransactionPin(
       context: context,
       transactionId: transactionId,
       transactionType: 'gift_card_sell',
       amount: payoutAmount,
       currency: 'NGN',
-      title: 'Confirm Gift Card Sale',
-      message: 'Sell ${_selectedCard!.displayName} ${_selectedCard!.currencies.isNotEmpty ? _selectedCard!.currencies.first : "USD"} ${_selectedDenomination!.toStringAsFixed(0)} card for ${_formatCurrency(payoutAmount)}?',
-      onPinValidated: (verificationToken) async {
-        await context.read<GiftCardCubit>().sellGiftCard(
-          cardType: _selectedCard!.cardType,
-          cardNumber: _cardNumberController.text.trim(),
-          cardPin: _cardPinController.text.trim(),
-          denomination: _selectedDenomination!,
-          transactionId: transactionId,
-          verificationToken: verificationToken,
-          images: _uploadedImageUrls.isNotEmpty ? _uploadedImageUrls : null,
-          providerName: _selectedCard!.providerName.isNotEmpty ? _selectedCard!.providerName : null,
-          cardCountry: _selectedCountry,
-          cardFormat: _selectedFormat,
-          imageUrls: _uploadedImageUrls.isNotEmpty ? _uploadedImageUrls : null,
-          imageKeys: _uploadedImageKeys.isNotEmpty ? _uploadedImageKeys : null,
-          ocrBrand: _ocrBrand.isNotEmpty ? _ocrBrand : null,
-          ocrCardNumber: _ocrCardNumber.isNotEmpty ? _ocrCardNumber : null,
-          ocrPin: _ocrPin.isNotEmpty ? _ocrPin : null,
-          ocrDenomination: _ocrDenomination > 0 ? _ocrDenomination : null,
-          ocrCurrency: _ocrCurrency.isNotEmpty ? _ocrCurrency : null,
-        );
+      title: 'Confirm Sale',
+      message: 'Confirm gift card sale for NGN ${payoutAmount.toStringAsFixed(2)}',
+      onPinValidated: (token) async {
+        verificationToken = token;
       },
+    );
+
+    if (!success || verificationToken == null) return;
+    if (!mounted) return;
+
+    // Execute sell AFTER modal is dismissed
+    await context.read<GiftCardCubit>().sellGiftCard(
+      cardType: _selectedCard!.cardType,
+      cardNumber: _cardNumberController.text.trim(),
+      cardPin: _cardPinController.text.trim(),
+      denomination: _selectedDenomination!,
+      transactionId: transactionId,
+      verificationToken: verificationToken!,
+      images: _uploadedImageUrls.isNotEmpty ? _uploadedImageUrls : null,
+      providerName: _selectedCard!.providerName.isNotEmpty ? _selectedCard!.providerName : null,
+      cardCountry: _selectedCountry,
+      cardFormat: _selectedFormat,
+      imageUrls: _uploadedImageUrls.isNotEmpty ? _uploadedImageUrls : null,
+      imageKeys: _uploadedImageKeys.isNotEmpty ? _uploadedImageKeys : null,
+      ocrBrand: _ocrBrand.isNotEmpty ? _ocrBrand : null,
+      ocrCardNumber: _ocrCardNumber.isNotEmpty ? _ocrCardNumber : null,
+      ocrPin: _ocrPin.isNotEmpty ? _ocrPin : null,
+      ocrDenomination: _ocrDenomination > 0 ? _ocrDenomination : null,
+      ocrCurrency: _ocrCurrency.isNotEmpty ? _ocrCurrency : null,
     );
   }
 

@@ -1,14 +1,13 @@
-// This is a generated file - do not edit.
 //
-// Generated from payroll.proto.
-
-// @dart = 3.3
+//  Generated code. Do not modify.
+//  source: payroll.proto
+//
+// @dart = 2.12
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: curly_braces_in_flow_control_structures
-// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
-// ignore_for_file: non_constant_identifier_names, unused_import
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -286,59 +285,18 @@ const Employee$json = {
     {'1': 'email', '3': 5, '4': 1, '5': 9, '10': 'email'},
     {'1': 'phone', '3': 6, '4': 1, '5': 9, '10': 'phone'},
     {'1': 'nin', '3': 7, '4': 1, '5': 9, '10': 'nin'},
-    {
-      '1': 'bank_account_number',
-      '3': 8,
-      '4': 1,
-      '5': 9,
-      '10': 'bankAccountNumber'
-    },
+    {'1': 'bank_account_number', '3': 8, '4': 1, '5': 9, '10': 'bankAccountNumber'},
     {'1': 'bank_code', '3': 9, '4': 1, '5': 9, '10': 'bankCode'},
     {'1': 'bank_name', '3': 10, '4': 1, '5': 9, '10': 'bankName'},
-    {
-      '1': 'employment_type',
-      '3': 11,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.EmploymentType',
-      '10': 'employmentType'
-    },
+    {'1': 'employment_type', '3': 11, '4': 1, '5': 14, '6': '.pb.EmploymentType', '10': 'employmentType'},
     {'1': 'pay_rate', '3': 12, '4': 1, '5': 3, '10': 'payRate'},
-    {
-      '1': 'pay_frequency',
-      '3': 13,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.PayFrequency',
-      '10': 'payFrequency'
-    },
+    {'1': 'pay_frequency', '3': 13, '4': 1, '5': 14, '6': '.pb.PayFrequency', '10': 'payFrequency'},
     {'1': 'department', '3': 14, '4': 1, '5': 9, '10': 'department'},
     {'1': 'job_title', '3': 15, '4': 1, '5': 9, '10': 'jobTitle'},
     {'1': 'start_date', '3': 16, '4': 1, '5': 9, '10': 'startDate'},
-    {
-      '1': 'status',
-      '3': 17,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.EmployeeStatus',
-      '10': 'status'
-    },
-    {
-      '1': 'created_at',
-      '3': 18,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'createdAt'
-    },
-    {
-      '1': 'updated_at',
-      '3': 19,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'updatedAt'
-    },
+    {'1': 'status', '3': 17, '4': 1, '5': 14, '6': '.pb.EmployeeStatus', '10': 'status'},
+    {'1': 'created_at', '3': 18, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    {'1': 'updated_at', '3': 19, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
   ],
 };
 
@@ -366,60 +324,20 @@ const PayRun$json = {
     {'1': 'business_id', '3': 2, '4': 1, '5': 9, '10': 'businessId'},
     {'1': 'pay_period_start', '3': 3, '4': 1, '5': 9, '10': 'payPeriodStart'},
     {'1': 'pay_period_end', '3': 4, '4': 1, '5': 9, '10': 'payPeriodEnd'},
-    {
-      '1': 'status',
-      '3': 5,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.PayRunStatus',
-      '10': 'status'
-    },
+    {'1': 'status', '3': 5, '4': 1, '5': 14, '6': '.pb.PayRunStatus', '10': 'status'},
     {'1': 'total_gross', '3': 6, '4': 1, '5': 3, '10': 'totalGross'},
     {'1': 'total_deductions', '3': 7, '4': 1, '5': 3, '10': 'totalDeductions'},
     {'1': 'total_net', '3': 8, '4': 1, '5': 3, '10': 'totalNet'},
-    {
-      '1': 'total_employer_contributions',
-      '3': 9,
-      '4': 1,
-      '5': 3,
-      '10': 'totalEmployerContributions'
-    },
+    {'1': 'total_employer_contributions', '3': 9, '4': 1, '5': 3, '10': 'totalEmployerContributions'},
     {'1': 'employee_count', '3': 10, '4': 1, '5': 5, '10': 'employeeCount'},
     {'1': 'created_by', '3': 11, '4': 1, '5': 9, '10': 'createdBy'},
     {'1': 'approved_by', '3': 12, '4': 1, '5': 9, '10': 'approvedBy'},
-    {
-      '1': 'created_at',
-      '3': 13,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'createdAt'
-    },
-    {
-      '1': 'processed_at',
-      '3': 14,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'processedAt'
-    },
+    {'1': 'created_at', '3': 13, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    {'1': 'processed_at', '3': 14, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'processedAt'},
     {'1': 'name', '3': 15, '4': 1, '5': 9, '10': 'name'},
     {'1': 'is_recurring', '3': 16, '4': 1, '5': 8, '10': 'isRecurring'},
-    {
-      '1': 'recurrence_frequency',
-      '3': 17,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.RecurrenceFrequency',
-      '10': 'recurrenceFrequency'
-    },
-    {
-      '1': 'next_scheduled_date',
-      '3': 18,
-      '4': 1,
-      '5': 9,
-      '10': 'nextScheduledDate'
-    },
+    {'1': 'recurrence_frequency', '3': 17, '4': 1, '5': 14, '6': '.pb.RecurrenceFrequency', '10': 'recurrenceFrequency'},
+    {'1': 'next_scheduled_date', '3': 18, '4': 1, '5': 9, '10': 'nextScheduledDate'},
     {'1': 'auto_approve', '3': 19, '4': 1, '5': 8, '10': 'autoApprove'},
     {'1': 'employee_ids', '3': 20, '4': 3, '5': 9, '10': 'employeeIds'},
   ],
@@ -457,38 +375,11 @@ const InventoryItem$json = {
     {'1': 'unit', '3': 8, '4': 1, '5': 9, '10': 'unit'},
     {'1': 'sku', '3': 9, '4': 1, '5': 9, '10': 'sku'},
     {'1': 'location', '3': 10, '4': 1, '5': 9, '10': 'location'},
-    {
-      '1': 'minimum_stock_level',
-      '3': 11,
-      '4': 1,
-      '5': 5,
-      '10': 'minimumStockLevel'
-    },
-    {
-      '1': 'status',
-      '3': 12,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.InventoryItemStatus',
-      '10': 'status'
-    },
+    {'1': 'minimum_stock_level', '3': 11, '4': 1, '5': 5, '10': 'minimumStockLevel'},
+    {'1': 'status', '3': 12, '4': 1, '5': 14, '6': '.pb.InventoryItemStatus', '10': 'status'},
     {'1': 'notes', '3': 13, '4': 1, '5': 9, '10': 'notes'},
-    {
-      '1': 'created_at',
-      '3': 14,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'createdAt'
-    },
-    {
-      '1': 'updated_at',
-      '3': 15,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'updatedAt'
-    },
+    {'1': 'created_at', '3': 14, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    {'1': 'updated_at', '3': 15, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
   ],
 };
 
@@ -512,27 +403,13 @@ const InventoryAdjustment$json = {
     {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
     {'1': 'item_id', '3': 2, '4': 1, '5': 9, '10': 'itemId'},
     {'1': 'business_id', '3': 3, '4': 1, '5': 9, '10': 'businessId'},
-    {
-      '1': 'adjustment_type',
-      '3': 4,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.AdjustmentType',
-      '10': 'adjustmentType'
-    },
+    {'1': 'adjustment_type', '3': 4, '4': 1, '5': 14, '6': '.pb.AdjustmentType', '10': 'adjustmentType'},
     {'1': 'quantity_change', '3': 5, '4': 1, '5': 5, '10': 'quantityChange'},
     {'1': 'quantity_before', '3': 6, '4': 1, '5': 5, '10': 'quantityBefore'},
     {'1': 'quantity_after', '3': 7, '4': 1, '5': 5, '10': 'quantityAfter'},
     {'1': 'reason', '3': 8, '4': 1, '5': 9, '10': 'reason'},
     {'1': 'adjusted_by', '3': 9, '4': 1, '5': 9, '10': 'adjustedBy'},
-    {
-      '1': 'created_at',
-      '3': 10,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'createdAt'
-    },
+    {'1': 'created_at', '3': 10, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
   ],
 };
 
@@ -574,27 +451,9 @@ const PaySlip$json = {
     {'1': 'employee_name', '3': 4, '4': 1, '5': 9, '10': 'employeeName'},
     {'1': 'gross_pay', '3': 5, '4': 1, '5': 3, '10': 'grossPay'},
     {'1': 'income_tax', '3': 6, '4': 1, '5': 3, '10': 'incomeTax'},
-    {
-      '1': 'national_insurance',
-      '3': 7,
-      '4': 1,
-      '5': 3,
-      '10': 'nationalInsurance'
-    },
-    {
-      '1': 'student_loan_repayment',
-      '3': 8,
-      '4': 1,
-      '5': 3,
-      '10': 'studentLoanRepayment'
-    },
-    {
-      '1': 'pension_contribution',
-      '3': 9,
-      '4': 1,
-      '5': 3,
-      '10': 'pensionContribution'
-    },
+    {'1': 'national_insurance', '3': 7, '4': 1, '5': 3, '10': 'nationalInsurance'},
+    {'1': 'student_loan_repayment', '3': 8, '4': 1, '5': 3, '10': 'studentLoanRepayment'},
+    {'1': 'pension_contribution', '3': 9, '4': 1, '5': 3, '10': 'pensionContribution'},
     {'1': 'other_deductions', '3': 10, '4': 1, '5': 3, '10': 'otherDeductions'},
     {'1': 'total_deductions', '3': 11, '4': 1, '5': 3, '10': 'totalDeductions'},
     {'1': 'net_pay', '3': 12, '4': 1, '5': 3, '10': 'netPay'},
@@ -605,29 +464,9 @@ const PaySlip$json = {
     {'1': 'overtime_pay', '3': 17, '4': 1, '5': 3, '10': 'overtimePay'},
     {'1': 'bonuses', '3': 18, '4': 1, '5': 3, '10': 'bonuses'},
     {'1': 'commissions', '3': 19, '4': 1, '5': 3, '10': 'commissions'},
-    {
-      '1': 'payment_status',
-      '3': 20,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.PaymentStatus',
-      '10': 'paymentStatus'
-    },
-    {
-      '1': 'payment_reference',
-      '3': 21,
-      '4': 1,
-      '5': 9,
-      '10': 'paymentReference'
-    },
-    {
-      '1': 'created_at',
-      '3': 22,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'createdAt'
-    },
+    {'1': 'payment_status', '3': 20, '4': 1, '5': 14, '6': '.pb.PaymentStatus', '10': 'paymentStatus'},
+    {'1': 'payment_reference', '3': 21, '4': 1, '5': 9, '10': 'paymentReference'},
+    {'1': 'created_at', '3': 22, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
   ],
 };
 
@@ -690,32 +529,12 @@ const AddEmployeeRequest$json = {
     {'1': 'email', '3': 2, '4': 1, '5': 9, '10': 'email'},
     {'1': 'phone', '3': 3, '4': 1, '5': 9, '10': 'phone'},
     {'1': 'nin', '3': 4, '4': 1, '5': 9, '10': 'nin'},
-    {
-      '1': 'bank_account_number',
-      '3': 5,
-      '4': 1,
-      '5': 9,
-      '10': 'bankAccountNumber'
-    },
+    {'1': 'bank_account_number', '3': 5, '4': 1, '5': 9, '10': 'bankAccountNumber'},
     {'1': 'bank_code', '3': 6, '4': 1, '5': 9, '10': 'bankCode'},
     {'1': 'bank_name', '3': 7, '4': 1, '5': 9, '10': 'bankName'},
-    {
-      '1': 'employment_type',
-      '3': 8,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.EmploymentType',
-      '10': 'employmentType'
-    },
+    {'1': 'employment_type', '3': 8, '4': 1, '5': 14, '6': '.pb.EmploymentType', '10': 'employmentType'},
     {'1': 'pay_rate', '3': 9, '4': 1, '5': 3, '10': 'payRate'},
-    {
-      '1': 'pay_frequency',
-      '3': 10,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.PayFrequency',
-      '10': 'payFrequency'
-    },
+    {'1': 'pay_frequency', '3': 10, '4': 1, '5': 14, '6': '.pb.PayFrequency', '10': 'payFrequency'},
     {'1': 'department', '3': 11, '4': 1, '5': 9, '10': 'department'},
     {'1': 'job_title', '3': 12, '4': 1, '5': 9, '10': 'jobTitle'},
     {'1': 'start_date', '3': 13, '4': 1, '5': 9, '10': 'startDate'},
@@ -741,14 +560,7 @@ const AddEmployeeResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'employee',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.Employee',
-      '10': 'employee'
-    },
+    {'1': 'employee', '3': 3, '4': 1, '5': 11, '6': '.pb.Employee', '10': 'employee'},
   ],
 };
 
@@ -767,42 +579,15 @@ const UpdateEmployeeRequest$json = {
     {'1': 'email', '3': 3, '4': 1, '5': 9, '10': 'email'},
     {'1': 'phone', '3': 4, '4': 1, '5': 9, '10': 'phone'},
     {'1': 'nin', '3': 5, '4': 1, '5': 9, '10': 'nin'},
-    {
-      '1': 'bank_account_number',
-      '3': 6,
-      '4': 1,
-      '5': 9,
-      '10': 'bankAccountNumber'
-    },
+    {'1': 'bank_account_number', '3': 6, '4': 1, '5': 9, '10': 'bankAccountNumber'},
     {'1': 'bank_code', '3': 7, '4': 1, '5': 9, '10': 'bankCode'},
     {'1': 'bank_name', '3': 8, '4': 1, '5': 9, '10': 'bankName'},
-    {
-      '1': 'employment_type',
-      '3': 9,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.EmploymentType',
-      '10': 'employmentType'
-    },
+    {'1': 'employment_type', '3': 9, '4': 1, '5': 14, '6': '.pb.EmploymentType', '10': 'employmentType'},
     {'1': 'pay_rate', '3': 10, '4': 1, '5': 3, '10': 'payRate'},
-    {
-      '1': 'pay_frequency',
-      '3': 11,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.PayFrequency',
-      '10': 'payFrequency'
-    },
+    {'1': 'pay_frequency', '3': 11, '4': 1, '5': 14, '6': '.pb.PayFrequency', '10': 'payFrequency'},
     {'1': 'department', '3': 12, '4': 1, '5': 9, '10': 'department'},
     {'1': 'job_title', '3': 13, '4': 1, '5': 9, '10': 'jobTitle'},
-    {
-      '1': 'status',
-      '3': 14,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.EmployeeStatus',
-      '10': 'status'
-    },
+    {'1': 'status', '3': 14, '4': 1, '5': 14, '6': '.pb.EmployeeStatus', '10': 'status'},
   ],
 };
 
@@ -825,14 +610,7 @@ const UpdateEmployeeResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'employee',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.Employee',
-      '10': 'employee'
-    },
+    {'1': 'employee', '3': 3, '4': 1, '5': 11, '6': '.pb.Employee', '10': 'employee'},
   ],
 };
 
@@ -865,10 +643,9 @@ const RemoveEmployeeResponse$json = {
 };
 
 /// Descriptor for `RemoveEmployeeResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List removeEmployeeResponseDescriptor =
-    $convert.base64Decode(
-        'ChZSZW1vdmVFbXBsb3llZVJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGAoHbW'
-        'Vzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
+final $typed_data.Uint8List removeEmployeeResponseDescriptor = $convert.base64Decode(
+    'ChZSZW1vdmVFbXBsb3llZVJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGAoHbW'
+    'Vzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
 
 @$core.Deprecated('Use getEmployeeRequestDescriptor instead')
 const GetEmployeeRequest$json = {
@@ -888,14 +665,7 @@ const GetEmployeeResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'employee',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.Employee',
-      '10': 'employee'
-    },
+    {'1': 'employee', '3': 3, '4': 1, '5': 11, '6': '.pb.Employee', '10': 'employee'},
   ],
 };
 
@@ -911,14 +681,7 @@ const ListEmployeesRequest$json = {
   '2': [
     {'1': 'page', '3': 1, '4': 1, '5': 5, '10': 'page'},
     {'1': 'limit', '3': 2, '4': 1, '5': 5, '10': 'limit'},
-    {
-      '1': 'status',
-      '3': 3,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.EmployeeStatus',
-      '10': 'status'
-    },
+    {'1': 'status', '3': 3, '4': 1, '5': 14, '6': '.pb.EmployeeStatus', '10': 'status'},
     {'1': 'department', '3': 4, '4': 1, '5': 9, '10': 'department'},
     {'1': 'search', '3': 5, '4': 1, '5': 9, '10': 'search'},
   ],
@@ -934,22 +697,8 @@ final $typed_data.Uint8List listEmployeesRequestDescriptor = $convert.base64Deco
 const ListEmployeesResponse$json = {
   '1': 'ListEmployeesResponse',
   '2': [
-    {
-      '1': 'employees',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.Employee',
-      '10': 'employees'
-    },
-    {
-      '1': 'pagination',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.PayrollPaginationInfo',
-      '10': 'pagination'
-    },
+    {'1': 'employees', '3': 1, '4': 3, '5': 11, '6': '.pb.Employee', '10': 'employees'},
+    {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.pb.PayrollPaginationInfo', '10': 'pagination'},
   ],
 };
 
@@ -968,14 +717,7 @@ const CreatePayRunRequest$json = {
     {'1': 'name', '3': 3, '4': 1, '5': 9, '10': 'name'},
     {'1': 'employee_ids', '3': 4, '4': 3, '5': 9, '10': 'employeeIds'},
     {'1': 'is_recurring', '3': 5, '4': 1, '5': 8, '10': 'isRecurring'},
-    {
-      '1': 'recurrence_frequency',
-      '3': 6,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.RecurrenceFrequency',
-      '10': 'recurrenceFrequency'
-    },
+    {'1': 'recurrence_frequency', '3': 6, '4': 1, '5': 14, '6': '.pb.RecurrenceFrequency', '10': 'recurrenceFrequency'},
     {'1': 'auto_approve', '3': 7, '4': 1, '5': 8, '10': 'autoApprove'},
   ],
 };
@@ -995,14 +737,7 @@ const CreatePayRunResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'pay_run',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.PayRun',
-      '10': 'payRun'
-    },
+    {'1': 'pay_run', '3': 3, '4': 1, '5': 11, '6': '.pb.PayRun', '10': 'payRun'},
   ],
 };
 
@@ -1020,9 +755,8 @@ const CalculatePayRunRequest$json = {
 };
 
 /// Descriptor for `CalculatePayRunRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List calculatePayRunRequestDescriptor =
-    $convert.base64Decode(
-        'ChZDYWxjdWxhdGVQYXlSdW5SZXF1ZXN0EhwKCnBheV9ydW5faWQYASABKAlSCHBheVJ1bklk');
+final $typed_data.Uint8List calculatePayRunRequestDescriptor = $convert.base64Decode(
+    'ChZDYWxjdWxhdGVQYXlSdW5SZXF1ZXN0EhwKCnBheV9ydW5faWQYASABKAlSCHBheVJ1bklk');
 
 @$core.Deprecated('Use calculatePayRunResponseDescriptor instead')
 const CalculatePayRunResponse$json = {
@@ -1030,22 +764,8 @@ const CalculatePayRunResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'pay_run',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.PayRun',
-      '10': 'payRun'
-    },
-    {
-      '1': 'pay_slips',
-      '3': 4,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.PaySlip',
-      '10': 'paySlips'
-    },
+    {'1': 'pay_run', '3': 3, '4': 1, '5': 11, '6': '.pb.PayRun', '10': 'payRun'},
+    {'1': 'pay_slips', '3': 4, '4': 3, '5': 11, '6': '.pb.PaySlip', '10': 'paySlips'},
   ],
 };
 
@@ -1073,14 +793,7 @@ const ApprovePayRunResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'pay_run',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.PayRun',
-      '10': 'payRun'
-    },
+    {'1': 'pay_run', '3': 3, '4': 1, '5': 11, '6': '.pb.PayRun', '10': 'payRun'},
   ],
 };
 
@@ -1112,21 +825,8 @@ const ProcessPayRunResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'pay_run',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.PayRun',
-      '10': 'payRun'
-    },
-    {
-      '1': 'successful_payments',
-      '3': 4,
-      '4': 1,
-      '5': 5,
-      '10': 'successfulPayments'
-    },
+    {'1': 'pay_run', '3': 3, '4': 1, '5': 11, '6': '.pb.PayRun', '10': 'payRun'},
+    {'1': 'successful_payments', '3': 4, '4': 1, '5': 5, '10': 'successfulPayments'},
     {'1': 'failed_payments', '3': 5, '4': 1, '5': 5, '10': 'failedPayments'},
   ],
 };
@@ -1156,14 +856,7 @@ const GetPayRunResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'pay_run',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.PayRun',
-      '10': 'payRun'
-    },
+    {'1': 'pay_run', '3': 3, '4': 1, '5': 11, '6': '.pb.PayRun', '10': 'payRun'},
   ],
 };
 
@@ -1178,14 +871,7 @@ const ListPayRunsRequest$json = {
   '2': [
     {'1': 'page', '3': 1, '4': 1, '5': 5, '10': 'page'},
     {'1': 'limit', '3': 2, '4': 1, '5': 5, '10': 'limit'},
-    {
-      '1': 'status',
-      '3': 3,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.PayRunStatus',
-      '10': 'status'
-    },
+    {'1': 'status', '3': 3, '4': 1, '5': 14, '6': '.pb.PayRunStatus', '10': 'status'},
   ],
 };
 
@@ -1198,22 +884,8 @@ final $typed_data.Uint8List listPayRunsRequestDescriptor = $convert.base64Decode
 const ListPayRunsResponse$json = {
   '1': 'ListPayRunsResponse',
   '2': [
-    {
-      '1': 'pay_runs',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.PayRun',
-      '10': 'payRuns'
-    },
-    {
-      '1': 'pagination',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.PayrollPaginationInfo',
-      '10': 'pagination'
-    },
+    {'1': 'pay_runs', '3': 1, '4': 3, '5': 11, '6': '.pb.PayRun', '10': 'payRuns'},
+    {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.pb.PayrollPaginationInfo', '10': 'pagination'},
   ],
 };
 
@@ -1241,14 +913,7 @@ const GetPaySlipResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'pay_slip',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.PaySlip',
-      '10': 'paySlip'
-    },
+    {'1': 'pay_slip', '3': 3, '4': 1, '5': 11, '6': '.pb.PaySlip', '10': 'paySlip'},
   ],
 };
 
@@ -1277,22 +942,8 @@ final $typed_data.Uint8List listPaySlipsRequestDescriptor = $convert.base64Decod
 const ListPaySlipsResponse$json = {
   '1': 'ListPaySlipsResponse',
   '2': [
-    {
-      '1': 'pay_slips',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.PaySlip',
-      '10': 'paySlips'
-    },
-    {
-      '1': 'pagination',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.PayrollPaginationInfo',
-      '10': 'pagination'
-    },
+    {'1': 'pay_slips', '3': 1, '4': 3, '5': 11, '6': '.pb.PaySlip', '10': 'paySlips'},
+    {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.pb.PayrollPaginationInfo', '10': 'pagination'},
   ],
 };
 
@@ -1312,10 +963,9 @@ const GetPayrollSummaryRequest$json = {
 };
 
 /// Descriptor for `GetPayrollSummaryRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getPayrollSummaryRequestDescriptor =
-    $convert.base64Decode(
-        'ChhHZXRQYXlyb2xsU3VtbWFyeVJlcXVlc3QSIQoMcGVyaW9kX3N0YXJ0GAEgASgJUgtwZXJpb2'
-        'RTdGFydBIdCgpwZXJpb2RfZW5kGAIgASgJUglwZXJpb2RFbmQ=');
+final $typed_data.Uint8List getPayrollSummaryRequestDescriptor = $convert.base64Decode(
+    'ChhHZXRQYXlyb2xsU3VtbWFyeVJlcXVlc3QSIQoMcGVyaW9kX3N0YXJ0GAEgASgJUgtwZXJpb2'
+    'RTdGFydBIdCgpwZXJpb2RfZW5kGAIgASgJUglwZXJpb2RFbmQ=');
 
 @$core.Deprecated('Use getPayrollSummaryResponseDescriptor instead')
 const GetPayrollSummaryResponse$json = {
@@ -1328,21 +978,8 @@ const GetPayrollSummaryResponse$json = {
     {'1': 'total_gross_paid', '3': 5, '4': 1, '5': 3, '10': 'totalGrossPaid'},
     {'1': 'total_deductions', '3': 6, '4': 1, '5': 3, '10': 'totalDeductions'},
     {'1': 'total_net_paid', '3': 7, '4': 1, '5': 3, '10': 'totalNetPaid'},
-    {
-      '1': 'total_employer_contributions',
-      '3': 8,
-      '4': 1,
-      '5': 3,
-      '10': 'totalEmployerContributions'
-    },
-    {
-      '1': 'deduction_breakdown',
-      '3': 9,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.DeductionSummary',
-      '10': 'deductionBreakdown'
-    },
+    {'1': 'total_employer_contributions', '3': 8, '4': 1, '5': 3, '10': 'totalEmployerContributions'},
+    {'1': 'deduction_breakdown', '3': 9, '4': 3, '5': 11, '6': '.pb.DeductionSummary', '10': 'deductionBreakdown'},
   ],
 };
 
@@ -1379,30 +1016,11 @@ const GetTaxReportResponse$json = {
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
     {'1': 'total_paye', '3': 3, '4': 1, '5': 3, '10': 'totalPaye'},
     {'1': 'total_nhf', '3': 4, '4': 1, '5': 3, '10': 'totalNhf'},
-    {
-      '1': 'total_pension_employee',
-      '3': 5,
-      '4': 1,
-      '5': 3,
-      '10': 'totalPensionEmployee'
-    },
-    {
-      '1': 'total_pension_employer',
-      '3': 6,
-      '4': 1,
-      '5': 3,
-      '10': 'totalPensionEmployer'
-    },
+    {'1': 'total_pension_employee', '3': 5, '4': 1, '5': 3, '10': 'totalPensionEmployee'},
+    {'1': 'total_pension_employer', '3': 6, '4': 1, '5': 3, '10': 'totalPensionEmployer'},
     {'1': 'total_nsitf', '3': 7, '4': 1, '5': 3, '10': 'totalNsitf'},
     {'1': 'total_itf', '3': 8, '4': 1, '5': 3, '10': 'totalItf'},
-    {
-      '1': 'employee_summaries',
-      '3': 9,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.EmployeeTaxSummary',
-      '10': 'employeeSummaries'
-    },
+    {'1': 'employee_summaries', '3': 9, '4': 3, '5': 11, '6': '.pb.EmployeeTaxSummary', '10': 'employeeSummaries'},
   ],
 };
 
@@ -1449,13 +1067,7 @@ const CreateInventoryItemRequest$json = {
     {'1': 'unit', '3': 6, '4': 1, '5': 9, '10': 'unit'},
     {'1': 'sku', '3': 7, '4': 1, '5': 9, '10': 'sku'},
     {'1': 'location', '3': 8, '4': 1, '5': 9, '10': 'location'},
-    {
-      '1': 'minimum_stock_level',
-      '3': 9,
-      '4': 1,
-      '5': 5,
-      '10': 'minimumStockLevel'
-    },
+    {'1': 'minimum_stock_level', '3': 9, '4': 1, '5': 5, '10': 'minimumStockLevel'},
     {'1': 'notes', '3': 10, '4': 1, '5': 9, '10': 'notes'},
   ],
 };
@@ -1475,23 +1087,15 @@ const CreateInventoryItemResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'item',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.InventoryItem',
-      '10': 'item'
-    },
+    {'1': 'item', '3': 3, '4': 1, '5': 11, '6': '.pb.InventoryItem', '10': 'item'},
   ],
 };
 
 /// Descriptor for `CreateInventoryItemResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List createInventoryItemResponseDescriptor =
-    $convert.base64Decode(
-        'ChtDcmVhdGVJbnZlbnRvcnlJdGVtUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2Vzcx'
-        'IYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdlEiUKBGl0ZW0YAyABKAsyES5wYi5JbnZlbnRvcnlJ'
-        'dGVtUgRpdGVt');
+final $typed_data.Uint8List createInventoryItemResponseDescriptor = $convert.base64Decode(
+    'ChtDcmVhdGVJbnZlbnRvcnlJdGVtUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2Vzcx'
+    'IYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdlEiUKBGl0ZW0YAyABKAsyES5wYi5JbnZlbnRvcnlJ'
+    'dGVtUgRpdGVt');
 
 @$core.Deprecated('Use updateInventoryItemRequestDescriptor instead')
 const UpdateInventoryItemRequest$json = {
@@ -1505,21 +1109,8 @@ const UpdateInventoryItemRequest$json = {
     {'1': 'unit', '3': 6, '4': 1, '5': 9, '10': 'unit'},
     {'1': 'sku', '3': 7, '4': 1, '5': 9, '10': 'sku'},
     {'1': 'location', '3': 8, '4': 1, '5': 9, '10': 'location'},
-    {
-      '1': 'minimum_stock_level',
-      '3': 9,
-      '4': 1,
-      '5': 5,
-      '10': 'minimumStockLevel'
-    },
-    {
-      '1': 'status',
-      '3': 10,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.InventoryItemStatus',
-      '10': 'status'
-    },
+    {'1': 'minimum_stock_level', '3': 9, '4': 1, '5': 5, '10': 'minimumStockLevel'},
+    {'1': 'status', '3': 10, '4': 1, '5': 14, '6': '.pb.InventoryItemStatus', '10': 'status'},
     {'1': 'notes', '3': 11, '4': 1, '5': 9, '10': 'notes'},
   ],
 };
@@ -1540,23 +1131,15 @@ const UpdateInventoryItemResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'item',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.InventoryItem',
-      '10': 'item'
-    },
+    {'1': 'item', '3': 3, '4': 1, '5': 11, '6': '.pb.InventoryItem', '10': 'item'},
   ],
 };
 
 /// Descriptor for `UpdateInventoryItemResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateInventoryItemResponseDescriptor =
-    $convert.base64Decode(
-        'ChtVcGRhdGVJbnZlbnRvcnlJdGVtUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2Vzcx'
-        'IYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdlEiUKBGl0ZW0YAyABKAsyES5wYi5JbnZlbnRvcnlJ'
-        'dGVtUgRpdGVt');
+final $typed_data.Uint8List updateInventoryItemResponseDescriptor = $convert.base64Decode(
+    'ChtVcGRhdGVJbnZlbnRvcnlJdGVtUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2Vzcx'
+    'IYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdlEiUKBGl0ZW0YAyABKAsyES5wYi5JbnZlbnRvcnlJ'
+    'dGVtUgRpdGVt');
 
 @$core.Deprecated('Use deleteInventoryItemRequestDescriptor instead')
 const DeleteInventoryItemRequest$json = {
@@ -1567,9 +1150,8 @@ const DeleteInventoryItemRequest$json = {
 };
 
 /// Descriptor for `DeleteInventoryItemRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deleteInventoryItemRequestDescriptor =
-    $convert.base64Decode(
-        'ChpEZWxldGVJbnZlbnRvcnlJdGVtUmVxdWVzdBIXCgdpdGVtX2lkGAEgASgJUgZpdGVtSWQ=');
+final $typed_data.Uint8List deleteInventoryItemRequestDescriptor = $convert.base64Decode(
+    'ChpEZWxldGVJbnZlbnRvcnlJdGVtUmVxdWVzdBIXCgdpdGVtX2lkGAEgASgJUgZpdGVtSWQ=');
 
 @$core.Deprecated('Use deleteInventoryItemResponseDescriptor instead')
 const DeleteInventoryItemResponse$json = {
@@ -1581,10 +1163,9 @@ const DeleteInventoryItemResponse$json = {
 };
 
 /// Descriptor for `DeleteInventoryItemResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deleteInventoryItemResponseDescriptor =
-    $convert.base64Decode(
-        'ChtEZWxldGVJbnZlbnRvcnlJdGVtUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2Vzcx'
-        'IYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
+final $typed_data.Uint8List deleteInventoryItemResponseDescriptor = $convert.base64Decode(
+    'ChtEZWxldGVJbnZlbnRvcnlJdGVtUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2Vzcx'
+    'IYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
 
 @$core.Deprecated('Use getInventoryItemRequestDescriptor instead')
 const GetInventoryItemRequest$json = {
@@ -1595,9 +1176,8 @@ const GetInventoryItemRequest$json = {
 };
 
 /// Descriptor for `GetInventoryItemRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getInventoryItemRequestDescriptor =
-    $convert.base64Decode(
-        'ChdHZXRJbnZlbnRvcnlJdGVtUmVxdWVzdBIXCgdpdGVtX2lkGAEgASgJUgZpdGVtSWQ=');
+final $typed_data.Uint8List getInventoryItemRequestDescriptor = $convert.base64Decode(
+    'ChdHZXRJbnZlbnRvcnlJdGVtUmVxdWVzdBIXCgdpdGVtX2lkGAEgASgJUgZpdGVtSWQ=');
 
 @$core.Deprecated('Use getInventoryItemResponseDescriptor instead')
 const GetInventoryItemResponse$json = {
@@ -1605,14 +1185,7 @@ const GetInventoryItemResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'item',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.InventoryItem',
-      '10': 'item'
-    },
+    {'1': 'item', '3': 3, '4': 1, '5': 11, '6': '.pb.InventoryItem', '10': 'item'},
   ],
 };
 
@@ -1631,14 +1204,7 @@ const ListInventoryItemsRequest$json = {
     {'1': 'category', '3': 3, '4': 1, '5': 9, '10': 'category'},
     {'1': 'search', '3': 4, '4': 1, '5': 9, '10': 'search'},
     {'1': 'low_stock_only', '3': 5, '4': 1, '5': 8, '10': 'lowStockOnly'},
-    {
-      '1': 'status',
-      '3': 6,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.InventoryItemStatus',
-      '10': 'status'
-    },
+    {'1': 'status', '3': 6, '4': 1, '5': 14, '6': '.pb.InventoryItemStatus', '10': 'status'},
   ],
 };
 
@@ -1653,57 +1219,34 @@ final $typed_data.Uint8List listInventoryItemsRequestDescriptor = $convert.base6
 const ListInventoryItemsResponse$json = {
   '1': 'ListInventoryItemsResponse',
   '2': [
-    {
-      '1': 'items',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.InventoryItem',
-      '10': 'items'
-    },
-    {
-      '1': 'pagination',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.PayrollPaginationInfo',
-      '10': 'pagination'
-    },
+    {'1': 'items', '3': 1, '4': 3, '5': 11, '6': '.pb.InventoryItem', '10': 'items'},
+    {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.pb.PayrollPaginationInfo', '10': 'pagination'},
   ],
 };
 
 /// Descriptor for `ListInventoryItemsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List listInventoryItemsResponseDescriptor =
-    $convert.base64Decode(
-        'ChpMaXN0SW52ZW50b3J5SXRlbXNSZXNwb25zZRInCgVpdGVtcxgBIAMoCzIRLnBiLkludmVudG'
-        '9yeUl0ZW1SBWl0ZW1zEjkKCnBhZ2luYXRpb24YAiABKAsyGS5wYi5QYXlyb2xsUGFnaW5hdGlv'
-        'bkluZm9SCnBhZ2luYXRpb24=');
+final $typed_data.Uint8List listInventoryItemsResponseDescriptor = $convert.base64Decode(
+    'ChpMaXN0SW52ZW50b3J5SXRlbXNSZXNwb25zZRInCgVpdGVtcxgBIAMoCzIRLnBiLkludmVudG'
+    '9yeUl0ZW1SBWl0ZW1zEjkKCnBhZ2luYXRpb24YAiABKAsyGS5wYi5QYXlyb2xsUGFnaW5hdGlv'
+    'bkluZm9SCnBhZ2luYXRpb24=');
 
 @$core.Deprecated('Use adjustInventoryQuantityRequestDescriptor instead')
 const AdjustInventoryQuantityRequest$json = {
   '1': 'AdjustInventoryQuantityRequest',
   '2': [
     {'1': 'item_id', '3': 1, '4': 1, '5': 9, '10': 'itemId'},
-    {
-      '1': 'adjustment_type',
-      '3': 2,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.AdjustmentType',
-      '10': 'adjustmentType'
-    },
+    {'1': 'adjustment_type', '3': 2, '4': 1, '5': 14, '6': '.pb.AdjustmentType', '10': 'adjustmentType'},
     {'1': 'quantity', '3': 3, '4': 1, '5': 5, '10': 'quantity'},
     {'1': 'reason', '3': 4, '4': 1, '5': 9, '10': 'reason'},
   ],
 };
 
 /// Descriptor for `AdjustInventoryQuantityRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List adjustInventoryQuantityRequestDescriptor =
-    $convert.base64Decode(
-        'Ch5BZGp1c3RJbnZlbnRvcnlRdWFudGl0eVJlcXVlc3QSFwoHaXRlbV9pZBgBIAEoCVIGaXRlbU'
-        'lkEjsKD2FkanVzdG1lbnRfdHlwZRgCIAEoDjISLnBiLkFkanVzdG1lbnRUeXBlUg5hZGp1c3Rt'
-        'ZW50VHlwZRIaCghxdWFudGl0eRgDIAEoBVIIcXVhbnRpdHkSFgoGcmVhc29uGAQgASgJUgZyZW'
-        'Fzb24=');
+final $typed_data.Uint8List adjustInventoryQuantityRequestDescriptor = $convert.base64Decode(
+    'Ch5BZGp1c3RJbnZlbnRvcnlRdWFudGl0eVJlcXVlc3QSFwoHaXRlbV9pZBgBIAEoCVIGaXRlbU'
+    'lkEjsKD2FkanVzdG1lbnRfdHlwZRgCIAEoDjISLnBiLkFkanVzdG1lbnRUeXBlUg5hZGp1c3Rt'
+    'ZW50VHlwZRIaCghxdWFudGl0eRgDIAEoBVIIcXVhbnRpdHkSFgoGcmVhc29uGAQgASgJUgZyZW'
+    'Fzb24=');
 
 @$core.Deprecated('Use adjustInventoryQuantityResponseDescriptor instead')
 const AdjustInventoryQuantityResponse$json = {
@@ -1711,32 +1254,17 @@ const AdjustInventoryQuantityResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'item',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.InventoryItem',
-      '10': 'item'
-    },
-    {
-      '1': 'adjustment',
-      '3': 4,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.InventoryAdjustment',
-      '10': 'adjustment'
-    },
+    {'1': 'item', '3': 3, '4': 1, '5': 11, '6': '.pb.InventoryItem', '10': 'item'},
+    {'1': 'adjustment', '3': 4, '4': 1, '5': 11, '6': '.pb.InventoryAdjustment', '10': 'adjustment'},
   ],
 };
 
 /// Descriptor for `AdjustInventoryQuantityResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List adjustInventoryQuantityResponseDescriptor =
-    $convert.base64Decode(
-        'Ch9BZGp1c3RJbnZlbnRvcnlRdWFudGl0eVJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2'
-        'Nlc3MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRIlCgRpdGVtGAMgASgLMhEucGIuSW52ZW50'
-        'b3J5SXRlbVIEaXRlbRI3CgphZGp1c3RtZW50GAQgASgLMhcucGIuSW52ZW50b3J5QWRqdXN0bW'
-        'VudFIKYWRqdXN0bWVudA==');
+final $typed_data.Uint8List adjustInventoryQuantityResponseDescriptor = $convert.base64Decode(
+    'Ch9BZGp1c3RJbnZlbnRvcnlRdWFudGl0eVJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2'
+    'Nlc3MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRIlCgRpdGVtGAMgASgLMhEucGIuSW52ZW50'
+    'b3J5SXRlbVIEaXRlbRI3CgphZGp1c3RtZW50GAQgASgLMhcucGIuSW52ZW50b3J5QWRqdXN0bW'
+    'VudFIKYWRqdXN0bWVudA==');
 
 @$core.Deprecated('Use getInventoryHistoryRequestDescriptor instead')
 const GetInventoryHistoryRequest$json = {
@@ -1749,40 +1277,24 @@ const GetInventoryHistoryRequest$json = {
 };
 
 /// Descriptor for `GetInventoryHistoryRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getInventoryHistoryRequestDescriptor =
-    $convert.base64Decode(
-        'ChpHZXRJbnZlbnRvcnlIaXN0b3J5UmVxdWVzdBIXCgdpdGVtX2lkGAEgASgJUgZpdGVtSWQSEg'
-        'oEcGFnZRgCIAEoBVIEcGFnZRIUCgVsaW1pdBgDIAEoBVIFbGltaXQ=');
+final $typed_data.Uint8List getInventoryHistoryRequestDescriptor = $convert.base64Decode(
+    'ChpHZXRJbnZlbnRvcnlIaXN0b3J5UmVxdWVzdBIXCgdpdGVtX2lkGAEgASgJUgZpdGVtSWQSEg'
+    'oEcGFnZRgCIAEoBVIEcGFnZRIUCgVsaW1pdBgDIAEoBVIFbGltaXQ=');
 
 @$core.Deprecated('Use getInventoryHistoryResponseDescriptor instead')
 const GetInventoryHistoryResponse$json = {
   '1': 'GetInventoryHistoryResponse',
   '2': [
-    {
-      '1': 'adjustments',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.InventoryAdjustment',
-      '10': 'adjustments'
-    },
-    {
-      '1': 'pagination',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.PayrollPaginationInfo',
-      '10': 'pagination'
-    },
+    {'1': 'adjustments', '3': 1, '4': 3, '5': 11, '6': '.pb.InventoryAdjustment', '10': 'adjustments'},
+    {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.pb.PayrollPaginationInfo', '10': 'pagination'},
   ],
 };
 
 /// Descriptor for `GetInventoryHistoryResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getInventoryHistoryResponseDescriptor =
-    $convert.base64Decode(
-        'ChtHZXRJbnZlbnRvcnlIaXN0b3J5UmVzcG9uc2USOQoLYWRqdXN0bWVudHMYASADKAsyFy5wYi'
-        '5JbnZlbnRvcnlBZGp1c3RtZW50UgthZGp1c3RtZW50cxI5CgpwYWdpbmF0aW9uGAIgASgLMhku'
-        'cGIuUGF5cm9sbFBhZ2luYXRpb25JbmZvUgpwYWdpbmF0aW9u');
+final $typed_data.Uint8List getInventoryHistoryResponseDescriptor = $convert.base64Decode(
+    'ChtHZXRJbnZlbnRvcnlIaXN0b3J5UmVzcG9uc2USOQoLYWRqdXN0bWVudHMYASADKAsyFy5wYi'
+    '5JbnZlbnRvcnlBZGp1c3RtZW50UgthZGp1c3RtZW50cxI5CgpwYWdpbmF0aW9uGAIgASgLMhku'
+    'cGIuUGF5cm9sbFBhZ2luYXRpb25JbmZvUgpwYWdpbmF0aW9u');
 
 @$core.Deprecated('Use getInventorySummaryRequestDescriptor instead')
 const GetInventorySummaryRequest$json = {
@@ -1790,8 +1302,8 @@ const GetInventorySummaryRequest$json = {
 };
 
 /// Descriptor for `GetInventorySummaryRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getInventorySummaryRequestDescriptor =
-    $convert.base64Decode('ChpHZXRJbnZlbnRvcnlTdW1tYXJ5UmVxdWVzdA==');
+final $typed_data.Uint8List getInventorySummaryRequestDescriptor = $convert.base64Decode(
+    'ChpHZXRJbnZlbnRvcnlTdW1tYXJ5UmVxdWVzdA==');
 
 @$core.Deprecated('Use getInventorySummaryResponseDescriptor instead')
 const GetInventorySummaryResponse$json = {
@@ -1801,21 +1313,8 @@ const GetInventorySummaryResponse$json = {
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
     {'1': 'total_items', '3': 3, '4': 1, '5': 5, '10': 'totalItems'},
     {'1': 'low_stock_items', '3': 4, '4': 1, '5': 5, '10': 'lowStockItems'},
-    {
-      '1': 'total_inventory_value',
-      '3': 5,
-      '4': 1,
-      '5': 3,
-      '10': 'totalInventoryValue'
-    },
-    {
-      '1': 'categories',
-      '3': 6,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.CategorySummary',
-      '10': 'categories'
-    },
+    {'1': 'total_inventory_value', '3': 5, '4': 1, '5': 3, '10': 'totalInventoryValue'},
+    {'1': 'categories', '3': 6, '4': 3, '5': 11, '6': '.pb.CategorySummary', '10': 'categories'},
   ],
 };
 
@@ -1842,49 +1341,15 @@ const Customer$json = {
     {'1': 'state', '3': 9, '4': 1, '5': 9, '10': 'state'},
     {'1': 'country', '3': 10, '4': 1, '5': 9, '10': 'country'},
     {'1': 'tin', '3': 11, '4': 1, '5': 9, '10': 'tin'},
-    {
-      '1': 'bank_account_number',
-      '3': 12,
-      '4': 1,
-      '5': 9,
-      '10': 'bankAccountNumber'
-    },
+    {'1': 'bank_account_number', '3': 12, '4': 1, '5': 9, '10': 'bankAccountNumber'},
     {'1': 'bank_code', '3': 13, '4': 1, '5': 9, '10': 'bankCode'},
     {'1': 'bank_name', '3': 14, '4': 1, '5': 9, '10': 'bankName'},
-    {
-      '1': 'segment',
-      '3': 15,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.CustomerSegment',
-      '10': 'segment'
-    },
-    {
-      '1': 'status',
-      '3': 16,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.CustomerStatus',
-      '10': 'status'
-    },
+    {'1': 'segment', '3': 15, '4': 1, '5': 14, '6': '.pb.CustomerSegment', '10': 'segment'},
+    {'1': 'status', '3': 16, '4': 1, '5': 14, '6': '.pb.CustomerStatus', '10': 'status'},
     {'1': 'tags', '3': 17, '4': 3, '5': 9, '10': 'tags'},
     {'1': 'notes', '3': 18, '4': 1, '5': 9, '10': 'notes'},
-    {
-      '1': 'created_at',
-      '3': 19,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'createdAt'
-    },
-    {
-      '1': 'updated_at',
-      '3': 20,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'updatedAt'
-    },
+    {'1': 'created_at', '3': 19, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    {'1': 'updated_at', '3': 20, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
   ],
 };
 
@@ -1915,14 +1380,7 @@ const CustomerFinancialProfile$json = {
     {'1': 'total_invoices', '3': 6, '4': 1, '5': 5, '10': 'totalInvoices'},
     {'1': 'paid_invoices', '3': 7, '4': 1, '5': 5, '10': 'paidInvoices'},
     {'1': 'overdue_invoices', '3': 8, '4': 1, '5': 5, '10': 'overdueInvoices'},
-    {
-      '1': 'last_payment_date',
-      '3': 9,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'lastPaymentDate'
-    },
+    {'1': 'last_payment_date', '3': 9, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'lastPaymentDate'},
   ],
 };
 
@@ -1946,14 +1404,7 @@ const CustomerNote$json = {
     {'1': 'business_id', '3': 3, '4': 1, '5': 9, '10': 'businessId'},
     {'1': 'content', '3': 4, '4': 1, '5': 9, '10': 'content'},
     {'1': 'created_by', '3': 5, '4': 1, '5': 9, '10': 'createdBy'},
-    {
-      '1': 'created_at',
-      '3': 6,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'createdAt'
-    },
+    {'1': 'created_at', '3': 6, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
   ],
 };
 
@@ -1974,14 +1425,7 @@ const CustomerStatementEntry$json = {
     {'1': 'description', '3': 4, '4': 1, '5': 9, '10': 'description'},
     {'1': 'amount', '3': 5, '4': 1, '5': 3, '10': 'amount'},
     {'1': 'balance', '3': 6, '4': 1, '5': 3, '10': 'balance'},
-    {
-      '1': 'date',
-      '3': 7,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'date'
-    },
+    {'1': 'date', '3': 7, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'date'},
   ],
 };
 
@@ -1999,20 +1443,8 @@ const CustomerSummary$json = {
     {'1': 'total_customers', '3': 1, '4': 1, '5': 5, '10': 'totalCustomers'},
     {'1': 'active_customers', '3': 2, '4': 1, '5': 5, '10': 'activeCustomers'},
     {'1': 'vip_customers', '3': 3, '4': 1, '5': 5, '10': 'vipCustomers'},
-    {
-      '1': 'overdue_customers',
-      '3': 4,
-      '4': 1,
-      '5': 5,
-      '10': 'overdueCustomers'
-    },
-    {
-      '1': 'total_outstanding',
-      '3': 5,
-      '4': 1,
-      '5': 3,
-      '10': 'totalOutstanding'
-    },
+    {'1': 'overdue_customers', '3': 4, '4': 1, '5': 5, '10': 'overdueCustomers'},
+    {'1': 'total_outstanding', '3': 5, '4': 1, '5': 3, '10': 'totalOutstanding'},
     {'1': 'total_revenue', '3': 6, '4': 1, '5': 3, '10': 'totalRevenue'},
   ],
 };
@@ -2038,23 +1470,10 @@ const CreateCustomerRequest$json = {
     {'1': 'state', '3': 7, '4': 1, '5': 9, '10': 'state'},
     {'1': 'country', '3': 8, '4': 1, '5': 9, '10': 'country'},
     {'1': 'tin', '3': 9, '4': 1, '5': 9, '10': 'tin'},
-    {
-      '1': 'bank_account_number',
-      '3': 10,
-      '4': 1,
-      '5': 9,
-      '10': 'bankAccountNumber'
-    },
+    {'1': 'bank_account_number', '3': 10, '4': 1, '5': 9, '10': 'bankAccountNumber'},
     {'1': 'bank_code', '3': 11, '4': 1, '5': 9, '10': 'bankCode'},
     {'1': 'bank_name', '3': 12, '4': 1, '5': 9, '10': 'bankName'},
-    {
-      '1': 'segment',
-      '3': 13,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.CustomerSegment',
-      '10': 'segment'
-    },
+    {'1': 'segment', '3': 13, '4': 1, '5': 14, '6': '.pb.CustomerSegment', '10': 'segment'},
     {'1': 'tags', '3': 14, '4': 3, '5': 9, '10': 'tags'},
     {'1': 'notes', '3': 15, '4': 1, '5': 9, '10': 'notes'},
   ],
@@ -2077,14 +1496,7 @@ const CreateCustomerResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'customer',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.Customer',
-      '10': 'customer'
-    },
+    {'1': 'customer', '3': 3, '4': 1, '5': 11, '6': '.pb.Customer', '10': 'customer'},
   ],
 };
 
@@ -2108,31 +1520,11 @@ const UpdateCustomerRequest$json = {
     {'1': 'state', '3': 8, '4': 1, '5': 9, '10': 'state'},
     {'1': 'country', '3': 9, '4': 1, '5': 9, '10': 'country'},
     {'1': 'tin', '3': 10, '4': 1, '5': 9, '10': 'tin'},
-    {
-      '1': 'bank_account_number',
-      '3': 11,
-      '4': 1,
-      '5': 9,
-      '10': 'bankAccountNumber'
-    },
+    {'1': 'bank_account_number', '3': 11, '4': 1, '5': 9, '10': 'bankAccountNumber'},
     {'1': 'bank_code', '3': 12, '4': 1, '5': 9, '10': 'bankCode'},
     {'1': 'bank_name', '3': 13, '4': 1, '5': 9, '10': 'bankName'},
-    {
-      '1': 'segment',
-      '3': 14,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.CustomerSegment',
-      '10': 'segment'
-    },
-    {
-      '1': 'status',
-      '3': 15,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.CustomerStatus',
-      '10': 'status'
-    },
+    {'1': 'segment', '3': 14, '4': 1, '5': 14, '6': '.pb.CustomerSegment', '10': 'segment'},
+    {'1': 'status', '3': 15, '4': 1, '5': 14, '6': '.pb.CustomerStatus', '10': 'status'},
     {'1': 'tags', '3': 16, '4': 3, '5': 9, '10': 'tags'},
     {'1': 'notes', '3': 17, '4': 1, '5': 9, '10': 'notes'},
   ],
@@ -2157,14 +1549,7 @@ const UpdateCustomerResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'customer',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.Customer',
-      '10': 'customer'
-    },
+    {'1': 'customer', '3': 3, '4': 1, '5': 11, '6': '.pb.Customer', '10': 'customer'},
   ],
 };
 
@@ -2197,10 +1582,9 @@ const DeleteCustomerResponse$json = {
 };
 
 /// Descriptor for `DeleteCustomerResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deleteCustomerResponseDescriptor =
-    $convert.base64Decode(
-        'ChZEZWxldGVDdXN0b21lclJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGAoHbW'
-        'Vzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
+final $typed_data.Uint8List deleteCustomerResponseDescriptor = $convert.base64Decode(
+    'ChZEZWxldGVDdXN0b21lclJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGAoHbW'
+    'Vzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
 
 @$core.Deprecated('Use getCustomerRequestDescriptor instead')
 const GetCustomerRequest$json = {
@@ -2220,14 +1604,7 @@ const GetCustomerResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'customer',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.Customer',
-      '10': 'customer'
-    },
+    {'1': 'customer', '3': 3, '4': 1, '5': 11, '6': '.pb.Customer', '10': 'customer'},
   ],
 };
 
@@ -2244,22 +1621,8 @@ const ListCustomersRequest$json = {
     {'1': 'page', '3': 1, '4': 1, '5': 5, '10': 'page'},
     {'1': 'limit', '3': 2, '4': 1, '5': 5, '10': 'limit'},
     {'1': 'search', '3': 3, '4': 1, '5': 9, '10': 'search'},
-    {
-      '1': 'segment',
-      '3': 4,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.CustomerSegment',
-      '10': 'segment'
-    },
-    {
-      '1': 'status',
-      '3': 5,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.CustomerStatus',
-      '10': 'status'
-    },
+    {'1': 'segment', '3': 4, '4': 1, '5': 14, '6': '.pb.CustomerSegment', '10': 'segment'},
+    {'1': 'status', '3': 5, '4': 1, '5': 14, '6': '.pb.CustomerStatus', '10': 'status'},
     {'1': 'tag', '3': 6, '4': 1, '5': 9, '10': 'tag'},
   ],
 };
@@ -2275,22 +1638,8 @@ final $typed_data.Uint8List listCustomersRequestDescriptor = $convert.base64Deco
 const ListCustomersResponse$json = {
   '1': 'ListCustomersResponse',
   '2': [
-    {
-      '1': 'customers',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.Customer',
-      '10': 'customers'
-    },
-    {
-      '1': 'pagination',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.PayrollPaginationInfo',
-      '10': 'pagination'
-    },
+    {'1': 'customers', '3': 1, '4': 3, '5': 11, '6': '.pb.Customer', '10': 'customers'},
+    {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.pb.PayrollPaginationInfo', '10': 'pagination'},
   ],
 };
 
@@ -2309,10 +1658,9 @@ const GetCustomerFinancialProfileRequest$json = {
 };
 
 /// Descriptor for `GetCustomerFinancialProfileRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getCustomerFinancialProfileRequestDescriptor =
-    $convert.base64Decode(
-        'CiJHZXRDdXN0b21lckZpbmFuY2lhbFByb2ZpbGVSZXF1ZXN0Eh8KC2N1c3RvbWVyX2lkGAEgAS'
-        'gJUgpjdXN0b21lcklk');
+final $typed_data.Uint8List getCustomerFinancialProfileRequestDescriptor = $convert.base64Decode(
+    'CiJHZXRDdXN0b21lckZpbmFuY2lhbFByb2ZpbGVSZXF1ZXN0Eh8KC2N1c3RvbWVyX2lkGAEgAS'
+    'gJUgpjdXN0b21lcklk');
 
 @$core.Deprecated('Use getCustomerFinancialProfileResponseDescriptor instead')
 const GetCustomerFinancialProfileResponse$json = {
@@ -2320,23 +1668,15 @@ const GetCustomerFinancialProfileResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'profile',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.CustomerFinancialProfile',
-      '10': 'profile'
-    },
+    {'1': 'profile', '3': 3, '4': 1, '5': 11, '6': '.pb.CustomerFinancialProfile', '10': 'profile'},
   ],
 };
 
 /// Descriptor for `GetCustomerFinancialProfileResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getCustomerFinancialProfileResponseDescriptor =
-    $convert.base64Decode(
-        'CiNHZXRDdXN0b21lckZpbmFuY2lhbFByb2ZpbGVSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUg'
-        'dzdWNjZXNzEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USNgoHcHJvZmlsZRgDIAEoCzIcLnBi'
-        'LkN1c3RvbWVyRmluYW5jaWFsUHJvZmlsZVIHcHJvZmlsZQ==');
+final $typed_data.Uint8List getCustomerFinancialProfileResponseDescriptor = $convert.base64Decode(
+    'CiNHZXRDdXN0b21lckZpbmFuY2lhbFByb2ZpbGVSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUg'
+    'dzdWNjZXNzEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USNgoHcHJvZmlsZRgDIAEoCzIcLnBi'
+    'LkN1c3RvbWVyRmluYW5jaWFsUHJvZmlsZVIHcHJvZmlsZQ==');
 
 @$core.Deprecated('Use getCustomerSummaryRequestDescriptor instead')
 const GetCustomerSummaryRequest$json = {
@@ -2344,8 +1684,8 @@ const GetCustomerSummaryRequest$json = {
 };
 
 /// Descriptor for `GetCustomerSummaryRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getCustomerSummaryRequestDescriptor =
-    $convert.base64Decode('ChlHZXRDdXN0b21lclN1bW1hcnlSZXF1ZXN0');
+final $typed_data.Uint8List getCustomerSummaryRequestDescriptor = $convert.base64Decode(
+    'ChlHZXRDdXN0b21lclN1bW1hcnlSZXF1ZXN0');
 
 @$core.Deprecated('Use getCustomerSummaryResponseDescriptor instead')
 const GetCustomerSummaryResponse$json = {
@@ -2353,23 +1693,15 @@ const GetCustomerSummaryResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'summary',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.CustomerSummary',
-      '10': 'summary'
-    },
+    {'1': 'summary', '3': 3, '4': 1, '5': 11, '6': '.pb.CustomerSummary', '10': 'summary'},
   ],
 };
 
 /// Descriptor for `GetCustomerSummaryResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getCustomerSummaryResponseDescriptor =
-    $convert.base64Decode(
-        'ChpHZXRDdXN0b21lclN1bW1hcnlSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEh'
-        'gKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USLQoHc3VtbWFyeRgDIAEoCzITLnBiLkN1c3RvbWVy'
-        'U3VtbWFyeVIHc3VtbWFyeQ==');
+final $typed_data.Uint8List getCustomerSummaryResponseDescriptor = $convert.base64Decode(
+    'ChpHZXRDdXN0b21lclN1bW1hcnlSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEh'
+    'gKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USLQoHc3VtbWFyeRgDIAEoCzITLnBiLkN1c3RvbWVy'
+    'U3VtbWFyeVIHc3VtbWFyeQ==');
 
 @$core.Deprecated('Use addCustomerNoteRequestDescriptor instead')
 const AddCustomerNoteRequest$json = {
@@ -2381,10 +1713,9 @@ const AddCustomerNoteRequest$json = {
 };
 
 /// Descriptor for `AddCustomerNoteRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List addCustomerNoteRequestDescriptor =
-    $convert.base64Decode(
-        'ChZBZGRDdXN0b21lck5vdGVSZXF1ZXN0Eh8KC2N1c3RvbWVyX2lkGAEgASgJUgpjdXN0b21lck'
-        'lkEhgKB2NvbnRlbnQYAiABKAlSB2NvbnRlbnQ=');
+final $typed_data.Uint8List addCustomerNoteRequestDescriptor = $convert.base64Decode(
+    'ChZBZGRDdXN0b21lck5vdGVSZXF1ZXN0Eh8KC2N1c3RvbWVyX2lkGAEgASgJUgpjdXN0b21lck'
+    'lkEhgKB2NvbnRlbnQYAiABKAlSB2NvbnRlbnQ=');
 
 @$core.Deprecated('Use addCustomerNoteResponseDescriptor instead')
 const AddCustomerNoteResponse$json = {
@@ -2392,14 +1723,7 @@ const AddCustomerNoteResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'note',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.CustomerNote',
-      '10': 'note'
-    },
+    {'1': 'note', '3': 3, '4': 1, '5': 11, '6': '.pb.CustomerNote', '10': 'note'},
   ],
 };
 
@@ -2420,31 +1744,16 @@ const ListCustomerNotesRequest$json = {
 };
 
 /// Descriptor for `ListCustomerNotesRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List listCustomerNotesRequestDescriptor =
-    $convert.base64Decode(
-        'ChhMaXN0Q3VzdG9tZXJOb3Rlc1JlcXVlc3QSHwoLY3VzdG9tZXJfaWQYASABKAlSCmN1c3RvbW'
-        'VySWQSEgoEcGFnZRgCIAEoBVIEcGFnZRIUCgVsaW1pdBgDIAEoBVIFbGltaXQ=');
+final $typed_data.Uint8List listCustomerNotesRequestDescriptor = $convert.base64Decode(
+    'ChhMaXN0Q3VzdG9tZXJOb3Rlc1JlcXVlc3QSHwoLY3VzdG9tZXJfaWQYASABKAlSCmN1c3RvbW'
+    'VySWQSEgoEcGFnZRgCIAEoBVIEcGFnZRIUCgVsaW1pdBgDIAEoBVIFbGltaXQ=');
 
 @$core.Deprecated('Use listCustomerNotesResponseDescriptor instead')
 const ListCustomerNotesResponse$json = {
   '1': 'ListCustomerNotesResponse',
   '2': [
-    {
-      '1': 'notes',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.CustomerNote',
-      '10': 'notes'
-    },
-    {
-      '1': 'pagination',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.PayrollPaginationInfo',
-      '10': 'pagination'
-    },
+    {'1': 'notes', '3': 1, '4': 3, '5': 11, '6': '.pb.CustomerNote', '10': 'notes'},
+    {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.pb.PayrollPaginationInfo', '10': 'pagination'},
   ],
 };
 
@@ -2465,11 +1774,10 @@ const GetCustomerStatementRequest$json = {
 };
 
 /// Descriptor for `GetCustomerStatementRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getCustomerStatementRequestDescriptor =
-    $convert.base64Decode(
-        'ChtHZXRDdXN0b21lclN0YXRlbWVudFJlcXVlc3QSHwoLY3VzdG9tZXJfaWQYASABKAlSCmN1c3'
-        'RvbWVySWQSHQoKc3RhcnRfZGF0ZRgCIAEoCVIJc3RhcnREYXRlEhkKCGVuZF9kYXRlGAMgASgJ'
-        'UgdlbmREYXRl');
+final $typed_data.Uint8List getCustomerStatementRequestDescriptor = $convert.base64Decode(
+    'ChtHZXRDdXN0b21lclN0YXRlbWVudFJlcXVlc3QSHwoLY3VzdG9tZXJfaWQYASABKAlSCmN1c3'
+    'RvbWVySWQSHQoKc3RhcnRfZGF0ZRgCIAEoCVIJc3RhcnREYXRlEhkKCGVuZF9kYXRlGAMgASgJ'
+    'UgdlbmREYXRl');
 
 @$core.Deprecated('Use getCustomerStatementResponseDescriptor instead')
 const GetCustomerStatementResponse$json = {
@@ -2477,14 +1785,7 @@ const GetCustomerStatementResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'entries',
-      '3': 3,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.CustomerStatementEntry',
-      '10': 'entries'
-    },
+    {'1': 'entries', '3': 3, '4': 3, '5': 11, '6': '.pb.CustomerStatementEntry', '10': 'entries'},
     {'1': 'opening_balance', '3': 4, '4': 1, '5': 3, '10': 'openingBalance'},
     {'1': 'closing_balance', '3': 5, '4': 1, '5': 3, '10': 'closingBalance'},
   ],
@@ -2503,66 +1804,17 @@ const TaxObligation$json = {
   '2': [
     {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
     {'1': 'business_id', '3': 2, '4': 1, '5': 9, '10': 'businessId'},
-    {
-      '1': 'tax_type',
-      '3': 3,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.TaxType',
-      '10': 'taxType'
-    },
+    {'1': 'tax_type', '3': 3, '4': 1, '5': 14, '6': '.pb.TaxType', '10': 'taxType'},
     {'1': 'period', '3': 4, '4': 1, '5': 9, '10': 'period'},
     {'1': 'amount', '3': 5, '4': 1, '5': 3, '10': 'amount'},
-    {
-      '1': 'status',
-      '3': 6,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.TaxObligationStatus',
-      '10': 'status'
-    },
-    {
-      '1': 'due_date',
-      '3': 7,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'dueDate'
-    },
-    {
-      '1': 'filed_date',
-      '3': 8,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'filedDate'
-    },
-    {
-      '1': 'paid_date',
-      '3': 9,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'paidDate'
-    },
+    {'1': 'status', '3': 6, '4': 1, '5': 14, '6': '.pb.TaxObligationStatus', '10': 'status'},
+    {'1': 'due_date', '3': 7, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'dueDate'},
+    {'1': 'filed_date', '3': 8, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'filedDate'},
+    {'1': 'paid_date', '3': 9, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'paidDate'},
     {'1': 'reference', '3': 10, '4': 1, '5': 9, '10': 'reference'},
     {'1': 'notes', '3': 11, '4': 1, '5': 9, '10': 'notes'},
-    {
-      '1': 'created_at',
-      '3': 12,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'createdAt'
-    },
-    {
-      '1': 'updated_at',
-      '3': 13,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'updatedAt'
-    },
+    {'1': 'created_at', '3': 12, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    {'1': 'updated_at', '3': 13, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
   ],
 };
 
@@ -2583,23 +1835,9 @@ final $typed_data.Uint8List taxObligationDescriptor = $convert.base64Decode(
 const TaxCalendarEvent$json = {
   '1': 'TaxCalendarEvent',
   '2': [
-    {
-      '1': 'tax_type',
-      '3': 1,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.TaxType',
-      '10': 'taxType'
-    },
+    {'1': 'tax_type', '3': 1, '4': 1, '5': 14, '6': '.pb.TaxType', '10': 'taxType'},
     {'1': 'description', '3': 2, '4': 1, '5': 9, '10': 'description'},
-    {
-      '1': 'due_date',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'dueDate'
-    },
+    {'1': 'due_date', '3': 3, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'dueDate'},
     {'1': 'is_filed', '3': 4, '4': 1, '5': 8, '10': 'isFiled'},
     {'1': 'is_paid', '3': 5, '4': 1, '5': 8, '10': 'isPaid'},
     {'1': 'period', '3': 6, '4': 1, '5': 9, '10': 'period'},
@@ -2620,33 +1858,12 @@ const TaxDocument$json = {
   '2': [
     {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
     {'1': 'business_id', '3': 2, '4': 1, '5': 9, '10': 'businessId'},
-    {
-      '1': 'document_type',
-      '3': 3,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.TaxDocumentType',
-      '10': 'documentType'
-    },
+    {'1': 'document_type', '3': 3, '4': 1, '5': 14, '6': '.pb.TaxDocumentType', '10': 'documentType'},
     {'1': 'name', '3': 4, '4': 1, '5': 9, '10': 'name'},
     {'1': 'file_url', '3': 5, '4': 1, '5': 9, '10': 'fileUrl'},
-    {
-      '1': 'expiry_date',
-      '3': 6,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'expiryDate'
-    },
+    {'1': 'expiry_date', '3': 6, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'expiryDate'},
     {'1': 'notes', '3': 7, '4': 1, '5': 9, '10': 'notes'},
-    {
-      '1': 'created_at',
-      '3': 8,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'createdAt'
-    },
+    {'1': 'created_at', '3': 8, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
   ],
 };
 
@@ -2668,38 +1885,11 @@ const VATEntry$json = {
     {'1': 'description', '3': 3, '4': 1, '5': 9, '10': 'description'},
     {'1': 'base_amount', '3': 4, '4': 1, '5': 3, '10': 'baseAmount'},
     {'1': 'vat_amount', '3': 5, '4': 1, '5': 3, '10': 'vatAmount'},
-    {
-      '1': 'direction',
-      '3': 6,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.VATDirection',
-      '10': 'direction'
-    },
-    {
-      '1': 'invoice_reference',
-      '3': 7,
-      '4': 1,
-      '5': 9,
-      '10': 'invoiceReference'
-    },
+    {'1': 'direction', '3': 6, '4': 1, '5': 14, '6': '.pb.VATDirection', '10': 'direction'},
+    {'1': 'invoice_reference', '3': 7, '4': 1, '5': 9, '10': 'invoiceReference'},
     {'1': 'period', '3': 8, '4': 1, '5': 9, '10': 'period'},
-    {
-      '1': 'transaction_date',
-      '3': 9,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'transactionDate'
-    },
-    {
-      '1': 'created_at',
-      '3': 10,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'createdAt'
-    },
+    {'1': 'transaction_date', '3': 9, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'transactionDate'},
+    {'1': 'created_at', '3': 10, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
   ],
 };
 
@@ -2724,30 +1914,10 @@ const WHTEntry$json = {
     {'1': 'payment_amount', '3': 4, '4': 1, '5': 3, '10': 'paymentAmount'},
     {'1': 'wht_rate', '3': 5, '4': 1, '5': 1, '10': 'whtRate'},
     {'1': 'wht_amount', '3': 6, '4': 1, '5': 3, '10': 'whtAmount'},
-    {
-      '1': 'payment_reference',
-      '3': 7,
-      '4': 1,
-      '5': 9,
-      '10': 'paymentReference'
-    },
+    {'1': 'payment_reference', '3': 7, '4': 1, '5': 9, '10': 'paymentReference'},
     {'1': 'period', '3': 8, '4': 1, '5': 9, '10': 'period'},
-    {
-      '1': 'transaction_date',
-      '3': 9,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'transactionDate'
-    },
-    {
-      '1': 'created_at',
-      '3': 10,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'createdAt'
-    },
+    {'1': 'transaction_date', '3': 9, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'transactionDate'},
+    {'1': 'created_at', '3': 10, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
   ],
 };
 
@@ -2770,28 +1940,9 @@ const TaxDashboardSummary$json = {
     {'1': 'paye_due', '3': 2, '4': 1, '5': 3, '10': 'payeDue'},
     {'1': 'wht_due', '3': 3, '4': 1, '5': 3, '10': 'whtDue'},
     {'1': 'cit_estimated', '3': 4, '4': 1, '5': 3, '10': 'citEstimated'},
-    {
-      '1': 'pending_obligations',
-      '3': 5,
-      '4': 1,
-      '5': 5,
-      '10': 'pendingObligations'
-    },
-    {
-      '1': 'overdue_obligations',
-      '3': 6,
-      '4': 1,
-      '5': 5,
-      '10': 'overdueObligations'
-    },
-    {
-      '1': 'upcoming_deadlines',
-      '3': 7,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.TaxCalendarEvent',
-      '10': 'upcomingDeadlines'
-    },
+    {'1': 'pending_obligations', '3': 5, '4': 1, '5': 5, '10': 'pendingObligations'},
+    {'1': 'overdue_obligations', '3': 6, '4': 1, '5': 5, '10': 'overdueObligations'},
+    {'1': 'upcoming_deadlines', '3': 7, '4': 3, '5': 11, '6': '.pb.TaxCalendarEvent', '10': 'upcomingDeadlines'},
   ],
 };
 
@@ -2810,8 +1961,8 @@ const GetTaxDashboardRequest$json = {
 };
 
 /// Descriptor for `GetTaxDashboardRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getTaxDashboardRequestDescriptor =
-    $convert.base64Decode('ChZHZXRUYXhEYXNoYm9hcmRSZXF1ZXN0');
+final $typed_data.Uint8List getTaxDashboardRequestDescriptor = $convert.base64Decode(
+    'ChZHZXRUYXhEYXNoYm9hcmRSZXF1ZXN0');
 
 @$core.Deprecated('Use getTaxDashboardResponseDescriptor instead')
 const GetTaxDashboardResponse$json = {
@@ -2819,14 +1970,7 @@ const GetTaxDashboardResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'dashboard',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.TaxDashboardSummary',
-      '10': 'dashboard'
-    },
+    {'1': 'dashboard', '3': 3, '4': 1, '5': 11, '6': '.pb.TaxDashboardSummary', '10': 'dashboard'},
   ],
 };
 
@@ -2856,14 +2000,7 @@ const GetTaxCalendarResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'events',
-      '3': 3,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.TaxCalendarEvent',
-      '10': 'events'
-    },
+    {'1': 'events', '3': 3, '4': 3, '5': 11, '6': '.pb.TaxCalendarEvent', '10': 'events'},
   ],
 };
 
@@ -2877,14 +2014,7 @@ final $typed_data.Uint8List getTaxCalendarResponseDescriptor = $convert.base64De
 const CreateTaxObligationRequest$json = {
   '1': 'CreateTaxObligationRequest',
   '2': [
-    {
-      '1': 'tax_type',
-      '3': 1,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.TaxType',
-      '10': 'taxType'
-    },
+    {'1': 'tax_type', '3': 1, '4': 1, '5': 14, '6': '.pb.TaxType', '10': 'taxType'},
     {'1': 'period', '3': 2, '4': 1, '5': 9, '10': 'period'},
     {'1': 'amount', '3': 3, '4': 1, '5': 3, '10': 'amount'},
     {'1': 'due_date', '3': 4, '4': 1, '5': 9, '10': 'dueDate'},
@@ -2904,37 +2034,22 @@ const CreateTaxObligationResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'obligation',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.TaxObligation',
-      '10': 'obligation'
-    },
+    {'1': 'obligation', '3': 3, '4': 1, '5': 11, '6': '.pb.TaxObligation', '10': 'obligation'},
   ],
 };
 
 /// Descriptor for `CreateTaxObligationResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List createTaxObligationResponseDescriptor =
-    $convert.base64Decode(
-        'ChtDcmVhdGVUYXhPYmxpZ2F0aW9uUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2Vzcx'
-        'IYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdlEjEKCm9ibGlnYXRpb24YAyABKAsyES5wYi5UYXhP'
-        'YmxpZ2F0aW9uUgpvYmxpZ2F0aW9u');
+final $typed_data.Uint8List createTaxObligationResponseDescriptor = $convert.base64Decode(
+    'ChtDcmVhdGVUYXhPYmxpZ2F0aW9uUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2Vzcx'
+    'IYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdlEjEKCm9ibGlnYXRpb24YAyABKAsyES5wYi5UYXhP'
+    'YmxpZ2F0aW9uUgpvYmxpZ2F0aW9u');
 
 @$core.Deprecated('Use updateTaxObligationRequestDescriptor instead')
 const UpdateTaxObligationRequest$json = {
   '1': 'UpdateTaxObligationRequest',
   '2': [
     {'1': 'obligation_id', '3': 1, '4': 1, '5': 9, '10': 'obligationId'},
-    {
-      '1': 'status',
-      '3': 2,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.TaxObligationStatus',
-      '10': 'status'
-    },
+    {'1': 'status', '3': 2, '4': 1, '5': 14, '6': '.pb.TaxObligationStatus', '10': 'status'},
     {'1': 'amount', '3': 3, '4': 1, '5': 3, '10': 'amount'},
     {'1': 'reference', '3': 4, '4': 1, '5': 9, '10': 'reference'},
     {'1': 'notes', '3': 5, '4': 1, '5': 9, '10': 'notes'},
@@ -2954,23 +2069,15 @@ const UpdateTaxObligationResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'obligation',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.TaxObligation',
-      '10': 'obligation'
-    },
+    {'1': 'obligation', '3': 3, '4': 1, '5': 11, '6': '.pb.TaxObligation', '10': 'obligation'},
   ],
 };
 
 /// Descriptor for `UpdateTaxObligationResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateTaxObligationResponseDescriptor =
-    $convert.base64Decode(
-        'ChtVcGRhdGVUYXhPYmxpZ2F0aW9uUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2Vzcx'
-        'IYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdlEjEKCm9ibGlnYXRpb24YAyABKAsyES5wYi5UYXhP'
-        'YmxpZ2F0aW9uUgpvYmxpZ2F0aW9u');
+final $typed_data.Uint8List updateTaxObligationResponseDescriptor = $convert.base64Decode(
+    'ChtVcGRhdGVUYXhPYmxpZ2F0aW9uUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2Vzcx'
+    'IYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdlEjEKCm9ibGlnYXRpb24YAyABKAsyES5wYi5UYXhP'
+    'YmxpZ2F0aW9uUgpvYmxpZ2F0aW9u');
 
 @$core.Deprecated('Use listTaxObligationsRequestDescriptor instead')
 const ListTaxObligationsRequest$json = {
@@ -2978,22 +2085,8 @@ const ListTaxObligationsRequest$json = {
   '2': [
     {'1': 'page', '3': 1, '4': 1, '5': 5, '10': 'page'},
     {'1': 'limit', '3': 2, '4': 1, '5': 5, '10': 'limit'},
-    {
-      '1': 'tax_type',
-      '3': 3,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.TaxType',
-      '10': 'taxType'
-    },
-    {
-      '1': 'status',
-      '3': 4,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.TaxObligationStatus',
-      '10': 'status'
-    },
+    {'1': 'tax_type', '3': 3, '4': 1, '5': 14, '6': '.pb.TaxType', '10': 'taxType'},
+    {'1': 'status', '3': 4, '4': 1, '5': 14, '6': '.pb.TaxObligationStatus', '10': 'status'},
     {'1': 'year', '3': 5, '4': 1, '5': 5, '10': 'year'},
   ],
 };
@@ -3009,44 +2102,22 @@ final $typed_data.Uint8List listTaxObligationsRequestDescriptor = $convert.base6
 const ListTaxObligationsResponse$json = {
   '1': 'ListTaxObligationsResponse',
   '2': [
-    {
-      '1': 'obligations',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.TaxObligation',
-      '10': 'obligations'
-    },
-    {
-      '1': 'pagination',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.PayrollPaginationInfo',
-      '10': 'pagination'
-    },
+    {'1': 'obligations', '3': 1, '4': 3, '5': 11, '6': '.pb.TaxObligation', '10': 'obligations'},
+    {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.pb.PayrollPaginationInfo', '10': 'pagination'},
   ],
 };
 
 /// Descriptor for `ListTaxObligationsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List listTaxObligationsResponseDescriptor =
-    $convert.base64Decode(
-        'ChpMaXN0VGF4T2JsaWdhdGlvbnNSZXNwb25zZRIzCgtvYmxpZ2F0aW9ucxgBIAMoCzIRLnBiLl'
-        'RheE9ibGlnYXRpb25SC29ibGlnYXRpb25zEjkKCnBhZ2luYXRpb24YAiABKAsyGS5wYi5QYXly'
-        'b2xsUGFnaW5hdGlvbkluZm9SCnBhZ2luYXRpb24=');
+final $typed_data.Uint8List listTaxObligationsResponseDescriptor = $convert.base64Decode(
+    'ChpMaXN0VGF4T2JsaWdhdGlvbnNSZXNwb25zZRIzCgtvYmxpZ2F0aW9ucxgBIAMoCzIRLnBiLl'
+    'RheE9ibGlnYXRpb25SC29ibGlnYXRpb25zEjkKCnBhZ2luYXRpb24YAiABKAsyGS5wYi5QYXly'
+    'b2xsUGFnaW5hdGlvbkluZm9SCnBhZ2luYXRpb24=');
 
 @$core.Deprecated('Use uploadTaxDocumentRequestDescriptor instead')
 const UploadTaxDocumentRequest$json = {
   '1': 'UploadTaxDocumentRequest',
   '2': [
-    {
-      '1': 'document_type',
-      '3': 1,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.TaxDocumentType',
-      '10': 'documentType'
-    },
+    {'1': 'document_type', '3': 1, '4': 1, '5': 14, '6': '.pb.TaxDocumentType', '10': 'documentType'},
     {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
     {'1': 'file_url', '3': 3, '4': 1, '5': 9, '10': 'fileUrl'},
     {'1': 'expiry_date', '3': 4, '4': 1, '5': 9, '10': 'expiryDate'},
@@ -3067,14 +2138,7 @@ const UploadTaxDocumentResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'document',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.TaxDocument',
-      '10': 'document'
-    },
+    {'1': 'document', '3': 3, '4': 1, '5': 11, '6': '.pb.TaxDocument', '10': 'document'},
   ],
 };
 
@@ -3090,14 +2154,7 @@ const ListTaxDocumentsRequest$json = {
   '2': [
     {'1': 'page', '3': 1, '4': 1, '5': 5, '10': 'page'},
     {'1': 'limit', '3': 2, '4': 1, '5': 5, '10': 'limit'},
-    {
-      '1': 'document_type',
-      '3': 3,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.TaxDocumentType',
-      '10': 'documentType'
-    },
+    {'1': 'document_type', '3': 3, '4': 1, '5': 14, '6': '.pb.TaxDocumentType', '10': 'documentType'},
   ],
 };
 
@@ -3111,22 +2168,8 @@ final $typed_data.Uint8List listTaxDocumentsRequestDescriptor = $convert.base64D
 const ListTaxDocumentsResponse$json = {
   '1': 'ListTaxDocumentsResponse',
   '2': [
-    {
-      '1': 'documents',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.TaxDocument',
-      '10': 'documents'
-    },
-    {
-      '1': 'pagination',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.PayrollPaginationInfo',
-      '10': 'pagination'
-    },
+    {'1': 'documents', '3': 1, '4': 3, '5': 11, '6': '.pb.TaxDocument', '10': 'documents'},
+    {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.pb.PayrollPaginationInfo', '10': 'pagination'},
   ],
 };
 
@@ -3145,10 +2188,9 @@ const DeleteTaxDocumentRequest$json = {
 };
 
 /// Descriptor for `DeleteTaxDocumentRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deleteTaxDocumentRequestDescriptor =
-    $convert.base64Decode(
-        'ChhEZWxldGVUYXhEb2N1bWVudFJlcXVlc3QSHwoLZG9jdW1lbnRfaWQYASABKAlSCmRvY3VtZW'
-        '50SWQ=');
+final $typed_data.Uint8List deleteTaxDocumentRequestDescriptor = $convert.base64Decode(
+    'ChhEZWxldGVUYXhEb2N1bWVudFJlcXVlc3QSHwoLZG9jdW1lbnRfaWQYASABKAlSCmRvY3VtZW'
+    '50SWQ=');
 
 @$core.Deprecated('Use deleteTaxDocumentResponseDescriptor instead')
 const DeleteTaxDocumentResponse$json = {
@@ -3160,10 +2202,9 @@ const DeleteTaxDocumentResponse$json = {
 };
 
 /// Descriptor for `DeleteTaxDocumentResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deleteTaxDocumentResponseDescriptor =
-    $convert.base64Decode(
-        'ChlEZWxldGVUYXhEb2N1bWVudFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGA'
-        'oHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
+final $typed_data.Uint8List deleteTaxDocumentResponseDescriptor = $convert.base64Decode(
+    'ChlEZWxldGVUYXhEb2N1bWVudFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGA'
+    'oHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
 
 @$core.Deprecated('Use getVATScheduleRequestDescriptor instead')
 const GetVATScheduleRequest$json = {
@@ -3174,9 +2215,8 @@ const GetVATScheduleRequest$json = {
 };
 
 /// Descriptor for `GetVATScheduleRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getVATScheduleRequestDescriptor =
-    $convert.base64Decode(
-        'ChVHZXRWQVRTY2hlZHVsZVJlcXVlc3QSFgoGcGVyaW9kGAEgASgJUgZwZXJpb2Q=');
+final $typed_data.Uint8List getVATScheduleRequestDescriptor = $convert.base64Decode(
+    'ChVHZXRWQVRTY2hlZHVsZVJlcXVlc3QSFgoGcGVyaW9kGAEgASgJUgZwZXJpb2Q=');
 
 @$core.Deprecated('Use getVATScheduleResponseDescriptor instead')
 const GetVATScheduleResponse$json = {
@@ -3184,14 +2224,7 @@ const GetVATScheduleResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'entries',
-      '3': 3,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.VATEntry',
-      '10': 'entries'
-    },
+    {'1': 'entries', '3': 3, '4': 3, '5': 11, '6': '.pb.VATEntry', '10': 'entries'},
     {'1': 'total_output_vat', '3': 4, '4': 1, '5': 3, '10': 'totalOutputVat'},
     {'1': 'total_input_vat', '3': 5, '4': 1, '5': 3, '10': 'totalInputVat'},
     {'1': 'net_vat_payable', '3': 6, '4': 1, '5': 3, '10': 'netVatPayable'},
@@ -3212,21 +2245,8 @@ const RecordVATTransactionRequest$json = {
   '2': [
     {'1': 'description', '3': 1, '4': 1, '5': 9, '10': 'description'},
     {'1': 'base_amount', '3': 2, '4': 1, '5': 3, '10': 'baseAmount'},
-    {
-      '1': 'direction',
-      '3': 3,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.VATDirection',
-      '10': 'direction'
-    },
-    {
-      '1': 'invoice_reference',
-      '3': 4,
-      '4': 1,
-      '5': 9,
-      '10': 'invoiceReference'
-    },
+    {'1': 'direction', '3': 3, '4': 1, '5': 14, '6': '.pb.VATDirection', '10': 'direction'},
+    {'1': 'invoice_reference', '3': 4, '4': 1, '5': 9, '10': 'invoiceReference'},
     {'1': 'period', '3': 5, '4': 1, '5': 9, '10': 'period'},
     {'1': 'transaction_date', '3': 6, '4': 1, '5': 9, '10': 'transactionDate'},
   ],
@@ -3251,11 +2271,10 @@ const RecordVATTransactionResponse$json = {
 };
 
 /// Descriptor for `RecordVATTransactionResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List recordVATTransactionResponseDescriptor =
-    $convert.base64Decode(
-        'ChxSZWNvcmRWQVRUcmFuc2FjdGlvblJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3'
-        'MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRIiCgVlbnRyeRgDIAEoCzIMLnBiLlZBVEVudHJ5'
-        'UgVlbnRyeQ==');
+final $typed_data.Uint8List recordVATTransactionResponseDescriptor = $convert.base64Decode(
+    'ChxSZWNvcmRWQVRUcmFuc2FjdGlvblJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3'
+    'MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRIiCgVlbnRyeRgDIAEoCzIMLnBiLlZBVEVudHJ5'
+    'UgVlbnRyeQ==');
 
 @$core.Deprecated('Use getWHTScheduleRequestDescriptor instead')
 const GetWHTScheduleRequest$json = {
@@ -3266,9 +2285,8 @@ const GetWHTScheduleRequest$json = {
 };
 
 /// Descriptor for `GetWHTScheduleRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getWHTScheduleRequestDescriptor =
-    $convert.base64Decode(
-        'ChVHZXRXSFRTY2hlZHVsZVJlcXVlc3QSFgoGcGVyaW9kGAEgASgJUgZwZXJpb2Q=');
+final $typed_data.Uint8List getWHTScheduleRequestDescriptor = $convert.base64Decode(
+    'ChVHZXRXSFRTY2hlZHVsZVJlcXVlc3QSFgoGcGVyaW9kGAEgASgJUgZwZXJpb2Q=');
 
 @$core.Deprecated('Use getWHTScheduleResponseDescriptor instead')
 const GetWHTScheduleResponse$json = {
@@ -3276,21 +2294,8 @@ const GetWHTScheduleResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'entries',
-      '3': 3,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.WHTEntry',
-      '10': 'entries'
-    },
-    {
-      '1': 'total_wht_deducted',
-      '3': 4,
-      '4': 1,
-      '5': 3,
-      '10': 'totalWhtDeducted'
-    },
+    {'1': 'entries', '3': 3, '4': 3, '5': 11, '6': '.pb.WHTEntry', '10': 'entries'},
+    {'1': 'total_wht_deducted', '3': 4, '4': 1, '5': 3, '10': 'totalWhtDeducted'},
   ],
 };
 
@@ -3307,13 +2312,7 @@ const RecordWHTDeductionRequest$json = {
     {'1': 'vendor_name', '3': 1, '4': 1, '5': 9, '10': 'vendorName'},
     {'1': 'payment_amount', '3': 2, '4': 1, '5': 3, '10': 'paymentAmount'},
     {'1': 'wht_rate', '3': 3, '4': 1, '5': 1, '10': 'whtRate'},
-    {
-      '1': 'payment_reference',
-      '3': 4,
-      '4': 1,
-      '5': 9,
-      '10': 'paymentReference'
-    },
+    {'1': 'payment_reference', '3': 4, '4': 1, '5': 9, '10': 'paymentReference'},
     {'1': 'period', '3': 5, '4': 1, '5': 9, '10': 'period'},
     {'1': 'transaction_date', '3': 6, '4': 1, '5': 9, '10': 'transactionDate'},
   ],
@@ -3338,11 +2337,10 @@ const RecordWHTDeductionResponse$json = {
 };
 
 /// Descriptor for `RecordWHTDeductionResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List recordWHTDeductionResponseDescriptor =
-    $convert.base64Decode(
-        'ChpSZWNvcmRXSFREZWR1Y3Rpb25SZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEh'
-        'gKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USIgoFZW50cnkYAyABKAsyDC5wYi5XSFRFbnRyeVIF'
-        'ZW50cnk=');
+final $typed_data.Uint8List recordWHTDeductionResponseDescriptor = $convert.base64Decode(
+    'ChpSZWNvcmRXSFREZWR1Y3Rpb25SZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEh'
+    'gKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USIgoFZW50cnkYAyABKAsyDC5wYi5XSFRFbnRyeVIF'
+    'ZW50cnk=');
 
 @$core.Deprecated('Use getPAYESummaryRequestDescriptor instead')
 const GetPAYESummaryRequest$json = {
@@ -3366,14 +2364,7 @@ const GetPAYESummaryResponse$json = {
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
     {'1': 'total_paye', '3': 3, '4': 1, '5': 3, '10': 'totalPaye'},
     {'1': 'employee_count', '3': 4, '4': 1, '5': 5, '10': 'employeeCount'},
-    {
-      '1': 'employee_summaries',
-      '3': 5,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.EmployeeTaxSummary',
-      '10': 'employeeSummaries'
-    },
+    {'1': 'employee_summaries', '3': 5, '4': 3, '5': 11, '6': '.pb.EmployeeTaxSummary', '10': 'employeeSummaries'},
   ],
 };
 
@@ -3393,9 +2384,8 @@ const GetCITEstimationRequest$json = {
 };
 
 /// Descriptor for `GetCITEstimationRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getCITEstimationRequestDescriptor =
-    $convert.base64Decode(
-        'ChdHZXRDSVRFc3RpbWF0aW9uUmVxdWVzdBISCgR5ZWFyGAEgASgFUgR5ZWFy');
+final $typed_data.Uint8List getCITEstimationRequestDescriptor = $convert.base64Decode(
+    'ChdHZXRDSVRFc3RpbWF0aW9uUmVxdWVzdBISCgR5ZWFyGAEgASgFUgR5ZWFy');
 
 @$core.Deprecated('Use getCITEstimationResponseDescriptor instead')
 const GetCITEstimationResponse$json = {
@@ -3432,31 +2422,10 @@ const Supplier$json = {
     {'1': 'email', '3': 5, '4': 1, '5': 9, '10': 'email'},
     {'1': 'phone', '3': 6, '4': 1, '5': 9, '10': 'phone'},
     {'1': 'address', '3': 7, '4': 1, '5': 9, '10': 'address'},
-    {
-      '1': 'status',
-      '3': 8,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.SupplierStatus',
-      '10': 'status'
-    },
+    {'1': 'status', '3': 8, '4': 1, '5': 14, '6': '.pb.SupplierStatus', '10': 'status'},
     {'1': 'notes', '3': 9, '4': 1, '5': 9, '10': 'notes'},
-    {
-      '1': 'created_at',
-      '3': 10,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'createdAt'
-    },
-    {
-      '1': 'updated_at',
-      '3': 11,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'updatedAt'
-    },
+    {'1': 'created_at', '3': 10, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    {'1': 'updated_at', '3': 11, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
   ],
 };
 
@@ -3478,57 +2447,15 @@ const PurchaseOrder$json = {
     {'1': 'business_id', '3': 2, '4': 1, '5': 9, '10': 'businessId'},
     {'1': 'supplier_id', '3': 3, '4': 1, '5': 9, '10': 'supplierId'},
     {'1': 'supplier_name', '3': 4, '4': 1, '5': 9, '10': 'supplierName'},
-    {
-      '1': 'status',
-      '3': 5,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.PurchaseOrderStatus',
-      '10': 'status'
-    },
-    {
-      '1': 'items',
-      '3': 6,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.PurchaseOrderItem',
-      '10': 'items'
-    },
+    {'1': 'status', '3': 5, '4': 1, '5': 14, '6': '.pb.PurchaseOrderStatus', '10': 'status'},
+    {'1': 'items', '3': 6, '4': 3, '5': 11, '6': '.pb.PurchaseOrderItem', '10': 'items'},
     {'1': 'total_amount', '3': 7, '4': 1, '5': 3, '10': 'totalAmount'},
     {'1': 'notes', '3': 8, '4': 1, '5': 9, '10': 'notes'},
     {'1': 'reference', '3': 9, '4': 1, '5': 9, '10': 'reference'},
-    {
-      '1': 'expected_date',
-      '3': 10,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'expectedDate'
-    },
-    {
-      '1': 'received_date',
-      '3': 11,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'receivedDate'
-    },
-    {
-      '1': 'created_at',
-      '3': 12,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'createdAt'
-    },
-    {
-      '1': 'updated_at',
-      '3': 13,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'updatedAt'
-    },
+    {'1': 'expected_date', '3': 10, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'expectedDate'},
+    {'1': 'received_date', '3': 11, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'receivedDate'},
+    {'1': 'created_at', '3': 12, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    {'1': 'updated_at', '3': 13, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
   ],
 };
 
@@ -3553,13 +2480,7 @@ const PurchaseOrderItem$json = {
     {'1': 'item_id', '3': 1, '4': 1, '5': 9, '10': 'itemId'},
     {'1': 'item_name', '3': 2, '4': 1, '5': 9, '10': 'itemName'},
     {'1': 'quantity_ordered', '3': 3, '4': 1, '5': 5, '10': 'quantityOrdered'},
-    {
-      '1': 'quantity_received',
-      '3': 4,
-      '4': 1,
-      '5': 5,
-      '10': 'quantityReceived'
-    },
+    {'1': 'quantity_received', '3': 4, '4': 1, '5': 5, '10': 'quantityReceived'},
     {'1': 'unit_price', '3': 5, '4': 1, '5': 3, '10': 'unitPrice'},
     {'1': 'total_price', '3': 6, '4': 1, '5': 3, '10': 'totalPrice'},
   ],
@@ -3579,14 +2500,7 @@ const InventoryValuation$json = {
   '2': [
     {'1': 'total_value', '3': 1, '4': 1, '5': 3, '10': 'totalValue'},
     {'1': 'total_items', '3': 2, '4': 1, '5': 5, '10': 'totalItems'},
-    {
-      '1': 'categories',
-      '3': 3,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.CategoryValuation',
-      '10': 'categories'
-    },
+    {'1': 'categories', '3': 3, '4': 3, '5': 11, '6': '.pb.CategoryValuation', '10': 'categories'},
   ],
 };
 
@@ -3621,14 +2535,7 @@ const ExpiryAlert$json = {
     {'1': 'item_name', '3': 2, '4': 1, '5': 9, '10': 'itemName'},
     {'1': 'category', '3': 3, '4': 1, '5': 9, '10': 'category'},
     {'1': 'quantity', '3': 4, '4': 1, '5': 5, '10': 'quantity'},
-    {
-      '1': 'expiry_date',
-      '3': 5,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'expiryDate'
-    },
+    {'1': 'expiry_date', '3': 5, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'expiryDate'},
     {'1': 'days_until_expiry', '3': 6, '4': 1, '5': 5, '10': 'daysUntilExpiry'},
   ],
 };
@@ -3667,14 +2574,7 @@ const CreateSupplierResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'supplier',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.Supplier',
-      '10': 'supplier'
-    },
+    {'1': 'supplier', '3': 3, '4': 1, '5': 11, '6': '.pb.Supplier', '10': 'supplier'},
   ],
 };
 
@@ -3694,14 +2594,7 @@ const UpdateSupplierRequest$json = {
     {'1': 'email', '3': 4, '4': 1, '5': 9, '10': 'email'},
     {'1': 'phone', '3': 5, '4': 1, '5': 9, '10': 'phone'},
     {'1': 'address', '3': 6, '4': 1, '5': 9, '10': 'address'},
-    {
-      '1': 'status',
-      '3': 7,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.SupplierStatus',
-      '10': 'status'
-    },
+    {'1': 'status', '3': 7, '4': 1, '5': 14, '6': '.pb.SupplierStatus', '10': 'status'},
     {'1': 'notes', '3': 8, '4': 1, '5': 9, '10': 'notes'},
   ],
 };
@@ -3720,14 +2613,7 @@ const UpdateSupplierResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'supplier',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.Supplier',
-      '10': 'supplier'
-    },
+    {'1': 'supplier', '3': 3, '4': 1, '5': 11, '6': '.pb.Supplier', '10': 'supplier'},
   ],
 };
 
@@ -3760,10 +2646,9 @@ const DeleteSupplierResponse$json = {
 };
 
 /// Descriptor for `DeleteSupplierResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deleteSupplierResponseDescriptor =
-    $convert.base64Decode(
-        'ChZEZWxldGVTdXBwbGllclJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGAoHbW'
-        'Vzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
+final $typed_data.Uint8List deleteSupplierResponseDescriptor = $convert.base64Decode(
+    'ChZEZWxldGVTdXBwbGllclJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGAoHbW'
+    'Vzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
 
 @$core.Deprecated('Use listSuppliersRequestDescriptor instead')
 const ListSuppliersRequest$json = {
@@ -3772,14 +2657,7 @@ const ListSuppliersRequest$json = {
     {'1': 'page', '3': 1, '4': 1, '5': 5, '10': 'page'},
     {'1': 'limit', '3': 2, '4': 1, '5': 5, '10': 'limit'},
     {'1': 'search', '3': 3, '4': 1, '5': 9, '10': 'search'},
-    {
-      '1': 'status',
-      '3': 4,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.SupplierStatus',
-      '10': 'status'
-    },
+    {'1': 'status', '3': 4, '4': 1, '5': 14, '6': '.pb.SupplierStatus', '10': 'status'},
   ],
 };
 
@@ -3793,22 +2671,8 @@ final $typed_data.Uint8List listSuppliersRequestDescriptor = $convert.base64Deco
 const ListSuppliersResponse$json = {
   '1': 'ListSuppliersResponse',
   '2': [
-    {
-      '1': 'suppliers',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.Supplier',
-      '10': 'suppliers'
-    },
-    {
-      '1': 'pagination',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.PayrollPaginationInfo',
-      '10': 'pagination'
-    },
+    {'1': 'suppliers', '3': 1, '4': 3, '5': 11, '6': '.pb.Supplier', '10': 'suppliers'},
+    {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.pb.PayrollPaginationInfo', '10': 'pagination'},
   ],
 };
 
@@ -3823,14 +2687,7 @@ const CreatePurchaseOrderRequest$json = {
   '1': 'CreatePurchaseOrderRequest',
   '2': [
     {'1': 'supplier_id', '3': 1, '4': 1, '5': 9, '10': 'supplierId'},
-    {
-      '1': 'items',
-      '3': 2,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.PurchaseOrderItem',
-      '10': 'items'
-    },
+    {'1': 'items', '3': 2, '4': 3, '5': 11, '6': '.pb.PurchaseOrderItem', '10': 'items'},
     {'1': 'notes', '3': 3, '4': 1, '5': 9, '10': 'notes'},
     {'1': 'expected_date', '3': 4, '4': 1, '5': 9, '10': 'expectedDate'},
   ],
@@ -3848,23 +2705,15 @@ const CreatePurchaseOrderResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'purchase_order',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.PurchaseOrder',
-      '10': 'purchaseOrder'
-    },
+    {'1': 'purchase_order', '3': 3, '4': 1, '5': 11, '6': '.pb.PurchaseOrder', '10': 'purchaseOrder'},
   ],
 };
 
 /// Descriptor for `CreatePurchaseOrderResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List createPurchaseOrderResponseDescriptor =
-    $convert.base64Decode(
-        'ChtDcmVhdGVQdXJjaGFzZU9yZGVyUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2Vzcx'
-        'IYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdlEjgKDnB1cmNoYXNlX29yZGVyGAMgASgLMhEucGIu'
-        'UHVyY2hhc2VPcmRlclINcHVyY2hhc2VPcmRlcg==');
+final $typed_data.Uint8List createPurchaseOrderResponseDescriptor = $convert.base64Decode(
+    'ChtDcmVhdGVQdXJjaGFzZU9yZGVyUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2Vzcx'
+    'IYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdlEjgKDnB1cmNoYXNlX29yZGVyGAMgASgLMhEucGIu'
+    'UHVyY2hhc2VPcmRlclINcHVyY2hhc2VPcmRlcg==');
 
 @$core.Deprecated('Use getPurchaseOrderRequestDescriptor instead')
 const GetPurchaseOrderRequest$json = {
@@ -3875,10 +2724,9 @@ const GetPurchaseOrderRequest$json = {
 };
 
 /// Descriptor for `GetPurchaseOrderRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getPurchaseOrderRequestDescriptor =
-    $convert.base64Decode(
-        'ChdHZXRQdXJjaGFzZU9yZGVyUmVxdWVzdBIqChFwdXJjaGFzZV9vcmRlcl9pZBgBIAEoCVIPcH'
-        'VyY2hhc2VPcmRlcklk');
+final $typed_data.Uint8List getPurchaseOrderRequestDescriptor = $convert.base64Decode(
+    'ChdHZXRQdXJjaGFzZU9yZGVyUmVxdWVzdBIqChFwdXJjaGFzZV9vcmRlcl9pZBgBIAEoCVIPcH'
+    'VyY2hhc2VPcmRlcklk');
 
 @$core.Deprecated('Use getPurchaseOrderResponseDescriptor instead')
 const GetPurchaseOrderResponse$json = {
@@ -3886,14 +2734,7 @@ const GetPurchaseOrderResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'purchase_order',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.PurchaseOrder',
-      '10': 'purchaseOrder'
-    },
+    {'1': 'purchase_order', '3': 3, '4': 1, '5': 11, '6': '.pb.PurchaseOrder', '10': 'purchaseOrder'},
   ],
 };
 
@@ -3909,14 +2750,7 @@ const ListPurchaseOrdersRequest$json = {
   '2': [
     {'1': 'page', '3': 1, '4': 1, '5': 5, '10': 'page'},
     {'1': 'limit', '3': 2, '4': 1, '5': 5, '10': 'limit'},
-    {
-      '1': 'status',
-      '3': 3,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.PurchaseOrderStatus',
-      '10': 'status'
-    },
+    {'1': 'status', '3': 3, '4': 1, '5': 14, '6': '.pb.PurchaseOrderStatus', '10': 'status'},
     {'1': 'supplier_id', '3': 4, '4': 1, '5': 9, '10': 'supplierId'},
   ],
 };
@@ -3931,54 +2765,31 @@ final $typed_data.Uint8List listPurchaseOrdersRequestDescriptor = $convert.base6
 const ListPurchaseOrdersResponse$json = {
   '1': 'ListPurchaseOrdersResponse',
   '2': [
-    {
-      '1': 'purchase_orders',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.PurchaseOrder',
-      '10': 'purchaseOrders'
-    },
-    {
-      '1': 'pagination',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.PayrollPaginationInfo',
-      '10': 'pagination'
-    },
+    {'1': 'purchase_orders', '3': 1, '4': 3, '5': 11, '6': '.pb.PurchaseOrder', '10': 'purchaseOrders'},
+    {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.pb.PayrollPaginationInfo', '10': 'pagination'},
   ],
 };
 
 /// Descriptor for `ListPurchaseOrdersResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List listPurchaseOrdersResponseDescriptor =
-    $convert.base64Decode(
-        'ChpMaXN0UHVyY2hhc2VPcmRlcnNSZXNwb25zZRI6Cg9wdXJjaGFzZV9vcmRlcnMYASADKAsyES'
-        '5wYi5QdXJjaGFzZU9yZGVyUg5wdXJjaGFzZU9yZGVycxI5CgpwYWdpbmF0aW9uGAIgASgLMhku'
-        'cGIuUGF5cm9sbFBhZ2luYXRpb25JbmZvUgpwYWdpbmF0aW9u');
+final $typed_data.Uint8List listPurchaseOrdersResponseDescriptor = $convert.base64Decode(
+    'ChpMaXN0UHVyY2hhc2VPcmRlcnNSZXNwb25zZRI6Cg9wdXJjaGFzZV9vcmRlcnMYASADKAsyES'
+    '5wYi5QdXJjaGFzZU9yZGVyUg5wdXJjaGFzZU9yZGVycxI5CgpwYWdpbmF0aW9uGAIgASgLMhku'
+    'cGIuUGF5cm9sbFBhZ2luYXRpb25JbmZvUgpwYWdpbmF0aW9u');
 
 @$core.Deprecated('Use receivePurchaseOrderRequestDescriptor instead')
 const ReceivePurchaseOrderRequest$json = {
   '1': 'ReceivePurchaseOrderRequest',
   '2': [
     {'1': 'purchase_order_id', '3': 1, '4': 1, '5': 9, '10': 'purchaseOrderId'},
-    {
-      '1': 'received_items',
-      '3': 2,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.PurchaseOrderItem',
-      '10': 'receivedItems'
-    },
+    {'1': 'received_items', '3': 2, '4': 3, '5': 11, '6': '.pb.PurchaseOrderItem', '10': 'receivedItems'},
   ],
 };
 
 /// Descriptor for `ReceivePurchaseOrderRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List receivePurchaseOrderRequestDescriptor =
-    $convert.base64Decode(
-        'ChtSZWNlaXZlUHVyY2hhc2VPcmRlclJlcXVlc3QSKgoRcHVyY2hhc2Vfb3JkZXJfaWQYASABKA'
-        'lSD3B1cmNoYXNlT3JkZXJJZBI8Cg5yZWNlaXZlZF9pdGVtcxgCIAMoCzIVLnBiLlB1cmNoYXNl'
-        'T3JkZXJJdGVtUg1yZWNlaXZlZEl0ZW1z');
+final $typed_data.Uint8List receivePurchaseOrderRequestDescriptor = $convert.base64Decode(
+    'ChtSZWNlaXZlUHVyY2hhc2VPcmRlclJlcXVlc3QSKgoRcHVyY2hhc2Vfb3JkZXJfaWQYASABKA'
+    'lSD3B1cmNoYXNlT3JkZXJJZBI8Cg5yZWNlaXZlZF9pdGVtcxgCIAMoCzIVLnBiLlB1cmNoYXNl'
+    'T3JkZXJJdGVtUg1yZWNlaXZlZEl0ZW1z');
 
 @$core.Deprecated('Use receivePurchaseOrderResponseDescriptor instead')
 const ReceivePurchaseOrderResponse$json = {
@@ -3986,23 +2797,15 @@ const ReceivePurchaseOrderResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'purchase_order',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.PurchaseOrder',
-      '10': 'purchaseOrder'
-    },
+    {'1': 'purchase_order', '3': 3, '4': 1, '5': 11, '6': '.pb.PurchaseOrder', '10': 'purchaseOrder'},
   ],
 };
 
 /// Descriptor for `ReceivePurchaseOrderResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List receivePurchaseOrderResponseDescriptor =
-    $convert.base64Decode(
-        'ChxSZWNlaXZlUHVyY2hhc2VPcmRlclJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3'
-        'MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRI4Cg5wdXJjaGFzZV9vcmRlchgDIAEoCzIRLnBi'
-        'LlB1cmNoYXNlT3JkZXJSDXB1cmNoYXNlT3JkZXI=');
+final $typed_data.Uint8List receivePurchaseOrderResponseDescriptor = $convert.base64Decode(
+    'ChxSZWNlaXZlUHVyY2hhc2VPcmRlclJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3'
+    'MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRI4Cg5wdXJjaGFzZV9vcmRlchgDIAEoCzIRLnBi'
+    'LlB1cmNoYXNlT3JkZXJSDXB1cmNoYXNlT3JkZXI=');
 
 @$core.Deprecated('Use getInventoryValuationRequestDescriptor instead')
 const GetInventoryValuationRequest$json = {
@@ -4010,8 +2813,8 @@ const GetInventoryValuationRequest$json = {
 };
 
 /// Descriptor for `GetInventoryValuationRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getInventoryValuationRequestDescriptor =
-    $convert.base64Decode('ChxHZXRJbnZlbnRvcnlWYWx1YXRpb25SZXF1ZXN0');
+final $typed_data.Uint8List getInventoryValuationRequestDescriptor = $convert.base64Decode(
+    'ChxHZXRJbnZlbnRvcnlWYWx1YXRpb25SZXF1ZXN0');
 
 @$core.Deprecated('Use getInventoryValuationResponseDescriptor instead')
 const GetInventoryValuationResponse$json = {
@@ -4019,23 +2822,15 @@ const GetInventoryValuationResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'valuation',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.pb.InventoryValuation',
-      '10': 'valuation'
-    },
+    {'1': 'valuation', '3': 3, '4': 1, '5': 11, '6': '.pb.InventoryValuation', '10': 'valuation'},
   ],
 };
 
 /// Descriptor for `GetInventoryValuationResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getInventoryValuationResponseDescriptor =
-    $convert.base64Decode(
-        'Ch1HZXRJbnZlbnRvcnlWYWx1YXRpb25SZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZX'
-        'NzEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USNAoJdmFsdWF0aW9uGAMgASgLMhYucGIuSW52'
-        'ZW50b3J5VmFsdWF0aW9uUgl2YWx1YXRpb24=');
+final $typed_data.Uint8List getInventoryValuationResponseDescriptor = $convert.base64Decode(
+    'Ch1HZXRJbnZlbnRvcnlWYWx1YXRpb25SZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZX'
+    'NzEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USNAoJdmFsdWF0aW9uGAMgASgLMhYucGIuSW52'
+    'ZW50b3J5VmFsdWF0aW9uUgl2YWx1YXRpb24=');
 
 @$core.Deprecated('Use getExpiryAlertsRequestDescriptor instead')
 const GetExpiryAlertsRequest$json = {
@@ -4046,10 +2841,9 @@ const GetExpiryAlertsRequest$json = {
 };
 
 /// Descriptor for `GetExpiryAlertsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getExpiryAlertsRequestDescriptor =
-    $convert.base64Decode(
-        'ChZHZXRFeHBpcnlBbGVydHNSZXF1ZXN0Eh0KCmRheXNfYWhlYWQYASABKAVSCWRheXNBaGVhZA'
-        '==');
+final $typed_data.Uint8List getExpiryAlertsRequestDescriptor = $convert.base64Decode(
+    'ChZHZXRFeHBpcnlBbGVydHNSZXF1ZXN0Eh0KCmRheXNfYWhlYWQYASABKAVSCWRheXNBaGVhZA'
+    '==');
 
 @$core.Deprecated('Use getExpiryAlertsResponseDescriptor instead')
 const GetExpiryAlertsResponse$json = {
@@ -4057,14 +2851,7 @@ const GetExpiryAlertsResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'alerts',
-      '3': 3,
-      '4': 3,
-      '5': 11,
-      '6': '.pb.ExpiryAlert',
-      '10': 'alerts'
-    },
+    {'1': 'alerts', '3': 3, '4': 3, '5': 11, '6': '.pb.ExpiryAlert', '10': 'alerts'},
   ],
 };
 
@@ -4073,3 +2860,4 @@ final $typed_data.Uint8List getExpiryAlertsResponseDescriptor = $convert.base64D
     'ChdHZXRFeHBpcnlBbGVydHNSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEhgKB2'
     '1lc3NhZ2UYAiABKAlSB21lc3NhZ2USJwoGYWxlcnRzGAMgAygLMg8ucGIuRXhwaXJ5QWxlcnRS'
     'BmFsZXJ0cw==');
+

@@ -14,8 +14,6 @@ import '../../domain/repositories/insurance_repository.dart';
 import '../../../authentication/domain/entities/user.dart';
 import '../../../../../core/cache/cache_config.dart';
 import '../../../../../core/cache/swr_cache_manager.dart';
-import '../../../../../core/offline/mutation.dart';
-import '../../../../../core/offline/mutation_queue.dart';
 import '../../../../core/utils/form_field_validators.dart';
 import 'create_policy_state.dart';
 
@@ -23,17 +21,14 @@ import 'create_policy_state.dart';
 class CreatePolicyCubit extends Cubit<CreatePolicyState> {
   final InsuranceRepository _repository;
   final SWRCacheManager _cacheManager;
-  final MutationQueue _mutationQueue;
   final LocaleManager? _localeManager;
 
   CreatePolicyCubit({
     required InsuranceRepository repository,
     required SWRCacheManager cacheManager,
-    required MutationQueue mutationQueue,
     LocaleManager? localeManager,
   })  : _repository = repository,
         _cacheManager = cacheManager,
-        _mutationQueue = mutationQueue,
         _localeManager = localeManager,
         super(const CreatePolicyInitial());
 
@@ -506,8 +501,13 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
   Future<void> purchaseInsurance({
     required String accountId,
     required String transactionPin,
+    String? transactionId,
   }) async {
-    if (isClosed || _selectedProduct == null || _quote == null) return;
+    if (isClosed) return;
+    if (_selectedProduct == null || _quote == null) {
+      emit(const CreatePolicyError(message: 'Quote not available. Please go back and get a new quote.'));
+      return;
+    }
 
     // Check quote expiry BEFORE the isPurchasing guard so user always gets feedback
     if (_quote!.isExpired) {
@@ -534,13 +534,23 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
 
     // Emit initial processing state
     emit(InsurancePurchaseProcessing(
-      step: InsuranceProcessingStep.initiated,
+      step: InsuranceProcessingStep.validatingPin,
       product: product,
       quote: quote,
-      progress: 0.1,
+      progress: 0.25,
     ));
 
     try {
+      // Emit holding funds/processing payment step
+      if (!isClosed) {
+        emit(InsurancePurchaseProcessing(
+          step: InsuranceProcessingStep.holdingFunds,
+          product: product,
+          quote: quote,
+          progress: 0.5,
+        ));
+      }
+
       final result = await _repository.purchaseInsurance(
         quoteId: quote.quoteId,
         productId: product.id,
@@ -549,12 +559,21 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
         idempotencyKey: idempotencyKey,
         formData: _formData,
         locale: _locale,
+        transactionId: transactionId,
       );
 
       if (isClosed) return;
 
       // Clear idempotency key after successful purchase
       _lastIdempotencyKey = null;
+
+      // Emit completing step just before success
+      emit(InsurancePurchaseProcessing(
+        step: InsuranceProcessingStep.purchasingPolicy,
+        product: product,
+        quote: quote,
+        progress: 0.9,
+      ));
 
       emit(InsurancePurchaseSuccess(
         purchaseResult: result,
@@ -566,56 +585,55 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
       _cacheManager.invalidatePattern('insurance_products_');
     } on GrpcError catch (e) {
       if (isClosed) return;
+      // Financial operations should NOT be queued offline due to security risks
+      // (stale balances, expired tokens, quote expiry, regulatory concerns).
+      // Instead, show error and let user retry. Idempotency key prevents double-charging.
       if (_isNetworkError(e)) {
-        await _mutationQueue.enqueue(QueuedMutation.create(
-          type: MutationType.generic,
-          payload: {
-            'action': 'purchase_insurance',
-            'quoteId': quote.quoteId,
-            'productId': product.id,
-            'accountId': accountId,
-            'idempotencyKey': idempotencyKey,
-            'formData': _formData,
-            'locale': _locale,
-          },
-          description: 'Insurance purchase: ${product.name}',
+        emit(const CreatePolicyError(
+          message: 'Network error. Please check your connection and try again.',
         ));
-        emit(const InsurancePurchaseQueued());
+        _restoreQuoteState();
       } else {
         emit(CreatePolicyError(
           message: friendlyGrpcError(e, 'Failed to purchase insurance'),
           errorCode: e.code.toString(),
         ));
+        _restoreQuoteState();
       }
     } catch (e) {
       if (isClosed) return;
       if (_isNetworkError(e)) {
-        await _mutationQueue.enqueue(QueuedMutation.create(
-          type: MutationType.generic,
-          payload: {
-            'action': 'purchase_insurance',
-            'quoteId': quote.quoteId,
-            'productId': product.id,
-            'accountId': accountId,
-            'idempotencyKey': idempotencyKey,
-            'formData': _formData,
-            'locale': _locale,
-          },
-          description: 'Insurance purchase: ${product.name}',
+        emit(const CreatePolicyError(
+          message: 'Network error. Please check your connection and try again.',
         ));
-        emit(const InsurancePurchaseQueued());
+        _restoreQuoteState();
       } else {
         final msg = e.toString().toLowerCase();
         if (msg.contains('insufficient') || msg.contains('balance')) {
           emit(const CreatePolicyError(message: 'Insufficient balance. Please fund your account and try again.'));
         } else if (msg.contains('pin') || msg.contains('permission')) {
           emit(const CreatePolicyError(message: 'Invalid transaction PIN. Please try again.'));
+        } else if (msg.contains('quote') && (msg.contains('expired') || msg.contains('not found'))) {
+          emit(const CreatePolicyError(message: 'Quote has expired. Please get a new quote and try again.'));
         } else {
           emit(const CreatePolicyError(message: 'Purchase failed. Please try again.'));
         }
+        _restoreQuoteState();
       }
     } finally {
       _isPurchasing = false;
+    }
+  }
+
+  /// Re-emit InsuranceQuoteLoaded after a purchase error so the confirm screen
+  /// doesn't show "Quote not loaded". The user can retry from the same screen.
+  void _restoreQuoteState() {
+    if (_quote != null && _selectedProduct != null && !isClosed) {
+      emit(InsuranceQuoteLoaded(
+        quote: _quote!,
+        product: _selectedProduct!,
+        formData: _formData,
+      ));
     }
   }
 

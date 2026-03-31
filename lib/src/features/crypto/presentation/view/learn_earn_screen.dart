@@ -2,8 +2,149 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lazervault/core/utils/currency_formatter.dart';
+import 'package:intl/intl.dart';
 
+import '../../../../../core/services/injection_container.dart';
+import '../../../../core/grpc/crypto_grpc_client.dart';
+import '../../../../generated/crypto.pb.dart';
+
+// ---------------------------------------------------------------------------
+// Colors
+// ---------------------------------------------------------------------------
+const _kBg = Color(0xFF0A0A0A);
+const _kCard = Color(0xFF1F1F1F);
+const _kAccent = Color.fromARGB(255, 78, 3, 208);
+const _kTextSecondary = Color(0xFF9CA3AF);
+const _kDivider = Color(0xFF2D2D2D);
+
+// ---------------------------------------------------------------------------
+// Educational content data
+// ---------------------------------------------------------------------------
+class _Lesson {
+  final IconData icon;
+  final String title;
+  final String summary;
+  final String detail;
+  const _Lesson(this.icon, this.title, this.summary, this.detail);
+}
+
+const _cryptoBasics = <_Lesson>[
+  _Lesson(
+    Icons.currency_bitcoin,
+    'What is Bitcoin?',
+    'The first decentralised digital currency, created in 2009 by Satoshi Nakamoto.',
+    'Bitcoin (BTC) is a peer-to-peer electronic cash system that operates without '
+        'a central authority. Transactions are verified by network nodes through '
+        'cryptography and recorded on a public ledger called a blockchain. Its '
+        'supply is capped at 21 million coins, making it a deflationary asset. '
+        'Bitcoin pioneered the concept of trustless digital value transfer and '
+        'remains the largest cryptocurrency by market capitalisation.',
+  ),
+  _Lesson(
+    Icons.auto_awesome,
+    'What is Ethereum?',
+    'A programmable blockchain that enables smart contracts and decentralised apps.',
+    'Ethereum (ETH) extends blockchain technology beyond simple transactions by '
+        'allowing developers to deploy self-executing smart contracts. These power '
+        'decentralised finance (DeFi), NFTs, DAOs and thousands of other applications. '
+        'Ethereum transitioned from Proof of Work to Proof of Stake in 2022, '
+        'reducing energy consumption by over 99%. Its native token, Ether, is '
+        'used to pay gas fees for computation on the network.',
+  ),
+  _Lesson(
+    Icons.account_balance,
+    'What is DeFi?',
+    'Decentralised Finance recreates traditional banking services on the blockchain.',
+    'DeFi protocols let users lend, borrow, trade, and earn interest without '
+        'intermediaries like banks. Popular protocols include Aave (lending), '
+        'Uniswap (decentralised exchange) and MakerDAO (stablecoin issuance). '
+        'DeFi uses smart contracts to automate financial logic, enabling '
+        'permissionless access to financial services globally. Risks include '
+        'smart-contract vulnerabilities, impermanent loss, and regulatory uncertainty.',
+  ),
+  _Lesson(
+    Icons.link,
+    'How does blockchain work?',
+    'A distributed, immutable ledger that records transactions across many computers.',
+    'A blockchain is a chain of blocks, each containing a batch of validated '
+        'transactions. Every block includes a cryptographic hash of the previous '
+        'block, creating a tamper-proof chain. Consensus mechanisms (Proof of Work '
+        'or Proof of Stake) ensure all participants agree on the state of the '
+        'ledger without a central coordinator. This architecture makes double-'
+        'spending virtually impossible and provides full transaction transparency.',
+  ),
+  _Lesson(
+    Icons.bar_chart,
+    'Understanding market cap',
+    'Market capitalisation measures a cryptocurrency\'s total value in circulation.',
+    'Market cap is calculated by multiplying the current price by the circulating '
+        'supply. It is the primary metric for comparing the relative size of '
+        'cryptocurrencies. Large-cap assets (>\$10B) like Bitcoin and Ethereum are '
+        'generally considered lower risk, while small-cap assets can offer higher '
+        'growth potential but with greater volatility. Fully diluted valuation '
+        '(FDV) uses max supply instead, giving a ceiling estimate.',
+  ),
+  _Lesson(
+    Icons.attach_money,
+    'What are stablecoins?',
+    'Cryptocurrencies pegged to fiat currencies, maintaining a stable value.',
+    'Stablecoins like USDT, USDC and DAI are designed to hold a 1:1 value with '
+        'the US dollar. They achieve this through fiat reserves (USDT/USDC), '
+        'crypto over-collateralisation (DAI) or algorithmic mechanisms. Stablecoins '
+        'serve as a bridge between traditional finance and crypto, enabling fast '
+        'settlement, DeFi participation and a safe-haven during market volatility '
+        'without needing to exit to a bank account.',
+  ),
+];
+
+const _tradingConcepts = <_Lesson>[
+  _Lesson(
+    Icons.swap_vert,
+    'Market vs Limit Orders',
+    'Two fundamental order types for buying and selling assets.',
+    'A market order executes immediately at the best available price, prioritising '
+        'speed over price certainty. A limit order lets you set a specific price '
+        'and only fills when the market reaches it, giving you price control but '
+        'no guarantee of execution. Market orders are best for liquid assets when '
+        'you need quick fills; limit orders suit precise entry/exit strategies.',
+  ),
+  _Lesson(
+    Icons.candlestick_chart,
+    'Reading candlestick charts',
+    'Visual representation of price action showing open, high, low and close.',
+    'Each candlestick represents a time period. The body shows the open-to-close '
+        'range (green if close > open, red otherwise). Wicks extend to the high '
+        'and low. Common patterns include doji (indecision), hammer (reversal) '
+        'and engulfing (trend change). Combining candlesticks with volume data '
+        'helps confirm price movements and identify potential entry/exit points.',
+  ),
+  _Lesson(
+    Icons.receipt_long,
+    'Understanding fees',
+    'Trading fees, network fees and spreads can significantly impact returns.',
+    'Exchanges charge maker/taker fees (typically 0.1%-0.5% per trade). Network '
+        'fees (gas on Ethereum, transaction fees on Bitcoin) are paid to validators '
+        'for processing on-chain transactions. Spread is the difference between '
+        'bid and ask prices. For frequent traders, fee optimisation through limit '
+        'orders, fee-tier upgrades and choosing low-fee networks can meaningfully '
+        'improve profitability over time.',
+  ),
+  _Lesson(
+    Icons.shield,
+    'Risk management basics',
+    'Protecting your capital with position sizing, stop-losses and diversification.',
+    'Never invest more than you can afford to lose. The 1-2% rule suggests risking '
+        'no more than 1-2% of your portfolio on a single trade. Stop-loss orders '
+        'automatically sell when price drops to a specified level, limiting '
+        'downside. Diversification across asset classes and market caps reduces '
+        'concentration risk. Dollar-cost averaging (DCA) smooths out volatility '
+        'by investing fixed amounts at regular intervals.',
+  ),
+];
+
+// ---------------------------------------------------------------------------
+// Screen
+// ---------------------------------------------------------------------------
 class LearnEarnScreen extends StatefulWidget {
   const LearnEarnScreen({super.key});
 
@@ -12,198 +153,106 @@ class LearnEarnScreen extends StatefulWidget {
 }
 
 class _LearnEarnScreenState extends State<LearnEarnScreen>
-    with TickerProviderStateMixin {
-  late TabController _tabController;
-  late AnimationController _progressController;
-  
-  final int _totalEarned = 142;
-  final int _coursesCompleted = 8;
-  final int _currentStreak = 12;
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+  final CryptoGrpcClient _grpcClient = serviceLocator<CryptoGrpcClient>();
+
+  List<CryptoMessage> _topCryptos = [];
+  List<CryptoNewsItem> _newsItems = [];
+  bool _isLoadingDiscover = true;
+  String? _discoverError;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
-    _progressController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    );
-    _progressController.forward();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      if (_tabController.index == 1 && _isLoadingDiscover && _discoverError == null) {
+        _loadDiscoverData();
+      }
+    });
   }
 
   @override
   void dispose() {
     _tabController.dispose();
-    _progressController.dispose();
     super.dispose();
   }
 
+  Future<void> _loadDiscoverData() async {
+    setState(() {
+      _isLoadingDiscover = true;
+      _discoverError = null;
+    });
+    try {
+      final results = await Future.wait([
+        _grpcClient.getTopCryptos(limit: 10, vsCurrency: 'usd'),
+        _grpcClient.getCryptoNews(currencies: ['btc', 'eth', 'sol', 'bnb'], limit: 10),
+      ]);
+      if (!mounted) return;
+      setState(() {
+        _topCryptos = (results[0] as GetTopCryptosResponse).cryptos.toList();
+        _newsItems = (results[1] as GetCryptoNewsResponse).items.toList();
+        _isLoadingDiscover = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _discoverError = 'Unable to load market data. Pull down to retry.';
+        _isLoadingDiscover = false;
+      });
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Build
+  // ---------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF1F1F1F),
-              const Color(0xFF0A0A0A),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildHeader(),
-              _buildComingSoonBanner(),
-              _buildProgressOverview(),
-              _buildTabBar(),
-              Expanded(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    _buildCoursesTab(),
-                    _buildQuizzesTab(),
-                    _buildRewardsTab(),
-                    _buildProgressTab(),
-                  ],
-                ),
+      backgroundColor: _kBg,
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildHeader(),
+            _buildTabBar(),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [_buildLearnTab(), _buildDiscoverTab()],
               ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildComingSoonBanner() {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.green.withValues(alpha: 0.2),
-            const Color(0xFF1F1F1F),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.rocket_launch, color: Colors.green, size: 28.sp),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Coming Soon',
-                  style: GoogleFonts.inter(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  'Learn about crypto and earn rewards. Feature in development.',
-                  style: GoogleFonts.inter(
-                    fontSize: 13.sp,
-                    color: Colors.white.withValues(alpha: 0.7),
-                    height: 1.4,
-                  ),
-                ),
-              ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildHeader() {
-    return Container(
+    return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
       child: Row(
         children: [
-          Container(
-            padding: EdgeInsets.all(8.w),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: GestureDetector(
-              onTap: () => Get.back(),
+          GestureDetector(
+            onTap: () => Get.back(),
+            child: Container(
+              padding: EdgeInsets.all(8.w),
+              decoration: BoxDecoration(
+                color: _kCard,
+                borderRadius: BorderRadius.circular(12.r),
+              ),
               child: Icon(Icons.arrow_back, color: Colors.white, size: 20.sp),
             ),
           ),
           SizedBox(width: 16.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Learn & Earn',
-                  style: GoogleFonts.inter(
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                Text(
-                  'Crypto education',
-                  style: GoogleFonts.inter(
-                    fontSize: 14.sp,
-                    color: Colors.white.withValues(alpha: 0.7),
-                  ),
-                ),
-              ],
+          Text(
+            'Learn & Earn',
+            style: GoogleFonts.inter(
+              fontSize: 20.sp,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
             ),
           ),
-          Container(
-            padding: EdgeInsets.all(8.w),
-            decoration: BoxDecoration(
-              color: Colors.green.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Icon(Icons.school, color: Colors.green, size: 20.sp),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProgressOverview() {
-    return Container(
-      margin: EdgeInsets.all(20.w),
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.green.withValues(alpha: 0.2), const Color(0xFF1F1F1F)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildStatItem('Total Earned', '${CurrencySymbols.currentSymbol}$_totalEarned', Icons.monetization_on, Colors.green),
-              _buildStatItem('Courses', '$_coursesCompleted', Icons.book, Colors.blue),
-              _buildStatItem('Streak', '$_currentStreak days', Icons.local_fire_department, Colors.orange),
-            ],
-          ),
-          SizedBox(height: 20.h),
-          _buildOverallProgress(),
         ],
       ),
     );
@@ -213,493 +262,187 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
+        color: _kCard,
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: TabBar(
         controller: _tabController,
         indicator: BoxDecoration(
-          color: Colors.green,
-          borderRadius: BorderRadius.circular(12.r),
+          color: _kAccent,
+          borderRadius: BorderRadius.circular(10.r),
         ),
+        indicatorSize: TabBarIndicatorSize.tab,
+        dividerHeight: 0,
+        labelStyle: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600),
+        unselectedLabelStyle: GoogleFonts.inter(fontSize: 14.sp),
         labelColor: Colors.white,
-        unselectedLabelColor: Colors.white.withValues(alpha: 0.6),
-        labelStyle: GoogleFonts.inter(fontSize: 12.sp, fontWeight: FontWeight.w600),
-        tabs: [
-          Tab(text: 'Courses'),
-          Tab(text: 'Quizzes'),
-          Tab(text: 'Rewards'),
-          Tab(text: 'Progress'),
-        ],
+        unselectedLabelColor: _kTextSecondary,
+        tabs: const [Tab(text: 'Learn'), Tab(text: 'Discover')],
       ),
     );
   }
 
-  Widget _buildCoursesTab() {
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(20.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildFeaturedCourse(),
-          SizedBox(height: 24.h),
-          Text(
-            'Course Categories',
-            style: GoogleFonts.inter(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: 16.h),
-          _buildCourseCategory('Beginner', 'Start your crypto journey', 5, Colors.green),
-          _buildCourseCategory('Intermediate', 'Deepen your knowledge', 8, Colors.blue),
-          _buildCourseCategory('Advanced', 'Master crypto trading', 6, Colors.purple),
-          _buildCourseCategory('DeFi', 'Decentralized Finance', 4, Colors.orange),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuizzesTab() {
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(20.w),
-      child: Column(
-        children: [
-          _buildDailyChallenge(),
-          SizedBox(height: 20.h),
-          _buildQuizList(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRewardsTab() {
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(20.w),
-      child: Column(
-        children: [
-          _buildRewardsSummary(),
-          SizedBox(height: 20.h),
-          _buildRewardsHistory(),
-          SizedBox(height: 20.h),
-          _buildAchievements(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProgressTab() {
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(20.w),
-      child: Column(
-        children: [
-          _buildLearningPath(),
-          SizedBox(height: 20.h),
-          _buildSkillsProgress(),
-          SizedBox(height: 20.h),
-          _buildCertificates(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatItem(String label, String value, IconData icon, Color color) {
-    return Column(
+  // ---------------------------------------------------------------------------
+  // LEARN TAB
+  // ---------------------------------------------------------------------------
+  Widget _buildLearnTab() {
+    return ListView(
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
       children: [
-        Container(
-          padding: EdgeInsets.all(12.w),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.2),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(icon, color: color, size: 24.sp),
-        ),
-        SizedBox(height: 8.h),
+        _sectionTitle('Crypto Basics', Icons.school),
+        SizedBox(height: 12.h),
+        ..._cryptoBasics.map(_buildLessonCard),
+        SizedBox(height: 28.h),
+        _sectionTitle('Trading Concepts', Icons.trending_up),
+        SizedBox(height: 12.h),
+        ..._tradingConcepts.map(_buildLessonCard),
+        SizedBox(height: 24.h),
+      ],
+    );
+  }
+
+  Widget _sectionTitle(String title, IconData icon) {
+    return Row(
+      children: [
+        Icon(icon, color: _kAccent, size: 20.sp),
+        SizedBox(width: 8.w),
         Text(
-          value,
+          title,
           style: GoogleFonts.inter(
-            fontSize: 18.sp,
-            fontWeight: FontWeight.bold,
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w700,
             color: Colors.white,
-          ),
-        ),
-        Text(
-          label,
-          style: GoogleFonts.inter(
-            fontSize: 12.sp,
-            color: Colors.white.withValues(alpha: 0.7),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildOverallProgress() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget _buildLessonCard(_Lesson lesson) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 10.h),
+      child: _ExpandableLessonCard(lesson: lesson),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // DISCOVER TAB
+  // ---------------------------------------------------------------------------
+  Widget _buildDiscoverTab() {
+    if (_isLoadingDiscover) {
+      return const Center(child: CircularProgressIndicator(color: _kAccent));
+    }
+    if (_discoverError != null) {
+      return RefreshIndicator(
+        color: _kAccent,
+        onRefresh: _loadDiscoverData,
+        child: ListView(
           children: [
-            Text(
-              'Overall Progress',
-              style: GoogleFonts.inter(
-                fontSize: 14.sp,
-                color: Colors.white.withValues(alpha: 0.8),
-              ),
-            ),
-            Text(
-              '73%',
-              style: GoogleFonts.inter(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.green,
+            SizedBox(height: 120.h),
+            Center(
+              child: Column(
+                children: [
+                  Icon(Icons.cloud_off, color: _kTextSecondary, size: 48.sp),
+                  SizedBox(height: 12.h),
+                  Text(
+                    _discoverError!,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(fontSize: 14.sp, color: _kTextSecondary),
+                  ),
+                ],
               ),
             ),
           ],
         ),
-        SizedBox(height: 8.h),
-        AnimatedBuilder(
-          animation: _progressController,
-          builder: (context, child) {
-            return LinearProgressIndicator(
-              value: 0.73 * _progressController.value,
-              backgroundColor: Colors.white.withValues(alpha: 0.1),
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
-              borderRadius: BorderRadius.circular(4.r),
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFeaturedCourse() {
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.blue.withValues(alpha: 0.3), const Color(0xFF1F1F1F)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      );
+    }
+    return RefreshIndicator(
+      color: _kAccent,
+      onRefresh: _loadDiscoverData,
+      child: ListView(
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
         children: [
-          Row(
-            children: [
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                decoration: BoxDecoration(
-                  color: Colors.blue,
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
+          _sectionTitle('Top Cryptocurrencies', Icons.emoji_events),
+          SizedBox(height: 12.h),
+          ..._topCryptos.asMap().entries.map((e) => _buildCryptoRow(e.key + 1, e.value)),
+          SizedBox(height: 28.h),
+          _sectionTitle('Trending News', Icons.newspaper),
+          SizedBox(height: 12.h),
+          if (_newsItems.isEmpty)
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 24.h),
+              child: Center(
                 child: Text(
-                  'FEATURED',
-                  style: GoogleFonts.inter(
-                    fontSize: 10.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+                  'No news articles available right now.',
+                  style: GoogleFonts.inter(fontSize: 13.sp, color: _kTextSecondary),
                 ),
               ),
-              Spacer(),
-              Icon(Icons.star, color: Colors.amber, size: 20.sp),
-              Text(
-                '4.9',
-                style: GoogleFonts.inter(
-                  fontSize: 14.sp,
-                  color: Colors.white,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            'Bitcoin Fundamentals',
-            style: GoogleFonts.inter(
-              fontSize: 20.sp,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'Learn the basics of Bitcoin, blockchain technology, and how cryptocurrency works.',
-            style: GoogleFonts.inter(
-              fontSize: 14.sp,
-              color: Colors.white.withValues(alpha: 0.8),
-              height: 1.4,
-            ),
-          ),
-          SizedBox(height: 16.h),
-          Row(
-            children: [
-              _buildCourseInfo(Icons.access_time, '2h 30m'),
-              SizedBox(width: 16.w),
-              _buildCourseInfo(Icons.play_circle_outline, '12 lessons'),
-              SizedBox(width: 16.w),
-              _buildCourseInfo(Icons.monetization_on, '${CurrencySymbols.currentSymbol}25'),
-            ],
-          ),
-          SizedBox(height: 16.h),
-          ElevatedButton(
-            onPressed: () => _startCourse('Bitcoin Fundamentals'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-              minimumSize: Size(double.infinity, 44.h),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-            ),
-            child: Text(
-              'Start Course',
-              style: GoogleFonts.inter(
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
+            )
+          else
+            ..._newsItems.map(_buildNewsCard),
+          SizedBox(height: 24.h),
         ],
       ),
     );
   }
 
-  Widget _buildCourseCategory(String title, String description, int courses, Color color) {
-    return Container(
-      margin: EdgeInsets.only(bottom: 16.h),
-      child: GestureDetector(
-        onTap: () => _openCategory(title),
-        child: Container(
-          padding: EdgeInsets.all(16.w),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1F1F1F),
-            borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(color: color.withValues(alpha: 0.3)),
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: EdgeInsets.all(12.w),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                child: Icon(
-                  _getCategoryIcon(title),
-                  color: color,
-                  size: 24.sp,
-                ),
-              ),
-              SizedBox(width: 16.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: GoogleFonts.inter(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                    Text(
-                      description,
-                      style: GoogleFonts.inter(
-                        fontSize: 12.sp,
-                        color: Colors.white.withValues(alpha: 0.6),
-                      ),
-                    ),
-                    Text(
-                      '$courses courses',
-                      style: GoogleFonts.inter(
-                        fontSize: 12.sp,
-                        color: color,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(
-                Icons.arrow_forward_ios,
-                color: Colors.white.withValues(alpha: 0.5),
-                size: 16.sp,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  Widget _buildCryptoRow(int rank, CryptoMessage crypto) {
+    final priceFmt = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
+    final mcapFmt = NumberFormat.compactCurrency(symbol: '\$', decimalDigits: 1);
+    final pctChange = crypto.priceChangePercentage24h;
+    final isPositive = pctChange >= 0;
 
-  Widget _buildDailyChallenge() {
     return Container(
-      padding: EdgeInsets.all(20.w),
+      margin: EdgeInsets.only(bottom: 8.h),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.purple.withValues(alpha: 0.2), const Color(0xFF1F1F1F)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.purple.withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.emoji_events, color: Colors.purple, size: 24.sp),
-              SizedBox(width: 12.w),
-              Text(
-                'Daily Challenge',
-                style: GoogleFonts.inter(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-              Spacer(),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                decoration: BoxDecoration(
-                  color: Colors.purple.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-                child: Text(
-                  '${CurrencySymbols.currentSymbol}5 Reward',
-                  style: GoogleFonts.inter(
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.purple,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            'DeFi Quiz Challenge',
-            style: GoogleFonts.inter(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'Test your knowledge about Decentralized Finance protocols and earn rewards!',
-            style: GoogleFonts.inter(
-              fontSize: 14.sp,
-              color: Colors.white.withValues(alpha: 0.8),
-            ),
-          ),
-          SizedBox(height: 16.h),
-          Row(
-            children: [
-              _buildQuizInfo(Icons.quiz, '10 questions'),
-              SizedBox(width: 16.w),
-              _buildQuizInfo(Icons.timer, '5 minutes'),
-              SizedBox(width: 16.w),
-              _buildQuizInfo(Icons.people, '2,341 completed'),
-            ],
-          ),
-          SizedBox(height: 16.h),
-          ElevatedButton(
-            onPressed: () => _startQuiz('DeFi Quiz Challenge'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.purple,
-              minimumSize: Size(double.infinity, 44.h),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-            ),
-            child: Text(
-              'Start Challenge',
-              style: GoogleFonts.inter(
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuizList() {
-    final quizzes = [
-      {'title': 'Blockchain Basics', 'reward': '${CurrencySymbols.currentSymbol}3', 'difficulty': 'Easy', 'color': Colors.green},
-      {'title': 'Crypto Trading', 'reward': '${CurrencySymbols.currentSymbol}7', 'difficulty': 'Medium', 'color': Colors.orange},
-      {'title': 'Smart Contracts', 'reward': '${CurrencySymbols.currentSymbol}10', 'difficulty': 'Hard', 'color': Colors.red},
-      {'title': 'NFT Fundamentals', 'reward': '${CurrencySymbols.currentSymbol}5', 'difficulty': 'Easy', 'color': Colors.green},
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Available Quizzes',
-          style: GoogleFonts.inter(
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
-        SizedBox(height: 16.h),
-        ...quizzes.map((quiz) => _buildQuizItem(
-          quiz['title'] as String,
-          quiz['reward'] as String,
-          quiz['difficulty'] as String,
-          quiz['color'] as Color,
-        )),
-      ],
-    );
-  }
-
-  Widget _buildQuizItem(String title, String reward, String difficulty, Color color) {
-    return Container(
-      margin: EdgeInsets.only(bottom: 12.h),
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
+        color: _kCard,
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        border: Border.all(color: _kDivider, width: 0.5),
       ),
       child: Row(
         children: [
-          Container(
-            padding: EdgeInsets.all(8.w),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(8.r),
+          SizedBox(
+            width: 24.w,
+            child: Text(
+              '#$rank',
+              style: GoogleFonts.inter(
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w600,
+                color: _kTextSecondary,
+              ),
             ),
-            child: Icon(Icons.quiz, color: color, size: 20.sp),
           ),
-          SizedBox(width: 16.w),
+          if (crypto.image.isNotEmpty)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16.r),
+              child: Image.network(
+                crypto.image,
+                width: 32.w,
+                height: 32.w,
+                errorBuilder: (_, __, ___) => _placeholderIcon(crypto.symbol),
+              ),
+            )
+          else
+            _placeholderIcon(crypto.symbol),
+          SizedBox(width: 10.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  title,
+                  crypto.name,
                   style: GoogleFonts.inter(
-                    fontSize: 16.sp,
+                    fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
                   ),
+                  overflow: TextOverflow.ellipsis,
                 ),
+                SizedBox(height: 2.h),
                 Text(
-                  difficulty,
-                  style: GoogleFonts.inter(
-                    fontSize: 12.sp,
-                    color: color,
-                  ),
+                  '${crypto.symbol.toUpperCase()}  |  MCap ${mcapFmt.format(crypto.marketCap)}',
+                  style: GoogleFonts.inter(fontSize: 11.sp, color: _kTextSecondary),
                 ),
               ],
             ),
@@ -708,549 +451,230 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                reward,
-                style: GoogleFonts.inter(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green,
-                ),
-              ),
-              GestureDetector(
-                onTap: () => _startQuiz(title),
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
-                  decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  child: Text(
-                    'Start',
-                    style: GoogleFonts.inter(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRewardsSummary() {
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Rewards Summary',
-            style: GoogleFonts.inter(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: 16.h),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildRewardStat('This Week', '${CurrencySymbols.currentSymbol}23'),
-              _buildRewardStat('This Month', '${CurrencySymbols.currentSymbol}87'),
-              _buildRewardStat('All Time', '${CurrencySymbols.currentSymbol}$_totalEarned'),
-            ],
-          ),
-          SizedBox(height: 16.h),
-          ElevatedButton(
-            onPressed: _claimRewards,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              minimumSize: Size(double.infinity, 44.h),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-            ),
-            child: Text(
-              'Claim Available Rewards (${CurrencySymbols.currentSymbol}23)',
-              style: GoogleFonts.inter(
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRewardsHistory() {
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Recent Rewards',
-            style: GoogleFonts.inter(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: 16.h),
-          _buildRewardHistoryItem('Completed DeFi Quiz', '${CurrencySymbols.currentSymbol}5', '2 hours ago'),
-          _buildRewardHistoryItem('Finished Bitcoin Course', '${CurrencySymbols.currentSymbol}25', 'Yesterday'),
-          _buildRewardHistoryItem('Weekly Challenge', '${CurrencySymbols.currentSymbol}10', '3 days ago'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAchievements() {
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Achievements',
-            style: GoogleFonts.inter(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: 16.h),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildAchievementBadge('First Course', Icons.school, Colors.blue, true),
-              _buildAchievementBadge('Quiz Master', Icons.quiz, Colors.purple, true),
-              _buildAchievementBadge('Streak Legend', Icons.local_fire_department, Colors.orange, false),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLearningPath() {
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Your Learning Path',
-            style: GoogleFonts.inter(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: 16.h),
-          _buildPathItem('Crypto Basics', true, Colors.green),
-          _buildPathItem('Trading Fundamentals', true, Colors.green),
-          _buildPathItem('DeFi Protocols', false, Colors.orange),
-          _buildPathItem('Advanced Trading', false, Colors.grey),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSkillsProgress() {
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Skills Progress',
-            style: GoogleFonts.inter(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: 16.h),
-          _buildSkillProgress('Blockchain Knowledge', 0.8),
-          _buildSkillProgress('Trading Skills', 0.6),
-          _buildSkillProgress('DeFi Understanding', 0.4),
-          _buildSkillProgress('Security Awareness', 0.9),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCertificates() {
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Certificates',
-            style: GoogleFonts.inter(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: 16.h),
-          _buildCertificateItem('Bitcoin Fundamentals', 'Completed', true),
-          _buildCertificateItem('Blockchain Technology', 'Completed', true),
-          _buildCertificateItem('Crypto Trading Basics', 'In Progress', false),
-        ],
-      ),
-    );
-  }
-
-  // Helper widgets
-  Widget _buildCourseInfo(IconData icon, String text) {
-    return Row(
-      children: [
-        Icon(icon, color: Colors.white.withValues(alpha: 0.6), size: 16.sp),
-        SizedBox(width: 4.w),
-        Text(
-          text,
-          style: GoogleFonts.inter(
-            fontSize: 12.sp,
-            color: Colors.white.withValues(alpha: 0.6),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildQuizInfo(IconData icon, String text) {
-    return Row(
-      children: [
-        Icon(icon, color: Colors.white.withValues(alpha: 0.6), size: 16.sp),
-        SizedBox(width: 4.w),
-        Text(
-          text,
-          style: GoogleFonts.inter(
-            fontSize: 12.sp,
-            color: Colors.white.withValues(alpha: 0.6),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildRewardStat(String label, String amount) {
-    return Column(
-      children: [
-        Text(
-          amount,
-          style: GoogleFonts.inter(
-            fontSize: 20.sp,
-            fontWeight: FontWeight.bold,
-            color: Colors.green,
-          ),
-        ),
-        Text(
-          label,
-          style: GoogleFonts.inter(
-            fontSize: 12.sp,
-            color: Colors.white.withValues(alpha: 0.6),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildRewardHistoryItem(String activity, String reward, String time) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 12.h),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  activity,
-                  style: GoogleFonts.inter(
-                    fontSize: 14.sp,
-                    color: Colors.white,
-                  ),
-                ),
-                Text(
-                  time,
-                  style: GoogleFonts.inter(
-                    fontSize: 12.sp,
-                    color: Colors.white.withValues(alpha: 0.6),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Text(
-            reward,
-            style: GoogleFonts.inter(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.bold,
-              color: Colors.green,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAchievementBadge(String title, IconData icon, Color color, bool earned) {
-    return Column(
-      children: [
-        Container(
-          padding: EdgeInsets.all(16.w),
-          decoration: BoxDecoration(
-            color: earned ? color.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.05),
-            shape: BoxShape.circle,
-            boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
-          ),
-          child: Icon(
-            icon,
-            color: earned ? color : Colors.white.withValues(alpha: 0.3),
-            size: 24.sp,
-          ),
-        ),
-        SizedBox(height: 8.h),
-        Text(
-          title,
-          style: GoogleFonts.inter(
-            fontSize: 12.sp,
-            color: earned ? Colors.white : Colors.white.withValues(alpha: 0.5),
-            fontWeight: earned ? FontWeight.w600 : FontWeight.normal,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPathItem(String title, bool completed, Color color) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 12.h),
-      child: Row(
-        children: [
-          Container(
-            padding: EdgeInsets.all(4.w),
-            decoration: BoxDecoration(
-              color: completed ? color : Colors.white.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              completed ? Icons.check : Icons.circle_outlined,
-              color: completed ? Colors.white : Colors.white.withValues(alpha: 0.5),
-              size: 16.sp,
-            ),
-          ),
-          SizedBox(width: 12.w),
-          Text(
-            title,
-            style: GoogleFonts.inter(
-              fontSize: 14.sp,
-              color: completed ? Colors.white : Colors.white.withValues(alpha: 0.6),
-              fontWeight: completed ? FontWeight.w500 : FontWeight.normal,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSkillProgress(String skill, double progress) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 16.h),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                skill,
+                priceFmt.format(crypto.currentPrice),
                 style: GoogleFonts.inter(
                   fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
                   color: Colors.white,
                 ),
               ),
+              SizedBox(height: 2.h),
               Text(
-                '${(progress * 100).toInt()}%',
+                '${isPositive ? '+' : ''}${pctChange.toStringAsFixed(2)}%',
                 style: GoogleFonts.inter(
                   fontSize: 12.sp,
-                  color: Colors.green,
+                  fontWeight: FontWeight.w500,
+                  color: isPositive ? const Color(0xFF10B981) : const Color(0xFFEF4444),
                 ),
               ),
             ],
           ),
-          SizedBox(height: 8.h),
-          LinearProgressIndicator(
-            value: progress,
-            backgroundColor: Colors.white.withValues(alpha: 0.1),
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
-            borderRadius: BorderRadius.circular(4.r),
+        ],
+      ),
+    );
+  }
+
+  Widget _placeholderIcon(String symbol) {
+    return Container(
+      width: 32.w,
+      height: 32.w,
+      decoration: BoxDecoration(
+        color: _kAccent.withValues(alpha: 0.2),
+        shape: BoxShape.circle,
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        symbol.substring(0, symbol.length.clamp(0, 2)).toUpperCase(),
+        style: GoogleFonts.inter(fontSize: 11.sp, fontWeight: FontWeight.w700, color: _kAccent),
+      ),
+    );
+  }
+
+  Widget _buildNewsCard(CryptoNewsItem news) {
+    final timeAgo = news.hasPublishedAt() ? _formatTimeAgo(news.publishedAt.toDateTime()) : '';
+    final sentiment = news.sentiment.isNotEmpty ? news.sentiment : null;
+
+    return Container(
+      margin: EdgeInsets.only(bottom: 10.h),
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: _kCard,
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: _kDivider, width: 0.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            news.title,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.inter(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+              height: 1.4,
+            ),
+          ),
+          SizedBox(height: 10.h),
+          Row(
+            children: [
+              if (news.source.isNotEmpty) ...[
+                Icon(Icons.language, size: 13.sp, color: _kTextSecondary),
+                SizedBox(width: 4.w),
+                Flexible(
+                  child: Text(
+                    news.source,
+                    style: GoogleFonts.inter(fontSize: 11.sp, color: _kTextSecondary),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                SizedBox(width: 10.w),
+              ],
+              if (timeAgo.isNotEmpty) ...[
+                Icon(Icons.access_time, size: 13.sp, color: _kTextSecondary),
+                SizedBox(width: 4.w),
+                Text(timeAgo, style: GoogleFonts.inter(fontSize: 11.sp, color: _kTextSecondary)),
+              ],
+              const Spacer(),
+              if (sentiment != null) _sentimentBadge(sentiment),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCertificateItem(String course, String status, bool completed) {
+  Widget _sentimentBadge(String sentiment) {
+    final lc = sentiment.toLowerCase();
+    final Color bg;
+    final Color fg;
+    if (lc == 'positive' || lc == 'bullish') {
+      bg = const Color(0xFF10B981).withValues(alpha: 0.15);
+      fg = const Color(0xFF10B981);
+    } else if (lc == 'negative' || lc == 'bearish') {
+      bg = const Color(0xFFEF4444).withValues(alpha: 0.15);
+      fg = const Color(0xFFEF4444);
+    } else {
+      bg = _kTextSecondary.withValues(alpha: 0.15);
+      fg = _kTextSecondary;
+    }
     return Container(
-      margin: EdgeInsets.only(bottom: 12.h),
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(6.r)),
+      child: Text(
+        sentiment[0].toUpperCase() + sentiment.substring(1),
+        style: GoogleFonts.inter(fontSize: 10.sp, fontWeight: FontWeight.w600, color: fg),
       ),
-      child: Row(
-        children: [
-          Icon(
-            completed ? Icons.verified : Icons.schedule,
-            color: completed ? Colors.green : Colors.orange,
-            size: 24.sp,
+    );
+  }
+
+  String _formatTimeAgo(DateTime dt) {
+    final diff = DateTime.now().difference(dt);
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    if (diff.inDays < 7) return '${diff.inDays}d ago';
+    return DateFormat('MMM d').format(dt);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Expandable lesson card (stateful for animation)
+// ---------------------------------------------------------------------------
+class _ExpandableLessonCard extends StatefulWidget {
+  final _Lesson lesson;
+  const _ExpandableLessonCard({required this.lesson});
+
+  @override
+  State<_ExpandableLessonCard> createState() => _ExpandableLessonCardState();
+}
+
+class _ExpandableLessonCardState extends State<_ExpandableLessonCard>
+    with SingleTickerProviderStateMixin {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final lesson = widget.lesson;
+    return GestureDetector(
+      onTap: () => setState(() => _expanded = !_expanded),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+        padding: EdgeInsets.all(14.w),
+        decoration: BoxDecoration(
+          color: _kCard,
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(
+            color: _expanded ? _kAccent.withValues(alpha: 0.5) : _kDivider,
+            width: _expanded ? 1 : 0.5,
           ),
-          SizedBox(width: 16.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                Text(
-                  course,
-                  style: GoogleFonts.inter(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                Container(
+                  width: 36.w,
+                  height: 36.w,
+                  decoration: BoxDecoration(
+                    color: _kAccent.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(lesson.icon, color: _kAccent, size: 18.sp),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        lesson.title,
+                        style: GoogleFonts.inter(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(height: 2.h),
+                      Text(
+                        lesson.summary,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(fontSize: 12.sp, color: _kTextSecondary),
+                      ),
+                    ],
                   ),
                 ),
-                Text(
-                  status,
-                  style: GoogleFonts.inter(
-                    fontSize: 12.sp,
-                    color: completed ? Colors.green : Colors.orange,
-                  ),
+                SizedBox(width: 8.w),
+                AnimatedRotation(
+                  turns: _expanded ? 0.5 : 0,
+                  duration: const Duration(milliseconds: 250),
+                  child: Icon(Icons.keyboard_arrow_down, color: _kTextSecondary, size: 20.sp),
                 ),
               ],
             ),
-          ),
-          if (completed)
-            IconButton(
-              onPressed: () => _downloadCertificate(course),
-              icon: Icon(Icons.download, color: Colors.green, size: 20.sp),
+            AnimatedCrossFade(
+              firstChild: const SizedBox.shrink(),
+              secondChild: Padding(
+                padding: EdgeInsets.only(top: 12.h),
+                child: Text(
+                  lesson.detail,
+                  style: GoogleFonts.inter(
+                    fontSize: 13.sp,
+                    color: Colors.white.withValues(alpha: 0.8),
+                    height: 1.55,
+                  ),
+                ),
+              ),
+              crossFadeState: _expanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+              duration: const Duration(milliseconds: 250),
             ),
-        ],
+          ],
+        ),
       ),
     );
   }
-
-  IconData _getCategoryIcon(String category) {
-    switch (category) {
-      case 'Beginner':
-        return Icons.school;
-      case 'Intermediate':
-        return Icons.trending_up;
-      case 'Advanced':
-        return Icons.psychology;
-      case 'DeFi':
-        return Icons.account_balance;
-      default:
-        return Icons.book;
-    }
-  }
-
-  // Action methods
-  void _startCourse(String courseName) {
-    Get.snackbar(
-      'Course Started',
-      'Starting $courseName...',
-      backgroundColor: Colors.blue.withValues(alpha: 0.2),
-      colorText: Colors.white,
-    );
-  }
-
-  void _openCategory(String category) {
-    Get.snackbar(
-      category,
-      'Opening $category courses...',
-      backgroundColor: Colors.green.withValues(alpha: 0.2),
-      colorText: Colors.white,
-    );
-  }
-
-  void _startQuiz(String quizName) {
-    Get.snackbar(
-      'Quiz Started',
-      'Starting $quizName...',
-      backgroundColor: Colors.purple.withValues(alpha: 0.2),
-      colorText: Colors.white,
-    );
-  }
-
-  void _claimRewards() {
-    Get.snackbar(
-      'Rewards Claimed!',
-      'Successfully claimed ${CurrencySymbols.currentSymbol}23 in rewards',
-      backgroundColor: Colors.green.withValues(alpha: 0.2),
-      colorText: Colors.white,
-    );
-  }
-
-  void _downloadCertificate(String course) {
-    Get.snackbar(
-      'Certificate Downloaded',
-      'Certificate for $course has been downloaded',
-      backgroundColor: Colors.green.withValues(alpha: 0.2),
-      colorText: Colors.white,
-    );
-  }
-} 
+}

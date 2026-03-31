@@ -42,6 +42,7 @@ class RecentHistoryList extends StatelessWidget {
         ListView.separated(
           physics: const NeverScrollableScrollPhysics(),
           shrinkWrap: true,
+          padding: EdgeInsets.zero,
           itemCount: transactions.length,
           separatorBuilder: (_, __) => Padding(
             padding: EdgeInsets.only(left: 54.w),
@@ -52,7 +53,10 @@ class RecentHistoryList extends StatelessWidget {
           ),
           itemBuilder: (context, index) {
             final tx = transactions[index];
-            return _RecentTransactionRow(transaction: tx);
+            return _RecentTransactionRow(
+              transaction: tx,
+              isFirst: index == 0,
+            );
           },
         ),
         SizedBox(height: 8.h),
@@ -202,8 +206,12 @@ class RecentHistoryList extends StatelessWidget {
 
 class _RecentTransactionRow extends StatelessWidget {
   final UnifiedTransaction transaction;
+  final bool isFirst;
 
-  const _RecentTransactionRow({required this.transaction});
+  const _RecentTransactionRow({
+    required this.transaction,
+    this.isFirst = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -211,7 +219,10 @@ class _RecentTransactionRow extends StatelessWidget {
       onTap: () => TransactionReceiptRouter.navigateToReceipt(transaction),
       behavior: HitTestBehavior.opaque,
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 10.h),
+        padding: EdgeInsets.only(
+          top: isFirst ? 12.h : 10.h,
+          bottom: 10.h,
+        ),
         child: Row(
           children: [
             Container(

@@ -917,7 +917,6 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
             BlocProvider(create: (context) => CreatePolicyCubit(
               repository: serviceLocator<InsuranceRepository>(),
               cacheManager: serviceLocator<SWRCacheManager>(),
-              mutationQueue: serviceLocator<MutationQueue>(),
               localeManager: serviceLocator<LocaleManager>(),
             )),
           ],

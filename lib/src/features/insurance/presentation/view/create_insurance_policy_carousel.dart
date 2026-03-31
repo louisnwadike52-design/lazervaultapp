@@ -4,17 +4,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
+import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import '../cubit/create_policy_cubit.dart';
-import '../cubit/insurance_cubit.dart';
+import '../cubit/create_policy_state.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../authentication/cubit/authentication_state.dart';
 import '../widgets/create_policy/insurance_category_products_screen.dart';
 import '../widgets/create_policy/insurance_form_screen.dart';
 import '../widgets/create_policy/insurance_quote_review_screen.dart';
 import '../widgets/create_policy/insurance_payment_confirm_screen.dart';
-import 'insurance_payment_processing_screen.dart';
+import '../widgets/create_policy/insurance_processing_screen.dart';
 
 /// Main carousel for MyCover.ai insurance policy creation
 ///
@@ -28,10 +31,17 @@ class CreateInsurancePolicyCarousel extends StatefulWidget {
 }
 
 class _CreateInsurancePolicyCarouselState
-    extends State<CreateInsurancePolicyCarousel> {
+    extends State<CreateInsurancePolicyCarousel>
+    with TransactionPinMixin {
+  @override
+  ITransactionPinService get transactionPinService =>
+      GetIt.I<ITransactionPinService>();
+
   late PageController _pageController;
   int _currentPage = 0;
   final int _totalPages = 4;
+  bool _isProcessing = false;
+  StreamSubscription<CreatePolicyState>? _purchaseSubscription;
 
   final List<String> _pageNames = [
     'Browse Plans',
@@ -58,6 +68,7 @@ class _CreateInsurancePolicyCarouselState
 
   @override
   void dispose() {
+    _purchaseSubscription?.cancel();
     _pageController.dispose();
     super.dispose();
   }
@@ -181,7 +192,9 @@ class _CreateInsurancePolicyCarouselState
     }
   }
 
-  void _proceedToPurchase() {
+  Future<void> _proceedToPurchase() async {
+    if (_isProcessing) return;
+
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is! AuthenticationSuccess) {
       _showErrorSnackBar('Authentication required');
@@ -189,22 +202,96 @@ class _CreateInsurancePolicyCarouselState
     }
 
     final cubit = context.read<CreatePolicyCubit>();
-    final insuranceCubit = context.read<InsuranceCubit>();
-    final authCubit = context.read<AuthenticationCubit>();
+    final accountId = cubit.selectedAccountId;
 
-    // Navigate to processing screen which handles PIN entry
+    if (accountId == null) {
+      _showErrorSnackBar('Please select an account to pay from');
+      return;
+    }
+
+    // Validate quote is available and not expired
+    if (cubit.quote == null) {
+      _showErrorSnackBar('Quote not available. Please go back and get a new quote.');
+      return;
+    }
+    if (cubit.quote!.isExpired) {
+      _showErrorSnackBar('Your quote has expired. Please go back and get a new quote.');
+      return;
+    }
+
+    // Capture quote before async PIN flow — it won't change during PIN entry
+    final quote = cubit.quote!;
+
+    final transactionId =
+        'INS-${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}';
+
+    String? verificationToken;
+
+    final pinSuccess = await validateTransactionPin(
+      context: context,
+      transactionId: transactionId,
+      transactionType: 'buy_insurance',
+      amount: quote.premium,
+      currency: quote.currency,
+      currencySymbol: _currencySymbol(quote.currency),
+      title: 'Confirm Insurance Purchase',
+      message: 'Confirm payment of ${_currencySymbol(quote.currency)}${quote.premium.toStringAsFixed(2)}',
+      showProcessingPhase: false,
+      onPinValidated: (token) async {
+        verificationToken = token;
+      },
+    );
+
+    if (!pinSuccess || verificationToken == null) {
+      // PIN was cancelled, failed, or locked — user stays on confirm screen
+      // The mixin already showed appropriate error dialogs
+      return;
+    }
+    if (!mounted) return;
+
+    // Re-check quote after PIN flow (user may have been away for a while)
+    if (cubit.quote == null) {
+      _showErrorSnackBar('Quote is no longer available. Please go back and get a new quote.');
+      return;
+    }
+    if (cubit.quote!.isExpired) {
+      _showErrorSnackBar('Your quote expired while entering PIN. Please go back and get a new quote.');
+      return;
+    }
+
+    // Navigate to processing screen - it will handle the purchase and show progress
+    if (!mounted) return;
+    setState(() => _isProcessing = true);
+
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => MultiBlocProvider(
-          providers: [
-            BlocProvider.value(value: cubit),
-            BlocProvider.value(value: insuranceCubit),
-            BlocProvider.value(value: authCubit),
-          ],
-          child: const InsurancePaymentProcessingScreen(),
+        builder: (_) => BlocProvider.value(
+          value: cubit,
+          child: const InsuranceProcessingScreen(),
         ),
       ),
+    ).then((_) {
+      setState(() => _isProcessing = false);
+    });
+
+    cubit.purchaseInsurance(
+      accountId: accountId,
+      transactionPin: verificationToken!,
+      transactionId: transactionId,
     );
+  }
+
+  /// Convert currency code to display symbol
+  String _currencySymbol(String currency) {
+    final c = currency.toLowerCase().trim();
+    if (c == 'ngn' || c.contains('naira')) return '\u20A6';
+    if (c == 'usd' || c.contains('dollar')) return '\$';
+    if (c == 'gbp' || c.contains('pound')) return '\u00A3';
+    if (c == 'eur' || c.contains('euro')) return '\u20AC';
+    if (c == 'ghs' || c.contains('cedi')) return '\u20B5';
+    if (c == 'kes' || c.contains('shilling')) return 'KSh';
+    if (c == 'zar' || c.contains('rand')) return 'R';
+    return currency; // fallback to raw value
   }
 
   void _showErrorSnackBar(String message) {
@@ -410,7 +497,7 @@ class _CreateInsurancePolicyCarouselState
             if (_currentPage > 0) SizedBox(width: 12.w),
             Expanded(
               child: GestureDetector(
-                onTap: _goToNextPage,
+                onTap: _isProcessing ? null : _goToNextPage,
                 child: Container(
                   padding: EdgeInsets.symmetric(vertical: 16.h),
                   decoration: BoxDecoration(
@@ -427,21 +514,41 @@ class _CreateInsurancePolicyCarouselState
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          isLastPage ? 'Confirm & Pay' : 'Continue',
-                          style: GoogleFonts.inter(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
+                        if (_isProcessing && isLastPage) ...[
+                          SizedBox(
+                            width: 20.w,
+                            height: 20.w,
+                            child: const CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
                           ),
-                        ),
-                        if (!isLastPage) ...[
                           SizedBox(width: 8.w),
-                          Icon(Icons.arrow_forward, color: Colors.white, size: 20.sp),
-                        ],
-                        if (isLastPage) ...[
-                          SizedBox(width: 8.w),
-                          Icon(Icons.lock, color: Colors.white, size: 18.sp),
+                          Text(
+                            'Processing...',
+                            style: GoogleFonts.inter(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ] else ...[
+                          Text(
+                            isLastPage ? 'Confirm & Pay' : 'Continue',
+                            style: GoogleFonts.inter(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                          if (!isLastPage) ...[
+                            SizedBox(width: 8.w),
+                            Icon(Icons.arrow_forward, color: Colors.white, size: 20.sp),
+                          ],
+                          if (isLastPage) ...[
+                            SizedBox(width: 8.w),
+                            Icon(Icons.lock, color: Colors.white, size: 18.sp),
+                          ],
                         ],
                       ],
                     ),

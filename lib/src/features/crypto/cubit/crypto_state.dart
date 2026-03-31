@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 import '../domain/entities/crypto_entity.dart';
-import '../domain/entities/crypto_wallet_entity.dart';
 import '../domain/entities/global_market_data.dart';
 import '../domain/entities/price_point.dart';
 
@@ -19,10 +18,10 @@ class CryptosLoaded extends CryptoState {
   final List<Crypto> cryptos;
   final List<Crypto> trendingCryptos;
   final List<Crypto> topCryptos;
+  final List<Crypto> supportedAssets;
   final List<CryptoWatchlist> watchlists;
   final List<CryptoHolding> holdings;
   final List<CryptoTransaction> transactions;
-  final List<CryptoWalletEntity> wallets;
   final GlobalMarketData? globalMarketData;
   final String? searchQuery;
   final bool isSearching;
@@ -31,10 +30,10 @@ class CryptosLoaded extends CryptoState {
     required this.cryptos,
     this.trendingCryptos = const [],
     this.topCryptos = const [],
+    this.supportedAssets = const [],
     this.watchlists = const [],
     this.holdings = const [],
     this.transactions = const [],
-    this.wallets = const [],
     this.globalMarketData,
     this.searchQuery,
     this.isSearching = false,
@@ -45,10 +44,10 @@ class CryptosLoaded extends CryptoState {
         cryptos,
         trendingCryptos,
         topCryptos,
+        supportedAssets,
         watchlists,
         holdings,
         transactions,
-        wallets,
         globalMarketData,
         searchQuery,
         isSearching,
@@ -60,10 +59,10 @@ class CryptosLoaded extends CryptoState {
     List<Crypto>? cryptos,
     List<Crypto>? trendingCryptos,
     List<Crypto>? topCryptos,
+    List<Crypto>? supportedAssets,
     List<CryptoWatchlist>? watchlists,
     List<CryptoHolding>? holdings,
     List<CryptoTransaction>? transactions,
-    List<CryptoWalletEntity>? wallets,
     GlobalMarketData? globalMarketData,
     String? searchQuery,
     bool clearSearchQuery = false,
@@ -73,10 +72,10 @@ class CryptosLoaded extends CryptoState {
       cryptos: cryptos ?? this.cryptos,
       trendingCryptos: trendingCryptos ?? this.trendingCryptos,
       topCryptos: topCryptos ?? this.topCryptos,
+      supportedAssets: supportedAssets ?? this.supportedAssets,
       watchlists: watchlists ?? this.watchlists,
       holdings: holdings ?? this.holdings,
       transactions: transactions ?? this.transactions,
-      wallets: wallets ?? this.wallets,
       globalMarketData: globalMarketData ?? this.globalMarketData,
       searchQuery: clearSearchQuery ? null : (searchQuery ?? this.searchQuery),
       isSearching: isSearching ?? this.isSearching,
@@ -88,25 +87,33 @@ class CryptoDetailsLoaded extends CryptoState {
   final Crypto crypto;
   final List<PricePoint> priceHistory;
   final String selectedTimeframe;
+  final List<CryptoNews> news;
+  final bool isLoadingNews;
 
   const CryptoDetailsLoaded({
     required this.crypto,
     required this.priceHistory,
     this.selectedTimeframe = '7d',
+    this.news = const [],
+    this.isLoadingNews = false,
   });
 
   @override
-  List<Object> get props => [crypto, priceHistory, selectedTimeframe];
+  List<Object> get props => [crypto, priceHistory, selectedTimeframe, news, isLoadingNews];
 
   CryptoDetailsLoaded copyWith({
     Crypto? crypto,
     List<PricePoint>? priceHistory,
     String? selectedTimeframe,
+    List<CryptoNews>? news,
+    bool? isLoadingNews,
   }) {
     return CryptoDetailsLoaded(
       crypto: crypto ?? this.crypto,
       priceHistory: priceHistory ?? this.priceHistory,
       selectedTimeframe: selectedTimeframe ?? this.selectedTimeframe,
+      news: news ?? this.news,
+      isLoadingNews: isLoadingNews ?? this.isLoadingNews,
     );
   }
 }

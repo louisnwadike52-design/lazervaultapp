@@ -102,15 +102,22 @@ class _TagPaymentConfirmationScreenState
         : widget.tag.id;
     final transactionId = 'TAG-PAY-$idPrefix';
 
-    final pinResult = await validatePinOnly(
+    String? verificationToken;
+
+    final success = await validateTransactionPin(
       context: context,
       transactionId: transactionId,
       transactionType: 'tag_payment',
       amount: widget.tag.amount,
       currency: widget.tag.currency,
+      title: 'Confirm Payment',
+      message: 'Confirm tag payment of ${widget.tag.currency} ${widget.tag.amount.toStringAsFixed(2)}',
+      onPinValidated: (token) async {
+        verificationToken = token;
+      },
     );
 
-    if (pinResult == null || !pinResult.success) return;
+    if (!success || verificationToken == null) return;
 
     setState(() {
       _isProcessing = true;
@@ -120,7 +127,7 @@ class _TagPaymentConfirmationScreenState
     context.read<TagPayCubit>().payTag(
           tagId: widget.tag.id,
           sourceAccountId: _selectedAccountId!,
-          transactionPin: pinResult.verificationToken ?? '',
+          transactionPin: verificationToken!,
         );
   }
 

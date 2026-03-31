@@ -38,6 +38,14 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+
+    // Keep native libraries uncompressed in the APK for modern Android page-size
+    // compatibility checks and faster loading.
+    packaging {
+        jniLibs {
+            useLegacyPackaging = false
+        }
+    }
 }
 
 flutter {

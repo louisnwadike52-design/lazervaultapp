@@ -149,16 +149,23 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
     }
 
     // Show PIN bottomsheet
-    final pinResult = await validatePinOnly(
+    String? verificationToken;
+
+    final success = await validateTransactionPin(
       context: context,
       transactionId:
           'CF-DONATE-${widget.crowdfund.id.substring(0, 8)}-${DateTime.now().millisecondsSinceEpoch}',
       transactionType: 'crowdfund_donation',
       amount: amount,
       currency: widget.crowdfund.currency,
+      title: 'Confirm Donation',
+      message: 'Confirm donation of ${widget.crowdfund.currency} ${amount.toStringAsFixed(2)}',
+      onPinValidated: (token) async {
+        verificationToken = token;
+      },
     );
 
-    if (pinResult == null || !pinResult.success) return;
+    if (!success || verificationToken == null) return;
     if (!mounted) return;
 
     setState(() => _isSubmitting = true);
@@ -173,7 +180,7 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
           : _messageController.text.trim(),
       isAnonymous: _isAnonymous,
       sourceAccountId: _personalAccount!.id,
-      transactionPin: pinResult.verificationToken ?? '',
+      transactionPin: verificationToken!,
     );
 
     Navigator.pushReplacement(

@@ -208,27 +208,30 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
     // Generate unique transaction ID
     final transactionId = 'batch_transfer_${const Uuid().v4()}';
 
-    final pinMessage = _isScheduled
-        ? 'Schedule batch transfer of $_currencySymbol${totalAmount.toStringAsFixed(2)} to ${recipients.length} ${recipients.length == 1 ? 'recipient' : 'recipients'}?'
-        : 'Confirm batch transfer of $_currencySymbol${totalAmount.toStringAsFixed(2)} to ${recipients.length} ${recipients.length == 1 ? 'recipient' : 'recipients'}?';
-
     // Validate PIN before processing batch transfer
+    String? verificationToken;
+
     final success = await validateTransactionPin(
       context: context,
       transactionId: transactionId,
       transactionType: 'batch_transfer',
       amount: totalAmount,
       currency: _currency,
-      title: _isScheduled ? 'Schedule Batch Transfer' : 'Confirm Batch Transfer',
-      message: pinMessage,
-      onPinValidated: (verificationToken) async {
-        _executeBatchTransferWithToken(transactionId, verificationToken);
+      title: 'Confirm Batch Transfer',
+      message: 'Confirm batch transfer of $_currency ${totalAmount.toStringAsFixed(2)}',
+      onPinValidated: (token) async {
+        verificationToken = token;
       },
     );
 
-    if (!success) {
+    if (!success || verificationToken == null) {
       if (mounted) setState(() => _isProcessing = false);
+      return;
     }
+    if (!mounted) return;
+
+    // Execute batch transfer AFTER modal is dismissed
+    _executeBatchTransferWithToken(transactionId, verificationToken!);
   }
 
   void _showError(String message) {

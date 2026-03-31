@@ -2141,23 +2141,8 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   }
 
   void _triggerBackgroundWalletCreation() {
-    // Delay to ensure auth token is fully propagated to gRPC channel,
-    // then retry with exponential backoff if the call fails.
-    Future.delayed(const Duration(seconds: 2), () async {
-      const maxAttempts = 3;
-      for (var attempt = 1; attempt <= maxAttempts; attempt++) {
-        try {
-          final cryptoGrpcClient = serviceLocator<CryptoGrpcClient>();
-          await cryptoGrpcClient.batchCreateWallets();
-          return; // Success — exit
-        } catch (e) {
-          if (attempt < maxAttempts) {
-            // Exponential backoff: 2s, 4s
-            await Future.delayed(Duration(seconds: 2 * attempt));
-          }
-        }
-      }
-    });
+    // No-op: LazerVault is a distributor — crypto custody is managed by Quidax.
+    // User sub-accounts are created on-demand when they first buy/sell crypto.
   }
 
   Future<void> skipPasscodeSetup() async {

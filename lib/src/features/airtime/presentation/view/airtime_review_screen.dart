@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -12,8 +11,6 @@ import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
-import '../cubit/airtime_cubit.dart';
-import '../cubit/airtime_state.dart';
 import '../widgets/airtime_step_indicator.dart';
 
 class AirtimeReviewScreen extends StatefulWidget {
@@ -134,6 +131,8 @@ class _AirtimeReviewScreenState extends State<AirtimeReviewScreen>
       setState(() => _isProcessing = true);
       final transactionId = 'airtime_${DateTime.now().millisecondsSinceEpoch}_${phoneNumber!.replaceAll(RegExp(r'[^\d]'), '')}';
 
+      String? verificationToken;
+
       final success = await validateTransactionPin(
         context: context,
         transactionId: transactionId,
@@ -141,65 +140,33 @@ class _AirtimeReviewScreenState extends State<AirtimeReviewScreen>
         amount: amount!,
         currency: country!.currency,
         title: 'Confirm Airtime Purchase',
-        message: 'Confirm purchase of ${country!.currency} ${amount!.toStringAsFixed(2)} airtime for $phoneNumber?',
-        onPinValidated: (verificationToken) async {
-          // Payment runs inside the PIN modal — modal stays open showing "Processing"
-          final cubit = context.read<AirtimeCubit>();
-          final completer = Completer<void>();
-          StreamSubscription<AirtimeState>? subscription;
-
-          subscription = cubit.stream.listen((state) {
-            if (state is AirtimePaymentSuccess) {
-              subscription?.cancel();
-              pinModalKey.currentState?.setSuccess();
-              Future.delayed(const Duration(milliseconds: 1500), () {
-                if (mounted) {
-                  Navigator.of(context).pop();
-                  Get.offNamed(AppRoutes.airtimePaymentConfirmation, arguments: {
-                    'transaction': state.transaction,
-                    'isSuccess': true,
-                  });
-                }
-              });
-              if (!completer.isCompleted) completer.complete();
-            } else if (state is AirtimePaymentFailed) {
-              subscription?.cancel();
-              pinModalKey.currentState?.setFailed(state.message);
-              if (!completer.isCompleted) {
-                completer.completeError(Exception(state.message));
-              }
-            }
-          });
-
-          // Trigger the actual payment via cubit
-          cubit.processPaymentWithToken(
-            countryCode: country!.code,
-            networkProviderId: networkProvider!.id,
-            phoneNumber: phoneNumber!,
-            amount: amount!,
-            currency: country!.currency,
-            transactionId: transactionId,
-            verificationToken: verificationToken,
-            sourceAccountId: _selectedAccountId!,
-            operatorId: networkProvider!.operatorId,
-            reloadlyOperatorId: networkProvider!.reloadlyOperatorId,
-          );
-
-          await completer.future.timeout(
-            const Duration(seconds: 90),
-            onTimeout: () {
-              subscription?.cancel();
-              if (!completer.isCompleted) {
-                pinModalKey.currentState?.setFailed('Request timed out. Check your transaction history.');
-              }
-            },
-          );
+        message: 'Confirm airtime purchase of ${country!.currency} ${amount!.toStringAsFixed(2)}',
+        showProcessingPhase: false,
+        onPinValidated: (token) async {
+          verificationToken = token;
         },
       );
 
-      if (!success && mounted) {
-        setState(() => _isProcessing = false);
+      if (!success || verificationToken == null) {
+        if (mounted) setState(() => _isProcessing = false);
+        return;
       }
+      if (!mounted) return;
+
+      // Navigate to processing screen — it handles the payment and routes to receipt
+      Get.offNamed(AppRoutes.airtimePaymentProcessing, arguments: {
+        'countryCode': country!.code,
+        'networkProviderId': networkProvider!.id,
+        'phoneNumber': phoneNumber!,
+        'amount': amount!,
+        'currency': country!.currency,
+        'transactionId': transactionId,
+        'verificationToken': verificationToken!,
+        'sourceAccountId': _selectedAccountId!,
+        'operatorId': networkProvider!.operatorId,
+        'reloadlyOperatorId': networkProvider!.reloadlyOperatorId,
+        'providerName': networkProvider!.name,
+      });
     }
   }
 

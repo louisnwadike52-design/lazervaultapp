@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -260,15 +261,29 @@ class InsuranceTermsScreen extends StatelessWidget {
                   ),
                   SizedBox(width: 12.w),
                   Expanded(
-                    child: Text(
-                      benefit,
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF9CA3AF),
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w400,
-                        height: 1.5,
-                      ),
-                    ),
+                    child: benefit.contains('<') && benefit.contains('>')
+                      ? HtmlWidget(
+                          benefit,
+                          textStyle: GoogleFonts.inter(
+                            color: Colors.white.withValues(alpha: 0.85),
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w400,
+                            height: 1.5,
+                          ),
+                          customStylesBuilder: (_) => {
+                            'color': 'rgba(255,255,255,0.85)',
+                            'background-color': 'transparent',
+                          },
+                        )
+                      : Text(
+                          benefit,
+                          style: GoogleFonts.inter(
+                            color: Colors.white.withValues(alpha: 0.85),
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w400,
+                            height: 1.5,
+                          ),
+                        ),
                   ),
                 ],
               ),

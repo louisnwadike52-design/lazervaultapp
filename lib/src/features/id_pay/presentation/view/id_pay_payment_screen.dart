@@ -165,15 +165,22 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
         _idPay.id.length >= 8 ? _idPay.id.substring(0, 8) : _idPay.id;
     final transactionId = 'IDPAY-$idPrefix';
 
-    final pinResult = await validatePinOnly(
+    String? verificationToken;
+
+    final success = await validateTransactionPin(
       context: context,
       transactionId: transactionId,
       transactionType: 'id_pay_payment',
       amount: _paymentAmount,
       currency: _idPay.currency,
+      title: 'Confirm Payment',
+      message: 'Confirm IDPay payment of ${_currencySymbol(_idPay.currency)}${_paymentAmount.toStringAsFixed(2)}',
+      onPinValidated: (token) async {
+        verificationToken = token;
+      },
     );
 
-    if (pinResult == null || !pinResult.success) return;
+    if (!success || verificationToken == null) return;
 
     setState(() {
       _isProcessing = true;
@@ -183,7 +190,7 @@ class _IDPayPaymentScreenState extends State<IDPayPaymentScreen>
     context.read<IDPayCubit>().payIDPay(
           payId: _idPay.payId,
           amount: _paymentAmount,
-          transactionPin: pinResult.verificationToken ?? '',
+          transactionPin: verificationToken!,
           sourceAccountId: _selectedAccountId!,
         );
   }

@@ -553,14 +553,14 @@ service AuthService {
     };
   }
 
-  // Search users by username prefix (for autocomplete/search functionality)
+  // Search users for transfers / invites (unified: username, name, email, phone)
   rpc SearchUsers(UserSearchRequest) returns (UserSearchResponse) {
     option (google.api.http) = {
       get: "/api/v1/auth/search/users"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary: "Search Users";
-      description: "Search for users by name, username, email, or phone number. Supports multi-field search with optional search_type filter";
+      description: "Search by username (optional @), name, email (partial/full), or phone (digits). search_type: username, name, phone, email, or empty for unified.";
       tags: ["User Lookup"];
       security: {
         security_requirement: {
@@ -1029,6 +1029,8 @@ message User {
   string date_of_birth = 20;         // YYYY-MM-DD format
   int32 kyc_tier = 21;               // KYC tier level (1, 2, 3)
   string kyc_status = 22;            // KYC verification status
+  repeated string roles = 23;       // All roles (matches JWT "roles")
+  string role = 24;                 // Primary role for UI (matches JWT "role")
 }
 
 // ===== Signup Progress =====
@@ -1247,13 +1249,17 @@ message UserLookupResult {
   string phone_number = 7;            // Phone number (masked for privacy)
   string email = 8;                   // Email (masked for privacy)
   string primary_account_id = 9;      // Primary account ID (UUID) for transfers
+  string country_code = 10;           // User's country code (e.g., "NG", "US")
+  bool email_matches_search_query = 11;   // SearchUsers: exact email match vs query (authoritative)
+  bool phone_matches_search_query_exact = 12; // SearchUsers: full digit-sequence match vs query
 }
 
 // Search users by multiple fields request
 message UserSearchRequest {
-  string query = 1;                   // Search query (name, username, email, or phone)
+  string query = 1;                   // Substring text; phone matched on digits; optional leading @ stripped server-side for username
   int32 limit = 2;                    // Maximum number of results (default 10, max 50)
   string search_type = 3;             // Optional: "username", "name", "phone", "email", or "" for unified search across all fields
+  string country_code = 4;            // Optional locale filter (skipped server-side for email-like / intl phone queries)
 }
 
 // Search users response

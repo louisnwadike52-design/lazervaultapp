@@ -20,6 +20,7 @@ import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
 import '../cubit/beneficiary_cubit.dart';
 import '../cubit/beneficiary_state.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 
 class PaymentConfirmationScreen extends StatefulWidget {
   const PaymentConfirmationScreen({super.key});
@@ -43,6 +44,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
   bool _isProcessing = false;
   int? _selectedQuickAmount;
   bool _saveBeneficiary = false;
+  CountryLocale _selectedCountry = CountryLocales.all.first; // Nigeria default
 
   // Beneficiary-aware fields
   BillBeneficiaryEntity? _beneficiary;
@@ -118,16 +120,19 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
 
     // Pre-fill phone number: from beneficiary args if present, else from user profile
     final argsPhone = args is Map<String, dynamic> ? args['phoneNumber'] as String? : null;
+    String rawPhone = '';
     if (argsPhone != null && argsPhone.isNotEmpty) {
-      _phoneController.text = _normalizePhone(argsPhone);
+      rawPhone = argsPhone;
     } else {
       final authState = context.read<AuthenticationCubit>().state;
       if (authState is AuthenticationSuccess) {
-        final profilePhone = authState.profile.user.phoneNumber ?? '';
-        _phoneController.text = profilePhone.isNotEmpty
-            ? _normalizePhone(profilePhone)
-            : '';
+        rawPhone = authState.profile.user.phoneNumber ?? '';
       }
+    }
+    if (rawPhone.isNotEmpty) {
+      // Detect country code from phone and strip it for the local number field
+      final stripped = _stripDialCode(rawPhone);
+      _phoneController.text = stripped;
     }
   }
 
@@ -309,7 +314,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
     if (!_isValidPhone(phoneNumber)) {
       Get.snackbar(
         'Invalid Phone Number',
-        'Enter a valid phone number (e.g. +2348012345678)',
+        'Enter a valid phone number (e.g. 8012345678)',
         backgroundColor: const Color(0xFFEF4444),
         colorText: Colors.white,
         snackPosition: SnackPosition.TOP,
@@ -385,6 +390,8 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
     final transactionId = const Uuid().v4();
 
     // Validate PIN before processing payment
+    String? verificationToken;
+
     final success = await validateTransactionPin(
       context: context,
       transactionId: transactionId,
@@ -395,27 +402,26 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
       message:
           'Confirm payment of \u20A6${amount.toStringAsFixed(2)} for ${provider.providerName}?',
       showProcessingPhase: false,
-      onPinValidated: (verificationToken) async {
-        // Pop the PIN bottom sheet before navigating to processing screen
-        if (mounted) {
-          try { Navigator.of(context).pop(); } catch (_) {}
-        }
-        _executePaymentWithToken(
-          provider: provider,
-          validationResult: validationResult,
-          meterNumber: meterNumber,
-          meterType: meterType,
-          amount: amount,
-          transactionId: transactionId,
-          verificationToken: verificationToken,
-        );
+      onPinValidated: (token) async {
+        verificationToken = token;
       },
     );
 
-    if (!success) {
-      // C2: Reset processing flag on PIN failure/cancellation
+    if (!success || verificationToken == null) {
       setState(() => _isProcessing = false);
+      return;
     }
+    if (!mounted) return;
+
+    _executePaymentWithToken(
+      provider: provider,
+      validationResult: validationResult,
+      meterNumber: meterNumber,
+      meterType: meterType,
+      amount: amount,
+      transactionId: transactionId,
+      verificationToken: verificationToken!,
+    );
   }
 
   void _executePaymentWithToken({
@@ -427,7 +433,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
     required String transactionId,
     required String verificationToken,
   }) {
-    final phoneNumber = _normalizePhone(_phoneController.text.trim());
+    final phoneNumber = _buildFullPhone();
 
     // Save beneficiary if toggle is on (new beneficiary flow only)
     if (_saveBeneficiary && !_isFromBeneficiary) {
@@ -455,8 +461,8 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
       }
     }
 
-    // Navigate to processing screen with all payment params
-    Get.toNamed(
+    // Navigate to processing screen — remove confirmation from stack
+    Get.offNamed(
       AppRoutes.electricityBillProcessing,
       arguments: {
         'provider': provider,
@@ -1293,15 +1299,190 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
 
   /// Strips whitespace, dashes from phone number.
   String _normalizePhone(String phone) {
-    return phone.replaceAll(RegExp(r'[\s\-]'), '');
+    return phone.replaceAll(RegExp(r'[\s\-()]'), '');
   }
 
-  /// Validates phone numbers - accepts any valid phone format.
-  /// Must be at least 7 digits (shortest valid international numbers)
-  /// and at most 15 digits (ITU-T E.164 max). May start with +.
+  /// Strip dial code prefix from a phone number to get the local part.
+  String _stripDialCode(String phone) {
+    final cleaned = _normalizePhone(phone);
+    // Try to match against known dial codes (longest first)
+    final sortedCountries = List<CountryLocale>.from(CountryLocales.all)
+      ..sort((a, b) => b.dialCode.length.compareTo(a.dialCode.length));
+    for (final country in sortedCountries) {
+      final code = country.dialCode; // e.g. "+234"
+      if (cleaned.startsWith(code)) {
+        _selectedCountry = country;
+        return cleaned.substring(code.length);
+      }
+    }
+    // Strip leading 0 for Nigerian numbers without country code
+    if (cleaned.startsWith('0') && cleaned.length >= 10) {
+      return cleaned.substring(1);
+    }
+    return cleaned;
+  }
+
+  /// Build the full E.164 phone number with country code.
+  String _buildFullPhone() {
+    final local = _normalizePhone(_phoneController.text.trim());
+    // Strip leading zero if present (common in local format)
+    final stripped = local.startsWith('0') ? local.substring(1) : local;
+    return '${_selectedCountry.dialCode}$stripped';
+  }
+
+  /// Validates the local phone number (without country code).
+  /// Must be 6-14 digits.
   bool _isValidPhone(String phone) {
-    final normalized = _normalizePhone(phone);
-    return RegExp(r'^\+?\d{7,15}$').hasMatch(normalized);
+    final local = _normalizePhone(phone);
+    final stripped = local.startsWith('0') ? local.substring(1) : local;
+    return RegExp(r'^\d{6,14}$').hasMatch(stripped);
+  }
+
+  void _showCountryCodePicker() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        String searchQuery = '';
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            final filtered = searchQuery.isEmpty
+                ? CountryLocales.all
+                : CountryLocales.search(searchQuery);
+            return DraggableScrollableSheet(
+              initialChildSize: 0.7,
+              maxChildSize: 0.9,
+              minChildSize: 0.4,
+              builder: (context, scrollController) {
+                return Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1F1F1F),
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(24.r),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      // Drag handle
+                      Container(
+                        margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
+                        width: 40.w,
+                        height: 4.h,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2D2D2D),
+                          borderRadius: BorderRadius.circular(2.r),
+                        ),
+                      ),
+                      // Header
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Select Country Code',
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 18.sp,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () => Navigator.pop(context),
+                              child: Icon(Icons.close, color: const Color(0xFF9CA3AF), size: 24.sp),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Search
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+                        child: TextField(
+                          onChanged: (v) => setSheetState(() => searchQuery = v),
+                          style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
+                          decoration: InputDecoration(
+                            hintText: 'Search country...',
+                            hintStyle: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 14.sp),
+                            prefixIcon: Icon(Icons.search, color: const Color(0xFF6B7280), size: 20.sp),
+                            filled: true,
+                            fillColor: const Color(0xFF0A0A0A),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12.r),
+                              borderSide: BorderSide.none,
+                            ),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                          ),
+                        ),
+                      ),
+                      // List
+                      Expanded(
+                        child: ListView.builder(
+                          controller: scrollController,
+                          padding: EdgeInsets.symmetric(horizontal: 20.w),
+                          itemCount: filtered.length,
+                          itemBuilder: (context, index) {
+                            final country = filtered[index];
+                            final isSelected = country.countryCode == _selectedCountry.countryCode;
+                            return GestureDetector(
+                              onTap: () {
+                                setState(() => _selectedCountry = country);
+                                Navigator.pop(context);
+                              },
+                              child: Container(
+                                margin: EdgeInsets.only(bottom: 8.h),
+                                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? const Color(0xFF3B82F6).withValues(alpha: 0.1)
+                                      : const Color(0xFF0A0A0A),
+                                  borderRadius: BorderRadius.circular(12.r),
+                                  border: isSelected
+                                      ? Border.all(color: const Color(0xFF3B82F6), width: 1.5)
+                                      : null,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Text(country.flag, style: TextStyle(fontSize: 24.sp)),
+                                    SizedBox(width: 12.w),
+                                    Expanded(
+                                      child: Text(
+                                        country.countryName,
+                                        style: GoogleFonts.inter(
+                                          color: Colors.white,
+                                          fontSize: 15.sp,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                    Text(
+                                      country.dialCode,
+                                      style: GoogleFonts.inter(
+                                        color: const Color(0xFF9CA3AF),
+                                        fontSize: 14.sp,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    if (isSelected) ...[
+                                      SizedBox(width: 8.w),
+                                      Icon(Icons.check_circle, color: const Color(0xFF3B82F6), size: 20.sp),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
+    );
   }
 
   Widget _buildPhoneInput() {
@@ -1327,7 +1508,6 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
         ),
         SizedBox(height: 10.h),
         Container(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
           decoration: BoxDecoration(
             color: const Color(0xFF1F1F1F),
             borderRadius: BorderRadius.circular(12.r),
@@ -1336,27 +1516,72 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
               width: 1,
             ),
           ),
-          child: TextField(
-            controller: _phoneController,
-            keyboardType: TextInputType.phone,
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
-            ),
-            decoration: InputDecoration(
-              hintText: '+2348012345678',
-              hintStyle: GoogleFonts.inter(
-                color: const Color(0xFF4B5563),
-                fontSize: 16.sp,
+          child: Row(
+            children: [
+              // Country code selector
+              GestureDetector(
+                onTap: _showCountryCodePicker,
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      right: BorderSide(
+                        color: const Color(0xFF2D2D2D),
+                        width: 1,
+                      ),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _selectedCountry.flag,
+                        style: TextStyle(fontSize: 20.sp),
+                      ),
+                      SizedBox(width: 6.w),
+                      Text(
+                        _selectedCountry.dialCode,
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(width: 4.w),
+                      Icon(
+                        Icons.keyboard_arrow_down,
+                        color: const Color(0xFF6B7280),
+                        size: 18.sp,
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              border: InputBorder.none,
-              icon: Icon(
-                Icons.phone_outlined,
-                color: const Color(0xFF6B7280),
-                size: 22.sp,
+              // Phone number input
+              Expanded(
+                child: TextField(
+                  controller: _phoneController,
+                  keyboardType: TextInputType.phone,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[\d]')),
+                  ],
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: '8012345678',
+                    hintStyle: GoogleFonts.inter(
+                      color: const Color(0xFF4B5563),
+                      fontSize: 16.sp,
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
         ),
       ],

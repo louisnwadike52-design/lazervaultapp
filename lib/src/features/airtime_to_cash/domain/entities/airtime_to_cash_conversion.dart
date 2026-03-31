@@ -4,6 +4,7 @@ import 'package:equatable/equatable.dart';
 enum A2CConversionStatus {
   pending,
   processing,
+  awaitingSettlement,
   completed,
   failed,
 }
@@ -15,6 +16,8 @@ extension A2CConversionStatusExtension on A2CConversionStatus {
         return 'Pending';
       case A2CConversionStatus.processing:
         return 'Processing';
+      case A2CConversionStatus.awaitingSettlement:
+        return 'Awaiting Settlement';
       case A2CConversionStatus.completed:
         return 'Completed';
       case A2CConversionStatus.failed:
@@ -28,6 +31,8 @@ extension A2CConversionStatusExtension on A2CConversionStatus {
         return '#FFA500';
       case A2CConversionStatus.processing:
         return '#0066CC';
+      case A2CConversionStatus.awaitingSettlement:
+        return '#FFA500';
       case A2CConversionStatus.completed:
         return '#00AA4F';
       case A2CConversionStatus.failed:
@@ -41,6 +46,8 @@ extension A2CConversionStatusExtension on A2CConversionStatus {
         return const Color(0xFFFFA500);
       case A2CConversionStatus.processing:
         return const Color(0xFF0066CC);
+      case A2CConversionStatus.awaitingSettlement:
+        return const Color(0xFFFFA500);
       case A2CConversionStatus.completed:
         return const Color(0xFF00AA4F);
       case A2CConversionStatus.failed:
@@ -86,7 +93,8 @@ class AirtimeToCashConversion extends Equatable {
   bool get isFailed => status == A2CConversionStatus.failed;
   bool get isPending =>
       status == A2CConversionStatus.pending ||
-      status == A2CConversionStatus.processing;
+      status == A2CConversionStatus.processing ||
+      status == A2CConversionStatus.awaitingSettlement;
 
   /// Net amount credited to wallet after fee deduction
   double get netCashAmount => cashAmount;

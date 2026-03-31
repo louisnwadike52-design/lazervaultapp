@@ -17,6 +17,9 @@ class StockTradeProcessingScreen extends StatefulWidget {
   final int quantity;
   final double? limitPrice;
   final double? stopPrice;
+  final String? transactionId;
+  final String? verificationToken;
+  final double? quantityExact;
 
   const StockTradeProcessingScreen({
     super.key,
@@ -26,6 +29,9 @@ class StockTradeProcessingScreen extends StatefulWidget {
     required this.quantity,
     this.limitPrice,
     this.stopPrice,
+    this.transactionId,
+    this.verificationToken,
+    this.quantityExact,
   });
 
   @override
@@ -92,9 +98,12 @@ class _StockTradeProcessingScreenState extends State<StockTradeProcessingScreen>
       type: widget.orderType,
       side: widget.orderSide,
       quantity: widget.quantity,
+      quantityExact: widget.quantityExact,
       price: widget.orderType == OrderType.limit || widget.orderType == OrderType.stopLimit
           ? widget.limitPrice
           : null,
+      transactionId: widget.transactionId,
+      verificationToken: widget.verificationToken,
     );
   }
 

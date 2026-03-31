@@ -114,6 +114,25 @@ class CryptoGrpcClient {
     }
   }
 
+  /// Get Quidax-supported assets (tradeable coins enriched with CoinGecko data)
+  Future<GetSupportedAssetsResponse> getSupportedAssets({
+    int page = 1,
+    int perPage = 50,
+    String vsCurrency = 'usd',
+  }) async {
+    try {
+      final request = GetSupportedAssetsRequest()
+        ..vsCurrency = vsCurrency
+        ..page = page
+        ..perPage = perPage;
+
+      final response = await _client.getSupportedAssets(request);
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   /// Get cryptocurrency price history
   ///
   /// [id] - Cryptocurrency ID
@@ -253,55 +272,6 @@ class CryptoGrpcClient {
     }
   }
 
-  /// Get user's crypto wallets
-  Future<GetWalletsResponse> getWallets() async {
-    final options = await _callOptionsHelper.withAuth();
-    try {
-      final request = GetWalletsRequest();
-      final response = await _client.getWallets(request, options: options);
-      return response;
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  /// Create a new crypto wallet
-  ///
-  /// [cryptoId] - Cryptocurrency ID (e.g., 'bitcoin', 'ethereum')
-  /// [walletType] - Wallet type (e.g., 'metamask', 'trust_wallet')
-  Future<CreateWalletResponse> createWallet({
-    required String cryptoId,
-    String? walletType,
-  }) async {
-    final options = await _callOptionsHelper.withAuth();
-    try {
-      final request = CreateWalletRequest()
-        ..cryptoId = cryptoId
-        ..walletType = walletType ?? 'default';
-      final response = await _client.createWallet(request, options: options);
-      return response;
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  /// Get wallet balance
-  ///
-  /// [walletId] - Wallet ID or address
-  Future<GetWalletBalanceResponse> getWalletBalance({
-    required String walletId,
-  }) async {
-    final options = await _callOptionsHelper.withAuth();
-    try {
-      final request = GetWalletBalanceRequest()
-        ..walletId = walletId;
-      final response = await _client.getWalletBalance(request, options: options);
-      return response;
-    } catch (e) {
-      rethrow;
-    }
-  }
-
   // ============================================================
   // AUTHENTICATED WATCHLIST OPERATIONS
   // ============================================================
@@ -384,29 +354,17 @@ class CryptoGrpcClient {
     }
   }
 
-  /// Batch create default stablecoin wallets for the current user
-  Future<BatchCreateWalletsResponse> batchCreateWallets() async {
-    final options = await _callOptionsHelper.withAuth();
-    try {
-      final request = BatchCreateWalletsRequest();
-      final response = await _client.batchCreateWallets(request, options: options);
-      return response;
-    } catch (e) {
-      rethrow;
-    }
-  }
-
   /// Get exchange rate for a crypto/fiat pair
-  Future<GetExchangeRateResponse> getExchangeRate({
+  Future<GetCryptoFiatRateResponse> getExchangeRate({
     required String cryptoId,
     required String fiatCurrency,
   }) async {
     final options = await _callOptionsHelper.withAuth();
     try {
-      final request = GetExchangeRateRequest()
+      final request = GetCryptoFiatRateRequest()
         ..cryptoId = cryptoId
         ..fiatCurrency = fiatCurrency;
-      final response = await _client.getExchangeRate(request, options: options);
+      final response = await _client.getCryptoFiatRate(request, options: options);
       return response;
     } catch (e) {
       rethrow;
@@ -421,6 +379,125 @@ class CryptoGrpcClient {
       final request = GetGlobalMarketDataRequest();
       final response = await _client.getGlobalMarketData(request, options: options);
       return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get crypto news for specified currencies
+  Future<GetCryptoNewsResponse> getCryptoNews({
+    required List<String> currencies,
+    int limit = 20,
+  }) async {
+    try {
+      final request = GetCryptoNewsRequest()
+        ..currencies.addAll(currencies)
+        ..limit = limit;
+
+      final response = await _client.getCryptoNews(request);
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // ============================================================
+  // OHLCV CHART DATA
+  // ============================================================
+
+  /// Get OHLCV (candlestick) data for a cryptocurrency
+  ///
+  /// [cryptoId] - Cryptocurrency ID (e.g., 'bitcoin')
+  /// [vsCurrency] - Currency for prices (default: 'ngn')
+  /// [days] - Number of days of data (e.g., 1, 7, 30, 90, 365)
+  Future<GetOHLCVResponse> getOHLCV({
+    required String cryptoId,
+    String vsCurrency = 'ngn',
+    int days = 1,
+  }) async {
+    try {
+      final request = GetOHLCVRequest()
+        ..cryptoId = cryptoId
+        ..vsCurrency = vsCurrency
+        ..days = days;
+      return await _client.getOHLCV(request);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // ============================================================
+  // ORDER BOOK & TRADES
+  // ============================================================
+
+  Future<GetOrderBookResponse> getOrderBook(String market) async {
+    try {
+      final request = GetOrderBookRequest()..market = market;
+      return await _client.getOrderBook(request);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<GetRecentTradesResponse> getRecentTrades(String market) async {
+    try {
+      final request = GetRecentTradesRequest()..market = market;
+      return await _client.getRecentTrades(request);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // ============================================================
+  // FEAR & GREED INDEX
+  // ============================================================
+
+  Future<GetFearGreedIndexResponse> getFearGreedIndex() async {
+    try {
+      return await _client.getFearGreedIndex(GetFearGreedIndexRequest());
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // ============================================================
+  // PRICE ALERTS
+  // ============================================================
+
+  Future<CreatePriceAlertResponse> createPriceAlert({
+    required String cryptoId,
+    required double targetPrice,
+    required String direction,
+    String fiatCurrency = 'USD',
+  }) async {
+    final options = await _callOptionsHelper.withAuth();
+    try {
+      final request = CreatePriceAlertRequest()
+        ..cryptoId = cryptoId
+        ..targetPrice = targetPrice
+        ..direction = direction
+        ..fiatCurrency = fiatCurrency;
+      return await _client.createPriceAlert(request, options: options);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<GetPriceAlertsResponse> getPriceAlerts({bool activeOnly = true}) async {
+    final options = await _callOptionsHelper.withAuth();
+    try {
+      final request = GetPriceAlertsRequest()..activeOnly = activeOnly;
+      return await _client.getPriceAlerts(request, options: options);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<DeletePriceAlertResponse> deletePriceAlert(String alertId) async {
+    final options = await _callOptionsHelper.withAuth();
+    try {
+      final request = DeletePriceAlertRequest()..alertId = alertId;
+      return await _client.deletePriceAlert(request, options: options);
     } catch (e) {
       rethrow;
     }

@@ -200,6 +200,8 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
     // Use accountNumber if available, otherwise use account id
     final toAccountNumber = destination.accountNumber ?? destination.id;
 
+    String? verificationToken;
+
     final success = await validateTransactionPin(
       context: context,
       transactionId: transactionId,
@@ -207,56 +209,59 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
       amount: amount,
       currency: source.currency.isNotEmpty ? source.currency : 'NGN',
       title: 'Confirm Transfer',
-      message:
-          'Move ${_formatCurrency(amount, source.currency)} from '
-          '${source.displayName} to ${destination.displayName}?',
-      onPinValidated: (verificationToken) async {
-        context.read<WalletTransferCubit>().transferBetweenAccounts(
-              fromAccountId: source.id,
-              toAccountNumber: toAccountNumber,
-              type: 'internal',
-              amount: amount,
-              description: description,
-              transactionId: transactionId,
-              verificationToken: verificationToken,
-              sourceAccountName: _accountDisplayLabel(source),
-              destinationAccountName: _accountDisplayLabel(destination),
-              currency: source.currency,
-            );
-
-        // Wait for cubit result
-        await for (final state
-            in context.read<WalletTransferCubit>().stream) {
-          if (state is WalletTransferSuccess) {
-            pinModalKey.currentState?.setSuccess();
-            await Future.delayed(const Duration(milliseconds: 1200));
-            if (mounted) {
-              try {
-                Navigator.of(context).pop();
-              } catch (_) {}
-            }
-            Get.offNamed(
-              AppRoutes.walletTransferReceipt,
-              arguments: {
-                'sourceAccount': state.sourceAccountName,
-                'destinationAccount': state.destinationAccountName,
-                'amount': state.amount,
-                'currency': state.currency,
-                'reference': state.reference ?? '',
-                'transferId': state.transferId ?? '',
-                'newBalance': state.newBalance,
-              },
-            );
-            break;
-          } else if (state is WalletTransferError) {
-            throw Exception(state.message);
-          }
-        }
+      message: 'Confirm transfer of ${source.currency.isNotEmpty ? source.currency : 'NGN'} ${amount.toStringAsFixed(2)}',
+      onPinValidated: (token) async {
+        verificationToken = token;
       },
     );
 
-    if (!success && mounted) {
-      context.read<WalletTransferCubit>().reset();
+    if (!success || verificationToken == null) {
+      if (mounted) context.read<WalletTransferCubit>().reset();
+      return;
+    }
+    if (!mounted) return;
+
+    // Execute transfer AFTER modal is dismissed
+    context.read<WalletTransferCubit>().transferBetweenAccounts(
+          fromAccountId: source.id,
+          toAccountNumber: toAccountNumber,
+          type: 'internal',
+          amount: amount,
+          description: description,
+          transactionId: transactionId,
+          verificationToken: verificationToken!,
+          sourceAccountName: _accountDisplayLabel(source),
+          destinationAccountName: _accountDisplayLabel(destination),
+          currency: source.currency,
+        );
+
+    // Wait for cubit result
+    await for (final state
+        in context.read<WalletTransferCubit>().stream) {
+      if (state is WalletTransferSuccess) {
+        if (mounted) {
+          Get.offNamed(
+            AppRoutes.walletTransferReceipt,
+            arguments: {
+              'sourceAccount': state.sourceAccountName,
+              'destinationAccount': state.destinationAccountName,
+              'amount': state.amount,
+              'currency': state.currency,
+              'reference': state.reference ?? '',
+              'transferId': state.transferId ?? '',
+              'newBalance': state.newBalance,
+            },
+          );
+        }
+        break;
+      } else if (state is WalletTransferError) {
+        if (mounted) {
+          Get.snackbar('Transfer Failed', state.message,
+              backgroundColor: const Color(0xFFEF4444), colorText: Colors.white,
+              snackPosition: SnackPosition.TOP);
+        }
+        break;
+      }
     }
   }
 

@@ -373,10 +373,11 @@ message PurchaseInsuranceRequest {
     string quote_id = 1;
     string product_id = 2;
     string account_id = 3;                   // LazerVault account to debit
-    string transaction_pin = 4;              // Pre-validated PIN token
+    string transaction_pin = 4;              // Pre-validated PIN verification token
     string idempotency_key = 5;
     map<string, string> form_data = 6;       // Customer form data
     string locale = 7;
+    string transaction_id = 8;               // Transaction ID used during PIN verification
 }
 
 message PurchaseInsuranceResponse {

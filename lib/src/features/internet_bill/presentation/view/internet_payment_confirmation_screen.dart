@@ -45,36 +45,42 @@ class _InternetPaymentConfirmationScreenState
     final transactionId = const Uuid().v4();
     final idempotencyKey = const Uuid().v4();
 
+    String? verificationToken;
+
     final success = await validateTransactionPin(
       context: context,
       transactionId: transactionId,
       transactionType: 'internet_bill',
       amount: package.amount,
       currency: 'NGN',
-      title: 'Confirm Internet Payment',
-      message:
-          'Confirm payment of \u20A6${_currencyFormat.format(package.amount)} for ${provider.name}?',
-      onPinValidated: (verificationToken) async {
-        Get.toNamed(
-          AppRoutes.internetPaymentProcessing,
-          arguments: {
-            'provider': provider,
-            'package': package,
-            'validation': args['validation'],
-            'accountNumber': accountNumber,
-            'transactionId': transactionId,
-            'verificationToken': verificationToken,
-            'idempotencyKey': idempotencyKey,
-          },
-        );
+      title: 'Confirm Payment',
+      message: 'Confirm internet bill payment of \u20A6${package.amount.toStringAsFixed(0)}',
+      onPinValidated: (token) async {
+        verificationToken = token;
       },
     );
 
-    if (!success) {
+    if (!success || verificationToken == null) {
       setState(() {
         _isProcessing = false;
       });
+      return;
     }
+    if (!mounted) return;
+
+    // Navigate AFTER modal is dismissed
+    Get.offNamed(
+      AppRoutes.internetPaymentProcessing,
+      arguments: {
+        'provider': provider,
+        'package': package,
+        'validation': args['validation'],
+        'accountNumber': accountNumber,
+        'transactionId': transactionId,
+        'verificationToken': verificationToken!,
+        'idempotencyKey': idempotencyKey,
+      },
+    );
   }
 
   @override

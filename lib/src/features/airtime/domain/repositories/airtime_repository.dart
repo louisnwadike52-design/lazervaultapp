@@ -25,6 +25,21 @@ abstract class AirtimeRepository {
     String? reloadlyOperatorId,
   });
   
+  // Transfer operations
+  Future<AirtimeTransaction> transferAirtime({
+    required String countryCode,
+    required String recipientPhone,
+    required String recipientName,
+    required String senderPhone,
+    required String network,
+    required double amount,
+    required String currency,
+    String? transactionId,
+    String? verificationToken,
+    String? operatorId,
+    String? transferNote,
+  });
+
   Future<List<AirtimeTransaction>> getTransactionHistory(String userId);
   Future<AirtimeTransaction?> getTransactionById(String transactionId);
   

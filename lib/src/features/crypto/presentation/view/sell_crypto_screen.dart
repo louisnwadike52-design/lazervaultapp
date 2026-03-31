@@ -3,24 +3,30 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
+import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
+import '../../../transaction_pin/services/transaction_pin_service.dart';
 import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
 import '../../domain/entities/crypto_entity.dart';
-import 'crypto_confirmation_screen.dart';
+import '../models/crypto_transaction_models.dart';
+import 'crypto_processing_screen.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 
 class SellCryptoScreen extends StatefulWidget {
   final CryptoHolding? selectedHolding;
+  final bool lockHolding;
 
-  const SellCryptoScreen({super.key, this.selectedHolding});
+  const SellCryptoScreen({super.key, this.selectedHolding, this.lockHolding = false});
 
   @override
   State<SellCryptoScreen> createState() => _SellCryptoScreenState();
 }
 
 class _SellCryptoScreenState extends State<SellCryptoScreen>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, TransactionPinMixin {
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
   
@@ -31,6 +37,10 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
   CryptoHolding? _selectedHolding;
   bool _isAmountInCrypto = true;
   bool _isLoading = false;
+  bool _isTransacting = false;
+
+  @override
+  ITransactionPinService get transactionPinService => GetIt.I<ITransactionPinService>();
 
   @override
   void initState() {
@@ -254,7 +264,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
           ),
           SizedBox(height: 16.h),
           GestureDetector(
-            onTap: _showHoldingsBottomSheet,
+            onTap: widget.lockHolding ? null : _showHoldingsBottomSheet,
             child: Container(
               padding: EdgeInsets.all(16.w),
               decoration: BoxDecoration(
@@ -588,21 +598,8 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
         child: Container(
           padding: EdgeInsets.symmetric(vertical: 12.h),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Colors.red.withValues(alpha: 0.1),
-                Colors.red.withValues(alpha: 0.05),
-              ],
-            ),
+            color: Colors.white.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(8.r),
-            boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
           ),
           child: Center(
             child: Text(
@@ -610,7 +607,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
               style: GoogleFonts.inter(
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w600,
-                color: Colors.red,
+                color: Colors.white.withValues(alpha: 0.85),
               ),
             ),
           ),
@@ -839,27 +836,54 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
   }
 
   Widget _buildSellButton() {
-    final isEnabled = _selectedHolding != null && _hasValidAmount;
+    final isEnabled = _selectedHolding != null && _hasValidAmount && !_isTransacting;
 
-    return SizedBox(
-      width: double.infinity,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        child: ElevatedButton(
-          onPressed: isEnabled ? _processSellOrder : null,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.transparent,
-            padding: EdgeInsets.zero,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16.r),
+    // Build validation error message
+    String? validationError;
+    if (_selectedHolding == null) {
+      validationError = 'Please select a cryptocurrency holding';
+    } else if (_amountController.text.isEmpty) {
+      validationError = 'Please enter an amount to sell';
+    } else if (!_hasValidAmount) {
+      validationError = 'Amount exceeds your holding balance';
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Show validation error if any
+        if (validationError != null && !isEnabled)
+          Padding(
+            padding: EdgeInsets.only(bottom: 12.h),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.info_outline,
+                  color: Colors.orange,
+                  size: 16.sp,
+                ),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: Text(
+                    validationError,
+                    style: GoogleFonts.inter(
+                      fontSize: 12.sp,
+                      color: Colors.orange,
+                    ),
+                  ),
+                ),
+              ],
             ),
-            elevation: 0,
           ),
-          child: Container(
+        // Sell button
+        GestureDetector(
+          onTap: isEnabled ? _processSellOrder : _showDisabledButtonFeedback,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
             width: double.infinity,
             padding: EdgeInsets.symmetric(vertical: 18.h),
             decoration: BoxDecoration(
-              gradient: isEnabled 
+              gradient: isEnabled
                 ? LinearGradient(
                     colors: [
                       Colors.red,
@@ -883,7 +907,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                 ),
               ] : null,
             ),
-            child: _isLoading
+            child: _isTransacting
               ? Center(
                   child: SizedBox(
                     height: 20.h,
@@ -899,7 +923,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                   children: [
                     Icon(
                       Icons.remove_circle_outline,
-                      color: Colors.white,
+                      color: isEnabled ? Colors.white : Colors.grey,
                       size: 20.sp,
                     ),
                     SizedBox(width: 8.w),
@@ -908,20 +932,72 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                       style: GoogleFonts.inter(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                        color: isEnabled ? Colors.white : Colors.grey,
                       ),
                     ),
                   ],
                 ),
           ),
         ),
-      ),
+      ],
     );
+  }
+
+  void _showDisabledButtonFeedback() {
+    // Show helpful message when disabled button is tapped
+    if (_selectedHolding == null) {
+      Get.snackbar(
+        'Select Holding',
+        'Please select a cryptocurrency holding to sell',
+        backgroundColor: Colors.orange.withValues(alpha: 0.9),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 2),
+      );
+    } else if (_amountController.text.isEmpty || !_hasValidAmount) {
+      Get.snackbar(
+        'Invalid Amount',
+        'Please enter a valid amount within your holding balance',
+        backgroundColor: Colors.orange.withValues(alpha: 0.9),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 2),
+      );
+    } else if (_isTransacting) {
+      Get.snackbar(
+        'Processing',
+        'Transaction in progress, please wait...',
+        backgroundColor: Colors.blue.withValues(alpha: 0.9),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 2),
+      );
+    }
   }
 
   void _showHoldingsBottomSheet() {
     final cubitState = context.read<CryptoCubit>().state;
-    final holdings = cubitState is CryptosLoaded ? cubitState.holdings : <CryptoHolding>[];
+    if (cubitState is! CryptosLoaded) return;
+
+    // Only show holdings for Quidax-supported assets
+    final supportedSymbols = cubitState.supportedAssets
+        .map((a) => a.symbol.toLowerCase())
+        .toSet();
+    final allHoldings = cubitState.holdings;
+    final holdings = supportedSymbols.isNotEmpty
+        ? allHoldings.where((h) => supportedSymbols.contains(h.cryptoSymbol.toLowerCase())).toList()
+        : allHoldings;
+
+    // Resolve holdings to Crypto objects for detail navigation
+    final cryptoLookup = <String, Crypto>{};
+    for (final c in cubitState.cryptos) {
+      cryptoLookup[c.symbol.toLowerCase()] = c;
+    }
+    for (final c in cubitState.supportedAssets) {
+      cryptoLookup[c.symbol.toLowerCase()] = c;
+    }
+
+    final searchNotifier = ValueNotifier<String>('');
 
     showModalBottomSheet(
       context: context,
@@ -991,18 +1067,49 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                     borderSide: BorderSide.none,
                   ),
                 ),
+                onChanged: (v) => searchNotifier.value = v.toLowerCase(),
               ),
             ),
             SizedBox(height: 16.h),
             Expanded(
-              child: ListView.builder(
-                padding: EdgeInsets.symmetric(horizontal: 24.w),
-                itemCount: holdings.length,
-                itemBuilder: (context, index) {
-                  final holding = holdings[index];
-                  return _buildHoldingItem(holding);
-                },
-              ),
+              child: holdings.isEmpty
+                ? Center(
+                    child: Text(
+                      'No holdings to sell',
+                      style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 14.sp),
+                    ),
+                  )
+                : ValueListenableBuilder<String>(
+                    valueListenable: searchNotifier,
+                    builder: (context, query, _) {
+                      final filtered = query.isEmpty
+                          ? holdings
+                          : holdings.where((h) =>
+                              h.cryptoName.toLowerCase().contains(query) ||
+                              h.cryptoSymbol.toLowerCase().contains(query)
+                            ).toList();
+
+                      if (filtered.isEmpty) {
+                        return Center(
+                          child: Text(
+                            'No matching holdings',
+                            style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 14.sp),
+                          ),
+                        );
+                      }
+
+                      return ListView.builder(
+                        padding: EdgeInsets.symmetric(horizontal: 24.w),
+                        itemCount: filtered.length,
+                        itemBuilder: (context, index) {
+                          return _buildHoldingItem(
+                            filtered[index],
+                            cryptoForDetail: cryptoLookup[filtered[index].cryptoSymbol.toLowerCase()],
+                          );
+                        },
+                      );
+                    },
+                  ),
             ),
           ],
         ),
@@ -1010,131 +1117,197 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
     );
   }
 
-  Widget _buildHoldingItem(CryptoHolding holding) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedHolding = holding;
-        });
-        _searchController.clear();
-        Get.back();
-      },
-      child: Container(
-        margin: EdgeInsets.only(bottom: 12.h),
-        padding: EdgeInsets.all(16.w),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 40.w,
-              height: 40.w,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.orange, Colors.orange.withValues(alpha: 0.7)],
-                ),
-                borderRadius: BorderRadius.circular(20.r),
-              ),
-              child: Icon(
-                Icons.currency_bitcoin,
-                color: Colors.white,
-                size: 20.sp,
-              ),
-            ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    holding.cryptoName,
-                    style: GoogleFonts.inter(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                  Text(
-                    '${holding.quantity.toStringAsFixed(6)} ${holding.cryptoSymbol.toUpperCase()}',
-                    style: GoogleFonts.inter(
-                      fontSize: 12.sp,
-                      color: Colors.white.withValues(alpha: 0.6),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+  Widget _buildHoldingItem(CryptoHolding holding, {Crypto? cryptoForDetail}) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 12.h),
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: Column(
+        children: [
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _selectedHolding = holding;
+              });
+              _searchController.clear();
+              Get.back();
+            },
+            child: Row(
               children: [
-                Text(
-                  '${CurrencySymbols.currentSymbol}${holding.totalValue.toStringAsFixed(2)}',
-                  style: GoogleFonts.inter(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
+                Container(
+                  width: 40.w,
+                  height: 40.w,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.orange, Colors.orange.withValues(alpha: 0.7)],
+                    ),
+                    borderRadius: BorderRadius.circular(20.r),
+                  ),
+                  child: Icon(
+                    Icons.currency_bitcoin,
                     color: Colors.white,
+                    size: 20.sp,
                   ),
                 ),
-                Row(
-                  children: [
-                    Icon(
-                      holding.totalGainLossPercentage >= 0 
-                        ? Icons.arrow_upward 
-                        : Icons.arrow_downward,
-                      color: holding.totalGainLossPercentage >= 0 
-                        ? Colors.green 
-                        : Colors.red,
-                      size: 12.sp,
-                    ),
-                    Text(
-                      '${holding.totalGainLossPercentage.abs().toStringAsFixed(2)}%',
-                      style: GoogleFonts.inter(
-                        fontSize: 12.sp,
-                        color: holding.totalGainLossPercentage >= 0 
-                          ? Colors.green 
-                          : Colors.red,
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        holding.cryptoName,
+                        style: GoogleFonts.inter(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
                       ),
+                      Text(
+                        '${holding.quantity.toStringAsFixed(6)} ${holding.cryptoSymbol.toUpperCase()}',
+                        style: GoogleFonts.inter(
+                          fontSize: 12.sp,
+                          color: Colors.white.withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '${CurrencySymbols.currentSymbol}${holding.totalValue.toStringAsFixed(2)}',
+                      style: GoogleFonts.inter(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        Icon(
+                          holding.totalGainLossPercentage >= 0
+                            ? Icons.arrow_upward
+                            : Icons.arrow_downward,
+                          color: holding.totalGainLossPercentage >= 0
+                            ? Colors.green
+                            : Colors.red,
+                          size: 12.sp,
+                        ),
+                        Text(
+                          '${holding.totalGainLossPercentage.abs().toStringAsFixed(2)}%',
+                          style: GoogleFonts.inter(
+                            fontSize: 12.sp,
+                            color: holding.totalGainLossPercentage >= 0
+                              ? Colors.green
+                              : Colors.red,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ],
             ),
+          ),
+          if (cryptoForDetail != null) ...[
+            SizedBox(height: 10.h),
+            GestureDetector(
+              onTap: () {
+                Get.back(); // close bottom sheet
+                Get.toNamed(AppRoutes.cryptoDetails, arguments: cryptoForDetail);
+              },
+              child: Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(vertical: 8.h),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      color: Colors.white.withValues(alpha: 0.7),
+                      size: 16.sp,
+                    ),
+                    SizedBox(width: 6.w),
+                    Text(
+                      'View Details',
+                      style: GoogleFonts.inter(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white.withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
-        ),
+        ],
       ),
     );
   }
 
-  void _processSellOrder() {
-    if (_selectedHolding == null || !_hasValidAmount || _isLoading) return;
+  void _processSellOrder() async {
+    if (_selectedHolding == null || !_hasValidAmount || _isLoading || _isTransacting) return;
 
-    // Create transaction details
+    // Calculate fee
     final fee = _fiatAmount * 0.015; // 1.5% fee
     final netProceeds = _fiatAmount - fee;
 
-    final transactionDetails = CryptoTransactionDetails(
-      type: CryptoTransactionType.sell,
-      cryptoName: _selectedHolding!.cryptoName,
-      cryptoSymbol: _selectedHolding!.cryptoSymbol,
-      cryptoAmount: _cryptoAmount.toStringAsFixed(6),
-      pricePerUnit: _selectedHolding!.currentPrice,
-      fiatAmount: netProceeds,
-      networkFee: fee * 0.3,
-      tradingFee: fee * 0.7,
+    final cryptoId = _selectedHolding!.cryptoId;
+    final quantity = _cryptoAmount;
+    final price = _selectedHolding!.currentPrice;
+
+    // Show PIN bottom sheet first
+    final success = await validateTransactionPin(
+      context: context,
+      transactionId: 'CRYPTO-SELL-${DateTime.now().millisecondsSinceEpoch}',
+      transactionType: 'sell',
+      amount: netProceeds,
+      currency: CurrencySymbols.currentCurrency,
+      title: 'Confirm Sell Order',
+      message: 'Confirm sale of ${quantity.toStringAsFixed(6)} ${_selectedHolding!.cryptoSymbol.toUpperCase()}',
+      fee: fee,
       totalAmount: netProceeds,
-      paymentMethod: 'Bank Transfer',
-      cryptoId: _selectedHolding!.cryptoId,
-      cryptoQuantity: _cryptoAmount,
+      showProcessingPhase: false, // We'll use our own processing screen
+      onPinValidated: (verificationToken) async {
+        // PIN validated - navigate to processing screen
+        if (!mounted) return;
+
+        setState(() => _isTransacting = true);
+
+        Get.to(() => BlocProvider.value(
+          value: context.read<CryptoCubit>(),
+          child: CryptoProcessingScreen(
+            transactionType: CryptoTransactionType.sell,
+            cryptoName: _selectedHolding!.cryptoName,
+            cryptoSymbol: _selectedHolding!.cryptoSymbol,
+            cryptoAmount: quantity.toStringAsFixed(6),
+            fiatAmount: netProceeds,
+            price: price,
+            cryptoId: cryptoId,
+            cryptoQuantity: quantity,
+            transactionPin: verificationToken,
+            paymentMethod: 'Bank Transfer',
+          ),
+        ));
+
+        // Clear amount after initiating transaction (processing screen handles success/error)
+        _amountController.clear();
+        setState(() => _isTransacting = false);
+      },
     );
 
-    // Navigate to confirmation screen with CryptoCubit
-    final cryptoCubit = context.read<CryptoCubit>();
-    Get.to(() => BlocProvider.value(
-      value: cryptoCubit,
-      child: CryptoConfirmationScreen(transactionDetails: transactionDetails),
-    ));
+    if (!success && mounted) {
+      setState(() => _isTransacting = false);
+    }
   }
 } 

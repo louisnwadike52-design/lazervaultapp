@@ -1,14 +1,13 @@
-// This is a generated file - do not edit.
 //
-// Generated from kyc.proto.
-
-// @dart = 3.3
+//  Generated code. Do not modify.
+//  source: kyc.proto
+//
+// @dart = 2.12
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: curly_braces_in_flow_control_structures
-// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
-// ignore_for_file: non_constant_identifier_names, unused_import
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -106,57 +105,13 @@ const CountryKYCRequirements$json = {
   '1': 'CountryKYCRequirements',
   '2': [
     {'1': 'country_code', '3': 1, '4': 1, '5': 9, '10': 'countryCode'},
-    {
-      '1': 'accepted_id_types',
-      '3': 2,
-      '4': 3,
-      '5': 14,
-      '6': '.kyc.IDType',
-      '10': 'acceptedIdTypes'
-    },
-    {
-      '1': 'mandatory_id_types',
-      '3': 3,
-      '4': 3,
-      '5': 14,
-      '6': '.kyc.IDType',
-      '10': 'mandatoryIdTypes'
-    },
-    {
-      '1': 'address_proof_required',
-      '3': 4,
-      '4': 1,
-      '5': 8,
-      '10': 'addressProofRequired'
-    },
-    {
-      '1': 'liveness_check_required',
-      '3': 5,
-      '4': 1,
-      '5': 8,
-      '10': 'livenessCheckRequired'
-    },
-    {
-      '1': 'tier_1_daily_limit',
-      '3': 6,
-      '4': 1,
-      '5': 3,
-      '10': 'tier1DailyLimit'
-    },
-    {
-      '1': 'tier_2_daily_limit',
-      '3': 7,
-      '4': 1,
-      '5': 3,
-      '10': 'tier2DailyLimit'
-    },
-    {
-      '1': 'tier_3_daily_limit',
-      '3': 8,
-      '4': 1,
-      '5': 3,
-      '10': 'tier3DailyLimit'
-    },
+    {'1': 'accepted_id_types', '3': 2, '4': 3, '5': 14, '6': '.kyc.IDType', '10': 'acceptedIdTypes'},
+    {'1': 'mandatory_id_types', '3': 3, '4': 3, '5': 14, '6': '.kyc.IDType', '10': 'mandatoryIdTypes'},
+    {'1': 'address_proof_required', '3': 4, '4': 1, '5': 8, '10': 'addressProofRequired'},
+    {'1': 'liveness_check_required', '3': 5, '4': 1, '5': 8, '10': 'livenessCheckRequired'},
+    {'1': 'tier_1_daily_limit', '3': 6, '4': 1, '5': 3, '10': 'tier1DailyLimit'},
+    {'1': 'tier_2_daily_limit', '3': 7, '4': 1, '5': 3, '10': 'tier2DailyLimit'},
+    {'1': 'tier_3_daily_limit', '3': 8, '4': 1, '5': 3, '10': 'tier3DailyLimit'},
   ],
 };
 
@@ -176,48 +131,15 @@ const KYCTierInfo$json = {
   '1': 'KYCTierInfo',
   '2': [
     {'1': 'tier', '3': 1, '4': 1, '5': 14, '6': '.kyc.KYCTier', '10': 'tier'},
-    {
-      '1': 'status',
-      '3': 2,
-      '4': 1,
-      '5': 14,
-      '6': '.kyc.KYCStatus',
-      '10': 'status'
-    },
+    {'1': 'status', '3': 2, '4': 1, '5': 14, '6': '.kyc.KYCStatus', '10': 'status'},
     {'1': 'display_name', '3': 3, '4': 1, '5': 9, '10': 'displayName'},
     {'1': 'description', '3': 4, '4': 1, '5': 9, '10': 'description'},
     {'1': 'benefits', '3': 5, '4': 3, '5': 9, '10': 'benefits'},
-    {
-      '1': 'daily_transaction_limit',
-      '3': 6,
-      '4': 1,
-      '5': 3,
-      '10': 'dailyTransactionLimit'
-    },
-    {
-      '1': 'daily_receive_limit',
-      '3': 7,
-      '4': 1,
-      '5': 3,
-      '10': 'dailyReceiveLimit'
-    },
+    {'1': 'daily_transaction_limit', '3': 6, '4': 1, '5': 3, '10': 'dailyTransactionLimit'},
+    {'1': 'daily_receive_limit', '3': 7, '4': 1, '5': 3, '10': 'dailyReceiveLimit'},
     {'1': 'max_balance', '3': 8, '4': 1, '5': 3, '10': 'maxBalance'},
-    {
-      '1': 'verified_at',
-      '3': 9,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'verifiedAt'
-    },
-    {
-      '1': 'expires_at',
-      '3': 10,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'expiresAt'
-    },
+    {'1': 'verified_at', '3': 9, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'verifiedAt'},
+    {'1': 'expires_at', '3': 10, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'expiresAt'},
     {'1': 'is_current', '3': 11, '4': 1, '5': 8, '10': 'isCurrent'},
     {'1': 'is_locked', '3': 12, '4': 1, '5': 8, '10': 'isLocked'},
   ],
@@ -241,14 +163,7 @@ const VerifyIDRequest$json = {
   '1': 'VerifyIDRequest',
   '2': [
     {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
-    {
-      '1': 'id_type',
-      '3': 2,
-      '4': 1,
-      '5': 14,
-      '6': '.kyc.IDType',
-      '10': 'idType'
-    },
+    {'1': 'id_type', '3': 2, '4': 1, '5': 14, '6': '.kyc.IDType', '10': 'idType'},
     {'1': 'id_number', '3': 3, '4': 1, '5': 9, '10': 'idNumber'},
     {'1': 'first_name', '3': 4, '4': 1, '5': 9, '10': 'firstName'},
     {'1': 'last_name', '3': 5, '4': 1, '5': 9, '10': 'lastName'},
@@ -270,30 +185,11 @@ const UploadDocumentRequest$json = {
   '1': 'UploadDocumentRequest',
   '2': [
     {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
-    {
-      '1': 'document_type',
-      '3': 2,
-      '4': 1,
-      '5': 14,
-      '6': '.kyc.IDType',
-      '10': 'documentType'
-    },
-    {
-      '1': 'document_front_url',
-      '3': 3,
-      '4': 1,
-      '5': 9,
-      '10': 'documentFrontUrl'
-    },
+    {'1': 'document_type', '3': 2, '4': 1, '5': 14, '6': '.kyc.IDType', '10': 'documentType'},
+    {'1': 'document_front_url', '3': 3, '4': 1, '5': 9, '10': 'documentFrontUrl'},
     {'1': 'document_back_url', '3': 4, '4': 1, '5': 9, '10': 'documentBackUrl'},
     {'1': 'selfie_url', '3': 5, '4': 1, '5': 9, '10': 'selfieUrl'},
-    {
-      '1': 'proof_of_address_url',
-      '3': 6,
-      '4': 1,
-      '5': 9,
-      '10': 'proofOfAddressUrl'
-    },
+    {'1': 'proof_of_address_url', '3': 6, '4': 1, '5': 9, '10': 'proofOfAddressUrl'},
   ],
 };
 
@@ -311,30 +207,9 @@ const VerifyIDResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'status',
-      '3': 3,
-      '4': 1,
-      '5': 14,
-      '6': '.kyc.KYCStatus',
-      '10': 'status'
-    },
-    {
-      '1': 'current_tier',
-      '3': 4,
-      '4': 1,
-      '5': 14,
-      '6': '.kyc.KYCTier',
-      '10': 'currentTier'
-    },
-    {
-      '1': 'verified_at',
-      '3': 5,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'verifiedAt'
-    },
+    {'1': 'status', '3': 3, '4': 1, '5': 14, '6': '.kyc.KYCStatus', '10': 'status'},
+    {'1': 'current_tier', '3': 4, '4': 1, '5': 14, '6': '.kyc.KYCTier', '10': 'currentTier'},
+    {'1': 'verified_at', '3': 5, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'verifiedAt'},
     {'1': 'reference', '3': 6, '4': 1, '5': 9, '10': 'reference'},
   ],
 };
@@ -356,47 +231,18 @@ const GetKYCStatusRequest$json = {
 };
 
 /// Descriptor for `GetKYCStatusRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getKYCStatusRequestDescriptor =
-    $convert.base64Decode(
-        'ChNHZXRLWUNTdGF0dXNSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZA==');
+final $typed_data.Uint8List getKYCStatusRequestDescriptor = $convert.base64Decode(
+    'ChNHZXRLWUNTdGF0dXNSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZA==');
 
 @$core.Deprecated('Use getKYCStatusResponseDescriptor instead')
 const GetKYCStatusResponse$json = {
   '1': 'GetKYCStatusResponse',
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
-    {
-      '1': 'status',
-      '3': 2,
-      '4': 1,
-      '5': 14,
-      '6': '.kyc.KYCStatus',
-      '10': 'status'
-    },
-    {
-      '1': 'current_tier',
-      '3': 3,
-      '4': 1,
-      '5': 14,
-      '6': '.kyc.KYCTier',
-      '10': 'currentTier'
-    },
-    {
-      '1': 'tier_info',
-      '3': 4,
-      '4': 3,
-      '5': 11,
-      '6': '.kyc.KYCTierInfo',
-      '10': 'tierInfo'
-    },
-    {
-      '1': 'last_updated',
-      '3': 5,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'lastUpdated'
-    },
+    {'1': 'status', '3': 2, '4': 1, '5': 14, '6': '.kyc.KYCStatus', '10': 'status'},
+    {'1': 'current_tier', '3': 3, '4': 1, '5': 14, '6': '.kyc.KYCTier', '10': 'currentTier'},
+    {'1': 'tier_info', '3': 4, '4': 3, '5': 11, '6': '.kyc.KYCTierInfo', '10': 'tierInfo'},
+    {'1': 'last_updated', '3': 5, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'lastUpdated'},
     {'1': 'rejection_reason', '3': 6, '4': 1, '5': 9, '10': 'rejectionReason'},
   ],
 };
@@ -429,14 +275,7 @@ const SkipKYCResponse$json = {
   '1': 'SkipKYCResponse',
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
-    {
-      '1': 'assigned_tier',
-      '3': 2,
-      '4': 1,
-      '5': 14,
-      '6': '.kyc.KYCTier',
-      '10': 'assignedTier'
-    },
+    {'1': 'assigned_tier', '3': 2, '4': 1, '5': 14, '6': '.kyc.KYCTier', '10': 'assignedTier'},
     {'1': 'message', '3': 3, '4': 1, '5': 9, '10': 'message'},
     {'1': 'next_steps', '3': 4, '4': 3, '5': 9, '10': 'nextSteps'},
   ],
@@ -457,47 +296,31 @@ const GetCountryRequirementsRequest$json = {
 };
 
 /// Descriptor for `GetCountryRequirementsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getCountryRequirementsRequestDescriptor =
-    $convert.base64Decode(
-        'Ch1HZXRDb3VudHJ5UmVxdWlyZW1lbnRzUmVxdWVzdBIhCgxjb3VudHJ5X2NvZGUYASABKAlSC2'
-        'NvdW50cnlDb2Rl');
+final $typed_data.Uint8List getCountryRequirementsRequestDescriptor = $convert.base64Decode(
+    'Ch1HZXRDb3VudHJ5UmVxdWlyZW1lbnRzUmVxdWVzdBIhCgxjb3VudHJ5X2NvZGUYASABKAlSC2'
+    'NvdW50cnlDb2Rl');
 
 @$core.Deprecated('Use getCountryRequirementsResponseDescriptor instead')
 const GetCountryRequirementsResponse$json = {
   '1': 'GetCountryRequirementsResponse',
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
-    {
-      '1': 'requirements',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.kyc.CountryKYCRequirements',
-      '10': 'requirements'
-    },
+    {'1': 'requirements', '3': 2, '4': 1, '5': 11, '6': '.kyc.CountryKYCRequirements', '10': 'requirements'},
   ],
 };
 
 /// Descriptor for `GetCountryRequirementsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getCountryRequirementsResponseDescriptor =
-    $convert.base64Decode(
-        'Ch5HZXRDb3VudHJ5UmVxdWlyZW1lbnRzUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2'
-        'VzcxI/CgxyZXF1aXJlbWVudHMYAiABKAsyGy5reWMuQ291bnRyeUtZQ1JlcXVpcmVtZW50c1IM'
-        'cmVxdWlyZW1lbnRz');
+final $typed_data.Uint8List getCountryRequirementsResponseDescriptor = $convert.base64Decode(
+    'Ch5HZXRDb3VudHJ5UmVxdWlyZW1lbnRzUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2'
+    'VzcxI/CgxyZXF1aXJlbWVudHMYAiABKAsyGy5reWMuQ291bnRyeUtZQ1JlcXVpcmVtZW50c1IM'
+    'cmVxdWlyZW1lbnRz');
 
 @$core.Deprecated('Use initiateKYCRequestDescriptor instead')
 const InitiateKYCRequest$json = {
   '1': 'InitiateKYCRequest',
   '2': [
     {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
-    {
-      '1': 'target_tier',
-      '3': 2,
-      '4': 1,
-      '5': 14,
-      '6': '.kyc.KYCTier',
-      '10': 'targetTier'
-    },
+    {'1': 'target_tier', '3': 2, '4': 1, '5': 14, '6': '.kyc.KYCTier', '10': 'targetTier'},
   ],
 };
 
@@ -512,13 +335,7 @@ const InitiateKYCResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'session_id', '3': 2, '4': 1, '5': 9, '10': 'sessionId'},
-    {
-      '1': 'required_documents',
-      '3': 3,
-      '4': 3,
-      '5': 9,
-      '10': 'requiredDocuments'
-    },
+    {'1': 'required_documents', '3': 3, '4': 3, '5': 9, '10': 'requiredDocuments'},
     {'1': 'required_fields', '3': 4, '4': 3, '5': 9, '10': 'requiredFields'},
     {'1': 'redirect_url', '3': 5, '4': 1, '5': 9, '10': 'redirectUrl'},
   ],
@@ -536,39 +353,11 @@ const VerificationDocument$json = {
   '1': 'VerificationDocument',
   '2': [
     {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
-    {
-      '1': 'document_type',
-      '3': 2,
-      '4': 1,
-      '5': 14,
-      '6': '.kyc.IDType',
-      '10': 'documentType'
-    },
+    {'1': 'document_type', '3': 2, '4': 1, '5': 14, '6': '.kyc.IDType', '10': 'documentType'},
     {'1': 'document_url', '3': 3, '4': 1, '5': 9, '10': 'documentUrl'},
-    {
-      '1': 'status',
-      '3': 4,
-      '4': 1,
-      '5': 14,
-      '6': '.kyc.DocumentStatus',
-      '10': 'status'
-    },
-    {
-      '1': 'uploaded_at',
-      '3': 5,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'uploadedAt'
-    },
-    {
-      '1': 'verified_at',
-      '3': 6,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'verifiedAt'
-    },
+    {'1': 'status', '3': 4, '4': 1, '5': 14, '6': '.kyc.DocumentStatus', '10': 'status'},
+    {'1': 'uploaded_at', '3': 5, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'uploadedAt'},
+    {'1': 'verified_at', '3': 6, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'verifiedAt'},
     {'1': 'rejection_reason', '3': 7, '4': 1, '5': 9, '10': 'rejectionReason'},
   ],
 };
@@ -591,23 +380,15 @@ const GetUserDocumentsRequest$json = {
 };
 
 /// Descriptor for `GetUserDocumentsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getUserDocumentsRequestDescriptor =
-    $convert.base64Decode(
-        'ChdHZXRVc2VyRG9jdW1lbnRzUmVxdWVzdBIXCgd1c2VyX2lkGAEgASgJUgZ1c2VySWQ=');
+final $typed_data.Uint8List getUserDocumentsRequestDescriptor = $convert.base64Decode(
+    'ChdHZXRVc2VyRG9jdW1lbnRzUmVxdWVzdBIXCgd1c2VyX2lkGAEgASgJUgZ1c2VySWQ=');
 
 @$core.Deprecated('Use getUserDocumentsResponseDescriptor instead')
 const GetUserDocumentsResponse$json = {
   '1': 'GetUserDocumentsResponse',
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
-    {
-      '1': 'documents',
-      '3': 2,
-      '4': 3,
-      '5': 11,
-      '6': '.kyc.VerificationDocument',
-      '10': 'documents'
-    },
+    {'1': 'documents', '3': 2, '4': 3, '5': 11, '6': '.kyc.VerificationDocument', '10': 'documents'},
   ],
 };
 
@@ -621,23 +402,9 @@ const CreateVerificationSessionRequest$json = {
   '1': 'CreateVerificationSessionRequest',
   '2': [
     {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
-    {
-      '1': 'target_tier',
-      '3': 2,
-      '4': 1,
-      '5': 14,
-      '6': '.kyc.KYCTier',
-      '10': 'targetTier'
-    },
+    {'1': 'target_tier', '3': 2, '4': 1, '5': 14, '6': '.kyc.KYCTier', '10': 'targetTier'},
     {'1': 'country_code', '3': 3, '4': 1, '5': 9, '10': 'countryCode'},
-    {
-      '1': 'id_type',
-      '3': 4,
-      '4': 1,
-      '5': 14,
-      '6': '.kyc.IDType',
-      '10': 'idType'
-    },
+    {'1': 'id_type', '3': 4, '4': 1, '5': 14, '6': '.kyc.IDType', '10': 'idType'},
     {'1': 'id_number', '3': 5, '4': 1, '5': 9, '10': 'idNumber'},
     {'1': 'first_name', '3': 6, '4': 1, '5': 9, '10': 'firstName'},
     {'1': 'last_name', '3': 7, '4': 1, '5': 9, '10': 'lastName'},
@@ -665,14 +432,7 @@ const CreateVerificationSessionResponse$json = {
     {'1': 'session_url', '3': 3, '4': 1, '5': 9, '10': 'sessionUrl'},
     {'1': 'session_token', '3': 4, '4': 1, '5': 9, '10': 'sessionToken'},
     {'1': 'provider', '3': 5, '4': 1, '5': 9, '10': 'provider'},
-    {
-      '1': 'status',
-      '3': 6,
-      '4': 1,
-      '5': 14,
-      '6': '.kyc.KYCStatus',
-      '10': 'status'
-    },
+    {'1': 'status', '3': 6, '4': 1, '5': 14, '6': '.kyc.KYCStatus', '10': 'status'},
     {'1': 'error_message', '3': 7, '4': 1, '5': 9, '10': 'errorMessage'},
   ],
 };
@@ -692,21 +452,8 @@ const ConfirmVerificationRequest$json = {
   '2': [
     {'1': 'verification_id', '3': 1, '4': 1, '5': 9, '10': 'verificationId'},
     {'1': 'provider', '3': 2, '4': 1, '5': 9, '10': 'provider'},
-    {
-      '1': 'provider_auth_code',
-      '3': 3,
-      '4': 1,
-      '5': 9,
-      '10': 'providerAuthCode'
-    },
-    {
-      '1': 'metadata',
-      '3': 4,
-      '4': 3,
-      '5': 11,
-      '6': '.kyc.ConfirmVerificationRequest.MetadataEntry',
-      '10': 'metadata'
-    },
+    {'1': 'provider_auth_code', '3': 3, '4': 1, '5': 9, '10': 'providerAuthCode'},
+    {'1': 'metadata', '3': 4, '4': 3, '5': 11, '6': '.kyc.ConfirmVerificationRequest.MetadataEntry', '10': 'metadata'},
   ],
   '3': [ConfirmVerificationRequest_MetadataEntry$json],
 };
@@ -735,22 +482,8 @@ const ConfirmVerificationResponse$json = {
   '1': 'ConfirmVerificationResponse',
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
-    {
-      '1': 'status',
-      '3': 2,
-      '4': 1,
-      '5': 14,
-      '6': '.kyc.KYCStatus',
-      '10': 'status'
-    },
-    {
-      '1': 'current_tier',
-      '3': 3,
-      '4': 1,
-      '5': 14,
-      '6': '.kyc.KYCTier',
-      '10': 'currentTier'
-    },
+    {'1': 'status', '3': 2, '4': 1, '5': 14, '6': '.kyc.KYCStatus', '10': 'status'},
+    {'1': 'current_tier', '3': 3, '4': 1, '5': 14, '6': '.kyc.KYCTier', '10': 'currentTier'},
     {'1': 'message', '3': 4, '4': 1, '5': 9, '10': 'message'},
   ],
 };
@@ -772,10 +505,9 @@ const GetDocumentUploadURLRequest$json = {
 };
 
 /// Descriptor for `GetDocumentUploadURLRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getDocumentUploadURLRequestDescriptor =
-    $convert.base64Decode(
-        'ChtHZXREb2N1bWVudFVwbG9hZFVSTFJlcXVlc3QSIwoNZG9jdW1lbnRfdHlwZRgBIAEoCVIMZG'
-        '9jdW1lbnRUeXBlEiEKDGNvbnRlbnRfdHlwZRgCIAEoCVILY29udGVudFR5cGU=');
+final $typed_data.Uint8List getDocumentUploadURLRequestDescriptor = $convert.base64Decode(
+    'ChtHZXREb2N1bWVudFVwbG9hZFVSTFJlcXVlc3QSIwoNZG9jdW1lbnRfdHlwZRgBIAEoCVIMZG'
+    '9jdW1lbnRUeXBlEiEKDGNvbnRlbnRfdHlwZRgCIAEoCVILY29udGVudFR5cGU=');
 
 @$core.Deprecated('Use getDocumentUploadURLResponseDescriptor instead')
 const GetDocumentUploadURLResponse$json = {
@@ -789,34 +521,25 @@ const GetDocumentUploadURLResponse$json = {
 };
 
 /// Descriptor for `GetDocumentUploadURLResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getDocumentUploadURLResponseDescriptor =
-    $convert.base64Decode(
-        'ChxHZXREb2N1bWVudFVwbG9hZFVSTFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3'
-        'MSHQoKdXBsb2FkX3VybBgCIAEoCVIJdXBsb2FkVXJsEh8KC3N0b3JhZ2Vfa2V5GAMgASgJUgpz'
-        'dG9yYWdlS2V5Eh0KCmV4cGlyZXNfYXQYBCABKANSCWV4cGlyZXNBdA==');
+final $typed_data.Uint8List getDocumentUploadURLResponseDescriptor = $convert.base64Decode(
+    'ChxHZXREb2N1bWVudFVwbG9hZFVSTFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3'
+    'MSHQoKdXBsb2FkX3VybBgCIAEoCVIJdXBsb2FkVXJsEh8KC3N0b3JhZ2Vfa2V5GAMgASgJUgpz'
+    'dG9yYWdlS2V5Eh0KCmV4cGlyZXNfYXQYBCABKANSCWV4cGlyZXNBdA==');
 
 @$core.Deprecated('Use submitDocumentsForReviewRequestDescriptor instead')
 const SubmitDocumentsForReviewRequest$json = {
   '1': 'SubmitDocumentsForReviewRequest',
   '2': [
     {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
-    {
-      '1': 'documents',
-      '3': 2,
-      '4': 3,
-      '5': 11,
-      '6': '.kyc.DocumentSubmission',
-      '10': 'documents'
-    },
+    {'1': 'documents', '3': 2, '4': 3, '5': 11, '6': '.kyc.DocumentSubmission', '10': 'documents'},
   ],
 };
 
 /// Descriptor for `SubmitDocumentsForReviewRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List submitDocumentsForReviewRequestDescriptor =
-    $convert.base64Decode(
-        'Ch9TdWJtaXREb2N1bWVudHNGb3JSZXZpZXdSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZX'
-        'JJZBI1Cglkb2N1bWVudHMYAiADKAsyFy5reWMuRG9jdW1lbnRTdWJtaXNzaW9uUglkb2N1bWVu'
-        'dHM=');
+final $typed_data.Uint8List submitDocumentsForReviewRequestDescriptor = $convert.base64Decode(
+    'Ch9TdWJtaXREb2N1bWVudHNGb3JSZXZpZXdSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZX'
+    'JJZBI1Cglkb2N1bWVudHMYAiADKAsyFy5reWMuRG9jdW1lbnRTdWJtaXNzaW9uUglkb2N1bWVu'
+    'dHM=');
 
 @$core.Deprecated('Use documentSubmissionDescriptor instead')
 const DocumentSubmission$json = {
@@ -840,23 +563,15 @@ const SubmitDocumentsForReviewResponse$json = {
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {
-      '1': 'status',
-      '3': 3,
-      '4': 1,
-      '5': 14,
-      '6': '.kyc.KYCStatus',
-      '10': 'status'
-    },
+    {'1': 'status', '3': 3, '4': 1, '5': 14, '6': '.kyc.KYCStatus', '10': 'status'},
   ],
 };
 
 /// Descriptor for `SubmitDocumentsForReviewResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List submitDocumentsForReviewResponseDescriptor =
-    $convert.base64Decode(
-        'CiBTdWJtaXREb2N1bWVudHNGb3JSZXZpZXdSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdW'
-        'NjZXNzEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USJgoGc3RhdHVzGAMgASgOMg4ua3ljLktZ'
-        'Q1N0YXR1c1IGc3RhdHVz');
+final $typed_data.Uint8List submitDocumentsForReviewResponseDescriptor = $convert.base64Decode(
+    'CiBTdWJtaXREb2N1bWVudHNGb3JSZXZpZXdSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdW'
+    'NjZXNzEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USJgoGc3RhdHVzGAMgASgOMg4ua3ljLktZ'
+    'Q1N0YXR1c1IGc3RhdHVz');
 
 @$core.Deprecated('Use getPendingReviewsRequestDescriptor instead')
 const GetPendingReviewsRequest$json = {
@@ -868,24 +583,16 @@ const GetPendingReviewsRequest$json = {
 };
 
 /// Descriptor for `GetPendingReviewsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getPendingReviewsRequestDescriptor =
-    $convert.base64Decode(
-        'ChhHZXRQZW5kaW5nUmV2aWV3c1JlcXVlc3QSEgoEcGFnZRgBIAEoBVIEcGFnZRIUCgVsaW1pdB'
-        'gCIAEoBVIFbGltaXQ=');
+final $typed_data.Uint8List getPendingReviewsRequestDescriptor = $convert.base64Decode(
+    'ChhHZXRQZW5kaW5nUmV2aWV3c1JlcXVlc3QSEgoEcGFnZRgBIAEoBVIEcGFnZRIUCgVsaW1pdB'
+    'gCIAEoBVIFbGltaXQ=');
 
 @$core.Deprecated('Use getPendingReviewsResponseDescriptor instead')
 const GetPendingReviewsResponse$json = {
   '1': 'GetPendingReviewsResponse',
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
-    {
-      '1': 'items',
-      '3': 2,
-      '4': 3,
-      '5': 11,
-      '6': '.kyc.PendingReviewItem',
-      '10': 'items'
-    },
+    {'1': 'items', '3': 2, '4': 3, '5': 11, '6': '.kyc.PendingReviewItem', '10': 'items'},
     {'1': 'total', '3': 3, '4': 1, '5': 5, '10': 'total'},
   ],
 };
@@ -903,38 +610,10 @@ const PendingReviewItem$json = {
     {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
     {'1': 'user_name', '3': 2, '4': 1, '5': 9, '10': 'userName'},
     {'1': 'country_code', '3': 3, '4': 1, '5': 9, '10': 'countryCode'},
-    {
-      '1': 'current_tier',
-      '3': 4,
-      '4': 1,
-      '5': 14,
-      '6': '.kyc.KYCTier',
-      '10': 'currentTier'
-    },
-    {
-      '1': 'target_tier',
-      '3': 5,
-      '4': 1,
-      '5': 14,
-      '6': '.kyc.KYCTier',
-      '10': 'targetTier'
-    },
-    {
-      '1': 'documents',
-      '3': 6,
-      '4': 3,
-      '5': 11,
-      '6': '.kyc.VerificationDocument',
-      '10': 'documents'
-    },
-    {
-      '1': 'submitted_at',
-      '3': 7,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'submittedAt'
-    },
+    {'1': 'current_tier', '3': 4, '4': 1, '5': 14, '6': '.kyc.KYCTier', '10': 'currentTier'},
+    {'1': 'target_tier', '3': 5, '4': 1, '5': 14, '6': '.kyc.KYCTier', '10': 'targetTier'},
+    {'1': 'documents', '3': 6, '4': 3, '5': 11, '6': '.kyc.VerificationDocument', '10': 'documents'},
+    {'1': 'submitted_at', '3': 7, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'submittedAt'},
   ],
 };
 
@@ -974,7 +653,7 @@ const ReviewDocumentResponse$json = {
 };
 
 /// Descriptor for `ReviewDocumentResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List reviewDocumentResponseDescriptor =
-    $convert.base64Decode(
-        'ChZSZXZpZXdEb2N1bWVudFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGAoHbW'
-        'Vzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
+final $typed_data.Uint8List reviewDocumentResponseDescriptor = $convert.base64Decode(
+    'ChZSZXZpZXdEb2N1bWVudFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGAoHbW'
+    'Vzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
+

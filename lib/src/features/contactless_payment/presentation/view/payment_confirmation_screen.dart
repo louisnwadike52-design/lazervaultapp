@@ -169,15 +169,22 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
 
     final transactionId = 'NFC-${_uuid.v4().substring(0, 8)}';
 
-    final pinResult = await validatePinOnly(
+    String? verificationToken;
+
+    final success = await validateTransactionPin(
       context: context,
       transactionId: transactionId,
       transactionType: 'contactless_payment',
       amount: widget.session.amount,
       currency: widget.session.currency,
+      title: 'Confirm Payment',
+      message: 'Confirm contactless payment of ${widget.session.formattedAmount}',
+      onPinValidated: (token) async {
+        verificationToken = token;
+      },
     );
 
-    if (pinResult == null || !pinResult.success) return;
+    if (!success || verificationToken == null) return;
 
     if (!mounted) return;
     setState(() => _isProcessing = true);
@@ -186,7 +193,7 @@ class _PaymentConfirmationViewState extends State<_PaymentConfirmationView>
           sessionId: widget.session.id,
           sourceAccountId: _selectedAccountId!,
           transactionId: transactionId,
-          verificationToken: pinResult.verificationToken ?? '',
+          verificationToken: verificationToken!,
         );
   }
 

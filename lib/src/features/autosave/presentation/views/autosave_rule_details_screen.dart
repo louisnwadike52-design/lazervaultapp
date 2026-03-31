@@ -190,22 +190,29 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
     final idPrefix = rule.id.length >= 8 ? rule.id.substring(0, 8) : rule.id;
     final transactionId = 'AUTOSAVE-$idPrefix';
 
-    final pinResult = await validatePinOnly(
+    String? verificationToken;
+
+    final success = await validateTransactionPin(
       context: context,
       transactionId: transactionId,
       transactionType: 'autosave_trigger',
       amount: rule.amountValue,
       currency: rule.currency,
+      title: 'Confirm Manual Save',
+      message: 'Confirm manual auto-save trigger',
+      onPinValidated: (token) async {
+        verificationToken = token;
+      },
     );
 
-    if (pinResult == null || !pinResult.success) return;
+    if (!success || verificationToken == null) return;
 
     setState(() => _isTriggeringRule = true);
 
     if (!mounted) return;
     context.read<AutoSaveCubit>().triggerSave(
       ruleId: rule.id,
-      transactionPinToken: pinResult.verificationToken ?? '',
+      transactionPinToken: verificationToken!,
     );
   }
 

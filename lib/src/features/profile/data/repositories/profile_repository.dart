@@ -263,6 +263,8 @@ class ProfileRepositoryImpl implements IProfileRepository {
                 phoneNumber: user.phoneNumber,
                 profilePicture: user.profilePicture,
                 primaryAccountId: user.hasPrimaryAccountId() ? user.primaryAccountId : null,
+                emailMatchesSearchQuery: user.emailMatchesSearchQuery,
+                phoneMatchesSearchQueryExact: user.phoneMatchesSearchQueryExact,
               ))
           .toList();
     } on GrpcError catch (e) {

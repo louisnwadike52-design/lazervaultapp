@@ -270,6 +270,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
         joinedAt: DateTime.now(),
         status: GroupMemberStatus.active,
         userUsername: user.userUsername.isNotEmpty ? user.userUsername : null,
+        emailMatchesSearchQuery: user.emailMatchesSearchQuery,
+        phoneMatchesSearchQueryExact: user.phoneMatchesSearchQueryExact,
       )).toList();
     } on GrpcError catch (e) {
       throw Exception(friendlyGrpcError(e, 'Failed to search users'));

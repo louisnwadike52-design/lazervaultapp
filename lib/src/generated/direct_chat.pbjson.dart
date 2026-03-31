@@ -1,14 +1,13 @@
-// This is a generated file - do not edit.
 //
-// Generated from direct_chat.proto.
-
-// @dart = 3.3
+//  Generated code. Do not modify.
+//  source: direct_chat.proto
+//
+// @dart = 2.12
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: curly_braces_in_flow_control_structures
-// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
-// ignore_for_file: non_constant_identifier_names, unused_import
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -26,21 +25,8 @@ const SendDirectMessageRequest$json = {
     {'1': 'account_id', '3': 6, '4': 1, '5': 9, '10': 'accountId'},
     {'1': 'user_country', '3': 7, '4': 1, '5': 9, '10': 'userCountry'},
     {'1': 'currency', '3': 8, '4': 1, '5': 9, '10': 'currency'},
-    {
-      '1': 'entities',
-      '3': 9,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Struct',
-      '10': 'entities'
-    },
-    {
-      '1': 'response_style_instruction',
-      '3': 10,
-      '4': 1,
-      '5': 9,
-      '10': 'responseStyleInstruction'
-    },
+    {'1': 'entities', '3': 9, '4': 1, '5': 11, '6': '.google.protobuf.Struct', '10': 'entities'},
+    {'1': 'response_style_instruction', '3': 10, '4': 1, '5': 9, '10': 'responseStyleInstruction'},
   ],
 };
 
@@ -62,21 +48,8 @@ const SendDirectMessageResponse$json = {
     {'1': 'response', '3': 2, '4': 1, '5': 9, '10': 'response'},
     {'1': 'service_routed_to', '3': 3, '4': 1, '5': 9, '10': 'serviceRoutedTo'},
     {'1': 'session_id', '3': 4, '4': 1, '5': 9, '10': 'sessionId'},
-    {
-      '1': 'entities',
-      '3': 5,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Struct',
-      '10': 'entities'
-    },
-    {
-      '1': 'conversation_state',
-      '3': 6,
-      '4': 1,
-      '5': 9,
-      '10': 'conversationState'
-    },
+    {'1': 'entities', '3': 5, '4': 1, '5': 11, '6': '.google.protobuf.Struct', '10': 'entities'},
+    {'1': 'conversation_state', '3': 6, '4': 1, '5': 9, '10': 'conversationState'},
   ],
 };
 
@@ -116,14 +89,7 @@ const DirectChatHistoryMessage$json = {
     {'1': 'service', '3': 3, '4': 1, '5': 9, '10': 'service'},
     {'1': 'source_context', '3': 4, '4': 1, '5': 9, '10': 'sourceContext'},
     {'1': 'created_at', '3': 5, '4': 1, '5': 9, '10': 'createdAt'},
-    {
-      '1': 'entities',
-      '3': 6,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Struct',
-      '10': 'entities'
-    },
+    {'1': 'entities', '3': 6, '4': 1, '5': 11, '6': '.google.protobuf.Struct', '10': 'entities'},
   ],
 };
 
@@ -138,22 +104,15 @@ final $typed_data.Uint8List directChatHistoryMessageDescriptor = $convert.base64
 const GetDirectChatHistoryResponse$json = {
   '1': 'GetDirectChatHistoryResponse',
   '2': [
-    {
-      '1': 'messages',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.directchat.DirectChatHistoryMessage',
-      '10': 'messages'
-    },
+    {'1': 'messages', '3': 1, '4': 3, '5': 11, '6': '.pb.DirectChatHistoryMessage', '10': 'messages'},
     {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
     {'1': 'session_id', '3': 3, '4': 1, '5': 9, '10': 'sessionId'},
   ],
 };
 
 /// Descriptor for `GetDirectChatHistoryResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getDirectChatHistoryResponseDescriptor =
-    $convert.base64Decode(
-        'ChxHZXREaXJlY3RDaGF0SGlzdG9yeVJlc3BvbnNlEkAKCG1lc3NhZ2VzGAEgAygLMiQuZGlyZW'
-        'N0Y2hhdC5EaXJlY3RDaGF0SGlzdG9yeU1lc3NhZ2VSCG1lc3NhZ2VzEhQKBXRvdGFsGAIgASgF'
-        'UgV0b3RhbBIdCgpzZXNzaW9uX2lkGAMgASgJUglzZXNzaW9uSWQ=');
+final $typed_data.Uint8List getDirectChatHistoryResponseDescriptor = $convert.base64Decode(
+    'ChxHZXREaXJlY3RDaGF0SGlzdG9yeVJlc3BvbnNlEjgKCG1lc3NhZ2VzGAEgAygLMhwucGIuRG'
+    'lyZWN0Q2hhdEhpc3RvcnlNZXNzYWdlUghtZXNzYWdlcxIUCgV0b3RhbBgCIAEoBVIFdG90YWwS'
+    'HQoKc2Vzc2lvbl9pZBgDIAEoCVIJc2Vzc2lvbklk');
+

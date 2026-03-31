@@ -121,6 +121,52 @@ class AirtimeRepositoryImpl implements AirtimeRepository {
   }
 
   @override
+  Future<AirtimeTransaction> transferAirtime({
+    required String countryCode,
+    required String recipientPhone,
+    required String recipientName,
+    required String senderPhone,
+    required String network,
+    required double amount,
+    required String currency,
+    String? transactionId,
+    String? verificationToken,
+    String? operatorId,
+    String? transferNote,
+  }) async {
+    if (remoteDataSource != null &&
+        verificationToken != null &&
+        verificationToken.isNotEmpty) {
+      final txnId =
+          transactionId ?? 'ATX${DateTime.now().millisecondsSinceEpoch}';
+      final idempotencyKey =
+          '${txnId}_${recipientPhone}_${amount.toStringAsFixed(2)}_transfer';
+
+      final transaction = await remoteDataSource!.transferAirtime(
+        senderPhone: senderPhone,
+        recipientPhone: recipientPhone,
+        recipientName: recipientName,
+        network: network,
+        amount: amount,
+        transactionId: txnId,
+        verificationToken: verificationToken,
+        idempotencyKey: idempotencyKey,
+        countryCode: countryCode,
+        operatorId: operatorId,
+        transferNote: transferNote,
+        currency: currency,
+      );
+
+      return transaction;
+    }
+
+    if (remoteDataSource == null) {
+      throw Exception('Remote data source not available. Please check your connection.');
+    }
+    throw Exception('Verification token is required for transfer processing');
+  }
+
+  @override
   Future<List<AirtimeTransaction>> getTransactionHistory(String userId) async {
     // Try remote first
     if (remoteDataSource != null) {

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:grpc/grpc.dart';
+import 'package:lazervault/core/utils/user_search_query.dart';
 import '../../../../../core/cache/swr_cache_manager.dart';
 import '../../../../../core/offline/mutation_queue.dart';
 import '../../domain/usecases/group_account_usecases.dart';
@@ -727,9 +728,9 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
 
       if (isClosed) return;
 
-      // Find exact email match
+      // Authoritative exact match: API returns masked email; use server flag only.
       final exactMatch = users.cast<GroupMember?>().firstWhere(
-            (u) => u?.email.toLowerCase() == email.toLowerCase(),
+            (u) => u?.emailMatchesSearchQuery == true,
             orElse: () => null,
           );
 
@@ -742,7 +743,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
         ));
       } else {
         emit(UserSearchNotFound(
-          searchQuery: email,
+          searchQuery: normalizeLazerVaultUserSearchQuery(email),
           searchType: UserSearchType.email,
         ));
       }
@@ -750,7 +751,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       if (isClosed) return;
       // If search fails, treat as not found (user can still invite)
       emit(UserSearchNotFound(
-        searchQuery: email,
+        searchQuery: normalizeLazerVaultUserSearchQuery(email),
         searchType: UserSearchType.email,
       ));
     }
@@ -821,9 +822,12 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
           // Only search valid phone lengths
           try {
             final users = await searchUsers(phone);
-            for (final user in users) {
-              // Match by partial phone number
-              results[phone] = user;
+            final exact = users.cast<GroupMember?>().firstWhere(
+                  (u) => u?.phoneMatchesSearchQueryExact == true,
+                  orElse: () => null,
+                );
+            if (exact != null) {
+              results[phone] = exact;
             }
           } catch (_) {
             // Continue with other phones if one fails

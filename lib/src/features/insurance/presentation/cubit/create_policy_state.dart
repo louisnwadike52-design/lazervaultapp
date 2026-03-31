@@ -297,15 +297,3 @@ class InsurancePurchaseSuccess extends CreatePolicyState {
   @override
   List<Object?> get props => [purchaseResult, product, quote];
 }
-
-/// State when insurance purchase has been queued for offline retry
-class InsurancePurchaseQueued extends CreatePolicyState {
-  final String message;
-
-  const InsurancePurchaseQueued({
-    this.message = 'Purchase queued. Will retry when online.',
-  });
-
-  @override
-  List<Object?> get props => [message];
-}

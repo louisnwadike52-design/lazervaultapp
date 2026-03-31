@@ -143,6 +143,8 @@ class GroupMemberModel extends GroupMember {
     super.phoneNumber,
     super.isPartial = false,
     super.userUsername,
+    super.emailMatchesSearchQuery = false,
+    super.phoneMatchesSearchQueryExact = false,
   });
 
   factory GroupMemberModel.fromJson(Map<String, dynamic> json) {
@@ -165,6 +167,9 @@ class GroupMemberModel extends GroupMember {
       phoneNumber: json['phoneNumber'] as String?,
       isPartial: json['isPartial'] as bool? ?? false,
       userUsername: json['userUsername'] as String?,
+      emailMatchesSearchQuery: json['emailMatchesSearchQuery'] as bool? ?? false,
+      phoneMatchesSearchQueryExact:
+          json['phoneMatchesSearchQueryExact'] as bool? ?? false,
     );
   }
 
@@ -182,6 +187,8 @@ class GroupMemberModel extends GroupMember {
       'phoneNumber': phoneNumber,
       'isPartial': isPartial,
       'userUsername': userUsername,
+      'emailMatchesSearchQuery': emailMatchesSearchQuery,
+      'phoneMatchesSearchQueryExact': phoneMatchesSearchQueryExact,
     };
   }
 
@@ -199,6 +206,8 @@ class GroupMemberModel extends GroupMember {
       phoneNumber: entity.phoneNumber,
       isPartial: entity.isPartial,
       userUsername: entity.userUsername,
+      emailMatchesSearchQuery: entity.emailMatchesSearchQuery,
+      phoneMatchesSearchQueryExact: entity.phoneMatchesSearchQueryExact,
     );
   }
 
@@ -216,6 +225,8 @@ class GroupMemberModel extends GroupMember {
     String? phoneNumber,
     bool? isPartial,
     String? userUsername,
+    bool? emailMatchesSearchQuery,
+    bool? phoneMatchesSearchQueryExact,
   }) {
     return GroupMemberModel(
       id: id ?? this.id,
@@ -230,6 +241,10 @@ class GroupMemberModel extends GroupMember {
       phoneNumber: phoneNumber ?? this.phoneNumber,
       isPartial: isPartial ?? this.isPartial,
       userUsername: userUsername ?? this.userUsername,
+      emailMatchesSearchQuery:
+          emailMatchesSearchQuery ?? this.emailMatchesSearchQuery,
+      phoneMatchesSearchQueryExact:
+          phoneMatchesSearchQueryExact ?? this.phoneMatchesSearchQueryExact,
     );
   }
 }

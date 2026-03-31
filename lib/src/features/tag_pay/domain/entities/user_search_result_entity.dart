@@ -10,6 +10,10 @@ class UserSearchResultEntity extends Equatable {
   final String profilePicture;
   final String searchType; // 'username', 'name', 'phone', 'email', or '' for unified
   final String? primaryAccountId; // Primary account ID for transfers (from auth service)
+  /// Auth SearchUsers: true when this row is an exact email match for the query (do not infer from [email], which is masked).
+  final bool emailMatchesSearchQuery;
+  /// Auth SearchUsers: true when digit-normalized phone equals the query digits.
+  final bool phoneMatchesSearchQueryExact;
 
   const UserSearchResultEntity({
     required this.userId,
@@ -21,6 +25,8 @@ class UserSearchResultEntity extends Equatable {
     required this.profilePicture,
     this.searchType = '', // Default to unified search
     this.primaryAccountId, // Optional primary account ID
+    this.emailMatchesSearchQuery = false,
+    this.phoneMatchesSearchQueryExact = false,
   });
 
   String get fullName => '$firstName $lastName';
@@ -91,5 +97,7 @@ class UserSearchResultEntity extends Equatable {
         phoneNumber,
         profilePicture,
         primaryAccountId,
+        emailMatchesSearchQuery,
+        phoneMatchesSearchQueryExact,
       ];
 }

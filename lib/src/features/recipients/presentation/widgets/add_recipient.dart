@@ -36,7 +36,7 @@ import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/core/config/country_config.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-enum AddRecipientMethod { bankDetails, username, contacts }
+enum AddRecipientMethod { bankDetails, lazervaultUser, contacts }
 
 class AddRecipient extends StatefulWidget {
   const AddRecipient({super.key});
@@ -269,10 +269,10 @@ class _AddRecipientState extends State<AddRecipient> {
                           SizedBox(width: 12.w),
                           Expanded(
                             child: _buildMethodCard(
-                              method: AddRecipientMethod.username,
-                              icon: Icons.alternate_email,
-                              title: '@Username',
-                              isSelected: _selectedMethod == AddRecipientMethod.username,
+                              method: AddRecipientMethod.lazervaultUser,
+                              icon: Icons.person_search_outlined,
+                              title: 'LazerVault user',
+                              isSelected: _selectedMethod == AddRecipientMethod.lazervaultUser,
                             ),
                           ),
                           SizedBox(width: 12.w),
@@ -383,7 +383,7 @@ class _AddRecipientState extends State<AddRecipient> {
     switch (_selectedMethod) {
       case AddRecipientMethod.bankDetails:
         return _buildBankDetailsForm();
-      case AddRecipientMethod.username:
+      case AddRecipientMethod.lazervaultUser:
         return _buildUsernameForm();
       case AddRecipientMethod.contacts:
         return _buildContactsForm();
@@ -638,37 +638,17 @@ class _AddRecipientState extends State<AddRecipient> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'LazerTag Username',
+          'LazerVault user',
           style: TextStyle(
             color: Colors.black87,
             fontSize: 18.sp,
             fontWeight: FontWeight.w600,
           ),
         ),
-        SizedBox(height: 8.h),
-        Text(
-          'Search and add recipients by their LazerVault username',
-          style: TextStyle(
-            color: Colors.grey[600],
-            fontSize: 14.sp,
-          ),
-        ),
         SizedBox(height: 24.h),
 
-        // Username Search Field - Tappable to open search bottom sheet
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Username',
-              style: TextStyle(
-                color: Colors.black87,
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            SizedBox(height: 8.h),
-            GestureDetector(
+        // Username search — opens bottom sheet
+        GestureDetector(
               onTap: _showUsernameSearchSheet,
               child: Container(
                 padding: EdgeInsets.all(16.w),
@@ -716,7 +696,7 @@ class _AddRecipientState extends State<AddRecipient> {
                               ],
                             )
                           : Text(
-                              'Tap to search for username',
+                              'Search by username, phone or email',
                               style: TextStyle(
                                 color: Colors.grey[500],
                                 fontSize: 16.sp,
@@ -747,8 +727,6 @@ class _AddRecipientState extends State<AddRecipient> {
                 ),
               ),
             ),
-          ],
-        ),
         SizedBox(height: 24.h),
 
         // Info Card
@@ -769,7 +747,7 @@ class _AddRecipientState extends State<AddRecipient> {
               SizedBox(width: 12.w),
               Expanded(
                 child: Text(
-                  'Search for LazerVault users by username. Selected users will be automatically verified.',
+                  'Internal transfers are verified automatically once you pick the right person.',
                   style: TextStyle(
                     color: Colors.blue[700],
                     fontSize: 12.sp,
@@ -1099,7 +1077,7 @@ class _AddRecipientState extends State<AddRecipient> {
           return 'Verify Recipient';
         }
         return 'Proceed to Payment';
-      case AddRecipientMethod.username:
+      case AddRecipientMethod.lazervaultUser:
         return 'Add Recipient';
       case AddRecipientMethod.contacts:
         return 'Browse Contacts';
@@ -1117,7 +1095,7 @@ class _AddRecipientState extends State<AddRecipient> {
           _proceedToPayment(_verificationResult!, false, _isFavorite, null);
         }
         break;
-      case AddRecipientMethod.username:
+      case AddRecipientMethod.lazervaultUser:
         _addUsernameRecipient();
         break;
       case AddRecipientMethod.contacts:

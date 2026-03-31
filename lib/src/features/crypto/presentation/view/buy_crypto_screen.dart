@@ -3,24 +3,30 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
+import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
+import '../../../transaction_pin/services/transaction_pin_service.dart';
 import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
 import '../../domain/entities/crypto_entity.dart';
-import 'crypto_confirmation_screen.dart';
+import '../models/crypto_transaction_models.dart';
+import 'crypto_processing_screen.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 
 class BuyCryptoScreen extends StatefulWidget {
   final Crypto? selectedCrypto;
+  final bool lockAsset;
 
-  const BuyCryptoScreen({super.key, this.selectedCrypto});
+  const BuyCryptoScreen({super.key, this.selectedCrypto, this.lockAsset = false});
 
   @override
   State<BuyCryptoScreen> createState() => _BuyCryptoScreenState();
 }
 
 class _BuyCryptoScreenState extends State<BuyCryptoScreen>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, TransactionPinMixin {
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
   
@@ -29,16 +35,13 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
   late Animation<Offset> _slideAnimation;
   
   Crypto? _selectedCrypto;
-  String _selectedPaymentMethod = 'Card';
+  String _selectedPaymentMethod = 'LazerVault Wallet';
   bool _isAmountInCrypto = false;
   bool _isLoading = false;
-  
-  final List<Map<String, dynamic>> _paymentMethods = [
-    {'name': 'Card', 'icon': Icons.credit_card, 'subtitle': 'Instant purchase'},
-    {'name': 'Bank Transfer', 'icon': Icons.account_balance, 'subtitle': '1-2 business days'},
-    {'name': 'Apple Pay', 'icon': Icons.apple, 'subtitle': 'Quick & secure'},
-    {'name': 'Google Pay', 'icon': Icons.account_balance_wallet, 'subtitle': 'One-tap payment'},
-  ];
+  bool _isTransacting = false;
+
+  @override
+  ITransactionPinService get transactionPinService => GetIt.I<ITransactionPinService>();
 
   @override
   void initState() {
@@ -260,7 +263,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
           ),
           SizedBox(height: 16.h),
           GestureDetector(
-            onTap: _showCryptoSearchBottomSheet,
+            onTap: widget.lockAsset ? null : _showCryptoSearchBottomSheet,
             child: Container(
               padding: EdgeInsets.all(16.w),
               decoration: BoxDecoration(
@@ -371,11 +374,12 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                       ),
                     ),
                   ],
-                  Icon(
-                    Icons.keyboard_arrow_down,
-                    color: const Color.fromARGB(255, 78, 3, 208),
-                    size: 20.sp,
-                  ),
+                  if (!widget.lockAsset)
+                    Icon(
+                      Icons.keyboard_arrow_down,
+                      color: const Color.fromARGB(255, 78, 3, 208),
+                      size: 20.sp,
+                    ),
                 ],
               ),
             ),
@@ -579,21 +583,8 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
         child: Container(
           padding: EdgeInsets.symmetric(vertical: 12.h),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
-                const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.05),
-              ],
-            ),
+            color: Colors.white.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(8.r),
-            boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
           ),
           child: Center(
             child: Text(
@@ -601,7 +592,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
               style: GoogleFonts.inter(
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w600,
-                color: const Color.fromARGB(255, 78, 3, 208),
+                color: Colors.white.withValues(alpha: 0.85),
               ),
             ),
           ),
@@ -720,7 +711,8 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20.r),        boxShadow: [
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
@@ -734,13 +726,13 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
           Row(
             children: [
               Icon(
-                Icons.payment,
+                Icons.account_balance_wallet,
                 color: const Color.fromARGB(255, 78, 3, 208),
                 size: 20.sp,
               ),
               SizedBox(width: 8.w),
               Text(
-                'Payment Method',
+                'Pay From',
                 style: GoogleFonts.inter(
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
@@ -750,93 +742,97 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
             ],
           ),
           SizedBox(height: 16.h),
-          ..._paymentMethods.map((method) => _buildPaymentMethodOption(method)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPaymentMethodOption(Map<String, dynamic> method) {
-    final isSelected = _selectedPaymentMethod == method['name'];
-    
-    return Container(
-      margin: EdgeInsets.only(bottom: 12.h),
-      child: GestureDetector(
-        onTap: () => setState(() => _selectedPaymentMethod = method['name']),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          padding: EdgeInsets.all(16.w),
-          decoration: BoxDecoration(
-            gradient: isSelected 
-              ? LinearGradient(
-                  colors: [
-                    const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
-                    const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
-                  ],
-                )
-              : null,
-            color: isSelected ? null : const Color(0xFF0A0A0A),
-            borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(
-              color: isSelected ? const Color.fromARGB(255, 78, 3, 208) : Colors.white.withValues(alpha: 0.1),
-              width: isSelected ? 2 : 1,
+          // LazerVault personal wallet — single payment source
+          Container(
+            padding: EdgeInsets.all(16.w),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
+                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(
+                color: const Color.fromARGB(255, 78, 3, 208),
+                width: 2,
+              ),
             ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: EdgeInsets.all(8.w),
-                decoration: BoxDecoration(
-                  color: isSelected 
-                    ? const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2)
-                    : Colors.white.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8.r),
+            child: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(10.w),
+                  decoration: BoxDecoration(
+                    color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                  child: Icon(
+                    Icons.account_balance_wallet,
+                    color: const Color.fromARGB(255, 78, 3, 208),
+                    size: 22.sp,
+                  ),
                 ),
-                child: Icon(
-                  method['icon'],
-                  color: isSelected ? const Color.fromARGB(255, 78, 3, 208) : Colors.white,
-                  size: 20.sp,
-                ),
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      method['name'],
-                      style: GoogleFonts.inter(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'LazerVault Wallet',
+                        style: GoogleFonts.inter(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
-                    Text(
-                      method['subtitle'],
-                      style: GoogleFonts.inter(
-                        fontSize: 12.sp,
-                        color: Colors.white.withValues(alpha: 0.6),
+                      Text(
+                        'Personal ${CurrencySymbols.currentCurrency} Balance',
+                        style: GoogleFonts.inter(
+                          fontSize: 12.sp,
+                          color: Colors.white.withValues(alpha: 0.6),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              if (isSelected)
                 Container(
                   padding: EdgeInsets.all(4.w),
                   decoration: BoxDecoration(
                     color: const Color.fromARGB(255, 78, 3, 208),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    Icons.check,
-                    color: Colors.white,
-                    size: 16.sp,
-                  ),
+                  child: Icon(Icons.check, color: Colors.white, size: 14.sp),
                 ),
-            ],
+              ],
+            ),
           ),
-        ),
+          // Insufficient funds warning
+          if (_fiatAmount > 0) ...[
+            SizedBox(height: 12.h),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+              decoration: BoxDecoration(
+                color: Colors.blue.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, color: Colors.blue, size: 16.sp),
+                  SizedBox(width: 8.w),
+                  Expanded(
+                    child: Text(
+                      'Funds will be deducted from your LazerVault wallet balance',
+                      style: GoogleFonts.inter(
+                        fontSize: 12.sp,
+                        color: Colors.blue.withValues(alpha: 0.8),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -886,29 +882,57 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
   }
 
   Widget _buildBuyButton() {
-    final isEnabled = _selectedCrypto != null && 
-                     _amountController.text.isNotEmpty && 
-                     (double.tryParse(_amountController.text) ?? 0.0) > 0;
+    final isEnabled = _selectedCrypto != null &&
+                     _amountController.text.isNotEmpty &&
+                     (double.tryParse(_amountController.text) ?? 0.0) > 0 &&
+                     !_isTransacting;
 
-    return SizedBox(
-      width: double.infinity,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        child: ElevatedButton(
-          onPressed: isEnabled ? _processBuyOrder : null,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.transparent,
-            padding: EdgeInsets.zero,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16.r),
+    // Build validation error message
+    String? validationError;
+    if (_selectedCrypto == null) {
+      validationError = 'Please select a cryptocurrency';
+    } else if (_amountController.text.isEmpty) {
+      validationError = 'Please enter an amount';
+    } else if ((double.tryParse(_amountController.text) ?? 0.0) <= 0) {
+      validationError = 'Please enter a valid amount';
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Show validation error if any
+        if (validationError != null && !isEnabled)
+          Padding(
+            padding: EdgeInsets.only(bottom: 12.h),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.info_outline,
+                  color: Colors.orange,
+                  size: 16.sp,
+                ),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: Text(
+                    validationError,
+                    style: GoogleFonts.inter(
+                      fontSize: 12.sp,
+                      color: Colors.orange,
+                    ),
+                  ),
+                ),
+              ],
             ),
-            elevation: 0,
           ),
-          child: Container(
+        // Buy button
+        GestureDetector(
+          onTap: isEnabled ? _processBuyOrder : _showDisabledButtonFeedback,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
             width: double.infinity,
             padding: EdgeInsets.symmetric(vertical: 18.h),
             decoration: BoxDecoration(
-              gradient: isEnabled 
+              gradient: isEnabled
                 ? LinearGradient(
                     colors: [
                       const Color.fromARGB(255, 78, 3, 208),
@@ -932,7 +956,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                 ),
               ] : null,
             ),
-            child: _isLoading
+            child: _isTransacting
               ? Center(
                   child: SizedBox(
                     height: 20.h,
@@ -948,7 +972,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                   children: [
                     Icon(
                       Icons.add_circle_outline,
-                      color: Colors.white,
+                      color: isEnabled ? Colors.white : Colors.grey,
                       size: 20.sp,
                     ),
                     SizedBox(width: 8.w),
@@ -957,15 +981,48 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                       style: GoogleFonts.inter(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                        color: isEnabled ? Colors.white : Colors.grey,
                       ),
                     ),
                   ],
                 ),
           ),
         ),
-      ),
+      ],
     );
+  }
+
+  void _showDisabledButtonFeedback() {
+    // Haptic feedback
+    // Show brief message indicating what's needed
+    if (_selectedCrypto == null) {
+      Get.snackbar(
+        'Select Crypto',
+        'Please select a cryptocurrency to buy',
+        backgroundColor: Colors.orange.withValues(alpha: 0.9),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 2),
+      );
+    } else if (_amountController.text.isEmpty || (double.tryParse(_amountController.text) ?? 0.0) <= 0) {
+      Get.snackbar(
+        'Enter Amount',
+        'Please enter a valid amount to purchase',
+        backgroundColor: Colors.orange.withValues(alpha: 0.9),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 2),
+      );
+    } else if (_isTransacting) {
+      Get.snackbar(
+        'Processing',
+        'Transaction in progress, please wait...',
+        backgroundColor: Colors.blue.withValues(alpha: 0.9),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 2),
+      );
+    }
   }
 
   void _showCryptoSearchBottomSheet() {
@@ -1053,13 +1110,49 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                     if (state is CryptoLoading) {
                       return const Center(child: CircularProgressIndicator());
                     } else if (state is CryptosLoaded) {
-                      final cryptos = _searchController.text.isEmpty 
-                        ? state.cryptos.take(20).toList()
-                        : state.cryptos.where((crypto) => 
-                            crypto.name.toLowerCase().contains(_searchController.text.toLowerCase()) ||
-                            crypto.symbol.toLowerCase().contains(_searchController.text.toLowerCase())
+                      // Only show Quidax-supported assets for buy
+                      final supported = state.supportedAssets;
+                      if (supported.isEmpty) {
+                        return Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(32.w),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.info_outline, color: Colors.grey[600], size: 48.sp),
+                                SizedBox(height: 12.h),
+                                Text(
+                                  'No supported assets available',
+                                  style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 16.sp),
+                                ),
+                                SizedBox(height: 4.h),
+                                Text(
+                                  'Quidax-supported trading pairs could not be loaded. Please try again.',
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.inter(color: Colors.grey[600], fontSize: 13.sp),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+                      final query = _searchController.text.toLowerCase();
+                      final cryptos = query.isEmpty
+                        ? supported
+                        : supported.where((c) =>
+                            c.name.toLowerCase().contains(query) ||
+                            c.symbol.toLowerCase().contains(query)
                           ).toList();
-                          
+
+                      if (cryptos.isEmpty) {
+                        return Center(
+                          child: Text(
+                            'No matching assets found',
+                            style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 14.sp),
+                          ),
+                        );
+                      }
+
                       return ListView.builder(
                         padding: EdgeInsets.symmetric(horizontal: 24.w),
                         itemCount: cryptos.length,
@@ -1087,132 +1180,198 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
   }
 
   Widget _buildCryptoSearchItem(Crypto crypto) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedCrypto = crypto;
-        });
-        _searchController.clear();
-        Get.back();
-      },
-      child: Container(
-        margin: EdgeInsets.only(bottom: 12.h),
-        padding: EdgeInsets.all(16.w),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 40.w,
-              height: 40.w,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.orange, Colors.orange.withValues(alpha: 0.7)],
-                ),
-                borderRadius: BorderRadius.circular(20.r),
-              ),
-              child: Icon(
-                Icons.currency_bitcoin,
-                color: Colors.white,
-                size: 20.sp,
-              ),
-            ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    crypto.name,
-                    style: GoogleFonts.inter(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                  Text(
-                    crypto.symbol.toUpperCase(),
-                    style: GoogleFonts.inter(
-                      fontSize: 12.sp,
-                      color: Colors.white.withValues(alpha: 0.6),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+    return Container(
+      margin: EdgeInsets.only(bottom: 12.h),
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: Column(
+        children: [
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _selectedCrypto = crypto;
+              });
+              _searchController.clear();
+              Get.back();
+            },
+            child: Row(
               children: [
-                Text(
-                  '${CurrencySymbols.currentSymbol}${crypto.currentPrice.toStringAsFixed(2)}',
-                  style: GoogleFonts.inter(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
+                Container(
+                  width: 40.w,
+                  height: 40.w,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.orange, Colors.orange.withValues(alpha: 0.7)],
+                    ),
+                    borderRadius: BorderRadius.circular(20.r),
+                  ),
+                  child: Icon(
+                    Icons.currency_bitcoin,
                     color: Colors.white,
+                    size: 20.sp,
                   ),
                 ),
-                Row(
-                  children: [
-                    Icon(
-                      crypto.priceChangePercentage24h >= 0
-                        ? Icons.arrow_upward
-                        : Icons.arrow_downward,
-                      color: crypto.priceChangePercentage24h >= 0
-                        ? Colors.green
-                        : Colors.red,
-                      size: 12.sp,
-                    ),
-                    Text(
-                      '${crypto.priceChangePercentage24h.abs().toStringAsFixed(2)}%',
-                      style: GoogleFonts.inter(
-                        fontSize: 12.sp,
-                        color: crypto.priceChangePercentage24h >= 0 
-                          ? Colors.green 
-                          : Colors.red,
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        crypto.name,
+                        style: GoogleFonts.inter(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
                       ),
+                      Text(
+                        crypto.symbol.toUpperCase(),
+                        style: GoogleFonts.inter(
+                          fontSize: 12.sp,
+                          color: Colors.white.withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '${CurrencySymbols.currentSymbol}${crypto.currentPrice.toStringAsFixed(2)}',
+                      style: GoogleFonts.inter(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        Icon(
+                          crypto.priceChangePercentage24h >= 0
+                            ? Icons.arrow_upward
+                            : Icons.arrow_downward,
+                          color: crypto.priceChangePercentage24h >= 0
+                            ? Colors.green
+                            : Colors.red,
+                          size: 12.sp,
+                        ),
+                        Text(
+                          '${crypto.priceChangePercentage24h.abs().toStringAsFixed(2)}%',
+                          style: GoogleFonts.inter(
+                            fontSize: 12.sp,
+                            color: crypto.priceChangePercentage24h >= 0
+                              ? Colors.green
+                              : Colors.red,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+          SizedBox(height: 10.h),
+          GestureDetector(
+            onTap: () {
+              Get.back(); // close bottom sheet
+              Get.toNamed(AppRoutes.cryptoDetails, arguments: crypto);
+            },
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(vertical: 8.h),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    color: Colors.white.withValues(alpha: 0.7),
+                    size: 16.sp,
+                  ),
+                  SizedBox(width: 6.w),
+                  Text(
+                    'View Details',
+                    style: GoogleFonts.inter(
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white.withValues(alpha: 0.7),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  void _processBuyOrder() {
-    if (_selectedCrypto == null || _isLoading) return;
+  void _processBuyOrder() async {
+    if (_selectedCrypto == null || _isLoading || _isTransacting) return;
     final fiat = _fiatAmount;
     if (fiat <= 0) return; // Guard against zero/negative amount
 
-    // Create transaction details
+    // Calculate fee
     final fee = fiat * 0.015; // 1.5% fee
+    final networkFee = fee * 0.3;
+    final tradingFee = fee * 0.7;
     final total = fiat + fee;
 
-    final transactionDetails = CryptoTransactionDetails(
-      type: CryptoTransactionType.buy,
-      cryptoName: _selectedCrypto!.name,
-      cryptoSymbol: _selectedCrypto!.symbol,
-      cryptoAmount: _cryptoAmount.toStringAsFixed(6),
-      pricePerUnit: _selectedCrypto!.currentPrice,
-      fiatAmount: _fiatAmount,
-      networkFee: fee * 0.3,
-      tradingFee: fee * 0.7,
+    final cryptoId = _selectedCrypto!.id;
+    final quantity = _cryptoAmount;
+    final price = _selectedCrypto!.currentPrice;
+
+    // Show PIN bottom sheet first
+    final success = await validateTransactionPin(
+      context: context,
+      transactionId: 'CRYPTO-BUY-${DateTime.now().millisecondsSinceEpoch}',
+      transactionType: 'buy',
+      amount: fiat,
+      currency: CurrencySymbols.currentCurrency,
+      title: 'Confirm Buy Order',
+      message: 'Confirm purchase of ${quantity.toStringAsFixed(6)} ${_selectedCrypto!.symbol.toUpperCase()}',
+      fee: fee,
       totalAmount: total,
-      paymentMethod: _selectedPaymentMethod,
-      cryptoId: _selectedCrypto!.id,
-      cryptoQuantity: _cryptoAmount,
+      showProcessingPhase: false, // We'll use our own processing screen
+      onPinValidated: (verificationToken) async {
+        // PIN validated - navigate to processing screen
+        if (!mounted) return;
+
+        setState(() => _isTransacting = true);
+
+        Get.to(() => BlocProvider.value(
+          value: context.read<CryptoCubit>(),
+          child: CryptoProcessingScreen(
+            transactionType: CryptoTransactionType.buy,
+            cryptoName: _selectedCrypto!.name,
+            cryptoSymbol: _selectedCrypto!.symbol,
+            cryptoAmount: quantity.toStringAsFixed(6),
+            fiatAmount: fiat,
+            price: price,
+            cryptoId: cryptoId,
+            cryptoQuantity: quantity,
+            transactionPin: verificationToken,
+            paymentMethod: _selectedPaymentMethod,
+          ),
+        ));
+
+        // Clear amount after initiating transaction (processing screen handles success/error)
+        _amountController.clear();
+        setState(() => _isTransacting = false);
+      },
     );
 
-    // Navigate to confirmation screen with CryptoCubit
-    final cryptoCubit = context.read<CryptoCubit>();
-    Get.to(() => BlocProvider.value(
-      value: cryptoCubit,
-      child: CryptoConfirmationScreen(transactionDetails: transactionDetails),
-    ));
+    if (!success && mounted) {
+      setState(() => _isTransacting = false);
+    }
   }
 } 

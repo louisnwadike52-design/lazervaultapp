@@ -1467,33 +1467,40 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
     required String recipientUserId,
     required String recipientName,
     required String recipientEmail,
-  }) {
+  }) async {
     final transactionId =
         'TRANSFER-${DateTime.now().millisecondsSinceEpoch}_${widget.giftCard.id}';
 
-    validateTransactionPin(
+    String? verificationToken;
+
+    final success = await validateTransactionPin(
       context: context,
       transactionId: transactionId,
       transactionType: 'gift_card_transfer',
       amount: widget.giftCard.originalAmount,
       currency: widget.giftCard.currency.isNotEmpty ? widget.giftCard.currency : 'NGN',
-      title: 'Transfer Gift Card',
-      message:
-          'Transfer ${widget.giftCard.brandName} (${widget.giftCard.currency} ${widget.giftCard.originalAmount.toStringAsFixed(2)}) to $recipientName',
-      onPinValidated: (verificationToken) async {
-        setState(() => _isTransferring = true);
-        context.read<GiftCardCubit>().transferGiftCard(
-              giftCardId: widget.giftCard.id,
-              recipientEmail: recipientEmail,
-              recipientName: recipientName,
-              message: _messageController.text.trim(),
-              transactionId: transactionId,
-              verificationToken: verificationToken,
-              recipientUserId: recipientUserId,
-              transferType: 'platform',
-            );
+      title: 'Confirm Transfer',
+      message: 'Confirm gift card transfer to $recipientName',
+      onPinValidated: (token) async {
+        verificationToken = token;
       },
     );
+
+    if (!success || verificationToken == null) return;
+    if (!mounted) return;
+
+    // Execute transfer AFTER modal is dismissed
+    setState(() => _isTransferring = true);
+    context.read<GiftCardCubit>().transferGiftCard(
+          giftCardId: widget.giftCard.id,
+          recipientEmail: recipientEmail,
+          recipientName: recipientName,
+          message: _messageController.text.trim(),
+          transactionId: transactionId,
+          verificationToken: verificationToken!,
+          recipientUserId: recipientUserId,
+          transferType: 'platform',
+        );
   }
 
   void _showEmailTransferSheet() {
@@ -1645,7 +1652,7 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
     );
   }
 
-  void _onTransferSubmit() {
+  void _onTransferSubmit() async {
     final email = _recipientEmailController.text.trim();
     final name = _recipientNameController.text.trim();
 
@@ -1677,23 +1684,30 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
     final transactionId =
         'TRANSFER-${DateTime.now().millisecondsSinceEpoch}_${widget.giftCard.id}';
 
-    validateTransactionPin(
+    String? verificationToken;
+
+    final success = await validateTransactionPin(
       context: context,
       transactionId: transactionId,
       transactionType: 'gift_card_transfer',
       amount: widget.giftCard.originalAmount,
       currency: widget.giftCard.currency.isNotEmpty ? widget.giftCard.currency : 'NGN',
-      title: 'Transfer Gift Card',
-      message:
-          'Transfer ${widget.giftCard.brandName} (${widget.giftCard.currency} ${widget.giftCard.originalAmount.toStringAsFixed(2)}) to $name',
-      onPinValidated: (verificationToken) async {
-        _executeTransfer(
-          transactionId: transactionId,
-          verificationToken: verificationToken,
-          email: email,
-          name: name,
-        );
+      title: 'Confirm Transfer',
+      message: 'Confirm gift card transfer to $name',
+      onPinValidated: (token) async {
+        verificationToken = token;
       },
+    );
+
+    if (!success || verificationToken == null) return;
+    if (!mounted) return;
+
+    // Execute transfer AFTER modal is dismissed
+    _executeTransfer(
+      transactionId: transactionId,
+      verificationToken: verificationToken!,
+      email: email,
+      name: name,
     );
   }
 

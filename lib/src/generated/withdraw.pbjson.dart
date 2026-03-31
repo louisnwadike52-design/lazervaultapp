@@ -1,14 +1,13 @@
-// This is a generated file - do not edit.
 //
-// Generated from withdraw.proto.
-
-// @dart = 3.3
+//  Generated code. Do not modify.
+//  source: withdraw.proto
+//
+// @dart = 2.12
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: curly_braces_in_flow_control_structures
-// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
-// ignore_for_file: non_constant_identifier_names, unused_import
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -42,46 +41,12 @@ const WithdrawalTransaction$json = {
     {'1': 'amount', '3': 3, '4': 1, '5': 4, '10': 'amount'},
     {'1': 'currency', '3': 6, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'target_bank_name', '3': 7, '4': 1, '5': 9, '10': 'targetBankName'},
-    {
-      '1': 'target_account_number',
-      '3': 8,
-      '4': 1,
-      '5': 9,
-      '10': 'targetAccountNumber'
-    },
+    {'1': 'target_account_number', '3': 8, '4': 1, '5': 9, '10': 'targetAccountNumber'},
     {'1': 'target_sort_code', '3': 9, '4': 1, '5': 9, '10': 'targetSortCode'},
-    {
-      '1': 'status',
-      '3': 10,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.WithdrawalStatus',
-      '10': 'status'
-    },
-    {
-      '1': 'created_at',
-      '3': 11,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'createdAt'
-    },
-    {
-      '1': 'completed_at',
-      '3': 12,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'completedAt'
-    },
-    {
-      '1': 'failed_at',
-      '3': 13,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'failedAt'
-    },
+    {'1': 'status', '3': 10, '4': 1, '5': 14, '6': '.pb.WithdrawalStatus', '10': 'status'},
+    {'1': 'created_at', '3': 11, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    {'1': 'completed_at', '3': 12, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'completedAt'},
+    {'1': 'failed_at', '3': 13, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'failedAt'},
     {'1': 'failure_reason', '3': 14, '4': 1, '5': 9, '10': 'failureReason'},
   ],
 };
@@ -108,13 +73,7 @@ const InitiateWithdrawalRequest$json = {
     {'1': 'amount', '3': 2, '4': 1, '5': 4, '10': 'amount'},
     {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'target_bank_name', '3': 4, '4': 1, '5': 9, '10': 'targetBankName'},
-    {
-      '1': 'target_account_number',
-      '3': 5,
-      '4': 1,
-      '5': 9,
-      '10': 'targetAccountNumber'
-    },
+    {'1': 'target_account_number', '3': 5, '4': 1, '5': 9, '10': 'targetAccountNumber'},
     {'1': 'target_sort_code', '3': 6, '4': 1, '5': 9, '10': 'targetSortCode'},
   ],
   '7': {},
@@ -135,24 +94,16 @@ const InitiateWithdrawalResponse$json = {
   '1': 'InitiateWithdrawalResponse',
   '2': [
     {'1': 'withdrawal_id', '3': 1, '4': 1, '5': 9, '10': 'withdrawal_id'},
-    {
-      '1': 'status',
-      '3': 2,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.WithdrawalStatus',
-      '10': 'status'
-    },
+    {'1': 'status', '3': 2, '4': 1, '5': 14, '6': '.pb.WithdrawalStatus', '10': 'status'},
     {'1': 'message', '3': 3, '4': 1, '5': 9, '10': 'message'},
   ],
 };
 
 /// Descriptor for `InitiateWithdrawalResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List initiateWithdrawalResponseDescriptor =
-    $convert.base64Decode(
-        'ChpJbml0aWF0ZVdpdGhkcmF3YWxSZXNwb25zZRIkCg13aXRoZHJhd2FsX2lkGAEgASgJUg13aX'
-        'RoZHJhd2FsX2lkEiwKBnN0YXR1cxgCIAEoDjIULnBiLldpdGhkcmF3YWxTdGF0dXNSBnN0YXR1'
-        'cxIYCgdtZXNzYWdlGAMgASgJUgdtZXNzYWdl');
+final $typed_data.Uint8List initiateWithdrawalResponseDescriptor = $convert.base64Decode(
+    'ChpJbml0aWF0ZVdpdGhkcmF3YWxSZXNwb25zZRIkCg13aXRoZHJhd2FsX2lkGAEgASgJUg13aX'
+    'RoZHJhd2FsX2lkEiwKBnN0YXR1cxgCIAEoDjIULnBiLldpdGhkcmF3YWxTdGF0dXNSBnN0YXR1'
+    'cxIYCgdtZXNzYWdlGAMgASgJUgdtZXNzYWdl');
 
 @$core.Deprecated('Use getWithdrawalDetailsRequestDescriptor instead')
 const GetWithdrawalDetailsRequest$json = {
@@ -163,82 +114,28 @@ const GetWithdrawalDetailsRequest$json = {
 };
 
 /// Descriptor for `GetWithdrawalDetailsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getWithdrawalDetailsRequestDescriptor =
-    $convert.base64Decode(
-        'ChtHZXRXaXRoZHJhd2FsRGV0YWlsc1JlcXVlc3QSJAoNd2l0aGRyYXdhbF9pZBgBIAEoCVINd2'
-        'l0aGRyYXdhbF9pZA==');
+final $typed_data.Uint8List getWithdrawalDetailsRequestDescriptor = $convert.base64Decode(
+    'ChtHZXRXaXRoZHJhd2FsRGV0YWlsc1JlcXVlc3QSJAoNd2l0aGRyYXdhbF9pZBgBIAEoCVINd2'
+    'l0aGRyYXdhbF9pZA==');
 
 @$core.Deprecated('Use getWithdrawalDetailsResponseDescriptor instead')
 const GetWithdrawalDetailsResponse$json = {
   '1': 'GetWithdrawalDetailsResponse',
   '2': [
     {'1': 'withdrawal_id', '3': 1, '4': 1, '5': 9, '10': 'withdrawal_id'},
-    {
-      '1': 'source_account_id',
-      '3': 2,
-      '4': 1,
-      '5': 4,
-      '10': 'source_account_id'
-    },
+    {'1': 'source_account_id', '3': 2, '4': 1, '5': 4, '10': 'source_account_id'},
     {'1': 'amount', '3': 3, '4': 1, '5': 4, '10': 'amount'},
     {'1': 'currency', '3': 4, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'target_bank_name', '3': 5, '4': 1, '5': 9, '10': 'target_bank_name'},
-    {
-      '1': 'target_account_number',
-      '3': 6,
-      '4': 1,
-      '5': 9,
-      '10': 'target_account_number'
-    },
+    {'1': 'target_account_number', '3': 6, '4': 1, '5': 9, '10': 'target_account_number'},
     {'1': 'target_sort_code', '3': 7, '4': 1, '5': 9, '10': 'target_sort_code'},
-    {
-      '1': 'status',
-      '3': 8,
-      '4': 1,
-      '5': 14,
-      '6': '.pb.WithdrawalStatus',
-      '10': 'status'
-    },
-    {
-      '1': 'created_at',
-      '3': 9,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'created_at'
-    },
-    {
-      '1': 'processing_at',
-      '3': 10,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'processing_at'
-    },
-    {
-      '1': 'completed_at',
-      '3': 11,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'completed_at'
-    },
-    {
-      '1': 'failed_at',
-      '3': 12,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'failed_at'
-    },
+    {'1': 'status', '3': 8, '4': 1, '5': 14, '6': '.pb.WithdrawalStatus', '10': 'status'},
+    {'1': 'created_at', '3': 9, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'created_at'},
+    {'1': 'processing_at', '3': 10, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'processing_at'},
+    {'1': 'completed_at', '3': 11, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'completed_at'},
+    {'1': 'failed_at', '3': 12, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'failed_at'},
     {'1': 'failure_reason', '3': 13, '4': 1, '5': 9, '10': 'failure_reason'},
-    {
-      '1': 'external_transaction_id',
-      '3': 14,
-      '4': 1,
-      '5': 9,
-      '10': 'external_transaction_id'
-    },
+    {'1': 'external_transaction_id', '3': 14, '4': 1, '5': 9, '10': 'external_transaction_id'},
   ],
 };
 
@@ -257,3 +154,4 @@ final $typed_data.Uint8List getWithdrawalDetailsResponseDescriptor = $convert.ba
     'YXQYDCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUglmYWlsZWRfYXQSJgoOZmFpbH'
     'VyZV9yZWFzb24YDSABKAlSDmZhaWx1cmVfcmVhc29uEjgKF2V4dGVybmFsX3RyYW5zYWN0aW9u'
     'X2lkGA4gASgJUhdleHRlcm5hbF90cmFuc2FjdGlvbl9pZA==');
+

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
+import 'package:lazervault/src/features/investments/presentation/theme/invest_trading_ui.dart';
 
 import '../../../domain/entities/stock_entity.dart';
 
@@ -14,6 +15,7 @@ class TradeQuantityScreen extends StatefulWidget {
   final int initialQuantity;
   final double? initialLimitPrice;
   final double? initialStopPrice;
+  final Color? accentColor;
   final Function(int, double?, double?) onChanged;
 
   const TradeQuantityScreen({
@@ -24,6 +26,7 @@ class TradeQuantityScreen extends StatefulWidget {
     required this.initialQuantity,
     this.initialLimitPrice,
     this.initialStopPrice,
+    this.accentColor,
     required this.onChanged,
   });
 
@@ -32,6 +35,11 @@ class TradeQuantityScreen extends StatefulWidget {
 }
 
 class _TradeQuantityScreenState extends State<TradeQuantityScreen> {
+  Color get _accent => widget.accentColor ?? InvestTradingUi.accent;
+
+  Color get _sideColor =>
+      widget.orderSide == OrderSide.buy ? InvestTradingUi.buy : InvestTradingUi.sell;
+
   late TextEditingController _quantityController;
   late TextEditingController _limitPriceController;
   late TextEditingController _stopPriceController;
@@ -104,17 +112,11 @@ class _TradeQuantityScreenState extends State<TradeQuantityScreen> {
           Container(
             padding: EdgeInsets.all(20.w),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  (widget.orderSide == OrderSide.buy ? Colors.green : Colors.red)
-                      .withValues(alpha: 0.2),
-                  (widget.orderSide == OrderSide.buy ? Colors.green : Colors.red)
-                      .withValues(alpha: 0.1),
-                ],
-              ),
+              color: InvestTradingUi.surfaceElevated,
               borderRadius: BorderRadius.circular(16.r),
+              border: Border.all(
+                color: _sideColor.withValues(alpha: 0.35),
+              ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -123,19 +125,17 @@ class _TradeQuantityScreenState extends State<TradeQuantityScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.orderSide == OrderSide.buy ? 'Buying' : 'Selling',
-                      style: GoogleFonts.inter(
-                        fontSize: 14.sp,
-                        color: Colors.grey[400],
-                      ),
+                      widget.orderSide == OrderSide.buy ? 'BUYING' : 'SELLING',
+                      style: InvestTradingUi.eyebrow(_sideColor),
                     ),
                     SizedBox(height: 4.h),
                     Text(
                       widget.stock.symbol,
                       style: GoogleFonts.inter(
                         fontSize: 24.sp,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                        color: InvestTradingUi.textPrimary,
+                        letterSpacing: -0.5,
                       ),
                     ),
                   ],
@@ -145,26 +145,24 @@ class _TradeQuantityScreenState extends State<TradeQuantityScreen> {
                   children: [
                     Text(
                       _getOrderTypeLabel(),
-                      style: GoogleFonts.inter(
-                        fontSize: 14.sp,
-                        color: Colors.grey[400],
-                      ),
+                      style: InvestTradingUi.labelMuted(),
                     ),
-                    SizedBox(height: 4.h),
+                    SizedBox(height: 8.h),
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                       decoration: BoxDecoration(
-                        color: widget.orderSide == OrderSide.buy
-                            ? Colors.green
-                            : Colors.red,
-                        borderRadius: BorderRadius.circular(8.r),
+                        color: _sideColor,
+                        borderRadius: BorderRadius.circular(10.r),
                       ),
                       child: Text(
                         widget.orderSide == OrderSide.buy ? 'BUY' : 'SELL',
                         style: GoogleFonts.inter(
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w800,
+                          color: widget.orderSide == OrderSide.buy
+                              ? Colors.black
+                              : Colors.white,
+                          letterSpacing: 0.6,
                         ),
                       ),
                     ),
@@ -178,11 +176,11 @@ class _TradeQuantityScreenState extends State<TradeQuantityScreen> {
 
           // Quantity input
           Text(
-            'Number of Shares',
+            'Number of shares',
             style: GoogleFonts.inter(
-              fontSize: 16.sp,
+              fontSize: 15.sp,
               fontWeight: FontWeight.w600,
-              color: Colors.white,
+              color: InvestTradingUi.textPrimary,
             ),
           ),
           SizedBox(height: 12.h),
@@ -209,20 +207,12 @@ class _TradeQuantityScreenState extends State<TradeQuantityScreen> {
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
                     fontSize: 24.sp,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    color: InvestTradingUi.textPrimary,
                   ),
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Colors.white.withValues(alpha: 0.05),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                      borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                      borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
-                    ),
+                  decoration: InvestTradingUi.tradingInputDecoration(
+                    accentColor: _accent,
+                  ).copyWith(
                     contentPadding: EdgeInsets.symmetric(vertical: 16.h),
                   ),
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -250,11 +240,11 @@ class _TradeQuantityScreenState extends State<TradeQuantityScreen> {
           if (widget.orderType == OrderType.limit ||
               widget.orderType == OrderType.stopLimit) ...[
             Text(
-              'Limit Price',
+              'Limit price',
               style: GoogleFonts.inter(
-                fontSize: 16.sp,
+                fontSize: 15.sp,
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: InvestTradingUi.textPrimary,
               ),
             ),
             SizedBox(height: 12.h),
@@ -263,22 +253,15 @@ class _TradeQuantityScreenState extends State<TradeQuantityScreen> {
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               style: GoogleFonts.inter(
                 fontSize: 18.sp,
-                color: Colors.white,
+                color: InvestTradingUi.textPrimary,
               ),
-              decoration: InputDecoration(
+              decoration: InvestTradingUi.tradingInputDecoration(
+                accentColor: _accent,
                 prefixText: '${CurrencySymbols.getSymbol(widget.stock.currency)} ',
                 hintText: widget.stock.currentPrice.toStringAsFixed(2),
-                filled: true,
-                fillColor: Colors.white.withValues(alpha: 0.05),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                  borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                  borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
-                ),
-                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+              ).copyWith(
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
               ),
               onChanged: _updateLimitPrice,
             ),
@@ -288,11 +271,11 @@ class _TradeQuantityScreenState extends State<TradeQuantityScreen> {
           if (widget.orderType == OrderType.stopLoss ||
               widget.orderType == OrderType.stopLimit) ...[
             Text(
-              'Stop Price',
+              'Stop price',
               style: GoogleFonts.inter(
-                fontSize: 16.sp,
+                fontSize: 15.sp,
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: InvestTradingUi.textPrimary,
               ),
             ),
             SizedBox(height: 12.h),
@@ -301,22 +284,15 @@ class _TradeQuantityScreenState extends State<TradeQuantityScreen> {
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               style: GoogleFonts.inter(
                 fontSize: 18.sp,
-                color: Colors.white,
+                color: InvestTradingUi.textPrimary,
               ),
-              decoration: InputDecoration(
+              decoration: InvestTradingUi.tradingInputDecoration(
+                accentColor: _accent,
                 prefixText: '${CurrencySymbols.getSymbol(widget.stock.currency)} ',
                 hintText: widget.stock.currentPrice.toStringAsFixed(2),
-                filled: true,
-                fillColor: Colors.white.withValues(alpha: 0.05),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                  borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                  borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
-                ),
-                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+              ).copyWith(
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
               ),
               onChanged: _updateStopPrice,
             ),
@@ -326,28 +302,22 @@ class _TradeQuantityScreenState extends State<TradeQuantityScreen> {
           // Estimated total
           Container(
             padding: EdgeInsets.all(20.w),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-            ),
+            decoration: InvestTradingUi.statementCardDecoration(),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Estimated Total',
-                  style: GoogleFonts.inter(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey[400],
-                  ),
+                  'Estimated total',
+                  style: InvestTradingUi.labelMuted().copyWith(fontSize: 14.sp),
                 ),
                 Text(
-                  CurrencySymbols.formatAmountWithCurrency(_estimatedTotal, widget.stock.currency),
+                  CurrencySymbols.formatAmountWithCurrency(
+                      _estimatedTotal, widget.stock.currency),
                   style: GoogleFonts.inter(
-                    fontSize: 24.sp,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
+                    fontSize: 22.sp,
+                    fontWeight: FontWeight.w800,
+                    color: InvestTradingUi.textPrimary,
+                    letterSpacing: -0.3,
                   ),
                 ),
               ],
@@ -360,28 +330,29 @@ class _TradeQuantityScreenState extends State<TradeQuantityScreen> {
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: Colors.blue.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+              color: _accent.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(14.r),
+              border: Border.all(color: _accent.withValues(alpha: 0.28)),
             ),
             child: Row(
               children: [
                 Icon(
-                  Icons.info_outline,
-                  color: Colors.blue,
-                  size: 20.sp,
+                  Icons.info_outline_rounded,
+                  color: _accent,
+                  size: 22.sp,
                 ),
                 SizedBox(width: 12.w),
                 Expanded(
                   child: Text(
                     widget.orderType == OrderType.market
-                        ? 'Market orders execute immediately at the current price'
+                        ? 'Market orders execute at the best available price now.'
                         : widget.orderType == OrderType.limit
-                            ? 'Your order will only execute at your limit price or better'
-                            : 'Stop orders will trigger when the price reaches your stop level',
+                            ? 'Limit orders fill at your price or better only.'
+                            : 'Stop orders activate when the market hits your stop level.',
                     style: GoogleFonts.inter(
                       fontSize: 13.sp,
-                      color: Colors.blue[200],
+                      height: 1.35,
+                      color: InvestTradingUi.textSecondary,
                     ),
                   ),
                 ),
@@ -394,16 +365,22 @@ class _TradeQuantityScreenState extends State<TradeQuantityScreen> {
   }
 
   Widget _buildQuantityButton(IconData icon, VoidCallback onPressed) {
-    return Container(
-      width: 48.w,
-      height: 48.w,
-      decoration: BoxDecoration(
-        color: const Color(0xFF6366F1),
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      child: IconButton(
-        icon: Icon(icon, color: Colors.white, size: 24.sp),
-        onPressed: onPressed,
+    return Material(
+      color: InvestTradingUi.surfaceElevated,
+      borderRadius: BorderRadius.circular(14.r),
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(14.r),
+        child: Container(
+          width: 52.w,
+          height: 52.w,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14.r),
+            border: Border.all(color: _accent.withValues(alpha: 0.45)),
+          ),
+          child: Icon(icon, color: _accent, size: 24.sp),
+        ),
       ),
     );
   }

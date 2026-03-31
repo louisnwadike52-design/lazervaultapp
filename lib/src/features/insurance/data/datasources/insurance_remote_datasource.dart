@@ -144,6 +144,7 @@ abstract class InsuranceRemoteDataSource {
     required String idempotencyKey,
     required Map<String, String> formData,
     required String locale,
+    String? transactionId,
   });
 
   Future<InsurancePurchaseResult> getInsurancePurchaseStatus({
@@ -634,6 +635,7 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
     required String idempotencyKey,
     required Map<String, String> formData,
     required String locale,
+    String? transactionId,
   }) async {
     final request = pb.PurchaseInsuranceRequest()
       ..quoteId = quoteId
@@ -642,6 +644,9 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
       ..transactionPin = transactionPin
       ..idempotencyKey = idempotencyKey
       ..locale = locale;
+    if (transactionId != null && transactionId.isNotEmpty) {
+      request.transactionId = transactionId;
+    }
     request.formData.addAll(formData);
 
     final options = await grpcClient.callOptions;

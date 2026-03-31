@@ -3,11 +3,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/utils/debouncer.dart';
+import 'package:lazervault/core/utils/user_search_query.dart';
 import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
 
 import 'package:lazervault/src/features/tag_pay/domain/entities/user_search_result_entity.dart';
 
-/// Bottom sheet for searching and selecting LazerVault usernames
+/// Bottom sheet for searching and selecting LazerVault users (username, email, or phone).
 class UsernameSearchBottomSheet extends StatefulWidget {
   final Function(UserSearchResultEntity) onUserSelected;
 
@@ -72,10 +73,9 @@ class _UsernameSearchBottomSheetState extends State<UsernameSearchBottomSheet> {
     // Cancel any pending search
     _debouncer.cancel();
 
-    // Clean the query - remove @ and $ symbols
-    final cleanQuery = query.replaceAll('@', '').replaceAll('\$', '').trim();
+    final normalized = normalizeLazerVaultUserSearchQuery(query);
 
-    if (cleanQuery.isEmpty) {
+    if (normalized.isEmpty) {
       setState(() {
         _searchResults = [];
         _isSearching = false;
@@ -84,8 +84,8 @@ class _UsernameSearchBottomSheetState extends State<UsernameSearchBottomSheet> {
       return;
     }
 
-    // Minimum 2 characters required
-    if (cleanQuery.length < 2) {
+    // Minimum 2 characters (after normalizing leading @ / $)
+    if (normalized.length < 2) {
       setState(() {
         _searchResults = [];
         _isSearching = false;
@@ -101,7 +101,7 @@ class _UsernameSearchBottomSheetState extends State<UsernameSearchBottomSheet> {
     });
 
     // Debounce the search - wait 500ms after user stops typing
-    _debouncer.run(() => _performSearch(cleanQuery));
+    _debouncer.run(() => _performSearch(query));
   }
 
   Future<void> _performSearch(String query) async {
@@ -170,7 +170,7 @@ class _UsernameSearchBottomSheetState extends State<UsernameSearchBottomSheet> {
                     ),
                     SizedBox(width: 16.w),
                     Text(
-                      'Search Users',
+                      'Find LazerVault user',
                       style: TextStyle(
                         color: Colors.black87,
                         fontSize: 20.sp,
@@ -181,7 +181,7 @@ class _UsernameSearchBottomSheetState extends State<UsernameSearchBottomSheet> {
                 ),
                 SizedBox(height: 8.h),
                 Text(
-                  'Find LazerVault users by username, email, or phone',
+                  'Search by username, phone number, or email (partial or full)',
                   style: TextStyle(
                     color: Colors.grey[600],
                     fontSize: 14.sp,
@@ -209,7 +209,7 @@ class _UsernameSearchBottomSheetState extends State<UsernameSearchBottomSheet> {
                   fontSize: 16.sp,
                 ),
                 decoration: InputDecoration(
-                  hintText: 'Search by @username, email, or phone',
+                  hintText: 'Username, phone, or email',
                   hintStyle: TextStyle(
                     color: Colors.grey[500],
                     fontSize: 16.sp,
@@ -290,7 +290,7 @@ class _UsernameSearchBottomSheetState extends State<UsernameSearchBottomSheet> {
       return _buildEmptyState(
         icon: Icons.person_off_outlined,
         title: _errorMessage!,
-        subtitle: 'Try a different username',
+        subtitle: 'Try a different name, @username, phone, or email',
       );
     }
 
