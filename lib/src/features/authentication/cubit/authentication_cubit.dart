@@ -1246,37 +1246,6 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     }
   }
 
-  /// Skip identity verification for progressive KYC onboarding
-  /// Allows users to complete signup as Tier 1 and verify later
-  void skipIdentityVerification() {
-    if (state is! SignUpInProgress) return;
-
-    final currentState = state as SignUpInProgress;
-
-    // Mark as skipped
-    if (isClosed) return;
-    emit(currentState.copyWith(
-      kycSkipped: true,
-      bvnVerified: false,
-      clearErrorMessage: true,
-    ));
-
-    // Navigate directly to email verification - email will be sent when page loads
-    final email = currentState.email;
-    final phoneNumber = currentState.phoneNumber;
-
-    // Determine if secondary verification is needed
-    final hasSecondaryPhone = phoneNumber.isNotEmpty;
-
-    // Navigate to email verification (codeSent: false - page will send email on load)
-    Get.offAllNamed(AppRoutes.emailVerification, arguments: {
-      'email': email,
-      'codeSent': false,
-      'isRequired': true,
-      'secondaryPhone': hasSecondaryPhone ? phoneNumber : null,
-    });
-  }
-
   /// Unified method to handle email or phone number input
   /// Intelligently detects whether input is an email or phone number
   void signUpEmailOrPhoneChanged(String value) {
@@ -1399,7 +1368,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
   /// Page 0: Country Selection (Nigeria only for now)
   /// Page 1: Email/Phone + Password
   /// Page 2: Personal Info (First Name, Last Name, DOB)
-  /// Page 3: BVN/NIN Verification
+  /// BVN verification: progressive KYC after passcode/PIN (not on signup).
   Future<void> signUpNextPage() async {
     if (state is SignUpInProgress) {
       final currentState = state as SignUpInProgress;
@@ -1609,8 +1578,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
           }
         }
 
-        // Create account now to get auth token for BVN verification on page 3
-        // This allows BVN verification to work since it requires an auth token
+        // Create account; BVN/NIN verification happens in progressive KYC after passcode/PIN.
         if (isClosed) return;
         emit(currentState.copyWith(isLoading: true, clearErrorMessage: true));
 
@@ -1619,7 +1587,6 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
             ? SignupPrimaryContact.phone
             : SignupPrimaryContact.email;
 
-        // Call signup to create account and get tokens
         // Construct locale from countryCode (e.g., "NG" -> "en-NG")
         final locale = currentState.countryCode.isNotEmpty
             ? 'en-${currentState.countryCode.toUpperCase()}'
@@ -1639,16 +1606,16 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
           phoneNumber: currentState.phoneNumber.isEmpty ? null : currentState.phoneNumber,
           username: cleanedUsername,
           referralCode: currentState.referralCode.isEmpty ? null : currentState.referralCode,
-          locale: locale, // Pass locale instead of countryCode/currencyCode
-          bvn: null, // BVN will be verified on next page
-          nin: null, // NIN will be verified on next page
+          locale: locale,
+          bvn: null,
+          nin: null,
         );
 
         if (isClosed) return;
 
         signupResult.fold(
           (failure) {
-            print('Error during pre-signup: ${failure.message}');
+            print('Error during signup: ${failure.message}');
             _showErrorSnackbar('Sign Up Failed', failure.message);
             emit(currentState.copyWith(
               isLoading: false,
@@ -1656,49 +1623,18 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
             ));
           },
           (profile) async {
-            // Save session (tokens) so BVN verification can use them
             await _saveSession(profile);
             _currentProfile = profile;
-
-            // Now proceed to BVN/NIN verification page with auth token available
             if (isClosed) return;
             emit(currentState.copyWith(
-              currentPage: 3,
-              clearErrorMessage: true,
               isLoading: false,
-              accountCreated: true, // Mark that account is created
+              clearErrorMessage: true,
+              accountCreated: true,
             ));
+            emit(UserCreated());
           },
         );
         return;
-      } else if (currentState.currentPage == 3) {
-        // ========== PAGE 3: BVN/NIN Verification ==========
-        final identityNumber = currentState.identityType == IdentityType.bvn
-            ? currentState.bvn
-            : currentState.nin;
-
-        final error = currentState.identityType == IdentityType.bvn
-            ? _validateBvn(identityNumber)
-            : _validateNin(identityNumber);
-
-        if (error != null) {
-          _showErrorSnackbar('Validation Error', error);
-          if (isClosed) return;
-          emit(currentState.copyWith(errorMessage: error));
-          return;
-        }
-
-        // Check if already verified
-        if (!currentState.bvnVerified) {
-          final errorMsg = 'Please verify your ${currentState.identityType == IdentityType.bvn ? 'BVN' : 'NIN'} before proceeding';
-          _showInfoSnackbar('Verification Required', errorMsg);
-          if (isClosed) return;
-          emit(currentState.copyWith(errorMessage: errorMsg));
-          return;
-        }
-
-        // BVN is verified, can proceed with signup submission
-        // The actual submission happens in signUpSubmitted()
       }
     }
   }
@@ -1805,12 +1741,6 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
           emit(currentState.copyWith(errorMessage: phoneError, isLoading: false));
           return;
         }
-      }
-
-      // Mark KYC as skipped if proceeding without verification
-      if (!currentState.bvnVerified && !currentState.kycSkipped) {
-        if (isClosed) return;
-        emit(currentState.copyWith(kycSkipped: true));
       }
 
       if (currentState.isLoading) return;

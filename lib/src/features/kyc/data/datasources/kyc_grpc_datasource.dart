@@ -710,11 +710,23 @@ class KYCGrpcDataSource {
 
       final status = _mapAuthProtoKYCStatus(response.status);
 
+      BVNNameReconciliation? recon;
+      if (response.hasBvnNameReconciliation()) {
+        final r = response.bvnNameReconciliation;
+        recon = BVNNameReconciliation(
+          nameAction: r.nameAction,
+          nameMatchScore: r.nameMatchScore,
+          verifiedName: r.verifiedName,
+          profileName: r.profileName,
+        );
+      }
+
       return ConfirmVerificationResult(
         success: response.success,
         status: status,
         currentTier: currentTier,
         message: response.message,
+        bvnNameReconciliation: recon,
       );
     } on GrpcError catch (e) {
       final message = e.toString();

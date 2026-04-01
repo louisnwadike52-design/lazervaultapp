@@ -1,8 +1,9 @@
 syntax = "proto3";
 
-package auth;
+// Must match gateway clients (pb.TransactionPinService).
+package pb;
 
-option go_package = "auth-service/proto";
+option go_package = "github.com/lazervault/auth-service/proto";
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";

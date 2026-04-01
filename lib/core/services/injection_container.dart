@@ -129,7 +129,6 @@ import 'package:lazervault/src/features/virtual_account/domain/usecases/create_v
 // End Virtual Account Imports
 import 'package:lazervault/src/features/voice_enrollment/domain/repositories/voice_enrollment_repository.dart';
 import 'package:lazervault/src/generated/recipient.pbgrpc.dart';
-import 'package:lazervault/src/generated/transfer.pbgrpc.dart' hide TransferTransaction;
 import 'package:lazervault/src/generated/banking.pbgrpc.dart' as banking_grpc;
 import 'package:lazervault/src/generated/user.pbgrpc.dart' as user_grpc;
 import 'package:lazervault/src/generated/transaction_pin.pbgrpc.dart';
@@ -262,7 +261,6 @@ import 'package:lazervault/src/features/microservice_chat/data/repositories/micr
 import 'package:lazervault/src/features/microservice_chat/domain/repositories/microservice_chat_repository.dart';
 import 'package:lazervault/src/features/microservice_chat/domain/usecases/send_microservice_chat_message_usecase.dart';
 import 'package:lazervault/src/features/microservice_chat/domain/usecases/load_microservice_chat_history_usecase.dart';
-import 'package:lazervault/src/features/microservice_chat/data/datasources/http_direct_chat_datasource.dart';
 import 'package:lazervault/src/features/microservice_chat/data/datasources/grpc_direct_chat_datasource.dart';
 import 'package:lazervault/src/features/microservice_chat/domain/usecases/send_direct_chat_message_usecase.dart';
 import 'package:lazervault/src/features/microservice_chat/domain/usecases/load_direct_chat_history_usecase.dart';

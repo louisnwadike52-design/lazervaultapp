@@ -23,7 +23,10 @@
       "mcp__ide__getDiagnostics",
       "Bash(flutter build:*)",
       "Bash(flutter install:*)",
-      "Bash(adb:*)"
+      "Bash(adb:*)",
+      "Bash(xcrun simctl:*)",
+      "Bash(go clean:*)",
+      "Bash(grep -n 'Future\\\\|$async' /Users/louislawrence/Music/apps/stack/lazervault-app-platform/lazervaultapp/lib/src/generated/accounts.pbgrpc.dart)"
     ],
     "deny": [],
     "ask": []

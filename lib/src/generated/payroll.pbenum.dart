@@ -1,22 +1,18 @@
-//
+///
 //  Generated code. Do not modify.
 //  source: payroll.proto
 //
 // @dart = 2.12
+// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
 
-// ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
-
+// ignore_for_file: UNDEFINED_SHOWN_NAME
 import 'dart:core' as $core;
-
 import 'package:protobuf/protobuf.dart' as $pb;
 
 class EmploymentType extends $pb.ProtobufEnum {
-  static const EmploymentType EMPLOYMENT_TYPE_FULL_TIME = EmploymentType._(0, _omitEnumNames ? '' : 'EMPLOYMENT_TYPE_FULL_TIME');
-  static const EmploymentType EMPLOYMENT_TYPE_PART_TIME = EmploymentType._(1, _omitEnumNames ? '' : 'EMPLOYMENT_TYPE_PART_TIME');
-  static const EmploymentType EMPLOYMENT_TYPE_CONTRACT = EmploymentType._(2, _omitEnumNames ? '' : 'EMPLOYMENT_TYPE_CONTRACT');
+  static const EmploymentType EMPLOYMENT_TYPE_FULL_TIME = EmploymentType._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'EMPLOYMENT_TYPE_FULL_TIME');
+  static const EmploymentType EMPLOYMENT_TYPE_PART_TIME = EmploymentType._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'EMPLOYMENT_TYPE_PART_TIME');
+  static const EmploymentType EMPLOYMENT_TYPE_CONTRACT = EmploymentType._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'EMPLOYMENT_TYPE_CONTRACT');
 
   static const $core.List<EmploymentType> values = <EmploymentType> [
     EMPLOYMENT_TYPE_FULL_TIME,
@@ -31,9 +27,9 @@ class EmploymentType extends $pb.ProtobufEnum {
 }
 
 class PayFrequency extends $pb.ProtobufEnum {
-  static const PayFrequency PAY_FREQUENCY_MONTHLY = PayFrequency._(0, _omitEnumNames ? '' : 'PAY_FREQUENCY_MONTHLY');
-  static const PayFrequency PAY_FREQUENCY_BIWEEKLY = PayFrequency._(1, _omitEnumNames ? '' : 'PAY_FREQUENCY_BIWEEKLY');
-  static const PayFrequency PAY_FREQUENCY_WEEKLY = PayFrequency._(2, _omitEnumNames ? '' : 'PAY_FREQUENCY_WEEKLY');
+  static const PayFrequency PAY_FREQUENCY_MONTHLY = PayFrequency._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'PAY_FREQUENCY_MONTHLY');
+  static const PayFrequency PAY_FREQUENCY_BIWEEKLY = PayFrequency._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'PAY_FREQUENCY_BIWEEKLY');
+  static const PayFrequency PAY_FREQUENCY_WEEKLY = PayFrequency._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'PAY_FREQUENCY_WEEKLY');
 
   static const $core.List<PayFrequency> values = <PayFrequency> [
     PAY_FREQUENCY_MONTHLY,
@@ -48,9 +44,9 @@ class PayFrequency extends $pb.ProtobufEnum {
 }
 
 class EmployeeStatus extends $pb.ProtobufEnum {
-  static const EmployeeStatus EMPLOYEE_STATUS_ACTIVE = EmployeeStatus._(0, _omitEnumNames ? '' : 'EMPLOYEE_STATUS_ACTIVE');
-  static const EmployeeStatus EMPLOYEE_STATUS_INACTIVE = EmployeeStatus._(1, _omitEnumNames ? '' : 'EMPLOYEE_STATUS_INACTIVE');
-  static const EmployeeStatus EMPLOYEE_STATUS_TERMINATED = EmployeeStatus._(2, _omitEnumNames ? '' : 'EMPLOYEE_STATUS_TERMINATED');
+  static const EmployeeStatus EMPLOYEE_STATUS_ACTIVE = EmployeeStatus._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'EMPLOYEE_STATUS_ACTIVE');
+  static const EmployeeStatus EMPLOYEE_STATUS_INACTIVE = EmployeeStatus._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'EMPLOYEE_STATUS_INACTIVE');
+  static const EmployeeStatus EMPLOYEE_STATUS_TERMINATED = EmployeeStatus._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'EMPLOYEE_STATUS_TERMINATED');
 
   static const $core.List<EmployeeStatus> values = <EmployeeStatus> [
     EMPLOYEE_STATUS_ACTIVE,
@@ -65,13 +61,13 @@ class EmployeeStatus extends $pb.ProtobufEnum {
 }
 
 class PayRunStatus extends $pb.ProtobufEnum {
-  static const PayRunStatus PAY_RUN_STATUS_DRAFT = PayRunStatus._(0, _omitEnumNames ? '' : 'PAY_RUN_STATUS_DRAFT');
-  static const PayRunStatus PAY_RUN_STATUS_CALCULATING = PayRunStatus._(1, _omitEnumNames ? '' : 'PAY_RUN_STATUS_CALCULATING');
-  static const PayRunStatus PAY_RUN_STATUS_READY = PayRunStatus._(2, _omitEnumNames ? '' : 'PAY_RUN_STATUS_READY');
-  static const PayRunStatus PAY_RUN_STATUS_APPROVED = PayRunStatus._(3, _omitEnumNames ? '' : 'PAY_RUN_STATUS_APPROVED');
-  static const PayRunStatus PAY_RUN_STATUS_PROCESSING = PayRunStatus._(4, _omitEnumNames ? '' : 'PAY_RUN_STATUS_PROCESSING');
-  static const PayRunStatus PAY_RUN_STATUS_COMPLETED = PayRunStatus._(5, _omitEnumNames ? '' : 'PAY_RUN_STATUS_COMPLETED');
-  static const PayRunStatus PAY_RUN_STATUS_FAILED = PayRunStatus._(6, _omitEnumNames ? '' : 'PAY_RUN_STATUS_FAILED');
+  static const PayRunStatus PAY_RUN_STATUS_DRAFT = PayRunStatus._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'PAY_RUN_STATUS_DRAFT');
+  static const PayRunStatus PAY_RUN_STATUS_CALCULATING = PayRunStatus._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'PAY_RUN_STATUS_CALCULATING');
+  static const PayRunStatus PAY_RUN_STATUS_READY = PayRunStatus._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'PAY_RUN_STATUS_READY');
+  static const PayRunStatus PAY_RUN_STATUS_APPROVED = PayRunStatus._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'PAY_RUN_STATUS_APPROVED');
+  static const PayRunStatus PAY_RUN_STATUS_PROCESSING = PayRunStatus._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'PAY_RUN_STATUS_PROCESSING');
+  static const PayRunStatus PAY_RUN_STATUS_COMPLETED = PayRunStatus._(5, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'PAY_RUN_STATUS_COMPLETED');
+  static const PayRunStatus PAY_RUN_STATUS_FAILED = PayRunStatus._(6, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'PAY_RUN_STATUS_FAILED');
 
   static const $core.List<PayRunStatus> values = <PayRunStatus> [
     PAY_RUN_STATUS_DRAFT,
@@ -90,9 +86,9 @@ class PayRunStatus extends $pb.ProtobufEnum {
 }
 
 class PaymentStatus extends $pb.ProtobufEnum {
-  static const PaymentStatus PAYMENT_STATUS_PENDING = PaymentStatus._(0, _omitEnumNames ? '' : 'PAYMENT_STATUS_PENDING');
-  static const PaymentStatus PAYMENT_STATUS_PAID = PaymentStatus._(1, _omitEnumNames ? '' : 'PAYMENT_STATUS_PAID');
-  static const PaymentStatus PAYMENT_STATUS_FAILED = PaymentStatus._(2, _omitEnumNames ? '' : 'PAYMENT_STATUS_FAILED');
+  static const PaymentStatus PAYMENT_STATUS_PENDING = PaymentStatus._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'PAYMENT_STATUS_PENDING');
+  static const PaymentStatus PAYMENT_STATUS_PAID = PaymentStatus._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'PAYMENT_STATUS_PAID');
+  static const PaymentStatus PAYMENT_STATUS_FAILED = PaymentStatus._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'PAYMENT_STATUS_FAILED');
 
   static const $core.List<PaymentStatus> values = <PaymentStatus> [
     PAYMENT_STATUS_PENDING,
@@ -107,10 +103,10 @@ class PaymentStatus extends $pb.ProtobufEnum {
 }
 
 class RecurrenceFrequency extends $pb.ProtobufEnum {
-  static const RecurrenceFrequency RECURRENCE_FREQUENCY_NONE = RecurrenceFrequency._(0, _omitEnumNames ? '' : 'RECURRENCE_FREQUENCY_NONE');
-  static const RecurrenceFrequency RECURRENCE_FREQUENCY_WEEKLY = RecurrenceFrequency._(1, _omitEnumNames ? '' : 'RECURRENCE_FREQUENCY_WEEKLY');
-  static const RecurrenceFrequency RECURRENCE_FREQUENCY_BIWEEKLY = RecurrenceFrequency._(2, _omitEnumNames ? '' : 'RECURRENCE_FREQUENCY_BIWEEKLY');
-  static const RecurrenceFrequency RECURRENCE_FREQUENCY_MONTHLY = RecurrenceFrequency._(3, _omitEnumNames ? '' : 'RECURRENCE_FREQUENCY_MONTHLY');
+  static const RecurrenceFrequency RECURRENCE_FREQUENCY_NONE = RecurrenceFrequency._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'RECURRENCE_FREQUENCY_NONE');
+  static const RecurrenceFrequency RECURRENCE_FREQUENCY_WEEKLY = RecurrenceFrequency._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'RECURRENCE_FREQUENCY_WEEKLY');
+  static const RecurrenceFrequency RECURRENCE_FREQUENCY_BIWEEKLY = RecurrenceFrequency._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'RECURRENCE_FREQUENCY_BIWEEKLY');
+  static const RecurrenceFrequency RECURRENCE_FREQUENCY_MONTHLY = RecurrenceFrequency._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'RECURRENCE_FREQUENCY_MONTHLY');
 
   static const $core.List<RecurrenceFrequency> values = <RecurrenceFrequency> [
     RECURRENCE_FREQUENCY_NONE,
@@ -126,9 +122,9 @@ class RecurrenceFrequency extends $pb.ProtobufEnum {
 }
 
 class InventoryItemStatus extends $pb.ProtobufEnum {
-  static const InventoryItemStatus INVENTORY_ITEM_STATUS_ACTIVE = InventoryItemStatus._(0, _omitEnumNames ? '' : 'INVENTORY_ITEM_STATUS_ACTIVE');
-  static const InventoryItemStatus INVENTORY_ITEM_STATUS_INACTIVE = InventoryItemStatus._(1, _omitEnumNames ? '' : 'INVENTORY_ITEM_STATUS_INACTIVE');
-  static const InventoryItemStatus INVENTORY_ITEM_STATUS_DISCONTINUED = InventoryItemStatus._(2, _omitEnumNames ? '' : 'INVENTORY_ITEM_STATUS_DISCONTINUED');
+  static const InventoryItemStatus INVENTORY_ITEM_STATUS_ACTIVE = InventoryItemStatus._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'INVENTORY_ITEM_STATUS_ACTIVE');
+  static const InventoryItemStatus INVENTORY_ITEM_STATUS_INACTIVE = InventoryItemStatus._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'INVENTORY_ITEM_STATUS_INACTIVE');
+  static const InventoryItemStatus INVENTORY_ITEM_STATUS_DISCONTINUED = InventoryItemStatus._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'INVENTORY_ITEM_STATUS_DISCONTINUED');
 
   static const $core.List<InventoryItemStatus> values = <InventoryItemStatus> [
     INVENTORY_ITEM_STATUS_ACTIVE,
@@ -143,9 +139,9 @@ class InventoryItemStatus extends $pb.ProtobufEnum {
 }
 
 class AdjustmentType extends $pb.ProtobufEnum {
-  static const AdjustmentType ADJUSTMENT_TYPE_ADD = AdjustmentType._(0, _omitEnumNames ? '' : 'ADJUSTMENT_TYPE_ADD');
-  static const AdjustmentType ADJUSTMENT_TYPE_REMOVE = AdjustmentType._(1, _omitEnumNames ? '' : 'ADJUSTMENT_TYPE_REMOVE');
-  static const AdjustmentType ADJUSTMENT_TYPE_SET = AdjustmentType._(2, _omitEnumNames ? '' : 'ADJUSTMENT_TYPE_SET');
+  static const AdjustmentType ADJUSTMENT_TYPE_ADD = AdjustmentType._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'ADJUSTMENT_TYPE_ADD');
+  static const AdjustmentType ADJUSTMENT_TYPE_REMOVE = AdjustmentType._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'ADJUSTMENT_TYPE_REMOVE');
+  static const AdjustmentType ADJUSTMENT_TYPE_SET = AdjustmentType._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'ADJUSTMENT_TYPE_SET');
 
   static const $core.List<AdjustmentType> values = <AdjustmentType> [
     ADJUSTMENT_TYPE_ADD,
@@ -159,14 +155,13 @@ class AdjustmentType extends $pb.ProtobufEnum {
   const AdjustmentType._($core.int v, $core.String n) : super(v, n);
 }
 
-/// Customer enums
 class CustomerSegment extends $pb.ProtobufEnum {
-  static const CustomerSegment CUSTOMER_SEGMENT_NONE = CustomerSegment._(0, _omitEnumNames ? '' : 'CUSTOMER_SEGMENT_NONE');
-  static const CustomerSegment CUSTOMER_SEGMENT_VIP = CustomerSegment._(1, _omitEnumNames ? '' : 'CUSTOMER_SEGMENT_VIP');
-  static const CustomerSegment CUSTOMER_SEGMENT_RETAIL = CustomerSegment._(2, _omitEnumNames ? '' : 'CUSTOMER_SEGMENT_RETAIL');
-  static const CustomerSegment CUSTOMER_SEGMENT_WHOLESALE = CustomerSegment._(3, _omitEnumNames ? '' : 'CUSTOMER_SEGMENT_WHOLESALE');
-  static const CustomerSegment CUSTOMER_SEGMENT_GOVERNMENT = CustomerSegment._(4, _omitEnumNames ? '' : 'CUSTOMER_SEGMENT_GOVERNMENT');
-  static const CustomerSegment CUSTOMER_SEGMENT_OVERDUE = CustomerSegment._(5, _omitEnumNames ? '' : 'CUSTOMER_SEGMENT_OVERDUE');
+  static const CustomerSegment CUSTOMER_SEGMENT_NONE = CustomerSegment._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'CUSTOMER_SEGMENT_NONE');
+  static const CustomerSegment CUSTOMER_SEGMENT_VIP = CustomerSegment._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'CUSTOMER_SEGMENT_VIP');
+  static const CustomerSegment CUSTOMER_SEGMENT_RETAIL = CustomerSegment._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'CUSTOMER_SEGMENT_RETAIL');
+  static const CustomerSegment CUSTOMER_SEGMENT_WHOLESALE = CustomerSegment._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'CUSTOMER_SEGMENT_WHOLESALE');
+  static const CustomerSegment CUSTOMER_SEGMENT_GOVERNMENT = CustomerSegment._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'CUSTOMER_SEGMENT_GOVERNMENT');
+  static const CustomerSegment CUSTOMER_SEGMENT_OVERDUE = CustomerSegment._(5, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'CUSTOMER_SEGMENT_OVERDUE');
 
   static const $core.List<CustomerSegment> values = <CustomerSegment> [
     CUSTOMER_SEGMENT_NONE,
@@ -184,9 +179,9 @@ class CustomerSegment extends $pb.ProtobufEnum {
 }
 
 class CustomerStatus extends $pb.ProtobufEnum {
-  static const CustomerStatus CUSTOMER_STATUS_ACTIVE = CustomerStatus._(0, _omitEnumNames ? '' : 'CUSTOMER_STATUS_ACTIVE');
-  static const CustomerStatus CUSTOMER_STATUS_INACTIVE = CustomerStatus._(1, _omitEnumNames ? '' : 'CUSTOMER_STATUS_INACTIVE');
-  static const CustomerStatus CUSTOMER_STATUS_BLOCKED = CustomerStatus._(2, _omitEnumNames ? '' : 'CUSTOMER_STATUS_BLOCKED');
+  static const CustomerStatus CUSTOMER_STATUS_ACTIVE = CustomerStatus._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'CUSTOMER_STATUS_ACTIVE');
+  static const CustomerStatus CUSTOMER_STATUS_INACTIVE = CustomerStatus._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'CUSTOMER_STATUS_INACTIVE');
+  static const CustomerStatus CUSTOMER_STATUS_BLOCKED = CustomerStatus._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'CUSTOMER_STATUS_BLOCKED');
 
   static const $core.List<CustomerStatus> values = <CustomerStatus> [
     CUSTOMER_STATUS_ACTIVE,
@@ -200,12 +195,11 @@ class CustomerStatus extends $pb.ProtobufEnum {
   const CustomerStatus._($core.int v, $core.String n) : super(v, n);
 }
 
-/// Tax enums
 class TaxType extends $pb.ProtobufEnum {
-  static const TaxType TAX_TYPE_VAT = TaxType._(0, _omitEnumNames ? '' : 'TAX_TYPE_VAT');
-  static const TaxType TAX_TYPE_PAYE = TaxType._(1, _omitEnumNames ? '' : 'TAX_TYPE_PAYE');
-  static const TaxType TAX_TYPE_WHT = TaxType._(2, _omitEnumNames ? '' : 'TAX_TYPE_WHT');
-  static const TaxType TAX_TYPE_CIT = TaxType._(3, _omitEnumNames ? '' : 'TAX_TYPE_CIT');
+  static const TaxType TAX_TYPE_VAT = TaxType._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TAX_TYPE_VAT');
+  static const TaxType TAX_TYPE_PAYE = TaxType._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TAX_TYPE_PAYE');
+  static const TaxType TAX_TYPE_WHT = TaxType._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TAX_TYPE_WHT');
+  static const TaxType TAX_TYPE_CIT = TaxType._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TAX_TYPE_CIT');
 
   static const $core.List<TaxType> values = <TaxType> [
     TAX_TYPE_VAT,
@@ -221,10 +215,10 @@ class TaxType extends $pb.ProtobufEnum {
 }
 
 class TaxObligationStatus extends $pb.ProtobufEnum {
-  static const TaxObligationStatus TAX_OBLIGATION_STATUS_PENDING = TaxObligationStatus._(0, _omitEnumNames ? '' : 'TAX_OBLIGATION_STATUS_PENDING');
-  static const TaxObligationStatus TAX_OBLIGATION_STATUS_FILED = TaxObligationStatus._(1, _omitEnumNames ? '' : 'TAX_OBLIGATION_STATUS_FILED');
-  static const TaxObligationStatus TAX_OBLIGATION_STATUS_PAID = TaxObligationStatus._(2, _omitEnumNames ? '' : 'TAX_OBLIGATION_STATUS_PAID');
-  static const TaxObligationStatus TAX_OBLIGATION_STATUS_OVERDUE = TaxObligationStatus._(3, _omitEnumNames ? '' : 'TAX_OBLIGATION_STATUS_OVERDUE');
+  static const TaxObligationStatus TAX_OBLIGATION_STATUS_PENDING = TaxObligationStatus._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TAX_OBLIGATION_STATUS_PENDING');
+  static const TaxObligationStatus TAX_OBLIGATION_STATUS_FILED = TaxObligationStatus._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TAX_OBLIGATION_STATUS_FILED');
+  static const TaxObligationStatus TAX_OBLIGATION_STATUS_PAID = TaxObligationStatus._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TAX_OBLIGATION_STATUS_PAID');
+  static const TaxObligationStatus TAX_OBLIGATION_STATUS_OVERDUE = TaxObligationStatus._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TAX_OBLIGATION_STATUS_OVERDUE');
 
   static const $core.List<TaxObligationStatus> values = <TaxObligationStatus> [
     TAX_OBLIGATION_STATUS_PENDING,
@@ -240,11 +234,11 @@ class TaxObligationStatus extends $pb.ProtobufEnum {
 }
 
 class TaxDocumentType extends $pb.ProtobufEnum {
-  static const TaxDocumentType TAX_DOCUMENT_TYPE_TIN_CERT = TaxDocumentType._(0, _omitEnumNames ? '' : 'TAX_DOCUMENT_TYPE_TIN_CERT');
-  static const TaxDocumentType TAX_DOCUMENT_TYPE_VAT_REGISTRATION = TaxDocumentType._(1, _omitEnumNames ? '' : 'TAX_DOCUMENT_TYPE_VAT_REGISTRATION');
-  static const TaxDocumentType TAX_DOCUMENT_TYPE_TAX_CLEARANCE = TaxDocumentType._(2, _omitEnumNames ? '' : 'TAX_DOCUMENT_TYPE_TAX_CLEARANCE');
-  static const TaxDocumentType TAX_DOCUMENT_TYPE_WHT_RECEIPT = TaxDocumentType._(3, _omitEnumNames ? '' : 'TAX_DOCUMENT_TYPE_WHT_RECEIPT');
-  static const TaxDocumentType TAX_DOCUMENT_TYPE_FILING_RECEIPT = TaxDocumentType._(4, _omitEnumNames ? '' : 'TAX_DOCUMENT_TYPE_FILING_RECEIPT');
+  static const TaxDocumentType TAX_DOCUMENT_TYPE_TIN_CERT = TaxDocumentType._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TAX_DOCUMENT_TYPE_TIN_CERT');
+  static const TaxDocumentType TAX_DOCUMENT_TYPE_VAT_REGISTRATION = TaxDocumentType._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TAX_DOCUMENT_TYPE_VAT_REGISTRATION');
+  static const TaxDocumentType TAX_DOCUMENT_TYPE_TAX_CLEARANCE = TaxDocumentType._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TAX_DOCUMENT_TYPE_TAX_CLEARANCE');
+  static const TaxDocumentType TAX_DOCUMENT_TYPE_WHT_RECEIPT = TaxDocumentType._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TAX_DOCUMENT_TYPE_WHT_RECEIPT');
+  static const TaxDocumentType TAX_DOCUMENT_TYPE_FILING_RECEIPT = TaxDocumentType._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TAX_DOCUMENT_TYPE_FILING_RECEIPT');
 
   static const $core.List<TaxDocumentType> values = <TaxDocumentType> [
     TAX_DOCUMENT_TYPE_TIN_CERT,
@@ -261,8 +255,8 @@ class TaxDocumentType extends $pb.ProtobufEnum {
 }
 
 class VATDirection extends $pb.ProtobufEnum {
-  static const VATDirection VAT_DIRECTION_OUTPUT = VATDirection._(0, _omitEnumNames ? '' : 'VAT_DIRECTION_OUTPUT');
-  static const VATDirection VAT_DIRECTION_INPUT = VATDirection._(1, _omitEnumNames ? '' : 'VAT_DIRECTION_INPUT');
+  static const VATDirection VAT_DIRECTION_OUTPUT = VATDirection._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'VAT_DIRECTION_OUTPUT');
+  static const VATDirection VAT_DIRECTION_INPUT = VATDirection._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'VAT_DIRECTION_INPUT');
 
   static const $core.List<VATDirection> values = <VATDirection> [
     VAT_DIRECTION_OUTPUT,
@@ -275,12 +269,11 @@ class VATDirection extends $pb.ProtobufEnum {
   const VATDirection._($core.int v, $core.String n) : super(v, n);
 }
 
-/// Inventory enhancement enums
 class PurchaseOrderStatus extends $pb.ProtobufEnum {
-  static const PurchaseOrderStatus PURCHASE_ORDER_STATUS_DRAFT = PurchaseOrderStatus._(0, _omitEnumNames ? '' : 'PURCHASE_ORDER_STATUS_DRAFT');
-  static const PurchaseOrderStatus PURCHASE_ORDER_STATUS_SUBMITTED = PurchaseOrderStatus._(1, _omitEnumNames ? '' : 'PURCHASE_ORDER_STATUS_SUBMITTED');
-  static const PurchaseOrderStatus PURCHASE_ORDER_STATUS_RECEIVED = PurchaseOrderStatus._(2, _omitEnumNames ? '' : 'PURCHASE_ORDER_STATUS_RECEIVED');
-  static const PurchaseOrderStatus PURCHASE_ORDER_STATUS_CANCELLED = PurchaseOrderStatus._(3, _omitEnumNames ? '' : 'PURCHASE_ORDER_STATUS_CANCELLED');
+  static const PurchaseOrderStatus PURCHASE_ORDER_STATUS_DRAFT = PurchaseOrderStatus._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'PURCHASE_ORDER_STATUS_DRAFT');
+  static const PurchaseOrderStatus PURCHASE_ORDER_STATUS_SUBMITTED = PurchaseOrderStatus._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'PURCHASE_ORDER_STATUS_SUBMITTED');
+  static const PurchaseOrderStatus PURCHASE_ORDER_STATUS_RECEIVED = PurchaseOrderStatus._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'PURCHASE_ORDER_STATUS_RECEIVED');
+  static const PurchaseOrderStatus PURCHASE_ORDER_STATUS_CANCELLED = PurchaseOrderStatus._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'PURCHASE_ORDER_STATUS_CANCELLED');
 
   static const $core.List<PurchaseOrderStatus> values = <PurchaseOrderStatus> [
     PURCHASE_ORDER_STATUS_DRAFT,
@@ -296,8 +289,8 @@ class PurchaseOrderStatus extends $pb.ProtobufEnum {
 }
 
 class SupplierStatus extends $pb.ProtobufEnum {
-  static const SupplierStatus SUPPLIER_STATUS_ACTIVE = SupplierStatus._(0, _omitEnumNames ? '' : 'SUPPLIER_STATUS_ACTIVE');
-  static const SupplierStatus SUPPLIER_STATUS_INACTIVE = SupplierStatus._(1, _omitEnumNames ? '' : 'SUPPLIER_STATUS_INACTIVE');
+  static const SupplierStatus SUPPLIER_STATUS_ACTIVE = SupplierStatus._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'SUPPLIER_STATUS_ACTIVE');
+  static const SupplierStatus SUPPLIER_STATUS_INACTIVE = SupplierStatus._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'SUPPLIER_STATUS_INACTIVE');
 
   static const $core.List<SupplierStatus> values = <SupplierStatus> [
     SUPPLIER_STATUS_ACTIVE,
@@ -310,5 +303,3 @@ class SupplierStatus extends $pb.ProtobufEnum {
   const SupplierStatus._($core.int v, $core.String n) : super(v, n);
 }
 
-
-const _omitEnumNames = $core.bool.fromEnvironment('protobuf.omit_enum_names');

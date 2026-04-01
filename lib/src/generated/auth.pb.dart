@@ -1,13 +1,9 @@
-//
+///
 //  Generated code. Do not modify.
 //  source: auth.proto
 //
 // @dart = 2.12
-
-// ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
 
 import 'dart:core' as $core;
 
@@ -19,6 +15,27 @@ import 'auth.pbenum.dart';
 export 'auth.pbenum.dart';
 
 class SignupRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SignupRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'password')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'firstName')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastName')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phone')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deviceId')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deviceName')
+    ..e<PrimaryContactType>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'primaryContactType', $pb.PbFieldType.OE, defaultOrMaker: PrimaryContactType.EMAIL, valueOf: PrimaryContactType.valueOf, enumValues: PrimaryContactType.values)
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'username')
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'referralCode')
+    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dateOfBirth')
+    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'locale')
+    ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bvn')
+    ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nin')
+    ..aOS(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'countryCode')
+    ..aOS(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currencyCode')
+    ..hasRequiredFields = false
+  ;
+
+  SignupRequest._() : super();
   factory SignupRequest({
     $core.String? email,
     $core.String? password,
@@ -39,83 +56,61 @@ class SignupRequest extends $pb.GeneratedMessage {
   @$core.Deprecated('This field is deprecated.')
     $core.String? currencyCode,
   }) {
-    final $result = create();
+    final _result = create();
     if (email != null) {
-      $result.email = email;
+      _result.email = email;
     }
     if (password != null) {
-      $result.password = password;
+      _result.password = password;
     }
     if (firstName != null) {
-      $result.firstName = firstName;
+      _result.firstName = firstName;
     }
     if (lastName != null) {
-      $result.lastName = lastName;
+      _result.lastName = lastName;
     }
     if (phone != null) {
-      $result.phone = phone;
+      _result.phone = phone;
     }
     if (deviceId != null) {
-      $result.deviceId = deviceId;
+      _result.deviceId = deviceId;
     }
     if (deviceName != null) {
-      $result.deviceName = deviceName;
+      _result.deviceName = deviceName;
     }
     if (primaryContactType != null) {
-      $result.primaryContactType = primaryContactType;
+      _result.primaryContactType = primaryContactType;
     }
     if (username != null) {
-      $result.username = username;
+      _result.username = username;
     }
     if (referralCode != null) {
-      $result.referralCode = referralCode;
+      _result.referralCode = referralCode;
     }
     if (dateOfBirth != null) {
-      $result.dateOfBirth = dateOfBirth;
+      _result.dateOfBirth = dateOfBirth;
     }
     if (locale != null) {
-      $result.locale = locale;
+      _result.locale = locale;
     }
     if (bvn != null) {
-      $result.bvn = bvn;
+      _result.bvn = bvn;
     }
     if (nin != null) {
-      $result.nin = nin;
+      _result.nin = nin;
     }
     if (countryCode != null) {
       // ignore: deprecated_member_use_from_same_package
-      $result.countryCode = countryCode;
+      _result.countryCode = countryCode;
     }
     if (currencyCode != null) {
       // ignore: deprecated_member_use_from_same_package
-      $result.currencyCode = currencyCode;
+      _result.currencyCode = currencyCode;
     }
-    return $result;
+    return _result;
   }
-  SignupRequest._() : super();
   factory SignupRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SignupRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SignupRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'email')
-    ..aOS(2, _omitFieldNames ? '' : 'password')
-    ..aOS(3, _omitFieldNames ? '' : 'firstName')
-    ..aOS(4, _omitFieldNames ? '' : 'lastName')
-    ..aOS(5, _omitFieldNames ? '' : 'phone')
-    ..aOS(6, _omitFieldNames ? '' : 'deviceId')
-    ..aOS(7, _omitFieldNames ? '' : 'deviceName')
-    ..e<PrimaryContactType>(8, _omitFieldNames ? '' : 'primaryContactType', $pb.PbFieldType.OE, defaultOrMaker: PrimaryContactType.EMAIL, valueOf: PrimaryContactType.valueOf, enumValues: PrimaryContactType.values)
-    ..aOS(9, _omitFieldNames ? '' : 'username')
-    ..aOS(10, _omitFieldNames ? '' : 'referralCode')
-    ..aOS(11, _omitFieldNames ? '' : 'dateOfBirth')
-    ..aOS(12, _omitFieldNames ? '' : 'locale')
-    ..aOS(13, _omitFieldNames ? '' : 'bvn')
-    ..aOS(14, _omitFieldNames ? '' : 'nin')
-    ..aOS(15, _omitFieldNames ? '' : 'countryCode')
-    ..aOS(16, _omitFieldNames ? '' : 'currencyCode')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -125,10 +120,8 @@ class SignupRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SignupRequest copyWith(void Function(SignupRequest) updates) => super.copyWith((message) => updates(message as SignupRequest)) as SignupRequest;
-
+  SignupRequest copyWith(void Function(SignupRequest) updates) => super.copyWith((message) => updates(message as SignupRequest)) as SignupRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SignupRequest create() => SignupRequest._();
   SignupRequest createEmptyInstance() => create();
@@ -263,8 +256,6 @@ class SignupRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(14)
   void clearNin() => clearField(14);
 
-  /// Deprecated: Use locale instead. Frontend should only send locale.
-  /// Kept for backward compatibility during migration.
   @$core.Deprecated('This field is deprecated.')
   @$pb.TagNumber(15)
   $core.String get countryCode => $_getSZ(14);
@@ -293,6 +284,23 @@ class SignupRequest extends $pb.GeneratedMessage {
 }
 
 class SignupResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SignupResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOB(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'emailVerificationRequired')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accessToken')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refreshToken')
+    ..aInt64(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresIn')
+    ..aOM<User>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'user', subBuilder: User.create)
+    ..aOB(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneVerificationRequired')
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verificationSentTo')
+    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneVerificationId')
+    ..aInt64(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneVerificationExpiresIn')
+    ..hasRequiredFields = false
+  ;
+
+  SignupResponse._() : super();
   factory SignupResponse({
     $core.String? userId,
     $core.String? email,
@@ -307,65 +315,47 @@ class SignupResponse extends $pb.GeneratedMessage {
     $core.String? phoneVerificationId,
     $fixnum.Int64? phoneVerificationExpiresIn,
   }) {
-    final $result = create();
+    final _result = create();
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (email != null) {
-      $result.email = email;
+      _result.email = email;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (emailVerificationRequired != null) {
-      $result.emailVerificationRequired = emailVerificationRequired;
+      _result.emailVerificationRequired = emailVerificationRequired;
     }
     if (accessToken != null) {
-      $result.accessToken = accessToken;
+      _result.accessToken = accessToken;
     }
     if (refreshToken != null) {
-      $result.refreshToken = refreshToken;
+      _result.refreshToken = refreshToken;
     }
     if (expiresIn != null) {
-      $result.expiresIn = expiresIn;
+      _result.expiresIn = expiresIn;
     }
     if (user != null) {
-      $result.user = user;
+      _result.user = user;
     }
     if (phoneVerificationRequired != null) {
-      $result.phoneVerificationRequired = phoneVerificationRequired;
+      _result.phoneVerificationRequired = phoneVerificationRequired;
     }
     if (verificationSentTo != null) {
-      $result.verificationSentTo = verificationSentTo;
+      _result.verificationSentTo = verificationSentTo;
     }
     if (phoneVerificationId != null) {
-      $result.phoneVerificationId = phoneVerificationId;
+      _result.phoneVerificationId = phoneVerificationId;
     }
     if (phoneVerificationExpiresIn != null) {
-      $result.phoneVerificationExpiresIn = phoneVerificationExpiresIn;
+      _result.phoneVerificationExpiresIn = phoneVerificationExpiresIn;
     }
-    return $result;
+    return _result;
   }
-  SignupResponse._() : super();
   factory SignupResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SignupResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SignupResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..aOS(2, _omitFieldNames ? '' : 'email')
-    ..aOS(3, _omitFieldNames ? '' : 'message')
-    ..aOB(4, _omitFieldNames ? '' : 'emailVerificationRequired')
-    ..aOS(5, _omitFieldNames ? '' : 'accessToken')
-    ..aOS(6, _omitFieldNames ? '' : 'refreshToken')
-    ..aInt64(7, _omitFieldNames ? '' : 'expiresIn')
-    ..aOM<User>(8, _omitFieldNames ? '' : 'user', subBuilder: User.create)
-    ..aOB(9, _omitFieldNames ? '' : 'phoneVerificationRequired')
-    ..aOS(10, _omitFieldNames ? '' : 'verificationSentTo')
-    ..aOS(11, _omitFieldNames ? '' : 'phoneVerificationId')
-    ..aInt64(12, _omitFieldNames ? '' : 'phoneVerificationExpiresIn')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -375,10 +365,8 @@ class SignupResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SignupResponse copyWith(void Function(SignupResponse) updates) => super.copyWith((message) => updates(message as SignupResponse)) as SignupResponse;
-
+  SignupResponse copyWith(void Function(SignupResponse) updates) => super.copyWith((message) => updates(message as SignupResponse)) as SignupResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SignupResponse create() => SignupResponse._();
   SignupResponse createEmptyInstance() => create();
@@ -498,8 +486,17 @@ class SignupResponse extends $pb.GeneratedMessage {
   void clearPhoneVerificationExpiresIn() => clearField(12);
 }
 
-/// ===== Login =====
 class LoginRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'LoginRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'password')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deviceId')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deviceName')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phone')
+    ..hasRequiredFields = false
+  ;
+
+  LoginRequest._() : super();
   factory LoginRequest({
     $core.String? email,
     $core.String? password,
@@ -507,37 +504,26 @@ class LoginRequest extends $pb.GeneratedMessage {
     $core.String? deviceName,
     $core.String? phone,
   }) {
-    final $result = create();
+    final _result = create();
     if (email != null) {
-      $result.email = email;
+      _result.email = email;
     }
     if (password != null) {
-      $result.password = password;
+      _result.password = password;
     }
     if (deviceId != null) {
-      $result.deviceId = deviceId;
+      _result.deviceId = deviceId;
     }
     if (deviceName != null) {
-      $result.deviceName = deviceName;
+      _result.deviceName = deviceName;
     }
     if (phone != null) {
-      $result.phone = phone;
+      _result.phone = phone;
     }
-    return $result;
+    return _result;
   }
-  LoginRequest._() : super();
   factory LoginRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory LoginRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'LoginRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'email')
-    ..aOS(2, _omitFieldNames ? '' : 'password')
-    ..aOS(3, _omitFieldNames ? '' : 'deviceId')
-    ..aOS(4, _omitFieldNames ? '' : 'deviceName')
-    ..aOS(5, _omitFieldNames ? '' : 'phone')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -547,10 +533,8 @@ class LoginRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  LoginRequest copyWith(void Function(LoginRequest) updates) => super.copyWith((message) => updates(message as LoginRequest)) as LoginRequest;
-
+  LoginRequest copyWith(void Function(LoginRequest) updates) => super.copyWith((message) => updates(message as LoginRequest)) as LoginRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static LoginRequest create() => LoginRequest._();
   LoginRequest createEmptyInstance() => create();
@@ -606,6 +590,19 @@ class LoginRequest extends $pb.GeneratedMessage {
 }
 
 class LoginResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'LoginResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accessToken')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refreshToken')
+    ..aInt64(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresIn')
+    ..aOM<LoginData>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'data', subBuilder: LoginData.create)
+    ..aOB(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'twoFactorRequired')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'twoFactorToken')
+    ..hasRequiredFields = false
+  ;
+
+  LoginResponse._() : super();
   factory LoginResponse({
     $core.bool? success,
     $core.String? msg,
@@ -616,49 +613,35 @@ class LoginResponse extends $pb.GeneratedMessage {
     $core.bool? twoFactorRequired,
     $core.String? twoFactorToken,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (msg != null) {
-      $result.msg = msg;
+      _result.msg = msg;
     }
     if (accessToken != null) {
-      $result.accessToken = accessToken;
+      _result.accessToken = accessToken;
     }
     if (refreshToken != null) {
-      $result.refreshToken = refreshToken;
+      _result.refreshToken = refreshToken;
     }
     if (expiresIn != null) {
-      $result.expiresIn = expiresIn;
+      _result.expiresIn = expiresIn;
     }
     if (data != null) {
-      $result.data = data;
+      _result.data = data;
     }
     if (twoFactorRequired != null) {
-      $result.twoFactorRequired = twoFactorRequired;
+      _result.twoFactorRequired = twoFactorRequired;
     }
     if (twoFactorToken != null) {
-      $result.twoFactorToken = twoFactorToken;
+      _result.twoFactorToken = twoFactorToken;
     }
-    return $result;
+    return _result;
   }
-  LoginResponse._() : super();
   factory LoginResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory LoginResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'LoginResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'msg')
-    ..aOS(3, _omitFieldNames ? '' : 'accessToken')
-    ..aOS(4, _omitFieldNames ? '' : 'refreshToken')
-    ..aInt64(5, _omitFieldNames ? '' : 'expiresIn')
-    ..aOM<LoginData>(6, _omitFieldNames ? '' : 'data', subBuilder: LoginData.create)
-    ..aOB(7, _omitFieldNames ? '' : 'twoFactorRequired')
-    ..aOS(8, _omitFieldNames ? '' : 'twoFactorToken')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -668,10 +651,8 @@ class LoginResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  LoginResponse copyWith(void Function(LoginResponse) updates) => super.copyWith((message) => updates(message as LoginResponse)) as LoginResponse;
-
+  LoginResponse copyWith(void Function(LoginResponse) updates) => super.copyWith((message) => updates(message as LoginResponse)) as LoginResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static LoginResponse create() => LoginResponse._();
   LoginResponse createEmptyInstance() => create();
@@ -756,39 +737,38 @@ class LoginResponse extends $pb.GeneratedMessage {
 }
 
 class LoginData extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'LoginData', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<User>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'user', subBuilder: User.create)
+    ..aOM<Session>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'session', subBuilder: Session.create)
+    ..aOB(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasPasscode')
+    ..aOB(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasTransactionPin')
+    ..hasRequiredFields = false
+  ;
+
+  LoginData._() : super();
   factory LoginData({
     User? user,
     Session? session,
     $core.bool? hasPasscode,
     $core.bool? hasTransactionPin,
   }) {
-    final $result = create();
+    final _result = create();
     if (user != null) {
-      $result.user = user;
+      _result.user = user;
     }
     if (session != null) {
-      $result.session = session;
+      _result.session = session;
     }
     if (hasPasscode != null) {
-      $result.hasPasscode = hasPasscode;
+      _result.hasPasscode = hasPasscode;
     }
     if (hasTransactionPin != null) {
-      $result.hasTransactionPin = hasTransactionPin;
+      _result.hasTransactionPin = hasTransactionPin;
     }
-    return $result;
+    return _result;
   }
-  LoginData._() : super();
   factory LoginData.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory LoginData.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'LoginData', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOM<User>(1, _omitFieldNames ? '' : 'user', subBuilder: User.create)
-    ..aOM<Session>(2, _omitFieldNames ? '' : 'session', subBuilder: Session.create)
-    ..aOB(3, _omitFieldNames ? '' : 'hasPasscode')
-    ..aOB(4, _omitFieldNames ? '' : 'hasTransactionPin')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -798,10 +778,8 @@ class LoginData extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  LoginData copyWith(void Function(LoginData) updates) => super.copyWith((message) => updates(message as LoginData)) as LoginData;
-
+  LoginData copyWith(void Function(LoginData) updates) => super.copyWith((message) => updates(message as LoginData)) as LoginData; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static LoginData create() => LoginData._();
   LoginData createEmptyInstance() => create();
@@ -852,39 +830,38 @@ class LoginData extends $pb.GeneratedMessage {
 }
 
 class Session extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'Session', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accessToken')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refreshToken')
+    ..aInt64(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresIn')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..hasRequiredFields = false
+  ;
+
+  Session._() : super();
   factory Session({
     $core.String? accessToken,
     $core.String? refreshToken,
     $fixnum.Int64? expiresIn,
     $core.String? userId,
   }) {
-    final $result = create();
+    final _result = create();
     if (accessToken != null) {
-      $result.accessToken = accessToken;
+      _result.accessToken = accessToken;
     }
     if (refreshToken != null) {
-      $result.refreshToken = refreshToken;
+      _result.refreshToken = refreshToken;
     }
     if (expiresIn != null) {
-      $result.expiresIn = expiresIn;
+      _result.expiresIn = expiresIn;
     }
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
-    return $result;
+    return _result;
   }
-  Session._() : super();
   factory Session.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory Session.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Session', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'accessToken')
-    ..aOS(2, _omitFieldNames ? '' : 'refreshToken')
-    ..aInt64(3, _omitFieldNames ? '' : 'expiresIn')
-    ..aOS(4, _omitFieldNames ? '' : 'userId')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -894,10 +871,8 @@ class Session extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  Session copyWith(void Function(Session) updates) => super.copyWith((message) => updates(message as Session)) as Session;
-
+  Session copyWith(void Function(Session) updates) => super.copyWith((message) => updates(message as Session)) as Session; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static Session create() => Session._();
   Session createEmptyInstance() => create();
@@ -943,26 +918,24 @@ class Session extends $pb.GeneratedMessage {
   void clearUserId() => clearField(4);
 }
 
-/// ===== Refresh Token =====
 class RefreshTokenRequest extends $pb.GeneratedMessage {
-  factory RefreshTokenRequest({
-    $core.String? refreshToken,
-  }) {
-    final $result = create();
-    if (refreshToken != null) {
-      $result.refreshToken = refreshToken;
-    }
-    return $result;
-  }
-  RefreshTokenRequest._() : super();
-  factory RefreshTokenRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory RefreshTokenRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RefreshTokenRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'refreshToken')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'RefreshTokenRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refreshToken')
     ..hasRequiredFields = false
   ;
 
+  RefreshTokenRequest._() : super();
+  factory RefreshTokenRequest({
+    $core.String? refreshToken,
+  }) {
+    final _result = create();
+    if (refreshToken != null) {
+      _result.refreshToken = refreshToken;
+    }
+    return _result;
+  }
+  factory RefreshTokenRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory RefreshTokenRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -972,10 +945,8 @@ class RefreshTokenRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  RefreshTokenRequest copyWith(void Function(RefreshTokenRequest) updates) => super.copyWith((message) => updates(message as RefreshTokenRequest)) as RefreshTokenRequest;
-
+  RefreshTokenRequest copyWith(void Function(RefreshTokenRequest) updates) => super.copyWith((message) => updates(message as RefreshTokenRequest)) as RefreshTokenRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static RefreshTokenRequest create() => RefreshTokenRequest._();
   RefreshTokenRequest createEmptyInstance() => create();
@@ -995,39 +966,38 @@ class RefreshTokenRequest extends $pb.GeneratedMessage {
 }
 
 class RefreshTokenResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'RefreshTokenResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accessToken')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refreshToken')
+    ..aInt64(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresIn')
+    ..aOM<User>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'user', subBuilder: User.create)
+    ..hasRequiredFields = false
+  ;
+
+  RefreshTokenResponse._() : super();
   factory RefreshTokenResponse({
     $core.String? accessToken,
     $core.String? refreshToken,
     $fixnum.Int64? expiresIn,
     User? user,
   }) {
-    final $result = create();
+    final _result = create();
     if (accessToken != null) {
-      $result.accessToken = accessToken;
+      _result.accessToken = accessToken;
     }
     if (refreshToken != null) {
-      $result.refreshToken = refreshToken;
+      _result.refreshToken = refreshToken;
     }
     if (expiresIn != null) {
-      $result.expiresIn = expiresIn;
+      _result.expiresIn = expiresIn;
     }
     if (user != null) {
-      $result.user = user;
+      _result.user = user;
     }
-    return $result;
+    return _result;
   }
-  RefreshTokenResponse._() : super();
   factory RefreshTokenResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory RefreshTokenResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RefreshTokenResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'accessToken')
-    ..aOS(2, _omitFieldNames ? '' : 'refreshToken')
-    ..aInt64(3, _omitFieldNames ? '' : 'expiresIn')
-    ..aOM<User>(4, _omitFieldNames ? '' : 'user', subBuilder: User.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1037,10 +1007,8 @@ class RefreshTokenResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  RefreshTokenResponse copyWith(void Function(RefreshTokenResponse) updates) => super.copyWith((message) => updates(message as RefreshTokenResponse)) as RefreshTokenResponse;
-
+  RefreshTokenResponse copyWith(void Function(RefreshTokenResponse) updates) => super.copyWith((message) => updates(message as RefreshTokenResponse)) as RefreshTokenResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static RefreshTokenResponse create() => RefreshTokenResponse._();
   RefreshTokenResponse createEmptyInstance() => create();
@@ -1088,31 +1056,29 @@ class RefreshTokenResponse extends $pb.GeneratedMessage {
   User ensureUser() => $_ensure(3);
 }
 
-/// ===== Logout =====
 class LogoutRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'LogoutRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refreshToken')
+    ..hasRequiredFields = false
+  ;
+
+  LogoutRequest._() : super();
   factory LogoutRequest({
     $core.String? userId,
     $core.String? refreshToken,
   }) {
-    final $result = create();
+    final _result = create();
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (refreshToken != null) {
-      $result.refreshToken = refreshToken;
+      _result.refreshToken = refreshToken;
     }
-    return $result;
+    return _result;
   }
-  LogoutRequest._() : super();
   factory LogoutRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory LogoutRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'LogoutRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..aOS(2, _omitFieldNames ? '' : 'refreshToken')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1122,10 +1088,8 @@ class LogoutRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  LogoutRequest copyWith(void Function(LogoutRequest) updates) => super.copyWith((message) => updates(message as LogoutRequest)) as LogoutRequest;
-
+  LogoutRequest copyWith(void Function(LogoutRequest) updates) => super.copyWith((message) => updates(message as LogoutRequest)) as LogoutRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static LogoutRequest create() => LogoutRequest._();
   LogoutRequest createEmptyInstance() => create();
@@ -1154,24 +1118,23 @@ class LogoutRequest extends $pb.GeneratedMessage {
 }
 
 class LogoutResponse extends $pb.GeneratedMessage {
-  factory LogoutResponse({
-    $core.String? message,
-  }) {
-    final $result = create();
-    if (message != null) {
-      $result.message = message;
-    }
-    return $result;
-  }
-  LogoutResponse._() : super();
-  factory LogoutResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory LogoutResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'LogoutResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'message')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'LogoutResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
     ..hasRequiredFields = false
   ;
 
+  LogoutResponse._() : super();
+  factory LogoutResponse({
+    $core.String? message,
+  }) {
+    final _result = create();
+    if (message != null) {
+      _result.message = message;
+    }
+    return _result;
+  }
+  factory LogoutResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory LogoutResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1181,10 +1144,8 @@ class LogoutResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  LogoutResponse copyWith(void Function(LogoutResponse) updates) => super.copyWith((message) => updates(message as LogoutResponse)) as LogoutResponse;
-
+  LogoutResponse copyWith(void Function(LogoutResponse) updates) => super.copyWith((message) => updates(message as LogoutResponse)) as LogoutResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static LogoutResponse create() => LogoutResponse._();
   LogoutResponse createEmptyInstance() => create();
@@ -1203,26 +1164,24 @@ class LogoutResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(1);
 }
 
-/// ===== Email Verification =====
 class VerifyEmailRequest extends $pb.GeneratedMessage {
-  factory VerifyEmailRequest({
-    $core.String? verificationCode,
-  }) {
-    final $result = create();
-    if (verificationCode != null) {
-      $result.verificationCode = verificationCode;
-    }
-    return $result;
-  }
-  VerifyEmailRequest._() : super();
-  factory VerifyEmailRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory VerifyEmailRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyEmailRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'verificationCode', protoName: 'verificationCode')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VerifyEmailRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verificationCode', protoName: 'verificationCode')
     ..hasRequiredFields = false
   ;
 
+  VerifyEmailRequest._() : super();
+  factory VerifyEmailRequest({
+    $core.String? verificationCode,
+  }) {
+    final _result = create();
+    if (verificationCode != null) {
+      _result.verificationCode = verificationCode;
+    }
+    return _result;
+  }
+  factory VerifyEmailRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory VerifyEmailRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1232,10 +1191,8 @@ class VerifyEmailRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  VerifyEmailRequest copyWith(void Function(VerifyEmailRequest) updates) => super.copyWith((message) => updates(message as VerifyEmailRequest)) as VerifyEmailRequest;
-
+  VerifyEmailRequest copyWith(void Function(VerifyEmailRequest) updates) => super.copyWith((message) => updates(message as VerifyEmailRequest)) as VerifyEmailRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static VerifyEmailRequest create() => VerifyEmailRequest._();
   VerifyEmailRequest createEmptyInstance() => create();
@@ -1255,29 +1212,28 @@ class VerifyEmailRequest extends $pb.GeneratedMessage {
 }
 
 class VerifyEmailResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VerifyEmailResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
+    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..hasRequiredFields = false
+  ;
+
+  VerifyEmailResponse._() : super();
   factory VerifyEmailResponse({
     $core.String? msg,
     $core.bool? success,
   }) {
-    final $result = create();
+    final _result = create();
     if (msg != null) {
-      $result.msg = msg;
+      _result.msg = msg;
     }
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
-    return $result;
+    return _result;
   }
-  VerifyEmailResponse._() : super();
   factory VerifyEmailResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory VerifyEmailResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyEmailResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'msg')
-    ..aOB(2, _omitFieldNames ? '' : 'success')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1287,10 +1243,8 @@ class VerifyEmailResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  VerifyEmailResponse copyWith(void Function(VerifyEmailResponse) updates) => super.copyWith((message) => updates(message as VerifyEmailResponse)) as VerifyEmailResponse;
-
+  VerifyEmailResponse copyWith(void Function(VerifyEmailResponse) updates) => super.copyWith((message) => updates(message as VerifyEmailResponse)) as VerifyEmailResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static VerifyEmailResponse create() => VerifyEmailResponse._();
   VerifyEmailResponse createEmptyInstance() => create();
@@ -1319,24 +1273,23 @@ class VerifyEmailResponse extends $pb.GeneratedMessage {
 }
 
 class ResendVerificationEmailRequest extends $pb.GeneratedMessage {
-  factory ResendVerificationEmailRequest({
-    $core.String? email,
-  }) {
-    final $result = create();
-    if (email != null) {
-      $result.email = email;
-    }
-    return $result;
-  }
-  ResendVerificationEmailRequest._() : super();
-  factory ResendVerificationEmailRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory ResendVerificationEmailRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ResendVerificationEmailRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'email')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ResendVerificationEmailRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
     ..hasRequiredFields = false
   ;
 
+  ResendVerificationEmailRequest._() : super();
+  factory ResendVerificationEmailRequest({
+    $core.String? email,
+  }) {
+    final _result = create();
+    if (email != null) {
+      _result.email = email;
+    }
+    return _result;
+  }
+  factory ResendVerificationEmailRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ResendVerificationEmailRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1346,10 +1299,8 @@ class ResendVerificationEmailRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ResendVerificationEmailRequest copyWith(void Function(ResendVerificationEmailRequest) updates) => super.copyWith((message) => updates(message as ResendVerificationEmailRequest)) as ResendVerificationEmailRequest;
-
+  ResendVerificationEmailRequest copyWith(void Function(ResendVerificationEmailRequest) updates) => super.copyWith((message) => updates(message as ResendVerificationEmailRequest)) as ResendVerificationEmailRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ResendVerificationEmailRequest create() => ResendVerificationEmailRequest._();
   ResendVerificationEmailRequest createEmptyInstance() => create();
@@ -1369,34 +1320,33 @@ class ResendVerificationEmailRequest extends $pb.GeneratedMessage {
 }
 
 class ResendVerificationEmailResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ResendVerificationEmailResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cooldownSeconds', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  ResendVerificationEmailResponse._() : super();
   factory ResendVerificationEmailResponse({
     $core.bool? success,
     $core.String? message,
     $core.int? cooldownSeconds,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (cooldownSeconds != null) {
-      $result.cooldownSeconds = cooldownSeconds;
+      _result.cooldownSeconds = cooldownSeconds;
     }
-    return $result;
+    return _result;
   }
-  ResendVerificationEmailResponse._() : super();
   factory ResendVerificationEmailResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ResendVerificationEmailResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ResendVerificationEmailResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..a<$core.int>(3, _omitFieldNames ? '' : 'cooldownSeconds', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1406,10 +1356,8 @@ class ResendVerificationEmailResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ResendVerificationEmailResponse copyWith(void Function(ResendVerificationEmailResponse) updates) => super.copyWith((message) => updates(message as ResendVerificationEmailResponse)) as ResendVerificationEmailResponse;
-
+  ResendVerificationEmailResponse copyWith(void Function(ResendVerificationEmailResponse) updates) => super.copyWith((message) => updates(message as ResendVerificationEmailResponse)) as ResendVerificationEmailResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ResendVerificationEmailResponse create() => ResendVerificationEmailResponse._();
   ResendVerificationEmailResponse createEmptyInstance() => create();
@@ -1446,36 +1394,34 @@ class ResendVerificationEmailResponse extends $pb.GeneratedMessage {
   void clearCooldownSeconds() => clearField(3);
 }
 
-/// ===== Phone Verification =====
 class VerifyPhoneRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VerifyPhoneRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'code')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phone')
+    ..hasRequiredFields = false
+  ;
+
+  VerifyPhoneRequest._() : super();
   factory VerifyPhoneRequest({
     $core.String? userId,
     $core.String? code,
     $core.String? phone,
   }) {
-    final $result = create();
+    final _result = create();
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (code != null) {
-      $result.code = code;
+      _result.code = code;
     }
     if (phone != null) {
-      $result.phone = phone;
+      _result.phone = phone;
     }
-    return $result;
+    return _result;
   }
-  VerifyPhoneRequest._() : super();
   factory VerifyPhoneRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory VerifyPhoneRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyPhoneRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..aOS(2, _omitFieldNames ? '' : 'code')
-    ..aOS(3, _omitFieldNames ? '' : 'phone')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1485,10 +1431,8 @@ class VerifyPhoneRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  VerifyPhoneRequest copyWith(void Function(VerifyPhoneRequest) updates) => super.copyWith((message) => updates(message as VerifyPhoneRequest)) as VerifyPhoneRequest;
-
+  VerifyPhoneRequest copyWith(void Function(VerifyPhoneRequest) updates) => super.copyWith((message) => updates(message as VerifyPhoneRequest)) as VerifyPhoneRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static VerifyPhoneRequest create() => VerifyPhoneRequest._();
   VerifyPhoneRequest createEmptyInstance() => create();
@@ -1526,29 +1470,28 @@ class VerifyPhoneRequest extends $pb.GeneratedMessage {
 }
 
 class VerifyPhoneResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VerifyPhoneResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..hasRequiredFields = false
+  ;
+
+  VerifyPhoneResponse._() : super();
   factory VerifyPhoneResponse({
     $core.String? message,
     $core.bool? success,
   }) {
-    final $result = create();
+    final _result = create();
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
-    return $result;
+    return _result;
   }
-  VerifyPhoneResponse._() : super();
   factory VerifyPhoneResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory VerifyPhoneResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyPhoneResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'message')
-    ..aOB(2, _omitFieldNames ? '' : 'success')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1558,10 +1501,8 @@ class VerifyPhoneResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  VerifyPhoneResponse copyWith(void Function(VerifyPhoneResponse) updates) => super.copyWith((message) => updates(message as VerifyPhoneResponse)) as VerifyPhoneResponse;
-
+  VerifyPhoneResponse copyWith(void Function(VerifyPhoneResponse) updates) => super.copyWith((message) => updates(message as VerifyPhoneResponse)) as VerifyPhoneResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static VerifyPhoneResponse create() => VerifyPhoneResponse._();
   VerifyPhoneResponse createEmptyInstance() => create();
@@ -1590,29 +1531,28 @@ class VerifyPhoneResponse extends $pb.GeneratedMessage {
 }
 
 class ResendPhoneVerificationRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ResendPhoneVerificationRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phone')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..hasRequiredFields = false
+  ;
+
+  ResendPhoneVerificationRequest._() : super();
   factory ResendPhoneVerificationRequest({
     $core.String? phone,
     $core.String? userId,
   }) {
-    final $result = create();
+    final _result = create();
     if (phone != null) {
-      $result.phone = phone;
+      _result.phone = phone;
     }
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
-    return $result;
+    return _result;
   }
-  ResendPhoneVerificationRequest._() : super();
   factory ResendPhoneVerificationRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ResendPhoneVerificationRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ResendPhoneVerificationRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'phone')
-    ..aOS(2, _omitFieldNames ? '' : 'userId')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1622,10 +1562,8 @@ class ResendPhoneVerificationRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ResendPhoneVerificationRequest copyWith(void Function(ResendPhoneVerificationRequest) updates) => super.copyWith((message) => updates(message as ResendPhoneVerificationRequest)) as ResendPhoneVerificationRequest;
-
+  ResendPhoneVerificationRequest copyWith(void Function(ResendPhoneVerificationRequest) updates) => super.copyWith((message) => updates(message as ResendPhoneVerificationRequest)) as ResendPhoneVerificationRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ResendPhoneVerificationRequest create() => ResendPhoneVerificationRequest._();
   ResendPhoneVerificationRequest createEmptyInstance() => create();
@@ -1654,29 +1592,28 @@ class ResendPhoneVerificationRequest extends $pb.GeneratedMessage {
 }
 
 class ResendPhoneVerificationResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ResendPhoneVerificationResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..hasRequiredFields = false
+  ;
+
+  ResendPhoneVerificationResponse._() : super();
   factory ResendPhoneVerificationResponse({
     $core.String? message,
     $core.bool? success,
   }) {
-    final $result = create();
+    final _result = create();
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
-    return $result;
+    return _result;
   }
-  ResendPhoneVerificationResponse._() : super();
   factory ResendPhoneVerificationResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ResendPhoneVerificationResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ResendPhoneVerificationResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'message')
-    ..aOB(2, _omitFieldNames ? '' : 'success')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1686,10 +1623,8 @@ class ResendPhoneVerificationResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ResendPhoneVerificationResponse copyWith(void Function(ResendPhoneVerificationResponse) updates) => super.copyWith((message) => updates(message as ResendPhoneVerificationResponse)) as ResendPhoneVerificationResponse;
-
+  ResendPhoneVerificationResponse copyWith(void Function(ResendPhoneVerificationResponse) updates) => super.copyWith((message) => updates(message as ResendPhoneVerificationResponse)) as ResendPhoneVerificationResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ResendPhoneVerificationResponse create() => ResendPhoneVerificationResponse._();
   ResendPhoneVerificationResponse createEmptyInstance() => create();
@@ -1718,34 +1653,33 @@ class ResendPhoneVerificationResponse extends $pb.GeneratedMessage {
 }
 
 class ForgotPasswordRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ForgotPasswordRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phone')
+    ..e<PasswordResetDeliveryMethod>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deliveryMethod', $pb.PbFieldType.OE, defaultOrMaker: PasswordResetDeliveryMethod.DELIVERY_METHOD_UNSPECIFIED, valueOf: PasswordResetDeliveryMethod.valueOf, enumValues: PasswordResetDeliveryMethod.values)
+    ..hasRequiredFields = false
+  ;
+
+  ForgotPasswordRequest._() : super();
   factory ForgotPasswordRequest({
     $core.String? email,
     $core.String? phone,
     PasswordResetDeliveryMethod? deliveryMethod,
   }) {
-    final $result = create();
+    final _result = create();
     if (email != null) {
-      $result.email = email;
+      _result.email = email;
     }
     if (phone != null) {
-      $result.phone = phone;
+      _result.phone = phone;
     }
     if (deliveryMethod != null) {
-      $result.deliveryMethod = deliveryMethod;
+      _result.deliveryMethod = deliveryMethod;
     }
-    return $result;
+    return _result;
   }
-  ForgotPasswordRequest._() : super();
   factory ForgotPasswordRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ForgotPasswordRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ForgotPasswordRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'email')
-    ..aOS(2, _omitFieldNames ? '' : 'phone')
-    ..e<PasswordResetDeliveryMethod>(3, _omitFieldNames ? '' : 'deliveryMethod', $pb.PbFieldType.OE, defaultOrMaker: PasswordResetDeliveryMethod.DELIVERY_METHOD_UNSPECIFIED, valueOf: PasswordResetDeliveryMethod.valueOf, enumValues: PasswordResetDeliveryMethod.values)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1755,10 +1689,8 @@ class ForgotPasswordRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ForgotPasswordRequest copyWith(void Function(ForgotPasswordRequest) updates) => super.copyWith((message) => updates(message as ForgotPasswordRequest)) as ForgotPasswordRequest;
-
+  ForgotPasswordRequest copyWith(void Function(ForgotPasswordRequest) updates) => super.copyWith((message) => updates(message as ForgotPasswordRequest)) as ForgotPasswordRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ForgotPasswordRequest create() => ForgotPasswordRequest._();
   ForgotPasswordRequest createEmptyInstance() => create();
@@ -1796,6 +1728,17 @@ class ForgotPasswordRequest extends $pb.GeneratedMessage {
 }
 
 class ForgotPasswordResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ForgotPasswordResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deliveryMethod')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'maskedContact')
+    ..aInt64(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresInSeconds')
+    ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userFound')
+    ..hasRequiredFields = false
+  ;
+
+  ForgotPasswordResponse._() : super();
   factory ForgotPasswordResponse({
     $core.String? message,
     $core.bool? success,
@@ -1804,41 +1747,29 @@ class ForgotPasswordResponse extends $pb.GeneratedMessage {
     $fixnum.Int64? expiresInSeconds,
     $core.bool? userFound,
   }) {
-    final $result = create();
+    final _result = create();
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (deliveryMethod != null) {
-      $result.deliveryMethod = deliveryMethod;
+      _result.deliveryMethod = deliveryMethod;
     }
     if (maskedContact != null) {
-      $result.maskedContact = maskedContact;
+      _result.maskedContact = maskedContact;
     }
     if (expiresInSeconds != null) {
-      $result.expiresInSeconds = expiresInSeconds;
+      _result.expiresInSeconds = expiresInSeconds;
     }
     if (userFound != null) {
-      $result.userFound = userFound;
+      _result.userFound = userFound;
     }
-    return $result;
+    return _result;
   }
-  ForgotPasswordResponse._() : super();
   factory ForgotPasswordResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ForgotPasswordResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ForgotPasswordResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'message')
-    ..aOB(2, _omitFieldNames ? '' : 'success')
-    ..aOS(3, _omitFieldNames ? '' : 'deliveryMethod')
-    ..aOS(4, _omitFieldNames ? '' : 'maskedContact')
-    ..aInt64(5, _omitFieldNames ? '' : 'expiresInSeconds')
-    ..aOB(6, _omitFieldNames ? '' : 'userFound')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1848,10 +1779,8 @@ class ForgotPasswordResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ForgotPasswordResponse copyWith(void Function(ForgotPasswordResponse) updates) => super.copyWith((message) => updates(message as ForgotPasswordResponse)) as ForgotPasswordResponse;
-
+  ForgotPasswordResponse copyWith(void Function(ForgotPasswordResponse) updates) => super.copyWith((message) => updates(message as ForgotPasswordResponse)) as ForgotPasswordResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ForgotPasswordResponse create() => ForgotPasswordResponse._();
   ForgotPasswordResponse createEmptyInstance() => create();
@@ -1916,34 +1845,33 @@ class ForgotPasswordResponse extends $pb.GeneratedMessage {
 }
 
 class VerifyPasswordResetCodeRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VerifyPasswordResetCodeRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'contact')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'code')
+    ..e<PasswordResetDeliveryMethod>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deliveryMethod', $pb.PbFieldType.OE, defaultOrMaker: PasswordResetDeliveryMethod.DELIVERY_METHOD_UNSPECIFIED, valueOf: PasswordResetDeliveryMethod.valueOf, enumValues: PasswordResetDeliveryMethod.values)
+    ..hasRequiredFields = false
+  ;
+
+  VerifyPasswordResetCodeRequest._() : super();
   factory VerifyPasswordResetCodeRequest({
     $core.String? contact,
     $core.String? code,
     PasswordResetDeliveryMethod? deliveryMethod,
   }) {
-    final $result = create();
+    final _result = create();
     if (contact != null) {
-      $result.contact = contact;
+      _result.contact = contact;
     }
     if (code != null) {
-      $result.code = code;
+      _result.code = code;
     }
     if (deliveryMethod != null) {
-      $result.deliveryMethod = deliveryMethod;
+      _result.deliveryMethod = deliveryMethod;
     }
-    return $result;
+    return _result;
   }
-  VerifyPasswordResetCodeRequest._() : super();
   factory VerifyPasswordResetCodeRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory VerifyPasswordResetCodeRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyPasswordResetCodeRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'contact')
-    ..aOS(2, _omitFieldNames ? '' : 'code')
-    ..e<PasswordResetDeliveryMethod>(3, _omitFieldNames ? '' : 'deliveryMethod', $pb.PbFieldType.OE, defaultOrMaker: PasswordResetDeliveryMethod.DELIVERY_METHOD_UNSPECIFIED, valueOf: PasswordResetDeliveryMethod.valueOf, enumValues: PasswordResetDeliveryMethod.values)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1953,10 +1881,8 @@ class VerifyPasswordResetCodeRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  VerifyPasswordResetCodeRequest copyWith(void Function(VerifyPasswordResetCodeRequest) updates) => super.copyWith((message) => updates(message as VerifyPasswordResetCodeRequest)) as VerifyPasswordResetCodeRequest;
-
+  VerifyPasswordResetCodeRequest copyWith(void Function(VerifyPasswordResetCodeRequest) updates) => super.copyWith((message) => updates(message as VerifyPasswordResetCodeRequest)) as VerifyPasswordResetCodeRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static VerifyPasswordResetCodeRequest create() => VerifyPasswordResetCodeRequest._();
   VerifyPasswordResetCodeRequest createEmptyInstance() => create();
@@ -1994,39 +1920,38 @@ class VerifyPasswordResetCodeRequest extends $pb.GeneratedMessage {
 }
 
 class VerifyPasswordResetCodeResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VerifyPasswordResetCodeResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'resetToken')
+    ..aInt64(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresInSeconds')
+    ..hasRequiredFields = false
+  ;
+
+  VerifyPasswordResetCodeResponse._() : super();
   factory VerifyPasswordResetCodeResponse({
     $core.bool? success,
     $core.String? message,
     $core.String? resetToken,
     $fixnum.Int64? expiresInSeconds,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (resetToken != null) {
-      $result.resetToken = resetToken;
+      _result.resetToken = resetToken;
     }
     if (expiresInSeconds != null) {
-      $result.expiresInSeconds = expiresInSeconds;
+      _result.expiresInSeconds = expiresInSeconds;
     }
-    return $result;
+    return _result;
   }
-  VerifyPasswordResetCodeResponse._() : super();
   factory VerifyPasswordResetCodeResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory VerifyPasswordResetCodeResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyPasswordResetCodeResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOS(3, _omitFieldNames ? '' : 'resetToken')
-    ..aInt64(4, _omitFieldNames ? '' : 'expiresInSeconds')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2036,10 +1961,8 @@ class VerifyPasswordResetCodeResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  VerifyPasswordResetCodeResponse copyWith(void Function(VerifyPasswordResetCodeResponse) updates) => super.copyWith((message) => updates(message as VerifyPasswordResetCodeResponse)) as VerifyPasswordResetCodeResponse;
-
+  VerifyPasswordResetCodeResponse copyWith(void Function(VerifyPasswordResetCodeResponse) updates) => super.copyWith((message) => updates(message as VerifyPasswordResetCodeResponse)) as VerifyPasswordResetCodeResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static VerifyPasswordResetCodeResponse create() => VerifyPasswordResetCodeResponse._();
   VerifyPasswordResetCodeResponse createEmptyInstance() => create();
@@ -2086,29 +2009,28 @@ class VerifyPasswordResetCodeResponse extends $pb.GeneratedMessage {
 }
 
 class ResetPasswordRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ResetPasswordRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'resetToken')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'newPassword')
+    ..hasRequiredFields = false
+  ;
+
+  ResetPasswordRequest._() : super();
   factory ResetPasswordRequest({
     $core.String? resetToken,
     $core.String? newPassword,
   }) {
-    final $result = create();
+    final _result = create();
     if (resetToken != null) {
-      $result.resetToken = resetToken;
+      _result.resetToken = resetToken;
     }
     if (newPassword != null) {
-      $result.newPassword = newPassword;
+      _result.newPassword = newPassword;
     }
-    return $result;
+    return _result;
   }
-  ResetPasswordRequest._() : super();
   factory ResetPasswordRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ResetPasswordRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ResetPasswordRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'resetToken')
-    ..aOS(2, _omitFieldNames ? '' : 'newPassword')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2118,10 +2040,8 @@ class ResetPasswordRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ResetPasswordRequest copyWith(void Function(ResetPasswordRequest) updates) => super.copyWith((message) => updates(message as ResetPasswordRequest)) as ResetPasswordRequest;
-
+  ResetPasswordRequest copyWith(void Function(ResetPasswordRequest) updates) => super.copyWith((message) => updates(message as ResetPasswordRequest)) as ResetPasswordRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ResetPasswordRequest create() => ResetPasswordRequest._();
   ResetPasswordRequest createEmptyInstance() => create();
@@ -2150,29 +2070,28 @@ class ResetPasswordRequest extends $pb.GeneratedMessage {
 }
 
 class ResetPasswordResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ResetPasswordResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
+    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..hasRequiredFields = false
+  ;
+
+  ResetPasswordResponse._() : super();
   factory ResetPasswordResponse({
     $core.String? msg,
     $core.bool? success,
   }) {
-    final $result = create();
+    final _result = create();
     if (msg != null) {
-      $result.msg = msg;
+      _result.msg = msg;
     }
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
-    return $result;
+    return _result;
   }
-  ResetPasswordResponse._() : super();
   factory ResetPasswordResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ResetPasswordResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ResetPasswordResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'msg')
-    ..aOB(2, _omitFieldNames ? '' : 'success')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2182,10 +2101,8 @@ class ResetPasswordResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ResetPasswordResponse copyWith(void Function(ResetPasswordResponse) updates) => super.copyWith((message) => updates(message as ResetPasswordResponse)) as ResetPasswordResponse;
-
+  ResetPasswordResponse copyWith(void Function(ResetPasswordResponse) updates) => super.copyWith((message) => updates(message as ResetPasswordResponse)) as ResetPasswordResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ResetPasswordResponse create() => ResetPasswordResponse._();
   ResetPasswordResponse createEmptyInstance() => create();
@@ -2214,34 +2131,33 @@ class ResetPasswordResponse extends $pb.GeneratedMessage {
 }
 
 class ChangePasswordRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ChangePasswordRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentPassword')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'newPassword')
+    ..hasRequiredFields = false
+  ;
+
+  ChangePasswordRequest._() : super();
   factory ChangePasswordRequest({
     $core.String? userId,
     $core.String? currentPassword,
     $core.String? newPassword,
   }) {
-    final $result = create();
+    final _result = create();
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (currentPassword != null) {
-      $result.currentPassword = currentPassword;
+      _result.currentPassword = currentPassword;
     }
     if (newPassword != null) {
-      $result.newPassword = newPassword;
+      _result.newPassword = newPassword;
     }
-    return $result;
+    return _result;
   }
-  ChangePasswordRequest._() : super();
   factory ChangePasswordRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ChangePasswordRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ChangePasswordRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..aOS(2, _omitFieldNames ? '' : 'currentPassword')
-    ..aOS(3, _omitFieldNames ? '' : 'newPassword')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2251,10 +2167,8 @@ class ChangePasswordRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ChangePasswordRequest copyWith(void Function(ChangePasswordRequest) updates) => super.copyWith((message) => updates(message as ChangePasswordRequest)) as ChangePasswordRequest;
-
+  ChangePasswordRequest copyWith(void Function(ChangePasswordRequest) updates) => super.copyWith((message) => updates(message as ChangePasswordRequest)) as ChangePasswordRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ChangePasswordRequest create() => ChangePasswordRequest._();
   ChangePasswordRequest createEmptyInstance() => create();
@@ -2292,24 +2206,23 @@ class ChangePasswordRequest extends $pb.GeneratedMessage {
 }
 
 class ChangePasswordResponse extends $pb.GeneratedMessage {
-  factory ChangePasswordResponse({
-    $core.String? message,
-  }) {
-    final $result = create();
-    if (message != null) {
-      $result.message = message;
-    }
-    return $result;
-  }
-  ChangePasswordResponse._() : super();
-  factory ChangePasswordResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory ChangePasswordResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ChangePasswordResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'message')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ChangePasswordResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
     ..hasRequiredFields = false
   ;
 
+  ChangePasswordResponse._() : super();
+  factory ChangePasswordResponse({
+    $core.String? message,
+  }) {
+    final _result = create();
+    if (message != null) {
+      _result.message = message;
+    }
+    return _result;
+  }
+  factory ChangePasswordResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ChangePasswordResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2319,10 +2232,8 @@ class ChangePasswordResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ChangePasswordResponse copyWith(void Function(ChangePasswordResponse) updates) => super.copyWith((message) => updates(message as ChangePasswordResponse)) as ChangePasswordResponse;
-
+  ChangePasswordResponse copyWith(void Function(ChangePasswordResponse) updates) => super.copyWith((message) => updates(message as ChangePasswordResponse)) as ChangePasswordResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ChangePasswordResponse create() => ChangePasswordResponse._();
   ChangePasswordResponse createEmptyInstance() => create();
@@ -2341,26 +2252,24 @@ class ChangePasswordResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(1);
 }
 
-/// ===== Get User Info =====
 class GetMeRequest extends $pb.GeneratedMessage {
-  factory GetMeRequest({
-    $core.String? userId,
-  }) {
-    final $result = create();
-    if (userId != null) {
-      $result.userId = userId;
-    }
-    return $result;
-  }
-  GetMeRequest._() : super();
-  factory GetMeRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetMeRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMeRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'userId')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetMeRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
     ..hasRequiredFields = false
   ;
 
+  GetMeRequest._() : super();
+  factory GetMeRequest({
+    $core.String? userId,
+  }) {
+    final _result = create();
+    if (userId != null) {
+      _result.userId = userId;
+    }
+    return _result;
+  }
+  factory GetMeRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetMeRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2370,10 +2279,8 @@ class GetMeRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetMeRequest copyWith(void Function(GetMeRequest) updates) => super.copyWith((message) => updates(message as GetMeRequest)) as GetMeRequest;
-
+  GetMeRequest copyWith(void Function(GetMeRequest) updates) => super.copyWith((message) => updates(message as GetMeRequest)) as GetMeRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetMeRequest create() => GetMeRequest._();
   GetMeRequest createEmptyInstance() => create();
@@ -2393,24 +2300,23 @@ class GetMeRequest extends $pb.GeneratedMessage {
 }
 
 class GetMeResponse extends $pb.GeneratedMessage {
-  factory GetMeResponse({
-    User? user,
-  }) {
-    final $result = create();
-    if (user != null) {
-      $result.user = user;
-    }
-    return $result;
-  }
-  GetMeResponse._() : super();
-  factory GetMeResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetMeResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMeResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOM<User>(1, _omitFieldNames ? '' : 'user', subBuilder: User.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetMeResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<User>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'user', subBuilder: User.create)
     ..hasRequiredFields = false
   ;
 
+  GetMeResponse._() : super();
+  factory GetMeResponse({
+    User? user,
+  }) {
+    final _result = create();
+    if (user != null) {
+      _result.user = user;
+    }
+    return _result;
+  }
+  factory GetMeResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetMeResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2420,10 +2326,8 @@ class GetMeResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetMeResponse copyWith(void Function(GetMeResponse) updates) => super.copyWith((message) => updates(message as GetMeResponse)) as GetMeResponse;
-
+  GetMeResponse copyWith(void Function(GetMeResponse) updates) => super.copyWith((message) => updates(message as GetMeResponse)) as GetMeResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetMeResponse create() => GetMeResponse._();
   GetMeResponse createEmptyInstance() => create();
@@ -2444,8 +2348,18 @@ class GetMeResponse extends $pb.GeneratedMessage {
   User ensureUser() => $_ensure(0);
 }
 
-/// ===== Update Profile =====
 class UpdateProfileRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateProfileRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'firstName')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastName')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'username')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phone')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'profilePicture')
+    ..hasRequiredFields = false
+  ;
+
+  UpdateProfileRequest._() : super();
   factory UpdateProfileRequest({
     $core.String? userId,
     $core.String? firstName,
@@ -2454,41 +2368,29 @@ class UpdateProfileRequest extends $pb.GeneratedMessage {
     $core.String? phone,
     $core.String? profilePicture,
   }) {
-    final $result = create();
+    final _result = create();
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (firstName != null) {
-      $result.firstName = firstName;
+      _result.firstName = firstName;
     }
     if (lastName != null) {
-      $result.lastName = lastName;
+      _result.lastName = lastName;
     }
     if (username != null) {
-      $result.username = username;
+      _result.username = username;
     }
     if (phone != null) {
-      $result.phone = phone;
+      _result.phone = phone;
     }
     if (profilePicture != null) {
-      $result.profilePicture = profilePicture;
+      _result.profilePicture = profilePicture;
     }
-    return $result;
+    return _result;
   }
-  UpdateProfileRequest._() : super();
   factory UpdateProfileRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UpdateProfileRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateProfileRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..aOS(2, _omitFieldNames ? '' : 'firstName')
-    ..aOS(3, _omitFieldNames ? '' : 'lastName')
-    ..aOS(4, _omitFieldNames ? '' : 'username')
-    ..aOS(5, _omitFieldNames ? '' : 'phone')
-    ..aOS(6, _omitFieldNames ? '' : 'profilePicture')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2498,10 +2400,8 @@ class UpdateProfileRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UpdateProfileRequest copyWith(void Function(UpdateProfileRequest) updates) => super.copyWith((message) => updates(message as UpdateProfileRequest)) as UpdateProfileRequest;
-
+  UpdateProfileRequest copyWith(void Function(UpdateProfileRequest) updates) => super.copyWith((message) => updates(message as UpdateProfileRequest)) as UpdateProfileRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static UpdateProfileRequest create() => UpdateProfileRequest._();
   UpdateProfileRequest createEmptyInstance() => create();
@@ -2566,34 +2466,33 @@ class UpdateProfileRequest extends $pb.GeneratedMessage {
 }
 
 class UpdateProfileResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateProfileResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
+    ..aOM<User>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'user', subBuilder: User.create)
+    ..hasRequiredFields = false
+  ;
+
+  UpdateProfileResponse._() : super();
   factory UpdateProfileResponse({
     $core.bool? success,
     $core.String? msg,
     User? user,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (msg != null) {
-      $result.msg = msg;
+      _result.msg = msg;
     }
     if (user != null) {
-      $result.user = user;
+      _result.user = user;
     }
-    return $result;
+    return _result;
   }
-  UpdateProfileResponse._() : super();
   factory UpdateProfileResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UpdateProfileResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateProfileResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'msg')
-    ..aOM<User>(3, _omitFieldNames ? '' : 'user', subBuilder: User.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2603,10 +2502,8 @@ class UpdateProfileResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UpdateProfileResponse copyWith(void Function(UpdateProfileResponse) updates) => super.copyWith((message) => updates(message as UpdateProfileResponse)) as UpdateProfileResponse;
-
+  UpdateProfileResponse copyWith(void Function(UpdateProfileResponse) updates) => super.copyWith((message) => updates(message as UpdateProfileResponse)) as UpdateProfileResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static UpdateProfileResponse create() => UpdateProfileResponse._();
   UpdateProfileResponse createEmptyInstance() => create();
@@ -2645,31 +2542,29 @@ class UpdateProfileResponse extends $pb.GeneratedMessage {
   User ensureUser() => $_ensure(2);
 }
 
-/// ===== Facial Login =====
 class FacialLoginRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'FacialLoginRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.List<$core.int>>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'facialData', $pb.PbFieldType.OY)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deviceId')
+    ..hasRequiredFields = false
+  ;
+
+  FacialLoginRequest._() : super();
   factory FacialLoginRequest({
     $core.List<$core.int>? facialData,
     $core.String? deviceId,
   }) {
-    final $result = create();
+    final _result = create();
     if (facialData != null) {
-      $result.facialData = facialData;
+      _result.facialData = facialData;
     }
     if (deviceId != null) {
-      $result.deviceId = deviceId;
+      _result.deviceId = deviceId;
     }
-    return $result;
+    return _result;
   }
-  FacialLoginRequest._() : super();
   factory FacialLoginRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory FacialLoginRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'FacialLoginRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..a<$core.List<$core.int>>(1, _omitFieldNames ? '' : 'facialData', $pb.PbFieldType.OY)
-    ..aOS(2, _omitFieldNames ? '' : 'deviceId')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2679,10 +2574,8 @@ class FacialLoginRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  FacialLoginRequest copyWith(void Function(FacialLoginRequest) updates) => super.copyWith((message) => updates(message as FacialLoginRequest)) as FacialLoginRequest;
-
+  FacialLoginRequest copyWith(void Function(FacialLoginRequest) updates) => super.copyWith((message) => updates(message as FacialLoginRequest)) as FacialLoginRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static FacialLoginRequest create() => FacialLoginRequest._();
   FacialLoginRequest createEmptyInstance() => create();
@@ -2711,39 +2604,38 @@ class FacialLoginRequest extends $pb.GeneratedMessage {
 }
 
 class FacialLoginResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'FacialLoginResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accessToken')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refreshToken')
+    ..aInt64(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresIn')
+    ..aOM<User>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'user', subBuilder: User.create)
+    ..hasRequiredFields = false
+  ;
+
+  FacialLoginResponse._() : super();
   factory FacialLoginResponse({
     $core.String? accessToken,
     $core.String? refreshToken,
     $fixnum.Int64? expiresIn,
     User? user,
   }) {
-    final $result = create();
+    final _result = create();
     if (accessToken != null) {
-      $result.accessToken = accessToken;
+      _result.accessToken = accessToken;
     }
     if (refreshToken != null) {
-      $result.refreshToken = refreshToken;
+      _result.refreshToken = refreshToken;
     }
     if (expiresIn != null) {
-      $result.expiresIn = expiresIn;
+      _result.expiresIn = expiresIn;
     }
     if (user != null) {
-      $result.user = user;
+      _result.user = user;
     }
-    return $result;
+    return _result;
   }
-  FacialLoginResponse._() : super();
   factory FacialLoginResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory FacialLoginResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'FacialLoginResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'accessToken')
-    ..aOS(2, _omitFieldNames ? '' : 'refreshToken')
-    ..aInt64(3, _omitFieldNames ? '' : 'expiresIn')
-    ..aOM<User>(4, _omitFieldNames ? '' : 'user', subBuilder: User.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2753,10 +2645,8 @@ class FacialLoginResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  FacialLoginResponse copyWith(void Function(FacialLoginResponse) updates) => super.copyWith((message) => updates(message as FacialLoginResponse)) as FacialLoginResponse;
-
+  FacialLoginResponse copyWith(void Function(FacialLoginResponse) updates) => super.copyWith((message) => updates(message as FacialLoginResponse)) as FacialLoginResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static FacialLoginResponse create() => FacialLoginResponse._();
   FacialLoginResponse createEmptyInstance() => create();
@@ -2804,8 +2694,18 @@ class FacialLoginResponse extends $pb.GeneratedMessage {
   User ensureUser() => $_ensure(3);
 }
 
-/// ===== Social Login =====
 class SocialLoginRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SocialLoginRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'provider')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'providerToken')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'firstName')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastName')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'providerUserId')
+    ..hasRequiredFields = false
+  ;
+
+  SocialLoginRequest._() : super();
   factory SocialLoginRequest({
     $core.String? provider,
     $core.String? providerToken,
@@ -2814,41 +2714,29 @@ class SocialLoginRequest extends $pb.GeneratedMessage {
     $core.String? lastName,
     $core.String? providerUserId,
   }) {
-    final $result = create();
+    final _result = create();
     if (provider != null) {
-      $result.provider = provider;
+      _result.provider = provider;
     }
     if (providerToken != null) {
-      $result.providerToken = providerToken;
+      _result.providerToken = providerToken;
     }
     if (email != null) {
-      $result.email = email;
+      _result.email = email;
     }
     if (firstName != null) {
-      $result.firstName = firstName;
+      _result.firstName = firstName;
     }
     if (lastName != null) {
-      $result.lastName = lastName;
+      _result.lastName = lastName;
     }
     if (providerUserId != null) {
-      $result.providerUserId = providerUserId;
+      _result.providerUserId = providerUserId;
     }
-    return $result;
+    return _result;
   }
-  SocialLoginRequest._() : super();
   factory SocialLoginRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SocialLoginRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SocialLoginRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'provider')
-    ..aOS(2, _omitFieldNames ? '' : 'providerToken')
-    ..aOS(3, _omitFieldNames ? '' : 'email')
-    ..aOS(4, _omitFieldNames ? '' : 'firstName')
-    ..aOS(5, _omitFieldNames ? '' : 'lastName')
-    ..aOS(6, _omitFieldNames ? '' : 'providerUserId')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2858,10 +2746,8 @@ class SocialLoginRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SocialLoginRequest copyWith(void Function(SocialLoginRequest) updates) => super.copyWith((message) => updates(message as SocialLoginRequest)) as SocialLoginRequest;
-
+  SocialLoginRequest copyWith(void Function(SocialLoginRequest) updates) => super.copyWith((message) => updates(message as SocialLoginRequest)) as SocialLoginRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SocialLoginRequest create() => SocialLoginRequest._();
   SocialLoginRequest createEmptyInstance() => create();
@@ -2926,6 +2812,16 @@ class SocialLoginRequest extends $pb.GeneratedMessage {
 }
 
 class SocialLoginResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SocialLoginResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accessToken')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refreshToken')
+    ..aInt64(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresIn')
+    ..aOM<User>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'user', subBuilder: User.create)
+    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isNewUser')
+    ..hasRequiredFields = false
+  ;
+
+  SocialLoginResponse._() : super();
   factory SocialLoginResponse({
     $core.String? accessToken,
     $core.String? refreshToken,
@@ -2933,37 +2829,26 @@ class SocialLoginResponse extends $pb.GeneratedMessage {
     User? user,
     $core.bool? isNewUser,
   }) {
-    final $result = create();
+    final _result = create();
     if (accessToken != null) {
-      $result.accessToken = accessToken;
+      _result.accessToken = accessToken;
     }
     if (refreshToken != null) {
-      $result.refreshToken = refreshToken;
+      _result.refreshToken = refreshToken;
     }
     if (expiresIn != null) {
-      $result.expiresIn = expiresIn;
+      _result.expiresIn = expiresIn;
     }
     if (user != null) {
-      $result.user = user;
+      _result.user = user;
     }
     if (isNewUser != null) {
-      $result.isNewUser = isNewUser;
+      _result.isNewUser = isNewUser;
     }
-    return $result;
+    return _result;
   }
-  SocialLoginResponse._() : super();
   factory SocialLoginResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SocialLoginResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SocialLoginResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'accessToken')
-    ..aOS(2, _omitFieldNames ? '' : 'refreshToken')
-    ..aInt64(3, _omitFieldNames ? '' : 'expiresIn')
-    ..aOM<User>(4, _omitFieldNames ? '' : 'user', subBuilder: User.create)
-    ..aOB(5, _omitFieldNames ? '' : 'isNewUser')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2973,10 +2858,8 @@ class SocialLoginResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SocialLoginResponse copyWith(void Function(SocialLoginResponse) updates) => super.copyWith((message) => updates(message as SocialLoginResponse)) as SocialLoginResponse;
-
+  SocialLoginResponse copyWith(void Function(SocialLoginResponse) updates) => super.copyWith((message) => updates(message as SocialLoginResponse)) as SocialLoginResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SocialLoginResponse create() => SocialLoginResponse._();
   SocialLoginResponse createEmptyInstance() => create();
@@ -3033,8 +2916,24 @@ class SocialLoginResponse extends $pb.GeneratedMessage {
   void clearIsNewUser() => clearField(5);
 }
 
-/// ===== Social Account Linking =====
 class LinkedSocialAccount extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'LinkedSocialAccount', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'provider')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'providerUserId')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'providerEmail')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'displayName')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'profilePictureUrl')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'profileUrl')
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+    ..aOB(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isPrimary')
+    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'linkedAt')
+    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastUsedAt')
+    ..hasRequiredFields = false
+  ;
+
+  LinkedSocialAccount._() : super();
   factory LinkedSocialAccount({
     $core.String? id,
     $core.String? userId,
@@ -3049,65 +2948,47 @@ class LinkedSocialAccount extends $pb.GeneratedMessage {
     $core.String? linkedAt,
     $core.String? lastUsedAt,
   }) {
-    final $result = create();
+    final _result = create();
     if (id != null) {
-      $result.id = id;
+      _result.id = id;
     }
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (provider != null) {
-      $result.provider = provider;
+      _result.provider = provider;
     }
     if (providerUserId != null) {
-      $result.providerUserId = providerUserId;
+      _result.providerUserId = providerUserId;
     }
     if (providerEmail != null) {
-      $result.providerEmail = providerEmail;
+      _result.providerEmail = providerEmail;
     }
     if (displayName != null) {
-      $result.displayName = displayName;
+      _result.displayName = displayName;
     }
     if (profilePictureUrl != null) {
-      $result.profilePictureUrl = profilePictureUrl;
+      _result.profilePictureUrl = profilePictureUrl;
     }
     if (profileUrl != null) {
-      $result.profileUrl = profileUrl;
+      _result.profileUrl = profileUrl;
     }
     if (status != null) {
-      $result.status = status;
+      _result.status = status;
     }
     if (isPrimary != null) {
-      $result.isPrimary = isPrimary;
+      _result.isPrimary = isPrimary;
     }
     if (linkedAt != null) {
-      $result.linkedAt = linkedAt;
+      _result.linkedAt = linkedAt;
     }
     if (lastUsedAt != null) {
-      $result.lastUsedAt = lastUsedAt;
+      _result.lastUsedAt = lastUsedAt;
     }
-    return $result;
+    return _result;
   }
-  LinkedSocialAccount._() : super();
   factory LinkedSocialAccount.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory LinkedSocialAccount.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'LinkedSocialAccount', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..aOS(2, _omitFieldNames ? '' : 'userId')
-    ..aOS(3, _omitFieldNames ? '' : 'provider')
-    ..aOS(4, _omitFieldNames ? '' : 'providerUserId')
-    ..aOS(5, _omitFieldNames ? '' : 'providerEmail')
-    ..aOS(6, _omitFieldNames ? '' : 'displayName')
-    ..aOS(7, _omitFieldNames ? '' : 'profilePictureUrl')
-    ..aOS(8, _omitFieldNames ? '' : 'profileUrl')
-    ..aOS(9, _omitFieldNames ? '' : 'status')
-    ..aOB(10, _omitFieldNames ? '' : 'isPrimary')
-    ..aOS(11, _omitFieldNames ? '' : 'linkedAt')
-    ..aOS(12, _omitFieldNames ? '' : 'lastUsedAt')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3117,10 +2998,8 @@ class LinkedSocialAccount extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  LinkedSocialAccount copyWith(void Function(LinkedSocialAccount) updates) => super.copyWith((message) => updates(message as LinkedSocialAccount)) as LinkedSocialAccount;
-
+  LinkedSocialAccount copyWith(void Function(LinkedSocialAccount) updates) => super.copyWith((message) => updates(message as LinkedSocialAccount)) as LinkedSocialAccount; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static LinkedSocialAccount create() => LinkedSocialAccount._();
   LinkedSocialAccount createEmptyInstance() => create();
@@ -3239,15 +3118,14 @@ class LinkedSocialAccount extends $pb.GeneratedMessage {
 }
 
 class GetLinkedSocialAccountsRequest extends $pb.GeneratedMessage {
-  factory GetLinkedSocialAccountsRequest() => create();
-  GetLinkedSocialAccountsRequest._() : super();
-  factory GetLinkedSocialAccountsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetLinkedSocialAccountsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetLinkedSocialAccountsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetLinkedSocialAccountsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..hasRequiredFields = false
   ;
 
+  GetLinkedSocialAccountsRequest._() : super();
+  factory GetLinkedSocialAccountsRequest() => create();
+  factory GetLinkedSocialAccountsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetLinkedSocialAccountsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3257,10 +3135,8 @@ class GetLinkedSocialAccountsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetLinkedSocialAccountsRequest copyWith(void Function(GetLinkedSocialAccountsRequest) updates) => super.copyWith((message) => updates(message as GetLinkedSocialAccountsRequest)) as GetLinkedSocialAccountsRequest;
-
+  GetLinkedSocialAccountsRequest copyWith(void Function(GetLinkedSocialAccountsRequest) updates) => super.copyWith((message) => updates(message as GetLinkedSocialAccountsRequest)) as GetLinkedSocialAccountsRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetLinkedSocialAccountsRequest create() => GetLinkedSocialAccountsRequest._();
   GetLinkedSocialAccountsRequest createEmptyInstance() => create();
@@ -3271,34 +3147,33 @@ class GetLinkedSocialAccountsRequest extends $pb.GeneratedMessage {
 }
 
 class GetLinkedSocialAccountsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetLinkedSocialAccountsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..pc<LinkedSocialAccount>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accounts', $pb.PbFieldType.PM, subBuilder: LinkedSocialAccount.create)
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalCount', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  GetLinkedSocialAccountsResponse._() : super();
   factory GetLinkedSocialAccountsResponse({
     $core.bool? success,
     $core.Iterable<LinkedSocialAccount>? accounts,
     $core.int? totalCount,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (accounts != null) {
-      $result.accounts.addAll(accounts);
+      _result.accounts.addAll(accounts);
     }
     if (totalCount != null) {
-      $result.totalCount = totalCount;
+      _result.totalCount = totalCount;
     }
-    return $result;
+    return _result;
   }
-  GetLinkedSocialAccountsResponse._() : super();
   factory GetLinkedSocialAccountsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetLinkedSocialAccountsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetLinkedSocialAccountsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..pc<LinkedSocialAccount>(2, _omitFieldNames ? '' : 'accounts', $pb.PbFieldType.PM, subBuilder: LinkedSocialAccount.create)
-    ..a<$core.int>(3, _omitFieldNames ? '' : 'totalCount', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3308,10 +3183,8 @@ class GetLinkedSocialAccountsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetLinkedSocialAccountsResponse copyWith(void Function(GetLinkedSocialAccountsResponse) updates) => super.copyWith((message) => updates(message as GetLinkedSocialAccountsResponse)) as GetLinkedSocialAccountsResponse;
-
+  GetLinkedSocialAccountsResponse copyWith(void Function(GetLinkedSocialAccountsResponse) updates) => super.copyWith((message) => updates(message as GetLinkedSocialAccountsResponse)) as GetLinkedSocialAccountsResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetLinkedSocialAccountsResponse create() => GetLinkedSocialAccountsResponse._();
   GetLinkedSocialAccountsResponse createEmptyInstance() => create();
@@ -3343,6 +3216,19 @@ class GetLinkedSocialAccountsResponse extends $pb.GeneratedMessage {
 }
 
 class LinkSocialAccountRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'LinkSocialAccountRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'provider')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'providerToken')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'providerUserId')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'providerEmail')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'displayName')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'profilePictureUrl')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'profileUrl')
+    ..aOB(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'setAsPrimary')
+    ..hasRequiredFields = false
+  ;
+
+  LinkSocialAccountRequest._() : super();
   factory LinkSocialAccountRequest({
     $core.String? provider,
     $core.String? providerToken,
@@ -3353,49 +3239,35 @@ class LinkSocialAccountRequest extends $pb.GeneratedMessage {
     $core.String? profileUrl,
     $core.bool? setAsPrimary,
   }) {
-    final $result = create();
+    final _result = create();
     if (provider != null) {
-      $result.provider = provider;
+      _result.provider = provider;
     }
     if (providerToken != null) {
-      $result.providerToken = providerToken;
+      _result.providerToken = providerToken;
     }
     if (providerUserId != null) {
-      $result.providerUserId = providerUserId;
+      _result.providerUserId = providerUserId;
     }
     if (providerEmail != null) {
-      $result.providerEmail = providerEmail;
+      _result.providerEmail = providerEmail;
     }
     if (displayName != null) {
-      $result.displayName = displayName;
+      _result.displayName = displayName;
     }
     if (profilePictureUrl != null) {
-      $result.profilePictureUrl = profilePictureUrl;
+      _result.profilePictureUrl = profilePictureUrl;
     }
     if (profileUrl != null) {
-      $result.profileUrl = profileUrl;
+      _result.profileUrl = profileUrl;
     }
     if (setAsPrimary != null) {
-      $result.setAsPrimary = setAsPrimary;
+      _result.setAsPrimary = setAsPrimary;
     }
-    return $result;
+    return _result;
   }
-  LinkSocialAccountRequest._() : super();
   factory LinkSocialAccountRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory LinkSocialAccountRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'LinkSocialAccountRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'provider')
-    ..aOS(2, _omitFieldNames ? '' : 'providerToken')
-    ..aOS(3, _omitFieldNames ? '' : 'providerUserId')
-    ..aOS(4, _omitFieldNames ? '' : 'providerEmail')
-    ..aOS(5, _omitFieldNames ? '' : 'displayName')
-    ..aOS(6, _omitFieldNames ? '' : 'profilePictureUrl')
-    ..aOS(7, _omitFieldNames ? '' : 'profileUrl')
-    ..aOB(8, _omitFieldNames ? '' : 'setAsPrimary')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3405,10 +3277,8 @@ class LinkSocialAccountRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  LinkSocialAccountRequest copyWith(void Function(LinkSocialAccountRequest) updates) => super.copyWith((message) => updates(message as LinkSocialAccountRequest)) as LinkSocialAccountRequest;
-
+  LinkSocialAccountRequest copyWith(void Function(LinkSocialAccountRequest) updates) => super.copyWith((message) => updates(message as LinkSocialAccountRequest)) as LinkSocialAccountRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static LinkSocialAccountRequest create() => LinkSocialAccountRequest._();
   LinkSocialAccountRequest createEmptyInstance() => create();
@@ -3491,34 +3361,33 @@ class LinkSocialAccountRequest extends $pb.GeneratedMessage {
 }
 
 class LinkSocialAccountResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'LinkSocialAccountResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOM<LinkedSocialAccount>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'account', subBuilder: LinkedSocialAccount.create)
+    ..hasRequiredFields = false
+  ;
+
+  LinkSocialAccountResponse._() : super();
   factory LinkSocialAccountResponse({
     $core.bool? success,
     $core.String? message,
     LinkedSocialAccount? account,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (account != null) {
-      $result.account = account;
+      _result.account = account;
     }
-    return $result;
+    return _result;
   }
-  LinkSocialAccountResponse._() : super();
   factory LinkSocialAccountResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory LinkSocialAccountResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'LinkSocialAccountResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOM<LinkedSocialAccount>(3, _omitFieldNames ? '' : 'account', subBuilder: LinkedSocialAccount.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3528,10 +3397,8 @@ class LinkSocialAccountResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  LinkSocialAccountResponse copyWith(void Function(LinkSocialAccountResponse) updates) => super.copyWith((message) => updates(message as LinkSocialAccountResponse)) as LinkSocialAccountResponse;
-
+  LinkSocialAccountResponse copyWith(void Function(LinkSocialAccountResponse) updates) => super.copyWith((message) => updates(message as LinkSocialAccountResponse)) as LinkSocialAccountResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static LinkSocialAccountResponse create() => LinkSocialAccountResponse._();
   LinkSocialAccountResponse createEmptyInstance() => create();
@@ -3571,24 +3438,23 @@ class LinkSocialAccountResponse extends $pb.GeneratedMessage {
 }
 
 class UnlinkSocialAccountRequest extends $pb.GeneratedMessage {
-  factory UnlinkSocialAccountRequest({
-    $core.String? accountId,
-  }) {
-    final $result = create();
-    if (accountId != null) {
-      $result.accountId = accountId;
-    }
-    return $result;
-  }
-  UnlinkSocialAccountRequest._() : super();
-  factory UnlinkSocialAccountRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory UnlinkSocialAccountRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UnlinkSocialAccountRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'accountId')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UnlinkSocialAccountRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountId')
     ..hasRequiredFields = false
   ;
 
+  UnlinkSocialAccountRequest._() : super();
+  factory UnlinkSocialAccountRequest({
+    $core.String? accountId,
+  }) {
+    final _result = create();
+    if (accountId != null) {
+      _result.accountId = accountId;
+    }
+    return _result;
+  }
+  factory UnlinkSocialAccountRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UnlinkSocialAccountRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3598,10 +3464,8 @@ class UnlinkSocialAccountRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UnlinkSocialAccountRequest copyWith(void Function(UnlinkSocialAccountRequest) updates) => super.copyWith((message) => updates(message as UnlinkSocialAccountRequest)) as UnlinkSocialAccountRequest;
-
+  UnlinkSocialAccountRequest copyWith(void Function(UnlinkSocialAccountRequest) updates) => super.copyWith((message) => updates(message as UnlinkSocialAccountRequest)) as UnlinkSocialAccountRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static UnlinkSocialAccountRequest create() => UnlinkSocialAccountRequest._();
   UnlinkSocialAccountRequest createEmptyInstance() => create();
@@ -3621,29 +3485,28 @@ class UnlinkSocialAccountRequest extends $pb.GeneratedMessage {
 }
 
 class UnlinkSocialAccountResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UnlinkSocialAccountResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  UnlinkSocialAccountResponse._() : super();
   factory UnlinkSocialAccountResponse({
     $core.bool? success,
     $core.String? message,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
-    return $result;
+    return _result;
   }
-  UnlinkSocialAccountResponse._() : super();
   factory UnlinkSocialAccountResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UnlinkSocialAccountResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UnlinkSocialAccountResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3653,10 +3516,8 @@ class UnlinkSocialAccountResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UnlinkSocialAccountResponse copyWith(void Function(UnlinkSocialAccountResponse) updates) => super.copyWith((message) => updates(message as UnlinkSocialAccountResponse)) as UnlinkSocialAccountResponse;
-
+  UnlinkSocialAccountResponse copyWith(void Function(UnlinkSocialAccountResponse) updates) => super.copyWith((message) => updates(message as UnlinkSocialAccountResponse)) as UnlinkSocialAccountResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static UnlinkSocialAccountResponse create() => UnlinkSocialAccountResponse._();
   UnlinkSocialAccountResponse createEmptyInstance() => create();
@@ -3685,24 +3546,23 @@ class UnlinkSocialAccountResponse extends $pb.GeneratedMessage {
 }
 
 class SetPrimarySocialAccountRequest extends $pb.GeneratedMessage {
-  factory SetPrimarySocialAccountRequest({
-    $core.String? accountId,
-  }) {
-    final $result = create();
-    if (accountId != null) {
-      $result.accountId = accountId;
-    }
-    return $result;
-  }
-  SetPrimarySocialAccountRequest._() : super();
-  factory SetPrimarySocialAccountRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory SetPrimarySocialAccountRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SetPrimarySocialAccountRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'accountId')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SetPrimarySocialAccountRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountId')
     ..hasRequiredFields = false
   ;
 
+  SetPrimarySocialAccountRequest._() : super();
+  factory SetPrimarySocialAccountRequest({
+    $core.String? accountId,
+  }) {
+    final _result = create();
+    if (accountId != null) {
+      _result.accountId = accountId;
+    }
+    return _result;
+  }
+  factory SetPrimarySocialAccountRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory SetPrimarySocialAccountRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3712,10 +3572,8 @@ class SetPrimarySocialAccountRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SetPrimarySocialAccountRequest copyWith(void Function(SetPrimarySocialAccountRequest) updates) => super.copyWith((message) => updates(message as SetPrimarySocialAccountRequest)) as SetPrimarySocialAccountRequest;
-
+  SetPrimarySocialAccountRequest copyWith(void Function(SetPrimarySocialAccountRequest) updates) => super.copyWith((message) => updates(message as SetPrimarySocialAccountRequest)) as SetPrimarySocialAccountRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SetPrimarySocialAccountRequest create() => SetPrimarySocialAccountRequest._();
   SetPrimarySocialAccountRequest createEmptyInstance() => create();
@@ -3735,34 +3593,33 @@ class SetPrimarySocialAccountRequest extends $pb.GeneratedMessage {
 }
 
 class SetPrimarySocialAccountResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SetPrimarySocialAccountResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOM<LinkedSocialAccount>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'account', subBuilder: LinkedSocialAccount.create)
+    ..hasRequiredFields = false
+  ;
+
+  SetPrimarySocialAccountResponse._() : super();
   factory SetPrimarySocialAccountResponse({
     $core.bool? success,
     $core.String? message,
     LinkedSocialAccount? account,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (account != null) {
-      $result.account = account;
+      _result.account = account;
     }
-    return $result;
+    return _result;
   }
-  SetPrimarySocialAccountResponse._() : super();
   factory SetPrimarySocialAccountResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SetPrimarySocialAccountResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SetPrimarySocialAccountResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOM<LinkedSocialAccount>(3, _omitFieldNames ? '' : 'account', subBuilder: LinkedSocialAccount.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3772,10 +3629,8 @@ class SetPrimarySocialAccountResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SetPrimarySocialAccountResponse copyWith(void Function(SetPrimarySocialAccountResponse) updates) => super.copyWith((message) => updates(message as SetPrimarySocialAccountResponse)) as SetPrimarySocialAccountResponse;
-
+  SetPrimarySocialAccountResponse copyWith(void Function(SetPrimarySocialAccountResponse) updates) => super.copyWith((message) => updates(message as SetPrimarySocialAccountResponse)) as SetPrimarySocialAccountResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SetPrimarySocialAccountResponse create() => SetPrimarySocialAccountResponse._();
   SetPrimarySocialAccountResponse createEmptyInstance() => create();
@@ -3815,29 +3670,28 @@ class SetPrimarySocialAccountResponse extends $pb.GeneratedMessage {
 }
 
 class ReauthorizeSocialAccountRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ReauthorizeSocialAccountRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'providerToken')
+    ..hasRequiredFields = false
+  ;
+
+  ReauthorizeSocialAccountRequest._() : super();
   factory ReauthorizeSocialAccountRequest({
     $core.String? accountId,
     $core.String? providerToken,
   }) {
-    final $result = create();
+    final _result = create();
     if (accountId != null) {
-      $result.accountId = accountId;
+      _result.accountId = accountId;
     }
     if (providerToken != null) {
-      $result.providerToken = providerToken;
+      _result.providerToken = providerToken;
     }
-    return $result;
+    return _result;
   }
-  ReauthorizeSocialAccountRequest._() : super();
   factory ReauthorizeSocialAccountRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ReauthorizeSocialAccountRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ReauthorizeSocialAccountRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'accountId')
-    ..aOS(2, _omitFieldNames ? '' : 'providerToken')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3847,10 +3701,8 @@ class ReauthorizeSocialAccountRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ReauthorizeSocialAccountRequest copyWith(void Function(ReauthorizeSocialAccountRequest) updates) => super.copyWith((message) => updates(message as ReauthorizeSocialAccountRequest)) as ReauthorizeSocialAccountRequest;
-
+  ReauthorizeSocialAccountRequest copyWith(void Function(ReauthorizeSocialAccountRequest) updates) => super.copyWith((message) => updates(message as ReauthorizeSocialAccountRequest)) as ReauthorizeSocialAccountRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ReauthorizeSocialAccountRequest create() => ReauthorizeSocialAccountRequest._();
   ReauthorizeSocialAccountRequest createEmptyInstance() => create();
@@ -3879,34 +3731,33 @@ class ReauthorizeSocialAccountRequest extends $pb.GeneratedMessage {
 }
 
 class ReauthorizeSocialAccountResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ReauthorizeSocialAccountResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOM<LinkedSocialAccount>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'account', subBuilder: LinkedSocialAccount.create)
+    ..hasRequiredFields = false
+  ;
+
+  ReauthorizeSocialAccountResponse._() : super();
   factory ReauthorizeSocialAccountResponse({
     $core.bool? success,
     $core.String? message,
     LinkedSocialAccount? account,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (account != null) {
-      $result.account = account;
+      _result.account = account;
     }
-    return $result;
+    return _result;
   }
-  ReauthorizeSocialAccountResponse._() : super();
   factory ReauthorizeSocialAccountResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ReauthorizeSocialAccountResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ReauthorizeSocialAccountResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOM<LinkedSocialAccount>(3, _omitFieldNames ? '' : 'account', subBuilder: LinkedSocialAccount.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3916,10 +3767,8 @@ class ReauthorizeSocialAccountResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ReauthorizeSocialAccountResponse copyWith(void Function(ReauthorizeSocialAccountResponse) updates) => super.copyWith((message) => updates(message as ReauthorizeSocialAccountResponse)) as ReauthorizeSocialAccountResponse;
-
+  ReauthorizeSocialAccountResponse copyWith(void Function(ReauthorizeSocialAccountResponse) updates) => super.copyWith((message) => updates(message as ReauthorizeSocialAccountResponse)) as ReauthorizeSocialAccountResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ReauthorizeSocialAccountResponse create() => ReauthorizeSocialAccountResponse._();
   ReauthorizeSocialAccountResponse createEmptyInstance() => create();
@@ -3958,31 +3807,29 @@ class ReauthorizeSocialAccountResponse extends $pb.GeneratedMessage {
   LinkedSocialAccount ensureAccount() => $_ensure(2);
 }
 
-/// ===== Two-Factor Authentication =====
 class EnableTwoFactorRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'EnableTwoFactorRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'method')
+    ..hasRequiredFields = false
+  ;
+
+  EnableTwoFactorRequest._() : super();
   factory EnableTwoFactorRequest({
     $core.String? userId,
     $core.String? method,
   }) {
-    final $result = create();
+    final _result = create();
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (method != null) {
-      $result.method = method;
+      _result.method = method;
     }
-    return $result;
+    return _result;
   }
-  EnableTwoFactorRequest._() : super();
   factory EnableTwoFactorRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory EnableTwoFactorRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'EnableTwoFactorRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..aOS(2, _omitFieldNames ? '' : 'method')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3992,10 +3839,8 @@ class EnableTwoFactorRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  EnableTwoFactorRequest copyWith(void Function(EnableTwoFactorRequest) updates) => super.copyWith((message) => updates(message as EnableTwoFactorRequest)) as EnableTwoFactorRequest;
-
+  EnableTwoFactorRequest copyWith(void Function(EnableTwoFactorRequest) updates) => super.copyWith((message) => updates(message as EnableTwoFactorRequest)) as EnableTwoFactorRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static EnableTwoFactorRequest create() => EnableTwoFactorRequest._();
   EnableTwoFactorRequest createEmptyInstance() => create();
@@ -4024,6 +3869,17 @@ class EnableTwoFactorRequest extends $pb.GeneratedMessage {
 }
 
 class EnableTwoFactorResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'EnableTwoFactorResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'qrCode')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'secret')
+    ..pPS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'backupCodes')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'methodName')
+    ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verificationRequired')
+    ..hasRequiredFields = false
+  ;
+
+  EnableTwoFactorResponse._() : super();
   factory EnableTwoFactorResponse({
     $core.String? message,
     $core.String? qrCode,
@@ -4032,41 +3888,29 @@ class EnableTwoFactorResponse extends $pb.GeneratedMessage {
     $core.String? methodName,
     $core.bool? verificationRequired,
   }) {
-    final $result = create();
+    final _result = create();
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (qrCode != null) {
-      $result.qrCode = qrCode;
+      _result.qrCode = qrCode;
     }
     if (secret != null) {
-      $result.secret = secret;
+      _result.secret = secret;
     }
     if (backupCodes != null) {
-      $result.backupCodes.addAll(backupCodes);
+      _result.backupCodes.addAll(backupCodes);
     }
     if (methodName != null) {
-      $result.methodName = methodName;
+      _result.methodName = methodName;
     }
     if (verificationRequired != null) {
-      $result.verificationRequired = verificationRequired;
+      _result.verificationRequired = verificationRequired;
     }
-    return $result;
+    return _result;
   }
-  EnableTwoFactorResponse._() : super();
   factory EnableTwoFactorResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory EnableTwoFactorResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'EnableTwoFactorResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'message')
-    ..aOS(2, _omitFieldNames ? '' : 'qrCode')
-    ..aOS(3, _omitFieldNames ? '' : 'secret')
-    ..pPS(4, _omitFieldNames ? '' : 'backupCodes')
-    ..aOS(5, _omitFieldNames ? '' : 'methodName')
-    ..aOB(6, _omitFieldNames ? '' : 'verificationRequired')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4076,10 +3920,8 @@ class EnableTwoFactorResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  EnableTwoFactorResponse copyWith(void Function(EnableTwoFactorResponse) updates) => super.copyWith((message) => updates(message as EnableTwoFactorResponse)) as EnableTwoFactorResponse;
-
+  EnableTwoFactorResponse copyWith(void Function(EnableTwoFactorResponse) updates) => super.copyWith((message) => updates(message as EnableTwoFactorResponse)) as EnableTwoFactorResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static EnableTwoFactorResponse create() => EnableTwoFactorResponse._();
   EnableTwoFactorResponse createEmptyInstance() => create();
@@ -4138,34 +3980,33 @@ class EnableTwoFactorResponse extends $pb.GeneratedMessage {
 }
 
 class VerifyTwoFactorRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VerifyTwoFactorRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'twoFactorToken')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'code')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'method')
+    ..hasRequiredFields = false
+  ;
+
+  VerifyTwoFactorRequest._() : super();
   factory VerifyTwoFactorRequest({
     $core.String? twoFactorToken,
     $core.String? code,
     $core.String? method,
   }) {
-    final $result = create();
+    final _result = create();
     if (twoFactorToken != null) {
-      $result.twoFactorToken = twoFactorToken;
+      _result.twoFactorToken = twoFactorToken;
     }
     if (code != null) {
-      $result.code = code;
+      _result.code = code;
     }
     if (method != null) {
-      $result.method = method;
+      _result.method = method;
     }
-    return $result;
+    return _result;
   }
-  VerifyTwoFactorRequest._() : super();
   factory VerifyTwoFactorRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory VerifyTwoFactorRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyTwoFactorRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'twoFactorToken')
-    ..aOS(2, _omitFieldNames ? '' : 'code')
-    ..aOS(3, _omitFieldNames ? '' : 'method')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4175,10 +4016,8 @@ class VerifyTwoFactorRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  VerifyTwoFactorRequest copyWith(void Function(VerifyTwoFactorRequest) updates) => super.copyWith((message) => updates(message as VerifyTwoFactorRequest)) as VerifyTwoFactorRequest;
-
+  VerifyTwoFactorRequest copyWith(void Function(VerifyTwoFactorRequest) updates) => super.copyWith((message) => updates(message as VerifyTwoFactorRequest)) as VerifyTwoFactorRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static VerifyTwoFactorRequest create() => VerifyTwoFactorRequest._();
   VerifyTwoFactorRequest createEmptyInstance() => create();
@@ -4216,39 +4055,38 @@ class VerifyTwoFactorRequest extends $pb.GeneratedMessage {
 }
 
 class VerifyTwoFactorResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VerifyTwoFactorResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accessToken')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refreshToken')
+    ..aInt64(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresIn')
+    ..aOM<User>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'user', subBuilder: User.create)
+    ..hasRequiredFields = false
+  ;
+
+  VerifyTwoFactorResponse._() : super();
   factory VerifyTwoFactorResponse({
     $core.String? accessToken,
     $core.String? refreshToken,
     $fixnum.Int64? expiresIn,
     User? user,
   }) {
-    final $result = create();
+    final _result = create();
     if (accessToken != null) {
-      $result.accessToken = accessToken;
+      _result.accessToken = accessToken;
     }
     if (refreshToken != null) {
-      $result.refreshToken = refreshToken;
+      _result.refreshToken = refreshToken;
     }
     if (expiresIn != null) {
-      $result.expiresIn = expiresIn;
+      _result.expiresIn = expiresIn;
     }
     if (user != null) {
-      $result.user = user;
+      _result.user = user;
     }
-    return $result;
+    return _result;
   }
-  VerifyTwoFactorResponse._() : super();
   factory VerifyTwoFactorResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory VerifyTwoFactorResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyTwoFactorResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'accessToken')
-    ..aOS(2, _omitFieldNames ? '' : 'refreshToken')
-    ..aInt64(3, _omitFieldNames ? '' : 'expiresIn')
-    ..aOM<User>(4, _omitFieldNames ? '' : 'user', subBuilder: User.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4258,10 +4096,8 @@ class VerifyTwoFactorResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  VerifyTwoFactorResponse copyWith(void Function(VerifyTwoFactorResponse) updates) => super.copyWith((message) => updates(message as VerifyTwoFactorResponse)) as VerifyTwoFactorResponse;
-
+  VerifyTwoFactorResponse copyWith(void Function(VerifyTwoFactorResponse) updates) => super.copyWith((message) => updates(message as VerifyTwoFactorResponse)) as VerifyTwoFactorResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static VerifyTwoFactorResponse create() => VerifyTwoFactorResponse._();
   VerifyTwoFactorResponse createEmptyInstance() => create();
@@ -4310,24 +4146,23 @@ class VerifyTwoFactorResponse extends $pb.GeneratedMessage {
 }
 
 class CompleteTwoFactorSetupRequest extends $pb.GeneratedMessage {
-  factory CompleteTwoFactorSetupRequest({
-    $core.String? code,
-  }) {
-    final $result = create();
-    if (code != null) {
-      $result.code = code;
-    }
-    return $result;
-  }
-  CompleteTwoFactorSetupRequest._() : super();
-  factory CompleteTwoFactorSetupRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory CompleteTwoFactorSetupRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CompleteTwoFactorSetupRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'code')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CompleteTwoFactorSetupRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'code')
     ..hasRequiredFields = false
   ;
 
+  CompleteTwoFactorSetupRequest._() : super();
+  factory CompleteTwoFactorSetupRequest({
+    $core.String? code,
+  }) {
+    final _result = create();
+    if (code != null) {
+      _result.code = code;
+    }
+    return _result;
+  }
+  factory CompleteTwoFactorSetupRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CompleteTwoFactorSetupRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4337,10 +4172,8 @@ class CompleteTwoFactorSetupRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CompleteTwoFactorSetupRequest copyWith(void Function(CompleteTwoFactorSetupRequest) updates) => super.copyWith((message) => updates(message as CompleteTwoFactorSetupRequest)) as CompleteTwoFactorSetupRequest;
-
+  CompleteTwoFactorSetupRequest copyWith(void Function(CompleteTwoFactorSetupRequest) updates) => super.copyWith((message) => updates(message as CompleteTwoFactorSetupRequest)) as CompleteTwoFactorSetupRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CompleteTwoFactorSetupRequest create() => CompleteTwoFactorSetupRequest._();
   CompleteTwoFactorSetupRequest createEmptyInstance() => create();
@@ -4360,29 +4193,28 @@ class CompleteTwoFactorSetupRequest extends $pb.GeneratedMessage {
 }
 
 class CompleteTwoFactorSetupResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CompleteTwoFactorSetupResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  CompleteTwoFactorSetupResponse._() : super();
   factory CompleteTwoFactorSetupResponse({
     $core.bool? success,
     $core.String? message,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
-    return $result;
+    return _result;
   }
-  CompleteTwoFactorSetupResponse._() : super();
   factory CompleteTwoFactorSetupResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CompleteTwoFactorSetupResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CompleteTwoFactorSetupResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4392,10 +4224,8 @@ class CompleteTwoFactorSetupResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CompleteTwoFactorSetupResponse copyWith(void Function(CompleteTwoFactorSetupResponse) updates) => super.copyWith((message) => updates(message as CompleteTwoFactorSetupResponse)) as CompleteTwoFactorSetupResponse;
-
+  CompleteTwoFactorSetupResponse copyWith(void Function(CompleteTwoFactorSetupResponse) updates) => super.copyWith((message) => updates(message as CompleteTwoFactorSetupResponse)) as CompleteTwoFactorSetupResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CompleteTwoFactorSetupResponse create() => CompleteTwoFactorSetupResponse._();
   CompleteTwoFactorSetupResponse createEmptyInstance() => create();
@@ -4424,24 +4254,23 @@ class CompleteTwoFactorSetupResponse extends $pb.GeneratedMessage {
 }
 
 class DisableTwoFactorRequest extends $pb.GeneratedMessage {
-  factory DisableTwoFactorRequest({
-    $core.String? code,
-  }) {
-    final $result = create();
-    if (code != null) {
-      $result.code = code;
-    }
-    return $result;
-  }
-  DisableTwoFactorRequest._() : super();
-  factory DisableTwoFactorRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory DisableTwoFactorRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DisableTwoFactorRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'code')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DisableTwoFactorRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'code')
     ..hasRequiredFields = false
   ;
 
+  DisableTwoFactorRequest._() : super();
+  factory DisableTwoFactorRequest({
+    $core.String? code,
+  }) {
+    final _result = create();
+    if (code != null) {
+      _result.code = code;
+    }
+    return _result;
+  }
+  factory DisableTwoFactorRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory DisableTwoFactorRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4451,10 +4280,8 @@ class DisableTwoFactorRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  DisableTwoFactorRequest copyWith(void Function(DisableTwoFactorRequest) updates) => super.copyWith((message) => updates(message as DisableTwoFactorRequest)) as DisableTwoFactorRequest;
-
+  DisableTwoFactorRequest copyWith(void Function(DisableTwoFactorRequest) updates) => super.copyWith((message) => updates(message as DisableTwoFactorRequest)) as DisableTwoFactorRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static DisableTwoFactorRequest create() => DisableTwoFactorRequest._();
   DisableTwoFactorRequest createEmptyInstance() => create();
@@ -4474,29 +4301,28 @@ class DisableTwoFactorRequest extends $pb.GeneratedMessage {
 }
 
 class DisableTwoFactorResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DisableTwoFactorResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  DisableTwoFactorResponse._() : super();
   factory DisableTwoFactorResponse({
     $core.bool? success,
     $core.String? message,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
-    return $result;
+    return _result;
   }
-  DisableTwoFactorResponse._() : super();
   factory DisableTwoFactorResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory DisableTwoFactorResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DisableTwoFactorResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4506,10 +4332,8 @@ class DisableTwoFactorResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  DisableTwoFactorResponse copyWith(void Function(DisableTwoFactorResponse) updates) => super.copyWith((message) => updates(message as DisableTwoFactorResponse)) as DisableTwoFactorResponse;
-
+  DisableTwoFactorResponse copyWith(void Function(DisableTwoFactorResponse) updates) => super.copyWith((message) => updates(message as DisableTwoFactorResponse)) as DisableTwoFactorResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static DisableTwoFactorResponse create() => DisableTwoFactorResponse._();
   DisableTwoFactorResponse createEmptyInstance() => create();
@@ -4538,15 +4362,14 @@ class DisableTwoFactorResponse extends $pb.GeneratedMessage {
 }
 
 class GetTwoFactorStatusRequest extends $pb.GeneratedMessage {
-  factory GetTwoFactorStatusRequest() => create();
-  GetTwoFactorStatusRequest._() : super();
-  factory GetTwoFactorStatusRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetTwoFactorStatusRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTwoFactorStatusRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTwoFactorStatusRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..hasRequiredFields = false
   ;
 
+  GetTwoFactorStatusRequest._() : super();
+  factory GetTwoFactorStatusRequest() => create();
+  factory GetTwoFactorStatusRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetTwoFactorStatusRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4556,10 +4379,8 @@ class GetTwoFactorStatusRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetTwoFactorStatusRequest copyWith(void Function(GetTwoFactorStatusRequest) updates) => super.copyWith((message) => updates(message as GetTwoFactorStatusRequest)) as GetTwoFactorStatusRequest;
-
+  GetTwoFactorStatusRequest copyWith(void Function(GetTwoFactorStatusRequest) updates) => super.copyWith((message) => updates(message as GetTwoFactorStatusRequest)) as GetTwoFactorStatusRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetTwoFactorStatusRequest create() => GetTwoFactorStatusRequest._();
   GetTwoFactorStatusRequest createEmptyInstance() => create();
@@ -4570,6 +4391,17 @@ class GetTwoFactorStatusRequest extends $pb.GeneratedMessage {
 }
 
 class GetTwoFactorStatusResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTwoFactorStatusResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'enabled')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'method')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'methodName')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'methodDescription')
+    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'backupCodesCount', $pb.PbFieldType.O3)
+    ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasBackupCodes')
+    ..hasRequiredFields = false
+  ;
+
+  GetTwoFactorStatusResponse._() : super();
   factory GetTwoFactorStatusResponse({
     $core.bool? enabled,
     $core.String? method,
@@ -4578,41 +4410,29 @@ class GetTwoFactorStatusResponse extends $pb.GeneratedMessage {
     $core.int? backupCodesCount,
     $core.bool? hasBackupCodes,
   }) {
-    final $result = create();
+    final _result = create();
     if (enabled != null) {
-      $result.enabled = enabled;
+      _result.enabled = enabled;
     }
     if (method != null) {
-      $result.method = method;
+      _result.method = method;
     }
     if (methodName != null) {
-      $result.methodName = methodName;
+      _result.methodName = methodName;
     }
     if (methodDescription != null) {
-      $result.methodDescription = methodDescription;
+      _result.methodDescription = methodDescription;
     }
     if (backupCodesCount != null) {
-      $result.backupCodesCount = backupCodesCount;
+      _result.backupCodesCount = backupCodesCount;
     }
     if (hasBackupCodes != null) {
-      $result.hasBackupCodes = hasBackupCodes;
+      _result.hasBackupCodes = hasBackupCodes;
     }
-    return $result;
+    return _result;
   }
-  GetTwoFactorStatusResponse._() : super();
   factory GetTwoFactorStatusResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetTwoFactorStatusResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTwoFactorStatusResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'enabled')
-    ..aOS(2, _omitFieldNames ? '' : 'method')
-    ..aOS(3, _omitFieldNames ? '' : 'methodName')
-    ..aOS(4, _omitFieldNames ? '' : 'methodDescription')
-    ..a<$core.int>(5, _omitFieldNames ? '' : 'backupCodesCount', $pb.PbFieldType.O3)
-    ..aOB(6, _omitFieldNames ? '' : 'hasBackupCodes')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4622,10 +4442,8 @@ class GetTwoFactorStatusResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetTwoFactorStatusResponse copyWith(void Function(GetTwoFactorStatusResponse) updates) => super.copyWith((message) => updates(message as GetTwoFactorStatusResponse)) as GetTwoFactorStatusResponse;
-
+  GetTwoFactorStatusResponse copyWith(void Function(GetTwoFactorStatusResponse) updates) => super.copyWith((message) => updates(message as GetTwoFactorStatusResponse)) as GetTwoFactorStatusResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetTwoFactorStatusResponse create() => GetTwoFactorStatusResponse._();
   GetTwoFactorStatusResponse createEmptyInstance() => create();
@@ -4690,24 +4508,23 @@ class GetTwoFactorStatusResponse extends $pb.GeneratedMessage {
 }
 
 class RegenerateBackupCodesRequest extends $pb.GeneratedMessage {
-  factory RegenerateBackupCodesRequest({
-    $core.String? code,
-  }) {
-    final $result = create();
-    if (code != null) {
-      $result.code = code;
-    }
-    return $result;
-  }
-  RegenerateBackupCodesRequest._() : super();
-  factory RegenerateBackupCodesRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory RegenerateBackupCodesRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RegenerateBackupCodesRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'code')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'RegenerateBackupCodesRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'code')
     ..hasRequiredFields = false
   ;
 
+  RegenerateBackupCodesRequest._() : super();
+  factory RegenerateBackupCodesRequest({
+    $core.String? code,
+  }) {
+    final _result = create();
+    if (code != null) {
+      _result.code = code;
+    }
+    return _result;
+  }
+  factory RegenerateBackupCodesRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory RegenerateBackupCodesRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4717,10 +4534,8 @@ class RegenerateBackupCodesRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  RegenerateBackupCodesRequest copyWith(void Function(RegenerateBackupCodesRequest) updates) => super.copyWith((message) => updates(message as RegenerateBackupCodesRequest)) as RegenerateBackupCodesRequest;
-
+  RegenerateBackupCodesRequest copyWith(void Function(RegenerateBackupCodesRequest) updates) => super.copyWith((message) => updates(message as RegenerateBackupCodesRequest)) as RegenerateBackupCodesRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static RegenerateBackupCodesRequest create() => RegenerateBackupCodesRequest._();
   RegenerateBackupCodesRequest createEmptyInstance() => create();
@@ -4740,34 +4555,33 @@ class RegenerateBackupCodesRequest extends $pb.GeneratedMessage {
 }
 
 class RegenerateBackupCodesResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'RegenerateBackupCodesResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..pPS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'backupCodes')
+    ..hasRequiredFields = false
+  ;
+
+  RegenerateBackupCodesResponse._() : super();
   factory RegenerateBackupCodesResponse({
     $core.bool? success,
     $core.String? message,
     $core.Iterable<$core.String>? backupCodes,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (backupCodes != null) {
-      $result.backupCodes.addAll(backupCodes);
+      _result.backupCodes.addAll(backupCodes);
     }
-    return $result;
+    return _result;
   }
-  RegenerateBackupCodesResponse._() : super();
   factory RegenerateBackupCodesResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory RegenerateBackupCodesResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RegenerateBackupCodesResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..pPS(3, _omitFieldNames ? '' : 'backupCodes')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4777,10 +4591,8 @@ class RegenerateBackupCodesResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  RegenerateBackupCodesResponse copyWith(void Function(RegenerateBackupCodesResponse) updates) => super.copyWith((message) => updates(message as RegenerateBackupCodesResponse)) as RegenerateBackupCodesResponse;
-
+  RegenerateBackupCodesResponse copyWith(void Function(RegenerateBackupCodesResponse) updates) => super.copyWith((message) => updates(message as RegenerateBackupCodesResponse)) as RegenerateBackupCodesResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static RegenerateBackupCodesResponse create() => RegenerateBackupCodesResponse._();
   RegenerateBackupCodesResponse createEmptyInstance() => create();
@@ -4812,15 +4624,14 @@ class RegenerateBackupCodesResponse extends $pb.GeneratedMessage {
 }
 
 class SendTwoFactorCodeRequest extends $pb.GeneratedMessage {
-  factory SendTwoFactorCodeRequest() => create();
-  SendTwoFactorCodeRequest._() : super();
-  factory SendTwoFactorCodeRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory SendTwoFactorCodeRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SendTwoFactorCodeRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SendTwoFactorCodeRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..hasRequiredFields = false
   ;
 
+  SendTwoFactorCodeRequest._() : super();
+  factory SendTwoFactorCodeRequest() => create();
+  factory SendTwoFactorCodeRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory SendTwoFactorCodeRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4830,10 +4641,8 @@ class SendTwoFactorCodeRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SendTwoFactorCodeRequest copyWith(void Function(SendTwoFactorCodeRequest) updates) => super.copyWith((message) => updates(message as SendTwoFactorCodeRequest)) as SendTwoFactorCodeRequest;
-
+  SendTwoFactorCodeRequest copyWith(void Function(SendTwoFactorCodeRequest) updates) => super.copyWith((message) => updates(message as SendTwoFactorCodeRequest)) as SendTwoFactorCodeRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SendTwoFactorCodeRequest create() => SendTwoFactorCodeRequest._();
   SendTwoFactorCodeRequest createEmptyInstance() => create();
@@ -4844,34 +4653,33 @@ class SendTwoFactorCodeRequest extends $pb.GeneratedMessage {
 }
 
 class SendTwoFactorCodeResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SendTwoFactorCodeResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aInt64(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresIn')
+    ..hasRequiredFields = false
+  ;
+
+  SendTwoFactorCodeResponse._() : super();
   factory SendTwoFactorCodeResponse({
     $core.bool? success,
     $core.String? message,
     $fixnum.Int64? expiresIn,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (expiresIn != null) {
-      $result.expiresIn = expiresIn;
+      _result.expiresIn = expiresIn;
     }
-    return $result;
+    return _result;
   }
-  SendTwoFactorCodeResponse._() : super();
   factory SendTwoFactorCodeResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SendTwoFactorCodeResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SendTwoFactorCodeResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aInt64(3, _omitFieldNames ? '' : 'expiresIn')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4881,10 +4689,8 @@ class SendTwoFactorCodeResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SendTwoFactorCodeResponse copyWith(void Function(SendTwoFactorCodeResponse) updates) => super.copyWith((message) => updates(message as SendTwoFactorCodeResponse)) as SendTwoFactorCodeResponse;
-
+  SendTwoFactorCodeResponse copyWith(void Function(SendTwoFactorCodeResponse) updates) => super.copyWith((message) => updates(message as SendTwoFactorCodeResponse)) as SendTwoFactorCodeResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SendTwoFactorCodeResponse create() => SendTwoFactorCodeResponse._();
   SendTwoFactorCodeResponse createEmptyInstance() => create();
@@ -4922,15 +4728,14 @@ class SendTwoFactorCodeResponse extends $pb.GeneratedMessage {
 }
 
 class GetAvailable2FAMethodsRequest extends $pb.GeneratedMessage {
-  factory GetAvailable2FAMethodsRequest() => create();
-  GetAvailable2FAMethodsRequest._() : super();
-  factory GetAvailable2FAMethodsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetAvailable2FAMethodsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetAvailable2FAMethodsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetAvailable2FAMethodsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..hasRequiredFields = false
   ;
 
+  GetAvailable2FAMethodsRequest._() : super();
+  factory GetAvailable2FAMethodsRequest() => create();
+  factory GetAvailable2FAMethodsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetAvailable2FAMethodsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -4940,10 +4745,8 @@ class GetAvailable2FAMethodsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetAvailable2FAMethodsRequest copyWith(void Function(GetAvailable2FAMethodsRequest) updates) => super.copyWith((message) => updates(message as GetAvailable2FAMethodsRequest)) as GetAvailable2FAMethodsRequest;
-
+  GetAvailable2FAMethodsRequest copyWith(void Function(GetAvailable2FAMethodsRequest) updates) => super.copyWith((message) => updates(message as GetAvailable2FAMethodsRequest)) as GetAvailable2FAMethodsRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetAvailable2FAMethodsRequest create() => GetAvailable2FAMethodsRequest._();
   GetAvailable2FAMethodsRequest createEmptyInstance() => create();
@@ -4954,6 +4757,16 @@ class GetAvailable2FAMethodsRequest extends $pb.GeneratedMessage {
 }
 
 class TwoFactorMethodInfo extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'TwoFactorMethodInfo', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'method')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'icon')
+    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'available')
+    ..hasRequiredFields = false
+  ;
+
+  TwoFactorMethodInfo._() : super();
   factory TwoFactorMethodInfo({
     $core.String? method,
     $core.String? name,
@@ -4961,37 +4774,26 @@ class TwoFactorMethodInfo extends $pb.GeneratedMessage {
     $core.String? icon,
     $core.bool? available,
   }) {
-    final $result = create();
+    final _result = create();
     if (method != null) {
-      $result.method = method;
+      _result.method = method;
     }
     if (name != null) {
-      $result.name = name;
+      _result.name = name;
     }
     if (description != null) {
-      $result.description = description;
+      _result.description = description;
     }
     if (icon != null) {
-      $result.icon = icon;
+      _result.icon = icon;
     }
     if (available != null) {
-      $result.available = available;
+      _result.available = available;
     }
-    return $result;
+    return _result;
   }
-  TwoFactorMethodInfo._() : super();
   factory TwoFactorMethodInfo.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory TwoFactorMethodInfo.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'TwoFactorMethodInfo', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'method')
-    ..aOS(2, _omitFieldNames ? '' : 'name')
-    ..aOS(3, _omitFieldNames ? '' : 'description')
-    ..aOS(4, _omitFieldNames ? '' : 'icon')
-    ..aOB(5, _omitFieldNames ? '' : 'available')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -5001,10 +4803,8 @@ class TwoFactorMethodInfo extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  TwoFactorMethodInfo copyWith(void Function(TwoFactorMethodInfo) updates) => super.copyWith((message) => updates(message as TwoFactorMethodInfo)) as TwoFactorMethodInfo;
-
+  TwoFactorMethodInfo copyWith(void Function(TwoFactorMethodInfo) updates) => super.copyWith((message) => updates(message as TwoFactorMethodInfo)) as TwoFactorMethodInfo; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static TwoFactorMethodInfo create() => TwoFactorMethodInfo._();
   TwoFactorMethodInfo createEmptyInstance() => create();
@@ -5060,24 +4860,23 @@ class TwoFactorMethodInfo extends $pb.GeneratedMessage {
 }
 
 class GetAvailable2FAMethodsResponse extends $pb.GeneratedMessage {
-  factory GetAvailable2FAMethodsResponse({
-    $core.Iterable<TwoFactorMethodInfo>? methods,
-  }) {
-    final $result = create();
-    if (methods != null) {
-      $result.methods.addAll(methods);
-    }
-    return $result;
-  }
-  GetAvailable2FAMethodsResponse._() : super();
-  factory GetAvailable2FAMethodsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetAvailable2FAMethodsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetAvailable2FAMethodsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..pc<TwoFactorMethodInfo>(1, _omitFieldNames ? '' : 'methods', $pb.PbFieldType.PM, subBuilder: TwoFactorMethodInfo.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetAvailable2FAMethodsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<TwoFactorMethodInfo>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'methods', $pb.PbFieldType.PM, subBuilder: TwoFactorMethodInfo.create)
     ..hasRequiredFields = false
   ;
 
+  GetAvailable2FAMethodsResponse._() : super();
+  factory GetAvailable2FAMethodsResponse({
+    $core.Iterable<TwoFactorMethodInfo>? methods,
+  }) {
+    final _result = create();
+    if (methods != null) {
+      _result.methods.addAll(methods);
+    }
+    return _result;
+  }
+  factory GetAvailable2FAMethodsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetAvailable2FAMethodsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -5087,10 +4886,8 @@ class GetAvailable2FAMethodsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetAvailable2FAMethodsResponse copyWith(void Function(GetAvailable2FAMethodsResponse) updates) => super.copyWith((message) => updates(message as GetAvailable2FAMethodsResponse)) as GetAvailable2FAMethodsResponse;
-
+  GetAvailable2FAMethodsResponse copyWith(void Function(GetAvailable2FAMethodsResponse) updates) => super.copyWith((message) => updates(message as GetAvailable2FAMethodsResponse)) as GetAvailable2FAMethodsResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetAvailable2FAMethodsResponse create() => GetAvailable2FAMethodsResponse._();
   GetAvailable2FAMethodsResponse createEmptyInstance() => create();
@@ -5103,26 +4900,24 @@ class GetAvailable2FAMethodsResponse extends $pb.GeneratedMessage {
   $core.List<TwoFactorMethodInfo> get methods => $_getList(0);
 }
 
-/// ===== Validate Token (for gateway) =====
 class ValidateTokenRequest extends $pb.GeneratedMessage {
-  factory ValidateTokenRequest({
-    $core.String? token,
-  }) {
-    final $result = create();
-    if (token != null) {
-      $result.token = token;
-    }
-    return $result;
-  }
-  ValidateTokenRequest._() : super();
-  factory ValidateTokenRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory ValidateTokenRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ValidateTokenRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'token')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ValidateTokenRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'token')
     ..hasRequiredFields = false
   ;
 
+  ValidateTokenRequest._() : super();
+  factory ValidateTokenRequest({
+    $core.String? token,
+  }) {
+    final _result = create();
+    if (token != null) {
+      _result.token = token;
+    }
+    return _result;
+  }
+  factory ValidateTokenRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ValidateTokenRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -5132,10 +4927,8 @@ class ValidateTokenRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ValidateTokenRequest copyWith(void Function(ValidateTokenRequest) updates) => super.copyWith((message) => updates(message as ValidateTokenRequest)) as ValidateTokenRequest;
-
+  ValidateTokenRequest copyWith(void Function(ValidateTokenRequest) updates) => super.copyWith((message) => updates(message as ValidateTokenRequest)) as ValidateTokenRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ValidateTokenRequest create() => ValidateTokenRequest._();
   ValidateTokenRequest createEmptyInstance() => create();
@@ -5155,39 +4948,38 @@ class ValidateTokenRequest extends $pb.GeneratedMessage {
 }
 
 class ValidateTokenResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ValidateTokenResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'valid')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
+    ..aInt64(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt')
+    ..hasRequiredFields = false
+  ;
+
+  ValidateTokenResponse._() : super();
   factory ValidateTokenResponse({
     $core.bool? valid,
     $core.String? userId,
     $core.String? email,
     $fixnum.Int64? expiresAt,
   }) {
-    final $result = create();
+    final _result = create();
     if (valid != null) {
-      $result.valid = valid;
+      _result.valid = valid;
     }
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (email != null) {
-      $result.email = email;
+      _result.email = email;
     }
     if (expiresAt != null) {
-      $result.expiresAt = expiresAt;
+      _result.expiresAt = expiresAt;
     }
-    return $result;
+    return _result;
   }
-  ValidateTokenResponse._() : super();
   factory ValidateTokenResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ValidateTokenResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ValidateTokenResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'valid')
-    ..aOS(2, _omitFieldNames ? '' : 'userId')
-    ..aOS(3, _omitFieldNames ? '' : 'email')
-    ..aInt64(4, _omitFieldNames ? '' : 'expiresAt')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -5197,10 +4989,8 @@ class ValidateTokenResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ValidateTokenResponse copyWith(void Function(ValidateTokenResponse) updates) => super.copyWith((message) => updates(message as ValidateTokenResponse)) as ValidateTokenResponse;
-
+  ValidateTokenResponse copyWith(void Function(ValidateTokenResponse) updates) => super.copyWith((message) => updates(message as ValidateTokenResponse)) as ValidateTokenResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ValidateTokenResponse create() => ValidateTokenResponse._();
   ValidateTokenResponse createEmptyInstance() => create();
@@ -5246,41 +5036,39 @@ class ValidateTokenResponse extends $pb.GeneratedMessage {
   void clearExpiresAt() => clearField(4);
 }
 
-/// ===== Passcode Login =====
 class LoginWithPasscodeRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'LoginWithPasscodeRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'passcode')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deviceId')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deviceName')
+    ..hasRequiredFields = false
+  ;
+
+  LoginWithPasscodeRequest._() : super();
   factory LoginWithPasscodeRequest({
     $core.String? email,
     $core.String? passcode,
     $core.String? deviceId,
     $core.String? deviceName,
   }) {
-    final $result = create();
+    final _result = create();
     if (email != null) {
-      $result.email = email;
+      _result.email = email;
     }
     if (passcode != null) {
-      $result.passcode = passcode;
+      _result.passcode = passcode;
     }
     if (deviceId != null) {
-      $result.deviceId = deviceId;
+      _result.deviceId = deviceId;
     }
     if (deviceName != null) {
-      $result.deviceName = deviceName;
+      _result.deviceName = deviceName;
     }
-    return $result;
+    return _result;
   }
-  LoginWithPasscodeRequest._() : super();
   factory LoginWithPasscodeRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory LoginWithPasscodeRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'LoginWithPasscodeRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'email')
-    ..aOS(2, _omitFieldNames ? '' : 'passcode')
-    ..aOS(3, _omitFieldNames ? '' : 'deviceId')
-    ..aOS(4, _omitFieldNames ? '' : 'deviceName')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -5290,10 +5078,8 @@ class LoginWithPasscodeRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  LoginWithPasscodeRequest copyWith(void Function(LoginWithPasscodeRequest) updates) => super.copyWith((message) => updates(message as LoginWithPasscodeRequest)) as LoginWithPasscodeRequest;
-
+  LoginWithPasscodeRequest copyWith(void Function(LoginWithPasscodeRequest) updates) => super.copyWith((message) => updates(message as LoginWithPasscodeRequest)) as LoginWithPasscodeRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static LoginWithPasscodeRequest create() => LoginWithPasscodeRequest._();
   LoginWithPasscodeRequest createEmptyInstance() => create();
@@ -5340,24 +5126,23 @@ class LoginWithPasscodeRequest extends $pb.GeneratedMessage {
 }
 
 class RegisterPasscodeRequest extends $pb.GeneratedMessage {
-  factory RegisterPasscodeRequest({
-    $core.String? passcode,
-  }) {
-    final $result = create();
-    if (passcode != null) {
-      $result.passcode = passcode;
-    }
-    return $result;
-  }
-  RegisterPasscodeRequest._() : super();
-  factory RegisterPasscodeRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory RegisterPasscodeRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RegisterPasscodeRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'passcode')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'RegisterPasscodeRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'passcode')
     ..hasRequiredFields = false
   ;
 
+  RegisterPasscodeRequest._() : super();
+  factory RegisterPasscodeRequest({
+    $core.String? passcode,
+  }) {
+    final _result = create();
+    if (passcode != null) {
+      _result.passcode = passcode;
+    }
+    return _result;
+  }
+  factory RegisterPasscodeRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory RegisterPasscodeRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -5367,10 +5152,8 @@ class RegisterPasscodeRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  RegisterPasscodeRequest copyWith(void Function(RegisterPasscodeRequest) updates) => super.copyWith((message) => updates(message as RegisterPasscodeRequest)) as RegisterPasscodeRequest;
-
+  RegisterPasscodeRequest copyWith(void Function(RegisterPasscodeRequest) updates) => super.copyWith((message) => updates(message as RegisterPasscodeRequest)) as RegisterPasscodeRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static RegisterPasscodeRequest create() => RegisterPasscodeRequest._();
   RegisterPasscodeRequest createEmptyInstance() => create();
@@ -5390,29 +5173,28 @@ class RegisterPasscodeRequest extends $pb.GeneratedMessage {
 }
 
 class RegisterPasscodeResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'RegisterPasscodeResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
+    ..hasRequiredFields = false
+  ;
+
+  RegisterPasscodeResponse._() : super();
   factory RegisterPasscodeResponse({
     $core.bool? success,
     $core.String? msg,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (msg != null) {
-      $result.msg = msg;
+      _result.msg = msg;
     }
-    return $result;
+    return _result;
   }
-  RegisterPasscodeResponse._() : super();
   factory RegisterPasscodeResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory RegisterPasscodeResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RegisterPasscodeResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'msg')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -5422,10 +5204,8 @@ class RegisterPasscodeResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  RegisterPasscodeResponse copyWith(void Function(RegisterPasscodeResponse) updates) => super.copyWith((message) => updates(message as RegisterPasscodeResponse)) as RegisterPasscodeResponse;
-
+  RegisterPasscodeResponse copyWith(void Function(RegisterPasscodeResponse) updates) => super.copyWith((message) => updates(message as RegisterPasscodeResponse)) as RegisterPasscodeResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static RegisterPasscodeResponse create() => RegisterPasscodeResponse._();
   RegisterPasscodeResponse createEmptyInstance() => create();
@@ -5454,29 +5234,28 @@ class RegisterPasscodeResponse extends $pb.GeneratedMessage {
 }
 
 class ChangePasscodeRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ChangePasscodeRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentPasscode')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'newPasscode')
+    ..hasRequiredFields = false
+  ;
+
+  ChangePasscodeRequest._() : super();
   factory ChangePasscodeRequest({
     $core.String? currentPasscode,
     $core.String? newPasscode,
   }) {
-    final $result = create();
+    final _result = create();
     if (currentPasscode != null) {
-      $result.currentPasscode = currentPasscode;
+      _result.currentPasscode = currentPasscode;
     }
     if (newPasscode != null) {
-      $result.newPasscode = newPasscode;
+      _result.newPasscode = newPasscode;
     }
-    return $result;
+    return _result;
   }
-  ChangePasscodeRequest._() : super();
   factory ChangePasscodeRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ChangePasscodeRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ChangePasscodeRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'currentPasscode')
-    ..aOS(2, _omitFieldNames ? '' : 'newPasscode')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -5486,10 +5265,8 @@ class ChangePasscodeRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ChangePasscodeRequest copyWith(void Function(ChangePasscodeRequest) updates) => super.copyWith((message) => updates(message as ChangePasscodeRequest)) as ChangePasscodeRequest;
-
+  ChangePasscodeRequest copyWith(void Function(ChangePasscodeRequest) updates) => super.copyWith((message) => updates(message as ChangePasscodeRequest)) as ChangePasscodeRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ChangePasscodeRequest create() => ChangePasscodeRequest._();
   ChangePasscodeRequest createEmptyInstance() => create();
@@ -5518,29 +5295,28 @@ class ChangePasscodeRequest extends $pb.GeneratedMessage {
 }
 
 class ChangePasscodeResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ChangePasscodeResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
+    ..hasRequiredFields = false
+  ;
+
+  ChangePasscodeResponse._() : super();
   factory ChangePasscodeResponse({
     $core.bool? success,
     $core.String? msg,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (msg != null) {
-      $result.msg = msg;
+      _result.msg = msg;
     }
-    return $result;
+    return _result;
   }
-  ChangePasscodeResponse._() : super();
   factory ChangePasscodeResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ChangePasscodeResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ChangePasscodeResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'msg')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -5550,10 +5326,8 @@ class ChangePasscodeResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ChangePasscodeResponse copyWith(void Function(ChangePasscodeResponse) updates) => super.copyWith((message) => updates(message as ChangePasscodeResponse)) as ChangePasscodeResponse;
-
+  ChangePasscodeResponse copyWith(void Function(ChangePasscodeResponse) updates) => super.copyWith((message) => updates(message as ChangePasscodeResponse)) as ChangePasscodeResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ChangePasscodeResponse create() => ChangePasscodeResponse._();
   ChangePasscodeResponse createEmptyInstance() => create();
@@ -5581,26 +5355,24 @@ class ChangePasscodeResponse extends $pb.GeneratedMessage {
   void clearMsg() => clearField(2);
 }
 
-/// ===== Password Reset =====
 class RequestPasswordResetRequest extends $pb.GeneratedMessage {
-  factory RequestPasswordResetRequest({
-    $core.String? email,
-  }) {
-    final $result = create();
-    if (email != null) {
-      $result.email = email;
-    }
-    return $result;
-  }
-  RequestPasswordResetRequest._() : super();
-  factory RequestPasswordResetRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory RequestPasswordResetRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RequestPasswordResetRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'email')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'RequestPasswordResetRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
     ..hasRequiredFields = false
   ;
 
+  RequestPasswordResetRequest._() : super();
+  factory RequestPasswordResetRequest({
+    $core.String? email,
+  }) {
+    final _result = create();
+    if (email != null) {
+      _result.email = email;
+    }
+    return _result;
+  }
+  factory RequestPasswordResetRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory RequestPasswordResetRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -5610,10 +5382,8 @@ class RequestPasswordResetRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  RequestPasswordResetRequest copyWith(void Function(RequestPasswordResetRequest) updates) => super.copyWith((message) => updates(message as RequestPasswordResetRequest)) as RequestPasswordResetRequest;
-
+  RequestPasswordResetRequest copyWith(void Function(RequestPasswordResetRequest) updates) => super.copyWith((message) => updates(message as RequestPasswordResetRequest)) as RequestPasswordResetRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static RequestPasswordResetRequest create() => RequestPasswordResetRequest._();
   RequestPasswordResetRequest createEmptyInstance() => create();
@@ -5633,29 +5403,28 @@ class RequestPasswordResetRequest extends $pb.GeneratedMessage {
 }
 
 class RequestPasswordResetResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'RequestPasswordResetResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
+    ..hasRequiredFields = false
+  ;
+
+  RequestPasswordResetResponse._() : super();
   factory RequestPasswordResetResponse({
     $core.bool? success,
     $core.String? msg,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (msg != null) {
-      $result.msg = msg;
+      _result.msg = msg;
     }
-    return $result;
+    return _result;
   }
-  RequestPasswordResetResponse._() : super();
   factory RequestPasswordResetResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory RequestPasswordResetResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RequestPasswordResetResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'msg')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -5665,10 +5434,8 @@ class RequestPasswordResetResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  RequestPasswordResetResponse copyWith(void Function(RequestPasswordResetResponse) updates) => super.copyWith((message) => updates(message as RequestPasswordResetResponse)) as RequestPasswordResetResponse;
-
+  RequestPasswordResetResponse copyWith(void Function(RequestPasswordResetResponse) updates) => super.copyWith((message) => updates(message as RequestPasswordResetResponse)) as RequestPasswordResetResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static RequestPasswordResetResponse create() => RequestPasswordResetResponse._();
   RequestPasswordResetResponse createEmptyInstance() => create();
@@ -5696,26 +5463,24 @@ class RequestPasswordResetResponse extends $pb.GeneratedMessage {
   void clearMsg() => clearField(2);
 }
 
-/// ===== Email Verification Request =====
 class RequestEmailVerificationRequest extends $pb.GeneratedMessage {
-  factory RequestEmailVerificationRequest({
-    $core.String? email,
-  }) {
-    final $result = create();
-    if (email != null) {
-      $result.email = email;
-    }
-    return $result;
-  }
-  RequestEmailVerificationRequest._() : super();
-  factory RequestEmailVerificationRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory RequestEmailVerificationRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RequestEmailVerificationRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'email')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'RequestEmailVerificationRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
     ..hasRequiredFields = false
   ;
 
+  RequestEmailVerificationRequest._() : super();
+  factory RequestEmailVerificationRequest({
+    $core.String? email,
+  }) {
+    final _result = create();
+    if (email != null) {
+      _result.email = email;
+    }
+    return _result;
+  }
+  factory RequestEmailVerificationRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory RequestEmailVerificationRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -5725,10 +5490,8 @@ class RequestEmailVerificationRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  RequestEmailVerificationRequest copyWith(void Function(RequestEmailVerificationRequest) updates) => super.copyWith((message) => updates(message as RequestEmailVerificationRequest)) as RequestEmailVerificationRequest;
-
+  RequestEmailVerificationRequest copyWith(void Function(RequestEmailVerificationRequest) updates) => super.copyWith((message) => updates(message as RequestEmailVerificationRequest)) as RequestEmailVerificationRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static RequestEmailVerificationRequest create() => RequestEmailVerificationRequest._();
   RequestEmailVerificationRequest createEmptyInstance() => create();
@@ -5748,29 +5511,28 @@ class RequestEmailVerificationRequest extends $pb.GeneratedMessage {
 }
 
 class RequestEmailVerificationResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'RequestEmailVerificationResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
+    ..hasRequiredFields = false
+  ;
+
+  RequestEmailVerificationResponse._() : super();
   factory RequestEmailVerificationResponse({
     $core.bool? success,
     $core.String? msg,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (msg != null) {
-      $result.msg = msg;
+      _result.msg = msg;
     }
-    return $result;
+    return _result;
   }
-  RequestEmailVerificationResponse._() : super();
   factory RequestEmailVerificationResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory RequestEmailVerificationResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RequestEmailVerificationResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'msg')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -5780,10 +5542,8 @@ class RequestEmailVerificationResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  RequestEmailVerificationResponse copyWith(void Function(RequestEmailVerificationResponse) updates) => super.copyWith((message) => updates(message as RequestEmailVerificationResponse)) as RequestEmailVerificationResponse;
-
+  RequestEmailVerificationResponse copyWith(void Function(RequestEmailVerificationResponse) updates) => super.copyWith((message) => updates(message as RequestEmailVerificationResponse)) as RequestEmailVerificationResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static RequestEmailVerificationResponse create() => RequestEmailVerificationResponse._();
   RequestEmailVerificationResponse createEmptyInstance() => create();
@@ -5811,26 +5571,24 @@ class RequestEmailVerificationResponse extends $pb.GeneratedMessage {
   void clearMsg() => clearField(2);
 }
 
-/// ===== Email Availability Check =====
 class CheckEmailAvailabilityRequest extends $pb.GeneratedMessage {
-  factory CheckEmailAvailabilityRequest({
-    $core.String? email,
-  }) {
-    final $result = create();
-    if (email != null) {
-      $result.email = email;
-    }
-    return $result;
-  }
-  CheckEmailAvailabilityRequest._() : super();
-  factory CheckEmailAvailabilityRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory CheckEmailAvailabilityRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CheckEmailAvailabilityRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'email')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CheckEmailAvailabilityRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
     ..hasRequiredFields = false
   ;
 
+  CheckEmailAvailabilityRequest._() : super();
+  factory CheckEmailAvailabilityRequest({
+    $core.String? email,
+  }) {
+    final _result = create();
+    if (email != null) {
+      _result.email = email;
+    }
+    return _result;
+  }
+  factory CheckEmailAvailabilityRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CheckEmailAvailabilityRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -5840,10 +5598,8 @@ class CheckEmailAvailabilityRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CheckEmailAvailabilityRequest copyWith(void Function(CheckEmailAvailabilityRequest) updates) => super.copyWith((message) => updates(message as CheckEmailAvailabilityRequest)) as CheckEmailAvailabilityRequest;
-
+  CheckEmailAvailabilityRequest copyWith(void Function(CheckEmailAvailabilityRequest) updates) => super.copyWith((message) => updates(message as CheckEmailAvailabilityRequest)) as CheckEmailAvailabilityRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CheckEmailAvailabilityRequest create() => CheckEmailAvailabilityRequest._();
   CheckEmailAvailabilityRequest createEmptyInstance() => create();
@@ -5863,29 +5619,28 @@ class CheckEmailAvailabilityRequest extends $pb.GeneratedMessage {
 }
 
 class CheckEmailAvailabilityResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CheckEmailAvailabilityResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'available')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
+    ..hasRequiredFields = false
+  ;
+
+  CheckEmailAvailabilityResponse._() : super();
   factory CheckEmailAvailabilityResponse({
     $core.bool? available,
     $core.String? msg,
   }) {
-    final $result = create();
+    final _result = create();
     if (available != null) {
-      $result.available = available;
+      _result.available = available;
     }
     if (msg != null) {
-      $result.msg = msg;
+      _result.msg = msg;
     }
-    return $result;
+    return _result;
   }
-  CheckEmailAvailabilityResponse._() : super();
   factory CheckEmailAvailabilityResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CheckEmailAvailabilityResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CheckEmailAvailabilityResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'available')
-    ..aOS(2, _omitFieldNames ? '' : 'msg')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -5895,10 +5650,8 @@ class CheckEmailAvailabilityResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CheckEmailAvailabilityResponse copyWith(void Function(CheckEmailAvailabilityResponse) updates) => super.copyWith((message) => updates(message as CheckEmailAvailabilityResponse)) as CheckEmailAvailabilityResponse;
-
+  CheckEmailAvailabilityResponse copyWith(void Function(CheckEmailAvailabilityResponse) updates) => super.copyWith((message) => updates(message as CheckEmailAvailabilityResponse)) as CheckEmailAvailabilityResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CheckEmailAvailabilityResponse create() => CheckEmailAvailabilityResponse._();
   CheckEmailAvailabilityResponse createEmptyInstance() => create();
@@ -5926,31 +5679,29 @@ class CheckEmailAvailabilityResponse extends $pb.GeneratedMessage {
   void clearMsg() => clearField(2);
 }
 
-/// ===== Phone Verification =====
 class RequestPhoneVerificationRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'RequestPhoneVerificationRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phone')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'countryCode')
+    ..hasRequiredFields = false
+  ;
+
+  RequestPhoneVerificationRequest._() : super();
   factory RequestPhoneVerificationRequest({
     $core.String? phone,
     $core.String? countryCode,
   }) {
-    final $result = create();
+    final _result = create();
     if (phone != null) {
-      $result.phone = phone;
+      _result.phone = phone;
     }
     if (countryCode != null) {
-      $result.countryCode = countryCode;
+      _result.countryCode = countryCode;
     }
-    return $result;
+    return _result;
   }
-  RequestPhoneVerificationRequest._() : super();
   factory RequestPhoneVerificationRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory RequestPhoneVerificationRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RequestPhoneVerificationRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'phone')
-    ..aOS(2, _omitFieldNames ? '' : 'countryCode')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -5960,10 +5711,8 @@ class RequestPhoneVerificationRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  RequestPhoneVerificationRequest copyWith(void Function(RequestPhoneVerificationRequest) updates) => super.copyWith((message) => updates(message as RequestPhoneVerificationRequest)) as RequestPhoneVerificationRequest;
-
+  RequestPhoneVerificationRequest copyWith(void Function(RequestPhoneVerificationRequest) updates) => super.copyWith((message) => updates(message as RequestPhoneVerificationRequest)) as RequestPhoneVerificationRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static RequestPhoneVerificationRequest create() => RequestPhoneVerificationRequest._();
   RequestPhoneVerificationRequest createEmptyInstance() => create();
@@ -5992,39 +5741,38 @@ class RequestPhoneVerificationRequest extends $pb.GeneratedMessage {
 }
 
 class RequestPhoneVerificationResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'RequestPhoneVerificationResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verificationId')
+    ..aInt64(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresIn')
+    ..hasRequiredFields = false
+  ;
+
+  RequestPhoneVerificationResponse._() : super();
   factory RequestPhoneVerificationResponse({
     $core.bool? success,
     $core.String? msg,
     $core.String? verificationId,
     $fixnum.Int64? expiresIn,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (msg != null) {
-      $result.msg = msg;
+      _result.msg = msg;
     }
     if (verificationId != null) {
-      $result.verificationId = verificationId;
+      _result.verificationId = verificationId;
     }
     if (expiresIn != null) {
-      $result.expiresIn = expiresIn;
+      _result.expiresIn = expiresIn;
     }
-    return $result;
+    return _result;
   }
-  RequestPhoneVerificationResponse._() : super();
   factory RequestPhoneVerificationResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory RequestPhoneVerificationResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RequestPhoneVerificationResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'msg')
-    ..aOS(3, _omitFieldNames ? '' : 'verificationId')
-    ..aInt64(4, _omitFieldNames ? '' : 'expiresIn')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -6034,10 +5782,8 @@ class RequestPhoneVerificationResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  RequestPhoneVerificationResponse copyWith(void Function(RequestPhoneVerificationResponse) updates) => super.copyWith((message) => updates(message as RequestPhoneVerificationResponse)) as RequestPhoneVerificationResponse;
-
+  RequestPhoneVerificationResponse copyWith(void Function(RequestPhoneVerificationResponse) updates) => super.copyWith((message) => updates(message as RequestPhoneVerificationResponse)) as RequestPhoneVerificationResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static RequestPhoneVerificationResponse create() => RequestPhoneVerificationResponse._();
   RequestPhoneVerificationResponse createEmptyInstance() => create();
@@ -6084,39 +5830,38 @@ class RequestPhoneVerificationResponse extends $pb.GeneratedMessage {
 }
 
 class VerifyPhoneNumberRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VerifyPhoneNumberRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phone')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'countryCode')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'code')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verificationId')
+    ..hasRequiredFields = false
+  ;
+
+  VerifyPhoneNumberRequest._() : super();
   factory VerifyPhoneNumberRequest({
     $core.String? phone,
     $core.String? countryCode,
     $core.String? code,
     $core.String? verificationId,
   }) {
-    final $result = create();
+    final _result = create();
     if (phone != null) {
-      $result.phone = phone;
+      _result.phone = phone;
     }
     if (countryCode != null) {
-      $result.countryCode = countryCode;
+      _result.countryCode = countryCode;
     }
     if (code != null) {
-      $result.code = code;
+      _result.code = code;
     }
     if (verificationId != null) {
-      $result.verificationId = verificationId;
+      _result.verificationId = verificationId;
     }
-    return $result;
+    return _result;
   }
-  VerifyPhoneNumberRequest._() : super();
   factory VerifyPhoneNumberRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory VerifyPhoneNumberRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyPhoneNumberRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'phone')
-    ..aOS(2, _omitFieldNames ? '' : 'countryCode')
-    ..aOS(3, _omitFieldNames ? '' : 'code')
-    ..aOS(4, _omitFieldNames ? '' : 'verificationId')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -6126,10 +5871,8 @@ class VerifyPhoneNumberRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  VerifyPhoneNumberRequest copyWith(void Function(VerifyPhoneNumberRequest) updates) => super.copyWith((message) => updates(message as VerifyPhoneNumberRequest)) as VerifyPhoneNumberRequest;
-
+  VerifyPhoneNumberRequest copyWith(void Function(VerifyPhoneNumberRequest) updates) => super.copyWith((message) => updates(message as VerifyPhoneNumberRequest)) as VerifyPhoneNumberRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static VerifyPhoneNumberRequest create() => VerifyPhoneNumberRequest._();
   VerifyPhoneNumberRequest createEmptyInstance() => create();
@@ -6176,34 +5919,33 @@ class VerifyPhoneNumberRequest extends $pb.GeneratedMessage {
 }
 
 class VerifyPhoneNumberResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VerifyPhoneNumberResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
+    ..aOB(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isVerified')
+    ..hasRequiredFields = false
+  ;
+
+  VerifyPhoneNumberResponse._() : super();
   factory VerifyPhoneNumberResponse({
     $core.bool? success,
     $core.String? msg,
     $core.bool? isVerified,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (msg != null) {
-      $result.msg = msg;
+      _result.msg = msg;
     }
     if (isVerified != null) {
-      $result.isVerified = isVerified;
+      _result.isVerified = isVerified;
     }
-    return $result;
+    return _result;
   }
-  VerifyPhoneNumberResponse._() : super();
   factory VerifyPhoneNumberResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory VerifyPhoneNumberResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyPhoneNumberResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'msg')
-    ..aOB(3, _omitFieldNames ? '' : 'isVerified')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -6213,10 +5955,8 @@ class VerifyPhoneNumberResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  VerifyPhoneNumberResponse copyWith(void Function(VerifyPhoneNumberResponse) updates) => super.copyWith((message) => updates(message as VerifyPhoneNumberResponse)) as VerifyPhoneNumberResponse;
-
+  VerifyPhoneNumberResponse copyWith(void Function(VerifyPhoneNumberResponse) updates) => super.copyWith((message) => updates(message as VerifyPhoneNumberResponse)) as VerifyPhoneNumberResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static VerifyPhoneNumberResponse create() => VerifyPhoneNumberResponse._();
   VerifyPhoneNumberResponse createEmptyInstance() => create();
@@ -6253,8 +5993,36 @@ class VerifyPhoneNumberResponse extends $pb.GeneratedMessage {
   void clearIsVerified() => clearField(3);
 }
 
-/// ===== User Model =====
 class User extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'User', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'firstName')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastName')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phone')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'countryCode')
+    ..aOB(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'emailVerified')
+    ..aOB(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneVerified')
+    ..aOB(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'twoFactorEnabled')
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'twoFactorMethod')
+    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'profilePicture')
+    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt')
+    ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt')
+    ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'signupStatus')
+    ..aOS(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentSignupStep')
+    ..aOS(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'username')
+    ..aOB(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'identityVerified')
+    ..aOS(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'identityType')
+    ..aOS(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'identityVerifiedAt')
+    ..aOS(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dateOfBirth')
+    ..a<$core.int>(21, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'kycTier', $pb.PbFieldType.O3)
+    ..aOS(22, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'kycStatus')
+    ..pPS(23, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'roles')
+    ..aOS(24, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'role')
+    ..hasRequiredFields = false
+  ;
+
+  User._() : super();
   factory User({
     $core.String? id,
     $core.String? email,
@@ -6281,113 +6049,83 @@ class User extends $pb.GeneratedMessage {
     $core.Iterable<$core.String>? roles,
     $core.String? role,
   }) {
-    final $result = create();
+    final _result = create();
     if (id != null) {
-      $result.id = id;
+      _result.id = id;
     }
     if (email != null) {
-      $result.email = email;
+      _result.email = email;
     }
     if (firstName != null) {
-      $result.firstName = firstName;
+      _result.firstName = firstName;
     }
     if (lastName != null) {
-      $result.lastName = lastName;
+      _result.lastName = lastName;
     }
     if (phone != null) {
-      $result.phone = phone;
+      _result.phone = phone;
     }
     if (countryCode != null) {
-      $result.countryCode = countryCode;
+      _result.countryCode = countryCode;
     }
     if (emailVerified != null) {
-      $result.emailVerified = emailVerified;
+      _result.emailVerified = emailVerified;
     }
     if (phoneVerified != null) {
-      $result.phoneVerified = phoneVerified;
+      _result.phoneVerified = phoneVerified;
     }
     if (twoFactorEnabled != null) {
-      $result.twoFactorEnabled = twoFactorEnabled;
+      _result.twoFactorEnabled = twoFactorEnabled;
     }
     if (twoFactorMethod != null) {
-      $result.twoFactorMethod = twoFactorMethod;
+      _result.twoFactorMethod = twoFactorMethod;
     }
     if (profilePicture != null) {
-      $result.profilePicture = profilePicture;
+      _result.profilePicture = profilePicture;
     }
     if (createdAt != null) {
-      $result.createdAt = createdAt;
+      _result.createdAt = createdAt;
     }
     if (updatedAt != null) {
-      $result.updatedAt = updatedAt;
+      _result.updatedAt = updatedAt;
     }
     if (signupStatus != null) {
-      $result.signupStatus = signupStatus;
+      _result.signupStatus = signupStatus;
     }
     if (currentSignupStep != null) {
-      $result.currentSignupStep = currentSignupStep;
+      _result.currentSignupStep = currentSignupStep;
     }
     if (username != null) {
-      $result.username = username;
+      _result.username = username;
     }
     if (identityVerified != null) {
-      $result.identityVerified = identityVerified;
+      _result.identityVerified = identityVerified;
     }
     if (identityType != null) {
-      $result.identityType = identityType;
+      _result.identityType = identityType;
     }
     if (identityVerifiedAt != null) {
-      $result.identityVerifiedAt = identityVerifiedAt;
+      _result.identityVerifiedAt = identityVerifiedAt;
     }
     if (dateOfBirth != null) {
-      $result.dateOfBirth = dateOfBirth;
+      _result.dateOfBirth = dateOfBirth;
     }
     if (kycTier != null) {
-      $result.kycTier = kycTier;
+      _result.kycTier = kycTier;
     }
     if (kycStatus != null) {
-      $result.kycStatus = kycStatus;
+      _result.kycStatus = kycStatus;
     }
     if (roles != null) {
-      $result.roles.addAll(roles);
+      _result.roles.addAll(roles);
     }
     if (role != null) {
-      $result.role = role;
+      _result.role = role;
     }
-    return $result;
+    return _result;
   }
-  User._() : super();
   factory User.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory User.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'User', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..aOS(2, _omitFieldNames ? '' : 'email')
-    ..aOS(3, _omitFieldNames ? '' : 'firstName')
-    ..aOS(4, _omitFieldNames ? '' : 'lastName')
-    ..aOS(5, _omitFieldNames ? '' : 'phone')
-    ..aOS(6, _omitFieldNames ? '' : 'countryCode')
-    ..aOB(7, _omitFieldNames ? '' : 'emailVerified')
-    ..aOB(8, _omitFieldNames ? '' : 'phoneVerified')
-    ..aOB(9, _omitFieldNames ? '' : 'twoFactorEnabled')
-    ..aOS(10, _omitFieldNames ? '' : 'twoFactorMethod')
-    ..aOS(11, _omitFieldNames ? '' : 'profilePicture')
-    ..aOS(12, _omitFieldNames ? '' : 'createdAt')
-    ..aOS(13, _omitFieldNames ? '' : 'updatedAt')
-    ..aOS(14, _omitFieldNames ? '' : 'signupStatus')
-    ..aOS(15, _omitFieldNames ? '' : 'currentSignupStep')
-    ..aOS(16, _omitFieldNames ? '' : 'username')
-    ..aOB(17, _omitFieldNames ? '' : 'identityVerified')
-    ..aOS(18, _omitFieldNames ? '' : 'identityType')
-    ..aOS(19, _omitFieldNames ? '' : 'identityVerifiedAt')
-    ..aOS(20, _omitFieldNames ? '' : 'dateOfBirth')
-    ..a<$core.int>(21, _omitFieldNames ? '' : 'kycTier', $pb.PbFieldType.O3)
-    ..aOS(22, _omitFieldNames ? '' : 'kycStatus')
-    ..pPS(23, _omitFieldNames ? '' : 'roles')
-    ..aOS(24, _omitFieldNames ? '' : 'role')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -6397,10 +6135,8 @@ class User extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  User copyWith(void Function(User) updates) => super.copyWith((message) => updates(message as User)) as User;
-
+  User copyWith(void Function(User) updates) => super.copyWith((message) => updates(message as User)) as User; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static User create() => User._();
   User createEmptyInstance() => create();
@@ -6620,8 +6356,18 @@ class User extends $pb.GeneratedMessage {
   void clearRole() => clearField(24);
 }
 
-/// Individual signup step progress
 class SignupStepProgress extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SignupStepProgress', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'stepName')
+    ..e<StepStatus>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: StepStatus.STEP_STATUS_UNSPECIFIED, valueOf: StepStatus.valueOf, enumValues: StepStatus.values)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'stepData')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completedAt')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt')
+    ..hasRequiredFields = false
+  ;
+
+  SignupStepProgress._() : super();
   factory SignupStepProgress({
     $core.String? stepName,
     StepStatus? status,
@@ -6630,41 +6376,29 @@ class SignupStepProgress extends $pb.GeneratedMessage {
     $core.String? createdAt,
     $core.String? updatedAt,
   }) {
-    final $result = create();
+    final _result = create();
     if (stepName != null) {
-      $result.stepName = stepName;
+      _result.stepName = stepName;
     }
     if (status != null) {
-      $result.status = status;
+      _result.status = status;
     }
     if (stepData != null) {
-      $result.stepData = stepData;
+      _result.stepData = stepData;
     }
     if (completedAt != null) {
-      $result.completedAt = completedAt;
+      _result.completedAt = completedAt;
     }
     if (createdAt != null) {
-      $result.createdAt = createdAt;
+      _result.createdAt = createdAt;
     }
     if (updatedAt != null) {
-      $result.updatedAt = updatedAt;
+      _result.updatedAt = updatedAt;
     }
-    return $result;
+    return _result;
   }
-  SignupStepProgress._() : super();
   factory SignupStepProgress.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SignupStepProgress.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SignupStepProgress', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'stepName')
-    ..e<StepStatus>(2, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: StepStatus.STEP_STATUS_UNSPECIFIED, valueOf: StepStatus.valueOf, enumValues: StepStatus.values)
-    ..aOS(3, _omitFieldNames ? '' : 'stepData')
-    ..aOS(4, _omitFieldNames ? '' : 'completedAt')
-    ..aOS(5, _omitFieldNames ? '' : 'createdAt')
-    ..aOS(6, _omitFieldNames ? '' : 'updatedAt')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -6674,10 +6408,8 @@ class SignupStepProgress extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SignupStepProgress copyWith(void Function(SignupStepProgress) updates) => super.copyWith((message) => updates(message as SignupStepProgress)) as SignupStepProgress;
-
+  SignupStepProgress copyWith(void Function(SignupStepProgress) updates) => super.copyWith((message) => updates(message as SignupStepProgress)) as SignupStepProgress; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SignupStepProgress create() => SignupStepProgress._();
   SignupStepProgress createEmptyInstance() => create();
@@ -6741,8 +6473,19 @@ class SignupStepProgress extends $pb.GeneratedMessage {
   void clearUpdatedAt() => clearField(6);
 }
 
-/// Overall signup progress
 class SignupProgress extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SignupProgress', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..e<SignupStatus>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: SignupStatus.SIGNUP_STATUS_UNSPECIFIED, valueOf: SignupStatus.valueOf, enumValues: SignupStatus.values)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentStep')
+    ..pc<SignupStepProgress>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'steps', $pb.PbFieldType.PM, subBuilder: SignupStepProgress.create)
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'signupCompletedAt')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt')
+    ..hasRequiredFields = false
+  ;
+
+  SignupProgress._() : super();
   factory SignupProgress({
     $core.String? userId,
     SignupStatus? status,
@@ -6752,45 +6495,32 @@ class SignupProgress extends $pb.GeneratedMessage {
     $core.String? createdAt,
     $core.String? updatedAt,
   }) {
-    final $result = create();
+    final _result = create();
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (status != null) {
-      $result.status = status;
+      _result.status = status;
     }
     if (currentStep != null) {
-      $result.currentStep = currentStep;
+      _result.currentStep = currentStep;
     }
     if (steps != null) {
-      $result.steps.addAll(steps);
+      _result.steps.addAll(steps);
     }
     if (signupCompletedAt != null) {
-      $result.signupCompletedAt = signupCompletedAt;
+      _result.signupCompletedAt = signupCompletedAt;
     }
     if (createdAt != null) {
-      $result.createdAt = createdAt;
+      _result.createdAt = createdAt;
     }
     if (updatedAt != null) {
-      $result.updatedAt = updatedAt;
+      _result.updatedAt = updatedAt;
     }
-    return $result;
+    return _result;
   }
-  SignupProgress._() : super();
   factory SignupProgress.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SignupProgress.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SignupProgress', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..e<SignupStatus>(2, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: SignupStatus.SIGNUP_STATUS_UNSPECIFIED, valueOf: SignupStatus.valueOf, enumValues: SignupStatus.values)
-    ..aOS(3, _omitFieldNames ? '' : 'currentStep')
-    ..pc<SignupStepProgress>(4, _omitFieldNames ? '' : 'steps', $pb.PbFieldType.PM, subBuilder: SignupStepProgress.create)
-    ..aOS(5, _omitFieldNames ? '' : 'signupCompletedAt')
-    ..aOS(6, _omitFieldNames ? '' : 'createdAt')
-    ..aOS(7, _omitFieldNames ? '' : 'updatedAt')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -6800,10 +6530,8 @@ class SignupProgress extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SignupProgress copyWith(void Function(SignupProgress) updates) => super.copyWith((message) => updates(message as SignupProgress)) as SignupProgress;
-
+  SignupProgress copyWith(void Function(SignupProgress) updates) => super.copyWith((message) => updates(message as SignupProgress)) as SignupProgress; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SignupProgress create() => SignupProgress._();
   SignupProgress createEmptyInstance() => create();
@@ -6870,17 +6598,15 @@ class SignupProgress extends $pb.GeneratedMessage {
   void clearUpdatedAt() => clearField(7);
 }
 
-/// Get signup progress request
 class GetSignupProgressRequest extends $pb.GeneratedMessage {
-  factory GetSignupProgressRequest() => create();
-  GetSignupProgressRequest._() : super();
-  factory GetSignupProgressRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetSignupProgressRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSignupProgressRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetSignupProgressRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..hasRequiredFields = false
   ;
 
+  GetSignupProgressRequest._() : super();
+  factory GetSignupProgressRequest() => create();
+  factory GetSignupProgressRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetSignupProgressRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -6890,10 +6616,8 @@ class GetSignupProgressRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetSignupProgressRequest copyWith(void Function(GetSignupProgressRequest) updates) => super.copyWith((message) => updates(message as GetSignupProgressRequest)) as GetSignupProgressRequest;
-
+  GetSignupProgressRequest copyWith(void Function(GetSignupProgressRequest) updates) => super.copyWith((message) => updates(message as GetSignupProgressRequest)) as GetSignupProgressRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetSignupProgressRequest create() => GetSignupProgressRequest._();
   GetSignupProgressRequest createEmptyInstance() => create();
@@ -6903,8 +6627,17 @@ class GetSignupProgressRequest extends $pb.GeneratedMessage {
   static GetSignupProgressRequest? _defaultInstance;
 }
 
-/// Get signup progress response
 class GetSignupProgressResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetSignupProgressResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
+    ..aOM<SignupProgress>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'progress', subBuilder: SignupProgress.create)
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nextStep')
+    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isComplete')
+    ..hasRequiredFields = false
+  ;
+
+  GetSignupProgressResponse._() : super();
   factory GetSignupProgressResponse({
     $core.bool? success,
     $core.String? msg,
@@ -6912,37 +6645,26 @@ class GetSignupProgressResponse extends $pb.GeneratedMessage {
     $core.String? nextStep,
     $core.bool? isComplete,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (msg != null) {
-      $result.msg = msg;
+      _result.msg = msg;
     }
     if (progress != null) {
-      $result.progress = progress;
+      _result.progress = progress;
     }
     if (nextStep != null) {
-      $result.nextStep = nextStep;
+      _result.nextStep = nextStep;
     }
     if (isComplete != null) {
-      $result.isComplete = isComplete;
+      _result.isComplete = isComplete;
     }
-    return $result;
+    return _result;
   }
-  GetSignupProgressResponse._() : super();
   factory GetSignupProgressResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetSignupProgressResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSignupProgressResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'msg')
-    ..aOM<SignupProgress>(3, _omitFieldNames ? '' : 'progress', subBuilder: SignupProgress.create)
-    ..aOS(4, _omitFieldNames ? '' : 'nextStep')
-    ..aOB(5, _omitFieldNames ? '' : 'isComplete')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -6952,10 +6674,8 @@ class GetSignupProgressResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetSignupProgressResponse copyWith(void Function(GetSignupProgressResponse) updates) => super.copyWith((message) => updates(message as GetSignupProgressResponse)) as GetSignupProgressResponse;
-
+  GetSignupProgressResponse copyWith(void Function(GetSignupProgressResponse) updates) => super.copyWith((message) => updates(message as GetSignupProgressResponse)) as GetSignupProgressResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetSignupProgressResponse create() => GetSignupProgressResponse._();
   GetSignupProgressResponse createEmptyInstance() => create();
@@ -7012,36 +6732,34 @@ class GetSignupProgressResponse extends $pb.GeneratedMessage {
   void clearIsComplete() => clearField(5);
 }
 
-/// Update signup step request
 class UpdateSignupStepRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateSignupStepRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'stepName')
+    ..e<StepStatus>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: StepStatus.STEP_STATUS_UNSPECIFIED, valueOf: StepStatus.valueOf, enumValues: StepStatus.values)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'stepData')
+    ..hasRequiredFields = false
+  ;
+
+  UpdateSignupStepRequest._() : super();
   factory UpdateSignupStepRequest({
     $core.String? stepName,
     StepStatus? status,
     $core.String? stepData,
   }) {
-    final $result = create();
+    final _result = create();
     if (stepName != null) {
-      $result.stepName = stepName;
+      _result.stepName = stepName;
     }
     if (status != null) {
-      $result.status = status;
+      _result.status = status;
     }
     if (stepData != null) {
-      $result.stepData = stepData;
+      _result.stepData = stepData;
     }
-    return $result;
+    return _result;
   }
-  UpdateSignupStepRequest._() : super();
   factory UpdateSignupStepRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UpdateSignupStepRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateSignupStepRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'stepName')
-    ..e<StepStatus>(2, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: StepStatus.STEP_STATUS_UNSPECIFIED, valueOf: StepStatus.valueOf, enumValues: StepStatus.values)
-    ..aOS(3, _omitFieldNames ? '' : 'stepData')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -7051,10 +6769,8 @@ class UpdateSignupStepRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UpdateSignupStepRequest copyWith(void Function(UpdateSignupStepRequest) updates) => super.copyWith((message) => updates(message as UpdateSignupStepRequest)) as UpdateSignupStepRequest;
-
+  UpdateSignupStepRequest copyWith(void Function(UpdateSignupStepRequest) updates) => super.copyWith((message) => updates(message as UpdateSignupStepRequest)) as UpdateSignupStepRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static UpdateSignupStepRequest create() => UpdateSignupStepRequest._();
   UpdateSignupStepRequest createEmptyInstance() => create();
@@ -7091,41 +6807,39 @@ class UpdateSignupStepRequest extends $pb.GeneratedMessage {
   void clearStepData() => clearField(3);
 }
 
-/// Update signup step response
 class UpdateSignupStepResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateSignupStepResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
+    ..aOM<SignupProgress>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'progress', subBuilder: SignupProgress.create)
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nextStep')
+    ..hasRequiredFields = false
+  ;
+
+  UpdateSignupStepResponse._() : super();
   factory UpdateSignupStepResponse({
     $core.bool? success,
     $core.String? msg,
     SignupProgress? progress,
     $core.String? nextStep,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (msg != null) {
-      $result.msg = msg;
+      _result.msg = msg;
     }
     if (progress != null) {
-      $result.progress = progress;
+      _result.progress = progress;
     }
     if (nextStep != null) {
-      $result.nextStep = nextStep;
+      _result.nextStep = nextStep;
     }
-    return $result;
+    return _result;
   }
-  UpdateSignupStepResponse._() : super();
   factory UpdateSignupStepResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UpdateSignupStepResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateSignupStepResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'msg')
-    ..aOM<SignupProgress>(3, _omitFieldNames ? '' : 'progress', subBuilder: SignupProgress.create)
-    ..aOS(4, _omitFieldNames ? '' : 'nextStep')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -7135,10 +6849,8 @@ class UpdateSignupStepResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UpdateSignupStepResponse copyWith(void Function(UpdateSignupStepResponse) updates) => super.copyWith((message) => updates(message as UpdateSignupStepResponse)) as UpdateSignupStepResponse;
-
+  UpdateSignupStepResponse copyWith(void Function(UpdateSignupStepResponse) updates) => super.copyWith((message) => updates(message as UpdateSignupStepResponse)) as UpdateSignupStepResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static UpdateSignupStepResponse create() => UpdateSignupStepResponse._();
   UpdateSignupStepResponse createEmptyInstance() => create();
@@ -7186,17 +6898,15 @@ class UpdateSignupStepResponse extends $pb.GeneratedMessage {
   void clearNextStep() => clearField(4);
 }
 
-/// Complete signup request
 class CompleteSignupRequest extends $pb.GeneratedMessage {
-  factory CompleteSignupRequest() => create();
-  CompleteSignupRequest._() : super();
-  factory CompleteSignupRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory CompleteSignupRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CompleteSignupRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CompleteSignupRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..hasRequiredFields = false
   ;
 
+  CompleteSignupRequest._() : super();
+  factory CompleteSignupRequest() => create();
+  factory CompleteSignupRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CompleteSignupRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -7206,10 +6916,8 @@ class CompleteSignupRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CompleteSignupRequest copyWith(void Function(CompleteSignupRequest) updates) => super.copyWith((message) => updates(message as CompleteSignupRequest)) as CompleteSignupRequest;
-
+  CompleteSignupRequest copyWith(void Function(CompleteSignupRequest) updates) => super.copyWith((message) => updates(message as CompleteSignupRequest)) as CompleteSignupRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CompleteSignupRequest create() => CompleteSignupRequest._();
   CompleteSignupRequest createEmptyInstance() => create();
@@ -7219,36 +6927,34 @@ class CompleteSignupRequest extends $pb.GeneratedMessage {
   static CompleteSignupRequest? _defaultInstance;
 }
 
-/// Complete signup response
 class CompleteSignupResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CompleteSignupResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
+    ..aOM<SignupProgress>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'progress', subBuilder: SignupProgress.create)
+    ..hasRequiredFields = false
+  ;
+
+  CompleteSignupResponse._() : super();
   factory CompleteSignupResponse({
     $core.bool? success,
     $core.String? msg,
     SignupProgress? progress,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (msg != null) {
-      $result.msg = msg;
+      _result.msg = msg;
     }
     if (progress != null) {
-      $result.progress = progress;
+      _result.progress = progress;
     }
-    return $result;
+    return _result;
   }
-  CompleteSignupResponse._() : super();
   factory CompleteSignupResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CompleteSignupResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CompleteSignupResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'msg')
-    ..aOM<SignupProgress>(3, _omitFieldNames ? '' : 'progress', subBuilder: SignupProgress.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -7258,10 +6964,8 @@ class CompleteSignupResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CompleteSignupResponse copyWith(void Function(CompleteSignupResponse) updates) => super.copyWith((message) => updates(message as CompleteSignupResponse)) as CompleteSignupResponse;
-
+  CompleteSignupResponse copyWith(void Function(CompleteSignupResponse) updates) => super.copyWith((message) => updates(message as CompleteSignupResponse)) as CompleteSignupResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CompleteSignupResponse create() => CompleteSignupResponse._();
   CompleteSignupResponse createEmptyInstance() => create();
@@ -7300,8 +7004,19 @@ class CompleteSignupResponse extends $pb.GeneratedMessage {
   SignupProgress ensureProgress() => $_ensure(2);
 }
 
-/// Verify identity request
 class VerifyIdentityRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VerifyIdentityRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..e<IdentityType>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'identityType', $pb.PbFieldType.OE, defaultOrMaker: IdentityType.IDENTITY_TYPE_UNSPECIFIED, valueOf: IdentityType.valueOf, enumValues: IdentityType.values)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'identityNumber')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dateOfBirth')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'countryCode')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'firstName')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastName')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumber')
+    ..hasRequiredFields = false
+  ;
+
+  VerifyIdentityRequest._() : super();
   factory VerifyIdentityRequest({
     IdentityType? identityType,
     $core.String? identityNumber,
@@ -7311,45 +7026,32 @@ class VerifyIdentityRequest extends $pb.GeneratedMessage {
     $core.String? lastName,
     $core.String? phoneNumber,
   }) {
-    final $result = create();
+    final _result = create();
     if (identityType != null) {
-      $result.identityType = identityType;
+      _result.identityType = identityType;
     }
     if (identityNumber != null) {
-      $result.identityNumber = identityNumber;
+      _result.identityNumber = identityNumber;
     }
     if (dateOfBirth != null) {
-      $result.dateOfBirth = dateOfBirth;
+      _result.dateOfBirth = dateOfBirth;
     }
     if (countryCode != null) {
-      $result.countryCode = countryCode;
+      _result.countryCode = countryCode;
     }
     if (firstName != null) {
-      $result.firstName = firstName;
+      _result.firstName = firstName;
     }
     if (lastName != null) {
-      $result.lastName = lastName;
+      _result.lastName = lastName;
     }
     if (phoneNumber != null) {
-      $result.phoneNumber = phoneNumber;
+      _result.phoneNumber = phoneNumber;
     }
-    return $result;
+    return _result;
   }
-  VerifyIdentityRequest._() : super();
   factory VerifyIdentityRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory VerifyIdentityRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyIdentityRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..e<IdentityType>(1, _omitFieldNames ? '' : 'identityType', $pb.PbFieldType.OE, defaultOrMaker: IdentityType.IDENTITY_TYPE_UNSPECIFIED, valueOf: IdentityType.valueOf, enumValues: IdentityType.values)
-    ..aOS(2, _omitFieldNames ? '' : 'identityNumber')
-    ..aOS(3, _omitFieldNames ? '' : 'dateOfBirth')
-    ..aOS(4, _omitFieldNames ? '' : 'countryCode')
-    ..aOS(5, _omitFieldNames ? '' : 'firstName')
-    ..aOS(6, _omitFieldNames ? '' : 'lastName')
-    ..aOS(7, _omitFieldNames ? '' : 'phoneNumber')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -7359,10 +7061,8 @@ class VerifyIdentityRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  VerifyIdentityRequest copyWith(void Function(VerifyIdentityRequest) updates) => super.copyWith((message) => updates(message as VerifyIdentityRequest)) as VerifyIdentityRequest;
-
+  VerifyIdentityRequest copyWith(void Function(VerifyIdentityRequest) updates) => super.copyWith((message) => updates(message as VerifyIdentityRequest)) as VerifyIdentityRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static VerifyIdentityRequest create() => VerifyIdentityRequest._();
   VerifyIdentityRequest createEmptyInstance() => create();
@@ -7435,8 +7135,22 @@ class VerifyIdentityRequest extends $pb.GeneratedMessage {
   void clearPhoneNumber() => clearField(7);
 }
 
-/// Verified identity details returned from provider
 class VerifiedIdentity extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VerifiedIdentity', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'firstName')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastName')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'middleName')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumber')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dateOfBirth')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'gender')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'photoUrl')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'address')
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'stateOfOrigin')
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lgaOfOrigin')
+    ..hasRequiredFields = false
+  ;
+
+  VerifiedIdentity._() : super();
   factory VerifiedIdentity({
     $core.String? firstName,
     $core.String? lastName,
@@ -7449,57 +7163,41 @@ class VerifiedIdentity extends $pb.GeneratedMessage {
     $core.String? stateOfOrigin,
     $core.String? lgaOfOrigin,
   }) {
-    final $result = create();
+    final _result = create();
     if (firstName != null) {
-      $result.firstName = firstName;
+      _result.firstName = firstName;
     }
     if (lastName != null) {
-      $result.lastName = lastName;
+      _result.lastName = lastName;
     }
     if (middleName != null) {
-      $result.middleName = middleName;
+      _result.middleName = middleName;
     }
     if (phoneNumber != null) {
-      $result.phoneNumber = phoneNumber;
+      _result.phoneNumber = phoneNumber;
     }
     if (dateOfBirth != null) {
-      $result.dateOfBirth = dateOfBirth;
+      _result.dateOfBirth = dateOfBirth;
     }
     if (gender != null) {
-      $result.gender = gender;
+      _result.gender = gender;
     }
     if (photoUrl != null) {
-      $result.photoUrl = photoUrl;
+      _result.photoUrl = photoUrl;
     }
     if (address != null) {
-      $result.address = address;
+      _result.address = address;
     }
     if (stateOfOrigin != null) {
-      $result.stateOfOrigin = stateOfOrigin;
+      _result.stateOfOrigin = stateOfOrigin;
     }
     if (lgaOfOrigin != null) {
-      $result.lgaOfOrigin = lgaOfOrigin;
+      _result.lgaOfOrigin = lgaOfOrigin;
     }
-    return $result;
+    return _result;
   }
-  VerifiedIdentity._() : super();
   factory VerifiedIdentity.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory VerifiedIdentity.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifiedIdentity', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'firstName')
-    ..aOS(2, _omitFieldNames ? '' : 'lastName')
-    ..aOS(3, _omitFieldNames ? '' : 'middleName')
-    ..aOS(4, _omitFieldNames ? '' : 'phoneNumber')
-    ..aOS(5, _omitFieldNames ? '' : 'dateOfBirth')
-    ..aOS(6, _omitFieldNames ? '' : 'gender')
-    ..aOS(7, _omitFieldNames ? '' : 'photoUrl')
-    ..aOS(8, _omitFieldNames ? '' : 'address')
-    ..aOS(9, _omitFieldNames ? '' : 'stateOfOrigin')
-    ..aOS(10, _omitFieldNames ? '' : 'lgaOfOrigin')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -7509,10 +7207,8 @@ class VerifiedIdentity extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  VerifiedIdentity copyWith(void Function(VerifiedIdentity) updates) => super.copyWith((message) => updates(message as VerifiedIdentity)) as VerifiedIdentity;
-
+  VerifiedIdentity copyWith(void Function(VerifiedIdentity) updates) => super.copyWith((message) => updates(message as VerifiedIdentity)) as VerifiedIdentity; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static VerifiedIdentity create() => VerifiedIdentity._();
   VerifiedIdentity createEmptyInstance() => create();
@@ -7612,8 +7308,23 @@ class VerifiedIdentity extends $pb.GeneratedMessage {
   void clearLgaOfOrigin() => clearField(10);
 }
 
-/// Verify identity response
 class VerifyIdentityResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VerifyIdentityResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verified')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorCode')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorMessage')
+    ..aOM<VerifiedIdentity>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'identity', subBuilder: VerifiedIdentity.create)
+    ..aOM<VirtualAccountInfo>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'virtualAccount', subBuilder: VirtualAccountInfo.create)
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verificationId')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sessionUrl')
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sessionToken')
+    ..aOM<DataReconciliation>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reconciliation', subBuilder: DataReconciliation.create)
+    ..hasRequiredFields = false
+  ;
+
+  VerifyIdentityResponse._() : super();
   factory VerifyIdentityResponse({
     $core.bool? success,
     $core.bool? verified,
@@ -7627,61 +7338,44 @@ class VerifyIdentityResponse extends $pb.GeneratedMessage {
     $core.String? sessionToken,
     DataReconciliation? reconciliation,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (verified != null) {
-      $result.verified = verified;
+      _result.verified = verified;
     }
     if (errorCode != null) {
-      $result.errorCode = errorCode;
+      _result.errorCode = errorCode;
     }
     if (errorMessage != null) {
-      $result.errorMessage = errorMessage;
+      _result.errorMessage = errorMessage;
     }
     if (identity != null) {
-      $result.identity = identity;
+      _result.identity = identity;
     }
     if (virtualAccount != null) {
-      $result.virtualAccount = virtualAccount;
+      _result.virtualAccount = virtualAccount;
     }
     if (verificationId != null) {
-      $result.verificationId = verificationId;
+      _result.verificationId = verificationId;
     }
     if (status != null) {
-      $result.status = status;
+      _result.status = status;
     }
     if (sessionUrl != null) {
-      $result.sessionUrl = sessionUrl;
+      _result.sessionUrl = sessionUrl;
     }
     if (sessionToken != null) {
-      $result.sessionToken = sessionToken;
+      _result.sessionToken = sessionToken;
     }
     if (reconciliation != null) {
-      $result.reconciliation = reconciliation;
+      _result.reconciliation = reconciliation;
     }
-    return $result;
+    return _result;
   }
-  VerifyIdentityResponse._() : super();
   factory VerifyIdentityResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory VerifyIdentityResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyIdentityResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOB(2, _omitFieldNames ? '' : 'verified')
-    ..aOS(3, _omitFieldNames ? '' : 'errorCode')
-    ..aOS(4, _omitFieldNames ? '' : 'errorMessage')
-    ..aOM<VerifiedIdentity>(5, _omitFieldNames ? '' : 'identity', subBuilder: VerifiedIdentity.create)
-    ..aOM<VirtualAccountInfo>(6, _omitFieldNames ? '' : 'virtualAccount', subBuilder: VirtualAccountInfo.create)
-    ..aOS(7, _omitFieldNames ? '' : 'verificationId')
-    ..aOS(8, _omitFieldNames ? '' : 'status')
-    ..aOS(9, _omitFieldNames ? '' : 'sessionUrl')
-    ..aOS(10, _omitFieldNames ? '' : 'sessionToken')
-    ..aOM<DataReconciliation>(11, _omitFieldNames ? '' : 'reconciliation', subBuilder: DataReconciliation.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -7691,10 +7385,8 @@ class VerifyIdentityResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  VerifyIdentityResponse copyWith(void Function(VerifyIdentityResponse) updates) => super.copyWith((message) => updates(message as VerifyIdentityResponse)) as VerifyIdentityResponse;
-
+  VerifyIdentityResponse copyWith(void Function(VerifyIdentityResponse) updates) => super.copyWith((message) => updates(message as VerifyIdentityResponse)) as VerifyIdentityResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static VerifyIdentityResponse create() => VerifyIdentityResponse._();
   VerifyIdentityResponse createEmptyInstance() => create();
@@ -7761,7 +7453,6 @@ class VerifyIdentityResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(6)
   VirtualAccountInfo ensureVirtualAccount() => $_ensure(5);
 
-  /// Async verification fields (Onfido/Persona - UK/US)
   @$pb.TagNumber(7)
   $core.String get verificationId => $_getSZ(6);
   @$pb.TagNumber(7)
@@ -7798,7 +7489,6 @@ class VerifyIdentityResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(10)
   void clearSessionToken() => clearField(10);
 
-  /// BVN data reconciliation (populated when name/DOB mismatch detected)
   @$pb.TagNumber(11)
   DataReconciliation get reconciliation => $_getN(10);
   @$pb.TagNumber(11)
@@ -7811,8 +7501,20 @@ class VerifyIdentityResponse extends $pb.GeneratedMessage {
   DataReconciliation ensureReconciliation() => $_ensure(10);
 }
 
-/// BVN data reconciliation result
 class DataReconciliation extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DataReconciliation', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nameAction')
+    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nameMatchScore', $pb.PbFieldType.OD)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verifiedName')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'profileName')
+    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dobMismatch')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verifiedDob')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'profileDob')
+    ..aOB(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneMismatch')
+    ..hasRequiredFields = false
+  ;
+
+  DataReconciliation._() : super();
   factory DataReconciliation({
     $core.String? nameAction,
     $core.double? nameMatchScore,
@@ -7823,49 +7525,35 @@ class DataReconciliation extends $pb.GeneratedMessage {
     $core.String? profileDob,
     $core.bool? phoneMismatch,
   }) {
-    final $result = create();
+    final _result = create();
     if (nameAction != null) {
-      $result.nameAction = nameAction;
+      _result.nameAction = nameAction;
     }
     if (nameMatchScore != null) {
-      $result.nameMatchScore = nameMatchScore;
+      _result.nameMatchScore = nameMatchScore;
     }
     if (verifiedName != null) {
-      $result.verifiedName = verifiedName;
+      _result.verifiedName = verifiedName;
     }
     if (profileName != null) {
-      $result.profileName = profileName;
+      _result.profileName = profileName;
     }
     if (dobMismatch != null) {
-      $result.dobMismatch = dobMismatch;
+      _result.dobMismatch = dobMismatch;
     }
     if (verifiedDob != null) {
-      $result.verifiedDob = verifiedDob;
+      _result.verifiedDob = verifiedDob;
     }
     if (profileDob != null) {
-      $result.profileDob = profileDob;
+      _result.profileDob = profileDob;
     }
     if (phoneMismatch != null) {
-      $result.phoneMismatch = phoneMismatch;
+      _result.phoneMismatch = phoneMismatch;
     }
-    return $result;
+    return _result;
   }
-  DataReconciliation._() : super();
   factory DataReconciliation.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory DataReconciliation.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DataReconciliation', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'nameAction')
-    ..a<$core.double>(2, _omitFieldNames ? '' : 'nameMatchScore', $pb.PbFieldType.OD)
-    ..aOS(3, _omitFieldNames ? '' : 'verifiedName')
-    ..aOS(4, _omitFieldNames ? '' : 'profileName')
-    ..aOB(5, _omitFieldNames ? '' : 'dobMismatch')
-    ..aOS(6, _omitFieldNames ? '' : 'verifiedDob')
-    ..aOS(7, _omitFieldNames ? '' : 'profileDob')
-    ..aOB(8, _omitFieldNames ? '' : 'phoneMismatch')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -7875,10 +7563,8 @@ class DataReconciliation extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  DataReconciliation copyWith(void Function(DataReconciliation) updates) => super.copyWith((message) => updates(message as DataReconciliation)) as DataReconciliation;
-
+  DataReconciliation copyWith(void Function(DataReconciliation) updates) => super.copyWith((message) => updates(message as DataReconciliation)) as DataReconciliation; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static DataReconciliation create() => DataReconciliation._();
   DataReconciliation createEmptyInstance() => create();
@@ -7960,31 +7646,29 @@ class DataReconciliation extends $pb.GeneratedMessage {
   void clearPhoneMismatch() => clearField(8);
 }
 
-/// Confirm BVN name after reconciliation
 class ConfirmBVNNameRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ConfirmBVNNameRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'action')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verificationId')
+    ..hasRequiredFields = false
+  ;
+
+  ConfirmBVNNameRequest._() : super();
   factory ConfirmBVNNameRequest({
     $core.String? action,
     $core.String? verificationId,
   }) {
-    final $result = create();
+    final _result = create();
     if (action != null) {
-      $result.action = action;
+      _result.action = action;
     }
     if (verificationId != null) {
-      $result.verificationId = verificationId;
+      _result.verificationId = verificationId;
     }
-    return $result;
+    return _result;
   }
-  ConfirmBVNNameRequest._() : super();
   factory ConfirmBVNNameRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ConfirmBVNNameRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ConfirmBVNNameRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'action')
-    ..aOS(2, _omitFieldNames ? '' : 'verificationId')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -7994,10 +7678,8 @@ class ConfirmBVNNameRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ConfirmBVNNameRequest copyWith(void Function(ConfirmBVNNameRequest) updates) => super.copyWith((message) => updates(message as ConfirmBVNNameRequest)) as ConfirmBVNNameRequest;
-
+  ConfirmBVNNameRequest copyWith(void Function(ConfirmBVNNameRequest) updates) => super.copyWith((message) => updates(message as ConfirmBVNNameRequest)) as ConfirmBVNNameRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ConfirmBVNNameRequest create() => ConfirmBVNNameRequest._();
   ConfirmBVNNameRequest createEmptyInstance() => create();
@@ -8025,41 +7707,39 @@ class ConfirmBVNNameRequest extends $pb.GeneratedMessage {
   void clearVerificationId() => clearField(2);
 }
 
-/// Confirm BVN name response
 class ConfirmBVNNameResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ConfirmBVNNameResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..e<KYCVerificationStatus>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: KYCVerificationStatus.KYC_STATUS_UNKNOWN, valueOf: KYCVerificationStatus.valueOf, enumValues: KYCVerificationStatus.values)
+    ..e<KYCTier>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentTier', $pb.PbFieldType.OE, defaultOrMaker: KYCTier.KYC_TIER_UNKNOWN, valueOf: KYCTier.valueOf, enumValues: KYCTier.values)
+    ..hasRequiredFields = false
+  ;
+
+  ConfirmBVNNameResponse._() : super();
   factory ConfirmBVNNameResponse({
     $core.bool? success,
     $core.String? message,
     KYCVerificationStatus? status,
     KYCTier? currentTier,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (status != null) {
-      $result.status = status;
+      _result.status = status;
     }
     if (currentTier != null) {
-      $result.currentTier = currentTier;
+      _result.currentTier = currentTier;
     }
-    return $result;
+    return _result;
   }
-  ConfirmBVNNameResponse._() : super();
   factory ConfirmBVNNameResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ConfirmBVNNameResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ConfirmBVNNameResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..e<KYCVerificationStatus>(3, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: KYCVerificationStatus.KYC_STATUS_UNKNOWN, valueOf: KYCVerificationStatus.valueOf, enumValues: KYCVerificationStatus.values)
-    ..e<KYCTier>(4, _omitFieldNames ? '' : 'currentTier', $pb.PbFieldType.OE, defaultOrMaker: KYCTier.KYC_TIER_UNKNOWN, valueOf: KYCTier.valueOf, enumValues: KYCTier.values)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -8069,10 +7749,8 @@ class ConfirmBVNNameResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ConfirmBVNNameResponse copyWith(void Function(ConfirmBVNNameResponse) updates) => super.copyWith((message) => updates(message as ConfirmBVNNameResponse)) as ConfirmBVNNameResponse;
-
+  ConfirmBVNNameResponse copyWith(void Function(ConfirmBVNNameResponse) updates) => super.copyWith((message) => updates(message as ConfirmBVNNameResponse)) as ConfirmBVNNameResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ConfirmBVNNameResponse create() => ConfirmBVNNameResponse._();
   ConfirmBVNNameResponse createEmptyInstance() => create();
@@ -8118,8 +7796,18 @@ class ConfirmBVNNameResponse extends $pb.GeneratedMessage {
   void clearCurrentTier() => clearField(4);
 }
 
-/// Virtual account info (returned after identity verification)
 class VirtualAccountInfo extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VirtualAccountInfo', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountNumber')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bankName')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bankCode')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountName')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'provider')
+    ..hasRequiredFields = false
+  ;
+
+  VirtualAccountInfo._() : super();
   factory VirtualAccountInfo({
     $core.String? accountNumber,
     $core.String? bankName,
@@ -8128,41 +7816,29 @@ class VirtualAccountInfo extends $pb.GeneratedMessage {
     $core.String? currency,
     $core.String? provider,
   }) {
-    final $result = create();
+    final _result = create();
     if (accountNumber != null) {
-      $result.accountNumber = accountNumber;
+      _result.accountNumber = accountNumber;
     }
     if (bankName != null) {
-      $result.bankName = bankName;
+      _result.bankName = bankName;
     }
     if (bankCode != null) {
-      $result.bankCode = bankCode;
+      _result.bankCode = bankCode;
     }
     if (accountName != null) {
-      $result.accountName = accountName;
+      _result.accountName = accountName;
     }
     if (currency != null) {
-      $result.currency = currency;
+      _result.currency = currency;
     }
     if (provider != null) {
-      $result.provider = provider;
+      _result.provider = provider;
     }
-    return $result;
+    return _result;
   }
-  VirtualAccountInfo._() : super();
   factory VirtualAccountInfo.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory VirtualAccountInfo.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VirtualAccountInfo', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'accountNumber')
-    ..aOS(2, _omitFieldNames ? '' : 'bankName')
-    ..aOS(3, _omitFieldNames ? '' : 'bankCode')
-    ..aOS(4, _omitFieldNames ? '' : 'accountName')
-    ..aOS(5, _omitFieldNames ? '' : 'currency')
-    ..aOS(6, _omitFieldNames ? '' : 'provider')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -8172,10 +7848,8 @@ class VirtualAccountInfo extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  VirtualAccountInfo copyWith(void Function(VirtualAccountInfo) updates) => super.copyWith((message) => updates(message as VirtualAccountInfo)) as VirtualAccountInfo;
-
+  VirtualAccountInfo copyWith(void Function(VirtualAccountInfo) updates) => super.copyWith((message) => updates(message as VirtualAccountInfo)) as VirtualAccountInfo; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static VirtualAccountInfo create() => VirtualAccountInfo._();
   VirtualAccountInfo createEmptyInstance() => create();
@@ -8239,17 +7913,15 @@ class VirtualAccountInfo extends $pb.GeneratedMessage {
   void clearProvider() => clearField(6);
 }
 
-/// Get identity verification status request
 class GetIdentityVerificationStatusRequest extends $pb.GeneratedMessage {
-  factory GetIdentityVerificationStatusRequest() => create();
-  GetIdentityVerificationStatusRequest._() : super();
-  factory GetIdentityVerificationStatusRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetIdentityVerificationStatusRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetIdentityVerificationStatusRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetIdentityVerificationStatusRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..hasRequiredFields = false
   ;
 
+  GetIdentityVerificationStatusRequest._() : super();
+  factory GetIdentityVerificationStatusRequest() => create();
+  factory GetIdentityVerificationStatusRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetIdentityVerificationStatusRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -8259,10 +7931,8 @@ class GetIdentityVerificationStatusRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetIdentityVerificationStatusRequest copyWith(void Function(GetIdentityVerificationStatusRequest) updates) => super.copyWith((message) => updates(message as GetIdentityVerificationStatusRequest)) as GetIdentityVerificationStatusRequest;
-
+  GetIdentityVerificationStatusRequest copyWith(void Function(GetIdentityVerificationStatusRequest) updates) => super.copyWith((message) => updates(message as GetIdentityVerificationStatusRequest)) as GetIdentityVerificationStatusRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetIdentityVerificationStatusRequest create() => GetIdentityVerificationStatusRequest._();
   GetIdentityVerificationStatusRequest createEmptyInstance() => create();
@@ -8272,8 +7942,18 @@ class GetIdentityVerificationStatusRequest extends $pb.GeneratedMessage {
   static GetIdentityVerificationStatusRequest? _defaultInstance;
 }
 
-/// Get identity verification status response
 class GetIdentityVerificationStatusResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetIdentityVerificationStatusResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
+    ..aOB(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'identityVerified')
+    ..e<IdentityType>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'identityType', $pb.PbFieldType.OE, defaultOrMaker: IdentityType.IDENTITY_TYPE_UNSPECIFIED, valueOf: IdentityType.valueOf, enumValues: IdentityType.values)
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'identityVerifiedAt')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'maskedIdentityNumber')
+    ..hasRequiredFields = false
+  ;
+
+  GetIdentityVerificationStatusResponse._() : super();
   factory GetIdentityVerificationStatusResponse({
     $core.bool? success,
     $core.String? msg,
@@ -8282,41 +7962,29 @@ class GetIdentityVerificationStatusResponse extends $pb.GeneratedMessage {
     $core.String? identityVerifiedAt,
     $core.String? maskedIdentityNumber,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (msg != null) {
-      $result.msg = msg;
+      _result.msg = msg;
     }
     if (identityVerified != null) {
-      $result.identityVerified = identityVerified;
+      _result.identityVerified = identityVerified;
     }
     if (identityType != null) {
-      $result.identityType = identityType;
+      _result.identityType = identityType;
     }
     if (identityVerifiedAt != null) {
-      $result.identityVerifiedAt = identityVerifiedAt;
+      _result.identityVerifiedAt = identityVerifiedAt;
     }
     if (maskedIdentityNumber != null) {
-      $result.maskedIdentityNumber = maskedIdentityNumber;
+      _result.maskedIdentityNumber = maskedIdentityNumber;
     }
-    return $result;
+    return _result;
   }
-  GetIdentityVerificationStatusResponse._() : super();
   factory GetIdentityVerificationStatusResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetIdentityVerificationStatusResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetIdentityVerificationStatusResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'msg')
-    ..aOB(3, _omitFieldNames ? '' : 'identityVerified')
-    ..e<IdentityType>(4, _omitFieldNames ? '' : 'identityType', $pb.PbFieldType.OE, defaultOrMaker: IdentityType.IDENTITY_TYPE_UNSPECIFIED, valueOf: IdentityType.valueOf, enumValues: IdentityType.values)
-    ..aOS(5, _omitFieldNames ? '' : 'identityVerifiedAt')
-    ..aOS(6, _omitFieldNames ? '' : 'maskedIdentityNumber')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -8326,10 +7994,8 @@ class GetIdentityVerificationStatusResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetIdentityVerificationStatusResponse copyWith(void Function(GetIdentityVerificationStatusResponse) updates) => super.copyWith((message) => updates(message as GetIdentityVerificationStatusResponse)) as GetIdentityVerificationStatusResponse;
-
+  GetIdentityVerificationStatusResponse copyWith(void Function(GetIdentityVerificationStatusResponse) updates) => super.copyWith((message) => updates(message as GetIdentityVerificationStatusResponse)) as GetIdentityVerificationStatusResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetIdentityVerificationStatusResponse create() => GetIdentityVerificationStatusResponse._();
   GetIdentityVerificationStatusResponse createEmptyInstance() => create();
@@ -8393,26 +8059,24 @@ class GetIdentityVerificationStatusResponse extends $pb.GeneratedMessage {
   void clearMaskedIdentityNumber() => clearField(6);
 }
 
-/// Lookup user by username request
 class LookupUserByUsernameRequest extends $pb.GeneratedMessage {
-  factory LookupUserByUsernameRequest({
-    $core.String? username,
-  }) {
-    final $result = create();
-    if (username != null) {
-      $result.username = username;
-    }
-    return $result;
-  }
-  LookupUserByUsernameRequest._() : super();
-  factory LookupUserByUsernameRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory LookupUserByUsernameRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'LookupUserByUsernameRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'username')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'LookupUserByUsernameRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'username')
     ..hasRequiredFields = false
   ;
 
+  LookupUserByUsernameRequest._() : super();
+  factory LookupUserByUsernameRequest({
+    $core.String? username,
+  }) {
+    final _result = create();
+    if (username != null) {
+      _result.username = username;
+    }
+    return _result;
+  }
+  factory LookupUserByUsernameRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory LookupUserByUsernameRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -8422,10 +8086,8 @@ class LookupUserByUsernameRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  LookupUserByUsernameRequest copyWith(void Function(LookupUserByUsernameRequest) updates) => super.copyWith((message) => updates(message as LookupUserByUsernameRequest)) as LookupUserByUsernameRequest;
-
+  LookupUserByUsernameRequest copyWith(void Function(LookupUserByUsernameRequest) updates) => super.copyWith((message) => updates(message as LookupUserByUsernameRequest)) as LookupUserByUsernameRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static LookupUserByUsernameRequest create() => LookupUserByUsernameRequest._();
   LookupUserByUsernameRequest createEmptyInstance() => create();
@@ -8444,26 +8106,24 @@ class LookupUserByUsernameRequest extends $pb.GeneratedMessage {
   void clearUsername() => clearField(1);
 }
 
-/// Lookup user by phone request
 class LookupUserByPhoneRequest extends $pb.GeneratedMessage {
-  factory LookupUserByPhoneRequest({
-    $core.String? phone,
-  }) {
-    final $result = create();
-    if (phone != null) {
-      $result.phone = phone;
-    }
-    return $result;
-  }
-  LookupUserByPhoneRequest._() : super();
-  factory LookupUserByPhoneRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory LookupUserByPhoneRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'LookupUserByPhoneRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'phone')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'LookupUserByPhoneRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phone')
     ..hasRequiredFields = false
   ;
 
+  LookupUserByPhoneRequest._() : super();
+  factory LookupUserByPhoneRequest({
+    $core.String? phone,
+  }) {
+    final _result = create();
+    if (phone != null) {
+      _result.phone = phone;
+    }
+    return _result;
+  }
+  factory LookupUserByPhoneRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory LookupUserByPhoneRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -8473,10 +8133,8 @@ class LookupUserByPhoneRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  LookupUserByPhoneRequest copyWith(void Function(LookupUserByPhoneRequest) updates) => super.copyWith((message) => updates(message as LookupUserByPhoneRequest)) as LookupUserByPhoneRequest;
-
+  LookupUserByPhoneRequest copyWith(void Function(LookupUserByPhoneRequest) updates) => super.copyWith((message) => updates(message as LookupUserByPhoneRequest)) as LookupUserByPhoneRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static LookupUserByPhoneRequest create() => LookupUserByPhoneRequest._();
   LookupUserByPhoneRequest createEmptyInstance() => create();
@@ -8495,41 +8153,39 @@ class LookupUserByPhoneRequest extends $pb.GeneratedMessage {
   void clearPhone() => clearField(1);
 }
 
-/// User lookup response (common for both username and phone lookup)
 class UserLookupResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UserLookupResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
+    ..aOB(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'found')
+    ..aOM<UserLookupResult>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'user', subBuilder: UserLookupResult.create)
+    ..hasRequiredFields = false
+  ;
+
+  UserLookupResponse._() : super();
   factory UserLookupResponse({
     $core.bool? success,
     $core.String? msg,
     $core.bool? found,
     UserLookupResult? user,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (msg != null) {
-      $result.msg = msg;
+      _result.msg = msg;
     }
     if (found != null) {
-      $result.found = found;
+      _result.found = found;
     }
     if (user != null) {
-      $result.user = user;
+      _result.user = user;
     }
-    return $result;
+    return _result;
   }
-  UserLookupResponse._() : super();
   factory UserLookupResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UserLookupResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UserLookupResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'msg')
-    ..aOB(3, _omitFieldNames ? '' : 'found')
-    ..aOM<UserLookupResult>(4, _omitFieldNames ? '' : 'user', subBuilder: UserLookupResult.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -8539,10 +8195,8 @@ class UserLookupResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UserLookupResponse copyWith(void Function(UserLookupResponse) updates) => super.copyWith((message) => updates(message as UserLookupResponse)) as UserLookupResponse;
-
+  UserLookupResponse copyWith(void Function(UserLookupResponse) updates) => super.copyWith((message) => updates(message as UserLookupResponse)) as UserLookupResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static UserLookupResponse create() => UserLookupResponse._();
   UserLookupResponse createEmptyInstance() => create();
@@ -8590,8 +8244,24 @@ class UserLookupResponse extends $pb.GeneratedMessage {
   UserLookupResult ensureUser() => $_ensure(3);
 }
 
-/// User lookup result - minimal info for transfers
 class UserLookupResult extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UserLookupResult', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'username')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'firstName')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastName')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'profilePicture')
+    ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isLazervaultUser')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumber')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'primaryAccountId')
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'countryCode')
+    ..aOB(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'emailMatchesSearchQuery')
+    ..aOB(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneMatchesSearchQueryExact')
+    ..hasRequiredFields = false
+  ;
+
+  UserLookupResult._() : super();
   factory UserLookupResult({
     $core.String? userId,
     $core.String? username,
@@ -8606,65 +8276,47 @@ class UserLookupResult extends $pb.GeneratedMessage {
     $core.bool? emailMatchesSearchQuery,
     $core.bool? phoneMatchesSearchQueryExact,
   }) {
-    final $result = create();
+    final _result = create();
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (username != null) {
-      $result.username = username;
+      _result.username = username;
     }
     if (firstName != null) {
-      $result.firstName = firstName;
+      _result.firstName = firstName;
     }
     if (lastName != null) {
-      $result.lastName = lastName;
+      _result.lastName = lastName;
     }
     if (profilePicture != null) {
-      $result.profilePicture = profilePicture;
+      _result.profilePicture = profilePicture;
     }
     if (isLazervaultUser != null) {
-      $result.isLazervaultUser = isLazervaultUser;
+      _result.isLazervaultUser = isLazervaultUser;
     }
     if (phoneNumber != null) {
-      $result.phoneNumber = phoneNumber;
+      _result.phoneNumber = phoneNumber;
     }
     if (email != null) {
-      $result.email = email;
+      _result.email = email;
     }
     if (primaryAccountId != null) {
-      $result.primaryAccountId = primaryAccountId;
+      _result.primaryAccountId = primaryAccountId;
     }
     if (countryCode != null) {
-      $result.countryCode = countryCode;
+      _result.countryCode = countryCode;
     }
     if (emailMatchesSearchQuery != null) {
-      $result.emailMatchesSearchQuery = emailMatchesSearchQuery;
+      _result.emailMatchesSearchQuery = emailMatchesSearchQuery;
     }
     if (phoneMatchesSearchQueryExact != null) {
-      $result.phoneMatchesSearchQueryExact = phoneMatchesSearchQueryExact;
+      _result.phoneMatchesSearchQueryExact = phoneMatchesSearchQueryExact;
     }
-    return $result;
+    return _result;
   }
-  UserLookupResult._() : super();
   factory UserLookupResult.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UserLookupResult.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UserLookupResult', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..aOS(2, _omitFieldNames ? '' : 'username')
-    ..aOS(3, _omitFieldNames ? '' : 'firstName')
-    ..aOS(4, _omitFieldNames ? '' : 'lastName')
-    ..aOS(5, _omitFieldNames ? '' : 'profilePicture')
-    ..aOB(6, _omitFieldNames ? '' : 'isLazervaultUser')
-    ..aOS(7, _omitFieldNames ? '' : 'phoneNumber')
-    ..aOS(8, _omitFieldNames ? '' : 'email')
-    ..aOS(9, _omitFieldNames ? '' : 'primaryAccountId')
-    ..aOS(10, _omitFieldNames ? '' : 'countryCode')
-    ..aOB(11, _omitFieldNames ? '' : 'emailMatchesSearchQuery')
-    ..aOB(12, _omitFieldNames ? '' : 'phoneMatchesSearchQueryExact')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -8674,10 +8326,8 @@ class UserLookupResult extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UserLookupResult copyWith(void Function(UserLookupResult) updates) => super.copyWith((message) => updates(message as UserLookupResult)) as UserLookupResult;
-
+  UserLookupResult copyWith(void Function(UserLookupResult) updates) => super.copyWith((message) => updates(message as UserLookupResult)) as UserLookupResult; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static UserLookupResult create() => UserLookupResult._();
   UserLookupResult createEmptyInstance() => create();
@@ -8776,7 +8426,6 @@ class UserLookupResult extends $pb.GeneratedMessage {
   @$pb.TagNumber(10)
   void clearCountryCode() => clearField(10);
 
-  /// SearchUsers only: server-side exact match vs the request query (clients must not compare masked email/phone strings).
   @$pb.TagNumber(11)
   $core.bool get emailMatchesSearchQuery => $_getBF(10);
   @$pb.TagNumber(11)
@@ -8796,41 +8445,39 @@ class UserLookupResult extends $pb.GeneratedMessage {
   void clearPhoneMatchesSearchQueryExact() => clearField(12);
 }
 
-/// Search users by multiple fields request
 class UserSearchRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UserSearchRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'query')
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'searchType')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'countryCode')
+    ..hasRequiredFields = false
+  ;
+
+  UserSearchRequest._() : super();
   factory UserSearchRequest({
     $core.String? query,
     $core.int? limit,
     $core.String? searchType,
     $core.String? countryCode,
   }) {
-    final $result = create();
+    final _result = create();
     if (query != null) {
-      $result.query = query;
+      _result.query = query;
     }
     if (limit != null) {
-      $result.limit = limit;
+      _result.limit = limit;
     }
     if (searchType != null) {
-      $result.searchType = searchType;
+      _result.searchType = searchType;
     }
     if (countryCode != null) {
-      $result.countryCode = countryCode;
+      _result.countryCode = countryCode;
     }
-    return $result;
+    return _result;
   }
-  UserSearchRequest._() : super();
   factory UserSearchRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UserSearchRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UserSearchRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'query')
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
-    ..aOS(3, _omitFieldNames ? '' : 'searchType')
-    ..aOS(4, _omitFieldNames ? '' : 'countryCode')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -8840,10 +8487,8 @@ class UserSearchRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UserSearchRequest copyWith(void Function(UserSearchRequest) updates) => super.copyWith((message) => updates(message as UserSearchRequest)) as UserSearchRequest;
-
+  UserSearchRequest copyWith(void Function(UserSearchRequest) updates) => super.copyWith((message) => updates(message as UserSearchRequest)) as UserSearchRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static UserSearchRequest create() => UserSearchRequest._();
   UserSearchRequest createEmptyInstance() => create();
@@ -8889,36 +8534,34 @@ class UserSearchRequest extends $pb.GeneratedMessage {
   void clearCountryCode() => clearField(4);
 }
 
-/// Search users response
 class UserSearchResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UserSearchResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
+    ..pc<UserLookupResult>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'users', $pb.PbFieldType.PM, subBuilder: UserLookupResult.create)
+    ..hasRequiredFields = false
+  ;
+
+  UserSearchResponse._() : super();
   factory UserSearchResponse({
     $core.bool? success,
     $core.String? msg,
     $core.Iterable<UserLookupResult>? users,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (msg != null) {
-      $result.msg = msg;
+      _result.msg = msg;
     }
     if (users != null) {
-      $result.users.addAll(users);
+      _result.users.addAll(users);
     }
-    return $result;
+    return _result;
   }
-  UserSearchResponse._() : super();
   factory UserSearchResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UserSearchResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UserSearchResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'msg')
-    ..pc<UserLookupResult>(3, _omitFieldNames ? '' : 'users', $pb.PbFieldType.PM, subBuilder: UserLookupResult.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -8928,10 +8571,8 @@ class UserSearchResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UserSearchResponse copyWith(void Function(UserSearchResponse) updates) => super.copyWith((message) => updates(message as UserSearchResponse)) as UserSearchResponse;
-
+  UserSearchResponse copyWith(void Function(UserSearchResponse) updates) => super.copyWith((message) => updates(message as UserSearchResponse)) as UserSearchResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static UserSearchResponse create() => UserSearchResponse._();
   UserSearchResponse createEmptyInstance() => create();
@@ -8962,31 +8603,29 @@ class UserSearchResponse extends $pb.GeneratedMessage {
   $core.List<UserLookupResult> get users => $_getList(2);
 }
 
-/// Initiate KYC request
 class InitiateKYCRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'InitiateKYCRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..e<KYCTier>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetTier', $pb.PbFieldType.OE, defaultOrMaker: KYCTier.KYC_TIER_UNKNOWN, valueOf: KYCTier.valueOf, enumValues: KYCTier.values)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'countryCode')
+    ..hasRequiredFields = false
+  ;
+
+  InitiateKYCRequest._() : super();
   factory InitiateKYCRequest({
     KYCTier? targetTier,
     $core.String? countryCode,
   }) {
-    final $result = create();
+    final _result = create();
     if (targetTier != null) {
-      $result.targetTier = targetTier;
+      _result.targetTier = targetTier;
     }
     if (countryCode != null) {
-      $result.countryCode = countryCode;
+      _result.countryCode = countryCode;
     }
-    return $result;
+    return _result;
   }
-  InitiateKYCRequest._() : super();
   factory InitiateKYCRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory InitiateKYCRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InitiateKYCRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..e<KYCTier>(1, _omitFieldNames ? '' : 'targetTier', $pb.PbFieldType.OE, defaultOrMaker: KYCTier.KYC_TIER_UNKNOWN, valueOf: KYCTier.valueOf, enumValues: KYCTier.values)
-    ..aOS(2, _omitFieldNames ? '' : 'countryCode')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -8996,10 +8635,8 @@ class InitiateKYCRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  InitiateKYCRequest copyWith(void Function(InitiateKYCRequest) updates) => super.copyWith((message) => updates(message as InitiateKYCRequest)) as InitiateKYCRequest;
-
+  InitiateKYCRequest copyWith(void Function(InitiateKYCRequest) updates) => super.copyWith((message) => updates(message as InitiateKYCRequest)) as InitiateKYCRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static InitiateKYCRequest create() => InitiateKYCRequest._();
   InitiateKYCRequest createEmptyInstance() => create();
@@ -9027,8 +8664,18 @@ class InitiateKYCRequest extends $pb.GeneratedMessage {
   void clearCountryCode() => clearField(2);
 }
 
-/// Initiate KYC response
 class InitiateKYCResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'InitiateKYCResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sessionId')
+    ..pPS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'requiredDocuments')
+    ..pPS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'requiredFields')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'redirectUrl')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorMessage')
+    ..hasRequiredFields = false
+  ;
+
+  InitiateKYCResponse._() : super();
   factory InitiateKYCResponse({
     $core.bool? success,
     $core.String? sessionId,
@@ -9037,41 +8684,29 @@ class InitiateKYCResponse extends $pb.GeneratedMessage {
     $core.String? redirectUrl,
     $core.String? errorMessage,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (sessionId != null) {
-      $result.sessionId = sessionId;
+      _result.sessionId = sessionId;
     }
     if (requiredDocuments != null) {
-      $result.requiredDocuments.addAll(requiredDocuments);
+      _result.requiredDocuments.addAll(requiredDocuments);
     }
     if (requiredFields != null) {
-      $result.requiredFields.addAll(requiredFields);
+      _result.requiredFields.addAll(requiredFields);
     }
     if (redirectUrl != null) {
-      $result.redirectUrl = redirectUrl;
+      _result.redirectUrl = redirectUrl;
     }
     if (errorMessage != null) {
-      $result.errorMessage = errorMessage;
+      _result.errorMessage = errorMessage;
     }
-    return $result;
+    return _result;
   }
-  InitiateKYCResponse._() : super();
   factory InitiateKYCResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory InitiateKYCResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InitiateKYCResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'sessionId')
-    ..pPS(3, _omitFieldNames ? '' : 'requiredDocuments')
-    ..pPS(4, _omitFieldNames ? '' : 'requiredFields')
-    ..aOS(5, _omitFieldNames ? '' : 'redirectUrl')
-    ..aOS(6, _omitFieldNames ? '' : 'errorMessage')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -9081,10 +8716,8 @@ class InitiateKYCResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  InitiateKYCResponse copyWith(void Function(InitiateKYCResponse) updates) => super.copyWith((message) => updates(message as InitiateKYCResponse)) as InitiateKYCResponse;
-
+  InitiateKYCResponse copyWith(void Function(InitiateKYCResponse) updates) => super.copyWith((message) => updates(message as InitiateKYCResponse)) as InitiateKYCResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static InitiateKYCResponse create() => InitiateKYCResponse._();
   InitiateKYCResponse createEmptyInstance() => create();
@@ -9136,8 +8769,17 @@ class InitiateKYCResponse extends $pb.GeneratedMessage {
   void clearErrorMessage() => clearField(6);
 }
 
-/// Upload document request
 class UploadDocumentRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UploadDocumentRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..e<DocumentType>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'documentType', $pb.PbFieldType.OE, defaultOrMaker: DocumentType.DOCUMENT_TYPE_UNKNOWN, valueOf: DocumentType.valueOf, enumValues: DocumentType.values)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'documentFrontUrl')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'documentBackUrl')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'selfieUrl')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'proofOfAddressUrl')
+    ..hasRequiredFields = false
+  ;
+
+  UploadDocumentRequest._() : super();
   factory UploadDocumentRequest({
     DocumentType? documentType,
     $core.String? documentFrontUrl,
@@ -9145,37 +8787,26 @@ class UploadDocumentRequest extends $pb.GeneratedMessage {
     $core.String? selfieUrl,
     $core.String? proofOfAddressUrl,
   }) {
-    final $result = create();
+    final _result = create();
     if (documentType != null) {
-      $result.documentType = documentType;
+      _result.documentType = documentType;
     }
     if (documentFrontUrl != null) {
-      $result.documentFrontUrl = documentFrontUrl;
+      _result.documentFrontUrl = documentFrontUrl;
     }
     if (documentBackUrl != null) {
-      $result.documentBackUrl = documentBackUrl;
+      _result.documentBackUrl = documentBackUrl;
     }
     if (selfieUrl != null) {
-      $result.selfieUrl = selfieUrl;
+      _result.selfieUrl = selfieUrl;
     }
     if (proofOfAddressUrl != null) {
-      $result.proofOfAddressUrl = proofOfAddressUrl;
+      _result.proofOfAddressUrl = proofOfAddressUrl;
     }
-    return $result;
+    return _result;
   }
-  UploadDocumentRequest._() : super();
   factory UploadDocumentRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UploadDocumentRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UploadDocumentRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..e<DocumentType>(1, _omitFieldNames ? '' : 'documentType', $pb.PbFieldType.OE, defaultOrMaker: DocumentType.DOCUMENT_TYPE_UNKNOWN, valueOf: DocumentType.valueOf, enumValues: DocumentType.values)
-    ..aOS(2, _omitFieldNames ? '' : 'documentFrontUrl')
-    ..aOS(3, _omitFieldNames ? '' : 'documentBackUrl')
-    ..aOS(4, _omitFieldNames ? '' : 'selfieUrl')
-    ..aOS(5, _omitFieldNames ? '' : 'proofOfAddressUrl')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -9185,10 +8816,8 @@ class UploadDocumentRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UploadDocumentRequest copyWith(void Function(UploadDocumentRequest) updates) => super.copyWith((message) => updates(message as UploadDocumentRequest)) as UploadDocumentRequest;
-
+  UploadDocumentRequest copyWith(void Function(UploadDocumentRequest) updates) => super.copyWith((message) => updates(message as UploadDocumentRequest)) as UploadDocumentRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static UploadDocumentRequest create() => UploadDocumentRequest._();
   UploadDocumentRequest createEmptyInstance() => create();
@@ -9243,41 +8872,39 @@ class UploadDocumentRequest extends $pb.GeneratedMessage {
   void clearProofOfAddressUrl() => clearField(5);
 }
 
-/// Upload document response
 class UploadDocumentResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UploadDocumentResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'documentId')
+    ..e<DocumentStatus>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: DocumentStatus.DOCUMENT_STATUS_UNKNOWN, valueOf: DocumentStatus.valueOf, enumValues: DocumentStatus.values)
+    ..hasRequiredFields = false
+  ;
+
+  UploadDocumentResponse._() : super();
   factory UploadDocumentResponse({
     $core.bool? success,
     $core.String? message,
     $core.String? documentId,
     DocumentStatus? status,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (documentId != null) {
-      $result.documentId = documentId;
+      _result.documentId = documentId;
     }
     if (status != null) {
-      $result.status = status;
+      _result.status = status;
     }
-    return $result;
+    return _result;
   }
-  UploadDocumentResponse._() : super();
   factory UploadDocumentResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UploadDocumentResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UploadDocumentResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOS(3, _omitFieldNames ? '' : 'documentId')
-    ..e<DocumentStatus>(4, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: DocumentStatus.DOCUMENT_STATUS_UNKNOWN, valueOf: DocumentStatus.valueOf, enumValues: DocumentStatus.values)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -9287,10 +8914,8 @@ class UploadDocumentResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UploadDocumentResponse copyWith(void Function(UploadDocumentResponse) updates) => super.copyWith((message) => updates(message as UploadDocumentResponse)) as UploadDocumentResponse;
-
+  UploadDocumentResponse copyWith(void Function(UploadDocumentResponse) updates) => super.copyWith((message) => updates(message as UploadDocumentResponse)) as UploadDocumentResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static UploadDocumentResponse create() => UploadDocumentResponse._();
   UploadDocumentResponse createEmptyInstance() => create();
@@ -9336,31 +8961,29 @@ class UploadDocumentResponse extends $pb.GeneratedMessage {
   void clearStatus() => clearField(4);
 }
 
-/// Skip KYC upgrade request
 class SkipKYCUpgradeRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SkipKYCUpgradeRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'skipTier2', protoName: 'skip_tier_2')
+    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'skipTier3', protoName: 'skip_tier_3')
+    ..hasRequiredFields = false
+  ;
+
+  SkipKYCUpgradeRequest._() : super();
   factory SkipKYCUpgradeRequest({
     $core.bool? skipTier2,
     $core.bool? skipTier3,
   }) {
-    final $result = create();
+    final _result = create();
     if (skipTier2 != null) {
-      $result.skipTier2 = skipTier2;
+      _result.skipTier2 = skipTier2;
     }
     if (skipTier3 != null) {
-      $result.skipTier3 = skipTier3;
+      _result.skipTier3 = skipTier3;
     }
-    return $result;
+    return _result;
   }
-  SkipKYCUpgradeRequest._() : super();
   factory SkipKYCUpgradeRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SkipKYCUpgradeRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SkipKYCUpgradeRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'skipTier2', protoName: 'skip_tier_2')
-    ..aOB(2, _omitFieldNames ? '' : 'skipTier3', protoName: 'skip_tier_3')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -9370,10 +8993,8 @@ class SkipKYCUpgradeRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SkipKYCUpgradeRequest copyWith(void Function(SkipKYCUpgradeRequest) updates) => super.copyWith((message) => updates(message as SkipKYCUpgradeRequest)) as SkipKYCUpgradeRequest;
-
+  SkipKYCUpgradeRequest copyWith(void Function(SkipKYCUpgradeRequest) updates) => super.copyWith((message) => updates(message as SkipKYCUpgradeRequest)) as SkipKYCUpgradeRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SkipKYCUpgradeRequest create() => SkipKYCUpgradeRequest._();
   SkipKYCUpgradeRequest createEmptyInstance() => create();
@@ -9401,41 +9022,39 @@ class SkipKYCUpgradeRequest extends $pb.GeneratedMessage {
   void clearSkipTier3() => clearField(2);
 }
 
-/// Skip KYC upgrade response
 class SkipKYCUpgradeResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SkipKYCUpgradeResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..e<KYCTier>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'assignedTier', $pb.PbFieldType.OE, defaultOrMaker: KYCTier.KYC_TIER_UNKNOWN, valueOf: KYCTier.valueOf, enumValues: KYCTier.values)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..pPS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nextSteps')
+    ..hasRequiredFields = false
+  ;
+
+  SkipKYCUpgradeResponse._() : super();
   factory SkipKYCUpgradeResponse({
     $core.bool? success,
     KYCTier? assignedTier,
     $core.String? message,
     $core.Iterable<$core.String>? nextSteps,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (assignedTier != null) {
-      $result.assignedTier = assignedTier;
+      _result.assignedTier = assignedTier;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (nextSteps != null) {
-      $result.nextSteps.addAll(nextSteps);
+      _result.nextSteps.addAll(nextSteps);
     }
-    return $result;
+    return _result;
   }
-  SkipKYCUpgradeResponse._() : super();
   factory SkipKYCUpgradeResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SkipKYCUpgradeResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SkipKYCUpgradeResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..e<KYCTier>(2, _omitFieldNames ? '' : 'assignedTier', $pb.PbFieldType.OE, defaultOrMaker: KYCTier.KYC_TIER_UNKNOWN, valueOf: KYCTier.valueOf, enumValues: KYCTier.values)
-    ..aOS(3, _omitFieldNames ? '' : 'message')
-    ..pPS(4, _omitFieldNames ? '' : 'nextSteps')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -9445,10 +9064,8 @@ class SkipKYCUpgradeResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SkipKYCUpgradeResponse copyWith(void Function(SkipKYCUpgradeResponse) updates) => super.copyWith((message) => updates(message as SkipKYCUpgradeResponse)) as SkipKYCUpgradeResponse;
-
+  SkipKYCUpgradeResponse copyWith(void Function(SkipKYCUpgradeResponse) updates) => super.copyWith((message) => updates(message as SkipKYCUpgradeResponse)) as SkipKYCUpgradeResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SkipKYCUpgradeResponse create() => SkipKYCUpgradeResponse._();
   SkipKYCUpgradeResponse createEmptyInstance() => create();
@@ -9488,17 +9105,15 @@ class SkipKYCUpgradeResponse extends $pb.GeneratedMessage {
   $core.List<$core.String> get nextSteps => $_getList(3);
 }
 
-/// Get user documents request
 class GetUserDocumentsRequest extends $pb.GeneratedMessage {
-  factory GetUserDocumentsRequest() => create();
-  GetUserDocumentsRequest._() : super();
-  factory GetUserDocumentsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetUserDocumentsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetUserDocumentsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetUserDocumentsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..hasRequiredFields = false
   ;
 
+  GetUserDocumentsRequest._() : super();
+  factory GetUserDocumentsRequest() => create();
+  factory GetUserDocumentsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetUserDocumentsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -9508,10 +9123,8 @@ class GetUserDocumentsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetUserDocumentsRequest copyWith(void Function(GetUserDocumentsRequest) updates) => super.copyWith((message) => updates(message as GetUserDocumentsRequest)) as GetUserDocumentsRequest;
-
+  GetUserDocumentsRequest copyWith(void Function(GetUserDocumentsRequest) updates) => super.copyWith((message) => updates(message as GetUserDocumentsRequest)) as GetUserDocumentsRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetUserDocumentsRequest create() => GetUserDocumentsRequest._();
   GetUserDocumentsRequest createEmptyInstance() => create();
@@ -9521,8 +9134,19 @@ class GetUserDocumentsRequest extends $pb.GeneratedMessage {
   static GetUserDocumentsRequest? _defaultInstance;
 }
 
-/// Verification document info
 class VerificationDocument extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VerificationDocument', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..e<DocumentType>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'documentType', $pb.PbFieldType.OE, defaultOrMaker: DocumentType.DOCUMENT_TYPE_UNKNOWN, valueOf: DocumentType.valueOf, enumValues: DocumentType.values)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'documentUrl')
+    ..e<DocumentStatus>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: DocumentStatus.DOCUMENT_STATUS_UNKNOWN, valueOf: DocumentStatus.valueOf, enumValues: DocumentStatus.values)
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'uploadedAt')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verifiedAt')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'rejectionReason')
+    ..hasRequiredFields = false
+  ;
+
+  VerificationDocument._() : super();
   factory VerificationDocument({
     $core.String? id,
     DocumentType? documentType,
@@ -9532,45 +9156,32 @@ class VerificationDocument extends $pb.GeneratedMessage {
     $core.String? verifiedAt,
     $core.String? rejectionReason,
   }) {
-    final $result = create();
+    final _result = create();
     if (id != null) {
-      $result.id = id;
+      _result.id = id;
     }
     if (documentType != null) {
-      $result.documentType = documentType;
+      _result.documentType = documentType;
     }
     if (documentUrl != null) {
-      $result.documentUrl = documentUrl;
+      _result.documentUrl = documentUrl;
     }
     if (status != null) {
-      $result.status = status;
+      _result.status = status;
     }
     if (uploadedAt != null) {
-      $result.uploadedAt = uploadedAt;
+      _result.uploadedAt = uploadedAt;
     }
     if (verifiedAt != null) {
-      $result.verifiedAt = verifiedAt;
+      _result.verifiedAt = verifiedAt;
     }
     if (rejectionReason != null) {
-      $result.rejectionReason = rejectionReason;
+      _result.rejectionReason = rejectionReason;
     }
-    return $result;
+    return _result;
   }
-  VerificationDocument._() : super();
   factory VerificationDocument.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory VerificationDocument.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerificationDocument', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..e<DocumentType>(2, _omitFieldNames ? '' : 'documentType', $pb.PbFieldType.OE, defaultOrMaker: DocumentType.DOCUMENT_TYPE_UNKNOWN, valueOf: DocumentType.valueOf, enumValues: DocumentType.values)
-    ..aOS(3, _omitFieldNames ? '' : 'documentUrl')
-    ..e<DocumentStatus>(4, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: DocumentStatus.DOCUMENT_STATUS_UNKNOWN, valueOf: DocumentStatus.valueOf, enumValues: DocumentStatus.values)
-    ..aOS(5, _omitFieldNames ? '' : 'uploadedAt')
-    ..aOS(6, _omitFieldNames ? '' : 'verifiedAt')
-    ..aOS(7, _omitFieldNames ? '' : 'rejectionReason')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -9580,10 +9191,8 @@ class VerificationDocument extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  VerificationDocument copyWith(void Function(VerificationDocument) updates) => super.copyWith((message) => updates(message as VerificationDocument)) as VerificationDocument;
-
+  VerificationDocument copyWith(void Function(VerificationDocument) updates) => super.copyWith((message) => updates(message as VerificationDocument)) as VerificationDocument; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static VerificationDocument create() => VerificationDocument._();
   VerificationDocument createEmptyInstance() => create();
@@ -9656,31 +9265,29 @@ class VerificationDocument extends $pb.GeneratedMessage {
   void clearRejectionReason() => clearField(7);
 }
 
-/// Get user documents response
 class GetUserDocumentsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetUserDocumentsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..pc<VerificationDocument>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'documents', $pb.PbFieldType.PM, subBuilder: VerificationDocument.create)
+    ..hasRequiredFields = false
+  ;
+
+  GetUserDocumentsResponse._() : super();
   factory GetUserDocumentsResponse({
     $core.bool? success,
     $core.Iterable<VerificationDocument>? documents,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (documents != null) {
-      $result.documents.addAll(documents);
+      _result.documents.addAll(documents);
     }
-    return $result;
+    return _result;
   }
-  GetUserDocumentsResponse._() : super();
   factory GetUserDocumentsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetUserDocumentsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetUserDocumentsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..pc<VerificationDocument>(2, _omitFieldNames ? '' : 'documents', $pb.PbFieldType.PM, subBuilder: VerificationDocument.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -9690,10 +9297,8 @@ class GetUserDocumentsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetUserDocumentsResponse copyWith(void Function(GetUserDocumentsResponse) updates) => super.copyWith((message) => updates(message as GetUserDocumentsResponse)) as GetUserDocumentsResponse;
-
+  GetUserDocumentsResponse copyWith(void Function(GetUserDocumentsResponse) updates) => super.copyWith((message) => updates(message as GetUserDocumentsResponse)) as GetUserDocumentsResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetUserDocumentsResponse create() => GetUserDocumentsResponse._();
   GetUserDocumentsResponse createEmptyInstance() => create();
@@ -9715,8 +9320,24 @@ class GetUserDocumentsResponse extends $pb.GeneratedMessage {
   $core.List<VerificationDocument> get documents => $_getList(1);
 }
 
-/// KYC Tier info with limits and benefits
 class KYCTierInfo extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'KYCTierInfo', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..e<KYCTier>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'tier', $pb.PbFieldType.OE, defaultOrMaker: KYCTier.KYC_TIER_UNKNOWN, valueOf: KYCTier.valueOf, enumValues: KYCTier.values)
+    ..e<KYCVerificationStatus>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: KYCVerificationStatus.KYC_STATUS_UNKNOWN, valueOf: KYCVerificationStatus.valueOf, enumValues: KYCVerificationStatus.values)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'displayName')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
+    ..pPS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'benefits')
+    ..aInt64(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dailyTransactionLimit')
+    ..aInt64(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dailyReceiveLimit')
+    ..aInt64(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'maxBalance')
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verifiedAt')
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt')
+    ..aOB(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isCurrent')
+    ..aOB(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isLocked')
+    ..hasRequiredFields = false
+  ;
+
+  KYCTierInfo._() : super();
   factory KYCTierInfo({
     KYCTier? tier,
     KYCVerificationStatus? status,
@@ -9731,65 +9352,47 @@ class KYCTierInfo extends $pb.GeneratedMessage {
     $core.bool? isCurrent,
     $core.bool? isLocked,
   }) {
-    final $result = create();
+    final _result = create();
     if (tier != null) {
-      $result.tier = tier;
+      _result.tier = tier;
     }
     if (status != null) {
-      $result.status = status;
+      _result.status = status;
     }
     if (displayName != null) {
-      $result.displayName = displayName;
+      _result.displayName = displayName;
     }
     if (description != null) {
-      $result.description = description;
+      _result.description = description;
     }
     if (benefits != null) {
-      $result.benefits.addAll(benefits);
+      _result.benefits.addAll(benefits);
     }
     if (dailyTransactionLimit != null) {
-      $result.dailyTransactionLimit = dailyTransactionLimit;
+      _result.dailyTransactionLimit = dailyTransactionLimit;
     }
     if (dailyReceiveLimit != null) {
-      $result.dailyReceiveLimit = dailyReceiveLimit;
+      _result.dailyReceiveLimit = dailyReceiveLimit;
     }
     if (maxBalance != null) {
-      $result.maxBalance = maxBalance;
+      _result.maxBalance = maxBalance;
     }
     if (verifiedAt != null) {
-      $result.verifiedAt = verifiedAt;
+      _result.verifiedAt = verifiedAt;
     }
     if (expiresAt != null) {
-      $result.expiresAt = expiresAt;
+      _result.expiresAt = expiresAt;
     }
     if (isCurrent != null) {
-      $result.isCurrent = isCurrent;
+      _result.isCurrent = isCurrent;
     }
     if (isLocked != null) {
-      $result.isLocked = isLocked;
+      _result.isLocked = isLocked;
     }
-    return $result;
+    return _result;
   }
-  KYCTierInfo._() : super();
   factory KYCTierInfo.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory KYCTierInfo.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'KYCTierInfo', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..e<KYCTier>(1, _omitFieldNames ? '' : 'tier', $pb.PbFieldType.OE, defaultOrMaker: KYCTier.KYC_TIER_UNKNOWN, valueOf: KYCTier.valueOf, enumValues: KYCTier.values)
-    ..e<KYCVerificationStatus>(2, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: KYCVerificationStatus.KYC_STATUS_UNKNOWN, valueOf: KYCVerificationStatus.valueOf, enumValues: KYCVerificationStatus.values)
-    ..aOS(3, _omitFieldNames ? '' : 'displayName')
-    ..aOS(4, _omitFieldNames ? '' : 'description')
-    ..pPS(5, _omitFieldNames ? '' : 'benefits')
-    ..aInt64(6, _omitFieldNames ? '' : 'dailyTransactionLimit')
-    ..aInt64(7, _omitFieldNames ? '' : 'dailyReceiveLimit')
-    ..aInt64(8, _omitFieldNames ? '' : 'maxBalance')
-    ..aOS(9, _omitFieldNames ? '' : 'verifiedAt')
-    ..aOS(10, _omitFieldNames ? '' : 'expiresAt')
-    ..aOB(11, _omitFieldNames ? '' : 'isCurrent')
-    ..aOB(12, _omitFieldNames ? '' : 'isLocked')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -9799,10 +9402,8 @@ class KYCTierInfo extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  KYCTierInfo copyWith(void Function(KYCTierInfo) updates) => super.copyWith((message) => updates(message as KYCTierInfo)) as KYCTierInfo;
-
+  KYCTierInfo copyWith(void Function(KYCTierInfo) updates) => super.copyWith((message) => updates(message as KYCTierInfo)) as KYCTierInfo; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static KYCTierInfo create() => KYCTierInfo._();
   KYCTierInfo createEmptyInstance() => create();
@@ -9914,17 +9515,15 @@ class KYCTierInfo extends $pb.GeneratedMessage {
   void clearIsLocked() => clearField(12);
 }
 
-/// Get KYC status request
 class GetKYCStatusRequest extends $pb.GeneratedMessage {
-  factory GetKYCStatusRequest() => create();
-  GetKYCStatusRequest._() : super();
-  factory GetKYCStatusRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetKYCStatusRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetKYCStatusRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetKYCStatusRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..hasRequiredFields = false
   ;
 
+  GetKYCStatusRequest._() : super();
+  factory GetKYCStatusRequest() => create();
+  factory GetKYCStatusRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetKYCStatusRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -9934,10 +9533,8 @@ class GetKYCStatusRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetKYCStatusRequest copyWith(void Function(GetKYCStatusRequest) updates) => super.copyWith((message) => updates(message as GetKYCStatusRequest)) as GetKYCStatusRequest;
-
+  GetKYCStatusRequest copyWith(void Function(GetKYCStatusRequest) updates) => super.copyWith((message) => updates(message as GetKYCStatusRequest)) as GetKYCStatusRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetKYCStatusRequest create() => GetKYCStatusRequest._();
   GetKYCStatusRequest createEmptyInstance() => create();
@@ -9947,8 +9544,18 @@ class GetKYCStatusRequest extends $pb.GeneratedMessage {
   static GetKYCStatusRequest? _defaultInstance;
 }
 
-/// Get KYC status response
 class GetKYCStatusResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetKYCStatusResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..e<KYCVerificationStatus>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: KYCVerificationStatus.KYC_STATUS_UNKNOWN, valueOf: KYCVerificationStatus.valueOf, enumValues: KYCVerificationStatus.values)
+    ..e<KYCTier>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentTier', $pb.PbFieldType.OE, defaultOrMaker: KYCTier.KYC_TIER_UNKNOWN, valueOf: KYCTier.valueOf, enumValues: KYCTier.values)
+    ..pc<KYCTierInfo>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'tierInfo', $pb.PbFieldType.PM, subBuilder: KYCTierInfo.create)
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastUpdated')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'rejectionReason')
+    ..hasRequiredFields = false
+  ;
+
+  GetKYCStatusResponse._() : super();
   factory GetKYCStatusResponse({
     $core.bool? success,
     KYCVerificationStatus? status,
@@ -9957,41 +9564,29 @@ class GetKYCStatusResponse extends $pb.GeneratedMessage {
     $core.String? lastUpdated,
     $core.String? rejectionReason,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (status != null) {
-      $result.status = status;
+      _result.status = status;
     }
     if (currentTier != null) {
-      $result.currentTier = currentTier;
+      _result.currentTier = currentTier;
     }
     if (tierInfo != null) {
-      $result.tierInfo.addAll(tierInfo);
+      _result.tierInfo.addAll(tierInfo);
     }
     if (lastUpdated != null) {
-      $result.lastUpdated = lastUpdated;
+      _result.lastUpdated = lastUpdated;
     }
     if (rejectionReason != null) {
-      $result.rejectionReason = rejectionReason;
+      _result.rejectionReason = rejectionReason;
     }
-    return $result;
+    return _result;
   }
-  GetKYCStatusResponse._() : super();
   factory GetKYCStatusResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetKYCStatusResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetKYCStatusResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..e<KYCVerificationStatus>(2, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: KYCVerificationStatus.KYC_STATUS_UNKNOWN, valueOf: KYCVerificationStatus.valueOf, enumValues: KYCVerificationStatus.values)
-    ..e<KYCTier>(3, _omitFieldNames ? '' : 'currentTier', $pb.PbFieldType.OE, defaultOrMaker: KYCTier.KYC_TIER_UNKNOWN, valueOf: KYCTier.valueOf, enumValues: KYCTier.values)
-    ..pc<KYCTierInfo>(4, _omitFieldNames ? '' : 'tierInfo', $pb.PbFieldType.PM, subBuilder: KYCTierInfo.create)
-    ..aOS(5, _omitFieldNames ? '' : 'lastUpdated')
-    ..aOS(6, _omitFieldNames ? '' : 'rejectionReason')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -10001,10 +9596,8 @@ class GetKYCStatusResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetKYCStatusResponse copyWith(void Function(GetKYCStatusResponse) updates) => super.copyWith((message) => updates(message as GetKYCStatusResponse)) as GetKYCStatusResponse;
-
+  GetKYCStatusResponse copyWith(void Function(GetKYCStatusResponse) updates) => super.copyWith((message) => updates(message as GetKYCStatusResponse)) as GetKYCStatusResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetKYCStatusResponse create() => GetKYCStatusResponse._();
   GetKYCStatusResponse createEmptyInstance() => create();
@@ -10062,8 +9655,20 @@ class GetKYCStatusResponse extends $pb.GeneratedMessage {
   void clearRejectionReason() => clearField(6);
 }
 
-/// Country KYC requirements
 class CountryKYCRequirements extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CountryKYCRequirements', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'countryCode')
+    ..pc<IdentityType>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'acceptedIdTypes', $pb.PbFieldType.KE, valueOf: IdentityType.valueOf, enumValues: IdentityType.values, defaultEnumValue: IdentityType.IDENTITY_TYPE_UNSPECIFIED)
+    ..pc<IdentityType>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'mandatoryIdTypes', $pb.PbFieldType.KE, valueOf: IdentityType.valueOf, enumValues: IdentityType.values, defaultEnumValue: IdentityType.IDENTITY_TYPE_UNSPECIFIED)
+    ..aOB(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'addressProofRequired')
+    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'livenessCheckRequired')
+    ..aInt64(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'tier1DailyLimit', protoName: 'tier_1_daily_limit')
+    ..aInt64(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'tier2DailyLimit', protoName: 'tier_2_daily_limit')
+    ..aInt64(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'tier3DailyLimit', protoName: 'tier_3_daily_limit')
+    ..hasRequiredFields = false
+  ;
+
+  CountryKYCRequirements._() : super();
   factory CountryKYCRequirements({
     $core.String? countryCode,
     $core.Iterable<IdentityType>? acceptedIdTypes,
@@ -10074,49 +9679,35 @@ class CountryKYCRequirements extends $pb.GeneratedMessage {
     $fixnum.Int64? tier2DailyLimit,
     $fixnum.Int64? tier3DailyLimit,
   }) {
-    final $result = create();
+    final _result = create();
     if (countryCode != null) {
-      $result.countryCode = countryCode;
+      _result.countryCode = countryCode;
     }
     if (acceptedIdTypes != null) {
-      $result.acceptedIdTypes.addAll(acceptedIdTypes);
+      _result.acceptedIdTypes.addAll(acceptedIdTypes);
     }
     if (mandatoryIdTypes != null) {
-      $result.mandatoryIdTypes.addAll(mandatoryIdTypes);
+      _result.mandatoryIdTypes.addAll(mandatoryIdTypes);
     }
     if (addressProofRequired != null) {
-      $result.addressProofRequired = addressProofRequired;
+      _result.addressProofRequired = addressProofRequired;
     }
     if (livenessCheckRequired != null) {
-      $result.livenessCheckRequired = livenessCheckRequired;
+      _result.livenessCheckRequired = livenessCheckRequired;
     }
     if (tier1DailyLimit != null) {
-      $result.tier1DailyLimit = tier1DailyLimit;
+      _result.tier1DailyLimit = tier1DailyLimit;
     }
     if (tier2DailyLimit != null) {
-      $result.tier2DailyLimit = tier2DailyLimit;
+      _result.tier2DailyLimit = tier2DailyLimit;
     }
     if (tier3DailyLimit != null) {
-      $result.tier3DailyLimit = tier3DailyLimit;
+      _result.tier3DailyLimit = tier3DailyLimit;
     }
-    return $result;
+    return _result;
   }
-  CountryKYCRequirements._() : super();
   factory CountryKYCRequirements.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CountryKYCRequirements.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CountryKYCRequirements', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'countryCode')
-    ..pc<IdentityType>(2, _omitFieldNames ? '' : 'acceptedIdTypes', $pb.PbFieldType.KE, valueOf: IdentityType.valueOf, enumValues: IdentityType.values, defaultEnumValue: IdentityType.IDENTITY_TYPE_UNSPECIFIED)
-    ..pc<IdentityType>(3, _omitFieldNames ? '' : 'mandatoryIdTypes', $pb.PbFieldType.KE, valueOf: IdentityType.valueOf, enumValues: IdentityType.values, defaultEnumValue: IdentityType.IDENTITY_TYPE_UNSPECIFIED)
-    ..aOB(4, _omitFieldNames ? '' : 'addressProofRequired')
-    ..aOB(5, _omitFieldNames ? '' : 'livenessCheckRequired')
-    ..aInt64(6, _omitFieldNames ? '' : 'tier1DailyLimit', protoName: 'tier_1_daily_limit')
-    ..aInt64(7, _omitFieldNames ? '' : 'tier2DailyLimit', protoName: 'tier_2_daily_limit')
-    ..aInt64(8, _omitFieldNames ? '' : 'tier3DailyLimit', protoName: 'tier_3_daily_limit')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -10126,10 +9717,8 @@ class CountryKYCRequirements extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CountryKYCRequirements copyWith(void Function(CountryKYCRequirements) updates) => super.copyWith((message) => updates(message as CountryKYCRequirements)) as CountryKYCRequirements;
-
+  CountryKYCRequirements copyWith(void Function(CountryKYCRequirements) updates) => super.copyWith((message) => updates(message as CountryKYCRequirements)) as CountryKYCRequirements; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CountryKYCRequirements create() => CountryKYCRequirements._();
   CountryKYCRequirements createEmptyInstance() => create();
@@ -10199,26 +9788,24 @@ class CountryKYCRequirements extends $pb.GeneratedMessage {
   void clearTier3DailyLimit() => clearField(8);
 }
 
-/// Get country requirements request
 class GetCountryRequirementsRequest extends $pb.GeneratedMessage {
-  factory GetCountryRequirementsRequest({
-    $core.String? countryCode,
-  }) {
-    final $result = create();
-    if (countryCode != null) {
-      $result.countryCode = countryCode;
-    }
-    return $result;
-  }
-  GetCountryRequirementsRequest._() : super();
-  factory GetCountryRequirementsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetCountryRequirementsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCountryRequirementsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'countryCode')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetCountryRequirementsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'countryCode')
     ..hasRequiredFields = false
   ;
 
+  GetCountryRequirementsRequest._() : super();
+  factory GetCountryRequirementsRequest({
+    $core.String? countryCode,
+  }) {
+    final _result = create();
+    if (countryCode != null) {
+      _result.countryCode = countryCode;
+    }
+    return _result;
+  }
+  factory GetCountryRequirementsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetCountryRequirementsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -10228,10 +9815,8 @@ class GetCountryRequirementsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetCountryRequirementsRequest copyWith(void Function(GetCountryRequirementsRequest) updates) => super.copyWith((message) => updates(message as GetCountryRequirementsRequest)) as GetCountryRequirementsRequest;
-
+  GetCountryRequirementsRequest copyWith(void Function(GetCountryRequirementsRequest) updates) => super.copyWith((message) => updates(message as GetCountryRequirementsRequest)) as GetCountryRequirementsRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetCountryRequirementsRequest create() => GetCountryRequirementsRequest._();
   GetCountryRequirementsRequest createEmptyInstance() => create();
@@ -10250,31 +9835,29 @@ class GetCountryRequirementsRequest extends $pb.GeneratedMessage {
   void clearCountryCode() => clearField(1);
 }
 
-/// Get country requirements response
 class GetCountryRequirementsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetCountryRequirementsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOM<CountryKYCRequirements>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'requirements', subBuilder: CountryKYCRequirements.create)
+    ..hasRequiredFields = false
+  ;
+
+  GetCountryRequirementsResponse._() : super();
   factory GetCountryRequirementsResponse({
     $core.bool? success,
     CountryKYCRequirements? requirements,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (requirements != null) {
-      $result.requirements = requirements;
+      _result.requirements = requirements;
     }
-    return $result;
+    return _result;
   }
-  GetCountryRequirementsResponse._() : super();
   factory GetCountryRequirementsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetCountryRequirementsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetCountryRequirementsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOM<CountryKYCRequirements>(2, _omitFieldNames ? '' : 'requirements', subBuilder: CountryKYCRequirements.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -10284,10 +9867,8 @@ class GetCountryRequirementsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetCountryRequirementsResponse copyWith(void Function(GetCountryRequirementsResponse) updates) => super.copyWith((message) => updates(message as GetCountryRequirementsResponse)) as GetCountryRequirementsResponse;
-
+  GetCountryRequirementsResponse copyWith(void Function(GetCountryRequirementsResponse) updates) => super.copyWith((message) => updates(message as GetCountryRequirementsResponse)) as GetCountryRequirementsResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetCountryRequirementsResponse create() => GetCountryRequirementsResponse._();
   GetCountryRequirementsResponse createEmptyInstance() => create();
@@ -10317,8 +9898,20 @@ class GetCountryRequirementsResponse extends $pb.GeneratedMessage {
   CountryKYCRequirements ensureRequirements() => $_ensure(1);
 }
 
-/// Create verification session request (async provider flow)
 class CreateVerificationSessionRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateVerificationSessionRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..e<KYCTier>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetTier', $pb.PbFieldType.OE, defaultOrMaker: KYCTier.KYC_TIER_UNKNOWN, valueOf: KYCTier.valueOf, enumValues: KYCTier.values)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'countryCode')
+    ..e<IdentityType>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'idType', $pb.PbFieldType.OE, defaultOrMaker: IdentityType.IDENTITY_TYPE_UNSPECIFIED, valueOf: IdentityType.valueOf, enumValues: IdentityType.values)
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'idNumber')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'firstName')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastName')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dateOfBirth')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumber')
+    ..hasRequiredFields = false
+  ;
+
+  CreateVerificationSessionRequest._() : super();
   factory CreateVerificationSessionRequest({
     KYCTier? targetTier,
     $core.String? countryCode,
@@ -10329,49 +9922,35 @@ class CreateVerificationSessionRequest extends $pb.GeneratedMessage {
     $core.String? dateOfBirth,
     $core.String? phoneNumber,
   }) {
-    final $result = create();
+    final _result = create();
     if (targetTier != null) {
-      $result.targetTier = targetTier;
+      _result.targetTier = targetTier;
     }
     if (countryCode != null) {
-      $result.countryCode = countryCode;
+      _result.countryCode = countryCode;
     }
     if (idType != null) {
-      $result.idType = idType;
+      _result.idType = idType;
     }
     if (idNumber != null) {
-      $result.idNumber = idNumber;
+      _result.idNumber = idNumber;
     }
     if (firstName != null) {
-      $result.firstName = firstName;
+      _result.firstName = firstName;
     }
     if (lastName != null) {
-      $result.lastName = lastName;
+      _result.lastName = lastName;
     }
     if (dateOfBirth != null) {
-      $result.dateOfBirth = dateOfBirth;
+      _result.dateOfBirth = dateOfBirth;
     }
     if (phoneNumber != null) {
-      $result.phoneNumber = phoneNumber;
+      _result.phoneNumber = phoneNumber;
     }
-    return $result;
+    return _result;
   }
-  CreateVerificationSessionRequest._() : super();
   factory CreateVerificationSessionRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateVerificationSessionRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateVerificationSessionRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..e<KYCTier>(1, _omitFieldNames ? '' : 'targetTier', $pb.PbFieldType.OE, defaultOrMaker: KYCTier.KYC_TIER_UNKNOWN, valueOf: KYCTier.valueOf, enumValues: KYCTier.values)
-    ..aOS(2, _omitFieldNames ? '' : 'countryCode')
-    ..e<IdentityType>(3, _omitFieldNames ? '' : 'idType', $pb.PbFieldType.OE, defaultOrMaker: IdentityType.IDENTITY_TYPE_UNSPECIFIED, valueOf: IdentityType.valueOf, enumValues: IdentityType.values)
-    ..aOS(4, _omitFieldNames ? '' : 'idNumber')
-    ..aOS(5, _omitFieldNames ? '' : 'firstName')
-    ..aOS(6, _omitFieldNames ? '' : 'lastName')
-    ..aOS(7, _omitFieldNames ? '' : 'dateOfBirth')
-    ..aOS(8, _omitFieldNames ? '' : 'phoneNumber')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -10381,10 +9960,8 @@ class CreateVerificationSessionRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateVerificationSessionRequest copyWith(void Function(CreateVerificationSessionRequest) updates) => super.copyWith((message) => updates(message as CreateVerificationSessionRequest)) as CreateVerificationSessionRequest;
-
+  CreateVerificationSessionRequest copyWith(void Function(CreateVerificationSessionRequest) updates) => super.copyWith((message) => updates(message as CreateVerificationSessionRequest)) as CreateVerificationSessionRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CreateVerificationSessionRequest create() => CreateVerificationSessionRequest._();
   CreateVerificationSessionRequest createEmptyInstance() => create();
@@ -10466,8 +10043,19 @@ class CreateVerificationSessionRequest extends $pb.GeneratedMessage {
   void clearPhoneNumber() => clearField(8);
 }
 
-/// Create verification session response
 class CreateVerificationSessionResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateVerificationSessionResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verificationId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sessionUrl')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sessionToken')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'provider')
+    ..e<KYCVerificationStatus>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: KYCVerificationStatus.KYC_STATUS_UNKNOWN, valueOf: KYCVerificationStatus.valueOf, enumValues: KYCVerificationStatus.values)
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorMessage')
+    ..hasRequiredFields = false
+  ;
+
+  CreateVerificationSessionResponse._() : super();
   factory CreateVerificationSessionResponse({
     $core.bool? success,
     $core.String? verificationId,
@@ -10477,45 +10065,32 @@ class CreateVerificationSessionResponse extends $pb.GeneratedMessage {
     KYCVerificationStatus? status,
     $core.String? errorMessage,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (verificationId != null) {
-      $result.verificationId = verificationId;
+      _result.verificationId = verificationId;
     }
     if (sessionUrl != null) {
-      $result.sessionUrl = sessionUrl;
+      _result.sessionUrl = sessionUrl;
     }
     if (sessionToken != null) {
-      $result.sessionToken = sessionToken;
+      _result.sessionToken = sessionToken;
     }
     if (provider != null) {
-      $result.provider = provider;
+      _result.provider = provider;
     }
     if (status != null) {
-      $result.status = status;
+      _result.status = status;
     }
     if (errorMessage != null) {
-      $result.errorMessage = errorMessage;
+      _result.errorMessage = errorMessage;
     }
-    return $result;
+    return _result;
   }
-  CreateVerificationSessionResponse._() : super();
   factory CreateVerificationSessionResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateVerificationSessionResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateVerificationSessionResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'verificationId')
-    ..aOS(3, _omitFieldNames ? '' : 'sessionUrl')
-    ..aOS(4, _omitFieldNames ? '' : 'sessionToken')
-    ..aOS(5, _omitFieldNames ? '' : 'provider')
-    ..e<KYCVerificationStatus>(6, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: KYCVerificationStatus.KYC_STATUS_UNKNOWN, valueOf: KYCVerificationStatus.valueOf, enumValues: KYCVerificationStatus.values)
-    ..aOS(7, _omitFieldNames ? '' : 'errorMessage')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -10525,10 +10100,8 @@ class CreateVerificationSessionResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateVerificationSessionResponse copyWith(void Function(CreateVerificationSessionResponse) updates) => super.copyWith((message) => updates(message as CreateVerificationSessionResponse)) as CreateVerificationSessionResponse;
-
+  CreateVerificationSessionResponse copyWith(void Function(CreateVerificationSessionResponse) updates) => super.copyWith((message) => updates(message as CreateVerificationSessionResponse)) as CreateVerificationSessionResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CreateVerificationSessionResponse create() => CreateVerificationSessionResponse._();
   CreateVerificationSessionResponse createEmptyInstance() => create();
@@ -10601,41 +10174,39 @@ class CreateVerificationSessionResponse extends $pb.GeneratedMessage {
   void clearErrorMessage() => clearField(7);
 }
 
-/// Confirm verification request (after SDK/WebView completion)
 class ConfirmVerificationRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ConfirmVerificationRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verificationId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'provider')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'providerAuthCode')
+    ..m<$core.String, $core.String>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'metadata', entryClassName: 'ConfirmVerificationRequest.MetadataEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OS, packageName: const $pb.PackageName('pb'))
+    ..hasRequiredFields = false
+  ;
+
+  ConfirmVerificationRequest._() : super();
   factory ConfirmVerificationRequest({
     $core.String? verificationId,
     $core.String? provider,
     $core.String? providerAuthCode,
     $core.Map<$core.String, $core.String>? metadata,
   }) {
-    final $result = create();
+    final _result = create();
     if (verificationId != null) {
-      $result.verificationId = verificationId;
+      _result.verificationId = verificationId;
     }
     if (provider != null) {
-      $result.provider = provider;
+      _result.provider = provider;
     }
     if (providerAuthCode != null) {
-      $result.providerAuthCode = providerAuthCode;
+      _result.providerAuthCode = providerAuthCode;
     }
     if (metadata != null) {
-      $result.metadata.addAll(metadata);
+      _result.metadata.addAll(metadata);
     }
-    return $result;
+    return _result;
   }
-  ConfirmVerificationRequest._() : super();
   factory ConfirmVerificationRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ConfirmVerificationRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ConfirmVerificationRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'verificationId')
-    ..aOS(2, _omitFieldNames ? '' : 'provider')
-    ..aOS(3, _omitFieldNames ? '' : 'providerAuthCode')
-    ..m<$core.String, $core.String>(4, _omitFieldNames ? '' : 'metadata', entryClassName: 'ConfirmVerificationRequest.MetadataEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OS, packageName: const $pb.PackageName('auth'))
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -10645,10 +10216,8 @@ class ConfirmVerificationRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ConfirmVerificationRequest copyWith(void Function(ConfirmVerificationRequest) updates) => super.copyWith((message) => updates(message as ConfirmVerificationRequest)) as ConfirmVerificationRequest;
-
+  ConfirmVerificationRequest copyWith(void Function(ConfirmVerificationRequest) updates) => super.copyWith((message) => updates(message as ConfirmVerificationRequest)) as ConfirmVerificationRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ConfirmVerificationRequest create() => ConfirmVerificationRequest._();
   ConfirmVerificationRequest createEmptyInstance() => create();
@@ -10688,41 +10257,133 @@ class ConfirmVerificationRequest extends $pb.GeneratedMessage {
   $core.Map<$core.String, $core.String> get metadata => $_getMap(3);
 }
 
-/// Confirm verification response
+class BVNNameReconciliation extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'BVNNameReconciliation', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nameAction')
+    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nameMatchScore', $pb.PbFieldType.OD)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verifiedName')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'profileName')
+    ..hasRequiredFields = false
+  ;
+
+  BVNNameReconciliation._() : super();
+  factory BVNNameReconciliation({
+    $core.String? nameAction,
+    $core.double? nameMatchScore,
+    $core.String? verifiedName,
+    $core.String? profileName,
+  }) {
+    final _result = create();
+    if (nameAction != null) {
+      _result.nameAction = nameAction;
+    }
+    if (nameMatchScore != null) {
+      _result.nameMatchScore = nameMatchScore;
+    }
+    if (verifiedName != null) {
+      _result.verifiedName = verifiedName;
+    }
+    if (profileName != null) {
+      _result.profileName = profileName;
+    }
+    return _result;
+  }
+  factory BVNNameReconciliation.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory BVNNameReconciliation.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  BVNNameReconciliation clone() => BVNNameReconciliation()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  BVNNameReconciliation copyWith(void Function(BVNNameReconciliation) updates) => super.copyWith((message) => updates(message as BVNNameReconciliation)) as BVNNameReconciliation; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static BVNNameReconciliation create() => BVNNameReconciliation._();
+  BVNNameReconciliation createEmptyInstance() => create();
+  static $pb.PbList<BVNNameReconciliation> createRepeated() => $pb.PbList<BVNNameReconciliation>();
+  @$core.pragma('dart2js:noInline')
+  static BVNNameReconciliation getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<BVNNameReconciliation>(create);
+  static BVNNameReconciliation? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get nameAction => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set nameAction($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasNameAction() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearNameAction() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.double get nameMatchScore => $_getN(1);
+  @$pb.TagNumber(2)
+  set nameMatchScore($core.double v) { $_setDouble(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasNameMatchScore() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearNameMatchScore() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get verifiedName => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set verifiedName($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasVerifiedName() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearVerifiedName() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get profileName => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set profileName($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasProfileName() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearProfileName() => clearField(4);
+}
+
 class ConfirmVerificationResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ConfirmVerificationResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..e<KYCVerificationStatus>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: KYCVerificationStatus.KYC_STATUS_UNKNOWN, valueOf: KYCVerificationStatus.valueOf, enumValues: KYCVerificationStatus.values)
+    ..e<KYCTier>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentTier', $pb.PbFieldType.OE, defaultOrMaker: KYCTier.KYC_TIER_UNKNOWN, valueOf: KYCTier.valueOf, enumValues: KYCTier.values)
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOM<BVNNameReconciliation>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bvnNameReconciliation', subBuilder: BVNNameReconciliation.create)
+    ..hasRequiredFields = false
+  ;
+
+  ConfirmVerificationResponse._() : super();
   factory ConfirmVerificationResponse({
     $core.bool? success,
     KYCVerificationStatus? status,
     KYCTier? currentTier,
     $core.String? message,
+    BVNNameReconciliation? bvnNameReconciliation,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (status != null) {
-      $result.status = status;
+      _result.status = status;
     }
     if (currentTier != null) {
-      $result.currentTier = currentTier;
+      _result.currentTier = currentTier;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
-    return $result;
+    if (bvnNameReconciliation != null) {
+      _result.bvnNameReconciliation = bvnNameReconciliation;
+    }
+    return _result;
   }
-  ConfirmVerificationResponse._() : super();
   factory ConfirmVerificationResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ConfirmVerificationResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ConfirmVerificationResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..e<KYCVerificationStatus>(2, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: KYCVerificationStatus.KYC_STATUS_UNKNOWN, valueOf: KYCVerificationStatus.valueOf, enumValues: KYCVerificationStatus.values)
-    ..e<KYCTier>(3, _omitFieldNames ? '' : 'currentTier', $pb.PbFieldType.OE, defaultOrMaker: KYCTier.KYC_TIER_UNKNOWN, valueOf: KYCTier.valueOf, enumValues: KYCTier.values)
-    ..aOS(4, _omitFieldNames ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -10732,10 +10393,8 @@ class ConfirmVerificationResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ConfirmVerificationResponse copyWith(void Function(ConfirmVerificationResponse) updates) => super.copyWith((message) => updates(message as ConfirmVerificationResponse)) as ConfirmVerificationResponse;
-
+  ConfirmVerificationResponse copyWith(void Function(ConfirmVerificationResponse) updates) => super.copyWith((message) => updates(message as ConfirmVerificationResponse)) as ConfirmVerificationResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ConfirmVerificationResponse create() => ConfirmVerificationResponse._();
   ConfirmVerificationResponse createEmptyInstance() => create();
@@ -10779,33 +10438,42 @@ class ConfirmVerificationResponse extends $pb.GeneratedMessage {
   $core.bool hasMessage() => $_has(3);
   @$pb.TagNumber(4)
   void clearMessage() => clearField(4);
+
+  @$pb.TagNumber(5)
+  BVNNameReconciliation get bvnNameReconciliation => $_getN(4);
+  @$pb.TagNumber(5)
+  set bvnNameReconciliation(BVNNameReconciliation v) { setField(5, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasBvnNameReconciliation() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearBvnNameReconciliation() => clearField(5);
+  @$pb.TagNumber(5)
+  BVNNameReconciliation ensureBvnNameReconciliation() => $_ensure(4);
 }
 
-/// Get presigned document upload URL request (Tier 3)
 class GetDocumentUploadURLRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetDocumentUploadURLRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'documentType')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'contentType')
+    ..hasRequiredFields = false
+  ;
+
+  GetDocumentUploadURLRequest._() : super();
   factory GetDocumentUploadURLRequest({
     $core.String? documentType,
     $core.String? contentType,
   }) {
-    final $result = create();
+    final _result = create();
     if (documentType != null) {
-      $result.documentType = documentType;
+      _result.documentType = documentType;
     }
     if (contentType != null) {
-      $result.contentType = contentType;
+      _result.contentType = contentType;
     }
-    return $result;
+    return _result;
   }
-  GetDocumentUploadURLRequest._() : super();
   factory GetDocumentUploadURLRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetDocumentUploadURLRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetDocumentUploadURLRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'documentType')
-    ..aOS(2, _omitFieldNames ? '' : 'contentType')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -10815,10 +10483,8 @@ class GetDocumentUploadURLRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetDocumentUploadURLRequest copyWith(void Function(GetDocumentUploadURLRequest) updates) => super.copyWith((message) => updates(message as GetDocumentUploadURLRequest)) as GetDocumentUploadURLRequest;
-
+  GetDocumentUploadURLRequest copyWith(void Function(GetDocumentUploadURLRequest) updates) => super.copyWith((message) => updates(message as GetDocumentUploadURLRequest)) as GetDocumentUploadURLRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetDocumentUploadURLRequest create() => GetDocumentUploadURLRequest._();
   GetDocumentUploadURLRequest createEmptyInstance() => create();
@@ -10846,41 +10512,39 @@ class GetDocumentUploadURLRequest extends $pb.GeneratedMessage {
   void clearContentType() => clearField(2);
 }
 
-/// Get presigned document upload URL response
 class GetDocumentUploadURLResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetDocumentUploadURLResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'uploadUrl')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'storageKey')
+    ..aInt64(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt')
+    ..hasRequiredFields = false
+  ;
+
+  GetDocumentUploadURLResponse._() : super();
   factory GetDocumentUploadURLResponse({
     $core.bool? success,
     $core.String? uploadUrl,
     $core.String? storageKey,
     $fixnum.Int64? expiresAt,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (uploadUrl != null) {
-      $result.uploadUrl = uploadUrl;
+      _result.uploadUrl = uploadUrl;
     }
     if (storageKey != null) {
-      $result.storageKey = storageKey;
+      _result.storageKey = storageKey;
     }
     if (expiresAt != null) {
-      $result.expiresAt = expiresAt;
+      _result.expiresAt = expiresAt;
     }
-    return $result;
+    return _result;
   }
-  GetDocumentUploadURLResponse._() : super();
   factory GetDocumentUploadURLResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetDocumentUploadURLResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetDocumentUploadURLResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'uploadUrl')
-    ..aOS(3, _omitFieldNames ? '' : 'storageKey')
-    ..aInt64(4, _omitFieldNames ? '' : 'expiresAt')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -10890,10 +10554,8 @@ class GetDocumentUploadURLResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetDocumentUploadURLResponse copyWith(void Function(GetDocumentUploadURLResponse) updates) => super.copyWith((message) => updates(message as GetDocumentUploadURLResponse)) as GetDocumentUploadURLResponse;
-
+  GetDocumentUploadURLResponse copyWith(void Function(GetDocumentUploadURLResponse) updates) => super.copyWith((message) => updates(message as GetDocumentUploadURLResponse)) as GetDocumentUploadURLResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetDocumentUploadURLResponse create() => GetDocumentUploadURLResponse._();
   GetDocumentUploadURLResponse createEmptyInstance() => create();
@@ -10939,36 +10601,34 @@ class GetDocumentUploadURLResponse extends $pb.GeneratedMessage {
   void clearExpiresAt() => clearField(4);
 }
 
-/// Document submission item for batch review
 class DocumentSubmissionItem extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DocumentSubmissionItem', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'storageKey')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'documentType')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'contentType')
+    ..hasRequiredFields = false
+  ;
+
+  DocumentSubmissionItem._() : super();
   factory DocumentSubmissionItem({
     $core.String? storageKey,
     $core.String? documentType,
     $core.String? contentType,
   }) {
-    final $result = create();
+    final _result = create();
     if (storageKey != null) {
-      $result.storageKey = storageKey;
+      _result.storageKey = storageKey;
     }
     if (documentType != null) {
-      $result.documentType = documentType;
+      _result.documentType = documentType;
     }
     if (contentType != null) {
-      $result.contentType = contentType;
+      _result.contentType = contentType;
     }
-    return $result;
+    return _result;
   }
-  DocumentSubmissionItem._() : super();
   factory DocumentSubmissionItem.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory DocumentSubmissionItem.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DocumentSubmissionItem', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'storageKey')
-    ..aOS(2, _omitFieldNames ? '' : 'documentType')
-    ..aOS(3, _omitFieldNames ? '' : 'contentType')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -10978,10 +10638,8 @@ class DocumentSubmissionItem extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  DocumentSubmissionItem copyWith(void Function(DocumentSubmissionItem) updates) => super.copyWith((message) => updates(message as DocumentSubmissionItem)) as DocumentSubmissionItem;
-
+  DocumentSubmissionItem copyWith(void Function(DocumentSubmissionItem) updates) => super.copyWith((message) => updates(message as DocumentSubmissionItem)) as DocumentSubmissionItem; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static DocumentSubmissionItem create() => DocumentSubmissionItem._();
   DocumentSubmissionItem createEmptyInstance() => create();
@@ -11018,26 +10676,24 @@ class DocumentSubmissionItem extends $pb.GeneratedMessage {
   void clearContentType() => clearField(3);
 }
 
-/// Submit documents for review request (Tier 3)
 class SubmitDocumentsForReviewRequest extends $pb.GeneratedMessage {
-  factory SubmitDocumentsForReviewRequest({
-    $core.Iterable<DocumentSubmissionItem>? documents,
-  }) {
-    final $result = create();
-    if (documents != null) {
-      $result.documents.addAll(documents);
-    }
-    return $result;
-  }
-  SubmitDocumentsForReviewRequest._() : super();
-  factory SubmitDocumentsForReviewRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory SubmitDocumentsForReviewRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SubmitDocumentsForReviewRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..pc<DocumentSubmissionItem>(1, _omitFieldNames ? '' : 'documents', $pb.PbFieldType.PM, subBuilder: DocumentSubmissionItem.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SubmitDocumentsForReviewRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<DocumentSubmissionItem>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'documents', $pb.PbFieldType.PM, subBuilder: DocumentSubmissionItem.create)
     ..hasRequiredFields = false
   ;
 
+  SubmitDocumentsForReviewRequest._() : super();
+  factory SubmitDocumentsForReviewRequest({
+    $core.Iterable<DocumentSubmissionItem>? documents,
+  }) {
+    final _result = create();
+    if (documents != null) {
+      _result.documents.addAll(documents);
+    }
+    return _result;
+  }
+  factory SubmitDocumentsForReviewRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory SubmitDocumentsForReviewRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -11047,10 +10703,8 @@ class SubmitDocumentsForReviewRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SubmitDocumentsForReviewRequest copyWith(void Function(SubmitDocumentsForReviewRequest) updates) => super.copyWith((message) => updates(message as SubmitDocumentsForReviewRequest)) as SubmitDocumentsForReviewRequest;
-
+  SubmitDocumentsForReviewRequest copyWith(void Function(SubmitDocumentsForReviewRequest) updates) => super.copyWith((message) => updates(message as SubmitDocumentsForReviewRequest)) as SubmitDocumentsForReviewRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SubmitDocumentsForReviewRequest create() => SubmitDocumentsForReviewRequest._();
   SubmitDocumentsForReviewRequest createEmptyInstance() => create();
@@ -11063,36 +10717,34 @@ class SubmitDocumentsForReviewRequest extends $pb.GeneratedMessage {
   $core.List<DocumentSubmissionItem> get documents => $_getList(0);
 }
 
-/// Submit documents for review response
 class SubmitDocumentsForReviewResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SubmitDocumentsForReviewResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..e<KYCVerificationStatus>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: KYCVerificationStatus.KYC_STATUS_UNKNOWN, valueOf: KYCVerificationStatus.valueOf, enumValues: KYCVerificationStatus.values)
+    ..hasRequiredFields = false
+  ;
+
+  SubmitDocumentsForReviewResponse._() : super();
   factory SubmitDocumentsForReviewResponse({
     $core.bool? success,
     $core.String? message,
     KYCVerificationStatus? status,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (status != null) {
-      $result.status = status;
+      _result.status = status;
     }
-    return $result;
+    return _result;
   }
-  SubmitDocumentsForReviewResponse._() : super();
   factory SubmitDocumentsForReviewResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SubmitDocumentsForReviewResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SubmitDocumentsForReviewResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..e<KYCVerificationStatus>(3, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: KYCVerificationStatus.KYC_STATUS_UNKNOWN, valueOf: KYCVerificationStatus.valueOf, enumValues: KYCVerificationStatus.values)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -11102,10 +10754,8 @@ class SubmitDocumentsForReviewResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SubmitDocumentsForReviewResponse copyWith(void Function(SubmitDocumentsForReviewResponse) updates) => super.copyWith((message) => updates(message as SubmitDocumentsForReviewResponse)) as SubmitDocumentsForReviewResponse;
-
+  SubmitDocumentsForReviewResponse copyWith(void Function(SubmitDocumentsForReviewResponse) updates) => super.copyWith((message) => updates(message as SubmitDocumentsForReviewResponse)) as SubmitDocumentsForReviewResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SubmitDocumentsForReviewResponse create() => SubmitDocumentsForReviewResponse._();
   SubmitDocumentsForReviewResponse createEmptyInstance() => create();
@@ -11142,31 +10792,29 @@ class SubmitDocumentsForReviewResponse extends $pb.GeneratedMessage {
   void clearStatus() => clearField(3);
 }
 
-/// Channel login request - authenticate via phone number
 class ChannelLoginRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ChannelLoginRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumber')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelType')
+    ..hasRequiredFields = false
+  ;
+
+  ChannelLoginRequest._() : super();
   factory ChannelLoginRequest({
     $core.String? phoneNumber,
     $core.String? channelType,
   }) {
-    final $result = create();
+    final _result = create();
     if (phoneNumber != null) {
-      $result.phoneNumber = phoneNumber;
+      _result.phoneNumber = phoneNumber;
     }
     if (channelType != null) {
-      $result.channelType = channelType;
+      _result.channelType = channelType;
     }
-    return $result;
+    return _result;
   }
-  ChannelLoginRequest._() : super();
   factory ChannelLoginRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ChannelLoginRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ChannelLoginRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'phoneNumber')
-    ..aOS(2, _omitFieldNames ? '' : 'channelType')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -11176,10 +10824,8 @@ class ChannelLoginRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ChannelLoginRequest copyWith(void Function(ChannelLoginRequest) updates) => super.copyWith((message) => updates(message as ChannelLoginRequest)) as ChannelLoginRequest;
-
+  ChannelLoginRequest copyWith(void Function(ChannelLoginRequest) updates) => super.copyWith((message) => updates(message as ChannelLoginRequest)) as ChannelLoginRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ChannelLoginRequest create() => ChannelLoginRequest._();
   ChannelLoginRequest createEmptyInstance() => create();
@@ -11207,8 +10853,21 @@ class ChannelLoginRequest extends $pb.GeneratedMessage {
   void clearChannelType() => clearField(2);
 }
 
-/// Channel login response - returns access token for channel operations
 class ChannelLoginResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ChannelLoginResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accessToken')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refreshToken')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountId')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userCountry')
+    ..a<$core.int>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresIn', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  ChannelLoginResponse._() : super();
   factory ChannelLoginResponse({
     $core.bool? success,
     $core.String? message,
@@ -11220,53 +10879,38 @@ class ChannelLoginResponse extends $pb.GeneratedMessage {
     $core.String? userCountry,
     $core.int? expiresIn,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (accessToken != null) {
-      $result.accessToken = accessToken;
+      _result.accessToken = accessToken;
     }
     if (refreshToken != null) {
-      $result.refreshToken = refreshToken;
+      _result.refreshToken = refreshToken;
     }
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (accountId != null) {
-      $result.accountId = accountId;
+      _result.accountId = accountId;
     }
     if (currency != null) {
-      $result.currency = currency;
+      _result.currency = currency;
     }
     if (userCountry != null) {
-      $result.userCountry = userCountry;
+      _result.userCountry = userCountry;
     }
     if (expiresIn != null) {
-      $result.expiresIn = expiresIn;
+      _result.expiresIn = expiresIn;
     }
-    return $result;
+    return _result;
   }
-  ChannelLoginResponse._() : super();
   factory ChannelLoginResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ChannelLoginResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ChannelLoginResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOS(3, _omitFieldNames ? '' : 'accessToken')
-    ..aOS(4, _omitFieldNames ? '' : 'refreshToken')
-    ..aOS(5, _omitFieldNames ? '' : 'userId')
-    ..aOS(6, _omitFieldNames ? '' : 'accountId')
-    ..aOS(7, _omitFieldNames ? '' : 'currency')
-    ..aOS(8, _omitFieldNames ? '' : 'userCountry')
-    ..a<$core.int>(9, _omitFieldNames ? '' : 'expiresIn', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -11276,10 +10920,8 @@ class ChannelLoginResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ChannelLoginResponse copyWith(void Function(ChannelLoginResponse) updates) => super.copyWith((message) => updates(message as ChannelLoginResponse)) as ChannelLoginResponse;
-
+  ChannelLoginResponse copyWith(void Function(ChannelLoginResponse) updates) => super.copyWith((message) => updates(message as ChannelLoginResponse)) as ChannelLoginResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ChannelLoginResponse create() => ChannelLoginResponse._();
   ChannelLoginResponse createEmptyInstance() => create();
@@ -11370,8 +11012,18 @@ class ChannelLoginResponse extends $pb.GeneratedMessage {
   void clearExpiresIn() => clearField(9);
 }
 
-/// Channel register request - register new user via phone channel
 class ChannelRegisterRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ChannelRegisterRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumber')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'firstName')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastName')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelType')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'countryCode')
+    ..hasRequiredFields = false
+  ;
+
+  ChannelRegisterRequest._() : super();
   factory ChannelRegisterRequest({
     $core.String? phoneNumber,
     $core.String? firstName,
@@ -11380,41 +11032,29 @@ class ChannelRegisterRequest extends $pb.GeneratedMessage {
     $core.String? channelType,
     $core.String? countryCode,
   }) {
-    final $result = create();
+    final _result = create();
     if (phoneNumber != null) {
-      $result.phoneNumber = phoneNumber;
+      _result.phoneNumber = phoneNumber;
     }
     if (firstName != null) {
-      $result.firstName = firstName;
+      _result.firstName = firstName;
     }
     if (lastName != null) {
-      $result.lastName = lastName;
+      _result.lastName = lastName;
     }
     if (email != null) {
-      $result.email = email;
+      _result.email = email;
     }
     if (channelType != null) {
-      $result.channelType = channelType;
+      _result.channelType = channelType;
     }
     if (countryCode != null) {
-      $result.countryCode = countryCode;
+      _result.countryCode = countryCode;
     }
-    return $result;
+    return _result;
   }
-  ChannelRegisterRequest._() : super();
   factory ChannelRegisterRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ChannelRegisterRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ChannelRegisterRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'phoneNumber')
-    ..aOS(2, _omitFieldNames ? '' : 'firstName')
-    ..aOS(3, _omitFieldNames ? '' : 'lastName')
-    ..aOS(4, _omitFieldNames ? '' : 'email')
-    ..aOS(5, _omitFieldNames ? '' : 'channelType')
-    ..aOS(6, _omitFieldNames ? '' : 'countryCode')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -11424,10 +11064,8 @@ class ChannelRegisterRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ChannelRegisterRequest copyWith(void Function(ChannelRegisterRequest) updates) => super.copyWith((message) => updates(message as ChannelRegisterRequest)) as ChannelRegisterRequest;
-
+  ChannelRegisterRequest copyWith(void Function(ChannelRegisterRequest) updates) => super.copyWith((message) => updates(message as ChannelRegisterRequest)) as ChannelRegisterRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ChannelRegisterRequest create() => ChannelRegisterRequest._();
   ChannelRegisterRequest createEmptyInstance() => create();
@@ -11491,8 +11129,18 @@ class ChannelRegisterRequest extends $pb.GeneratedMessage {
   void clearCountryCode() => clearField(6);
 }
 
-/// Channel register response - sends OTP to email
 class ChannelRegisterResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ChannelRegisterResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOB(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'otpSent')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'maskedEmail')
+    ..a<$core.int>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'otpExpiresInSeconds', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  ChannelRegisterResponse._() : super();
   factory ChannelRegisterResponse({
     $core.bool? success,
     $core.String? message,
@@ -11501,41 +11149,29 @@ class ChannelRegisterResponse extends $pb.GeneratedMessage {
     $core.String? maskedEmail,
     $core.int? otpExpiresInSeconds,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (otpSent != null) {
-      $result.otpSent = otpSent;
+      _result.otpSent = otpSent;
     }
     if (maskedEmail != null) {
-      $result.maskedEmail = maskedEmail;
+      _result.maskedEmail = maskedEmail;
     }
     if (otpExpiresInSeconds != null) {
-      $result.otpExpiresInSeconds = otpExpiresInSeconds;
+      _result.otpExpiresInSeconds = otpExpiresInSeconds;
     }
-    return $result;
+    return _result;
   }
-  ChannelRegisterResponse._() : super();
   factory ChannelRegisterResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ChannelRegisterResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ChannelRegisterResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOS(3, _omitFieldNames ? '' : 'userId')
-    ..aOB(4, _omitFieldNames ? '' : 'otpSent')
-    ..aOS(5, _omitFieldNames ? '' : 'maskedEmail')
-    ..a<$core.int>(6, _omitFieldNames ? '' : 'otpExpiresInSeconds', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -11545,10 +11181,8 @@ class ChannelRegisterResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ChannelRegisterResponse copyWith(void Function(ChannelRegisterResponse) updates) => super.copyWith((message) => updates(message as ChannelRegisterResponse)) as ChannelRegisterResponse;
-
+  ChannelRegisterResponse copyWith(void Function(ChannelRegisterResponse) updates) => super.copyWith((message) => updates(message as ChannelRegisterResponse)) as ChannelRegisterResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ChannelRegisterResponse create() => ChannelRegisterResponse._();
   ChannelRegisterResponse createEmptyInstance() => create();
@@ -11612,36 +11246,34 @@ class ChannelRegisterResponse extends $pb.GeneratedMessage {
   void clearOtpExpiresInSeconds() => clearField(6);
 }
 
-/// Channel verify registration request - verify OTP for new account
 class ChannelVerifyRegistrationRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ChannelVerifyRegistrationRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumber')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'otpCode')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelType')
+    ..hasRequiredFields = false
+  ;
+
+  ChannelVerifyRegistrationRequest._() : super();
   factory ChannelVerifyRegistrationRequest({
     $core.String? phoneNumber,
     $core.String? otpCode,
     $core.String? channelType,
   }) {
-    final $result = create();
+    final _result = create();
     if (phoneNumber != null) {
-      $result.phoneNumber = phoneNumber;
+      _result.phoneNumber = phoneNumber;
     }
     if (otpCode != null) {
-      $result.otpCode = otpCode;
+      _result.otpCode = otpCode;
     }
     if (channelType != null) {
-      $result.channelType = channelType;
+      _result.channelType = channelType;
     }
-    return $result;
+    return _result;
   }
-  ChannelVerifyRegistrationRequest._() : super();
   factory ChannelVerifyRegistrationRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ChannelVerifyRegistrationRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ChannelVerifyRegistrationRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'phoneNumber')
-    ..aOS(2, _omitFieldNames ? '' : 'otpCode')
-    ..aOS(3, _omitFieldNames ? '' : 'channelType')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -11651,10 +11283,8 @@ class ChannelVerifyRegistrationRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ChannelVerifyRegistrationRequest copyWith(void Function(ChannelVerifyRegistrationRequest) updates) => super.copyWith((message) => updates(message as ChannelVerifyRegistrationRequest)) as ChannelVerifyRegistrationRequest;
-
+  ChannelVerifyRegistrationRequest copyWith(void Function(ChannelVerifyRegistrationRequest) updates) => super.copyWith((message) => updates(message as ChannelVerifyRegistrationRequest)) as ChannelVerifyRegistrationRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ChannelVerifyRegistrationRequest create() => ChannelVerifyRegistrationRequest._();
   ChannelVerifyRegistrationRequest createEmptyInstance() => create();
@@ -11691,8 +11321,21 @@ class ChannelVerifyRegistrationRequest extends $pb.GeneratedMessage {
   void clearChannelType() => clearField(3);
 }
 
-/// Channel verify registration response - activates account and returns tokens
 class ChannelVerifyRegistrationResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ChannelVerifyRegistrationResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accessToken')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refreshToken')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountId')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userCountry')
+    ..a<$core.int>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresIn', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  ChannelVerifyRegistrationResponse._() : super();
   factory ChannelVerifyRegistrationResponse({
     $core.bool? success,
     $core.String? message,
@@ -11704,53 +11347,38 @@ class ChannelVerifyRegistrationResponse extends $pb.GeneratedMessage {
     $core.String? userCountry,
     $core.int? expiresIn,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (accessToken != null) {
-      $result.accessToken = accessToken;
+      _result.accessToken = accessToken;
     }
     if (refreshToken != null) {
-      $result.refreshToken = refreshToken;
+      _result.refreshToken = refreshToken;
     }
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (accountId != null) {
-      $result.accountId = accountId;
+      _result.accountId = accountId;
     }
     if (currency != null) {
-      $result.currency = currency;
+      _result.currency = currency;
     }
     if (userCountry != null) {
-      $result.userCountry = userCountry;
+      _result.userCountry = userCountry;
     }
     if (expiresIn != null) {
-      $result.expiresIn = expiresIn;
+      _result.expiresIn = expiresIn;
     }
-    return $result;
+    return _result;
   }
-  ChannelVerifyRegistrationResponse._() : super();
   factory ChannelVerifyRegistrationResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ChannelVerifyRegistrationResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ChannelVerifyRegistrationResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOS(3, _omitFieldNames ? '' : 'accessToken')
-    ..aOS(4, _omitFieldNames ? '' : 'refreshToken')
-    ..aOS(5, _omitFieldNames ? '' : 'userId')
-    ..aOS(6, _omitFieldNames ? '' : 'accountId')
-    ..aOS(7, _omitFieldNames ? '' : 'currency')
-    ..aOS(8, _omitFieldNames ? '' : 'userCountry')
-    ..a<$core.int>(9, _omitFieldNames ? '' : 'expiresIn', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -11760,10 +11388,8 @@ class ChannelVerifyRegistrationResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ChannelVerifyRegistrationResponse copyWith(void Function(ChannelVerifyRegistrationResponse) updates) => super.copyWith((message) => updates(message as ChannelVerifyRegistrationResponse)) as ChannelVerifyRegistrationResponse;
-
+  ChannelVerifyRegistrationResponse copyWith(void Function(ChannelVerifyRegistrationResponse) updates) => super.copyWith((message) => updates(message as ChannelVerifyRegistrationResponse)) as ChannelVerifyRegistrationResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ChannelVerifyRegistrationResponse create() => ChannelVerifyRegistrationResponse._();
   ChannelVerifyRegistrationResponse createEmptyInstance() => create();
@@ -11854,36 +11480,34 @@ class ChannelVerifyRegistrationResponse extends $pb.GeneratedMessage {
   void clearExpiresIn() => clearField(9);
 }
 
-/// Admin: Generate token for user by phone number (for telephony voice agents)
 class AdminGenerateTokenByPhoneRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AdminGenerateTokenByPhoneRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumber')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'adminSecret')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelType')
+    ..hasRequiredFields = false
+  ;
+
+  AdminGenerateTokenByPhoneRequest._() : super();
   factory AdminGenerateTokenByPhoneRequest({
     $core.String? phoneNumber,
     $core.String? adminSecret,
     $core.String? channelType,
   }) {
-    final $result = create();
+    final _result = create();
     if (phoneNumber != null) {
-      $result.phoneNumber = phoneNumber;
+      _result.phoneNumber = phoneNumber;
     }
     if (adminSecret != null) {
-      $result.adminSecret = adminSecret;
+      _result.adminSecret = adminSecret;
     }
     if (channelType != null) {
-      $result.channelType = channelType;
+      _result.channelType = channelType;
     }
-    return $result;
+    return _result;
   }
-  AdminGenerateTokenByPhoneRequest._() : super();
   factory AdminGenerateTokenByPhoneRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory AdminGenerateTokenByPhoneRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AdminGenerateTokenByPhoneRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'phoneNumber')
-    ..aOS(2, _omitFieldNames ? '' : 'adminSecret')
-    ..aOS(3, _omitFieldNames ? '' : 'channelType')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -11893,10 +11517,8 @@ class AdminGenerateTokenByPhoneRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  AdminGenerateTokenByPhoneRequest copyWith(void Function(AdminGenerateTokenByPhoneRequest) updates) => super.copyWith((message) => updates(message as AdminGenerateTokenByPhoneRequest)) as AdminGenerateTokenByPhoneRequest;
-
+  AdminGenerateTokenByPhoneRequest copyWith(void Function(AdminGenerateTokenByPhoneRequest) updates) => super.copyWith((message) => updates(message as AdminGenerateTokenByPhoneRequest)) as AdminGenerateTokenByPhoneRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static AdminGenerateTokenByPhoneRequest create() => AdminGenerateTokenByPhoneRequest._();
   AdminGenerateTokenByPhoneRequest createEmptyInstance() => create();
@@ -11934,6 +11556,23 @@ class AdminGenerateTokenByPhoneRequest extends $pb.GeneratedMessage {
 }
 
 class AdminGenerateTokenByPhoneResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AdminGenerateTokenByPhoneResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accessToken')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refreshToken')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountId')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userCountry')
+    ..a<$core.int>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresIn', $pb.PbFieldType.O3)
+    ..aOB(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userFound')
+    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'firstName')
+    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastName')
+    ..hasRequiredFields = false
+  ;
+
+  AdminGenerateTokenByPhoneResponse._() : super();
   factory AdminGenerateTokenByPhoneResponse({
     $core.bool? success,
     $core.String? message,
@@ -11948,65 +11587,47 @@ class AdminGenerateTokenByPhoneResponse extends $pb.GeneratedMessage {
     $core.String? firstName,
     $core.String? lastName,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (accessToken != null) {
-      $result.accessToken = accessToken;
+      _result.accessToken = accessToken;
     }
     if (refreshToken != null) {
-      $result.refreshToken = refreshToken;
+      _result.refreshToken = refreshToken;
     }
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (accountId != null) {
-      $result.accountId = accountId;
+      _result.accountId = accountId;
     }
     if (currency != null) {
-      $result.currency = currency;
+      _result.currency = currency;
     }
     if (userCountry != null) {
-      $result.userCountry = userCountry;
+      _result.userCountry = userCountry;
     }
     if (expiresIn != null) {
-      $result.expiresIn = expiresIn;
+      _result.expiresIn = expiresIn;
     }
     if (userFound != null) {
-      $result.userFound = userFound;
+      _result.userFound = userFound;
     }
     if (firstName != null) {
-      $result.firstName = firstName;
+      _result.firstName = firstName;
     }
     if (lastName != null) {
-      $result.lastName = lastName;
+      _result.lastName = lastName;
     }
-    return $result;
+    return _result;
   }
-  AdminGenerateTokenByPhoneResponse._() : super();
   factory AdminGenerateTokenByPhoneResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory AdminGenerateTokenByPhoneResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AdminGenerateTokenByPhoneResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOS(3, _omitFieldNames ? '' : 'accessToken')
-    ..aOS(4, _omitFieldNames ? '' : 'refreshToken')
-    ..aOS(5, _omitFieldNames ? '' : 'userId')
-    ..aOS(6, _omitFieldNames ? '' : 'accountId')
-    ..aOS(7, _omitFieldNames ? '' : 'currency')
-    ..aOS(8, _omitFieldNames ? '' : 'userCountry')
-    ..a<$core.int>(9, _omitFieldNames ? '' : 'expiresIn', $pb.PbFieldType.O3)
-    ..aOB(10, _omitFieldNames ? '' : 'userFound')
-    ..aOS(11, _omitFieldNames ? '' : 'firstName')
-    ..aOS(12, _omitFieldNames ? '' : 'lastName')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -12016,10 +11637,8 @@ class AdminGenerateTokenByPhoneResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  AdminGenerateTokenByPhoneResponse copyWith(void Function(AdminGenerateTokenByPhoneResponse) updates) => super.copyWith((message) => updates(message as AdminGenerateTokenByPhoneResponse)) as AdminGenerateTokenByPhoneResponse;
-
+  AdminGenerateTokenByPhoneResponse copyWith(void Function(AdminGenerateTokenByPhoneResponse) updates) => super.copyWith((message) => updates(message as AdminGenerateTokenByPhoneResponse)) as AdminGenerateTokenByPhoneResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static AdminGenerateTokenByPhoneResponse create() => AdminGenerateTokenByPhoneResponse._();
   AdminGenerateTokenByPhoneResponse createEmptyInstance() => create();
@@ -12137,6 +11756,3 @@ class AdminGenerateTokenByPhoneResponse extends $pb.GeneratedMessage {
   void clearLastName() => clearField(12);
 }
 
-
-const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
-const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');

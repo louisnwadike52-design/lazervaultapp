@@ -222,10 +222,6 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
              :phoneNumber,
              :countryCode,
              :countryName,
-             :bvn,
-             :nin,
-             :identityType,
-             :bvnVerified,
            ) = switch (state) {
               SignUpInProgress p => (
                   currentPage: p.currentPage,
@@ -237,10 +233,6 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                   phoneNumber: p.phoneNumber,
                   countryCode: p.countryCode,
                   countryName: p.countryName,
-                  bvn: p.bvn,
-                  nin: p.nin,
-                  identityType: p.identityType,
-                  bvnVerified: p.bvnVerified,
               ),
               _ => (
                   currentPage: 0,
@@ -252,10 +244,6 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                   phoneNumber: null,
                   countryCode: 'NG',
                   countryName: 'Nigeria',
-                  bvn: '',
-                  nin: '',
-                  identityType: IdentityType.bvn,
-                  bvnVerified: false,
               )
            };
 
@@ -263,9 +251,9 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
 
           return Column(
             children: [
-              // --- Back Button (hidden on BVN/NIN verification page) ---
+              // --- Back Button ---
               Visibility(
-                visible: currentPage > 0 && currentPage != 3,
+                visible: currentPage > 0,
                 child: Padding(
                   padding: EdgeInsets.only(top: 50.0.h),
                   child: Row(children: [
@@ -280,7 +268,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
               Expanded(
                 child: Padding(
                   padding: EdgeInsets.only(
-                      top: _responsiveController.screenHeight * (currentPage == 3 ? 0.12 : currentPage > 0 ? 0.04 : 0.15)),
+                      top: _responsiveController.screenHeight * (currentPage > 0 ? 0.04 : 0.15)),
                   child: SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
                     padding: const EdgeInsets.symmetric(
@@ -296,9 +284,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                               height: 70.0.h,
                               width: 70.0.w),
                         ),
-                        // Hide "Hi there" text on page 3 (ID verification) since it has its own heading
-                        if (currentPage != 3) ...[
-                          Text("Hi there 👋",
+                        Text("Hi there 👋",
                               style: TextStyle(
                                   fontSize: 18.0.sp,
                                   fontWeight: FontWeight.w600,
@@ -310,29 +296,20 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                                   fontWeight: FontWeight.w500,
                                   color: Colors.black54)),
                           SizedBox(height: 20.0.h),
-                        ],
-                        // Page content based on currentPage
-                        // Page 0: Country Selection
-                        // Page 1: Email/Phone + Password
-                        // Page 2: Personal Info
-                        // Page 3: BVN/NIN Verification
+                        // Page content: 0 country, 1 credentials, 2 personal info
                         if (currentPage == 0)
                           _buildCountrySelectionPage(context, countryCode: countryCode, countryName: countryName, isLoading: displayLoading)
                         else if (currentPage == 1)
                           _buildEmailPasswordPage(context, initialEmail: initialEmail, isLoading: displayLoading)
                         else if (currentPage == 2)
-                          _buildPersonalInfoPage(context, initialFirstName: firstName, initialLastName: lastName, selectedDate: selectedDate, initialPhoneNumber: phoneNumber, isLoading: displayLoading)
-                        else if (currentPage == 3)
-                          _buildBvnVerificationPage(context, bvn: bvn, nin: nin, identityType: identityType, bvnVerified: bvnVerified, isLoading: displayLoading),
+                          _buildPersonalInfoPage(context, initialFirstName: firstName, initialLastName: lastName, selectedDate: selectedDate, initialPhoneNumber: phoneNumber, isLoading: displayLoading),
                         SizedBox(height: 24.0.h),
                       ],
                     ),
                   ),
                 ),
               ),
-              // Hide "Already have an account?" on the identity verification page
-              if (currentPage != 3)
-                Padding(
+              Padding(
                     padding: EdgeInsets.only(bottom: 20.0.h),
                     child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -880,7 +857,7 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
                 },
               ),
             SizedBox(height: 32.0.h),
-            // --- Navigation Button (Continue to BVN verification) ---
+            // --- Create account & continue to verification ---
             SizedBox(
               width: double.infinity,
               height: 50.h,
@@ -919,355 +896,6 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
     );
   }
 
-  // Helper method for Identity Verification Page (Page 3) - Multi-country support
-  Widget _buildBvnVerificationPage(
-    BuildContext context, {
-    required String bvn,
-    required String nin,
-    required IdentityType identityType,
-    required bool bvnVerified,
-    required bool isLoading,
-  }) {
-    return BlocBuilder<AuthenticationCubit, AuthenticationState>(
-      builder: (context, state) {
-        final countryCode = state is SignUpInProgress ? state.countryCode : 'NG';
-        final identityValue = state is SignUpInProgress ? state.identityValue : '';
-        final availableIdTypes = IdentityTypeExtension.forCountry(countryCode);
-
-        // Get description text based on country
-        String getCountryVerificationDescription() {
-          switch (countryCode) {
-            case 'NG':
-              return "For security and compliance, we need to verify your identity using your BVN or NIN.";
-            case 'GB':
-              return "For security and compliance, we need to verify your identity using your passport or driving licence.";
-            case 'US':
-              return "For security and compliance, we need to verify your identity. We only need the last 4 digits of your SSN.";
-            case 'GH':
-              return "For security and compliance, we need to verify your identity using your Ghana Card or other government ID.";
-            case 'KE':
-              return "For security and compliance, we need to verify your identity using your National ID or passport.";
-            case 'ZA':
-              return "For security and compliance, we need to verify your identity using your South African ID number.";
-            default:
-              return "For security and compliance, we need to verify your identity.";
-          }
-        }
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Verify Your Identity",
-              style: TextStyle(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              getCountryVerificationDescription(),
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: Colors.black54,
-              ),
-            ),
-            SizedBox(height: 24.h),
-
-            // Identity Type Selector - Dynamic based on country
-            if (availableIdTypes.length > 1)
-              Row(
-                children: availableIdTypes.map((idType) {
-                  final isSelected = identityType == idType;
-                  return Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                        right: idType != availableIdTypes.last ? 12.w : 0,
-                      ),
-                      child: GestureDetector(
-                        onTap: () => context.read<AuthenticationCubit>().signUpIdentityTypeChanged(idType),
-                        child: Container(
-                          padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
-                          decoration: BoxDecoration(
-                            color: isSelected ? Colors.blue : Colors.grey.shade200,
-                            borderRadius: BorderRadius.circular(8.r),
-                          ),
-                          child: Text(
-                            idType.displayName,
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w600,
-                              color: isSelected ? Colors.white : Colors.black54,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            SizedBox(height: 20.h),
-
-            // Identity Input Field - Dynamic based on identity type
-            BuildFormField(
-              name: "identityValue",
-              placeholder: identityType.placeholder,
-              keyboardType: _getKeyboardType(identityType),
-              prefixIcon: Icon(Icons.badge_outlined, color: Colors.black45),
-              initialValue: _getInitialValue(identityType, bvn, nin, identityValue),
-              maxLength: identityType.maxLength,
-              onChanged: (value) {
-                // Update the appropriate field based on identity type
-                if (identityType == IdentityType.bvn) {
-                  context.read<AuthenticationCubit>().signUpBvnChanged(value);
-                } else if (identityType == IdentityType.nin) {
-                  context.read<AuthenticationCubit>().signUpNinChanged(value);
-                } else {
-                  context.read<AuthenticationCubit>().signUpIdentityValueChanged(value);
-                }
-              },
-            ),
-            SizedBox(height: 8.h),
-
-            // Info text about the selected identity type
-            if (identityType.description.isNotEmpty)
-              Container(
-                padding: EdgeInsets.all(12.w),
-                decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.info_outline, color: Colors.blue.shade400, size: 20.sp),
-                    SizedBox(width: 8.w),
-                    Expanded(
-                      child: Text(
-                        identityType.description,
-                        style: TextStyle(
-                          fontSize: 12.sp,
-                          color: Colors.blue.shade800,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            if (identityType.description.isNotEmpty) SizedBox(height: 20.h),
-
-            // Verification Status
-            if (bvnVerified)
-              Container(
-                padding: EdgeInsets.all(12.w),
-                decoration: BoxDecoration(
-                  color: Colors.green.shade50,
-                  borderRadius: BorderRadius.circular(8.r),
-                  border: Border.all(color: Colors.green.shade300),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.check_circle, color: Colors.green, size: 24.sp),
-                    SizedBox(width: 12.w),
-                    Text(
-                      "Identity verified successfully!",
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.green.shade700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            SizedBox(height: 24.h),
-
-            // Progressive KYC info card - explains why verification matters
-            Container(
-              padding: EdgeInsets.all(16.w),
-              decoration: BoxDecoration(
-                color: Colors.amber.shade50,
-                borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(color: Colors.amber.shade200),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.info_outline, color: Colors.amber.shade700, size: 20.sp),
-                      SizedBox(width: 8.w),
-                      Text(
-                        'Why verify now?',
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.amber.shade700,
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 8.h),
-                  Text(
-                    countryCode == 'NG'
-                        ? 'Verification unlocks ₦500,000 daily limit. Without it, you\'ll be limited to ₦50,000/day.'
-                        : 'Verification unlocks higher transaction limits and full access to all features.',
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: Colors.brown.shade700,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 20.h),
-
-            // Verify Button
-            if (!bvnVerified)
-              SizedBox(
-                width: double.infinity,
-                height: 50.h,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                  ),
-                  onPressed: isLoading
-                      ? null
-                      : () => context.read<AuthenticationCubit>().verifyIdentity(),
-                  child: isLoading
-                      ? SizedBox(
-                          height: 24.h,
-                          width: 24.h,
-                          child: const CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.verified, color: Colors.white, size: 20.sp),
-                            SizedBox(width: 8.w),
-                            Text(
-                              "Verify ${identityType.displayName}",
-                              style: TextStyle(
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                ),
-              ),
-            SizedBox(height: 12.h),
-
-            // Skip for now button (only shown if not verified)
-            if (!bvnVerified)
-              SizedBox(
-                width: double.infinity,
-                child: TextButton(
-                  style: TextButton.styleFrom(
-                    foregroundColor: Colors.grey.shade700,
-                    padding: EdgeInsets.symmetric(vertical: 12.h),
-                  ),
-                  onPressed: isLoading ? null : () => _showSkipDialog(context, countryCode),
-                  child: Text(
-                    'Skip for now',
-                    style: TextStyle(
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ),
-            SizedBox(height: 8.h),
-
-            // Small info text
-            if (!bvnVerified)
-              Center(
-                child: Text(
-                  'You can complete verification anytime from Settings',
-                  style: TextStyle(
-                    fontSize: 11.sp,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-              ),
-            SizedBox(height: bvnVerified ? 24.h : 0.h),
-
-            // Complete Signup Button (only shown after verification)
-            if (bvnVerified) ...[
-              SizedBox(height: 16.h),
-              SizedBox(
-                width: double.infinity,
-                height: 50.h,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                  ),
-                  onPressed: isLoading
-                      ? null
-                      : () => context.read<AuthenticationCubit>().signUpSubmitted(),
-                  child: isLoading
-                      ? SizedBox(
-                          height: 24.h,
-                          width: 24.h,
-                          child: const CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                      : Text(
-                          "Continue",
-                          style: TextStyle(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                ),
-              ),
-            ],
-          ],
-        );
-      },
-    );
-  }
-
-  // Helper to get keyboard type based on identity type
-  TextInputType _getKeyboardType(IdentityType identityType) {
-    switch (identityType) {
-      case IdentityType.bvn:
-      case IdentityType.nin:
-      case IdentityType.ssn:
-      case IdentityType.kenyaNationalId:
-      case IdentityType.saId:
-        return TextInputType.number;
-      default:
-        return TextInputType.text;
-    }
-  }
-
-  // Helper to get initial value based on identity type
-  String _getInitialValue(IdentityType identityType, String bvn, String nin, String identityValue) {
-    switch (identityType) {
-      case IdentityType.bvn:
-        return bvn;
-      case IdentityType.nin:
-        return nin;
-      default:
-        return identityValue;
-    }
-  }
-
   Widget _socialLoginButton(String imagePath) {
     return InkWell(
       onTap: () {
@@ -1288,258 +916,6 @@ class _SignUpState extends State<SignUp> with SingleTickerProviderStateMixin {
           imagePath: imagePath,
           height: 24.0.h,
           width: 24.0.w,
-        ),
-      ),
-    );
-  }
-
-  /// Shows skip confirmation dialog for progressive KYC
-  void _showSkipDialog(BuildContext context, String countryCode) {
-    final tier1Limit = countryCode == 'NG' ? '₦50,000' : 'limited amount';
-
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      barrierColor: Colors.black.withValues(alpha: 0.6),
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24.r),
-        ),
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        child: Container(
-          margin: EdgeInsets.symmetric(horizontal: 20.w),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24.r),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.15),
-                blurRadius: 24,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Header with icon
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.only(
-                  top: 24.h,
-                  left: 24.w,
-                  right: 24.w,
-                  bottom: 16.h,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFF4E5), // Light orange warning color
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(24.r),
-                    topRight: Radius.circular(24.r),
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    // Warning icon
-                    Container(
-                      width: 56.w,
-                      height: 56.h,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFF9800).withValues(alpha: 0.2),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.warning_amber_rounded,
-                        size: 28.sp,
-                        color: const Color(0xFFFF9800),
-                      ),
-                    ),
-                    SizedBox(height: 16.h),
-                    // Title
-                    Text(
-                      'Skip Identity Verification?',
-                      style: TextStyle(
-                        fontSize: 20.sp,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF2D3436),
-                        height: 1.2,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-
-              // Content
-              Padding(
-                padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 8.h),
-                child: Column(
-                  children: [
-                    // Description text
-                    Text(
-                      'You\'ll have a limited Tier 1 account. Some features will be restricted until you complete verification.',
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        color: const Color(0xFF636E72),
-                        height: 1.5,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    SizedBox(height: 20.h),
-
-                    // Limit info card
-                    Container(
-                      padding: EdgeInsets.all(16.w),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF5F7FA),
-                        borderRadius: BorderRadius.circular(16.r),
-                        border: Border.all(
-                          color: const Color(0xFF6C63FF).withValues(alpha: 0.2),
-                          width: 1,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 40.w,
-                            height: 40.h,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF6C63FF).withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(10.r),
-                            ),
-                            child: Icon(
-                              Icons.account_balance_wallet_outlined,
-                              size: 20.sp,
-                              color: const Color(0xFF6C63FF),
-                            ),
-                          ),
-                          SizedBox(width: 12.w),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Daily Limit',
-                                  style: TextStyle(
-                                    fontSize: 12.sp,
-                                    color: const Color(0xFF636E72),
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                SizedBox(height: 2.h),
-                                Text(
-                                  tier1Limit,
-                                  style: TextStyle(
-                                    fontSize: 16.sp,
-                                    color: const Color(0xFF2D3436),
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 16.h),
-
-                    // Restricted features info
-                    Container(
-                      padding: EdgeInsets.all(16.w),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFFF4E5).withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.info_outline,
-                            size: 16.sp,
-                            color: const Color(0xFFFF9800),
-                          ),
-                          SizedBox(width: 8.w),
-                          Expanded(
-                            child: Text(
-                              'Complete verification anytime from Settings',
-                              style: TextStyle(
-                                fontSize: 12.sp,
-                                color: const Color(0xFF636E72),
-                                height: 1.4,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Buttons
-              Padding(
-                padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 24.h),
-                child: Column(
-                  children: [
-                    // Skip button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50.h,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                          context.read<AuthenticationCubit>().skipIdentityVerification();
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF6C63FF),
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14.r),
-                          ),
-                        ),
-                        child: Text(
-                          'Skip & Continue',
-                          style: TextStyle(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 12.h),
-
-                    // Verify now button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50.h,
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF6C63FF),
-                          side: BorderSide(
-                            color: const Color(0xFF6C63FF).withValues(alpha: 0.3),
-                            width: 1.5,
-                          ),
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14.r),
-                          ),
-                        ),
-                        child: Text(
-                          'Verify Now',
-                          style: TextStyle(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );

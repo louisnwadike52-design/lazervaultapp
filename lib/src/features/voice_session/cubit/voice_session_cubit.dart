@@ -13,6 +13,8 @@ import 'package:lazervault/src/features/voice_session/models/voice_language.dart
 import 'package:lazervault/src/features/voice_session/models/voice_conversation.dart';
 import 'package:lazervault/src/features/voice_session/cubit/voice_chat_history_cubit.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 
 class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   // --- Configuration ---
@@ -225,6 +227,10 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
       if (_selectedVoiceId != null) {
         requestBody['voicePreference'] = _selectedVoiceId;
       }
+      // Dashboard locale (e.g. en-NG) for voice-agent TTS routing (YarnGPT vs OpenAI for English)
+      final localeManager = serviceLocator<LocaleManager>();
+      requestBody['locale'] = localeManager.currentLocale;
+      requestBody['userCountry'] = localeManager.currentCountry;
 
       final url = '$_goBackendBaseApiUrl/api/v1/voice/session/start';
       print('VoiceSessionCubit: POST $url');

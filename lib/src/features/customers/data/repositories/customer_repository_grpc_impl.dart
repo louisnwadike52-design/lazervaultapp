@@ -1,4 +1,3 @@
-import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/src/core/network/retry_helper.dart';
 import 'package:lazervault/src/generated/payroll.pbgrpc.dart' as payroll_pb;
@@ -486,38 +485,6 @@ class CustomerRepositoryGrpcImpl implements CustomerRepository {
         return CustomerStatus.blocked;
       default:
         return CustomerStatus.active;
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // Entity -> Proto Enum Mappers
-  // ---------------------------------------------------------------------------
-
-  payroll_pb.CustomerSegment _segmentToProto(CustomerSegment segment) {
-    switch (segment) {
-      case CustomerSegment.none:
-        return payroll_pb.CustomerSegment.CUSTOMER_SEGMENT_NONE;
-      case CustomerSegment.vip:
-        return payroll_pb.CustomerSegment.CUSTOMER_SEGMENT_VIP;
-      case CustomerSegment.retail:
-        return payroll_pb.CustomerSegment.CUSTOMER_SEGMENT_RETAIL;
-      case CustomerSegment.wholesale:
-        return payroll_pb.CustomerSegment.CUSTOMER_SEGMENT_WHOLESALE;
-      case CustomerSegment.government:
-        return payroll_pb.CustomerSegment.CUSTOMER_SEGMENT_GOVERNMENT;
-      case CustomerSegment.overdue:
-        return payroll_pb.CustomerSegment.CUSTOMER_SEGMENT_OVERDUE;
-    }
-  }
-
-  payroll_pb.CustomerStatus _statusToProto(CustomerStatus status) {
-    switch (status) {
-      case CustomerStatus.active:
-        return payroll_pb.CustomerStatus.CUSTOMER_STATUS_ACTIVE;
-      case CustomerStatus.inactive:
-        return payroll_pb.CustomerStatus.CUSTOMER_STATUS_INACTIVE;
-      case CustomerStatus.blocked:
-        return payroll_pb.CustomerStatus.CUSTOMER_STATUS_BLOCKED;
     }
   }
 }

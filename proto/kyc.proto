@@ -6,7 +6,6 @@ option go_package = "github.com/lazervault/protos/kyc";
 
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
-import "common.proto";
 
 // KYC Tier levels
 enum KYCTier {

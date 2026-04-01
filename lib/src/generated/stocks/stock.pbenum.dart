@@ -1,24 +1,20 @@
-//
+///
 //  Generated code. Do not modify.
 //  source: stocks/stock.proto
 //
 // @dart = 2.12
+// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
 
-// ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
-
+// ignore_for_file: UNDEFINED_SHOWN_NAME
 import 'dart:core' as $core;
-
 import 'package:protobuf/protobuf.dart' as $pb;
 
 class OrderType extends $pb.ProtobufEnum {
-  static const OrderType ORDER_TYPE_UNSPECIFIED = OrderType._(0, _omitEnumNames ? '' : 'ORDER_TYPE_UNSPECIFIED');
-  static const OrderType ORDER_TYPE_MARKET = OrderType._(1, _omitEnumNames ? '' : 'ORDER_TYPE_MARKET');
-  static const OrderType ORDER_TYPE_LIMIT = OrderType._(2, _omitEnumNames ? '' : 'ORDER_TYPE_LIMIT');
-  static const OrderType ORDER_TYPE_STOP_LOSS = OrderType._(3, _omitEnumNames ? '' : 'ORDER_TYPE_STOP_LOSS');
-  static const OrderType ORDER_TYPE_STOP_LIMIT = OrderType._(4, _omitEnumNames ? '' : 'ORDER_TYPE_STOP_LIMIT');
+  static const OrderType ORDER_TYPE_UNSPECIFIED = OrderType._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'ORDER_TYPE_UNSPECIFIED');
+  static const OrderType ORDER_TYPE_MARKET = OrderType._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'ORDER_TYPE_MARKET');
+  static const OrderType ORDER_TYPE_LIMIT = OrderType._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'ORDER_TYPE_LIMIT');
+  static const OrderType ORDER_TYPE_STOP_LOSS = OrderType._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'ORDER_TYPE_STOP_LOSS');
+  static const OrderType ORDER_TYPE_STOP_LIMIT = OrderType._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'ORDER_TYPE_STOP_LIMIT');
 
   static const $core.List<OrderType> values = <OrderType> [
     ORDER_TYPE_UNSPECIFIED,
@@ -35,9 +31,9 @@ class OrderType extends $pb.ProtobufEnum {
 }
 
 class OrderSide extends $pb.ProtobufEnum {
-  static const OrderSide ORDER_SIDE_UNSPECIFIED = OrderSide._(0, _omitEnumNames ? '' : 'ORDER_SIDE_UNSPECIFIED');
-  static const OrderSide ORDER_SIDE_BUY = OrderSide._(1, _omitEnumNames ? '' : 'ORDER_SIDE_BUY');
-  static const OrderSide ORDER_SIDE_SELL = OrderSide._(2, _omitEnumNames ? '' : 'ORDER_SIDE_SELL');
+  static const OrderSide ORDER_SIDE_UNSPECIFIED = OrderSide._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'ORDER_SIDE_UNSPECIFIED');
+  static const OrderSide ORDER_SIDE_BUY = OrderSide._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'ORDER_SIDE_BUY');
+  static const OrderSide ORDER_SIDE_SELL = OrderSide._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'ORDER_SIDE_SELL');
 
   static const $core.List<OrderSide> values = <OrderSide> [
     ORDER_SIDE_UNSPECIFIED,
@@ -52,12 +48,12 @@ class OrderSide extends $pb.ProtobufEnum {
 }
 
 class OrderStatus extends $pb.ProtobufEnum {
-  static const OrderStatus ORDER_STATUS_UNSPECIFIED = OrderStatus._(0, _omitEnumNames ? '' : 'ORDER_STATUS_UNSPECIFIED');
-  static const OrderStatus ORDER_STATUS_PENDING = OrderStatus._(1, _omitEnumNames ? '' : 'ORDER_STATUS_PENDING');
-  static const OrderStatus ORDER_STATUS_EXECUTED = OrderStatus._(2, _omitEnumNames ? '' : 'ORDER_STATUS_EXECUTED');
-  static const OrderStatus ORDER_STATUS_CANCELLED = OrderStatus._(3, _omitEnumNames ? '' : 'ORDER_STATUS_CANCELLED');
-  static const OrderStatus ORDER_STATUS_REJECTED = OrderStatus._(4, _omitEnumNames ? '' : 'ORDER_STATUS_REJECTED');
-  static const OrderStatus ORDER_STATUS_PARTIALLY_FILLED = OrderStatus._(5, _omitEnumNames ? '' : 'ORDER_STATUS_PARTIALLY_FILLED');
+  static const OrderStatus ORDER_STATUS_UNSPECIFIED = OrderStatus._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'ORDER_STATUS_UNSPECIFIED');
+  static const OrderStatus ORDER_STATUS_PENDING = OrderStatus._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'ORDER_STATUS_PENDING');
+  static const OrderStatus ORDER_STATUS_EXECUTED = OrderStatus._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'ORDER_STATUS_EXECUTED');
+  static const OrderStatus ORDER_STATUS_CANCELLED = OrderStatus._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'ORDER_STATUS_CANCELLED');
+  static const OrderStatus ORDER_STATUS_REJECTED = OrderStatus._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'ORDER_STATUS_REJECTED');
+  static const OrderStatus ORDER_STATUS_PARTIALLY_FILLED = OrderStatus._(5, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'ORDER_STATUS_PARTIALLY_FILLED');
 
   static const $core.List<OrderStatus> values = <OrderStatus> [
     ORDER_STATUS_UNSPECIFIED,
@@ -75,15 +71,15 @@ class OrderStatus extends $pb.ProtobufEnum {
 }
 
 class TimeFrame extends $pb.ProtobufEnum {
-  static const TimeFrame TIME_FRAME_UNSPECIFIED = TimeFrame._(0, _omitEnumNames ? '' : 'TIME_FRAME_UNSPECIFIED');
-  static const TimeFrame TIME_FRAME_1D = TimeFrame._(1, _omitEnumNames ? '' : 'TIME_FRAME_1D');
-  static const TimeFrame TIME_FRAME_5D = TimeFrame._(2, _omitEnumNames ? '' : 'TIME_FRAME_5D');
-  static const TimeFrame TIME_FRAME_1M = TimeFrame._(3, _omitEnumNames ? '' : 'TIME_FRAME_1M');
-  static const TimeFrame TIME_FRAME_3M = TimeFrame._(4, _omitEnumNames ? '' : 'TIME_FRAME_3M');
-  static const TimeFrame TIME_FRAME_6M = TimeFrame._(5, _omitEnumNames ? '' : 'TIME_FRAME_6M');
-  static const TimeFrame TIME_FRAME_1Y = TimeFrame._(6, _omitEnumNames ? '' : 'TIME_FRAME_1Y');
-  static const TimeFrame TIME_FRAME_5Y = TimeFrame._(7, _omitEnumNames ? '' : 'TIME_FRAME_5Y');
-  static const TimeFrame TIME_FRAME_ALL = TimeFrame._(8, _omitEnumNames ? '' : 'TIME_FRAME_ALL');
+  static const TimeFrame TIME_FRAME_UNSPECIFIED = TimeFrame._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TIME_FRAME_UNSPECIFIED');
+  static const TimeFrame TIME_FRAME_1D = TimeFrame._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TIME_FRAME_1D');
+  static const TimeFrame TIME_FRAME_5D = TimeFrame._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TIME_FRAME_5D');
+  static const TimeFrame TIME_FRAME_1M = TimeFrame._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TIME_FRAME_1M');
+  static const TimeFrame TIME_FRAME_3M = TimeFrame._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TIME_FRAME_3M');
+  static const TimeFrame TIME_FRAME_6M = TimeFrame._(5, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TIME_FRAME_6M');
+  static const TimeFrame TIME_FRAME_1Y = TimeFrame._(6, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TIME_FRAME_1Y');
+  static const TimeFrame TIME_FRAME_5Y = TimeFrame._(7, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TIME_FRAME_5Y');
+  static const TimeFrame TIME_FRAME_ALL = TimeFrame._(8, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TIME_FRAME_ALL');
 
   static const $core.List<TimeFrame> values = <TimeFrame> [
     TIME_FRAME_UNSPECIFIED,
@@ -104,10 +100,10 @@ class TimeFrame extends $pb.ProtobufEnum {
 }
 
 class AlertType extends $pb.ProtobufEnum {
-  static const AlertType ALERT_TYPE_UNSPECIFIED = AlertType._(0, _omitEnumNames ? '' : 'ALERT_TYPE_UNSPECIFIED');
-  static const AlertType ALERT_TYPE_PRICE_ABOVE = AlertType._(1, _omitEnumNames ? '' : 'ALERT_TYPE_PRICE_ABOVE');
-  static const AlertType ALERT_TYPE_PRICE_BELOW = AlertType._(2, _omitEnumNames ? '' : 'ALERT_TYPE_PRICE_BELOW');
-  static const AlertType ALERT_TYPE_PERCENT_CHANGE = AlertType._(3, _omitEnumNames ? '' : 'ALERT_TYPE_PERCENT_CHANGE');
+  static const AlertType ALERT_TYPE_UNSPECIFIED = AlertType._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'ALERT_TYPE_UNSPECIFIED');
+  static const AlertType ALERT_TYPE_PRICE_ABOVE = AlertType._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'ALERT_TYPE_PRICE_ABOVE');
+  static const AlertType ALERT_TYPE_PRICE_BELOW = AlertType._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'ALERT_TYPE_PRICE_BELOW');
+  static const AlertType ALERT_TYPE_PERCENT_CHANGE = AlertType._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'ALERT_TYPE_PERCENT_CHANGE');
 
   static const $core.List<AlertType> values = <AlertType> [
     ALERT_TYPE_UNSPECIFIED,
@@ -122,5 +118,3 @@ class AlertType extends $pb.ProtobufEnum {
   const AlertType._($core.int v, $core.String n) : super(v, n);
 }
 
-
-const _omitEnumNames = $core.bool.fromEnvironment('protobuf.omit_enum_names');

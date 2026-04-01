@@ -24,13 +24,20 @@ curl -s -o proto/protoc-gen-openapiv2/options/annotations.proto https://raw.gith
 curl -s -o proto/protoc-gen-openapiv2/options/openapiv2.proto https://raw.githubusercontent.com/grpc-ecosystem/grpc-gateway/master/protoc-gen-openapiv2/options/openapiv2.proto
 echo "Proto dependencies downloaded."
 
-# Generate auth.proto
-echo "Generating Dart code from auth.proto..."
+# Generate auth.proto from gateway (uses package pb to match gateway)
+echo "Generating Dart code from auth.proto (from gateway)..."
+protoc --dart_out=grpc:lib/src/generated \
+  -I../services/core-gateway/proto \
+  -Iproto \
+  -I../microservices/shared/proto \
+  ../services/core-gateway/proto/auth.proto
+
+# Generate transaction_pin.proto from auth service
+echo "Generating Dart code from transaction_pin.proto..."
 protoc --dart_out=grpc:lib/src/generated \
   -I../microservices/auth-service/auth-microservice/proto \
   -Iproto \
   -I../microservices/shared/proto \
-  ../microservices/auth-service/auth-microservice/proto/auth.proto \
   ../microservices/auth-service/auth-microservice/proto/transaction_pin.proto
 
 # Generate accounts.proto, family_accounts.proto, and multi_country.proto

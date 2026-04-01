@@ -1,25 +1,38 @@
-//
+///
 //  Generated code. Do not modify.
 //  source: contact_sync.proto
 //
 // @dart = 2.12
-
-// ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
 
 import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'contact_sync.pbenum.dart';
 import 'google/protobuf/timestamp.pb.dart' as $1;
+
+import 'contact_sync.pbenum.dart';
 
 export 'contact_sync.pbenum.dart';
 
-/// SyncedContact represents a contact synced to the backend
 class SyncedContact extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SyncedContact', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
+    ..pPS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumbers')
+    ..pPS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'emails')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'photoUrl')
+    ..aOM<$1.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deviceContactId')
+    ..aOB(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isLazervaultUser')
+    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lazervaultUserId')
+    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lazervaultUsername')
+    ..hasRequiredFields = false
+  ;
+
+  SyncedContact._() : super();
   factory SyncedContact({
     $core.String? id,
     $core.String? userId,
@@ -34,65 +47,47 @@ class SyncedContact extends $pb.GeneratedMessage {
     $core.String? lazervaultUserId,
     $core.String? lazervaultUsername,
   }) {
-    final $result = create();
+    final _result = create();
     if (id != null) {
-      $result.id = id;
+      _result.id = id;
     }
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (name != null) {
-      $result.name = name;
+      _result.name = name;
     }
     if (phoneNumbers != null) {
-      $result.phoneNumbers.addAll(phoneNumbers);
+      _result.phoneNumbers.addAll(phoneNumbers);
     }
     if (emails != null) {
-      $result.emails.addAll(emails);
+      _result.emails.addAll(emails);
     }
     if (photoUrl != null) {
-      $result.photoUrl = photoUrl;
+      _result.photoUrl = photoUrl;
     }
     if (createdAt != null) {
-      $result.createdAt = createdAt;
+      _result.createdAt = createdAt;
     }
     if (updatedAt != null) {
-      $result.updatedAt = updatedAt;
+      _result.updatedAt = updatedAt;
     }
     if (deviceContactId != null) {
-      $result.deviceContactId = deviceContactId;
+      _result.deviceContactId = deviceContactId;
     }
     if (isLazervaultUser != null) {
-      $result.isLazervaultUser = isLazervaultUser;
+      _result.isLazervaultUser = isLazervaultUser;
     }
     if (lazervaultUserId != null) {
-      $result.lazervaultUserId = lazervaultUserId;
+      _result.lazervaultUserId = lazervaultUserId;
     }
     if (lazervaultUsername != null) {
-      $result.lazervaultUsername = lazervaultUsername;
+      _result.lazervaultUsername = lazervaultUsername;
     }
-    return $result;
+    return _result;
   }
-  SyncedContact._() : super();
   factory SyncedContact.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SyncedContact.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SyncedContact', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..aOS(2, _omitFieldNames ? '' : 'userId')
-    ..aOS(3, _omitFieldNames ? '' : 'name')
-    ..pPS(4, _omitFieldNames ? '' : 'phoneNumbers')
-    ..pPS(5, _omitFieldNames ? '' : 'emails')
-    ..aOS(6, _omitFieldNames ? '' : 'photoUrl')
-    ..aOM<$1.Timestamp>(7, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(8, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
-    ..aOS(9, _omitFieldNames ? '' : 'deviceContactId')
-    ..aOB(10, _omitFieldNames ? '' : 'isLazervaultUser')
-    ..aOS(11, _omitFieldNames ? '' : 'lazervaultUserId')
-    ..aOS(12, _omitFieldNames ? '' : 'lazervaultUsername')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -102,10 +97,8 @@ class SyncedContact extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SyncedContact copyWith(void Function(SyncedContact) updates) => super.copyWith((message) => updates(message as SyncedContact)) as SyncedContact;
-
+  SyncedContact copyWith(void Function(SyncedContact) updates) => super.copyWith((message) => updates(message as SyncedContact)) as SyncedContact; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SyncedContact create() => SyncedContact._();
   SyncedContact createEmptyInstance() => create();
@@ -215,31 +208,29 @@ class SyncedContact extends $pb.GeneratedMessage {
   void clearLazervaultUsername() => clearField(12);
 }
 
-/// Request to sync contacts
 class SyncContactsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SyncContactsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<ContactToSync>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'contacts', $pb.PbFieldType.PM, subBuilder: ContactToSync.create)
+    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'replaceAll')
+    ..hasRequiredFields = false
+  ;
+
+  SyncContactsRequest._() : super();
   factory SyncContactsRequest({
     $core.Iterable<ContactToSync>? contacts,
     $core.bool? replaceAll,
   }) {
-    final $result = create();
+    final _result = create();
     if (contacts != null) {
-      $result.contacts.addAll(contacts);
+      _result.contacts.addAll(contacts);
     }
     if (replaceAll != null) {
-      $result.replaceAll = replaceAll;
+      _result.replaceAll = replaceAll;
     }
-    return $result;
+    return _result;
   }
-  SyncContactsRequest._() : super();
   factory SyncContactsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SyncContactsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SyncContactsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<ContactToSync>(1, _omitFieldNames ? '' : 'contacts', $pb.PbFieldType.PM, subBuilder: ContactToSync.create)
-    ..aOB(2, _omitFieldNames ? '' : 'replaceAll')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -249,10 +240,8 @@ class SyncContactsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SyncContactsRequest copyWith(void Function(SyncContactsRequest) updates) => super.copyWith((message) => updates(message as SyncContactsRequest)) as SyncContactsRequest;
-
+  SyncContactsRequest copyWith(void Function(SyncContactsRequest) updates) => super.copyWith((message) => updates(message as SyncContactsRequest)) as SyncContactsRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SyncContactsRequest create() => SyncContactsRequest._();
   SyncContactsRequest createEmptyInstance() => create();
@@ -274,41 +263,39 @@ class SyncContactsRequest extends $pb.GeneratedMessage {
   void clearReplaceAll() => clearField(2);
 }
 
-/// Individual contact to sync
 class ContactToSync extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ContactToSync', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deviceContactId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
+    ..pPS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumbers')
+    ..pPS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'emails')
+    ..hasRequiredFields = false
+  ;
+
+  ContactToSync._() : super();
   factory ContactToSync({
     $core.String? deviceContactId,
     $core.String? name,
     $core.Iterable<$core.String>? phoneNumbers,
     $core.Iterable<$core.String>? emails,
   }) {
-    final $result = create();
+    final _result = create();
     if (deviceContactId != null) {
-      $result.deviceContactId = deviceContactId;
+      _result.deviceContactId = deviceContactId;
     }
     if (name != null) {
-      $result.name = name;
+      _result.name = name;
     }
     if (phoneNumbers != null) {
-      $result.phoneNumbers.addAll(phoneNumbers);
+      _result.phoneNumbers.addAll(phoneNumbers);
     }
     if (emails != null) {
-      $result.emails.addAll(emails);
+      _result.emails.addAll(emails);
     }
-    return $result;
+    return _result;
   }
-  ContactToSync._() : super();
   factory ContactToSync.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ContactToSync.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ContactToSync', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'deviceContactId')
-    ..aOS(2, _omitFieldNames ? '' : 'name')
-    ..pPS(3, _omitFieldNames ? '' : 'phoneNumbers')
-    ..pPS(4, _omitFieldNames ? '' : 'emails')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -318,10 +305,8 @@ class ContactToSync extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ContactToSync copyWith(void Function(ContactToSync) updates) => super.copyWith((message) => updates(message as ContactToSync)) as ContactToSync;
-
+  ContactToSync copyWith(void Function(ContactToSync) updates) => super.copyWith((message) => updates(message as ContactToSync)) as ContactToSync; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ContactToSync create() => ContactToSync._();
   ContactToSync createEmptyInstance() => create();
@@ -355,41 +340,39 @@ class ContactToSync extends $pb.GeneratedMessage {
   $core.List<$core.String> get emails => $_getList(3);
 }
 
-/// Response to sync contacts
 class SyncContactsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SyncContactsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<SyncedContact>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'syncedContacts', $pb.PbFieldType.PM, subBuilder: SyncedContact.create)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalSynced', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalMatchedUsers', $pb.PbFieldType.O3)
+    ..pc<LazerVaultUserMatch>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'matchedUsers', $pb.PbFieldType.PM, subBuilder: LazerVaultUserMatch.create)
+    ..hasRequiredFields = false
+  ;
+
+  SyncContactsResponse._() : super();
   factory SyncContactsResponse({
     $core.Iterable<SyncedContact>? syncedContacts,
     $core.int? totalSynced,
     $core.int? totalMatchedUsers,
     $core.Iterable<LazerVaultUserMatch>? matchedUsers,
   }) {
-    final $result = create();
+    final _result = create();
     if (syncedContacts != null) {
-      $result.syncedContacts.addAll(syncedContacts);
+      _result.syncedContacts.addAll(syncedContacts);
     }
     if (totalSynced != null) {
-      $result.totalSynced = totalSynced;
+      _result.totalSynced = totalSynced;
     }
     if (totalMatchedUsers != null) {
-      $result.totalMatchedUsers = totalMatchedUsers;
+      _result.totalMatchedUsers = totalMatchedUsers;
     }
     if (matchedUsers != null) {
-      $result.matchedUsers.addAll(matchedUsers);
+      _result.matchedUsers.addAll(matchedUsers);
     }
-    return $result;
+    return _result;
   }
-  SyncContactsResponse._() : super();
   factory SyncContactsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SyncContactsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SyncContactsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<SyncedContact>(1, _omitFieldNames ? '' : 'syncedContacts', $pb.PbFieldType.PM, subBuilder: SyncedContact.create)
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'totalSynced', $pb.PbFieldType.O3)
-    ..a<$core.int>(3, _omitFieldNames ? '' : 'totalMatchedUsers', $pb.PbFieldType.O3)
-    ..pc<LazerVaultUserMatch>(4, _omitFieldNames ? '' : 'matchedUsers', $pb.PbFieldType.PM, subBuilder: LazerVaultUserMatch.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -399,10 +382,8 @@ class SyncContactsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SyncContactsResponse copyWith(void Function(SyncContactsResponse) updates) => super.copyWith((message) => updates(message as SyncContactsResponse)) as SyncContactsResponse;
-
+  SyncContactsResponse copyWith(void Function(SyncContactsResponse) updates) => super.copyWith((message) => updates(message as SyncContactsResponse)) as SyncContactsResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SyncContactsResponse create() => SyncContactsResponse._();
   SyncContactsResponse createEmptyInstance() => create();
@@ -436,8 +417,19 @@ class SyncContactsResponse extends $pb.GeneratedMessage {
   $core.List<LazerVaultUserMatch> get matchedUsers => $_getList(3);
 }
 
-/// Matched LazerVault user from contacts
 class LazerVaultUserMatch extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'LazerVaultUserMatch', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'contactId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'username')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'profilePhotoUrl')
+    ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isVerified')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'matchedBy')
+    ..hasRequiredFields = false
+  ;
+
+  LazerVaultUserMatch._() : super();
   factory LazerVaultUserMatch({
     $core.String? contactId,
     $core.String? userId,
@@ -447,45 +439,32 @@ class LazerVaultUserMatch extends $pb.GeneratedMessage {
     $core.bool? isVerified,
     $core.String? matchedBy,
   }) {
-    final $result = create();
+    final _result = create();
     if (contactId != null) {
-      $result.contactId = contactId;
+      _result.contactId = contactId;
     }
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (username != null) {
-      $result.username = username;
+      _result.username = username;
     }
     if (name != null) {
-      $result.name = name;
+      _result.name = name;
     }
     if (profilePhotoUrl != null) {
-      $result.profilePhotoUrl = profilePhotoUrl;
+      _result.profilePhotoUrl = profilePhotoUrl;
     }
     if (isVerified != null) {
-      $result.isVerified = isVerified;
+      _result.isVerified = isVerified;
     }
     if (matchedBy != null) {
-      $result.matchedBy = matchedBy;
+      _result.matchedBy = matchedBy;
     }
-    return $result;
+    return _result;
   }
-  LazerVaultUserMatch._() : super();
   factory LazerVaultUserMatch.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory LazerVaultUserMatch.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'LazerVaultUserMatch', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'contactId')
-    ..aOS(2, _omitFieldNames ? '' : 'userId')
-    ..aOS(3, _omitFieldNames ? '' : 'username')
-    ..aOS(4, _omitFieldNames ? '' : 'name')
-    ..aOS(5, _omitFieldNames ? '' : 'profilePhotoUrl')
-    ..aOB(6, _omitFieldNames ? '' : 'isVerified')
-    ..aOS(7, _omitFieldNames ? '' : 'matchedBy')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -495,10 +474,8 @@ class LazerVaultUserMatch extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  LazerVaultUserMatch copyWith(void Function(LazerVaultUserMatch) updates) => super.copyWith((message) => updates(message as LazerVaultUserMatch)) as LazerVaultUserMatch;
-
+  LazerVaultUserMatch copyWith(void Function(LazerVaultUserMatch) updates) => super.copyWith((message) => updates(message as LazerVaultUserMatch)) as LazerVaultUserMatch; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static LazerVaultUserMatch create() => LazerVaultUserMatch._();
   LazerVaultUserMatch createEmptyInstance() => create();
@@ -571,41 +548,39 @@ class LazerVaultUserMatch extends $pb.GeneratedMessage {
   void clearMatchedBy() => clearField(7);
 }
 
-/// Request to get synced contacts
 class GetSyncedContactsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetSyncedContactsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'searchQuery')
+    ..aOB(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'onlyLazervaultUsers')
+    ..hasRequiredFields = false
+  ;
+
+  GetSyncedContactsRequest._() : super();
   factory GetSyncedContactsRequest({
     $core.int? page,
     $core.int? pageSize,
     $core.String? searchQuery,
     $core.bool? onlyLazervaultUsers,
   }) {
-    final $result = create();
+    final _result = create();
     if (page != null) {
-      $result.page = page;
+      _result.page = page;
     }
     if (pageSize != null) {
-      $result.pageSize = pageSize;
+      _result.pageSize = pageSize;
     }
     if (searchQuery != null) {
-      $result.searchQuery = searchQuery;
+      _result.searchQuery = searchQuery;
     }
     if (onlyLazervaultUsers != null) {
-      $result.onlyLazervaultUsers = onlyLazervaultUsers;
+      _result.onlyLazervaultUsers = onlyLazervaultUsers;
     }
-    return $result;
+    return _result;
   }
-  GetSyncedContactsRequest._() : super();
   factory GetSyncedContactsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetSyncedContactsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSyncedContactsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$core.int>(1, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
-    ..aOS(3, _omitFieldNames ? '' : 'searchQuery')
-    ..aOB(4, _omitFieldNames ? '' : 'onlyLazervaultUsers')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -615,10 +590,8 @@ class GetSyncedContactsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetSyncedContactsRequest copyWith(void Function(GetSyncedContactsRequest) updates) => super.copyWith((message) => updates(message as GetSyncedContactsRequest)) as GetSyncedContactsRequest;
-
+  GetSyncedContactsRequest copyWith(void Function(GetSyncedContactsRequest) updates) => super.copyWith((message) => updates(message as GetSyncedContactsRequest)) as GetSyncedContactsRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetSyncedContactsRequest create() => GetSyncedContactsRequest._();
   GetSyncedContactsRequest createEmptyInstance() => create();
@@ -664,41 +637,39 @@ class GetSyncedContactsRequest extends $pb.GeneratedMessage {
   void clearOnlyLazervaultUsers() => clearField(4);
 }
 
-/// Response with synced contacts
 class GetSyncedContactsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetSyncedContactsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<SyncedContact>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'contacts', $pb.PbFieldType.PM, subBuilder: SyncedContact.create)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalCount', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  GetSyncedContactsResponse._() : super();
   factory GetSyncedContactsResponse({
     $core.Iterable<SyncedContact>? contacts,
     $core.int? totalCount,
     $core.int? page,
     $core.int? pageSize,
   }) {
-    final $result = create();
+    final _result = create();
     if (contacts != null) {
-      $result.contacts.addAll(contacts);
+      _result.contacts.addAll(contacts);
     }
     if (totalCount != null) {
-      $result.totalCount = totalCount;
+      _result.totalCount = totalCount;
     }
     if (page != null) {
-      $result.page = page;
+      _result.page = page;
     }
     if (pageSize != null) {
-      $result.pageSize = pageSize;
+      _result.pageSize = pageSize;
     }
-    return $result;
+    return _result;
   }
-  GetSyncedContactsResponse._() : super();
   factory GetSyncedContactsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetSyncedContactsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSyncedContactsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<SyncedContact>(1, _omitFieldNames ? '' : 'contacts', $pb.PbFieldType.PM, subBuilder: SyncedContact.create)
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'totalCount', $pb.PbFieldType.O3)
-    ..a<$core.int>(3, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
-    ..a<$core.int>(4, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -708,10 +679,8 @@ class GetSyncedContactsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetSyncedContactsResponse copyWith(void Function(GetSyncedContactsResponse) updates) => super.copyWith((message) => updates(message as GetSyncedContactsResponse)) as GetSyncedContactsResponse;
-
+  GetSyncedContactsResponse copyWith(void Function(GetSyncedContactsResponse) updates) => super.copyWith((message) => updates(message as GetSyncedContactsResponse)) as GetSyncedContactsResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetSyncedContactsResponse create() => GetSyncedContactsResponse._();
   GetSyncedContactsResponse createEmptyInstance() => create();
@@ -751,31 +720,29 @@ class GetSyncedContactsResponse extends $pb.GeneratedMessage {
   void clearPageSize() => clearField(4);
 }
 
-/// Request to delete synced contacts
 class DeleteSyncedContactsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DeleteSyncedContactsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..pPS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'contactIds')
+    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deleteAll')
+    ..hasRequiredFields = false
+  ;
+
+  DeleteSyncedContactsRequest._() : super();
   factory DeleteSyncedContactsRequest({
     $core.Iterable<$core.String>? contactIds,
     $core.bool? deleteAll,
   }) {
-    final $result = create();
+    final _result = create();
     if (contactIds != null) {
-      $result.contactIds.addAll(contactIds);
+      _result.contactIds.addAll(contactIds);
     }
     if (deleteAll != null) {
-      $result.deleteAll = deleteAll;
+      _result.deleteAll = deleteAll;
     }
-    return $result;
+    return _result;
   }
-  DeleteSyncedContactsRequest._() : super();
   factory DeleteSyncedContactsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory DeleteSyncedContactsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DeleteSyncedContactsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..pPS(1, _omitFieldNames ? '' : 'contactIds')
-    ..aOB(2, _omitFieldNames ? '' : 'deleteAll')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -785,10 +752,8 @@ class DeleteSyncedContactsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  DeleteSyncedContactsRequest copyWith(void Function(DeleteSyncedContactsRequest) updates) => super.copyWith((message) => updates(message as DeleteSyncedContactsRequest)) as DeleteSyncedContactsRequest;
-
+  DeleteSyncedContactsRequest copyWith(void Function(DeleteSyncedContactsRequest) updates) => super.copyWith((message) => updates(message as DeleteSyncedContactsRequest)) as DeleteSyncedContactsRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static DeleteSyncedContactsRequest create() => DeleteSyncedContactsRequest._();
   DeleteSyncedContactsRequest createEmptyInstance() => create();
@@ -810,31 +775,29 @@ class DeleteSyncedContactsRequest extends $pb.GeneratedMessage {
   void clearDeleteAll() => clearField(2);
 }
 
-/// Response to delete synced contacts
 class DeleteSyncedContactsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DeleteSyncedContactsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deletedCount', $pb.PbFieldType.O3)
+    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..hasRequiredFields = false
+  ;
+
+  DeleteSyncedContactsResponse._() : super();
   factory DeleteSyncedContactsResponse({
     $core.int? deletedCount,
     $core.bool? success,
   }) {
-    final $result = create();
+    final _result = create();
     if (deletedCount != null) {
-      $result.deletedCount = deletedCount;
+      _result.deletedCount = deletedCount;
     }
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
-    return $result;
+    return _result;
   }
-  DeleteSyncedContactsResponse._() : super();
   factory DeleteSyncedContactsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory DeleteSyncedContactsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DeleteSyncedContactsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$core.int>(1, _omitFieldNames ? '' : 'deletedCount', $pb.PbFieldType.O3)
-    ..aOB(2, _omitFieldNames ? '' : 'success')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -844,10 +807,8 @@ class DeleteSyncedContactsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  DeleteSyncedContactsResponse copyWith(void Function(DeleteSyncedContactsResponse) updates) => super.copyWith((message) => updates(message as DeleteSyncedContactsResponse)) as DeleteSyncedContactsResponse;
-
+  DeleteSyncedContactsResponse copyWith(void Function(DeleteSyncedContactsResponse) updates) => super.copyWith((message) => updates(message as DeleteSyncedContactsResponse)) as DeleteSyncedContactsResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static DeleteSyncedContactsResponse create() => DeleteSyncedContactsResponse._();
   DeleteSyncedContactsResponse createEmptyInstance() => create();
@@ -875,8 +836,21 @@ class DeleteSyncedContactsResponse extends $pb.GeneratedMessage {
   void clearSuccess() => clearField(2);
 }
 
-/// Request to convert contact to recipient
 class ConvertContactToRecipientRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ConvertContactToRecipientRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'contactId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deviceContactId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumber')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountNumber')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bankName')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sortCode')
+    ..aOB(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'autoDetectLazervault')
+    ..hasRequiredFields = false
+  ;
+
+  ConvertContactToRecipientRequest._() : super();
   factory ConvertContactToRecipientRequest({
     $core.String? contactId,
     $core.String? deviceContactId,
@@ -888,53 +862,38 @@ class ConvertContactToRecipientRequest extends $pb.GeneratedMessage {
     $core.String? sortCode,
     $core.bool? autoDetectLazervault,
   }) {
-    final $result = create();
+    final _result = create();
     if (contactId != null) {
-      $result.contactId = contactId;
+      _result.contactId = contactId;
     }
     if (deviceContactId != null) {
-      $result.deviceContactId = deviceContactId;
+      _result.deviceContactId = deviceContactId;
     }
     if (name != null) {
-      $result.name = name;
+      _result.name = name;
     }
     if (phoneNumber != null) {
-      $result.phoneNumber = phoneNumber;
+      _result.phoneNumber = phoneNumber;
     }
     if (email != null) {
-      $result.email = email;
+      _result.email = email;
     }
     if (accountNumber != null) {
-      $result.accountNumber = accountNumber;
+      _result.accountNumber = accountNumber;
     }
     if (bankName != null) {
-      $result.bankName = bankName;
+      _result.bankName = bankName;
     }
     if (sortCode != null) {
-      $result.sortCode = sortCode;
+      _result.sortCode = sortCode;
     }
     if (autoDetectLazervault != null) {
-      $result.autoDetectLazervault = autoDetectLazervault;
+      _result.autoDetectLazervault = autoDetectLazervault;
     }
-    return $result;
+    return _result;
   }
-  ConvertContactToRecipientRequest._() : super();
   factory ConvertContactToRecipientRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ConvertContactToRecipientRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ConvertContactToRecipientRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'contactId')
-    ..aOS(2, _omitFieldNames ? '' : 'deviceContactId')
-    ..aOS(3, _omitFieldNames ? '' : 'name')
-    ..aOS(4, _omitFieldNames ? '' : 'phoneNumber')
-    ..aOS(5, _omitFieldNames ? '' : 'email')
-    ..aOS(6, _omitFieldNames ? '' : 'accountNumber')
-    ..aOS(7, _omitFieldNames ? '' : 'bankName')
-    ..aOS(8, _omitFieldNames ? '' : 'sortCode')
-    ..aOB(9, _omitFieldNames ? '' : 'autoDetectLazervault')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -944,10 +903,8 @@ class ConvertContactToRecipientRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ConvertContactToRecipientRequest copyWith(void Function(ConvertContactToRecipientRequest) updates) => super.copyWith((message) => updates(message as ConvertContactToRecipientRequest)) as ConvertContactToRecipientRequest;
-
+  ConvertContactToRecipientRequest copyWith(void Function(ConvertContactToRecipientRequest) updates) => super.copyWith((message) => updates(message as ConvertContactToRecipientRequest)) as ConvertContactToRecipientRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ConvertContactToRecipientRequest create() => ConvertContactToRecipientRequest._();
   ConvertContactToRecipientRequest createEmptyInstance() => create();
@@ -1038,8 +995,17 @@ class ConvertContactToRecipientRequest extends $pb.GeneratedMessage {
   void clearAutoDetectLazervault() => clearField(9);
 }
 
-/// Response to convert contact to recipient
 class ConvertContactToRecipientResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ConvertContactToRecipientResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientId')
+    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isLazervaultUser')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lazervaultUserId')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lazervaultUsername')
+    ..aOM<RecipientDetails>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipient', subBuilder: RecipientDetails.create)
+    ..hasRequiredFields = false
+  ;
+
+  ConvertContactToRecipientResponse._() : super();
   factory ConvertContactToRecipientResponse({
     $core.String? recipientId,
     $core.bool? isLazervaultUser,
@@ -1047,37 +1013,26 @@ class ConvertContactToRecipientResponse extends $pb.GeneratedMessage {
     $core.String? lazervaultUsername,
     RecipientDetails? recipient,
   }) {
-    final $result = create();
+    final _result = create();
     if (recipientId != null) {
-      $result.recipientId = recipientId;
+      _result.recipientId = recipientId;
     }
     if (isLazervaultUser != null) {
-      $result.isLazervaultUser = isLazervaultUser;
+      _result.isLazervaultUser = isLazervaultUser;
     }
     if (lazervaultUserId != null) {
-      $result.lazervaultUserId = lazervaultUserId;
+      _result.lazervaultUserId = lazervaultUserId;
     }
     if (lazervaultUsername != null) {
-      $result.lazervaultUsername = lazervaultUsername;
+      _result.lazervaultUsername = lazervaultUsername;
     }
     if (recipient != null) {
-      $result.recipient = recipient;
+      _result.recipient = recipient;
     }
-    return $result;
+    return _result;
   }
-  ConvertContactToRecipientResponse._() : super();
   factory ConvertContactToRecipientResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ConvertContactToRecipientResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ConvertContactToRecipientResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'recipientId')
-    ..aOB(2, _omitFieldNames ? '' : 'isLazervaultUser')
-    ..aOS(3, _omitFieldNames ? '' : 'lazervaultUserId')
-    ..aOS(4, _omitFieldNames ? '' : 'lazervaultUsername')
-    ..aOM<RecipientDetails>(5, _omitFieldNames ? '' : 'recipient', subBuilder: RecipientDetails.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1087,10 +1042,8 @@ class ConvertContactToRecipientResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ConvertContactToRecipientResponse copyWith(void Function(ConvertContactToRecipientResponse) updates) => super.copyWith((message) => updates(message as ConvertContactToRecipientResponse)) as ConvertContactToRecipientResponse;
-
+  ConvertContactToRecipientResponse copyWith(void Function(ConvertContactToRecipientResponse) updates) => super.copyWith((message) => updates(message as ConvertContactToRecipientResponse)) as ConvertContactToRecipientResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ConvertContactToRecipientResponse create() => ConvertContactToRecipientResponse._();
   ConvertContactToRecipientResponse createEmptyInstance() => create();
@@ -1147,8 +1100,19 @@ class ConvertContactToRecipientResponse extends $pb.GeneratedMessage {
   RecipientDetails ensureRecipient() => $_ensure(4);
 }
 
-/// Recipient details
 class RecipientDetails extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'RecipientDetails', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountNumber')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bankName')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sortCode')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'profilePhotoUrl')
+    ..aOB(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isFavorite')
+    ..hasRequiredFields = false
+  ;
+
+  RecipientDetails._() : super();
   factory RecipientDetails({
     $core.String? id,
     $core.String? name,
@@ -1158,45 +1122,32 @@ class RecipientDetails extends $pb.GeneratedMessage {
     $core.String? profilePhotoUrl,
     $core.bool? isFavorite,
   }) {
-    final $result = create();
+    final _result = create();
     if (id != null) {
-      $result.id = id;
+      _result.id = id;
     }
     if (name != null) {
-      $result.name = name;
+      _result.name = name;
     }
     if (accountNumber != null) {
-      $result.accountNumber = accountNumber;
+      _result.accountNumber = accountNumber;
     }
     if (bankName != null) {
-      $result.bankName = bankName;
+      _result.bankName = bankName;
     }
     if (sortCode != null) {
-      $result.sortCode = sortCode;
+      _result.sortCode = sortCode;
     }
     if (profilePhotoUrl != null) {
-      $result.profilePhotoUrl = profilePhotoUrl;
+      _result.profilePhotoUrl = profilePhotoUrl;
     }
     if (isFavorite != null) {
-      $result.isFavorite = isFavorite;
+      _result.isFavorite = isFavorite;
     }
-    return $result;
+    return _result;
   }
-  RecipientDetails._() : super();
   factory RecipientDetails.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory RecipientDetails.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RecipientDetails', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..aOS(2, _omitFieldNames ? '' : 'name')
-    ..aOS(3, _omitFieldNames ? '' : 'accountNumber')
-    ..aOS(4, _omitFieldNames ? '' : 'bankName')
-    ..aOS(5, _omitFieldNames ? '' : 'sortCode')
-    ..aOS(6, _omitFieldNames ? '' : 'profilePhotoUrl')
-    ..aOB(7, _omitFieldNames ? '' : 'isFavorite')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1206,10 +1157,8 @@ class RecipientDetails extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  RecipientDetails copyWith(void Function(RecipientDetails) updates) => super.copyWith((message) => updates(message as RecipientDetails)) as RecipientDetails;
-
+  RecipientDetails copyWith(void Function(RecipientDetails) updates) => super.copyWith((message) => updates(message as RecipientDetails)) as RecipientDetails; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static RecipientDetails create() => RecipientDetails._();
   RecipientDetails createEmptyInstance() => create();
@@ -1282,31 +1231,29 @@ class RecipientDetails extends $pb.GeneratedMessage {
   void clearIsFavorite() => clearField(7);
 }
 
-/// Request to find LazerVault users
 class FindLazerVaultUsersRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'FindLazerVaultUsersRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..pPS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumbers')
+    ..pPS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'emails')
+    ..hasRequiredFields = false
+  ;
+
+  FindLazerVaultUsersRequest._() : super();
   factory FindLazerVaultUsersRequest({
     $core.Iterable<$core.String>? phoneNumbers,
     $core.Iterable<$core.String>? emails,
   }) {
-    final $result = create();
+    final _result = create();
     if (phoneNumbers != null) {
-      $result.phoneNumbers.addAll(phoneNumbers);
+      _result.phoneNumbers.addAll(phoneNumbers);
     }
     if (emails != null) {
-      $result.emails.addAll(emails);
+      _result.emails.addAll(emails);
     }
-    return $result;
+    return _result;
   }
-  FindLazerVaultUsersRequest._() : super();
   factory FindLazerVaultUsersRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory FindLazerVaultUsersRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'FindLazerVaultUsersRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..pPS(1, _omitFieldNames ? '' : 'phoneNumbers')
-    ..pPS(2, _omitFieldNames ? '' : 'emails')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1316,10 +1263,8 @@ class FindLazerVaultUsersRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  FindLazerVaultUsersRequest copyWith(void Function(FindLazerVaultUsersRequest) updates) => super.copyWith((message) => updates(message as FindLazerVaultUsersRequest)) as FindLazerVaultUsersRequest;
-
+  FindLazerVaultUsersRequest copyWith(void Function(FindLazerVaultUsersRequest) updates) => super.copyWith((message) => updates(message as FindLazerVaultUsersRequest)) as FindLazerVaultUsersRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static FindLazerVaultUsersRequest create() => FindLazerVaultUsersRequest._();
   FindLazerVaultUsersRequest createEmptyInstance() => create();
@@ -1335,31 +1280,29 @@ class FindLazerVaultUsersRequest extends $pb.GeneratedMessage {
   $core.List<$core.String> get emails => $_getList(1);
 }
 
-/// Response with found LazerVault users
 class FindLazerVaultUsersResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'FindLazerVaultUsersResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<LazerVaultUserMatch>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'matchedUsers', $pb.PbFieldType.PM, subBuilder: LazerVaultUserMatch.create)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalMatches', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  FindLazerVaultUsersResponse._() : super();
   factory FindLazerVaultUsersResponse({
     $core.Iterable<LazerVaultUserMatch>? matchedUsers,
     $core.int? totalMatches,
   }) {
-    final $result = create();
+    final _result = create();
     if (matchedUsers != null) {
-      $result.matchedUsers.addAll(matchedUsers);
+      _result.matchedUsers.addAll(matchedUsers);
     }
     if (totalMatches != null) {
-      $result.totalMatches = totalMatches;
+      _result.totalMatches = totalMatches;
     }
-    return $result;
+    return _result;
   }
-  FindLazerVaultUsersResponse._() : super();
   factory FindLazerVaultUsersResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory FindLazerVaultUsersResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'FindLazerVaultUsersResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<LazerVaultUserMatch>(1, _omitFieldNames ? '' : 'matchedUsers', $pb.PbFieldType.PM, subBuilder: LazerVaultUserMatch.create)
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'totalMatches', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1369,10 +1312,8 @@ class FindLazerVaultUsersResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  FindLazerVaultUsersResponse copyWith(void Function(FindLazerVaultUsersResponse) updates) => super.copyWith((message) => updates(message as FindLazerVaultUsersResponse)) as FindLazerVaultUsersResponse;
-
+  FindLazerVaultUsersResponse copyWith(void Function(FindLazerVaultUsersResponse) updates) => super.copyWith((message) => updates(message as FindLazerVaultUsersResponse)) as FindLazerVaultUsersResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static FindLazerVaultUsersResponse create() => FindLazerVaultUsersResponse._();
   FindLazerVaultUsersResponse createEmptyInstance() => create();
@@ -1394,41 +1335,39 @@ class FindLazerVaultUsersResponse extends $pb.GeneratedMessage {
   void clearTotalMatches() => clearField(2);
 }
 
-/// Request to update sync preferences
 class UpdateSyncPreferencesRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateSyncPreferencesRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'autoSyncEnabled')
+    ..e<SyncFrequency>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'syncFrequency', $pb.PbFieldType.OE, defaultOrMaker: SyncFrequency.SYNC_FREQUENCY_UNSPECIFIED, valueOf: SyncFrequency.valueOf, enumValues: SyncFrequency.values)
+    ..aOB(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'matchWithUsers')
+    ..aOB(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'syncPhotos')
+    ..hasRequiredFields = false
+  ;
+
+  UpdateSyncPreferencesRequest._() : super();
   factory UpdateSyncPreferencesRequest({
     $core.bool? autoSyncEnabled,
     SyncFrequency? syncFrequency,
     $core.bool? matchWithUsers,
     $core.bool? syncPhotos,
   }) {
-    final $result = create();
+    final _result = create();
     if (autoSyncEnabled != null) {
-      $result.autoSyncEnabled = autoSyncEnabled;
+      _result.autoSyncEnabled = autoSyncEnabled;
     }
     if (syncFrequency != null) {
-      $result.syncFrequency = syncFrequency;
+      _result.syncFrequency = syncFrequency;
     }
     if (matchWithUsers != null) {
-      $result.matchWithUsers = matchWithUsers;
+      _result.matchWithUsers = matchWithUsers;
     }
     if (syncPhotos != null) {
-      $result.syncPhotos = syncPhotos;
+      _result.syncPhotos = syncPhotos;
     }
-    return $result;
+    return _result;
   }
-  UpdateSyncPreferencesRequest._() : super();
   factory UpdateSyncPreferencesRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UpdateSyncPreferencesRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateSyncPreferencesRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'autoSyncEnabled')
-    ..e<SyncFrequency>(2, _omitFieldNames ? '' : 'syncFrequency', $pb.PbFieldType.OE, defaultOrMaker: SyncFrequency.SYNC_FREQUENCY_UNSPECIFIED, valueOf: SyncFrequency.valueOf, enumValues: SyncFrequency.values)
-    ..aOB(3, _omitFieldNames ? '' : 'matchWithUsers')
-    ..aOB(4, _omitFieldNames ? '' : 'syncPhotos')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1438,10 +1377,8 @@ class UpdateSyncPreferencesRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UpdateSyncPreferencesRequest copyWith(void Function(UpdateSyncPreferencesRequest) updates) => super.copyWith((message) => updates(message as UpdateSyncPreferencesRequest)) as UpdateSyncPreferencesRequest;
-
+  UpdateSyncPreferencesRequest copyWith(void Function(UpdateSyncPreferencesRequest) updates) => super.copyWith((message) => updates(message as UpdateSyncPreferencesRequest)) as UpdateSyncPreferencesRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static UpdateSyncPreferencesRequest create() => UpdateSyncPreferencesRequest._();
   UpdateSyncPreferencesRequest createEmptyInstance() => create();
@@ -1487,31 +1424,29 @@ class UpdateSyncPreferencesRequest extends $pb.GeneratedMessage {
   void clearSyncPhotos() => clearField(4);
 }
 
-/// Response to update sync preferences
 class UpdateSyncPreferencesResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateSyncPreferencesResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<SyncPreferences>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'preferences', subBuilder: SyncPreferences.create)
+    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..hasRequiredFields = false
+  ;
+
+  UpdateSyncPreferencesResponse._() : super();
   factory UpdateSyncPreferencesResponse({
     SyncPreferences? preferences,
     $core.bool? success,
   }) {
-    final $result = create();
+    final _result = create();
     if (preferences != null) {
-      $result.preferences = preferences;
+      _result.preferences = preferences;
     }
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
-    return $result;
+    return _result;
   }
-  UpdateSyncPreferencesResponse._() : super();
   factory UpdateSyncPreferencesResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UpdateSyncPreferencesResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateSyncPreferencesResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<SyncPreferences>(1, _omitFieldNames ? '' : 'preferences', subBuilder: SyncPreferences.create)
-    ..aOB(2, _omitFieldNames ? '' : 'success')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1521,10 +1456,8 @@ class UpdateSyncPreferencesResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UpdateSyncPreferencesResponse copyWith(void Function(UpdateSyncPreferencesResponse) updates) => super.copyWith((message) => updates(message as UpdateSyncPreferencesResponse)) as UpdateSyncPreferencesResponse;
-
+  UpdateSyncPreferencesResponse copyWith(void Function(UpdateSyncPreferencesResponse) updates) => super.copyWith((message) => updates(message as UpdateSyncPreferencesResponse)) as UpdateSyncPreferencesResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static UpdateSyncPreferencesResponse create() => UpdateSyncPreferencesResponse._();
   UpdateSyncPreferencesResponse createEmptyInstance() => create();
@@ -1554,8 +1487,20 @@ class UpdateSyncPreferencesResponse extends $pb.GeneratedMessage {
   void clearSuccess() => clearField(2);
 }
 
-/// Sync preferences
 class SyncPreferences extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SyncPreferences', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'autoSyncEnabled')
+    ..e<SyncFrequency>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'syncFrequency', $pb.PbFieldType.OE, defaultOrMaker: SyncFrequency.SYNC_FREQUENCY_UNSPECIFIED, valueOf: SyncFrequency.valueOf, enumValues: SyncFrequency.values)
+    ..aOB(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'matchWithUsers')
+    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'syncPhotos')
+    ..aOM<$1.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastSyncAt', subBuilder: $1.Timestamp.create)
+    ..a<$core.int>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalSyncedContacts', $pb.PbFieldType.O3)
+    ..a<$core.int>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalMatchedUsers', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  SyncPreferences._() : super();
   factory SyncPreferences({
     $core.String? userId,
     $core.bool? autoSyncEnabled,
@@ -1566,49 +1511,35 @@ class SyncPreferences extends $pb.GeneratedMessage {
     $core.int? totalSyncedContacts,
     $core.int? totalMatchedUsers,
   }) {
-    final $result = create();
+    final _result = create();
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (autoSyncEnabled != null) {
-      $result.autoSyncEnabled = autoSyncEnabled;
+      _result.autoSyncEnabled = autoSyncEnabled;
     }
     if (syncFrequency != null) {
-      $result.syncFrequency = syncFrequency;
+      _result.syncFrequency = syncFrequency;
     }
     if (matchWithUsers != null) {
-      $result.matchWithUsers = matchWithUsers;
+      _result.matchWithUsers = matchWithUsers;
     }
     if (syncPhotos != null) {
-      $result.syncPhotos = syncPhotos;
+      _result.syncPhotos = syncPhotos;
     }
     if (lastSyncAt != null) {
-      $result.lastSyncAt = lastSyncAt;
+      _result.lastSyncAt = lastSyncAt;
     }
     if (totalSyncedContacts != null) {
-      $result.totalSyncedContacts = totalSyncedContacts;
+      _result.totalSyncedContacts = totalSyncedContacts;
     }
     if (totalMatchedUsers != null) {
-      $result.totalMatchedUsers = totalMatchedUsers;
+      _result.totalMatchedUsers = totalMatchedUsers;
     }
-    return $result;
+    return _result;
   }
-  SyncPreferences._() : super();
   factory SyncPreferences.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SyncPreferences.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SyncPreferences', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..aOB(2, _omitFieldNames ? '' : 'autoSyncEnabled')
-    ..e<SyncFrequency>(3, _omitFieldNames ? '' : 'syncFrequency', $pb.PbFieldType.OE, defaultOrMaker: SyncFrequency.SYNC_FREQUENCY_UNSPECIFIED, valueOf: SyncFrequency.valueOf, enumValues: SyncFrequency.values)
-    ..aOB(4, _omitFieldNames ? '' : 'matchWithUsers')
-    ..aOB(5, _omitFieldNames ? '' : 'syncPhotos')
-    ..aOM<$1.Timestamp>(6, _omitFieldNames ? '' : 'lastSyncAt', subBuilder: $1.Timestamp.create)
-    ..a<$core.int>(7, _omitFieldNames ? '' : 'totalSyncedContacts', $pb.PbFieldType.O3)
-    ..a<$core.int>(8, _omitFieldNames ? '' : 'totalMatchedUsers', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1618,10 +1549,8 @@ class SyncPreferences extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SyncPreferences copyWith(void Function(SyncPreferences) updates) => super.copyWith((message) => updates(message as SyncPreferences)) as SyncPreferences;
-
+  SyncPreferences copyWith(void Function(SyncPreferences) updates) => super.copyWith((message) => updates(message as SyncPreferences)) as SyncPreferences; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SyncPreferences create() => SyncPreferences._();
   SyncPreferences createEmptyInstance() => create();
@@ -1705,6 +1634,3 @@ class SyncPreferences extends $pb.GeneratedMessage {
   void clearTotalMatchedUsers() => clearField(8);
 }
 
-
-const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
-const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');

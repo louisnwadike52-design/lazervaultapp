@@ -1,24 +1,19 @@
-//
+///
 //  Generated code. Do not modify.
 //  source: financial-products.proto
 //
 // @dart = 2.12
+// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
 
-// ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
-
+// ignore_for_file: UNDEFINED_SHOWN_NAME
 import 'dart:core' as $core;
-
 import 'package:protobuf/protobuf.dart' as $pb;
 
-/// Auto-save trigger types
 class AutoSaveTriggerType extends $pb.ProtobufEnum {
-  static const AutoSaveTriggerType AUTO_SAVE_TRIGGER_UNKNOWN = AutoSaveTriggerType._(0, _omitEnumNames ? '' : 'AUTO_SAVE_TRIGGER_UNKNOWN');
-  static const AutoSaveTriggerType AUTO_SAVE_TRIGGER_ON_DEPOSIT = AutoSaveTriggerType._(1, _omitEnumNames ? '' : 'AUTO_SAVE_TRIGGER_ON_DEPOSIT');
-  static const AutoSaveTriggerType AUTO_SAVE_TRIGGER_SCHEDULED = AutoSaveTriggerType._(2, _omitEnumNames ? '' : 'AUTO_SAVE_TRIGGER_SCHEDULED');
-  static const AutoSaveTriggerType AUTO_SAVE_TRIGGER_ROUND_UP = AutoSaveTriggerType._(3, _omitEnumNames ? '' : 'AUTO_SAVE_TRIGGER_ROUND_UP');
+  static const AutoSaveTriggerType AUTO_SAVE_TRIGGER_UNKNOWN = AutoSaveTriggerType._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'AUTO_SAVE_TRIGGER_UNKNOWN');
+  static const AutoSaveTriggerType AUTO_SAVE_TRIGGER_ON_DEPOSIT = AutoSaveTriggerType._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'AUTO_SAVE_TRIGGER_ON_DEPOSIT');
+  static const AutoSaveTriggerType AUTO_SAVE_TRIGGER_SCHEDULED = AutoSaveTriggerType._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'AUTO_SAVE_TRIGGER_SCHEDULED');
+  static const AutoSaveTriggerType AUTO_SAVE_TRIGGER_ROUND_UP = AutoSaveTriggerType._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'AUTO_SAVE_TRIGGER_ROUND_UP');
 
   static const $core.List<AutoSaveTriggerType> values = <AutoSaveTriggerType> [
     AUTO_SAVE_TRIGGER_UNKNOWN,
@@ -33,13 +28,12 @@ class AutoSaveTriggerType extends $pb.ProtobufEnum {
   const AutoSaveTriggerType._($core.int v, $core.String n) : super(v, n);
 }
 
-/// Schedule frequency for scheduled auto-saves
 class AutoSaveScheduleFrequency extends $pb.ProtobufEnum {
-  static const AutoSaveScheduleFrequency AUTO_SAVE_FREQUENCY_UNKNOWN = AutoSaveScheduleFrequency._(0, _omitEnumNames ? '' : 'AUTO_SAVE_FREQUENCY_UNKNOWN');
-  static const AutoSaveScheduleFrequency AUTO_SAVE_FREQUENCY_DAILY = AutoSaveScheduleFrequency._(1, _omitEnumNames ? '' : 'AUTO_SAVE_FREQUENCY_DAILY');
-  static const AutoSaveScheduleFrequency AUTO_SAVE_FREQUENCY_WEEKLY = AutoSaveScheduleFrequency._(2, _omitEnumNames ? '' : 'AUTO_SAVE_FREQUENCY_WEEKLY');
-  static const AutoSaveScheduleFrequency AUTO_SAVE_FREQUENCY_BIWEEKLY = AutoSaveScheduleFrequency._(3, _omitEnumNames ? '' : 'AUTO_SAVE_FREQUENCY_BIWEEKLY');
-  static const AutoSaveScheduleFrequency AUTO_SAVE_FREQUENCY_MONTHLY = AutoSaveScheduleFrequency._(4, _omitEnumNames ? '' : 'AUTO_SAVE_FREQUENCY_MONTHLY');
+  static const AutoSaveScheduleFrequency AUTO_SAVE_FREQUENCY_UNKNOWN = AutoSaveScheduleFrequency._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'AUTO_SAVE_FREQUENCY_UNKNOWN');
+  static const AutoSaveScheduleFrequency AUTO_SAVE_FREQUENCY_DAILY = AutoSaveScheduleFrequency._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'AUTO_SAVE_FREQUENCY_DAILY');
+  static const AutoSaveScheduleFrequency AUTO_SAVE_FREQUENCY_WEEKLY = AutoSaveScheduleFrequency._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'AUTO_SAVE_FREQUENCY_WEEKLY');
+  static const AutoSaveScheduleFrequency AUTO_SAVE_FREQUENCY_BIWEEKLY = AutoSaveScheduleFrequency._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'AUTO_SAVE_FREQUENCY_BIWEEKLY');
+  static const AutoSaveScheduleFrequency AUTO_SAVE_FREQUENCY_MONTHLY = AutoSaveScheduleFrequency._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'AUTO_SAVE_FREQUENCY_MONTHLY');
 
   static const $core.List<AutoSaveScheduleFrequency> values = <AutoSaveScheduleFrequency> [
     AUTO_SAVE_FREQUENCY_UNKNOWN,
@@ -55,13 +49,12 @@ class AutoSaveScheduleFrequency extends $pb.ProtobufEnum {
   const AutoSaveScheduleFrequency._($core.int v, $core.String n) : super(v, n);
 }
 
-/// Auto-save rule status
 class AutoSaveRuleStatus extends $pb.ProtobufEnum {
-  static const AutoSaveRuleStatus AUTO_SAVE_STATUS_UNKNOWN = AutoSaveRuleStatus._(0, _omitEnumNames ? '' : 'AUTO_SAVE_STATUS_UNKNOWN');
-  static const AutoSaveRuleStatus AUTO_SAVE_STATUS_ACTIVE = AutoSaveRuleStatus._(1, _omitEnumNames ? '' : 'AUTO_SAVE_STATUS_ACTIVE');
-  static const AutoSaveRuleStatus AUTO_SAVE_STATUS_PAUSED = AutoSaveRuleStatus._(2, _omitEnumNames ? '' : 'AUTO_SAVE_STATUS_PAUSED');
-  static const AutoSaveRuleStatus AUTO_SAVE_STATUS_COMPLETED = AutoSaveRuleStatus._(3, _omitEnumNames ? '' : 'AUTO_SAVE_STATUS_COMPLETED');
-  static const AutoSaveRuleStatus AUTO_SAVE_STATUS_CANCELLED = AutoSaveRuleStatus._(4, _omitEnumNames ? '' : 'AUTO_SAVE_STATUS_CANCELLED');
+  static const AutoSaveRuleStatus AUTO_SAVE_STATUS_UNKNOWN = AutoSaveRuleStatus._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'AUTO_SAVE_STATUS_UNKNOWN');
+  static const AutoSaveRuleStatus AUTO_SAVE_STATUS_ACTIVE = AutoSaveRuleStatus._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'AUTO_SAVE_STATUS_ACTIVE');
+  static const AutoSaveRuleStatus AUTO_SAVE_STATUS_PAUSED = AutoSaveRuleStatus._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'AUTO_SAVE_STATUS_PAUSED');
+  static const AutoSaveRuleStatus AUTO_SAVE_STATUS_COMPLETED = AutoSaveRuleStatus._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'AUTO_SAVE_STATUS_COMPLETED');
+  static const AutoSaveRuleStatus AUTO_SAVE_STATUS_CANCELLED = AutoSaveRuleStatus._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'AUTO_SAVE_STATUS_CANCELLED');
 
   static const $core.List<AutoSaveRuleStatus> values = <AutoSaveRuleStatus> [
     AUTO_SAVE_STATUS_UNKNOWN,
@@ -77,11 +70,10 @@ class AutoSaveRuleStatus extends $pb.ProtobufEnum {
   const AutoSaveRuleStatus._($core.int v, $core.String n) : super(v, n);
 }
 
-/// Amount calculation type
 class AutoSaveAmountType extends $pb.ProtobufEnum {
-  static const AutoSaveAmountType AUTO_SAVE_AMOUNT_UNKNOWN = AutoSaveAmountType._(0, _omitEnumNames ? '' : 'AUTO_SAVE_AMOUNT_UNKNOWN');
-  static const AutoSaveAmountType AUTO_SAVE_AMOUNT_FIXED = AutoSaveAmountType._(1, _omitEnumNames ? '' : 'AUTO_SAVE_AMOUNT_FIXED');
-  static const AutoSaveAmountType AUTO_SAVE_AMOUNT_PERCENTAGE = AutoSaveAmountType._(2, _omitEnumNames ? '' : 'AUTO_SAVE_AMOUNT_PERCENTAGE');
+  static const AutoSaveAmountType AUTO_SAVE_AMOUNT_UNKNOWN = AutoSaveAmountType._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'AUTO_SAVE_AMOUNT_UNKNOWN');
+  static const AutoSaveAmountType AUTO_SAVE_AMOUNT_FIXED = AutoSaveAmountType._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'AUTO_SAVE_AMOUNT_FIXED');
+  static const AutoSaveAmountType AUTO_SAVE_AMOUNT_PERCENTAGE = AutoSaveAmountType._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'AUTO_SAVE_AMOUNT_PERCENTAGE');
 
   static const $core.List<AutoSaveAmountType> values = <AutoSaveAmountType> [
     AUTO_SAVE_AMOUNT_UNKNOWN,
@@ -95,13 +87,12 @@ class AutoSaveAmountType extends $pb.ProtobufEnum {
   const AutoSaveAmountType._($core.int v, $core.String n) : super(v, n);
 }
 
-/// Notification channel types
 class NotificationChannelType extends $pb.ProtobufEnum {
-  static const NotificationChannelType NOTIFICATION_CHANNEL_TYPE_UNSPECIFIED = NotificationChannelType._(0, _omitEnumNames ? '' : 'NOTIFICATION_CHANNEL_TYPE_UNSPECIFIED');
-  static const NotificationChannelType NOTIFICATION_CHANNEL_TYPE_TELEGRAM = NotificationChannelType._(1, _omitEnumNames ? '' : 'NOTIFICATION_CHANNEL_TYPE_TELEGRAM');
-  static const NotificationChannelType NOTIFICATION_CHANNEL_TYPE_DISCORD = NotificationChannelType._(2, _omitEnumNames ? '' : 'NOTIFICATION_CHANNEL_TYPE_DISCORD');
-  static const NotificationChannelType NOTIFICATION_CHANNEL_TYPE_WHATSAPP_BUSINESS = NotificationChannelType._(3, _omitEnumNames ? '' : 'NOTIFICATION_CHANNEL_TYPE_WHATSAPP_BUSINESS');
-  static const NotificationChannelType NOTIFICATION_CHANNEL_TYPE_SLACK = NotificationChannelType._(4, _omitEnumNames ? '' : 'NOTIFICATION_CHANNEL_TYPE_SLACK');
+  static const NotificationChannelType NOTIFICATION_CHANNEL_TYPE_UNSPECIFIED = NotificationChannelType._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_CHANNEL_TYPE_UNSPECIFIED');
+  static const NotificationChannelType NOTIFICATION_CHANNEL_TYPE_TELEGRAM = NotificationChannelType._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_CHANNEL_TYPE_TELEGRAM');
+  static const NotificationChannelType NOTIFICATION_CHANNEL_TYPE_DISCORD = NotificationChannelType._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_CHANNEL_TYPE_DISCORD');
+  static const NotificationChannelType NOTIFICATION_CHANNEL_TYPE_WHATSAPP_BUSINESS = NotificationChannelType._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_CHANNEL_TYPE_WHATSAPP_BUSINESS');
+  static const NotificationChannelType NOTIFICATION_CHANNEL_TYPE_SLACK = NotificationChannelType._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_CHANNEL_TYPE_SLACK');
 
   static const $core.List<NotificationChannelType> values = <NotificationChannelType> [
     NOTIFICATION_CHANNEL_TYPE_UNSPECIFIED,
@@ -117,14 +108,13 @@ class NotificationChannelType extends $pb.ProtobufEnum {
   const NotificationChannelType._($core.int v, $core.String n) : super(v, n);
 }
 
-/// Notification channel status
 class NotificationChannelStatus extends $pb.ProtobufEnum {
-  static const NotificationChannelStatus NOTIFICATION_CHANNEL_STATUS_UNSPECIFIED = NotificationChannelStatus._(0, _omitEnumNames ? '' : 'NOTIFICATION_CHANNEL_STATUS_UNSPECIFIED');
-  static const NotificationChannelStatus NOTIFICATION_CHANNEL_STATUS_PENDING = NotificationChannelStatus._(1, _omitEnumNames ? '' : 'NOTIFICATION_CHANNEL_STATUS_PENDING');
-  static const NotificationChannelStatus NOTIFICATION_CHANNEL_STATUS_ACTIVE = NotificationChannelStatus._(2, _omitEnumNames ? '' : 'NOTIFICATION_CHANNEL_STATUS_ACTIVE');
-  static const NotificationChannelStatus NOTIFICATION_CHANNEL_STATUS_PAUSED = NotificationChannelStatus._(3, _omitEnumNames ? '' : 'NOTIFICATION_CHANNEL_STATUS_PAUSED');
-  static const NotificationChannelStatus NOTIFICATION_CHANNEL_STATUS_ERROR = NotificationChannelStatus._(4, _omitEnumNames ? '' : 'NOTIFICATION_CHANNEL_STATUS_ERROR');
-  static const NotificationChannelStatus NOTIFICATION_CHANNEL_STATUS_DISCONNECTED = NotificationChannelStatus._(5, _omitEnumNames ? '' : 'NOTIFICATION_CHANNEL_STATUS_DISCONNECTED');
+  static const NotificationChannelStatus NOTIFICATION_CHANNEL_STATUS_UNSPECIFIED = NotificationChannelStatus._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_CHANNEL_STATUS_UNSPECIFIED');
+  static const NotificationChannelStatus NOTIFICATION_CHANNEL_STATUS_PENDING = NotificationChannelStatus._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_CHANNEL_STATUS_PENDING');
+  static const NotificationChannelStatus NOTIFICATION_CHANNEL_STATUS_ACTIVE = NotificationChannelStatus._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_CHANNEL_STATUS_ACTIVE');
+  static const NotificationChannelStatus NOTIFICATION_CHANNEL_STATUS_PAUSED = NotificationChannelStatus._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_CHANNEL_STATUS_PAUSED');
+  static const NotificationChannelStatus NOTIFICATION_CHANNEL_STATUS_ERROR = NotificationChannelStatus._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_CHANNEL_STATUS_ERROR');
+  static const NotificationChannelStatus NOTIFICATION_CHANNEL_STATUS_DISCONNECTED = NotificationChannelStatus._(5, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_CHANNEL_STATUS_DISCONNECTED');
 
   static const $core.List<NotificationChannelStatus> values = <NotificationChannelStatus> [
     NOTIFICATION_CHANNEL_STATUS_UNSPECIFIED,
@@ -141,18 +131,17 @@ class NotificationChannelStatus extends $pb.ProtobufEnum {
   const NotificationChannelStatus._($core.int v, $core.String n) : super(v, n);
 }
 
-/// Notification event types
 class NotificationEventType extends $pb.ProtobufEnum {
-  static const NotificationEventType NOTIFICATION_EVENT_TYPE_UNSPECIFIED = NotificationEventType._(0, _omitEnumNames ? '' : 'NOTIFICATION_EVENT_TYPE_UNSPECIFIED');
-  static const NotificationEventType NOTIFICATION_EVENT_TYPE_NEW_DONATION = NotificationEventType._(1, _omitEnumNames ? '' : 'NOTIFICATION_EVENT_TYPE_NEW_DONATION');
-  static const NotificationEventType NOTIFICATION_EVENT_TYPE_MILESTONE_REACHED = NotificationEventType._(2, _omitEnumNames ? '' : 'NOTIFICATION_EVENT_TYPE_MILESTONE_REACHED');
-  static const NotificationEventType NOTIFICATION_EVENT_TYPE_GOAL_REACHED = NotificationEventType._(3, _omitEnumNames ? '' : 'NOTIFICATION_EVENT_TYPE_GOAL_REACHED');
-  static const NotificationEventType NOTIFICATION_EVENT_TYPE_NEW_CONTRIBUTOR = NotificationEventType._(4, _omitEnumNames ? '' : 'NOTIFICATION_EVENT_TYPE_NEW_CONTRIBUTOR');
-  static const NotificationEventType NOTIFICATION_EVENT_TYPE_LARGE_DONATION = NotificationEventType._(5, _omitEnumNames ? '' : 'NOTIFICATION_EVENT_TYPE_LARGE_DONATION');
-  static const NotificationEventType NOTIFICATION_EVENT_TYPE_DAILY_SUMMARY = NotificationEventType._(6, _omitEnumNames ? '' : 'NOTIFICATION_EVENT_TYPE_DAILY_SUMMARY');
-  static const NotificationEventType NOTIFICATION_EVENT_TYPE_CAMPAIGN_ENDING = NotificationEventType._(7, _omitEnumNames ? '' : 'NOTIFICATION_EVENT_TYPE_CAMPAIGN_ENDING');
-  static const NotificationEventType NOTIFICATION_EVENT_TYPE_CAMPAIGN_ENDED = NotificationEventType._(8, _omitEnumNames ? '' : 'NOTIFICATION_EVENT_TYPE_CAMPAIGN_ENDED');
-  static const NotificationEventType NOTIFICATION_EVENT_TYPE_WITHDRAWAL = NotificationEventType._(9, _omitEnumNames ? '' : 'NOTIFICATION_EVENT_TYPE_WITHDRAWAL');
+  static const NotificationEventType NOTIFICATION_EVENT_TYPE_UNSPECIFIED = NotificationEventType._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_EVENT_TYPE_UNSPECIFIED');
+  static const NotificationEventType NOTIFICATION_EVENT_TYPE_NEW_DONATION = NotificationEventType._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_EVENT_TYPE_NEW_DONATION');
+  static const NotificationEventType NOTIFICATION_EVENT_TYPE_MILESTONE_REACHED = NotificationEventType._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_EVENT_TYPE_MILESTONE_REACHED');
+  static const NotificationEventType NOTIFICATION_EVENT_TYPE_GOAL_REACHED = NotificationEventType._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_EVENT_TYPE_GOAL_REACHED');
+  static const NotificationEventType NOTIFICATION_EVENT_TYPE_NEW_CONTRIBUTOR = NotificationEventType._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_EVENT_TYPE_NEW_CONTRIBUTOR');
+  static const NotificationEventType NOTIFICATION_EVENT_TYPE_LARGE_DONATION = NotificationEventType._(5, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_EVENT_TYPE_LARGE_DONATION');
+  static const NotificationEventType NOTIFICATION_EVENT_TYPE_DAILY_SUMMARY = NotificationEventType._(6, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_EVENT_TYPE_DAILY_SUMMARY');
+  static const NotificationEventType NOTIFICATION_EVENT_TYPE_CAMPAIGN_ENDING = NotificationEventType._(7, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_EVENT_TYPE_CAMPAIGN_ENDING');
+  static const NotificationEventType NOTIFICATION_EVENT_TYPE_CAMPAIGN_ENDED = NotificationEventType._(8, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_EVENT_TYPE_CAMPAIGN_ENDED');
+  static const NotificationEventType NOTIFICATION_EVENT_TYPE_WITHDRAWAL = NotificationEventType._(9, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NOTIFICATION_EVENT_TYPE_WITHDRAWAL');
 
   static const $core.List<NotificationEventType> values = <NotificationEventType> [
     NOTIFICATION_EVENT_TYPE_UNSPECIFIED,
@@ -174,12 +163,12 @@ class NotificationEventType extends $pb.ProtobufEnum {
 }
 
 class LeaderboardSortBy extends $pb.ProtobufEnum {
-  static const LeaderboardSortBy LEADERBOARD_SORT_UNSPECIFIED = LeaderboardSortBy._(0, _omitEnumNames ? '' : 'LEADERBOARD_SORT_UNSPECIFIED');
-  static const LeaderboardSortBy LEADERBOARD_SORT_MOST_FUNDED = LeaderboardSortBy._(1, _omitEnumNames ? '' : 'LEADERBOARD_SORT_MOST_FUNDED');
-  static const LeaderboardSortBy LEADERBOARD_SORT_MOST_DONORS = LeaderboardSortBy._(2, _omitEnumNames ? '' : 'LEADERBOARD_SORT_MOST_DONORS');
-  static const LeaderboardSortBy LEADERBOARD_SORT_TRENDING = LeaderboardSortBy._(3, _omitEnumNames ? '' : 'LEADERBOARD_SORT_TRENDING');
-  static const LeaderboardSortBy LEADERBOARD_SORT_NEARLY_COMPLETE = LeaderboardSortBy._(4, _omitEnumNames ? '' : 'LEADERBOARD_SORT_NEARLY_COMPLETE');
-  static const LeaderboardSortBy LEADERBOARD_SORT_NEWEST = LeaderboardSortBy._(5, _omitEnumNames ? '' : 'LEADERBOARD_SORT_NEWEST');
+  static const LeaderboardSortBy LEADERBOARD_SORT_UNSPECIFIED = LeaderboardSortBy._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'LEADERBOARD_SORT_UNSPECIFIED');
+  static const LeaderboardSortBy LEADERBOARD_SORT_MOST_FUNDED = LeaderboardSortBy._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'LEADERBOARD_SORT_MOST_FUNDED');
+  static const LeaderboardSortBy LEADERBOARD_SORT_MOST_DONORS = LeaderboardSortBy._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'LEADERBOARD_SORT_MOST_DONORS');
+  static const LeaderboardSortBy LEADERBOARD_SORT_TRENDING = LeaderboardSortBy._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'LEADERBOARD_SORT_TRENDING');
+  static const LeaderboardSortBy LEADERBOARD_SORT_NEARLY_COMPLETE = LeaderboardSortBy._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'LEADERBOARD_SORT_NEARLY_COMPLETE');
+  static const LeaderboardSortBy LEADERBOARD_SORT_NEWEST = LeaderboardSortBy._(5, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'LEADERBOARD_SORT_NEWEST');
 
   static const $core.List<LeaderboardSortBy> values = <LeaderboardSortBy> [
     LEADERBOARD_SORT_UNSPECIFIED,
@@ -196,5 +185,3 @@ class LeaderboardSortBy extends $pb.ProtobufEnum {
   const LeaderboardSortBy._($core.int v, $core.String n) : super(v, n);
 }
 
-
-const _omitEnumNames = $core.bool.fromEnvironment('protobuf.omit_enum_names');

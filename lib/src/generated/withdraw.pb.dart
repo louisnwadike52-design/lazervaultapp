@@ -1,13 +1,9 @@
-//
+///
 //  Generated code. Do not modify.
 //  source: withdraw.proto
 //
 // @dart = 2.12
-
-// ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
 
 import 'dart:core' as $core;
 
@@ -15,12 +11,29 @@ import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
 import 'google/protobuf/timestamp.pb.dart' as $1;
+
 import 'withdraw.pbenum.dart';
 
 export 'withdraw.pbenum.dart';
 
-/// Represents a withdrawal transaction record
 class WithdrawalTransaction extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'WithdrawalTransaction', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionId')
+    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceAccountId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetBankName')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetAccountNumber')
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetSortCode')
+    ..e<WithdrawalStatus>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: WithdrawalStatus.WITHDRAWAL_STATUS_UNSPECIFIED, valueOf: WithdrawalStatus.valueOf, enumValues: WithdrawalStatus.values)
+    ..aOM<$1.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failedAt', subBuilder: $1.Timestamp.create)
+    ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failureReason')
+    ..hasRequiredFields = false
+  ;
+
+  WithdrawalTransaction._() : super();
   factory WithdrawalTransaction({
     $core.String? transactionId,
     $fixnum.Int64? sourceAccountId,
@@ -35,65 +48,47 @@ class WithdrawalTransaction extends $pb.GeneratedMessage {
     $1.Timestamp? failedAt,
     $core.String? failureReason,
   }) {
-    final $result = create();
+    final _result = create();
     if (transactionId != null) {
-      $result.transactionId = transactionId;
+      _result.transactionId = transactionId;
     }
     if (sourceAccountId != null) {
-      $result.sourceAccountId = sourceAccountId;
+      _result.sourceAccountId = sourceAccountId;
     }
     if (amount != null) {
-      $result.amount = amount;
+      _result.amount = amount;
     }
     if (currency != null) {
-      $result.currency = currency;
+      _result.currency = currency;
     }
     if (targetBankName != null) {
-      $result.targetBankName = targetBankName;
+      _result.targetBankName = targetBankName;
     }
     if (targetAccountNumber != null) {
-      $result.targetAccountNumber = targetAccountNumber;
+      _result.targetAccountNumber = targetAccountNumber;
     }
     if (targetSortCode != null) {
-      $result.targetSortCode = targetSortCode;
+      _result.targetSortCode = targetSortCode;
     }
     if (status != null) {
-      $result.status = status;
+      _result.status = status;
     }
     if (createdAt != null) {
-      $result.createdAt = createdAt;
+      _result.createdAt = createdAt;
     }
     if (completedAt != null) {
-      $result.completedAt = completedAt;
+      _result.completedAt = completedAt;
     }
     if (failedAt != null) {
-      $result.failedAt = failedAt;
+      _result.failedAt = failedAt;
     }
     if (failureReason != null) {
-      $result.failureReason = failureReason;
+      _result.failureReason = failureReason;
     }
-    return $result;
+    return _result;
   }
-  WithdrawalTransaction._() : super();
   factory WithdrawalTransaction.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory WithdrawalTransaction.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'WithdrawalTransaction', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'transactionId')
-    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'sourceAccountId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(6, _omitFieldNames ? '' : 'currency')
-    ..aOS(7, _omitFieldNames ? '' : 'targetBankName')
-    ..aOS(8, _omitFieldNames ? '' : 'targetAccountNumber')
-    ..aOS(9, _omitFieldNames ? '' : 'targetSortCode')
-    ..e<WithdrawalStatus>(10, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: WithdrawalStatus.WITHDRAWAL_STATUS_UNSPECIFIED, valueOf: WithdrawalStatus.valueOf, enumValues: WithdrawalStatus.values)
-    ..aOM<$1.Timestamp>(11, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(12, _omitFieldNames ? '' : 'completedAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(13, _omitFieldNames ? '' : 'failedAt', subBuilder: $1.Timestamp.create)
-    ..aOS(14, _omitFieldNames ? '' : 'failureReason')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -103,10 +98,8 @@ class WithdrawalTransaction extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  WithdrawalTransaction copyWith(void Function(WithdrawalTransaction) updates) => super.copyWith((message) => updates(message as WithdrawalTransaction)) as WithdrawalTransaction;
-
+  WithdrawalTransaction copyWith(void Function(WithdrawalTransaction) updates) => super.copyWith((message) => updates(message as WithdrawalTransaction)) as WithdrawalTransaction; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static WithdrawalTransaction create() => WithdrawalTransaction._();
   WithdrawalTransaction createEmptyInstance() => create();
@@ -142,8 +135,6 @@ class WithdrawalTransaction extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   void clearAmount() => clearField(3);
 
-  /// uint64 fee = 4;                // Optional withdrawal fee - Changed to uint64
-  /// uint64 total_amount = 5;       // Amount + Fee deducted - Changed to uint64
   @$pb.TagNumber(6)
   $core.String get currency => $_getSZ(3);
   @$pb.TagNumber(6)
@@ -232,8 +223,18 @@ class WithdrawalTransaction extends $pb.GeneratedMessage {
   void clearFailureReason() => clearField(14);
 }
 
-/// Request to initiate a withdrawal
 class InitiateWithdrawalRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'InitiateWithdrawalRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceAccountId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetBankName')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetAccountNumber')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetSortCode')
+    ..hasRequiredFields = false
+  ;
+
+  InitiateWithdrawalRequest._() : super();
   factory InitiateWithdrawalRequest({
     $fixnum.Int64? sourceAccountId,
     $fixnum.Int64? amount,
@@ -242,41 +243,29 @@ class InitiateWithdrawalRequest extends $pb.GeneratedMessage {
     $core.String? targetAccountNumber,
     $core.String? targetSortCode,
   }) {
-    final $result = create();
+    final _result = create();
     if (sourceAccountId != null) {
-      $result.sourceAccountId = sourceAccountId;
+      _result.sourceAccountId = sourceAccountId;
     }
     if (amount != null) {
-      $result.amount = amount;
+      _result.amount = amount;
     }
     if (currency != null) {
-      $result.currency = currency;
+      _result.currency = currency;
     }
     if (targetBankName != null) {
-      $result.targetBankName = targetBankName;
+      _result.targetBankName = targetBankName;
     }
     if (targetAccountNumber != null) {
-      $result.targetAccountNumber = targetAccountNumber;
+      _result.targetAccountNumber = targetAccountNumber;
     }
     if (targetSortCode != null) {
-      $result.targetSortCode = targetSortCode;
+      _result.targetSortCode = targetSortCode;
     }
-    return $result;
+    return _result;
   }
-  InitiateWithdrawalRequest._() : super();
   factory InitiateWithdrawalRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory InitiateWithdrawalRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InitiateWithdrawalRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'sourceAccountId', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(3, _omitFieldNames ? '' : 'currency')
-    ..aOS(4, _omitFieldNames ? '' : 'targetBankName')
-    ..aOS(5, _omitFieldNames ? '' : 'targetAccountNumber')
-    ..aOS(6, _omitFieldNames ? '' : 'targetSortCode')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -286,10 +275,8 @@ class InitiateWithdrawalRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  InitiateWithdrawalRequest copyWith(void Function(InitiateWithdrawalRequest) updates) => super.copyWith((message) => updates(message as InitiateWithdrawalRequest)) as InitiateWithdrawalRequest;
-
+  InitiateWithdrawalRequest copyWith(void Function(InitiateWithdrawalRequest) updates) => super.copyWith((message) => updates(message as InitiateWithdrawalRequest)) as InitiateWithdrawalRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static InitiateWithdrawalRequest create() => InitiateWithdrawalRequest._();
   InitiateWithdrawalRequest createEmptyInstance() => create();
@@ -353,36 +340,34 @@ class InitiateWithdrawalRequest extends $pb.GeneratedMessage {
   void clearTargetSortCode() => clearField(6);
 }
 
-/// Response after initiating a withdrawal (Acknowledgement)
 class InitiateWithdrawalResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'InitiateWithdrawalResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'withdrawal_id')
+    ..e<WithdrawalStatus>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: WithdrawalStatus.WITHDRAWAL_STATUS_UNSPECIFIED, valueOf: WithdrawalStatus.valueOf, enumValues: WithdrawalStatus.values)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  InitiateWithdrawalResponse._() : super();
   factory InitiateWithdrawalResponse({
     $core.String? withdrawalId,
     WithdrawalStatus? status,
     $core.String? message,
   }) {
-    final $result = create();
+    final _result = create();
     if (withdrawalId != null) {
-      $result.withdrawalId = withdrawalId;
+      _result.withdrawalId = withdrawalId;
     }
     if (status != null) {
-      $result.status = status;
+      _result.status = status;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
-    return $result;
+    return _result;
   }
-  InitiateWithdrawalResponse._() : super();
   factory InitiateWithdrawalResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory InitiateWithdrawalResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InitiateWithdrawalResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'withdrawal_id')
-    ..e<WithdrawalStatus>(2, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: WithdrawalStatus.WITHDRAWAL_STATUS_UNSPECIFIED, valueOf: WithdrawalStatus.valueOf, enumValues: WithdrawalStatus.values)
-    ..aOS(3, _omitFieldNames ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -392,10 +377,8 @@ class InitiateWithdrawalResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  InitiateWithdrawalResponse copyWith(void Function(InitiateWithdrawalResponse) updates) => super.copyWith((message) => updates(message as InitiateWithdrawalResponse)) as InitiateWithdrawalResponse;
-
+  InitiateWithdrawalResponse copyWith(void Function(InitiateWithdrawalResponse) updates) => super.copyWith((message) => updates(message as InitiateWithdrawalResponse)) as InitiateWithdrawalResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static InitiateWithdrawalResponse create() => InitiateWithdrawalResponse._();
   InitiateWithdrawalResponse createEmptyInstance() => create();
@@ -432,26 +415,24 @@ class InitiateWithdrawalResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(3);
 }
 
-/// Request to get details of a specific withdrawal transaction
 class GetWithdrawalDetailsRequest extends $pb.GeneratedMessage {
-  factory GetWithdrawalDetailsRequest({
-    $core.String? withdrawalId,
-  }) {
-    final $result = create();
-    if (withdrawalId != null) {
-      $result.withdrawalId = withdrawalId;
-    }
-    return $result;
-  }
-  GetWithdrawalDetailsRequest._() : super();
-  factory GetWithdrawalDetailsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetWithdrawalDetailsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetWithdrawalDetailsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'withdrawal_id')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetWithdrawalDetailsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'withdrawal_id')
     ..hasRequiredFields = false
   ;
 
+  GetWithdrawalDetailsRequest._() : super();
+  factory GetWithdrawalDetailsRequest({
+    $core.String? withdrawalId,
+  }) {
+    final _result = create();
+    if (withdrawalId != null) {
+      _result.withdrawalId = withdrawalId;
+    }
+    return _result;
+  }
+  factory GetWithdrawalDetailsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetWithdrawalDetailsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -461,10 +442,8 @@ class GetWithdrawalDetailsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetWithdrawalDetailsRequest copyWith(void Function(GetWithdrawalDetailsRequest) updates) => super.copyWith((message) => updates(message as GetWithdrawalDetailsRequest)) as GetWithdrawalDetailsRequest;
-
+  GetWithdrawalDetailsRequest copyWith(void Function(GetWithdrawalDetailsRequest) updates) => super.copyWith((message) => updates(message as GetWithdrawalDetailsRequest)) as GetWithdrawalDetailsRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetWithdrawalDetailsRequest create() => GetWithdrawalDetailsRequest._();
   GetWithdrawalDetailsRequest createEmptyInstance() => create();
@@ -483,8 +462,26 @@ class GetWithdrawalDetailsRequest extends $pb.GeneratedMessage {
   void clearWithdrawalId() => clearField(1);
 }
 
-/// Response containing details of a specific withdrawal transaction
 class GetWithdrawalDetailsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetWithdrawalDetailsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'withdrawal_id')
+    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'source_account_id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'target_bank_name')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'target_account_number')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'target_sort_code')
+    ..e<WithdrawalStatus>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: WithdrawalStatus.WITHDRAWAL_STATUS_UNSPECIFIED, valueOf: WithdrawalStatus.valueOf, enumValues: WithdrawalStatus.values)
+    ..aOM<$1.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'created_at', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'processing_at', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completed_at', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failed_at', subBuilder: $1.Timestamp.create)
+    ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failure_reason')
+    ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'external_transaction_id')
+    ..hasRequiredFields = false
+  ;
+
+  GetWithdrawalDetailsResponse._() : super();
   factory GetWithdrawalDetailsResponse({
     $core.String? withdrawalId,
     $fixnum.Int64? sourceAccountId,
@@ -501,73 +498,53 @@ class GetWithdrawalDetailsResponse extends $pb.GeneratedMessage {
     $core.String? failureReason,
     $core.String? externalTransactionId,
   }) {
-    final $result = create();
+    final _result = create();
     if (withdrawalId != null) {
-      $result.withdrawalId = withdrawalId;
+      _result.withdrawalId = withdrawalId;
     }
     if (sourceAccountId != null) {
-      $result.sourceAccountId = sourceAccountId;
+      _result.sourceAccountId = sourceAccountId;
     }
     if (amount != null) {
-      $result.amount = amount;
+      _result.amount = amount;
     }
     if (currency != null) {
-      $result.currency = currency;
+      _result.currency = currency;
     }
     if (targetBankName != null) {
-      $result.targetBankName = targetBankName;
+      _result.targetBankName = targetBankName;
     }
     if (targetAccountNumber != null) {
-      $result.targetAccountNumber = targetAccountNumber;
+      _result.targetAccountNumber = targetAccountNumber;
     }
     if (targetSortCode != null) {
-      $result.targetSortCode = targetSortCode;
+      _result.targetSortCode = targetSortCode;
     }
     if (status != null) {
-      $result.status = status;
+      _result.status = status;
     }
     if (createdAt != null) {
-      $result.createdAt = createdAt;
+      _result.createdAt = createdAt;
     }
     if (processingAt != null) {
-      $result.processingAt = processingAt;
+      _result.processingAt = processingAt;
     }
     if (completedAt != null) {
-      $result.completedAt = completedAt;
+      _result.completedAt = completedAt;
     }
     if (failedAt != null) {
-      $result.failedAt = failedAt;
+      _result.failedAt = failedAt;
     }
     if (failureReason != null) {
-      $result.failureReason = failureReason;
+      _result.failureReason = failureReason;
     }
     if (externalTransactionId != null) {
-      $result.externalTransactionId = externalTransactionId;
+      _result.externalTransactionId = externalTransactionId;
     }
-    return $result;
+    return _result;
   }
-  GetWithdrawalDetailsResponse._() : super();
   factory GetWithdrawalDetailsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetWithdrawalDetailsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetWithdrawalDetailsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'withdrawal_id')
-    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'source_account_id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(4, _omitFieldNames ? '' : 'currency')
-    ..aOS(5, _omitFieldNames ? '' : 'target_bank_name')
-    ..aOS(6, _omitFieldNames ? '' : 'target_account_number')
-    ..aOS(7, _omitFieldNames ? '' : 'target_sort_code')
-    ..e<WithdrawalStatus>(8, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: WithdrawalStatus.WITHDRAWAL_STATUS_UNSPECIFIED, valueOf: WithdrawalStatus.valueOf, enumValues: WithdrawalStatus.values)
-    ..aOM<$1.Timestamp>(9, _omitFieldNames ? '' : 'created_at', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(10, _omitFieldNames ? '' : 'processing_at', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(11, _omitFieldNames ? '' : 'completed_at', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(12, _omitFieldNames ? '' : 'failed_at', subBuilder: $1.Timestamp.create)
-    ..aOS(13, _omitFieldNames ? '' : 'failure_reason')
-    ..aOS(14, _omitFieldNames ? '' : 'external_transaction_id')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -577,10 +554,8 @@ class GetWithdrawalDetailsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetWithdrawalDetailsResponse copyWith(void Function(GetWithdrawalDetailsResponse) updates) => super.copyWith((message) => updates(message as GetWithdrawalDetailsResponse)) as GetWithdrawalDetailsResponse;
-
+  GetWithdrawalDetailsResponse copyWith(void Function(GetWithdrawalDetailsResponse) updates) => super.copyWith((message) => updates(message as GetWithdrawalDetailsResponse)) as GetWithdrawalDetailsResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetWithdrawalDetailsResponse create() => GetWithdrawalDetailsResponse._();
   GetWithdrawalDetailsResponse createEmptyInstance() => create();
@@ -607,7 +582,6 @@ class GetWithdrawalDetailsResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   void clearSourceAccountId() => clearField(2);
 
-  /// Amount represented in the smallest currency unit (e.g., cents)
   @$pb.TagNumber(3)
   $fixnum.Int64 get amount => $_getI64(2);
   @$pb.TagNumber(3)
@@ -725,6 +699,3 @@ class GetWithdrawalDetailsResponse extends $pb.GeneratedMessage {
   void clearExternalTransactionId() => clearField(14);
 }
 
-
-const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
-const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');

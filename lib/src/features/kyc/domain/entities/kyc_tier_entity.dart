@@ -518,17 +518,34 @@ class DocumentSubmissionItem {
   });
 }
 
+/// BVN vs profile name reconciliation from auth-service (Mono confirm path)
+class BVNNameReconciliation {
+  final String nameAction;
+  final double nameMatchScore;
+  final String verifiedName;
+  final String profileName;
+
+  const BVNNameReconciliation({
+    required this.nameAction,
+    required this.nameMatchScore,
+    required this.verifiedName,
+    required this.profileName,
+  });
+}
+
 /// Result of confirming a verification session
 class ConfirmVerificationResult {
   final bool success;
   final KYCStatus status;
   final KYCTier currentTier;
   final String message;
+  final BVNNameReconciliation? bvnNameReconciliation;
 
   const ConfirmVerificationResult({
     required this.success,
     required this.status,
     required this.currentTier,
     required this.message,
+    this.bvnNameReconciliation,
   });
 }

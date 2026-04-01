@@ -1,5 +1,8 @@
 syntax = "proto3";
 
+// NOTE: Dart gRPC types are generated from microservices/payroll-service/proto/payroll.proto (canonical).
+// This file is a trimmed reference; keep field numbers/RPCs aligned when editing the service proto.
+
 package pb;
 option go_package = "lazervaultGo/pb";
 
@@ -176,7 +179,7 @@ message InventoryAdjustment {
   google.protobuf.Timestamp created_at = 10;
 }
 
-message CategorySummary {
+message InventoryCategorySummary {
   string category = 1;
   int32 item_count = 2;
   int64 total_value = 3;
@@ -551,5 +554,5 @@ message GetInventorySummaryResponse {
   int32 total_items = 3;
   int32 low_stock_items = 4;
   int64 total_inventory_value = 5;
-  repeated CategorySummary categories = 6;
+  repeated InventoryCategorySummary categories = 6;
 }

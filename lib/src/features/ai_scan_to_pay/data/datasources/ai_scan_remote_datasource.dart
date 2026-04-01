@@ -601,13 +601,13 @@ class AiScanRemoteDataSourceImpl implements AiScanRemoteDataSource {
 
   ScanStatus _mapProtoToScanStatus(pb.ScanStatus protoStatus) {
     switch (protoStatus) {
-      case pb.ScanStatus.PENDING:
+      case pb.ScanStatus.SCAN_STATUS_PENDING:
         return ScanStatus.pending;
-      case pb.ScanStatus.PROCESSING:
-        return ScanStatus.analyzing;  // Map PROCESSING to analyzing
-      case pb.ScanStatus.COMPLETED:
+      case pb.ScanStatus.SCAN_STATUS_PROCESSING:
+        return ScanStatus.analyzing; // Map PROCESSING to analyzing
+      case pb.ScanStatus.SCAN_STATUS_COMPLETED:
         return ScanStatus.completed;
-      case pb.ScanStatus.FAILED:
+      case pb.ScanStatus.SCAN_STATUS_FAILED:
         return ScanStatus.failed;
       default:
         return ScanStatus.pending;

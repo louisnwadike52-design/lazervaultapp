@@ -1,25 +1,38 @@
-//
+///
 //  Generated code. Do not modify.
 //  source: support.proto
 //
 // @dart = 2.12
-
-// ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
 
 import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
 import 'google/protobuf/timestamp.pb.dart' as $1;
+
 import 'support.pbenum.dart';
 
 export 'support.pbenum.dart';
 
-/// Messages
 class SupportTicket extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SupportTicket', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.O3)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'ticketNumber')
+    ..e<TicketCategory>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: TicketCategory.TICKET_CATEGORY_UNSPECIFIED, valueOf: TicketCategory.valueOf, enumValues: TicketCategory.values)
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'subject')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
+    ..e<TicketStatus>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: TicketStatus.TICKET_STATUS_UNSPECIFIED, valueOf: TicketStatus.valueOf, enumValues: TicketStatus.values)
+    ..e<TicketPriority>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'priority', $pb.PbFieldType.OE, defaultOrMaker: TicketPriority.TICKET_PRIORITY_UNSPECIFIED, valueOf: TicketPriority.valueOf, enumValues: TicketPriority.values)
+    ..aOM<$1.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'resolvedAt', subBuilder: $1.Timestamp.create)
+    ..pc<TicketReply>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'replies', $pb.PbFieldType.PM, subBuilder: TicketReply.create)
+    ..hasRequiredFields = false
+  ;
+
+  SupportTicket._() : super();
   factory SupportTicket({
     $core.String? id,
     $core.int? userId,
@@ -34,65 +47,47 @@ class SupportTicket extends $pb.GeneratedMessage {
     $1.Timestamp? resolvedAt,
     $core.Iterable<TicketReply>? replies,
   }) {
-    final $result = create();
+    final _result = create();
     if (id != null) {
-      $result.id = id;
+      _result.id = id;
     }
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (ticketNumber != null) {
-      $result.ticketNumber = ticketNumber;
+      _result.ticketNumber = ticketNumber;
     }
     if (category != null) {
-      $result.category = category;
+      _result.category = category;
     }
     if (subject != null) {
-      $result.subject = subject;
+      _result.subject = subject;
     }
     if (description != null) {
-      $result.description = description;
+      _result.description = description;
     }
     if (status != null) {
-      $result.status = status;
+      _result.status = status;
     }
     if (priority != null) {
-      $result.priority = priority;
+      _result.priority = priority;
     }
     if (createdAt != null) {
-      $result.createdAt = createdAt;
+      _result.createdAt = createdAt;
     }
     if (updatedAt != null) {
-      $result.updatedAt = updatedAt;
+      _result.updatedAt = updatedAt;
     }
     if (resolvedAt != null) {
-      $result.resolvedAt = resolvedAt;
+      _result.resolvedAt = resolvedAt;
     }
     if (replies != null) {
-      $result.replies.addAll(replies);
+      _result.replies.addAll(replies);
     }
-    return $result;
+    return _result;
   }
-  SupportTicket._() : super();
   factory SupportTicket.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SupportTicket.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SupportTicket', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.O3)
-    ..aOS(3, _omitFieldNames ? '' : 'ticketNumber')
-    ..e<TicketCategory>(4, _omitFieldNames ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: TicketCategory.TICKET_CATEGORY_UNSPECIFIED, valueOf: TicketCategory.valueOf, enumValues: TicketCategory.values)
-    ..aOS(5, _omitFieldNames ? '' : 'subject')
-    ..aOS(6, _omitFieldNames ? '' : 'description')
-    ..e<TicketStatus>(7, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: TicketStatus.TICKET_STATUS_UNSPECIFIED, valueOf: TicketStatus.valueOf, enumValues: TicketStatus.values)
-    ..e<TicketPriority>(8, _omitFieldNames ? '' : 'priority', $pb.PbFieldType.OE, defaultOrMaker: TicketPriority.TICKET_PRIORITY_UNSPECIFIED, valueOf: TicketPriority.valueOf, enumValues: TicketPriority.values)
-    ..aOM<$1.Timestamp>(9, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(10, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(11, _omitFieldNames ? '' : 'resolvedAt', subBuilder: $1.Timestamp.create)
-    ..pc<TicketReply>(12, _omitFieldNames ? '' : 'replies', $pb.PbFieldType.PM, subBuilder: TicketReply.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -102,10 +97,8 @@ class SupportTicket extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SupportTicket copyWith(void Function(SupportTicket) updates) => super.copyWith((message) => updates(message as SupportTicket)) as SupportTicket;
-
+  SupportTicket copyWith(void Function(SupportTicket) updates) => super.copyWith((message) => updates(message as SupportTicket)) as SupportTicket; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SupportTicket create() => SupportTicket._();
   SupportTicket createEmptyInstance() => create();
@@ -224,6 +217,17 @@ class SupportTicket extends $pb.GeneratedMessage {
 }
 
 class TicketReply extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'TicketReply', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'ticketId')
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.O3)
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isStaff')
+    ..aOM<$1.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
+  TicketReply._() : super();
   factory TicketReply({
     $core.String? id,
     $core.String? ticketId,
@@ -232,41 +236,29 @@ class TicketReply extends $pb.GeneratedMessage {
     $core.bool? isStaff,
     $1.Timestamp? createdAt,
   }) {
-    final $result = create();
+    final _result = create();
     if (id != null) {
-      $result.id = id;
+      _result.id = id;
     }
     if (ticketId != null) {
-      $result.ticketId = ticketId;
+      _result.ticketId = ticketId;
     }
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (isStaff != null) {
-      $result.isStaff = isStaff;
+      _result.isStaff = isStaff;
     }
     if (createdAt != null) {
-      $result.createdAt = createdAt;
+      _result.createdAt = createdAt;
     }
-    return $result;
+    return _result;
   }
-  TicketReply._() : super();
   factory TicketReply.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory TicketReply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'TicketReply', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..aOS(2, _omitFieldNames ? '' : 'ticketId')
-    ..a<$core.int>(3, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.O3)
-    ..aOS(4, _omitFieldNames ? '' : 'message')
-    ..aOB(5, _omitFieldNames ? '' : 'isStaff')
-    ..aOM<$1.Timestamp>(6, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -276,10 +268,8 @@ class TicketReply extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  TicketReply copyWith(void Function(TicketReply) updates) => super.copyWith((message) => updates(message as TicketReply)) as TicketReply;
-
+  TicketReply copyWith(void Function(TicketReply) updates) => super.copyWith((message) => updates(message as TicketReply)) as TicketReply; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static TicketReply create() => TicketReply._();
   TicketReply createEmptyInstance() => create();
@@ -346,6 +336,20 @@ class TicketReply extends $pb.GeneratedMessage {
 }
 
 class ContactMessage extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ContactMessage', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'topic')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'subject')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..a<$core.int>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.O3)
+    ..aOM<$1.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOB(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isRead')
+    ..hasRequiredFields = false
+  ;
+
+  ContactMessage._() : super();
   factory ContactMessage({
     $core.String? id,
     $core.String? name,
@@ -357,53 +361,38 @@ class ContactMessage extends $pb.GeneratedMessage {
     $1.Timestamp? createdAt,
     $core.bool? isRead,
   }) {
-    final $result = create();
+    final _result = create();
     if (id != null) {
-      $result.id = id;
+      _result.id = id;
     }
     if (name != null) {
-      $result.name = name;
+      _result.name = name;
     }
     if (email != null) {
-      $result.email = email;
+      _result.email = email;
     }
     if (topic != null) {
-      $result.topic = topic;
+      _result.topic = topic;
     }
     if (subject != null) {
-      $result.subject = subject;
+      _result.subject = subject;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (createdAt != null) {
-      $result.createdAt = createdAt;
+      _result.createdAt = createdAt;
     }
     if (isRead != null) {
-      $result.isRead = isRead;
+      _result.isRead = isRead;
     }
-    return $result;
+    return _result;
   }
-  ContactMessage._() : super();
   factory ContactMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ContactMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ContactMessage', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..aOS(2, _omitFieldNames ? '' : 'name')
-    ..aOS(3, _omitFieldNames ? '' : 'email')
-    ..aOS(4, _omitFieldNames ? '' : 'topic')
-    ..aOS(5, _omitFieldNames ? '' : 'subject')
-    ..aOS(6, _omitFieldNames ? '' : 'message')
-    ..a<$core.int>(7, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.O3)
-    ..aOM<$1.Timestamp>(8, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..aOB(9, _omitFieldNames ? '' : 'isRead')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -413,10 +402,8 @@ class ContactMessage extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ContactMessage copyWith(void Function(ContactMessage) updates) => super.copyWith((message) => updates(message as ContactMessage)) as ContactMessage;
-
+  ContactMessage copyWith(void Function(ContactMessage) updates) => super.copyWith((message) => updates(message as ContactMessage)) as ContactMessage; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ContactMessage create() => ContactMessage._();
   ContactMessage createEmptyInstance() => create();
@@ -509,36 +496,34 @@ class ContactMessage extends $pb.GeneratedMessage {
   void clearIsRead() => clearField(9);
 }
 
-/// Create Support Ticket
 class CreateSupportTicketRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateSupportTicketRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..e<TicketCategory>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: TicketCategory.TICKET_CATEGORY_UNSPECIFIED, valueOf: TicketCategory.valueOf, enumValues: TicketCategory.values)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'subject')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
+    ..hasRequiredFields = false
+  ;
+
+  CreateSupportTicketRequest._() : super();
   factory CreateSupportTicketRequest({
     TicketCategory? category,
     $core.String? subject,
     $core.String? description,
   }) {
-    final $result = create();
+    final _result = create();
     if (category != null) {
-      $result.category = category;
+      _result.category = category;
     }
     if (subject != null) {
-      $result.subject = subject;
+      _result.subject = subject;
     }
     if (description != null) {
-      $result.description = description;
+      _result.description = description;
     }
-    return $result;
+    return _result;
   }
-  CreateSupportTicketRequest._() : super();
   factory CreateSupportTicketRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateSupportTicketRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateSupportTicketRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..e<TicketCategory>(1, _omitFieldNames ? '' : 'category', $pb.PbFieldType.OE, defaultOrMaker: TicketCategory.TICKET_CATEGORY_UNSPECIFIED, valueOf: TicketCategory.valueOf, enumValues: TicketCategory.values)
-    ..aOS(2, _omitFieldNames ? '' : 'subject')
-    ..aOS(3, _omitFieldNames ? '' : 'description')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -548,10 +533,8 @@ class CreateSupportTicketRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateSupportTicketRequest copyWith(void Function(CreateSupportTicketRequest) updates) => super.copyWith((message) => updates(message as CreateSupportTicketRequest)) as CreateSupportTicketRequest;
-
+  CreateSupportTicketRequest copyWith(void Function(CreateSupportTicketRequest) updates) => super.copyWith((message) => updates(message as CreateSupportTicketRequest)) as CreateSupportTicketRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CreateSupportTicketRequest create() => CreateSupportTicketRequest._();
   CreateSupportTicketRequest createEmptyInstance() => create();
@@ -589,34 +572,33 @@ class CreateSupportTicketRequest extends $pb.GeneratedMessage {
 }
 
 class CreateSupportTicketResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateSupportTicketResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOM<SupportTicket>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'ticket', subBuilder: SupportTicket.create)
+    ..hasRequiredFields = false
+  ;
+
+  CreateSupportTicketResponse._() : super();
   factory CreateSupportTicketResponse({
     $core.bool? success,
     $core.String? message,
     SupportTicket? ticket,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (ticket != null) {
-      $result.ticket = ticket;
+      _result.ticket = ticket;
     }
-    return $result;
+    return _result;
   }
-  CreateSupportTicketResponse._() : super();
   factory CreateSupportTicketResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateSupportTicketResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateSupportTicketResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOM<SupportTicket>(3, _omitFieldNames ? '' : 'ticket', subBuilder: SupportTicket.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -626,10 +608,8 @@ class CreateSupportTicketResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateSupportTicketResponse copyWith(void Function(CreateSupportTicketResponse) updates) => super.copyWith((message) => updates(message as CreateSupportTicketResponse)) as CreateSupportTicketResponse;
-
+  CreateSupportTicketResponse copyWith(void Function(CreateSupportTicketResponse) updates) => super.copyWith((message) => updates(message as CreateSupportTicketResponse)) as CreateSupportTicketResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CreateSupportTicketResponse create() => CreateSupportTicketResponse._();
   CreateSupportTicketResponse createEmptyInstance() => create();
@@ -668,36 +648,34 @@ class CreateSupportTicketResponse extends $pb.GeneratedMessage {
   SupportTicket ensureTicket() => $_ensure(2);
 }
 
-/// Get Support Tickets
 class GetSupportTicketsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetSupportTicketsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..e<TicketStatus>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'statusFilter', $pb.PbFieldType.OE, defaultOrMaker: TicketStatus.TICKET_STATUS_UNSPECIFIED, valueOf: TicketStatus.valueOf, enumValues: TicketStatus.values)
+    ..hasRequiredFields = false
+  ;
+
+  GetSupportTicketsRequest._() : super();
   factory GetSupportTicketsRequest({
     $core.int? page,
     $core.int? pageSize,
     TicketStatus? statusFilter,
   }) {
-    final $result = create();
+    final _result = create();
     if (page != null) {
-      $result.page = page;
+      _result.page = page;
     }
     if (pageSize != null) {
-      $result.pageSize = pageSize;
+      _result.pageSize = pageSize;
     }
     if (statusFilter != null) {
-      $result.statusFilter = statusFilter;
+      _result.statusFilter = statusFilter;
     }
-    return $result;
+    return _result;
   }
-  GetSupportTicketsRequest._() : super();
   factory GetSupportTicketsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetSupportTicketsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSupportTicketsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..a<$core.int>(1, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
-    ..e<TicketStatus>(3, _omitFieldNames ? '' : 'statusFilter', $pb.PbFieldType.OE, defaultOrMaker: TicketStatus.TICKET_STATUS_UNSPECIFIED, valueOf: TicketStatus.valueOf, enumValues: TicketStatus.values)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -707,10 +685,8 @@ class GetSupportTicketsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetSupportTicketsRequest copyWith(void Function(GetSupportTicketsRequest) updates) => super.copyWith((message) => updates(message as GetSupportTicketsRequest)) as GetSupportTicketsRequest;
-
+  GetSupportTicketsRequest copyWith(void Function(GetSupportTicketsRequest) updates) => super.copyWith((message) => updates(message as GetSupportTicketsRequest)) as GetSupportTicketsRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetSupportTicketsRequest create() => GetSupportTicketsRequest._();
   GetSupportTicketsRequest createEmptyInstance() => create();
@@ -748,6 +724,17 @@ class GetSupportTicketsRequest extends $pb.GeneratedMessage {
 }
 
 class GetSupportTicketsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetSupportTicketsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..pc<SupportTicket>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'tickets', $pb.PbFieldType.PM, subBuilder: SupportTicket.create)
+    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalCount', $pb.PbFieldType.O3)
+    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  GetSupportTicketsResponse._() : super();
   factory GetSupportTicketsResponse({
     $core.bool? success,
     $core.String? message,
@@ -756,41 +743,29 @@ class GetSupportTicketsResponse extends $pb.GeneratedMessage {
     $core.int? page,
     $core.int? pageSize,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (tickets != null) {
-      $result.tickets.addAll(tickets);
+      _result.tickets.addAll(tickets);
     }
     if (totalCount != null) {
-      $result.totalCount = totalCount;
+      _result.totalCount = totalCount;
     }
     if (page != null) {
-      $result.page = page;
+      _result.page = page;
     }
     if (pageSize != null) {
-      $result.pageSize = pageSize;
+      _result.pageSize = pageSize;
     }
-    return $result;
+    return _result;
   }
-  GetSupportTicketsResponse._() : super();
   factory GetSupportTicketsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetSupportTicketsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSupportTicketsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..pc<SupportTicket>(3, _omitFieldNames ? '' : 'tickets', $pb.PbFieldType.PM, subBuilder: SupportTicket.create)
-    ..a<$core.int>(4, _omitFieldNames ? '' : 'totalCount', $pb.PbFieldType.O3)
-    ..a<$core.int>(5, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
-    ..a<$core.int>(6, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -800,10 +775,8 @@ class GetSupportTicketsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetSupportTicketsResponse copyWith(void Function(GetSupportTicketsResponse) updates) => super.copyWith((message) => updates(message as GetSupportTicketsResponse)) as GetSupportTicketsResponse;
-
+  GetSupportTicketsResponse copyWith(void Function(GetSupportTicketsResponse) updates) => super.copyWith((message) => updates(message as GetSupportTicketsResponse)) as GetSupportTicketsResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetSupportTicketsResponse create() => GetSupportTicketsResponse._();
   GetSupportTicketsResponse createEmptyInstance() => create();
@@ -861,26 +834,24 @@ class GetSupportTicketsResponse extends $pb.GeneratedMessage {
   void clearPageSize() => clearField(6);
 }
 
-/// Get Support Ticket
 class GetSupportTicketRequest extends $pb.GeneratedMessage {
-  factory GetSupportTicketRequest({
-    $core.String? ticketId,
-  }) {
-    final $result = create();
-    if (ticketId != null) {
-      $result.ticketId = ticketId;
-    }
-    return $result;
-  }
-  GetSupportTicketRequest._() : super();
-  factory GetSupportTicketRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetSupportTicketRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSupportTicketRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'ticketId')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetSupportTicketRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'ticketId')
     ..hasRequiredFields = false
   ;
 
+  GetSupportTicketRequest._() : super();
+  factory GetSupportTicketRequest({
+    $core.String? ticketId,
+  }) {
+    final _result = create();
+    if (ticketId != null) {
+      _result.ticketId = ticketId;
+    }
+    return _result;
+  }
+  factory GetSupportTicketRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetSupportTicketRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -890,10 +861,8 @@ class GetSupportTicketRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetSupportTicketRequest copyWith(void Function(GetSupportTicketRequest) updates) => super.copyWith((message) => updates(message as GetSupportTicketRequest)) as GetSupportTicketRequest;
-
+  GetSupportTicketRequest copyWith(void Function(GetSupportTicketRequest) updates) => super.copyWith((message) => updates(message as GetSupportTicketRequest)) as GetSupportTicketRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetSupportTicketRequest create() => GetSupportTicketRequest._();
   GetSupportTicketRequest createEmptyInstance() => create();
@@ -913,34 +882,33 @@ class GetSupportTicketRequest extends $pb.GeneratedMessage {
 }
 
 class GetSupportTicketResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetSupportTicketResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOM<SupportTicket>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'ticket', subBuilder: SupportTicket.create)
+    ..hasRequiredFields = false
+  ;
+
+  GetSupportTicketResponse._() : super();
   factory GetSupportTicketResponse({
     $core.bool? success,
     $core.String? message,
     SupportTicket? ticket,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (ticket != null) {
-      $result.ticket = ticket;
+      _result.ticket = ticket;
     }
-    return $result;
+    return _result;
   }
-  GetSupportTicketResponse._() : super();
   factory GetSupportTicketResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetSupportTicketResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSupportTicketResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOM<SupportTicket>(3, _omitFieldNames ? '' : 'ticket', subBuilder: SupportTicket.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -950,10 +918,8 @@ class GetSupportTicketResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetSupportTicketResponse copyWith(void Function(GetSupportTicketResponse) updates) => super.copyWith((message) => updates(message as GetSupportTicketResponse)) as GetSupportTicketResponse;
-
+  GetSupportTicketResponse copyWith(void Function(GetSupportTicketResponse) updates) => super.copyWith((message) => updates(message as GetSupportTicketResponse)) as GetSupportTicketResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetSupportTicketResponse create() => GetSupportTicketResponse._();
   GetSupportTicketResponse createEmptyInstance() => create();
@@ -992,36 +958,34 @@ class GetSupportTicketResponse extends $pb.GeneratedMessage {
   SupportTicket ensureTicket() => $_ensure(2);
 }
 
-/// Update Ticket Status
 class UpdateTicketStatusRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateTicketStatusRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'ticketId')
+    ..e<TicketStatus>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: TicketStatus.TICKET_STATUS_UNSPECIFIED, valueOf: TicketStatus.valueOf, enumValues: TicketStatus.values)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'resolutionNote')
+    ..hasRequiredFields = false
+  ;
+
+  UpdateTicketStatusRequest._() : super();
   factory UpdateTicketStatusRequest({
     $core.String? ticketId,
     TicketStatus? status,
     $core.String? resolutionNote,
   }) {
-    final $result = create();
+    final _result = create();
     if (ticketId != null) {
-      $result.ticketId = ticketId;
+      _result.ticketId = ticketId;
     }
     if (status != null) {
-      $result.status = status;
+      _result.status = status;
     }
     if (resolutionNote != null) {
-      $result.resolutionNote = resolutionNote;
+      _result.resolutionNote = resolutionNote;
     }
-    return $result;
+    return _result;
   }
-  UpdateTicketStatusRequest._() : super();
   factory UpdateTicketStatusRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UpdateTicketStatusRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateTicketStatusRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'ticketId')
-    ..e<TicketStatus>(2, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: TicketStatus.TICKET_STATUS_UNSPECIFIED, valueOf: TicketStatus.valueOf, enumValues: TicketStatus.values)
-    ..aOS(3, _omitFieldNames ? '' : 'resolutionNote')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1031,10 +995,8 @@ class UpdateTicketStatusRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UpdateTicketStatusRequest copyWith(void Function(UpdateTicketStatusRequest) updates) => super.copyWith((message) => updates(message as UpdateTicketStatusRequest)) as UpdateTicketStatusRequest;
-
+  UpdateTicketStatusRequest copyWith(void Function(UpdateTicketStatusRequest) updates) => super.copyWith((message) => updates(message as UpdateTicketStatusRequest)) as UpdateTicketStatusRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static UpdateTicketStatusRequest create() => UpdateTicketStatusRequest._();
   UpdateTicketStatusRequest createEmptyInstance() => create();
@@ -1072,34 +1034,33 @@ class UpdateTicketStatusRequest extends $pb.GeneratedMessage {
 }
 
 class UpdateTicketStatusResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateTicketStatusResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOM<SupportTicket>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'ticket', subBuilder: SupportTicket.create)
+    ..hasRequiredFields = false
+  ;
+
+  UpdateTicketStatusResponse._() : super();
   factory UpdateTicketStatusResponse({
     $core.bool? success,
     $core.String? message,
     SupportTicket? ticket,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (ticket != null) {
-      $result.ticket = ticket;
+      _result.ticket = ticket;
     }
-    return $result;
+    return _result;
   }
-  UpdateTicketStatusResponse._() : super();
   factory UpdateTicketStatusResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UpdateTicketStatusResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateTicketStatusResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOM<SupportTicket>(3, _omitFieldNames ? '' : 'ticket', subBuilder: SupportTicket.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1109,10 +1070,8 @@ class UpdateTicketStatusResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UpdateTicketStatusResponse copyWith(void Function(UpdateTicketStatusResponse) updates) => super.copyWith((message) => updates(message as UpdateTicketStatusResponse)) as UpdateTicketStatusResponse;
-
+  UpdateTicketStatusResponse copyWith(void Function(UpdateTicketStatusResponse) updates) => super.copyWith((message) => updates(message as UpdateTicketStatusResponse)) as UpdateTicketStatusResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static UpdateTicketStatusResponse create() => UpdateTicketStatusResponse._();
   UpdateTicketStatusResponse createEmptyInstance() => create();
@@ -1151,31 +1110,29 @@ class UpdateTicketStatusResponse extends $pb.GeneratedMessage {
   SupportTicket ensureTicket() => $_ensure(2);
 }
 
-/// Add Ticket Reply
 class AddTicketReplyRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AddTicketReplyRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'ticketId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  AddTicketReplyRequest._() : super();
   factory AddTicketReplyRequest({
     $core.String? ticketId,
     $core.String? message,
   }) {
-    final $result = create();
+    final _result = create();
     if (ticketId != null) {
-      $result.ticketId = ticketId;
+      _result.ticketId = ticketId;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
-    return $result;
+    return _result;
   }
-  AddTicketReplyRequest._() : super();
   factory AddTicketReplyRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory AddTicketReplyRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AddTicketReplyRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'ticketId')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1185,10 +1142,8 @@ class AddTicketReplyRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  AddTicketReplyRequest copyWith(void Function(AddTicketReplyRequest) updates) => super.copyWith((message) => updates(message as AddTicketReplyRequest)) as AddTicketReplyRequest;
-
+  AddTicketReplyRequest copyWith(void Function(AddTicketReplyRequest) updates) => super.copyWith((message) => updates(message as AddTicketReplyRequest)) as AddTicketReplyRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static AddTicketReplyRequest create() => AddTicketReplyRequest._();
   AddTicketReplyRequest createEmptyInstance() => create();
@@ -1217,34 +1172,33 @@ class AddTicketReplyRequest extends $pb.GeneratedMessage {
 }
 
 class AddTicketReplyResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AddTicketReplyResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOM<TicketReply>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reply', subBuilder: TicketReply.create)
+    ..hasRequiredFields = false
+  ;
+
+  AddTicketReplyResponse._() : super();
   factory AddTicketReplyResponse({
     $core.bool? success,
     $core.String? message,
     TicketReply? reply,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (reply != null) {
-      $result.reply = reply;
+      _result.reply = reply;
     }
-    return $result;
+    return _result;
   }
-  AddTicketReplyResponse._() : super();
   factory AddTicketReplyResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory AddTicketReplyResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AddTicketReplyResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOM<TicketReply>(3, _omitFieldNames ? '' : 'reply', subBuilder: TicketReply.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1254,10 +1208,8 @@ class AddTicketReplyResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  AddTicketReplyResponse copyWith(void Function(AddTicketReplyResponse) updates) => super.copyWith((message) => updates(message as AddTicketReplyResponse)) as AddTicketReplyResponse;
-
+  AddTicketReplyResponse copyWith(void Function(AddTicketReplyResponse) updates) => super.copyWith((message) => updates(message as AddTicketReplyResponse)) as AddTicketReplyResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static AddTicketReplyResponse create() => AddTicketReplyResponse._();
   AddTicketReplyResponse createEmptyInstance() => create();
@@ -1296,8 +1248,17 @@ class AddTicketReplyResponse extends $pb.GeneratedMessage {
   TicketReply ensureReply() => $_ensure(2);
 }
 
-/// Submit Contact Form
 class SubmitContactFormRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SubmitContactFormRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'topic')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'subject')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  SubmitContactFormRequest._() : super();
   factory SubmitContactFormRequest({
     $core.String? name,
     $core.String? email,
@@ -1305,37 +1266,26 @@ class SubmitContactFormRequest extends $pb.GeneratedMessage {
     $core.String? subject,
     $core.String? message,
   }) {
-    final $result = create();
+    final _result = create();
     if (name != null) {
-      $result.name = name;
+      _result.name = name;
     }
     if (email != null) {
-      $result.email = email;
+      _result.email = email;
     }
     if (topic != null) {
-      $result.topic = topic;
+      _result.topic = topic;
     }
     if (subject != null) {
-      $result.subject = subject;
+      _result.subject = subject;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
-    return $result;
+    return _result;
   }
-  SubmitContactFormRequest._() : super();
   factory SubmitContactFormRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SubmitContactFormRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SubmitContactFormRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'name')
-    ..aOS(2, _omitFieldNames ? '' : 'email')
-    ..aOS(3, _omitFieldNames ? '' : 'topic')
-    ..aOS(4, _omitFieldNames ? '' : 'subject')
-    ..aOS(5, _omitFieldNames ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1345,10 +1295,8 @@ class SubmitContactFormRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SubmitContactFormRequest copyWith(void Function(SubmitContactFormRequest) updates) => super.copyWith((message) => updates(message as SubmitContactFormRequest)) as SubmitContactFormRequest;
-
+  SubmitContactFormRequest copyWith(void Function(SubmitContactFormRequest) updates) => super.copyWith((message) => updates(message as SubmitContactFormRequest)) as SubmitContactFormRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SubmitContactFormRequest create() => SubmitContactFormRequest._();
   SubmitContactFormRequest createEmptyInstance() => create();
@@ -1404,34 +1352,33 @@ class SubmitContactFormRequest extends $pb.GeneratedMessage {
 }
 
 class SubmitContactFormResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SubmitContactFormResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOM<ContactMessage>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'contactMessage', subBuilder: ContactMessage.create)
+    ..hasRequiredFields = false
+  ;
+
+  SubmitContactFormResponse._() : super();
   factory SubmitContactFormResponse({
     $core.bool? success,
     $core.String? message,
     ContactMessage? contactMessage,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (contactMessage != null) {
-      $result.contactMessage = contactMessage;
+      _result.contactMessage = contactMessage;
     }
-    return $result;
+    return _result;
   }
-  SubmitContactFormResponse._() : super();
   factory SubmitContactFormResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SubmitContactFormResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SubmitContactFormResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOM<ContactMessage>(3, _omitFieldNames ? '' : 'contactMessage', subBuilder: ContactMessage.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1441,10 +1388,8 @@ class SubmitContactFormResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SubmitContactFormResponse copyWith(void Function(SubmitContactFormResponse) updates) => super.copyWith((message) => updates(message as SubmitContactFormResponse)) as SubmitContactFormResponse;
-
+  SubmitContactFormResponse copyWith(void Function(SubmitContactFormResponse) updates) => super.copyWith((message) => updates(message as SubmitContactFormResponse)) as SubmitContactFormResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SubmitContactFormResponse create() => SubmitContactFormResponse._();
   SubmitContactFormResponse createEmptyInstance() => create();
@@ -1483,6 +1428,3 @@ class SubmitContactFormResponse extends $pb.GeneratedMessage {
   ContactMessage ensureContactMessage() => $_ensure(2);
 }
 
-
-const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
-const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');

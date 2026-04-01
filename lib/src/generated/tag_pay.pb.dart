@@ -1,25 +1,34 @@
-//
+///
 //  Generated code. Do not modify.
 //  source: tag_pay.proto
 //
 // @dart = 2.12
-
-// ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
 
 import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
 import 'google/protobuf/timestamp.pb.dart' as $1;
+
 import 'tag_pay.pbenum.dart';
 
 export 'tag_pay.pbenum.dart';
 
-/// Tag Pay Entity
 class TagPay extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'TagPay', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'tag_pay'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'tagPay')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'displayName')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'avatarUrl')
+    ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isActive')
+    ..aOM<$1.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
+  TagPay._() : super();
   factory TagPay({
     $core.String? id,
     $core.String? userId,
@@ -30,49 +39,35 @@ class TagPay extends $pb.GeneratedMessage {
     $1.Timestamp? createdAt,
     $1.Timestamp? updatedAt,
   }) {
-    final $result = create();
+    final _result = create();
     if (id != null) {
-      $result.id = id;
+      _result.id = id;
     }
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (tagPay != null) {
-      $result.tagPay = tagPay;
+      _result.tagPay = tagPay;
     }
     if (displayName != null) {
-      $result.displayName = displayName;
+      _result.displayName = displayName;
     }
     if (avatarUrl != null) {
-      $result.avatarUrl = avatarUrl;
+      _result.avatarUrl = avatarUrl;
     }
     if (isActive != null) {
-      $result.isActive = isActive;
+      _result.isActive = isActive;
     }
     if (createdAt != null) {
-      $result.createdAt = createdAt;
+      _result.createdAt = createdAt;
     }
     if (updatedAt != null) {
-      $result.updatedAt = updatedAt;
+      _result.updatedAt = updatedAt;
     }
-    return $result;
+    return _result;
   }
-  TagPay._() : super();
   factory TagPay.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory TagPay.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'TagPay', package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..aOS(2, _omitFieldNames ? '' : 'userId')
-    ..aOS(3, _omitFieldNames ? '' : 'tagPay')
-    ..aOS(4, _omitFieldNames ? '' : 'displayName')
-    ..aOS(5, _omitFieldNames ? '' : 'avatarUrl')
-    ..aOB(6, _omitFieldNames ? '' : 'isActive')
-    ..aOM<$1.Timestamp>(7, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(8, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -82,10 +77,8 @@ class TagPay extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  TagPay copyWith(void Function(TagPay) updates) => super.copyWith((message) => updates(message as TagPay)) as TagPay;
-
+  TagPay copyWith(void Function(TagPay) updates) => super.copyWith((message) => updates(message as TagPay)) as TagPay; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static TagPay create() => TagPay._();
   TagPay createEmptyInstance() => create();
@@ -171,8 +164,27 @@ class TagPay extends $pb.GeneratedMessage {
   $1.Timestamp ensureUpdatedAt() => $_ensure(7);
 }
 
-/// Tag Pay Transaction
 class TagPayTransaction extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'TagPayTransaction', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'tag_pay'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'senderId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'senderTagPay')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'senderName')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receiverId')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receiverTagPay')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receiverName')
+    ..a<$core.double>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
+    ..e<TagPayTransactionStatus>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: TagPayTransactionStatus.TAG_PAY_TRANSACTION_STATUS_PENDING, valueOf: TagPayTransactionStatus.valueOf, enumValues: TagPayTransactionStatus.values)
+    ..e<TagPayTransactionType>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'type', $pb.PbFieldType.OE, defaultOrMaker: TagPayTransactionType.TAG_PAY_TRANSACTION_TYPE_SEND, valueOf: TagPayTransactionType.valueOf, enumValues: TagPayTransactionType.values)
+    ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'referenceNumber')
+    ..aOM<$1.Timestamp>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completedAt', subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
+  TagPayTransaction._() : super();
   factory TagPayTransaction({
     $core.String? id,
     $core.String? senderId,
@@ -190,77 +202,56 @@ class TagPayTransaction extends $pb.GeneratedMessage {
     $1.Timestamp? createdAt,
     $1.Timestamp? completedAt,
   }) {
-    final $result = create();
+    final _result = create();
     if (id != null) {
-      $result.id = id;
+      _result.id = id;
     }
     if (senderId != null) {
-      $result.senderId = senderId;
+      _result.senderId = senderId;
     }
     if (senderTagPay != null) {
-      $result.senderTagPay = senderTagPay;
+      _result.senderTagPay = senderTagPay;
     }
     if (senderName != null) {
-      $result.senderName = senderName;
+      _result.senderName = senderName;
     }
     if (receiverId != null) {
-      $result.receiverId = receiverId;
+      _result.receiverId = receiverId;
     }
     if (receiverTagPay != null) {
-      $result.receiverTagPay = receiverTagPay;
+      _result.receiverTagPay = receiverTagPay;
     }
     if (receiverName != null) {
-      $result.receiverName = receiverName;
+      _result.receiverName = receiverName;
     }
     if (amount != null) {
-      $result.amount = amount;
+      _result.amount = amount;
     }
     if (currency != null) {
-      $result.currency = currency;
+      _result.currency = currency;
     }
     if (description != null) {
-      $result.description = description;
+      _result.description = description;
     }
     if (status != null) {
-      $result.status = status;
+      _result.status = status;
     }
     if (type != null) {
-      $result.type = type;
+      _result.type = type;
     }
     if (referenceNumber != null) {
-      $result.referenceNumber = referenceNumber;
+      _result.referenceNumber = referenceNumber;
     }
     if (createdAt != null) {
-      $result.createdAt = createdAt;
+      _result.createdAt = createdAt;
     }
     if (completedAt != null) {
-      $result.completedAt = completedAt;
+      _result.completedAt = completedAt;
     }
-    return $result;
+    return _result;
   }
-  TagPayTransaction._() : super();
   factory TagPayTransaction.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory TagPayTransaction.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'TagPayTransaction', package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..aOS(2, _omitFieldNames ? '' : 'senderId')
-    ..aOS(3, _omitFieldNames ? '' : 'senderTagPay')
-    ..aOS(4, _omitFieldNames ? '' : 'senderName')
-    ..aOS(5, _omitFieldNames ? '' : 'receiverId')
-    ..aOS(6, _omitFieldNames ? '' : 'receiverTagPay')
-    ..aOS(7, _omitFieldNames ? '' : 'receiverName')
-    ..a<$core.double>(8, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(9, _omitFieldNames ? '' : 'currency')
-    ..aOS(10, _omitFieldNames ? '' : 'description')
-    ..e<TagPayTransactionStatus>(11, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: TagPayTransactionStatus.TAG_PAY_TRANSACTION_STATUS_PENDING, valueOf: TagPayTransactionStatus.valueOf, enumValues: TagPayTransactionStatus.values)
-    ..e<TagPayTransactionType>(12, _omitFieldNames ? '' : 'type', $pb.PbFieldType.OE, defaultOrMaker: TagPayTransactionType.TAG_PAY_TRANSACTION_TYPE_SEND, valueOf: TagPayTransactionType.valueOf, enumValues: TagPayTransactionType.values)
-    ..aOS(13, _omitFieldNames ? '' : 'referenceNumber')
-    ..aOM<$1.Timestamp>(14, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(15, _omitFieldNames ? '' : 'completedAt', subBuilder: $1.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -270,10 +261,8 @@ class TagPayTransaction extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  TagPayTransaction copyWith(void Function(TagPayTransaction) updates) => super.copyWith((message) => updates(message as TagPayTransaction)) as TagPayTransaction;
-
+  TagPayTransaction copyWith(void Function(TagPayTransaction) updates) => super.copyWith((message) => updates(message as TagPayTransaction)) as TagPayTransaction; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static TagPayTransaction create() => TagPayTransaction._();
   TagPayTransaction createEmptyInstance() => create();
@@ -422,8 +411,26 @@ class TagPayTransaction extends $pb.GeneratedMessage {
   $1.Timestamp ensureCompletedAt() => $_ensure(14);
 }
 
-/// Money Request Entity
 class MoneyRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'MoneyRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'tag_pay'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'requesterId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'requesterTagPay')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'requesterName')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'requesteeId')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'requesteeTagPay')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'requesteeName')
+    ..a<$core.double>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
+    ..e<MoneyRequestStatus>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: MoneyRequestStatus.MONEY_REQUEST_STATUS_PENDING, valueOf: MoneyRequestStatus.valueOf, enumValues: MoneyRequestStatus.values)
+    ..aOM<$1.Timestamp>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'respondedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt', subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
+  MoneyRequest._() : super();
   factory MoneyRequest({
     $core.String? id,
     $core.String? requesterId,
@@ -440,73 +447,53 @@ class MoneyRequest extends $pb.GeneratedMessage {
     $1.Timestamp? respondedAt,
     $1.Timestamp? expiresAt,
   }) {
-    final $result = create();
+    final _result = create();
     if (id != null) {
-      $result.id = id;
+      _result.id = id;
     }
     if (requesterId != null) {
-      $result.requesterId = requesterId;
+      _result.requesterId = requesterId;
     }
     if (requesterTagPay != null) {
-      $result.requesterTagPay = requesterTagPay;
+      _result.requesterTagPay = requesterTagPay;
     }
     if (requesterName != null) {
-      $result.requesterName = requesterName;
+      _result.requesterName = requesterName;
     }
     if (requesteeId != null) {
-      $result.requesteeId = requesteeId;
+      _result.requesteeId = requesteeId;
     }
     if (requesteeTagPay != null) {
-      $result.requesteeTagPay = requesteeTagPay;
+      _result.requesteeTagPay = requesteeTagPay;
     }
     if (requesteeName != null) {
-      $result.requesteeName = requesteeName;
+      _result.requesteeName = requesteeName;
     }
     if (amount != null) {
-      $result.amount = amount;
+      _result.amount = amount;
     }
     if (currency != null) {
-      $result.currency = currency;
+      _result.currency = currency;
     }
     if (description != null) {
-      $result.description = description;
+      _result.description = description;
     }
     if (status != null) {
-      $result.status = status;
+      _result.status = status;
     }
     if (createdAt != null) {
-      $result.createdAt = createdAt;
+      _result.createdAt = createdAt;
     }
     if (respondedAt != null) {
-      $result.respondedAt = respondedAt;
+      _result.respondedAt = respondedAt;
     }
     if (expiresAt != null) {
-      $result.expiresAt = expiresAt;
+      _result.expiresAt = expiresAt;
     }
-    return $result;
+    return _result;
   }
-  MoneyRequest._() : super();
   factory MoneyRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory MoneyRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'MoneyRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..aOS(2, _omitFieldNames ? '' : 'requesterId')
-    ..aOS(3, _omitFieldNames ? '' : 'requesterTagPay')
-    ..aOS(4, _omitFieldNames ? '' : 'requesterName')
-    ..aOS(5, _omitFieldNames ? '' : 'requesteeId')
-    ..aOS(6, _omitFieldNames ? '' : 'requesteeTagPay')
-    ..aOS(7, _omitFieldNames ? '' : 'requesteeName')
-    ..a<$core.double>(8, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(9, _omitFieldNames ? '' : 'currency')
-    ..aOS(10, _omitFieldNames ? '' : 'description')
-    ..e<MoneyRequestStatus>(11, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: MoneyRequestStatus.MONEY_REQUEST_STATUS_PENDING, valueOf: MoneyRequestStatus.valueOf, enumValues: MoneyRequestStatus.values)
-    ..aOM<$1.Timestamp>(12, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(13, _omitFieldNames ? '' : 'respondedAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(14, _omitFieldNames ? '' : 'expiresAt', subBuilder: $1.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -516,10 +503,8 @@ class MoneyRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  MoneyRequest copyWith(void Function(MoneyRequest) updates) => super.copyWith((message) => updates(message as MoneyRequest)) as MoneyRequest;
-
+  MoneyRequest copyWith(void Function(MoneyRequest) updates) => super.copyWith((message) => updates(message as MoneyRequest)) as MoneyRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static MoneyRequest create() => MoneyRequest._();
   MoneyRequest createEmptyInstance() => create();
@@ -661,8 +646,25 @@ class MoneyRequest extends $pb.GeneratedMessage {
   $1.Timestamp ensureExpiresAt() => $_ensure(13);
 }
 
-/// User Tag Entity
 class UserTag extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UserTag', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'tag_pay'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'taggerId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'taggerTagPay')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'taggerName')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'taggedUserId')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'taggedUserTagPay')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'taggedUserName')
+    ..a<$core.double>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
+    ..e<TagStatus>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: TagStatus.TAG_STATUS_PENDING, valueOf: TagStatus.valueOf, enumValues: TagStatus.values)
+    ..aOM<$1.Timestamp>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paidAt', subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
+  UserTag._() : super();
   factory UserTag({
     $core.String? id,
     $core.String? taggerId,
@@ -678,69 +680,50 @@ class UserTag extends $pb.GeneratedMessage {
     $1.Timestamp? createdAt,
     $1.Timestamp? paidAt,
   }) {
-    final $result = create();
+    final _result = create();
     if (id != null) {
-      $result.id = id;
+      _result.id = id;
     }
     if (taggerId != null) {
-      $result.taggerId = taggerId;
+      _result.taggerId = taggerId;
     }
     if (taggerTagPay != null) {
-      $result.taggerTagPay = taggerTagPay;
+      _result.taggerTagPay = taggerTagPay;
     }
     if (taggerName != null) {
-      $result.taggerName = taggerName;
+      _result.taggerName = taggerName;
     }
     if (taggedUserId != null) {
-      $result.taggedUserId = taggedUserId;
+      _result.taggedUserId = taggedUserId;
     }
     if (taggedUserTagPay != null) {
-      $result.taggedUserTagPay = taggedUserTagPay;
+      _result.taggedUserTagPay = taggedUserTagPay;
     }
     if (taggedUserName != null) {
-      $result.taggedUserName = taggedUserName;
+      _result.taggedUserName = taggedUserName;
     }
     if (amount != null) {
-      $result.amount = amount;
+      _result.amount = amount;
     }
     if (currency != null) {
-      $result.currency = currency;
+      _result.currency = currency;
     }
     if (description != null) {
-      $result.description = description;
+      _result.description = description;
     }
     if (status != null) {
-      $result.status = status;
+      _result.status = status;
     }
     if (createdAt != null) {
-      $result.createdAt = createdAt;
+      _result.createdAt = createdAt;
     }
     if (paidAt != null) {
-      $result.paidAt = paidAt;
+      _result.paidAt = paidAt;
     }
-    return $result;
+    return _result;
   }
-  UserTag._() : super();
   factory UserTag.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UserTag.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UserTag', package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..aOS(2, _omitFieldNames ? '' : 'taggerId')
-    ..aOS(3, _omitFieldNames ? '' : 'taggerTagPay')
-    ..aOS(4, _omitFieldNames ? '' : 'taggerName')
-    ..aOS(5, _omitFieldNames ? '' : 'taggedUserId')
-    ..aOS(6, _omitFieldNames ? '' : 'taggedUserTagPay')
-    ..aOS(7, _omitFieldNames ? '' : 'taggedUserName')
-    ..a<$core.double>(8, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(9, _omitFieldNames ? '' : 'currency')
-    ..aOS(10, _omitFieldNames ? '' : 'description')
-    ..e<TagStatus>(11, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: TagStatus.TAG_STATUS_PENDING, valueOf: TagStatus.valueOf, enumValues: TagStatus.values)
-    ..aOM<$1.Timestamp>(12, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(13, _omitFieldNames ? '' : 'paidAt', subBuilder: $1.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -750,10 +733,8 @@ class UserTag extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UserTag copyWith(void Function(UserTag) updates) => super.copyWith((message) => updates(message as UserTag)) as UserTag;
-
+  UserTag copyWith(void Function(UserTag) updates) => super.copyWith((message) => updates(message as UserTag)) as UserTag; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static UserTag create() => UserTag._();
   UserTag createEmptyInstance() => create();
@@ -884,36 +865,34 @@ class UserTag extends $pb.GeneratedMessage {
   $1.Timestamp ensurePaidAt() => $_ensure(12);
 }
 
-/// Request/Response messages
 class CreateTagPayRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateTagPayRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'tag_pay'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'tagPay')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'displayName')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'avatarUrl')
+    ..hasRequiredFields = false
+  ;
+
+  CreateTagPayRequest._() : super();
   factory CreateTagPayRequest({
     $core.String? tagPay,
     $core.String? displayName,
     $core.String? avatarUrl,
   }) {
-    final $result = create();
+    final _result = create();
     if (tagPay != null) {
-      $result.tagPay = tagPay;
+      _result.tagPay = tagPay;
     }
     if (displayName != null) {
-      $result.displayName = displayName;
+      _result.displayName = displayName;
     }
     if (avatarUrl != null) {
-      $result.avatarUrl = avatarUrl;
+      _result.avatarUrl = avatarUrl;
     }
-    return $result;
+    return _result;
   }
-  CreateTagPayRequest._() : super();
   factory CreateTagPayRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateTagPayRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateTagPayRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'tagPay')
-    ..aOS(2, _omitFieldNames ? '' : 'displayName')
-    ..aOS(3, _omitFieldNames ? '' : 'avatarUrl')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -923,10 +902,8 @@ class CreateTagPayRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateTagPayRequest copyWith(void Function(CreateTagPayRequest) updates) => super.copyWith((message) => updates(message as CreateTagPayRequest)) as CreateTagPayRequest;
-
+  CreateTagPayRequest copyWith(void Function(CreateTagPayRequest) updates) => super.copyWith((message) => updates(message as CreateTagPayRequest)) as CreateTagPayRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CreateTagPayRequest create() => CreateTagPayRequest._();
   CreateTagPayRequest createEmptyInstance() => create();
@@ -964,34 +941,33 @@ class CreateTagPayRequest extends $pb.GeneratedMessage {
 }
 
 class CreateTagPayResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateTagPayResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'tag_pay'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOM<TagPay>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'tagPay', subBuilder: TagPay.create)
+    ..hasRequiredFields = false
+  ;
+
+  CreateTagPayResponse._() : super();
   factory CreateTagPayResponse({
     $core.bool? success,
     $core.String? message,
     TagPay? tagPay,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (tagPay != null) {
-      $result.tagPay = tagPay;
+      _result.tagPay = tagPay;
     }
-    return $result;
+    return _result;
   }
-  CreateTagPayResponse._() : super();
   factory CreateTagPayResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateTagPayResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateTagPayResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOM<TagPay>(3, _omitFieldNames ? '' : 'tagPay', subBuilder: TagPay.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1001,10 +977,8 @@ class CreateTagPayResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateTagPayResponse copyWith(void Function(CreateTagPayResponse) updates) => super.copyWith((message) => updates(message as CreateTagPayResponse)) as CreateTagPayResponse;
-
+  CreateTagPayResponse copyWith(void Function(CreateTagPayResponse) updates) => super.copyWith((message) => updates(message as CreateTagPayResponse)) as CreateTagPayResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CreateTagPayResponse create() => CreateTagPayResponse._();
   CreateTagPayResponse createEmptyInstance() => create();
@@ -1044,24 +1018,23 @@ class CreateTagPayResponse extends $pb.GeneratedMessage {
 }
 
 class GetTagPayRequest extends $pb.GeneratedMessage {
-  factory GetTagPayRequest({
-    $core.String? tagPay,
-  }) {
-    final $result = create();
-    if (tagPay != null) {
-      $result.tagPay = tagPay;
-    }
-    return $result;
-  }
-  GetTagPayRequest._() : super();
-  factory GetTagPayRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetTagPayRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTagPayRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'tagPay')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTagPayRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'tag_pay'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'tagPay')
     ..hasRequiredFields = false
   ;
 
+  GetTagPayRequest._() : super();
+  factory GetTagPayRequest({
+    $core.String? tagPay,
+  }) {
+    final _result = create();
+    if (tagPay != null) {
+      _result.tagPay = tagPay;
+    }
+    return _result;
+  }
+  factory GetTagPayRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetTagPayRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1071,10 +1044,8 @@ class GetTagPayRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetTagPayRequest copyWith(void Function(GetTagPayRequest) updates) => super.copyWith((message) => updates(message as GetTagPayRequest)) as GetTagPayRequest;
-
+  GetTagPayRequest copyWith(void Function(GetTagPayRequest) updates) => super.copyWith((message) => updates(message as GetTagPayRequest)) as GetTagPayRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetTagPayRequest create() => GetTagPayRequest._();
   GetTagPayRequest createEmptyInstance() => create();
@@ -1094,34 +1065,33 @@ class GetTagPayRequest extends $pb.GeneratedMessage {
 }
 
 class GetTagPayResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTagPayResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'tag_pay'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOM<TagPay>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'tagPay', subBuilder: TagPay.create)
+    ..hasRequiredFields = false
+  ;
+
+  GetTagPayResponse._() : super();
   factory GetTagPayResponse({
     $core.bool? success,
     $core.String? message,
     TagPay? tagPay,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (tagPay != null) {
-      $result.tagPay = tagPay;
+      _result.tagPay = tagPay;
     }
-    return $result;
+    return _result;
   }
-  GetTagPayResponse._() : super();
   factory GetTagPayResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetTagPayResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTagPayResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOM<TagPay>(3, _omitFieldNames ? '' : 'tagPay', subBuilder: TagPay.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1131,10 +1101,8 @@ class GetTagPayResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetTagPayResponse copyWith(void Function(GetTagPayResponse) updates) => super.copyWith((message) => updates(message as GetTagPayResponse)) as GetTagPayResponse;
-
+  GetTagPayResponse copyWith(void Function(GetTagPayResponse) updates) => super.copyWith((message) => updates(message as GetTagPayResponse)) as GetTagPayResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetTagPayResponse create() => GetTagPayResponse._();
   GetTagPayResponse createEmptyInstance() => create();
@@ -1174,24 +1142,23 @@ class GetTagPayResponse extends $pb.GeneratedMessage {
 }
 
 class CheckTagPayAvailabilityRequest extends $pb.GeneratedMessage {
-  factory CheckTagPayAvailabilityRequest({
-    $core.String? tagPay,
-  }) {
-    final $result = create();
-    if (tagPay != null) {
-      $result.tagPay = tagPay;
-    }
-    return $result;
-  }
-  CheckTagPayAvailabilityRequest._() : super();
-  factory CheckTagPayAvailabilityRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory CheckTagPayAvailabilityRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CheckTagPayAvailabilityRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'tagPay')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CheckTagPayAvailabilityRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'tag_pay'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'tagPay')
     ..hasRequiredFields = false
   ;
 
+  CheckTagPayAvailabilityRequest._() : super();
+  factory CheckTagPayAvailabilityRequest({
+    $core.String? tagPay,
+  }) {
+    final _result = create();
+    if (tagPay != null) {
+      _result.tagPay = tagPay;
+    }
+    return _result;
+  }
+  factory CheckTagPayAvailabilityRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CheckTagPayAvailabilityRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1201,10 +1168,8 @@ class CheckTagPayAvailabilityRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CheckTagPayAvailabilityRequest copyWith(void Function(CheckTagPayAvailabilityRequest) updates) => super.copyWith((message) => updates(message as CheckTagPayAvailabilityRequest)) as CheckTagPayAvailabilityRequest;
-
+  CheckTagPayAvailabilityRequest copyWith(void Function(CheckTagPayAvailabilityRequest) updates) => super.copyWith((message) => updates(message as CheckTagPayAvailabilityRequest)) as CheckTagPayAvailabilityRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CheckTagPayAvailabilityRequest create() => CheckTagPayAvailabilityRequest._();
   CheckTagPayAvailabilityRequest createEmptyInstance() => create();
@@ -1224,34 +1189,33 @@ class CheckTagPayAvailabilityRequest extends $pb.GeneratedMessage {
 }
 
 class CheckTagPayAvailabilityResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CheckTagPayAvailabilityResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'tag_pay'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'available')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..pPS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'suggestions')
+    ..hasRequiredFields = false
+  ;
+
+  CheckTagPayAvailabilityResponse._() : super();
   factory CheckTagPayAvailabilityResponse({
     $core.bool? available,
     $core.String? message,
     $core.Iterable<$core.String>? suggestions,
   }) {
-    final $result = create();
+    final _result = create();
     if (available != null) {
-      $result.available = available;
+      _result.available = available;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (suggestions != null) {
-      $result.suggestions.addAll(suggestions);
+      _result.suggestions.addAll(suggestions);
     }
-    return $result;
+    return _result;
   }
-  CheckTagPayAvailabilityResponse._() : super();
   factory CheckTagPayAvailabilityResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CheckTagPayAvailabilityResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CheckTagPayAvailabilityResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'available')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..pPS(3, _omitFieldNames ? '' : 'suggestions')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1261,10 +1225,8 @@ class CheckTagPayAvailabilityResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CheckTagPayAvailabilityResponse copyWith(void Function(CheckTagPayAvailabilityResponse) updates) => super.copyWith((message) => updates(message as CheckTagPayAvailabilityResponse)) as CheckTagPayAvailabilityResponse;
-
+  CheckTagPayAvailabilityResponse copyWith(void Function(CheckTagPayAvailabilityResponse) updates) => super.copyWith((message) => updates(message as CheckTagPayAvailabilityResponse)) as CheckTagPayAvailabilityResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CheckTagPayAvailabilityResponse create() => CheckTagPayAvailabilityResponse._();
   CheckTagPayAvailabilityResponse createEmptyInstance() => create();
@@ -1296,29 +1258,28 @@ class CheckTagPayAvailabilityResponse extends $pb.GeneratedMessage {
 }
 
 class SearchTagPayRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SearchTagPayRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'tag_pay'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'query')
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  SearchTagPayRequest._() : super();
   factory SearchTagPayRequest({
     $core.String? query,
     $core.int? limit,
   }) {
-    final $result = create();
+    final _result = create();
     if (query != null) {
-      $result.query = query;
+      _result.query = query;
     }
     if (limit != null) {
-      $result.limit = limit;
+      _result.limit = limit;
     }
-    return $result;
+    return _result;
   }
-  SearchTagPayRequest._() : super();
   factory SearchTagPayRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SearchTagPayRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SearchTagPayRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'query')
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1328,10 +1289,8 @@ class SearchTagPayRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SearchTagPayRequest copyWith(void Function(SearchTagPayRequest) updates) => super.copyWith((message) => updates(message as SearchTagPayRequest)) as SearchTagPayRequest;
-
+  SearchTagPayRequest copyWith(void Function(SearchTagPayRequest) updates) => super.copyWith((message) => updates(message as SearchTagPayRequest)) as SearchTagPayRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SearchTagPayRequest create() => SearchTagPayRequest._();
   SearchTagPayRequest createEmptyInstance() => create();
@@ -1360,29 +1319,28 @@ class SearchTagPayRequest extends $pb.GeneratedMessage {
 }
 
 class SearchTagPayResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SearchTagPayResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'tag_pay'), createEmptyInstance: create)
+    ..pc<TagPay>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'results', $pb.PbFieldType.PM, subBuilder: TagPay.create)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'total', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  SearchTagPayResponse._() : super();
   factory SearchTagPayResponse({
     $core.Iterable<TagPay>? results,
     $core.int? total,
   }) {
-    final $result = create();
+    final _result = create();
     if (results != null) {
-      $result.results.addAll(results);
+      _result.results.addAll(results);
     }
     if (total != null) {
-      $result.total = total;
+      _result.total = total;
     }
-    return $result;
+    return _result;
   }
-  SearchTagPayResponse._() : super();
   factory SearchTagPayResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SearchTagPayResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SearchTagPayResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'), createEmptyInstance: create)
-    ..pc<TagPay>(1, _omitFieldNames ? '' : 'results', $pb.PbFieldType.PM, subBuilder: TagPay.create)
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1392,10 +1350,8 @@ class SearchTagPayResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SearchTagPayResponse copyWith(void Function(SearchTagPayResponse) updates) => super.copyWith((message) => updates(message as SearchTagPayResponse)) as SearchTagPayResponse;
-
+  SearchTagPayResponse copyWith(void Function(SearchTagPayResponse) updates) => super.copyWith((message) => updates(message as SearchTagPayResponse)) as SearchTagPayResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SearchTagPayResponse create() => SearchTagPayResponse._();
   SearchTagPayResponse createEmptyInstance() => create();
@@ -1418,6 +1374,17 @@ class SearchTagPayResponse extends $pb.GeneratedMessage {
 }
 
 class SendMoneyTagPayRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SendMoneyTagPayRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'tag_pay'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receiverTagPay')
+    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceAccountId')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionPin')
+    ..hasRequiredFields = false
+  ;
+
+  SendMoneyTagPayRequest._() : super();
   factory SendMoneyTagPayRequest({
     $core.String? receiverTagPay,
     $core.double? amount,
@@ -1426,41 +1393,29 @@ class SendMoneyTagPayRequest extends $pb.GeneratedMessage {
     $core.String? sourceAccountId,
     $core.String? transactionPin,
   }) {
-    final $result = create();
+    final _result = create();
     if (receiverTagPay != null) {
-      $result.receiverTagPay = receiverTagPay;
+      _result.receiverTagPay = receiverTagPay;
     }
     if (amount != null) {
-      $result.amount = amount;
+      _result.amount = amount;
     }
     if (currency != null) {
-      $result.currency = currency;
+      _result.currency = currency;
     }
     if (description != null) {
-      $result.description = description;
+      _result.description = description;
     }
     if (sourceAccountId != null) {
-      $result.sourceAccountId = sourceAccountId;
+      _result.sourceAccountId = sourceAccountId;
     }
     if (transactionPin != null) {
-      $result.transactionPin = transactionPin;
+      _result.transactionPin = transactionPin;
     }
-    return $result;
+    return _result;
   }
-  SendMoneyTagPayRequest._() : super();
   factory SendMoneyTagPayRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SendMoneyTagPayRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SendMoneyTagPayRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'receiverTagPay')
-    ..a<$core.double>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(3, _omitFieldNames ? '' : 'currency')
-    ..aOS(4, _omitFieldNames ? '' : 'description')
-    ..aOS(5, _omitFieldNames ? '' : 'sourceAccountId')
-    ..aOS(6, _omitFieldNames ? '' : 'transactionPin')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1470,10 +1425,8 @@ class SendMoneyTagPayRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SendMoneyTagPayRequest copyWith(void Function(SendMoneyTagPayRequest) updates) => super.copyWith((message) => updates(message as SendMoneyTagPayRequest)) as SendMoneyTagPayRequest;
-
+  SendMoneyTagPayRequest copyWith(void Function(SendMoneyTagPayRequest) updates) => super.copyWith((message) => updates(message as SendMoneyTagPayRequest)) as SendMoneyTagPayRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SendMoneyTagPayRequest create() => SendMoneyTagPayRequest._();
   SendMoneyTagPayRequest createEmptyInstance() => create();
@@ -1538,34 +1491,33 @@ class SendMoneyTagPayRequest extends $pb.GeneratedMessage {
 }
 
 class SendMoneyTagPayResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SendMoneyTagPayResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'tag_pay'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOM<TagPayTransaction>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transaction', subBuilder: TagPayTransaction.create)
+    ..hasRequiredFields = false
+  ;
+
+  SendMoneyTagPayResponse._() : super();
   factory SendMoneyTagPayResponse({
     $core.bool? success,
     $core.String? message,
     TagPayTransaction? transaction,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (transaction != null) {
-      $result.transaction = transaction;
+      _result.transaction = transaction;
     }
-    return $result;
+    return _result;
   }
-  SendMoneyTagPayResponse._() : super();
   factory SendMoneyTagPayResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SendMoneyTagPayResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SendMoneyTagPayResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOM<TagPayTransaction>(3, _omitFieldNames ? '' : 'transaction', subBuilder: TagPayTransaction.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1575,10 +1527,8 @@ class SendMoneyTagPayResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SendMoneyTagPayResponse copyWith(void Function(SendMoneyTagPayResponse) updates) => super.copyWith((message) => updates(message as SendMoneyTagPayResponse)) as SendMoneyTagPayResponse;
-
+  SendMoneyTagPayResponse copyWith(void Function(SendMoneyTagPayResponse) updates) => super.copyWith((message) => updates(message as SendMoneyTagPayResponse)) as SendMoneyTagPayResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SendMoneyTagPayResponse create() => SendMoneyTagPayResponse._();
   SendMoneyTagPayResponse createEmptyInstance() => create();
@@ -1618,39 +1568,38 @@ class SendMoneyTagPayResponse extends $pb.GeneratedMessage {
 }
 
 class RequestMoneyTagPayRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'RequestMoneyTagPayRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'tag_pay'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'requesteeTagPay')
+    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
+    ..hasRequiredFields = false
+  ;
+
+  RequestMoneyTagPayRequest._() : super();
   factory RequestMoneyTagPayRequest({
     $core.String? requesteeTagPay,
     $core.double? amount,
     $core.String? currency,
     $core.String? description,
   }) {
-    final $result = create();
+    final _result = create();
     if (requesteeTagPay != null) {
-      $result.requesteeTagPay = requesteeTagPay;
+      _result.requesteeTagPay = requesteeTagPay;
     }
     if (amount != null) {
-      $result.amount = amount;
+      _result.amount = amount;
     }
     if (currency != null) {
-      $result.currency = currency;
+      _result.currency = currency;
     }
     if (description != null) {
-      $result.description = description;
+      _result.description = description;
     }
-    return $result;
+    return _result;
   }
-  RequestMoneyTagPayRequest._() : super();
   factory RequestMoneyTagPayRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory RequestMoneyTagPayRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RequestMoneyTagPayRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'requesteeTagPay')
-    ..a<$core.double>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(3, _omitFieldNames ? '' : 'currency')
-    ..aOS(4, _omitFieldNames ? '' : 'description')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1660,10 +1609,8 @@ class RequestMoneyTagPayRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  RequestMoneyTagPayRequest copyWith(void Function(RequestMoneyTagPayRequest) updates) => super.copyWith((message) => updates(message as RequestMoneyTagPayRequest)) as RequestMoneyTagPayRequest;
-
+  RequestMoneyTagPayRequest copyWith(void Function(RequestMoneyTagPayRequest) updates) => super.copyWith((message) => updates(message as RequestMoneyTagPayRequest)) as RequestMoneyTagPayRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static RequestMoneyTagPayRequest create() => RequestMoneyTagPayRequest._();
   RequestMoneyTagPayRequest createEmptyInstance() => create();
@@ -1710,34 +1657,33 @@ class RequestMoneyTagPayRequest extends $pb.GeneratedMessage {
 }
 
 class RequestMoneyTagPayResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'RequestMoneyTagPayResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'tag_pay'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOM<MoneyRequest>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'moneyRequest', subBuilder: MoneyRequest.create)
+    ..hasRequiredFields = false
+  ;
+
+  RequestMoneyTagPayResponse._() : super();
   factory RequestMoneyTagPayResponse({
     $core.bool? success,
     $core.String? message,
     MoneyRequest? moneyRequest,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (moneyRequest != null) {
-      $result.moneyRequest = moneyRequest;
+      _result.moneyRequest = moneyRequest;
     }
-    return $result;
+    return _result;
   }
-  RequestMoneyTagPayResponse._() : super();
   factory RequestMoneyTagPayResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory RequestMoneyTagPayResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RequestMoneyTagPayResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOM<MoneyRequest>(3, _omitFieldNames ? '' : 'moneyRequest', subBuilder: MoneyRequest.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1747,10 +1693,8 @@ class RequestMoneyTagPayResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  RequestMoneyTagPayResponse copyWith(void Function(RequestMoneyTagPayResponse) updates) => super.copyWith((message) => updates(message as RequestMoneyTagPayResponse)) as RequestMoneyTagPayResponse;
-
+  RequestMoneyTagPayResponse copyWith(void Function(RequestMoneyTagPayResponse) updates) => super.copyWith((message) => updates(message as RequestMoneyTagPayResponse)) as RequestMoneyTagPayResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static RequestMoneyTagPayResponse create() => RequestMoneyTagPayResponse._();
   RequestMoneyTagPayResponse createEmptyInstance() => create();
@@ -1790,34 +1734,33 @@ class RequestMoneyTagPayResponse extends $pb.GeneratedMessage {
 }
 
 class GetTagPayTransactionsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTagPayTransactionsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'tag_pay'), createEmptyInstance: create)
+    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
+    ..e<TagPayTransactionType>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'type', $pb.PbFieldType.OE, defaultOrMaker: TagPayTransactionType.TAG_PAY_TRANSACTION_TYPE_SEND, valueOf: TagPayTransactionType.valueOf, enumValues: TagPayTransactionType.values)
+    ..hasRequiredFields = false
+  ;
+
+  GetTagPayTransactionsRequest._() : super();
   factory GetTagPayTransactionsRequest({
     $core.int? page,
     $core.int? limit,
     TagPayTransactionType? type,
   }) {
-    final $result = create();
+    final _result = create();
     if (page != null) {
-      $result.page = page;
+      _result.page = page;
     }
     if (limit != null) {
-      $result.limit = limit;
+      _result.limit = limit;
     }
     if (type != null) {
-      $result.type = type;
+      _result.type = type;
     }
-    return $result;
+    return _result;
   }
-  GetTagPayTransactionsRequest._() : super();
   factory GetTagPayTransactionsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetTagPayTransactionsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTagPayTransactionsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'), createEmptyInstance: create)
-    ..a<$core.int>(1, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
-    ..e<TagPayTransactionType>(3, _omitFieldNames ? '' : 'type', $pb.PbFieldType.OE, defaultOrMaker: TagPayTransactionType.TAG_PAY_TRANSACTION_TYPE_SEND, valueOf: TagPayTransactionType.valueOf, enumValues: TagPayTransactionType.values)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1827,10 +1770,8 @@ class GetTagPayTransactionsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetTagPayTransactionsRequest copyWith(void Function(GetTagPayTransactionsRequest) updates) => super.copyWith((message) => updates(message as GetTagPayTransactionsRequest)) as GetTagPayTransactionsRequest;
-
+  GetTagPayTransactionsRequest copyWith(void Function(GetTagPayTransactionsRequest) updates) => super.copyWith((message) => updates(message as GetTagPayTransactionsRequest)) as GetTagPayTransactionsRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetTagPayTransactionsRequest create() => GetTagPayTransactionsRequest._();
   GetTagPayTransactionsRequest createEmptyInstance() => create();
@@ -1868,39 +1809,38 @@ class GetTagPayTransactionsRequest extends $pb.GeneratedMessage {
 }
 
 class GetTagPayTransactionsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTagPayTransactionsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'tag_pay'), createEmptyInstance: create)
+    ..pc<TagPayTransaction>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactions', $pb.PbFieldType.PM, subBuilder: TagPayTransaction.create)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'total', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalPages', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  GetTagPayTransactionsResponse._() : super();
   factory GetTagPayTransactionsResponse({
     $core.Iterable<TagPayTransaction>? transactions,
     $core.int? total,
     $core.int? page,
     $core.int? totalPages,
   }) {
-    final $result = create();
+    final _result = create();
     if (transactions != null) {
-      $result.transactions.addAll(transactions);
+      _result.transactions.addAll(transactions);
     }
     if (total != null) {
-      $result.total = total;
+      _result.total = total;
     }
     if (page != null) {
-      $result.page = page;
+      _result.page = page;
     }
     if (totalPages != null) {
-      $result.totalPages = totalPages;
+      _result.totalPages = totalPages;
     }
-    return $result;
+    return _result;
   }
-  GetTagPayTransactionsResponse._() : super();
   factory GetTagPayTransactionsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetTagPayTransactionsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTagPayTransactionsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'), createEmptyInstance: create)
-    ..pc<TagPayTransaction>(1, _omitFieldNames ? '' : 'transactions', $pb.PbFieldType.PM, subBuilder: TagPayTransaction.create)
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
-    ..a<$core.int>(3, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
-    ..a<$core.int>(4, _omitFieldNames ? '' : 'totalPages', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1910,10 +1850,8 @@ class GetTagPayTransactionsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetTagPayTransactionsResponse copyWith(void Function(GetTagPayTransactionsResponse) updates) => super.copyWith((message) => updates(message as GetTagPayTransactionsResponse)) as GetTagPayTransactionsResponse;
-
+  GetTagPayTransactionsResponse copyWith(void Function(GetTagPayTransactionsResponse) updates) => super.copyWith((message) => updates(message as GetTagPayTransactionsResponse)) as GetTagPayTransactionsResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetTagPayTransactionsResponse create() => GetTagPayTransactionsResponse._();
   GetTagPayTransactionsResponse createEmptyInstance() => create();
@@ -1954,34 +1892,33 @@ class GetTagPayTransactionsResponse extends $pb.GeneratedMessage {
 }
 
 class AcceptMoneyRequestRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AcceptMoneyRequestRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'tag_pay'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'requestId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceAccountId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionPin')
+    ..hasRequiredFields = false
+  ;
+
+  AcceptMoneyRequestRequest._() : super();
   factory AcceptMoneyRequestRequest({
     $core.String? requestId,
     $core.String? sourceAccountId,
     $core.String? transactionPin,
   }) {
-    final $result = create();
+    final _result = create();
     if (requestId != null) {
-      $result.requestId = requestId;
+      _result.requestId = requestId;
     }
     if (sourceAccountId != null) {
-      $result.sourceAccountId = sourceAccountId;
+      _result.sourceAccountId = sourceAccountId;
     }
     if (transactionPin != null) {
-      $result.transactionPin = transactionPin;
+      _result.transactionPin = transactionPin;
     }
-    return $result;
+    return _result;
   }
-  AcceptMoneyRequestRequest._() : super();
   factory AcceptMoneyRequestRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory AcceptMoneyRequestRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AcceptMoneyRequestRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'requestId')
-    ..aOS(2, _omitFieldNames ? '' : 'sourceAccountId')
-    ..aOS(3, _omitFieldNames ? '' : 'transactionPin')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1991,10 +1928,8 @@ class AcceptMoneyRequestRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  AcceptMoneyRequestRequest copyWith(void Function(AcceptMoneyRequestRequest) updates) => super.copyWith((message) => updates(message as AcceptMoneyRequestRequest)) as AcceptMoneyRequestRequest;
-
+  AcceptMoneyRequestRequest copyWith(void Function(AcceptMoneyRequestRequest) updates) => super.copyWith((message) => updates(message as AcceptMoneyRequestRequest)) as AcceptMoneyRequestRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static AcceptMoneyRequestRequest create() => AcceptMoneyRequestRequest._();
   AcceptMoneyRequestRequest createEmptyInstance() => create();
@@ -2032,34 +1967,33 @@ class AcceptMoneyRequestRequest extends $pb.GeneratedMessage {
 }
 
 class AcceptMoneyRequestResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AcceptMoneyRequestResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'tag_pay'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOM<TagPayTransaction>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transaction', subBuilder: TagPayTransaction.create)
+    ..hasRequiredFields = false
+  ;
+
+  AcceptMoneyRequestResponse._() : super();
   factory AcceptMoneyRequestResponse({
     $core.bool? success,
     $core.String? message,
     TagPayTransaction? transaction,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (transaction != null) {
-      $result.transaction = transaction;
+      _result.transaction = transaction;
     }
-    return $result;
+    return _result;
   }
-  AcceptMoneyRequestResponse._() : super();
   factory AcceptMoneyRequestResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory AcceptMoneyRequestResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AcceptMoneyRequestResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOM<TagPayTransaction>(3, _omitFieldNames ? '' : 'transaction', subBuilder: TagPayTransaction.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2069,10 +2003,8 @@ class AcceptMoneyRequestResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  AcceptMoneyRequestResponse copyWith(void Function(AcceptMoneyRequestResponse) updates) => super.copyWith((message) => updates(message as AcceptMoneyRequestResponse)) as AcceptMoneyRequestResponse;
-
+  AcceptMoneyRequestResponse copyWith(void Function(AcceptMoneyRequestResponse) updates) => super.copyWith((message) => updates(message as AcceptMoneyRequestResponse)) as AcceptMoneyRequestResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static AcceptMoneyRequestResponse create() => AcceptMoneyRequestResponse._();
   AcceptMoneyRequestResponse createEmptyInstance() => create();
@@ -2112,29 +2044,28 @@ class AcceptMoneyRequestResponse extends $pb.GeneratedMessage {
 }
 
 class DeclineMoneyRequestRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DeclineMoneyRequestRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'tag_pay'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'requestId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reason')
+    ..hasRequiredFields = false
+  ;
+
+  DeclineMoneyRequestRequest._() : super();
   factory DeclineMoneyRequestRequest({
     $core.String? requestId,
     $core.String? reason,
   }) {
-    final $result = create();
+    final _result = create();
     if (requestId != null) {
-      $result.requestId = requestId;
+      _result.requestId = requestId;
     }
     if (reason != null) {
-      $result.reason = reason;
+      _result.reason = reason;
     }
-    return $result;
+    return _result;
   }
-  DeclineMoneyRequestRequest._() : super();
   factory DeclineMoneyRequestRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory DeclineMoneyRequestRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DeclineMoneyRequestRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'requestId')
-    ..aOS(2, _omitFieldNames ? '' : 'reason')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2144,10 +2075,8 @@ class DeclineMoneyRequestRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  DeclineMoneyRequestRequest copyWith(void Function(DeclineMoneyRequestRequest) updates) => super.copyWith((message) => updates(message as DeclineMoneyRequestRequest)) as DeclineMoneyRequestRequest;
-
+  DeclineMoneyRequestRequest copyWith(void Function(DeclineMoneyRequestRequest) updates) => super.copyWith((message) => updates(message as DeclineMoneyRequestRequest)) as DeclineMoneyRequestRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static DeclineMoneyRequestRequest create() => DeclineMoneyRequestRequest._();
   DeclineMoneyRequestRequest createEmptyInstance() => create();
@@ -2176,29 +2105,28 @@ class DeclineMoneyRequestRequest extends $pb.GeneratedMessage {
 }
 
 class DeclineMoneyRequestResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DeclineMoneyRequestResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'tag_pay'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  DeclineMoneyRequestResponse._() : super();
   factory DeclineMoneyRequestResponse({
     $core.bool? success,
     $core.String? message,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
-    return $result;
+    return _result;
   }
-  DeclineMoneyRequestResponse._() : super();
   factory DeclineMoneyRequestResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory DeclineMoneyRequestResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DeclineMoneyRequestResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2208,10 +2136,8 @@ class DeclineMoneyRequestResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  DeclineMoneyRequestResponse copyWith(void Function(DeclineMoneyRequestResponse) updates) => super.copyWith((message) => updates(message as DeclineMoneyRequestResponse)) as DeclineMoneyRequestResponse;
-
+  DeclineMoneyRequestResponse copyWith(void Function(DeclineMoneyRequestResponse) updates) => super.copyWith((message) => updates(message as DeclineMoneyRequestResponse)) as DeclineMoneyRequestResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static DeclineMoneyRequestResponse create() => DeclineMoneyRequestResponse._();
   DeclineMoneyRequestResponse createEmptyInstance() => create();
@@ -2240,34 +2166,33 @@ class DeclineMoneyRequestResponse extends $pb.GeneratedMessage {
 }
 
 class GetPendingMoneyRequestsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetPendingMoneyRequestsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'tag_pay'), createEmptyInstance: create)
+    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
+    ..aOB(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'incoming')
+    ..hasRequiredFields = false
+  ;
+
+  GetPendingMoneyRequestsRequest._() : super();
   factory GetPendingMoneyRequestsRequest({
     $core.int? page,
     $core.int? limit,
     $core.bool? incoming,
   }) {
-    final $result = create();
+    final _result = create();
     if (page != null) {
-      $result.page = page;
+      _result.page = page;
     }
     if (limit != null) {
-      $result.limit = limit;
+      _result.limit = limit;
     }
     if (incoming != null) {
-      $result.incoming = incoming;
+      _result.incoming = incoming;
     }
-    return $result;
+    return _result;
   }
-  GetPendingMoneyRequestsRequest._() : super();
   factory GetPendingMoneyRequestsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetPendingMoneyRequestsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetPendingMoneyRequestsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'), createEmptyInstance: create)
-    ..a<$core.int>(1, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
-    ..aOB(3, _omitFieldNames ? '' : 'incoming')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2277,10 +2202,8 @@ class GetPendingMoneyRequestsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetPendingMoneyRequestsRequest copyWith(void Function(GetPendingMoneyRequestsRequest) updates) => super.copyWith((message) => updates(message as GetPendingMoneyRequestsRequest)) as GetPendingMoneyRequestsRequest;
-
+  GetPendingMoneyRequestsRequest copyWith(void Function(GetPendingMoneyRequestsRequest) updates) => super.copyWith((message) => updates(message as GetPendingMoneyRequestsRequest)) as GetPendingMoneyRequestsRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetPendingMoneyRequestsRequest create() => GetPendingMoneyRequestsRequest._();
   GetPendingMoneyRequestsRequest createEmptyInstance() => create();
@@ -2318,39 +2241,38 @@ class GetPendingMoneyRequestsRequest extends $pb.GeneratedMessage {
 }
 
 class GetPendingMoneyRequestsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetPendingMoneyRequestsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'tag_pay'), createEmptyInstance: create)
+    ..pc<MoneyRequest>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'requests', $pb.PbFieldType.PM, subBuilder: MoneyRequest.create)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'total', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalPages', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  GetPendingMoneyRequestsResponse._() : super();
   factory GetPendingMoneyRequestsResponse({
     $core.Iterable<MoneyRequest>? requests,
     $core.int? total,
     $core.int? page,
     $core.int? totalPages,
   }) {
-    final $result = create();
+    final _result = create();
     if (requests != null) {
-      $result.requests.addAll(requests);
+      _result.requests.addAll(requests);
     }
     if (total != null) {
-      $result.total = total;
+      _result.total = total;
     }
     if (page != null) {
-      $result.page = page;
+      _result.page = page;
     }
     if (totalPages != null) {
-      $result.totalPages = totalPages;
+      _result.totalPages = totalPages;
     }
-    return $result;
+    return _result;
   }
-  GetPendingMoneyRequestsResponse._() : super();
   factory GetPendingMoneyRequestsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetPendingMoneyRequestsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetPendingMoneyRequestsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'), createEmptyInstance: create)
-    ..pc<MoneyRequest>(1, _omitFieldNames ? '' : 'requests', $pb.PbFieldType.PM, subBuilder: MoneyRequest.create)
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
-    ..a<$core.int>(3, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
-    ..a<$core.int>(4, _omitFieldNames ? '' : 'totalPages', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2360,10 +2282,8 @@ class GetPendingMoneyRequestsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetPendingMoneyRequestsResponse copyWith(void Function(GetPendingMoneyRequestsResponse) updates) => super.copyWith((message) => updates(message as GetPendingMoneyRequestsResponse)) as GetPendingMoneyRequestsResponse;
-
+  GetPendingMoneyRequestsResponse copyWith(void Function(GetPendingMoneyRequestsResponse) updates) => super.copyWith((message) => updates(message as GetPendingMoneyRequestsResponse)) as GetPendingMoneyRequestsResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetPendingMoneyRequestsResponse create() => GetPendingMoneyRequestsResponse._();
   GetPendingMoneyRequestsResponse createEmptyInstance() => create();
@@ -2404,39 +2324,38 @@ class GetPendingMoneyRequestsResponse extends $pb.GeneratedMessage {
 }
 
 class CreateTagRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateTagRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'tag_pay'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'taggedUserTagPay')
+    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
+    ..hasRequiredFields = false
+  ;
+
+  CreateTagRequest._() : super();
   factory CreateTagRequest({
     $core.String? taggedUserTagPay,
     $core.double? amount,
     $core.String? currency,
     $core.String? description,
   }) {
-    final $result = create();
+    final _result = create();
     if (taggedUserTagPay != null) {
-      $result.taggedUserTagPay = taggedUserTagPay;
+      _result.taggedUserTagPay = taggedUserTagPay;
     }
     if (amount != null) {
-      $result.amount = amount;
+      _result.amount = amount;
     }
     if (currency != null) {
-      $result.currency = currency;
+      _result.currency = currency;
     }
     if (description != null) {
-      $result.description = description;
+      _result.description = description;
     }
-    return $result;
+    return _result;
   }
-  CreateTagRequest._() : super();
   factory CreateTagRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateTagRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateTagRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'taggedUserTagPay')
-    ..a<$core.double>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(3, _omitFieldNames ? '' : 'currency')
-    ..aOS(4, _omitFieldNames ? '' : 'description')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2446,10 +2365,8 @@ class CreateTagRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateTagRequest copyWith(void Function(CreateTagRequest) updates) => super.copyWith((message) => updates(message as CreateTagRequest)) as CreateTagRequest;
-
+  CreateTagRequest copyWith(void Function(CreateTagRequest) updates) => super.copyWith((message) => updates(message as CreateTagRequest)) as CreateTagRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CreateTagRequest create() => CreateTagRequest._();
   CreateTagRequest createEmptyInstance() => create();
@@ -2496,34 +2413,33 @@ class CreateTagRequest extends $pb.GeneratedMessage {
 }
 
 class CreateTagResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateTagResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'tag_pay'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOM<UserTag>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'tag', subBuilder: UserTag.create)
+    ..hasRequiredFields = false
+  ;
+
+  CreateTagResponse._() : super();
   factory CreateTagResponse({
     $core.bool? success,
     $core.String? message,
     UserTag? tag,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (tag != null) {
-      $result.tag = tag;
+      _result.tag = tag;
     }
-    return $result;
+    return _result;
   }
-  CreateTagResponse._() : super();
   factory CreateTagResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateTagResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateTagResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOM<UserTag>(3, _omitFieldNames ? '' : 'tag', subBuilder: UserTag.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2533,10 +2449,8 @@ class CreateTagResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateTagResponse copyWith(void Function(CreateTagResponse) updates) => super.copyWith((message) => updates(message as CreateTagResponse)) as CreateTagResponse;
-
+  CreateTagResponse copyWith(void Function(CreateTagResponse) updates) => super.copyWith((message) => updates(message as CreateTagResponse)) as CreateTagResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CreateTagResponse create() => CreateTagResponse._();
   CreateTagResponse createEmptyInstance() => create();
@@ -2576,34 +2490,33 @@ class CreateTagResponse extends $pb.GeneratedMessage {
 }
 
 class GetMyTagsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetMyTagsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'tag_pay'), createEmptyInstance: create)
+    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
+    ..e<TagStatus>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: TagStatus.TAG_STATUS_PENDING, valueOf: TagStatus.valueOf, enumValues: TagStatus.values)
+    ..hasRequiredFields = false
+  ;
+
+  GetMyTagsRequest._() : super();
   factory GetMyTagsRequest({
     $core.int? page,
     $core.int? limit,
     TagStatus? status,
   }) {
-    final $result = create();
+    final _result = create();
     if (page != null) {
-      $result.page = page;
+      _result.page = page;
     }
     if (limit != null) {
-      $result.limit = limit;
+      _result.limit = limit;
     }
     if (status != null) {
-      $result.status = status;
+      _result.status = status;
     }
-    return $result;
+    return _result;
   }
-  GetMyTagsRequest._() : super();
   factory GetMyTagsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetMyTagsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMyTagsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'), createEmptyInstance: create)
-    ..a<$core.int>(1, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
-    ..e<TagStatus>(3, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: TagStatus.TAG_STATUS_PENDING, valueOf: TagStatus.valueOf, enumValues: TagStatus.values)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2613,10 +2526,8 @@ class GetMyTagsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetMyTagsRequest copyWith(void Function(GetMyTagsRequest) updates) => super.copyWith((message) => updates(message as GetMyTagsRequest)) as GetMyTagsRequest;
-
+  GetMyTagsRequest copyWith(void Function(GetMyTagsRequest) updates) => super.copyWith((message) => updates(message as GetMyTagsRequest)) as GetMyTagsRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetMyTagsRequest create() => GetMyTagsRequest._();
   GetMyTagsRequest createEmptyInstance() => create();
@@ -2654,39 +2565,38 @@ class GetMyTagsRequest extends $pb.GeneratedMessage {
 }
 
 class GetMyTagsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetMyTagsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'tag_pay'), createEmptyInstance: create)
+    ..pc<UserTag>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'tags', $pb.PbFieldType.PM, subBuilder: UserTag.create)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'total', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalPages', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  GetMyTagsResponse._() : super();
   factory GetMyTagsResponse({
     $core.Iterable<UserTag>? tags,
     $core.int? total,
     $core.int? page,
     $core.int? totalPages,
   }) {
-    final $result = create();
+    final _result = create();
     if (tags != null) {
-      $result.tags.addAll(tags);
+      _result.tags.addAll(tags);
     }
     if (total != null) {
-      $result.total = total;
+      _result.total = total;
     }
     if (page != null) {
-      $result.page = page;
+      _result.page = page;
     }
     if (totalPages != null) {
-      $result.totalPages = totalPages;
+      _result.totalPages = totalPages;
     }
-    return $result;
+    return _result;
   }
-  GetMyTagsResponse._() : super();
   factory GetMyTagsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetMyTagsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMyTagsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'), createEmptyInstance: create)
-    ..pc<UserTag>(1, _omitFieldNames ? '' : 'tags', $pb.PbFieldType.PM, subBuilder: UserTag.create)
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
-    ..a<$core.int>(3, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
-    ..a<$core.int>(4, _omitFieldNames ? '' : 'totalPages', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2696,10 +2606,8 @@ class GetMyTagsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetMyTagsResponse copyWith(void Function(GetMyTagsResponse) updates) => super.copyWith((message) => updates(message as GetMyTagsResponse)) as GetMyTagsResponse;
-
+  GetMyTagsResponse copyWith(void Function(GetMyTagsResponse) updates) => super.copyWith((message) => updates(message as GetMyTagsResponse)) as GetMyTagsResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetMyTagsResponse create() => GetMyTagsResponse._();
   GetMyTagsResponse createEmptyInstance() => create();
@@ -2740,34 +2648,33 @@ class GetMyTagsResponse extends $pb.GeneratedMessage {
 }
 
 class PayTagRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'PayTagRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'tag_pay'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'tagId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceAccountId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionPin')
+    ..hasRequiredFields = false
+  ;
+
+  PayTagRequest._() : super();
   factory PayTagRequest({
     $core.String? tagId,
     $core.String? sourceAccountId,
     $core.String? transactionPin,
   }) {
-    final $result = create();
+    final _result = create();
     if (tagId != null) {
-      $result.tagId = tagId;
+      _result.tagId = tagId;
     }
     if (sourceAccountId != null) {
-      $result.sourceAccountId = sourceAccountId;
+      _result.sourceAccountId = sourceAccountId;
     }
     if (transactionPin != null) {
-      $result.transactionPin = transactionPin;
+      _result.transactionPin = transactionPin;
     }
-    return $result;
+    return _result;
   }
-  PayTagRequest._() : super();
   factory PayTagRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory PayTagRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'PayTagRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'tagId')
-    ..aOS(2, _omitFieldNames ? '' : 'sourceAccountId')
-    ..aOS(3, _omitFieldNames ? '' : 'transactionPin')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2777,10 +2684,8 @@ class PayTagRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  PayTagRequest copyWith(void Function(PayTagRequest) updates) => super.copyWith((message) => updates(message as PayTagRequest)) as PayTagRequest;
-
+  PayTagRequest copyWith(void Function(PayTagRequest) updates) => super.copyWith((message) => updates(message as PayTagRequest)) as PayTagRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static PayTagRequest create() => PayTagRequest._();
   PayTagRequest createEmptyInstance() => create();
@@ -2818,34 +2723,33 @@ class PayTagRequest extends $pb.GeneratedMessage {
 }
 
 class PayTagResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'PayTagResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'tag_pay'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOM<TagPayTransaction>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transaction', subBuilder: TagPayTransaction.create)
+    ..hasRequiredFields = false
+  ;
+
+  PayTagResponse._() : super();
   factory PayTagResponse({
     $core.bool? success,
     $core.String? message,
     TagPayTransaction? transaction,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (transaction != null) {
-      $result.transaction = transaction;
+      _result.transaction = transaction;
     }
-    return $result;
+    return _result;
   }
-  PayTagResponse._() : super();
   factory PayTagResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory PayTagResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'PayTagResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOM<TagPayTransaction>(3, _omitFieldNames ? '' : 'transaction', subBuilder: TagPayTransaction.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2855,10 +2759,8 @@ class PayTagResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  PayTagResponse copyWith(void Function(PayTagResponse) updates) => super.copyWith((message) => updates(message as PayTagResponse)) as PayTagResponse;
-
+  PayTagResponse copyWith(void Function(PayTagResponse) updates) => super.copyWith((message) => updates(message as PayTagResponse)) as PayTagResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static PayTagResponse create() => PayTagResponse._();
   PayTagResponse createEmptyInstance() => create();
@@ -2898,29 +2800,28 @@ class PayTagResponse extends $pb.GeneratedMessage {
 }
 
 class SearchUsersForTagRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SearchUsersForTagRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'tag_pay'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'query')
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  SearchUsersForTagRequest._() : super();
   factory SearchUsersForTagRequest({
     $core.String? query,
     $core.int? limit,
   }) {
-    final $result = create();
+    final _result = create();
     if (query != null) {
-      $result.query = query;
+      _result.query = query;
     }
     if (limit != null) {
-      $result.limit = limit;
+      _result.limit = limit;
     }
-    return $result;
+    return _result;
   }
-  SearchUsersForTagRequest._() : super();
   factory SearchUsersForTagRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SearchUsersForTagRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SearchUsersForTagRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'query')
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2930,10 +2831,8 @@ class SearchUsersForTagRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SearchUsersForTagRequest copyWith(void Function(SearchUsersForTagRequest) updates) => super.copyWith((message) => updates(message as SearchUsersForTagRequest)) as SearchUsersForTagRequest;
-
+  SearchUsersForTagRequest copyWith(void Function(SearchUsersForTagRequest) updates) => super.copyWith((message) => updates(message as SearchUsersForTagRequest)) as SearchUsersForTagRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SearchUsersForTagRequest create() => SearchUsersForTagRequest._();
   SearchUsersForTagRequest createEmptyInstance() => create();
@@ -2962,6 +2861,17 @@ class SearchUsersForTagRequest extends $pb.GeneratedMessage {
 }
 
 class UserSearchResult extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UserSearchResult', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'tag_pay'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'username')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'firstName')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastName')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'profilePicture')
+    ..hasRequiredFields = false
+  ;
+
+  UserSearchResult._() : super();
   factory UserSearchResult({
     $core.String? userId,
     $core.String? username,
@@ -2970,41 +2880,29 @@ class UserSearchResult extends $pb.GeneratedMessage {
     $core.String? email,
     $core.String? profilePicture,
   }) {
-    final $result = create();
+    final _result = create();
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (username != null) {
-      $result.username = username;
+      _result.username = username;
     }
     if (firstName != null) {
-      $result.firstName = firstName;
+      _result.firstName = firstName;
     }
     if (lastName != null) {
-      $result.lastName = lastName;
+      _result.lastName = lastName;
     }
     if (email != null) {
-      $result.email = email;
+      _result.email = email;
     }
     if (profilePicture != null) {
-      $result.profilePicture = profilePicture;
+      _result.profilePicture = profilePicture;
     }
-    return $result;
+    return _result;
   }
-  UserSearchResult._() : super();
   factory UserSearchResult.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UserSearchResult.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UserSearchResult', package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..aOS(2, _omitFieldNames ? '' : 'username')
-    ..aOS(3, _omitFieldNames ? '' : 'firstName')
-    ..aOS(4, _omitFieldNames ? '' : 'lastName')
-    ..aOS(5, _omitFieldNames ? '' : 'email')
-    ..aOS(6, _omitFieldNames ? '' : 'profilePicture')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3014,10 +2912,8 @@ class UserSearchResult extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UserSearchResult copyWith(void Function(UserSearchResult) updates) => super.copyWith((message) => updates(message as UserSearchResult)) as UserSearchResult;
-
+  UserSearchResult copyWith(void Function(UserSearchResult) updates) => super.copyWith((message) => updates(message as UserSearchResult)) as UserSearchResult; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static UserSearchResult create() => UserSearchResult._();
   UserSearchResult createEmptyInstance() => create();
@@ -3082,24 +2978,23 @@ class UserSearchResult extends $pb.GeneratedMessage {
 }
 
 class SearchUsersForTagResponse extends $pb.GeneratedMessage {
-  factory SearchUsersForTagResponse({
-    $core.Iterable<UserSearchResult>? users,
-  }) {
-    final $result = create();
-    if (users != null) {
-      $result.users.addAll(users);
-    }
-    return $result;
-  }
-  SearchUsersForTagResponse._() : super();
-  factory SearchUsersForTagResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory SearchUsersForTagResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SearchUsersForTagResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'), createEmptyInstance: create)
-    ..pc<UserSearchResult>(1, _omitFieldNames ? '' : 'users', $pb.PbFieldType.PM, subBuilder: UserSearchResult.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SearchUsersForTagResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'tag_pay'), createEmptyInstance: create)
+    ..pc<UserSearchResult>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'users', $pb.PbFieldType.PM, subBuilder: UserSearchResult.create)
     ..hasRequiredFields = false
   ;
 
+  SearchUsersForTagResponse._() : super();
+  factory SearchUsersForTagResponse({
+    $core.Iterable<UserSearchResult>? users,
+  }) {
+    final _result = create();
+    if (users != null) {
+      _result.users.addAll(users);
+    }
+    return _result;
+  }
+  factory SearchUsersForTagResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory SearchUsersForTagResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3109,10 +3004,8 @@ class SearchUsersForTagResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SearchUsersForTagResponse copyWith(void Function(SearchUsersForTagResponse) updates) => super.copyWith((message) => updates(message as SearchUsersForTagResponse)) as SearchUsersForTagResponse;
-
+  SearchUsersForTagResponse copyWith(void Function(SearchUsersForTagResponse) updates) => super.copyWith((message) => updates(message as SearchUsersForTagResponse)) as SearchUsersForTagResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SearchUsersForTagResponse create() => SearchUsersForTagResponse._();
   SearchUsersForTagResponse createEmptyInstance() => create();
@@ -3126,39 +3019,38 @@ class SearchUsersForTagResponse extends $pb.GeneratedMessage {
 }
 
 class BatchCreateTagsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'BatchCreateTagsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'tag_pay'), createEmptyInstance: create)
+    ..pPS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'taggedUserTagPays')
+    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
+    ..hasRequiredFields = false
+  ;
+
+  BatchCreateTagsRequest._() : super();
   factory BatchCreateTagsRequest({
     $core.Iterable<$core.String>? taggedUserTagPays,
     $core.double? amount,
     $core.String? currency,
     $core.String? description,
   }) {
-    final $result = create();
+    final _result = create();
     if (taggedUserTagPays != null) {
-      $result.taggedUserTagPays.addAll(taggedUserTagPays);
+      _result.taggedUserTagPays.addAll(taggedUserTagPays);
     }
     if (amount != null) {
-      $result.amount = amount;
+      _result.amount = amount;
     }
     if (currency != null) {
-      $result.currency = currency;
+      _result.currency = currency;
     }
     if (description != null) {
-      $result.description = description;
+      _result.description = description;
     }
-    return $result;
+    return _result;
   }
-  BatchCreateTagsRequest._() : super();
   factory BatchCreateTagsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory BatchCreateTagsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BatchCreateTagsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'), createEmptyInstance: create)
-    ..pPS(1, _omitFieldNames ? '' : 'taggedUserTagPays')
-    ..a<$core.double>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(3, _omitFieldNames ? '' : 'currency')
-    ..aOS(4, _omitFieldNames ? '' : 'description')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3168,10 +3060,8 @@ class BatchCreateTagsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  BatchCreateTagsRequest copyWith(void Function(BatchCreateTagsRequest) updates) => super.copyWith((message) => updates(message as BatchCreateTagsRequest)) as BatchCreateTagsRequest;
-
+  BatchCreateTagsRequest copyWith(void Function(BatchCreateTagsRequest) updates) => super.copyWith((message) => updates(message as BatchCreateTagsRequest)) as BatchCreateTagsRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static BatchCreateTagsRequest create() => BatchCreateTagsRequest._();
   BatchCreateTagsRequest createEmptyInstance() => create();
@@ -3212,39 +3102,38 @@ class BatchCreateTagsRequest extends $pb.GeneratedMessage {
 }
 
 class BatchCreateTagsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'BatchCreateTagsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'tag_pay'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..pc<UserTag>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'tags', $pb.PbFieldType.PM, subBuilder: UserTag.create)
+    ..pPS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failedUsers')
+    ..hasRequiredFields = false
+  ;
+
+  BatchCreateTagsResponse._() : super();
   factory BatchCreateTagsResponse({
     $core.bool? success,
     $core.String? message,
     $core.Iterable<UserTag>? tags,
     $core.Iterable<$core.String>? failedUsers,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (tags != null) {
-      $result.tags.addAll(tags);
+      _result.tags.addAll(tags);
     }
     if (failedUsers != null) {
-      $result.failedUsers.addAll(failedUsers);
+      _result.failedUsers.addAll(failedUsers);
     }
-    return $result;
+    return _result;
   }
-  BatchCreateTagsResponse._() : super();
   factory BatchCreateTagsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory BatchCreateTagsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BatchCreateTagsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'tag_pay'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..pc<UserTag>(3, _omitFieldNames ? '' : 'tags', $pb.PbFieldType.PM, subBuilder: UserTag.create)
-    ..pPS(4, _omitFieldNames ? '' : 'failedUsers')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3254,10 +3143,8 @@ class BatchCreateTagsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  BatchCreateTagsResponse copyWith(void Function(BatchCreateTagsResponse) updates) => super.copyWith((message) => updates(message as BatchCreateTagsResponse)) as BatchCreateTagsResponse;
-
+  BatchCreateTagsResponse copyWith(void Function(BatchCreateTagsResponse) updates) => super.copyWith((message) => updates(message as BatchCreateTagsResponse)) as BatchCreateTagsResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static BatchCreateTagsResponse create() => BatchCreateTagsResponse._();
   BatchCreateTagsResponse createEmptyInstance() => create();
@@ -3291,6 +3178,3 @@ class BatchCreateTagsResponse extends $pb.GeneratedMessage {
   $core.List<$core.String> get failedUsers => $_getList(3);
 }
 
-
-const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
-const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');
