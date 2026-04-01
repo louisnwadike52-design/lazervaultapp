@@ -20,20 +20,24 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
 };
 
 message StartVoiceSessionRequest {
-    // Service name for routing to specific voice agent (e.g., "stocks", "transfers", "crypto")
+    // Service name to route the voice session to the correct agent
     string service_name = 1;
     // User's preferred language code (e.g., "en", "fr", "yo")
     string language = 2;
     // User's preferred TTS voice ID
     string voice_preference = 3;
+    // Dashboard BCP-47 locale (e.g. "en-NG") for voice-agent TTS routing
+    string locale = 4;
+    // ISO country code from dashboard (e.g. "NG") — forwarded to LiveKit metadata
+    string user_country = 5;
 }
 
 message StartVoiceSessionResponse {
     string room_name = 1;         // The unique LiveKit room name for this session.
     string livekit_token = 2;     // The LiveKit access token for the Flutter client.
     string agent_id = 3;          // An identifier for the agent (optional, could be fixed).
-    string agent_url = 4;         // The URL/address of the voice agent service for this session.
-    int32 agent_port = 5;         // The port number of the voice agent service.
+    string agent_url = 4;         // URL of the voice agent
+    int32 agent_port = 5;         // Port number of the voice agent
 }
 
 // Voice note processing request - accepts multipart form data file upload
@@ -53,7 +57,7 @@ message ProcessVoiceNoteResponse {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
         json_schema: {
             title: "Process Voice Note Response";
-            description: "Response containing AI analysis and transcription of the voice note.";
+            description: "Contains the AI's response based on the voice note content.";
         }
     };
     
@@ -101,4 +105,4 @@ service VoiceSessionService {
             }
         };
     }
-} 
+}

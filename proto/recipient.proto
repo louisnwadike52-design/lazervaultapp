@@ -91,7 +91,7 @@ message ListRecipientsRequest {
 
 message ListRecipientsResponse {
   repeated Recipient recipients = 1;
-  common.PaginationInfo pagination = 2; // Pagination metadata
+  pb.PaginationInfo pagination = 2; // Pagination metadata
 }
 
 // --- Update Recipient ---

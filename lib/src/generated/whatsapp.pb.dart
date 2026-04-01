@@ -1,13 +1,9 @@
-//
+///
 //  Generated code. Do not modify.
 //  source: whatsapp.proto
 //
 // @dart = 2.12
-
-// ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
 
 import 'dart:core' as $core;
 
@@ -16,24 +12,23 @@ import 'package:protobuf/protobuf.dart' as $pb;
 import 'google/protobuf/timestamp.pb.dart' as $1;
 
 class InitiateLinkingRequest extends $pb.GeneratedMessage {
-  factory InitiateLinkingRequest({
-    $core.String? phoneNumber,
-  }) {
-    final $result = create();
-    if (phoneNumber != null) {
-      $result.phoneNumber = phoneNumber;
-    }
-    return $result;
-  }
-  InitiateLinkingRequest._() : super();
-  factory InitiateLinkingRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory InitiateLinkingRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InitiateLinkingRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'phoneNumber')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'InitiateLinkingRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumber')
     ..hasRequiredFields = false
   ;
 
+  InitiateLinkingRequest._() : super();
+  factory InitiateLinkingRequest({
+    $core.String? phoneNumber,
+  }) {
+    final _result = create();
+    if (phoneNumber != null) {
+      _result.phoneNumber = phoneNumber;
+    }
+    return _result;
+  }
+  factory InitiateLinkingRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory InitiateLinkingRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -43,10 +38,8 @@ class InitiateLinkingRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  InitiateLinkingRequest copyWith(void Function(InitiateLinkingRequest) updates) => super.copyWith((message) => updates(message as InitiateLinkingRequest)) as InitiateLinkingRequest;
-
+  InitiateLinkingRequest copyWith(void Function(InitiateLinkingRequest) updates) => super.copyWith((message) => updates(message as InitiateLinkingRequest)) as InitiateLinkingRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static InitiateLinkingRequest create() => InitiateLinkingRequest._();
   InitiateLinkingRequest createEmptyInstance() => create();
@@ -66,34 +59,33 @@ class InitiateLinkingRequest extends $pb.GeneratedMessage {
 }
 
 class InitiateLinkingResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'InitiateLinkingResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'otpReference')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOM<$1.Timestamp>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt', subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
+  InitiateLinkingResponse._() : super();
   factory InitiateLinkingResponse({
     $core.String? otpReference,
     $core.String? message,
     $1.Timestamp? expiresAt,
   }) {
-    final $result = create();
+    final _result = create();
     if (otpReference != null) {
-      $result.otpReference = otpReference;
+      _result.otpReference = otpReference;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (expiresAt != null) {
-      $result.expiresAt = expiresAt;
+      _result.expiresAt = expiresAt;
     }
-    return $result;
+    return _result;
   }
-  InitiateLinkingResponse._() : super();
   factory InitiateLinkingResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory InitiateLinkingResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InitiateLinkingResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'otpReference')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOM<$1.Timestamp>(3, _omitFieldNames ? '' : 'expiresAt', subBuilder: $1.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -103,10 +95,8 @@ class InitiateLinkingResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  InitiateLinkingResponse copyWith(void Function(InitiateLinkingResponse) updates) => super.copyWith((message) => updates(message as InitiateLinkingResponse)) as InitiateLinkingResponse;
-
+  InitiateLinkingResponse copyWith(void Function(InitiateLinkingResponse) updates) => super.copyWith((message) => updates(message as InitiateLinkingResponse)) as InitiateLinkingResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static InitiateLinkingResponse create() => InitiateLinkingResponse._();
   InitiateLinkingResponse createEmptyInstance() => create();
@@ -146,29 +136,28 @@ class InitiateLinkingResponse extends $pb.GeneratedMessage {
 }
 
 class VerifyLinkingRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VerifyLinkingRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumber')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'otpCode')
+    ..hasRequiredFields = false
+  ;
+
+  VerifyLinkingRequest._() : super();
   factory VerifyLinkingRequest({
     $core.String? phoneNumber,
     $core.String? otpCode,
   }) {
-    final $result = create();
+    final _result = create();
     if (phoneNumber != null) {
-      $result.phoneNumber = phoneNumber;
+      _result.phoneNumber = phoneNumber;
     }
     if (otpCode != null) {
-      $result.otpCode = otpCode;
+      _result.otpCode = otpCode;
     }
-    return $result;
+    return _result;
   }
-  VerifyLinkingRequest._() : super();
   factory VerifyLinkingRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory VerifyLinkingRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyLinkingRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'phoneNumber')
-    ..aOS(2, _omitFieldNames ? '' : 'otpCode')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -178,10 +167,8 @@ class VerifyLinkingRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  VerifyLinkingRequest copyWith(void Function(VerifyLinkingRequest) updates) => super.copyWith((message) => updates(message as VerifyLinkingRequest)) as VerifyLinkingRequest;
-
+  VerifyLinkingRequest copyWith(void Function(VerifyLinkingRequest) updates) => super.copyWith((message) => updates(message as VerifyLinkingRequest)) as VerifyLinkingRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static VerifyLinkingRequest create() => VerifyLinkingRequest._();
   VerifyLinkingRequest createEmptyInstance() => create();
@@ -210,34 +197,33 @@ class VerifyLinkingRequest extends $pb.GeneratedMessage {
 }
 
 class VerifyLinkingResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VerifyLinkingResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOM<WhatsAppUser>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'whatsappUser', subBuilder: WhatsAppUser.create)
+    ..hasRequiredFields = false
+  ;
+
+  VerifyLinkingResponse._() : super();
   factory VerifyLinkingResponse({
     $core.bool? success,
     $core.String? message,
     WhatsAppUser? whatsappUser,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (whatsappUser != null) {
-      $result.whatsappUser = whatsappUser;
+      _result.whatsappUser = whatsappUser;
     }
-    return $result;
+    return _result;
   }
-  VerifyLinkingResponse._() : super();
   factory VerifyLinkingResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory VerifyLinkingResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyLinkingResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOM<WhatsAppUser>(3, _omitFieldNames ? '' : 'whatsappUser', subBuilder: WhatsAppUser.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -247,10 +233,8 @@ class VerifyLinkingResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  VerifyLinkingResponse copyWith(void Function(VerifyLinkingResponse) updates) => super.copyWith((message) => updates(message as VerifyLinkingResponse)) as VerifyLinkingResponse;
-
+  VerifyLinkingResponse copyWith(void Function(VerifyLinkingResponse) updates) => super.copyWith((message) => updates(message as VerifyLinkingResponse)) as VerifyLinkingResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static VerifyLinkingResponse create() => VerifyLinkingResponse._();
   VerifyLinkingResponse createEmptyInstance() => create();
@@ -290,24 +274,23 @@ class VerifyLinkingResponse extends $pb.GeneratedMessage {
 }
 
 class UnlinkAccountRequest extends $pb.GeneratedMessage {
-  factory UnlinkAccountRequest({
-    $core.String? userId,
-  }) {
-    final $result = create();
-    if (userId != null) {
-      $result.userId = userId;
-    }
-    return $result;
-  }
-  UnlinkAccountRequest._() : super();
-  factory UnlinkAccountRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory UnlinkAccountRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UnlinkAccountRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'userId')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UnlinkAccountRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
     ..hasRequiredFields = false
   ;
 
+  UnlinkAccountRequest._() : super();
+  factory UnlinkAccountRequest({
+    $core.String? userId,
+  }) {
+    final _result = create();
+    if (userId != null) {
+      _result.userId = userId;
+    }
+    return _result;
+  }
+  factory UnlinkAccountRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UnlinkAccountRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -317,10 +300,8 @@ class UnlinkAccountRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UnlinkAccountRequest copyWith(void Function(UnlinkAccountRequest) updates) => super.copyWith((message) => updates(message as UnlinkAccountRequest)) as UnlinkAccountRequest;
-
+  UnlinkAccountRequest copyWith(void Function(UnlinkAccountRequest) updates) => super.copyWith((message) => updates(message as UnlinkAccountRequest)) as UnlinkAccountRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static UnlinkAccountRequest create() => UnlinkAccountRequest._();
   UnlinkAccountRequest createEmptyInstance() => create();
@@ -340,29 +321,28 @@ class UnlinkAccountRequest extends $pb.GeneratedMessage {
 }
 
 class UnlinkAccountResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UnlinkAccountResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  UnlinkAccountResponse._() : super();
   factory UnlinkAccountResponse({
     $core.bool? success,
     $core.String? message,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
-    return $result;
+    return _result;
   }
-  UnlinkAccountResponse._() : super();
   factory UnlinkAccountResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UnlinkAccountResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UnlinkAccountResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -372,10 +352,8 @@ class UnlinkAccountResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UnlinkAccountResponse copyWith(void Function(UnlinkAccountResponse) updates) => super.copyWith((message) => updates(message as UnlinkAccountResponse)) as UnlinkAccountResponse;
-
+  UnlinkAccountResponse copyWith(void Function(UnlinkAccountResponse) updates) => super.copyWith((message) => updates(message as UnlinkAccountResponse)) as UnlinkAccountResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static UnlinkAccountResponse create() => UnlinkAccountResponse._();
   UnlinkAccountResponse createEmptyInstance() => create();
@@ -404,15 +382,14 @@ class UnlinkAccountResponse extends $pb.GeneratedMessage {
 }
 
 class GetLinkStatusRequest extends $pb.GeneratedMessage {
-  factory GetLinkStatusRequest() => create();
-  GetLinkStatusRequest._() : super();
-  factory GetLinkStatusRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetLinkStatusRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetLinkStatusRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetLinkStatusRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
     ..hasRequiredFields = false
   ;
 
+  GetLinkStatusRequest._() : super();
+  factory GetLinkStatusRequest() => create();
+  factory GetLinkStatusRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetLinkStatusRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -422,10 +399,8 @@ class GetLinkStatusRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetLinkStatusRequest copyWith(void Function(GetLinkStatusRequest) updates) => super.copyWith((message) => updates(message as GetLinkStatusRequest)) as GetLinkStatusRequest;
-
+  GetLinkStatusRequest copyWith(void Function(GetLinkStatusRequest) updates) => super.copyWith((message) => updates(message as GetLinkStatusRequest)) as GetLinkStatusRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetLinkStatusRequest create() => GetLinkStatusRequest._();
   GetLinkStatusRequest createEmptyInstance() => create();
@@ -436,24 +411,23 @@ class GetLinkStatusRequest extends $pb.GeneratedMessage {
 }
 
 class GetLinkStatusResponse extends $pb.GeneratedMessage {
-  factory GetLinkStatusResponse({
-    WhatsAppUser? whatsappUser,
-  }) {
-    final $result = create();
-    if (whatsappUser != null) {
-      $result.whatsappUser = whatsappUser;
-    }
-    return $result;
-  }
-  GetLinkStatusResponse._() : super();
-  factory GetLinkStatusResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetLinkStatusResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetLinkStatusResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
-    ..aOM<WhatsAppUser>(1, _omitFieldNames ? '' : 'whatsappUser', subBuilder: WhatsAppUser.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetLinkStatusResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..aOM<WhatsAppUser>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'whatsappUser', subBuilder: WhatsAppUser.create)
     ..hasRequiredFields = false
   ;
 
+  GetLinkStatusResponse._() : super();
+  factory GetLinkStatusResponse({
+    WhatsAppUser? whatsappUser,
+  }) {
+    final _result = create();
+    if (whatsappUser != null) {
+      _result.whatsappUser = whatsappUser;
+    }
+    return _result;
+  }
+  factory GetLinkStatusResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetLinkStatusResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -463,10 +437,8 @@ class GetLinkStatusResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetLinkStatusResponse copyWith(void Function(GetLinkStatusResponse) updates) => super.copyWith((message) => updates(message as GetLinkStatusResponse)) as GetLinkStatusResponse;
-
+  GetLinkStatusResponse copyWith(void Function(GetLinkStatusResponse) updates) => super.copyWith((message) => updates(message as GetLinkStatusResponse)) as GetLinkStatusResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetLinkStatusResponse create() => GetLinkStatusResponse._();
   GetLinkStatusResponse createEmptyInstance() => create();
@@ -488,29 +460,28 @@ class GetLinkStatusResponse extends $pb.GeneratedMessage {
 }
 
 class WebhookRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'WebhookRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'object')
+    ..pc<WebhookEntry>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'entry', $pb.PbFieldType.PM, subBuilder: WebhookEntry.create)
+    ..hasRequiredFields = false
+  ;
+
+  WebhookRequest._() : super();
   factory WebhookRequest({
     $core.String? object,
     $core.Iterable<WebhookEntry>? entry,
   }) {
-    final $result = create();
+    final _result = create();
     if (object != null) {
-      $result.object = object;
+      _result.object = object;
     }
     if (entry != null) {
-      $result.entry.addAll(entry);
+      _result.entry.addAll(entry);
     }
-    return $result;
+    return _result;
   }
-  WebhookRequest._() : super();
   factory WebhookRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory WebhookRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'WebhookRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'object')
-    ..pc<WebhookEntry>(2, _omitFieldNames ? '' : 'entry', $pb.PbFieldType.PM, subBuilder: WebhookEntry.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -520,10 +491,8 @@ class WebhookRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  WebhookRequest copyWith(void Function(WebhookRequest) updates) => super.copyWith((message) => updates(message as WebhookRequest)) as WebhookRequest;
-
+  WebhookRequest copyWith(void Function(WebhookRequest) updates) => super.copyWith((message) => updates(message as WebhookRequest)) as WebhookRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static WebhookRequest create() => WebhookRequest._();
   WebhookRequest createEmptyInstance() => create();
@@ -546,29 +515,28 @@ class WebhookRequest extends $pb.GeneratedMessage {
 }
 
 class WebhookEntry extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'WebhookEntry', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..pc<WebhookChange>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'changes', $pb.PbFieldType.PM, subBuilder: WebhookChange.create)
+    ..hasRequiredFields = false
+  ;
+
+  WebhookEntry._() : super();
   factory WebhookEntry({
     $core.String? id,
     $core.Iterable<WebhookChange>? changes,
   }) {
-    final $result = create();
+    final _result = create();
     if (id != null) {
-      $result.id = id;
+      _result.id = id;
     }
     if (changes != null) {
-      $result.changes.addAll(changes);
+      _result.changes.addAll(changes);
     }
-    return $result;
+    return _result;
   }
-  WebhookEntry._() : super();
   factory WebhookEntry.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory WebhookEntry.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'WebhookEntry', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..pc<WebhookChange>(2, _omitFieldNames ? '' : 'changes', $pb.PbFieldType.PM, subBuilder: WebhookChange.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -578,10 +546,8 @@ class WebhookEntry extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  WebhookEntry copyWith(void Function(WebhookEntry) updates) => super.copyWith((message) => updates(message as WebhookEntry)) as WebhookEntry;
-
+  WebhookEntry copyWith(void Function(WebhookEntry) updates) => super.copyWith((message) => updates(message as WebhookEntry)) as WebhookEntry; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static WebhookEntry create() => WebhookEntry._();
   WebhookEntry createEmptyInstance() => create();
@@ -604,29 +570,28 @@ class WebhookEntry extends $pb.GeneratedMessage {
 }
 
 class WebhookChange extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'WebhookChange', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'field')
+    ..aOM<WebhookValue>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'value', subBuilder: WebhookValue.create)
+    ..hasRequiredFields = false
+  ;
+
+  WebhookChange._() : super();
   factory WebhookChange({
     $core.String? field_1,
     WebhookValue? value,
   }) {
-    final $result = create();
+    final _result = create();
     if (field_1 != null) {
-      $result.field_1 = field_1;
+      _result.field_1 = field_1;
     }
     if (value != null) {
-      $result.value = value;
+      _result.value = value;
     }
-    return $result;
+    return _result;
   }
-  WebhookChange._() : super();
   factory WebhookChange.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory WebhookChange.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'WebhookChange', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'field')
-    ..aOM<WebhookValue>(2, _omitFieldNames ? '' : 'value', subBuilder: WebhookValue.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -636,10 +601,8 @@ class WebhookChange extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  WebhookChange copyWith(void Function(WebhookChange) updates) => super.copyWith((message) => updates(message as WebhookChange)) as WebhookChange;
-
+  WebhookChange copyWith(void Function(WebhookChange) updates) => super.copyWith((message) => updates(message as WebhookChange)) as WebhookChange; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static WebhookChange create() => WebhookChange._();
   WebhookChange createEmptyInstance() => create();
@@ -670,6 +633,16 @@ class WebhookChange extends $pb.GeneratedMessage {
 }
 
 class WebhookValue extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'WebhookValue', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'messagingProduct')
+    ..aOM<WebhookMetadata>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'metadata', subBuilder: WebhookMetadata.create)
+    ..pc<WebhookContact>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'contacts', $pb.PbFieldType.PM, subBuilder: WebhookContact.create)
+    ..pc<WebhookMessage>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'messages', $pb.PbFieldType.PM, subBuilder: WebhookMessage.create)
+    ..pc<WebhookStatus>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'statuses', $pb.PbFieldType.PM, subBuilder: WebhookStatus.create)
+    ..hasRequiredFields = false
+  ;
+
+  WebhookValue._() : super();
   factory WebhookValue({
     $core.String? messagingProduct,
     WebhookMetadata? metadata,
@@ -677,37 +650,26 @@ class WebhookValue extends $pb.GeneratedMessage {
     $core.Iterable<WebhookMessage>? messages,
     $core.Iterable<WebhookStatus>? statuses,
   }) {
-    final $result = create();
+    final _result = create();
     if (messagingProduct != null) {
-      $result.messagingProduct = messagingProduct;
+      _result.messagingProduct = messagingProduct;
     }
     if (metadata != null) {
-      $result.metadata = metadata;
+      _result.metadata = metadata;
     }
     if (contacts != null) {
-      $result.contacts.addAll(contacts);
+      _result.contacts.addAll(contacts);
     }
     if (messages != null) {
-      $result.messages.addAll(messages);
+      _result.messages.addAll(messages);
     }
     if (statuses != null) {
-      $result.statuses.addAll(statuses);
+      _result.statuses.addAll(statuses);
     }
-    return $result;
+    return _result;
   }
-  WebhookValue._() : super();
   factory WebhookValue.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory WebhookValue.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'WebhookValue', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'messagingProduct')
-    ..aOM<WebhookMetadata>(2, _omitFieldNames ? '' : 'metadata', subBuilder: WebhookMetadata.create)
-    ..pc<WebhookContact>(3, _omitFieldNames ? '' : 'contacts', $pb.PbFieldType.PM, subBuilder: WebhookContact.create)
-    ..pc<WebhookMessage>(4, _omitFieldNames ? '' : 'messages', $pb.PbFieldType.PM, subBuilder: WebhookMessage.create)
-    ..pc<WebhookStatus>(5, _omitFieldNames ? '' : 'statuses', $pb.PbFieldType.PM, subBuilder: WebhookStatus.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -717,10 +679,8 @@ class WebhookValue extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  WebhookValue copyWith(void Function(WebhookValue) updates) => super.copyWith((message) => updates(message as WebhookValue)) as WebhookValue;
-
+  WebhookValue copyWith(void Function(WebhookValue) updates) => super.copyWith((message) => updates(message as WebhookValue)) as WebhookValue; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static WebhookValue create() => WebhookValue._();
   WebhookValue createEmptyInstance() => create();
@@ -760,29 +720,28 @@ class WebhookValue extends $pb.GeneratedMessage {
 }
 
 class WebhookMetadata extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'WebhookMetadata', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'displayPhoneNumber')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumberId')
+    ..hasRequiredFields = false
+  ;
+
+  WebhookMetadata._() : super();
   factory WebhookMetadata({
     $core.String? displayPhoneNumber,
     $core.String? phoneNumberId,
   }) {
-    final $result = create();
+    final _result = create();
     if (displayPhoneNumber != null) {
-      $result.displayPhoneNumber = displayPhoneNumber;
+      _result.displayPhoneNumber = displayPhoneNumber;
     }
     if (phoneNumberId != null) {
-      $result.phoneNumberId = phoneNumberId;
+      _result.phoneNumberId = phoneNumberId;
     }
-    return $result;
+    return _result;
   }
-  WebhookMetadata._() : super();
   factory WebhookMetadata.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory WebhookMetadata.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'WebhookMetadata', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'displayPhoneNumber')
-    ..aOS(2, _omitFieldNames ? '' : 'phoneNumberId')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -792,10 +751,8 @@ class WebhookMetadata extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  WebhookMetadata copyWith(void Function(WebhookMetadata) updates) => super.copyWith((message) => updates(message as WebhookMetadata)) as WebhookMetadata;
-
+  WebhookMetadata copyWith(void Function(WebhookMetadata) updates) => super.copyWith((message) => updates(message as WebhookMetadata)) as WebhookMetadata; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static WebhookMetadata create() => WebhookMetadata._();
   WebhookMetadata createEmptyInstance() => create();
@@ -824,29 +781,28 @@ class WebhookMetadata extends $pb.GeneratedMessage {
 }
 
 class WebhookContact extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'WebhookContact', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'profileName')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'waId')
+    ..hasRequiredFields = false
+  ;
+
+  WebhookContact._() : super();
   factory WebhookContact({
     $core.String? profileName,
     $core.String? waId,
   }) {
-    final $result = create();
+    final _result = create();
     if (profileName != null) {
-      $result.profileName = profileName;
+      _result.profileName = profileName;
     }
     if (waId != null) {
-      $result.waId = waId;
+      _result.waId = waId;
     }
-    return $result;
+    return _result;
   }
-  WebhookContact._() : super();
   factory WebhookContact.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory WebhookContact.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'WebhookContact', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'profileName')
-    ..aOS(2, _omitFieldNames ? '' : 'waId')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -856,10 +812,8 @@ class WebhookContact extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  WebhookContact copyWith(void Function(WebhookContact) updates) => super.copyWith((message) => updates(message as WebhookContact)) as WebhookContact;
-
+  WebhookContact copyWith(void Function(WebhookContact) updates) => super.copyWith((message) => updates(message as WebhookContact)) as WebhookContact; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static WebhookContact create() => WebhookContact._();
   WebhookContact createEmptyInstance() => create();
@@ -888,6 +842,17 @@ class WebhookContact extends $pb.GeneratedMessage {
 }
 
 class WebhookMessage extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'WebhookMessage', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'from')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'timestamp')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'type')
+    ..aOM<WebhookTextMessage>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'text', subBuilder: WebhookTextMessage.create)
+    ..aOM<WebhookInteractiveMessage>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'interactive', subBuilder: WebhookInteractiveMessage.create)
+    ..hasRequiredFields = false
+  ;
+
+  WebhookMessage._() : super();
   factory WebhookMessage({
     $core.String? from,
     $core.String? id,
@@ -896,41 +861,29 @@ class WebhookMessage extends $pb.GeneratedMessage {
     WebhookTextMessage? text,
     WebhookInteractiveMessage? interactive,
   }) {
-    final $result = create();
+    final _result = create();
     if (from != null) {
-      $result.from = from;
+      _result.from = from;
     }
     if (id != null) {
-      $result.id = id;
+      _result.id = id;
     }
     if (timestamp != null) {
-      $result.timestamp = timestamp;
+      _result.timestamp = timestamp;
     }
     if (type != null) {
-      $result.type = type;
+      _result.type = type;
     }
     if (text != null) {
-      $result.text = text;
+      _result.text = text;
     }
     if (interactive != null) {
-      $result.interactive = interactive;
+      _result.interactive = interactive;
     }
-    return $result;
+    return _result;
   }
-  WebhookMessage._() : super();
   factory WebhookMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory WebhookMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'WebhookMessage', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'from')
-    ..aOS(2, _omitFieldNames ? '' : 'id')
-    ..aOS(3, _omitFieldNames ? '' : 'timestamp')
-    ..aOS(4, _omitFieldNames ? '' : 'type')
-    ..aOM<WebhookTextMessage>(5, _omitFieldNames ? '' : 'text', subBuilder: WebhookTextMessage.create)
-    ..aOM<WebhookInteractiveMessage>(6, _omitFieldNames ? '' : 'interactive', subBuilder: WebhookInteractiveMessage.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -940,10 +893,8 @@ class WebhookMessage extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  WebhookMessage copyWith(void Function(WebhookMessage) updates) => super.copyWith((message) => updates(message as WebhookMessage)) as WebhookMessage;
-
+  WebhookMessage copyWith(void Function(WebhookMessage) updates) => super.copyWith((message) => updates(message as WebhookMessage)) as WebhookMessage; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static WebhookMessage create() => WebhookMessage._();
   WebhookMessage createEmptyInstance() => create();
@@ -1012,24 +963,23 @@ class WebhookMessage extends $pb.GeneratedMessage {
 }
 
 class WebhookTextMessage extends $pb.GeneratedMessage {
-  factory WebhookTextMessage({
-    $core.String? body,
-  }) {
-    final $result = create();
-    if (body != null) {
-      $result.body = body;
-    }
-    return $result;
-  }
-  WebhookTextMessage._() : super();
-  factory WebhookTextMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory WebhookTextMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'WebhookTextMessage', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'body')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'WebhookTextMessage', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'body')
     ..hasRequiredFields = false
   ;
 
+  WebhookTextMessage._() : super();
+  factory WebhookTextMessage({
+    $core.String? body,
+  }) {
+    final _result = create();
+    if (body != null) {
+      _result.body = body;
+    }
+    return _result;
+  }
+  factory WebhookTextMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory WebhookTextMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1039,10 +989,8 @@ class WebhookTextMessage extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  WebhookTextMessage copyWith(void Function(WebhookTextMessage) updates) => super.copyWith((message) => updates(message as WebhookTextMessage)) as WebhookTextMessage;
-
+  WebhookTextMessage copyWith(void Function(WebhookTextMessage) updates) => super.copyWith((message) => updates(message as WebhookTextMessage)) as WebhookTextMessage; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static WebhookTextMessage create() => WebhookTextMessage._();
   WebhookTextMessage createEmptyInstance() => create();
@@ -1062,34 +1010,33 @@ class WebhookTextMessage extends $pb.GeneratedMessage {
 }
 
 class WebhookInteractiveMessage extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'WebhookInteractiveMessage', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'type')
+    ..aOM<WebhookButtonReply>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'buttonReply', subBuilder: WebhookButtonReply.create)
+    ..aOM<WebhookListReply>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'listReply', subBuilder: WebhookListReply.create)
+    ..hasRequiredFields = false
+  ;
+
+  WebhookInteractiveMessage._() : super();
   factory WebhookInteractiveMessage({
     $core.String? type,
     WebhookButtonReply? buttonReply,
     WebhookListReply? listReply,
   }) {
-    final $result = create();
+    final _result = create();
     if (type != null) {
-      $result.type = type;
+      _result.type = type;
     }
     if (buttonReply != null) {
-      $result.buttonReply = buttonReply;
+      _result.buttonReply = buttonReply;
     }
     if (listReply != null) {
-      $result.listReply = listReply;
+      _result.listReply = listReply;
     }
-    return $result;
+    return _result;
   }
-  WebhookInteractiveMessage._() : super();
   factory WebhookInteractiveMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory WebhookInteractiveMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'WebhookInteractiveMessage', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'type')
-    ..aOM<WebhookButtonReply>(2, _omitFieldNames ? '' : 'buttonReply', subBuilder: WebhookButtonReply.create)
-    ..aOM<WebhookListReply>(3, _omitFieldNames ? '' : 'listReply', subBuilder: WebhookListReply.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1099,10 +1046,8 @@ class WebhookInteractiveMessage extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  WebhookInteractiveMessage copyWith(void Function(WebhookInteractiveMessage) updates) => super.copyWith((message) => updates(message as WebhookInteractiveMessage)) as WebhookInteractiveMessage;
-
+  WebhookInteractiveMessage copyWith(void Function(WebhookInteractiveMessage) updates) => super.copyWith((message) => updates(message as WebhookInteractiveMessage)) as WebhookInteractiveMessage; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static WebhookInteractiveMessage create() => WebhookInteractiveMessage._();
   WebhookInteractiveMessage createEmptyInstance() => create();
@@ -1144,29 +1089,28 @@ class WebhookInteractiveMessage extends $pb.GeneratedMessage {
 }
 
 class WebhookButtonReply extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'WebhookButtonReply', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'title')
+    ..hasRequiredFields = false
+  ;
+
+  WebhookButtonReply._() : super();
   factory WebhookButtonReply({
     $core.String? id,
     $core.String? title,
   }) {
-    final $result = create();
+    final _result = create();
     if (id != null) {
-      $result.id = id;
+      _result.id = id;
     }
     if (title != null) {
-      $result.title = title;
+      _result.title = title;
     }
-    return $result;
+    return _result;
   }
-  WebhookButtonReply._() : super();
   factory WebhookButtonReply.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory WebhookButtonReply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'WebhookButtonReply', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..aOS(2, _omitFieldNames ? '' : 'title')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1176,10 +1120,8 @@ class WebhookButtonReply extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  WebhookButtonReply copyWith(void Function(WebhookButtonReply) updates) => super.copyWith((message) => updates(message as WebhookButtonReply)) as WebhookButtonReply;
-
+  WebhookButtonReply copyWith(void Function(WebhookButtonReply) updates) => super.copyWith((message) => updates(message as WebhookButtonReply)) as WebhookButtonReply; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static WebhookButtonReply create() => WebhookButtonReply._();
   WebhookButtonReply createEmptyInstance() => create();
@@ -1208,34 +1150,33 @@ class WebhookButtonReply extends $pb.GeneratedMessage {
 }
 
 class WebhookListReply extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'WebhookListReply', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'title')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
+    ..hasRequiredFields = false
+  ;
+
+  WebhookListReply._() : super();
   factory WebhookListReply({
     $core.String? id,
     $core.String? title,
     $core.String? description,
   }) {
-    final $result = create();
+    final _result = create();
     if (id != null) {
-      $result.id = id;
+      _result.id = id;
     }
     if (title != null) {
-      $result.title = title;
+      _result.title = title;
     }
     if (description != null) {
-      $result.description = description;
+      _result.description = description;
     }
-    return $result;
+    return _result;
   }
-  WebhookListReply._() : super();
   factory WebhookListReply.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory WebhookListReply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'WebhookListReply', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..aOS(2, _omitFieldNames ? '' : 'title')
-    ..aOS(3, _omitFieldNames ? '' : 'description')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1245,10 +1186,8 @@ class WebhookListReply extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  WebhookListReply copyWith(void Function(WebhookListReply) updates) => super.copyWith((message) => updates(message as WebhookListReply)) as WebhookListReply;
-
+  WebhookListReply copyWith(void Function(WebhookListReply) updates) => super.copyWith((message) => updates(message as WebhookListReply)) as WebhookListReply; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static WebhookListReply create() => WebhookListReply._();
   WebhookListReply createEmptyInstance() => create();
@@ -1286,39 +1225,38 @@ class WebhookListReply extends $pb.GeneratedMessage {
 }
 
 class WebhookStatus extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'WebhookStatus', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'timestamp')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientId')
+    ..hasRequiredFields = false
+  ;
+
+  WebhookStatus._() : super();
   factory WebhookStatus({
     $core.String? id,
     $core.String? status,
     $core.String? timestamp,
     $core.String? recipientId,
   }) {
-    final $result = create();
+    final _result = create();
     if (id != null) {
-      $result.id = id;
+      _result.id = id;
     }
     if (status != null) {
-      $result.status = status;
+      _result.status = status;
     }
     if (timestamp != null) {
-      $result.timestamp = timestamp;
+      _result.timestamp = timestamp;
     }
     if (recipientId != null) {
-      $result.recipientId = recipientId;
+      _result.recipientId = recipientId;
     }
-    return $result;
+    return _result;
   }
-  WebhookStatus._() : super();
   factory WebhookStatus.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory WebhookStatus.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'WebhookStatus', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..aOS(2, _omitFieldNames ? '' : 'status')
-    ..aOS(3, _omitFieldNames ? '' : 'timestamp')
-    ..aOS(4, _omitFieldNames ? '' : 'recipientId')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1328,10 +1266,8 @@ class WebhookStatus extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  WebhookStatus copyWith(void Function(WebhookStatus) updates) => super.copyWith((message) => updates(message as WebhookStatus)) as WebhookStatus;
-
+  WebhookStatus copyWith(void Function(WebhookStatus) updates) => super.copyWith((message) => updates(message as WebhookStatus)) as WebhookStatus; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static WebhookStatus create() => WebhookStatus._();
   WebhookStatus createEmptyInstance() => create();
@@ -1378,24 +1314,23 @@ class WebhookStatus extends $pb.GeneratedMessage {
 }
 
 class WebhookResponse extends $pb.GeneratedMessage {
-  factory WebhookResponse({
-    $core.String? status,
-  }) {
-    final $result = create();
-    if (status != null) {
-      $result.status = status;
-    }
-    return $result;
-  }
-  WebhookResponse._() : super();
-  factory WebhookResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory WebhookResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'WebhookResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'status')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'WebhookResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
     ..hasRequiredFields = false
   ;
 
+  WebhookResponse._() : super();
+  factory WebhookResponse({
+    $core.String? status,
+  }) {
+    final _result = create();
+    if (status != null) {
+      _result.status = status;
+    }
+    return _result;
+  }
+  factory WebhookResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory WebhookResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1405,10 +1340,8 @@ class WebhookResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  WebhookResponse copyWith(void Function(WebhookResponse) updates) => super.copyWith((message) => updates(message as WebhookResponse)) as WebhookResponse;
-
+  WebhookResponse copyWith(void Function(WebhookResponse) updates) => super.copyWith((message) => updates(message as WebhookResponse)) as WebhookResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static WebhookResponse create() => WebhookResponse._();
   WebhookResponse createEmptyInstance() => create();
@@ -1428,34 +1361,33 @@ class WebhookResponse extends $pb.GeneratedMessage {
 }
 
 class VerifyWebhookRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VerifyWebhookRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hubMode')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hubVerifyToken')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hubChallenge')
+    ..hasRequiredFields = false
+  ;
+
+  VerifyWebhookRequest._() : super();
   factory VerifyWebhookRequest({
     $core.String? hubMode,
     $core.String? hubVerifyToken,
     $core.String? hubChallenge,
   }) {
-    final $result = create();
+    final _result = create();
     if (hubMode != null) {
-      $result.hubMode = hubMode;
+      _result.hubMode = hubMode;
     }
     if (hubVerifyToken != null) {
-      $result.hubVerifyToken = hubVerifyToken;
+      _result.hubVerifyToken = hubVerifyToken;
     }
     if (hubChallenge != null) {
-      $result.hubChallenge = hubChallenge;
+      _result.hubChallenge = hubChallenge;
     }
-    return $result;
+    return _result;
   }
-  VerifyWebhookRequest._() : super();
   factory VerifyWebhookRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory VerifyWebhookRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyWebhookRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'hubMode')
-    ..aOS(2, _omitFieldNames ? '' : 'hubVerifyToken')
-    ..aOS(3, _omitFieldNames ? '' : 'hubChallenge')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1465,10 +1397,8 @@ class VerifyWebhookRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  VerifyWebhookRequest copyWith(void Function(VerifyWebhookRequest) updates) => super.copyWith((message) => updates(message as VerifyWebhookRequest)) as VerifyWebhookRequest;
-
+  VerifyWebhookRequest copyWith(void Function(VerifyWebhookRequest) updates) => super.copyWith((message) => updates(message as VerifyWebhookRequest)) as VerifyWebhookRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static VerifyWebhookRequest create() => VerifyWebhookRequest._();
   VerifyWebhookRequest createEmptyInstance() => create();
@@ -1506,24 +1436,23 @@ class VerifyWebhookRequest extends $pb.GeneratedMessage {
 }
 
 class VerifyWebhookResponse extends $pb.GeneratedMessage {
-  factory VerifyWebhookResponse({
-    $core.String? challenge,
-  }) {
-    final $result = create();
-    if (challenge != null) {
-      $result.challenge = challenge;
-    }
-    return $result;
-  }
-  VerifyWebhookResponse._() : super();
-  factory VerifyWebhookResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory VerifyWebhookResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyWebhookResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'challenge')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VerifyWebhookResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'challenge')
     ..hasRequiredFields = false
   ;
 
+  VerifyWebhookResponse._() : super();
+  factory VerifyWebhookResponse({
+    $core.String? challenge,
+  }) {
+    final _result = create();
+    if (challenge != null) {
+      _result.challenge = challenge;
+    }
+    return _result;
+  }
+  factory VerifyWebhookResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory VerifyWebhookResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1533,10 +1462,8 @@ class VerifyWebhookResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  VerifyWebhookResponse copyWith(void Function(VerifyWebhookResponse) updates) => super.copyWith((message) => updates(message as VerifyWebhookResponse)) as VerifyWebhookResponse;
-
+  VerifyWebhookResponse copyWith(void Function(VerifyWebhookResponse) updates) => super.copyWith((message) => updates(message as VerifyWebhookResponse)) as VerifyWebhookResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static VerifyWebhookResponse create() => VerifyWebhookResponse._();
   VerifyWebhookResponse createEmptyInstance() => create();
@@ -1556,24 +1483,23 @@ class VerifyWebhookResponse extends $pb.GeneratedMessage {
 }
 
 class GetSessionRequest extends $pb.GeneratedMessage {
-  factory GetSessionRequest({
-    $core.String? sessionId,
-  }) {
-    final $result = create();
-    if (sessionId != null) {
-      $result.sessionId = sessionId;
-    }
-    return $result;
-  }
-  GetSessionRequest._() : super();
-  factory GetSessionRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetSessionRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSessionRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'sessionId')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetSessionRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sessionId')
     ..hasRequiredFields = false
   ;
 
+  GetSessionRequest._() : super();
+  factory GetSessionRequest({
+    $core.String? sessionId,
+  }) {
+    final _result = create();
+    if (sessionId != null) {
+      _result.sessionId = sessionId;
+    }
+    return _result;
+  }
+  factory GetSessionRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetSessionRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1583,10 +1509,8 @@ class GetSessionRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetSessionRequest copyWith(void Function(GetSessionRequest) updates) => super.copyWith((message) => updates(message as GetSessionRequest)) as GetSessionRequest;
-
+  GetSessionRequest copyWith(void Function(GetSessionRequest) updates) => super.copyWith((message) => updates(message as GetSessionRequest)) as GetSessionRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetSessionRequest create() => GetSessionRequest._();
   GetSessionRequest createEmptyInstance() => create();
@@ -1606,24 +1530,23 @@ class GetSessionRequest extends $pb.GeneratedMessage {
 }
 
 class GetSessionResponse extends $pb.GeneratedMessage {
-  factory GetSessionResponse({
-    WhatsAppSession? session,
-  }) {
-    final $result = create();
-    if (session != null) {
-      $result.session = session;
-    }
-    return $result;
-  }
-  GetSessionResponse._() : super();
-  factory GetSessionResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetSessionResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSessionResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
-    ..aOM<WhatsAppSession>(1, _omitFieldNames ? '' : 'session', subBuilder: WhatsAppSession.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetSessionResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..aOM<WhatsAppSession>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'session', subBuilder: WhatsAppSession.create)
     ..hasRequiredFields = false
   ;
 
+  GetSessionResponse._() : super();
+  factory GetSessionResponse({
+    WhatsAppSession? session,
+  }) {
+    final _result = create();
+    if (session != null) {
+      _result.session = session;
+    }
+    return _result;
+  }
+  factory GetSessionResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetSessionResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1633,10 +1556,8 @@ class GetSessionResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetSessionResponse copyWith(void Function(GetSessionResponse) updates) => super.copyWith((message) => updates(message as GetSessionResponse)) as GetSessionResponse;
-
+  GetSessionResponse copyWith(void Function(GetSessionResponse) updates) => super.copyWith((message) => updates(message as GetSessionResponse)) as GetSessionResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetSessionResponse create() => GetSessionResponse._();
   GetSessionResponse createEmptyInstance() => create();
@@ -1658,6 +1579,16 @@ class GetSessionResponse extends $pb.GeneratedMessage {
 }
 
 class WhatsAppSession extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'WhatsAppSession', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'whatsappUserId')
+    ..aOB(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isAuthenticated')
+    ..aOM<$1.Timestamp>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastActivityAt', subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
+  WhatsAppSession._() : super();
   factory WhatsAppSession({
     $core.String? id,
     $core.String? whatsappUserId,
@@ -1665,37 +1596,26 @@ class WhatsAppSession extends $pb.GeneratedMessage {
     $1.Timestamp? expiresAt,
     $1.Timestamp? lastActivityAt,
   }) {
-    final $result = create();
+    final _result = create();
     if (id != null) {
-      $result.id = id;
+      _result.id = id;
     }
     if (whatsappUserId != null) {
-      $result.whatsappUserId = whatsappUserId;
+      _result.whatsappUserId = whatsappUserId;
     }
     if (isAuthenticated != null) {
-      $result.isAuthenticated = isAuthenticated;
+      _result.isAuthenticated = isAuthenticated;
     }
     if (expiresAt != null) {
-      $result.expiresAt = expiresAt;
+      _result.expiresAt = expiresAt;
     }
     if (lastActivityAt != null) {
-      $result.lastActivityAt = lastActivityAt;
+      _result.lastActivityAt = lastActivityAt;
     }
-    return $result;
+    return _result;
   }
-  WhatsAppSession._() : super();
   factory WhatsAppSession.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory WhatsAppSession.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'WhatsAppSession', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..aOS(2, _omitFieldNames ? '' : 'whatsappUserId')
-    ..aOB(3, _omitFieldNames ? '' : 'isAuthenticated')
-    ..aOM<$1.Timestamp>(4, _omitFieldNames ? '' : 'expiresAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(5, _omitFieldNames ? '' : 'lastActivityAt', subBuilder: $1.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1705,10 +1625,8 @@ class WhatsAppSession extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  WhatsAppSession copyWith(void Function(WhatsAppSession) updates) => super.copyWith((message) => updates(message as WhatsAppSession)) as WhatsAppSession;
-
+  WhatsAppSession copyWith(void Function(WhatsAppSession) updates) => super.copyWith((message) => updates(message as WhatsAppSession)) as WhatsAppSession; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static WhatsAppSession create() => WhatsAppSession._();
   WhatsAppSession createEmptyInstance() => create();
@@ -1768,24 +1686,23 @@ class WhatsAppSession extends $pb.GeneratedMessage {
 }
 
 class InvalidateSessionRequest extends $pb.GeneratedMessage {
-  factory InvalidateSessionRequest({
-    $core.String? sessionId,
-  }) {
-    final $result = create();
-    if (sessionId != null) {
-      $result.sessionId = sessionId;
-    }
-    return $result;
-  }
-  InvalidateSessionRequest._() : super();
-  factory InvalidateSessionRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory InvalidateSessionRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InvalidateSessionRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'sessionId')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'InvalidateSessionRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sessionId')
     ..hasRequiredFields = false
   ;
 
+  InvalidateSessionRequest._() : super();
+  factory InvalidateSessionRequest({
+    $core.String? sessionId,
+  }) {
+    final _result = create();
+    if (sessionId != null) {
+      _result.sessionId = sessionId;
+    }
+    return _result;
+  }
+  factory InvalidateSessionRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory InvalidateSessionRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1795,10 +1712,8 @@ class InvalidateSessionRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  InvalidateSessionRequest copyWith(void Function(InvalidateSessionRequest) updates) => super.copyWith((message) => updates(message as InvalidateSessionRequest)) as InvalidateSessionRequest;
-
+  InvalidateSessionRequest copyWith(void Function(InvalidateSessionRequest) updates) => super.copyWith((message) => updates(message as InvalidateSessionRequest)) as InvalidateSessionRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static InvalidateSessionRequest create() => InvalidateSessionRequest._();
   InvalidateSessionRequest createEmptyInstance() => create();
@@ -1818,29 +1733,28 @@ class InvalidateSessionRequest extends $pb.GeneratedMessage {
 }
 
 class InvalidateSessionResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'InvalidateSessionResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  InvalidateSessionResponse._() : super();
   factory InvalidateSessionResponse({
     $core.bool? success,
     $core.String? message,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
-    return $result;
+    return _result;
   }
-  InvalidateSessionResponse._() : super();
   factory InvalidateSessionResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory InvalidateSessionResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InvalidateSessionResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1850,10 +1764,8 @@ class InvalidateSessionResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  InvalidateSessionResponse copyWith(void Function(InvalidateSessionResponse) updates) => super.copyWith((message) => updates(message as InvalidateSessionResponse)) as InvalidateSessionResponse;
-
+  InvalidateSessionResponse copyWith(void Function(InvalidateSessionResponse) updates) => super.copyWith((message) => updates(message as InvalidateSessionResponse)) as InvalidateSessionResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static InvalidateSessionResponse create() => InvalidateSessionResponse._();
   InvalidateSessionResponse createEmptyInstance() => create();
@@ -1882,39 +1794,38 @@ class InvalidateSessionResponse extends $pb.GeneratedMessage {
 }
 
 class UpdateSecuritySettingsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateSecuritySettingsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..a<$core.double>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dailyTransactionLimit', $pb.PbFieldType.OD)
+    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'perTransactionLimit', $pb.PbFieldType.OD)
+    ..aOB(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'requirePinForAll')
+    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'biometricThreshold', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
+  UpdateSecuritySettingsRequest._() : super();
   factory UpdateSecuritySettingsRequest({
     $core.double? dailyTransactionLimit,
     $core.double? perTransactionLimit,
     $core.bool? requirePinForAll,
     $core.double? biometricThreshold,
   }) {
-    final $result = create();
+    final _result = create();
     if (dailyTransactionLimit != null) {
-      $result.dailyTransactionLimit = dailyTransactionLimit;
+      _result.dailyTransactionLimit = dailyTransactionLimit;
     }
     if (perTransactionLimit != null) {
-      $result.perTransactionLimit = perTransactionLimit;
+      _result.perTransactionLimit = perTransactionLimit;
     }
     if (requirePinForAll != null) {
-      $result.requirePinForAll = requirePinForAll;
+      _result.requirePinForAll = requirePinForAll;
     }
     if (biometricThreshold != null) {
-      $result.biometricThreshold = biometricThreshold;
+      _result.biometricThreshold = biometricThreshold;
     }
-    return $result;
+    return _result;
   }
-  UpdateSecuritySettingsRequest._() : super();
   factory UpdateSecuritySettingsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory UpdateSecuritySettingsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateSecuritySettingsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
-    ..a<$core.double>(1, _omitFieldNames ? '' : 'dailyTransactionLimit', $pb.PbFieldType.OD)
-    ..a<$core.double>(2, _omitFieldNames ? '' : 'perTransactionLimit', $pb.PbFieldType.OD)
-    ..aOB(3, _omitFieldNames ? '' : 'requirePinForAll')
-    ..a<$core.double>(4, _omitFieldNames ? '' : 'biometricThreshold', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1924,10 +1835,8 @@ class UpdateSecuritySettingsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UpdateSecuritySettingsRequest copyWith(void Function(UpdateSecuritySettingsRequest) updates) => super.copyWith((message) => updates(message as UpdateSecuritySettingsRequest)) as UpdateSecuritySettingsRequest;
-
+  UpdateSecuritySettingsRequest copyWith(void Function(UpdateSecuritySettingsRequest) updates) => super.copyWith((message) => updates(message as UpdateSecuritySettingsRequest)) as UpdateSecuritySettingsRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static UpdateSecuritySettingsRequest create() => UpdateSecuritySettingsRequest._();
   UpdateSecuritySettingsRequest createEmptyInstance() => create();
@@ -1974,24 +1883,23 @@ class UpdateSecuritySettingsRequest extends $pb.GeneratedMessage {
 }
 
 class UpdateSecuritySettingsResponse extends $pb.GeneratedMessage {
-  factory UpdateSecuritySettingsResponse({
-    SecuritySettings? settings,
-  }) {
-    final $result = create();
-    if (settings != null) {
-      $result.settings = settings;
-    }
-    return $result;
-  }
-  UpdateSecuritySettingsResponse._() : super();
-  factory UpdateSecuritySettingsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory UpdateSecuritySettingsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateSecuritySettingsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
-    ..aOM<SecuritySettings>(1, _omitFieldNames ? '' : 'settings', subBuilder: SecuritySettings.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateSecuritySettingsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..aOM<SecuritySettings>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'settings', subBuilder: SecuritySettings.create)
     ..hasRequiredFields = false
   ;
 
+  UpdateSecuritySettingsResponse._() : super();
+  factory UpdateSecuritySettingsResponse({
+    SecuritySettings? settings,
+  }) {
+    final _result = create();
+    if (settings != null) {
+      _result.settings = settings;
+    }
+    return _result;
+  }
+  factory UpdateSecuritySettingsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateSecuritySettingsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2001,10 +1909,8 @@ class UpdateSecuritySettingsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  UpdateSecuritySettingsResponse copyWith(void Function(UpdateSecuritySettingsResponse) updates) => super.copyWith((message) => updates(message as UpdateSecuritySettingsResponse)) as UpdateSecuritySettingsResponse;
-
+  UpdateSecuritySettingsResponse copyWith(void Function(UpdateSecuritySettingsResponse) updates) => super.copyWith((message) => updates(message as UpdateSecuritySettingsResponse)) as UpdateSecuritySettingsResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static UpdateSecuritySettingsResponse create() => UpdateSecuritySettingsResponse._();
   UpdateSecuritySettingsResponse createEmptyInstance() => create();
@@ -2026,15 +1932,14 @@ class UpdateSecuritySettingsResponse extends $pb.GeneratedMessage {
 }
 
 class GetSecuritySettingsRequest extends $pb.GeneratedMessage {
-  factory GetSecuritySettingsRequest() => create();
-  GetSecuritySettingsRequest._() : super();
-  factory GetSecuritySettingsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetSecuritySettingsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSecuritySettingsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetSecuritySettingsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
     ..hasRequiredFields = false
   ;
 
+  GetSecuritySettingsRequest._() : super();
+  factory GetSecuritySettingsRequest() => create();
+  factory GetSecuritySettingsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetSecuritySettingsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2044,10 +1949,8 @@ class GetSecuritySettingsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetSecuritySettingsRequest copyWith(void Function(GetSecuritySettingsRequest) updates) => super.copyWith((message) => updates(message as GetSecuritySettingsRequest)) as GetSecuritySettingsRequest;
-
+  GetSecuritySettingsRequest copyWith(void Function(GetSecuritySettingsRequest) updates) => super.copyWith((message) => updates(message as GetSecuritySettingsRequest)) as GetSecuritySettingsRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetSecuritySettingsRequest create() => GetSecuritySettingsRequest._();
   GetSecuritySettingsRequest createEmptyInstance() => create();
@@ -2058,24 +1961,23 @@ class GetSecuritySettingsRequest extends $pb.GeneratedMessage {
 }
 
 class GetSecuritySettingsResponse extends $pb.GeneratedMessage {
-  factory GetSecuritySettingsResponse({
-    SecuritySettings? settings,
-  }) {
-    final $result = create();
-    if (settings != null) {
-      $result.settings = settings;
-    }
-    return $result;
-  }
-  GetSecuritySettingsResponse._() : super();
-  factory GetSecuritySettingsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetSecuritySettingsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSecuritySettingsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
-    ..aOM<SecuritySettings>(1, _omitFieldNames ? '' : 'settings', subBuilder: SecuritySettings.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetSecuritySettingsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..aOM<SecuritySettings>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'settings', subBuilder: SecuritySettings.create)
     ..hasRequiredFields = false
   ;
 
+  GetSecuritySettingsResponse._() : super();
+  factory GetSecuritySettingsResponse({
+    SecuritySettings? settings,
+  }) {
+    final _result = create();
+    if (settings != null) {
+      _result.settings = settings;
+    }
+    return _result;
+  }
+  factory GetSecuritySettingsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetSecuritySettingsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2085,10 +1987,8 @@ class GetSecuritySettingsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetSecuritySettingsResponse copyWith(void Function(GetSecuritySettingsResponse) updates) => super.copyWith((message) => updates(message as GetSecuritySettingsResponse)) as GetSecuritySettingsResponse;
-
+  GetSecuritySettingsResponse copyWith(void Function(GetSecuritySettingsResponse) updates) => super.copyWith((message) => updates(message as GetSecuritySettingsResponse)) as GetSecuritySettingsResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetSecuritySettingsResponse create() => GetSecuritySettingsResponse._();
   GetSecuritySettingsResponse createEmptyInstance() => create();
@@ -2110,39 +2010,38 @@ class GetSecuritySettingsResponse extends $pb.GeneratedMessage {
 }
 
 class SecuritySettings extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SecuritySettings', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..a<$core.double>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dailyTransactionLimit', $pb.PbFieldType.OD)
+    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'perTransactionLimit', $pb.PbFieldType.OD)
+    ..aOB(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'requirePinForAll')
+    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'biometricThreshold', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
+  SecuritySettings._() : super();
   factory SecuritySettings({
     $core.double? dailyTransactionLimit,
     $core.double? perTransactionLimit,
     $core.bool? requirePinForAll,
     $core.double? biometricThreshold,
   }) {
-    final $result = create();
+    final _result = create();
     if (dailyTransactionLimit != null) {
-      $result.dailyTransactionLimit = dailyTransactionLimit;
+      _result.dailyTransactionLimit = dailyTransactionLimit;
     }
     if (perTransactionLimit != null) {
-      $result.perTransactionLimit = perTransactionLimit;
+      _result.perTransactionLimit = perTransactionLimit;
     }
     if (requirePinForAll != null) {
-      $result.requirePinForAll = requirePinForAll;
+      _result.requirePinForAll = requirePinForAll;
     }
     if (biometricThreshold != null) {
-      $result.biometricThreshold = biometricThreshold;
+      _result.biometricThreshold = biometricThreshold;
     }
-    return $result;
+    return _result;
   }
-  SecuritySettings._() : super();
   factory SecuritySettings.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SecuritySettings.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SecuritySettings', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
-    ..a<$core.double>(1, _omitFieldNames ? '' : 'dailyTransactionLimit', $pb.PbFieldType.OD)
-    ..a<$core.double>(2, _omitFieldNames ? '' : 'perTransactionLimit', $pb.PbFieldType.OD)
-    ..aOB(3, _omitFieldNames ? '' : 'requirePinForAll')
-    ..a<$core.double>(4, _omitFieldNames ? '' : 'biometricThreshold', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2152,10 +2051,8 @@ class SecuritySettings extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SecuritySettings copyWith(void Function(SecuritySettings) updates) => super.copyWith((message) => updates(message as SecuritySettings)) as SecuritySettings;
-
+  SecuritySettings copyWith(void Function(SecuritySettings) updates) => super.copyWith((message) => updates(message as SecuritySettings)) as SecuritySettings; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SecuritySettings create() => SecuritySettings._();
   SecuritySettings createEmptyInstance() => create();
@@ -2202,39 +2099,38 @@ class SecuritySettings extends $pb.GeneratedMessage {
 }
 
 class GetAuditLogsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetAuditLogsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'startDate')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'endDate')
+    ..hasRequiredFields = false
+  ;
+
+  GetAuditLogsRequest._() : super();
   factory GetAuditLogsRequest({
     $core.int? page,
     $core.int? pageSize,
     $core.String? startDate,
     $core.String? endDate,
   }) {
-    final $result = create();
+    final _result = create();
     if (page != null) {
-      $result.page = page;
+      _result.page = page;
     }
     if (pageSize != null) {
-      $result.pageSize = pageSize;
+      _result.pageSize = pageSize;
     }
     if (startDate != null) {
-      $result.startDate = startDate;
+      _result.startDate = startDate;
     }
     if (endDate != null) {
-      $result.endDate = endDate;
+      _result.endDate = endDate;
     }
-    return $result;
+    return _result;
   }
-  GetAuditLogsRequest._() : super();
   factory GetAuditLogsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetAuditLogsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetAuditLogsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
-    ..a<$core.int>(1, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
-    ..aOS(3, _omitFieldNames ? '' : 'startDate')
-    ..aOS(4, _omitFieldNames ? '' : 'endDate')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2244,10 +2140,8 @@ class GetAuditLogsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetAuditLogsRequest copyWith(void Function(GetAuditLogsRequest) updates) => super.copyWith((message) => updates(message as GetAuditLogsRequest)) as GetAuditLogsRequest;
-
+  GetAuditLogsRequest copyWith(void Function(GetAuditLogsRequest) updates) => super.copyWith((message) => updates(message as GetAuditLogsRequest)) as GetAuditLogsRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetAuditLogsRequest create() => GetAuditLogsRequest._();
   GetAuditLogsRequest createEmptyInstance() => create();
@@ -2294,29 +2188,28 @@ class GetAuditLogsRequest extends $pb.GeneratedMessage {
 }
 
 class GetAuditLogsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetAuditLogsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..pc<AuditLog>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'logs', $pb.PbFieldType.PM, subBuilder: AuditLog.create)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'total', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  GetAuditLogsResponse._() : super();
   factory GetAuditLogsResponse({
     $core.Iterable<AuditLog>? logs,
     $core.int? total,
   }) {
-    final $result = create();
+    final _result = create();
     if (logs != null) {
-      $result.logs.addAll(logs);
+      _result.logs.addAll(logs);
     }
     if (total != null) {
-      $result.total = total;
+      _result.total = total;
     }
-    return $result;
+    return _result;
   }
-  GetAuditLogsResponse._() : super();
   factory GetAuditLogsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetAuditLogsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetAuditLogsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
-    ..pc<AuditLog>(1, _omitFieldNames ? '' : 'logs', $pb.PbFieldType.PM, subBuilder: AuditLog.create)
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2326,10 +2219,8 @@ class GetAuditLogsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetAuditLogsResponse copyWith(void Function(GetAuditLogsResponse) updates) => super.copyWith((message) => updates(message as GetAuditLogsResponse)) as GetAuditLogsResponse;
-
+  GetAuditLogsResponse copyWith(void Function(GetAuditLogsResponse) updates) => super.copyWith((message) => updates(message as GetAuditLogsResponse)) as GetAuditLogsResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetAuditLogsResponse create() => GetAuditLogsResponse._();
   GetAuditLogsResponse createEmptyInstance() => create();
@@ -2352,6 +2243,16 @@ class GetAuditLogsResponse extends $pb.GeneratedMessage {
 }
 
 class AuditLog extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AuditLog', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'action')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'serviceType')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+    ..aOM<$1.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
+  AuditLog._() : super();
   factory AuditLog({
     $core.String? id,
     $core.String? action,
@@ -2359,37 +2260,26 @@ class AuditLog extends $pb.GeneratedMessage {
     $core.String? status,
     $1.Timestamp? createdAt,
   }) {
-    final $result = create();
+    final _result = create();
     if (id != null) {
-      $result.id = id;
+      _result.id = id;
     }
     if (action != null) {
-      $result.action = action;
+      _result.action = action;
     }
     if (serviceType != null) {
-      $result.serviceType = serviceType;
+      _result.serviceType = serviceType;
     }
     if (status != null) {
-      $result.status = status;
+      _result.status = status;
     }
     if (createdAt != null) {
-      $result.createdAt = createdAt;
+      _result.createdAt = createdAt;
     }
-    return $result;
+    return _result;
   }
-  AuditLog._() : super();
   factory AuditLog.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory AuditLog.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AuditLog', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..aOS(2, _omitFieldNames ? '' : 'action')
-    ..aOS(3, _omitFieldNames ? '' : 'serviceType')
-    ..aOS(4, _omitFieldNames ? '' : 'status')
-    ..aOM<$1.Timestamp>(5, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2399,10 +2289,8 @@ class AuditLog extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  AuditLog copyWith(void Function(AuditLog) updates) => super.copyWith((message) => updates(message as AuditLog)) as AuditLog;
-
+  AuditLog copyWith(void Function(AuditLog) updates) => super.copyWith((message) => updates(message as AuditLog)) as AuditLog; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static AuditLog create() => AuditLog._();
   AuditLog createEmptyInstance() => create();
@@ -2460,6 +2348,18 @@ class AuditLog extends $pb.GeneratedMessage {
 }
 
 class WhatsAppUser extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'WhatsAppUser', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumber')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'whatsappId')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'linkStatus')
+    ..aOM<$1.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'linkedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastActiveAt', subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
+  WhatsAppUser._() : super();
   factory WhatsAppUser({
     $core.String? id,
     $core.String? userId,
@@ -2469,45 +2369,32 @@ class WhatsAppUser extends $pb.GeneratedMessage {
     $1.Timestamp? linkedAt,
     $1.Timestamp? lastActiveAt,
   }) {
-    final $result = create();
+    final _result = create();
     if (id != null) {
-      $result.id = id;
+      _result.id = id;
     }
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (phoneNumber != null) {
-      $result.phoneNumber = phoneNumber;
+      _result.phoneNumber = phoneNumber;
     }
     if (whatsappId != null) {
-      $result.whatsappId = whatsappId;
+      _result.whatsappId = whatsappId;
     }
     if (linkStatus != null) {
-      $result.linkStatus = linkStatus;
+      _result.linkStatus = linkStatus;
     }
     if (linkedAt != null) {
-      $result.linkedAt = linkedAt;
+      _result.linkedAt = linkedAt;
     }
     if (lastActiveAt != null) {
-      $result.lastActiveAt = lastActiveAt;
+      _result.lastActiveAt = lastActiveAt;
     }
-    return $result;
+    return _result;
   }
-  WhatsAppUser._() : super();
   factory WhatsAppUser.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory WhatsAppUser.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'WhatsAppUser', package: const $pb.PackageName(_omitMessageNames ? '' : 'whatsapp'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..aOS(2, _omitFieldNames ? '' : 'userId')
-    ..aOS(3, _omitFieldNames ? '' : 'phoneNumber')
-    ..aOS(4, _omitFieldNames ? '' : 'whatsappId')
-    ..aOS(5, _omitFieldNames ? '' : 'linkStatus')
-    ..aOM<$1.Timestamp>(6, _omitFieldNames ? '' : 'linkedAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(7, _omitFieldNames ? '' : 'lastActiveAt', subBuilder: $1.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2517,10 +2404,8 @@ class WhatsAppUser extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  WhatsAppUser copyWith(void Function(WhatsAppUser) updates) => super.copyWith((message) => updates(message as WhatsAppUser)) as WhatsAppUser;
-
+  WhatsAppUser copyWith(void Function(WhatsAppUser) updates) => super.copyWith((message) => updates(message as WhatsAppUser)) as WhatsAppUser; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static WhatsAppUser create() => WhatsAppUser._();
   WhatsAppUser createEmptyInstance() => create();
@@ -2597,6 +2482,3 @@ class WhatsAppUser extends $pb.GeneratedMessage {
   $1.Timestamp ensureLastActiveAt() => $_ensure(6);
 }
 
-
-const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
-const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');

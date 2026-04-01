@@ -336,16 +336,16 @@ class KYCCubit extends Cubit<KYCState> {
         if (!isClosed) emit(KYCError(failure: failure, userMessage: _getUserMessage(failure)));
       },
       (confirmResult) {
-        // Check if name confirmation is required (BVN name mismatch 50-80%)
-        if (confirmResult.message == 'name_confirmation_required' ||
-            confirmResult.message == 'confirm') {
-          // Name mismatch detected — ask user to confirm
+        final recon = confirmResult.bvnNameReconciliation;
+        final needsNameConfirm = confirmResult.message == 'name_confirmation_required' ||
+            (recon != null && recon.nameAction == 'confirm');
+        if (needsNameConfirm) {
           if (!isClosed) {
             emit(NameConfirmationRequired(
               verificationId: verificationId,
-              verifiedName: confirmResult.message, // Will be populated from reconciliation
-              profileName: '',
-              matchScore: 0.0,
+              verifiedName: recon?.verifiedName ?? '',
+              profileName: recon?.profileName ?? '',
+              matchScore: recon?.nameMatchScore ?? 0.0,
             ));
           }
         } else {

@@ -17,12 +17,18 @@ class IdVerificationScreen extends StatefulWidget {
   final KYCTier targetTier;
   final IDType? preferredIdType;
   final String? countryCode; // ISO country code for showing country-specific ID options
+  /// Tier-2 onboarding path: only BVN (no NIN chip), Mono-backed flow.
+  final bool bvnOnlyEntry;
+  /// When set (e.g. progressive KYC), skip triggers backend skip + dashboard; otherwise just pops.
+  final VoidCallback? onSkipPressed;
 
   const IdVerificationScreen({
     super.key,
     this.targetTier = KYCTier.tier2,
     this.preferredIdType,
     this.countryCode,
+    this.bvnOnlyEntry = false,
+    this.onSkipPressed,
   });
 
   static const String route = '/kyc/verify-id';
@@ -49,7 +55,11 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
     _countryConfig = widget.countryCode != null
         ? CountryConfigs.getByCode(widget.countryCode!)
         : null;
-    _selectedIdType = widget.preferredIdType ?? _getDefaultIdType();
+    if (widget.bvnOnlyEntry) {
+      _selectedIdType = IDType.bvn;
+    } else {
+      _selectedIdType = widget.preferredIdType ?? _getDefaultIdType();
+    }
   }
 
   /// Get the default ID type based on country or fallback to BVN
@@ -126,6 +136,9 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
 
   /// Get available ID types based on country AND target tier (CBN compliance)
   List<IDType> _getAvailableIdTypes() {
+    if (widget.bvnOnlyEntry) {
+      return [IDType.bvn];
+    }
     if (_countryConfig != null) {
       // Check tier-specific mandatory types first
       final kycLevel = widget.targetTier == KYCTier.tier3
@@ -160,12 +173,15 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
   @override
   Widget build(BuildContext context) {
     final isTier2 = widget.targetTier == KYCTier.tier2;
-    final appBarTitle = isTier2 ? 'Verify Your BVN' : 'Verify Your NIN';
+    final appBarTitle = widget.bvnOnlyEntry || isTier2 ? 'Verify your BVN' : 'Verify your identity';
 
     return Scaffold(
+      backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(
         title: Text(appBarTitle),
         elevation: 0,
+        backgroundColor: const Color(0xFF0A0A0A),
+        foregroundColor: Colors.white,
       ),
       body: BlocListener<KYCCubit, KYCState>(
         listener: (context, state) {
@@ -181,7 +197,35 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
             _showError(context, state);
           }
         },
-        child: SingleChildScrollView(
+        child: Theme(
+          data: Theme.of(context).copyWith(
+            brightness: Brightness.dark,
+            inputDecorationTheme: InputDecorationTheme(
+              filled: true,
+              fillColor: const Color(0xFF1F1F1F),
+              labelStyle: const TextStyle(color: Color(0xFF9CA3AF)),
+              hintStyle: const TextStyle(color: Color(0xFF6B7280)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 1.5),
+              ),
+              prefixIconColor: const Color(0xFF9CA3AF),
+            ),
+            textSelectionTheme: const TextSelectionThemeData(cursorColor: Color(0xFF3B82F6)),
+            textTheme: Theme.of(context).textTheme.apply(
+                  bodyColor: Colors.white,
+                  displayColor: Colors.white,
+                ),
+          ),
+          child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Form(
             key: _formKey,
@@ -191,8 +235,10 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
                 SizedBox(height: MediaQuery.of(context).size.height * 0.05),
                 _buildHeader(context),
                 const SizedBox(height: 32),
-                _buildIdTypeSelector(context),
-                const SizedBox(height: 24),
+                if (!widget.bvnOnlyEntry) _buildIdTypeSelector(context),
+                if (!widget.bvnOnlyEntry) const SizedBox(height: 24),
+                if (widget.bvnOnlyEntry) _buildBvnOnlyHint(context),
+                if (widget.bvnOnlyEntry) const SizedBox(height: 24),
                 _buildIdNumberField(context),
                 const SizedBox(height: 24),
                 _buildNameFields(context),
@@ -208,29 +254,57 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
             ),
           ),
         ),
+        ),
       ),
     );
   }
 
   Widget _buildHeader(BuildContext context) {
-    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Verify Your Identity',
-          style: theme.textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
         ),
         const SizedBox(height: 8),
         Text(
           'Enter your details to verify your identity. This helps us keep your account secure.',
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
-          ),
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: const Color(0xFF9CA3AF),
+              ),
         ),
       ],
+    );
+  }
+
+  Widget _buildBvnOnlyHint(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF2D2D2D)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.info_outline, color: const Color(0xFF3B82F6), size: 22),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'We verify your 11-digit BVN with our partner. Your number is encrypted and only used for compliance.',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: const Color(0xFF9CA3AF),
+                    height: 1.35,
+                  ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -384,11 +458,11 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
       controller: controller,
       keyboardType: _getIdNumberKeyboardType(_selectedIdType),
       inputFormatters: _getIdNumberInputFormatters(_selectedIdType, maxLength),
+      style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
         prefixIcon: const Icon(Icons.badge),
-        border: const OutlineInputBorder(),
       ),
       validator: (value) {
         if (value == null || value.isEmpty) {
@@ -541,10 +615,10 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
           child: TextFormField(
             controller: _firstNameController,
             textCapitalization: TextCapitalization.words,
+            style: const TextStyle(color: Colors.white),
             decoration: const InputDecoration(
               labelText: 'First Name',
               prefixIcon: Icon(Icons.person),
-              border: OutlineInputBorder(),
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
@@ -559,10 +633,10 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
           child: TextFormField(
             controller: _lastNameController,
             textCapitalization: TextCapitalization.words,
+            style: const TextStyle(color: Colors.white),
             decoration: const InputDecoration(
               labelText: 'Last Name',
               prefixIcon: Icon(Icons.person_outline),
-              border: OutlineInputBorder(),
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
@@ -580,11 +654,11 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
     return TextFormField(
       controller: _dobController,
       readOnly: true,
+      style: const TextStyle(color: Colors.white),
       decoration: const InputDecoration(
         labelText: 'Date of Birth',
         hintText: 'Tap to select date',
         prefixIcon: Icon(Icons.calendar_today),
-        border: OutlineInputBorder(),
       ),
       onTap: () async {
         final date = await showDatePicker(
@@ -630,20 +704,20 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
   }
 
   Widget _buildTermsSection(BuildContext context) {
-    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: theme.colorScheme.primary.withValues(alpha: 0.05),
+        color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: theme.colorScheme.primary.withValues(alpha: 0.2),
+          color: const Color(0xFF3B82F6).withValues(alpha: 0.35),
         ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Checkbox(
+            activeColor: const Color(0xFF3B82F6),
             value: _acceptTerms,
             onChanged: (value) => setState(() => _acceptTerms = value ?? false),
           ),
@@ -655,15 +729,15 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
                     setState(() => _acceptTerms = !_acceptTerms),
                 child: RichText(
                   text: TextSpan(
-                    style: theme.textTheme.bodyMedium,
+                    style: const TextStyle(color: Color(0xFF9CA3AF), height: 1.4),
                     children: [
                       const TextSpan(
                         text: 'I agree to the ',
                       ),
                       TextSpan(
                         text: 'Terms of Service',
-                        style: TextStyle(
-                          color: theme.colorScheme.primary,
+                        style: const TextStyle(
+                          color: Color(0xFF3B82F6),
                           decoration: TextDecoration.underline,
                         ),
                       ),
@@ -672,8 +746,8 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
                       ),
                       TextSpan(
                         text: 'Privacy Policy',
-                        style: TextStyle(
-                          color: theme.colorScheme.primary,
+                        style: const TextStyle(
+                          color: Color(0xFF3B82F6),
                           decoration: TextDecoration.underline,
                         ),
                       ),
@@ -710,15 +784,18 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
   Widget _buildSkipButton(BuildContext context) {
     return Center(
       child: TextButton(
-        onPressed: () => Navigator.of(context).pop(),
-        child: Text(
-          'I\'ll do this later',
+        onPressed: () {
+          if (widget.onSkipPressed != null) {
+            widget.onSkipPressed!();
+          } else {
+            Navigator.of(context).pop();
+          }
+        },
+        child: const Text(
+          'Skip for now',
           style: TextStyle(
-            color: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.color
-                ?.withValues(alpha: 0.6),
+            color: Color(0xFF9CA3AF),
+            fontWeight: FontWeight.w500,
           ),
         ),
       ),

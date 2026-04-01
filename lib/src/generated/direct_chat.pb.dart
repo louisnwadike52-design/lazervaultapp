@@ -1,13 +1,9 @@
-//
+///
 //  Generated code. Do not modify.
 //  source: direct_chat.proto
 //
 // @dart = 2.12
-
-// ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
 
 import 'dart:core' as $core;
 
@@ -16,6 +12,21 @@ import 'package:protobuf/protobuf.dart' as $pb;
 import 'google/protobuf/struct.pb.dart' as $1;
 
 class SendDirectMessageRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SendDirectMessageRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sessionId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceContext')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'language')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'locale')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountId')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userCountry')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOM<$1.Struct>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'entities', subBuilder: $1.Struct.create)
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'responseStyleInstruction')
+    ..hasRequiredFields = false
+  ;
+
+  SendDirectMessageRequest._() : super();
   factory SendDirectMessageRequest({
     $core.String? message,
     $core.String? sessionId,
@@ -28,57 +39,41 @@ class SendDirectMessageRequest extends $pb.GeneratedMessage {
     $1.Struct? entities,
     $core.String? responseStyleInstruction,
   }) {
-    final $result = create();
+    final _result = create();
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (sessionId != null) {
-      $result.sessionId = sessionId;
+      _result.sessionId = sessionId;
     }
     if (sourceContext != null) {
-      $result.sourceContext = sourceContext;
+      _result.sourceContext = sourceContext;
     }
     if (language != null) {
-      $result.language = language;
+      _result.language = language;
     }
     if (locale != null) {
-      $result.locale = locale;
+      _result.locale = locale;
     }
     if (accountId != null) {
-      $result.accountId = accountId;
+      _result.accountId = accountId;
     }
     if (userCountry != null) {
-      $result.userCountry = userCountry;
+      _result.userCountry = userCountry;
     }
     if (currency != null) {
-      $result.currency = currency;
+      _result.currency = currency;
     }
     if (entities != null) {
-      $result.entities = entities;
+      _result.entities = entities;
     }
     if (responseStyleInstruction != null) {
-      $result.responseStyleInstruction = responseStyleInstruction;
+      _result.responseStyleInstruction = responseStyleInstruction;
     }
-    return $result;
+    return _result;
   }
-  SendDirectMessageRequest._() : super();
   factory SendDirectMessageRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SendDirectMessageRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SendDirectMessageRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'message')
-    ..aOS(2, _omitFieldNames ? '' : 'sessionId')
-    ..aOS(3, _omitFieldNames ? '' : 'sourceContext')
-    ..aOS(4, _omitFieldNames ? '' : 'language')
-    ..aOS(5, _omitFieldNames ? '' : 'locale')
-    ..aOS(6, _omitFieldNames ? '' : 'accountId')
-    ..aOS(7, _omitFieldNames ? '' : 'userCountry')
-    ..aOS(8, _omitFieldNames ? '' : 'currency')
-    ..aOM<$1.Struct>(9, _omitFieldNames ? '' : 'entities', subBuilder: $1.Struct.create)
-    ..aOS(10, _omitFieldNames ? '' : 'responseStyleInstruction')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -88,10 +83,8 @@ class SendDirectMessageRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SendDirectMessageRequest copyWith(void Function(SendDirectMessageRequest) updates) => super.copyWith((message) => updates(message as SendDirectMessageRequest)) as SendDirectMessageRequest;
-
+  SendDirectMessageRequest copyWith(void Function(SendDirectMessageRequest) updates) => super.copyWith((message) => updates(message as SendDirectMessageRequest)) as SendDirectMessageRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SendDirectMessageRequest create() => SendDirectMessageRequest._();
   SendDirectMessageRequest createEmptyInstance() => create();
@@ -194,6 +187,17 @@ class SendDirectMessageRequest extends $pb.GeneratedMessage {
 }
 
 class SendDirectMessageResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SendDirectMessageResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'messageId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'response')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'serviceRoutedTo')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sessionId')
+    ..aOM<$1.Struct>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'entities', subBuilder: $1.Struct.create)
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'conversationState')
+    ..hasRequiredFields = false
+  ;
+
+  SendDirectMessageResponse._() : super();
   factory SendDirectMessageResponse({
     $core.String? messageId,
     $core.String? response,
@@ -202,41 +206,29 @@ class SendDirectMessageResponse extends $pb.GeneratedMessage {
     $1.Struct? entities,
     $core.String? conversationState,
   }) {
-    final $result = create();
+    final _result = create();
     if (messageId != null) {
-      $result.messageId = messageId;
+      _result.messageId = messageId;
     }
     if (response != null) {
-      $result.response = response;
+      _result.response = response;
     }
     if (serviceRoutedTo != null) {
-      $result.serviceRoutedTo = serviceRoutedTo;
+      _result.serviceRoutedTo = serviceRoutedTo;
     }
     if (sessionId != null) {
-      $result.sessionId = sessionId;
+      _result.sessionId = sessionId;
     }
     if (entities != null) {
-      $result.entities = entities;
+      _result.entities = entities;
     }
     if (conversationState != null) {
-      $result.conversationState = conversationState;
+      _result.conversationState = conversationState;
     }
-    return $result;
+    return _result;
   }
-  SendDirectMessageResponse._() : super();
   factory SendDirectMessageResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SendDirectMessageResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SendDirectMessageResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'messageId')
-    ..aOS(2, _omitFieldNames ? '' : 'response')
-    ..aOS(3, _omitFieldNames ? '' : 'serviceRoutedTo')
-    ..aOS(4, _omitFieldNames ? '' : 'sessionId')
-    ..aOM<$1.Struct>(5, _omitFieldNames ? '' : 'entities', subBuilder: $1.Struct.create)
-    ..aOS(6, _omitFieldNames ? '' : 'conversationState')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -246,10 +238,8 @@ class SendDirectMessageResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SendDirectMessageResponse copyWith(void Function(SendDirectMessageResponse) updates) => super.copyWith((message) => updates(message as SendDirectMessageResponse)) as SendDirectMessageResponse;
-
+  SendDirectMessageResponse copyWith(void Function(SendDirectMessageResponse) updates) => super.copyWith((message) => updates(message as SendDirectMessageResponse)) as SendDirectMessageResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SendDirectMessageResponse create() => SendDirectMessageResponse._();
   SendDirectMessageResponse createEmptyInstance() => create();
@@ -316,6 +306,16 @@ class SendDirectMessageResponse extends $pb.GeneratedMessage {
 }
 
 class GetDirectChatHistoryRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetDirectChatHistoryRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sessionId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceContext')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'locale')
+    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
+    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'offset', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  GetDirectChatHistoryRequest._() : super();
   factory GetDirectChatHistoryRequest({
     $core.String? sessionId,
     $core.String? sourceContext,
@@ -323,37 +323,26 @@ class GetDirectChatHistoryRequest extends $pb.GeneratedMessage {
     $core.int? limit,
     $core.int? offset,
   }) {
-    final $result = create();
+    final _result = create();
     if (sessionId != null) {
-      $result.sessionId = sessionId;
+      _result.sessionId = sessionId;
     }
     if (sourceContext != null) {
-      $result.sourceContext = sourceContext;
+      _result.sourceContext = sourceContext;
     }
     if (locale != null) {
-      $result.locale = locale;
+      _result.locale = locale;
     }
     if (limit != null) {
-      $result.limit = limit;
+      _result.limit = limit;
     }
     if (offset != null) {
-      $result.offset = offset;
+      _result.offset = offset;
     }
-    return $result;
+    return _result;
   }
-  GetDirectChatHistoryRequest._() : super();
   factory GetDirectChatHistoryRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetDirectChatHistoryRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetDirectChatHistoryRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'sessionId')
-    ..aOS(2, _omitFieldNames ? '' : 'sourceContext')
-    ..aOS(3, _omitFieldNames ? '' : 'locale')
-    ..a<$core.int>(4, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
-    ..a<$core.int>(5, _omitFieldNames ? '' : 'offset', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -363,10 +352,8 @@ class GetDirectChatHistoryRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetDirectChatHistoryRequest copyWith(void Function(GetDirectChatHistoryRequest) updates) => super.copyWith((message) => updates(message as GetDirectChatHistoryRequest)) as GetDirectChatHistoryRequest;
-
+  GetDirectChatHistoryRequest copyWith(void Function(GetDirectChatHistoryRequest) updates) => super.copyWith((message) => updates(message as GetDirectChatHistoryRequest)) as GetDirectChatHistoryRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetDirectChatHistoryRequest create() => GetDirectChatHistoryRequest._();
   GetDirectChatHistoryRequest createEmptyInstance() => create();
@@ -422,6 +409,17 @@ class GetDirectChatHistoryRequest extends $pb.GeneratedMessage {
 }
 
 class DirectChatHistoryMessage extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DirectChatHistoryMessage', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'role')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'content')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'service')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceContext')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt')
+    ..aOM<$1.Struct>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'entities', subBuilder: $1.Struct.create)
+    ..hasRequiredFields = false
+  ;
+
+  DirectChatHistoryMessage._() : super();
   factory DirectChatHistoryMessage({
     $core.String? role,
     $core.String? content,
@@ -430,41 +428,29 @@ class DirectChatHistoryMessage extends $pb.GeneratedMessage {
     $core.String? createdAt,
     $1.Struct? entities,
   }) {
-    final $result = create();
+    final _result = create();
     if (role != null) {
-      $result.role = role;
+      _result.role = role;
     }
     if (content != null) {
-      $result.content = content;
+      _result.content = content;
     }
     if (service != null) {
-      $result.service = service;
+      _result.service = service;
     }
     if (sourceContext != null) {
-      $result.sourceContext = sourceContext;
+      _result.sourceContext = sourceContext;
     }
     if (createdAt != null) {
-      $result.createdAt = createdAt;
+      _result.createdAt = createdAt;
     }
     if (entities != null) {
-      $result.entities = entities;
+      _result.entities = entities;
     }
-    return $result;
+    return _result;
   }
-  DirectChatHistoryMessage._() : super();
   factory DirectChatHistoryMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory DirectChatHistoryMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DirectChatHistoryMessage', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'role')
-    ..aOS(2, _omitFieldNames ? '' : 'content')
-    ..aOS(3, _omitFieldNames ? '' : 'service')
-    ..aOS(4, _omitFieldNames ? '' : 'sourceContext')
-    ..aOS(5, _omitFieldNames ? '' : 'createdAt')
-    ..aOM<$1.Struct>(6, _omitFieldNames ? '' : 'entities', subBuilder: $1.Struct.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -474,10 +460,8 @@ class DirectChatHistoryMessage extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  DirectChatHistoryMessage copyWith(void Function(DirectChatHistoryMessage) updates) => super.copyWith((message) => updates(message as DirectChatHistoryMessage)) as DirectChatHistoryMessage;
-
+  DirectChatHistoryMessage copyWith(void Function(DirectChatHistoryMessage) updates) => super.copyWith((message) => updates(message as DirectChatHistoryMessage)) as DirectChatHistoryMessage; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static DirectChatHistoryMessage create() => DirectChatHistoryMessage._();
   DirectChatHistoryMessage createEmptyInstance() => create();
@@ -544,34 +528,33 @@ class DirectChatHistoryMessage extends $pb.GeneratedMessage {
 }
 
 class GetDirectChatHistoryResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetDirectChatHistoryResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<DirectChatHistoryMessage>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'messages', $pb.PbFieldType.PM, subBuilder: DirectChatHistoryMessage.create)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'total', $pb.PbFieldType.O3)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sessionId')
+    ..hasRequiredFields = false
+  ;
+
+  GetDirectChatHistoryResponse._() : super();
   factory GetDirectChatHistoryResponse({
     $core.Iterable<DirectChatHistoryMessage>? messages,
     $core.int? total,
     $core.String? sessionId,
   }) {
-    final $result = create();
+    final _result = create();
     if (messages != null) {
-      $result.messages.addAll(messages);
+      _result.messages.addAll(messages);
     }
     if (total != null) {
-      $result.total = total;
+      _result.total = total;
     }
     if (sessionId != null) {
-      $result.sessionId = sessionId;
+      _result.sessionId = sessionId;
     }
-    return $result;
+    return _result;
   }
-  GetDirectChatHistoryResponse._() : super();
   factory GetDirectChatHistoryResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetDirectChatHistoryResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetDirectChatHistoryResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<DirectChatHistoryMessage>(1, _omitFieldNames ? '' : 'messages', $pb.PbFieldType.PM, subBuilder: DirectChatHistoryMessage.create)
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
-    ..aOS(3, _omitFieldNames ? '' : 'sessionId')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -581,10 +564,8 @@ class GetDirectChatHistoryResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetDirectChatHistoryResponse copyWith(void Function(GetDirectChatHistoryResponse) updates) => super.copyWith((message) => updates(message as GetDirectChatHistoryResponse)) as GetDirectChatHistoryResponse;
-
+  GetDirectChatHistoryResponse copyWith(void Function(GetDirectChatHistoryResponse) updates) => super.copyWith((message) => updates(message as GetDirectChatHistoryResponse)) as GetDirectChatHistoryResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetDirectChatHistoryResponse create() => GetDirectChatHistoryResponse._();
   GetDirectChatHistoryResponse createEmptyInstance() => create();
@@ -615,6 +596,3 @@ class GetDirectChatHistoryResponse extends $pb.GeneratedMessage {
   void clearSessionId() => clearField(3);
 }
 
-
-const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
-const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');

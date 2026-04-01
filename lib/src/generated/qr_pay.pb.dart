@@ -1,25 +1,39 @@
-//
+///
 //  Generated code. Do not modify.
 //  source: qr_pay.proto
 //
 // @dart = 2.12
-
-// ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
 
 import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
 import 'google/protobuf/timestamp.pb.dart' as $1;
+
 import 'qr_pay.pbenum.dart';
 
 export 'qr_pay.pbenum.dart';
 
-/// Models
 class QRCode extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'QRCode', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'qr_pay'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'username')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fullName')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'qrCode')
+    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
+    ..e<QRType>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'qrType', $pb.PbFieldType.OE, defaultOrMaker: QRType.QR_TYPE_DYNAMIC, valueOf: QRType.valueOf, enumValues: QRType.values)
+    ..e<QRStatus>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: QRStatus.QR_STATUS_PENDING, valueOf: QRStatus.valueOf, enumValues: QRStatus.values)
+    ..aOM<$1.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paidAt', subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
+  QRCode._() : super();
   factory QRCode({
     $core.String? id,
     $core.String? userId,
@@ -35,69 +49,50 @@ class QRCode extends $pb.GeneratedMessage {
     $1.Timestamp? expiresAt,
     $1.Timestamp? paidAt,
   }) {
-    final $result = create();
+    final _result = create();
     if (id != null) {
-      $result.id = id;
+      _result.id = id;
     }
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (username != null) {
-      $result.username = username;
+      _result.username = username;
     }
     if (fullName != null) {
-      $result.fullName = fullName;
+      _result.fullName = fullName;
     }
     if (qrCode != null) {
-      $result.qrCode = qrCode;
+      _result.qrCode = qrCode;
     }
     if (amount != null) {
-      $result.amount = amount;
+      _result.amount = amount;
     }
     if (currency != null) {
-      $result.currency = currency;
+      _result.currency = currency;
     }
     if (description != null) {
-      $result.description = description;
+      _result.description = description;
     }
     if (qrType != null) {
-      $result.qrType = qrType;
+      _result.qrType = qrType;
     }
     if (status != null) {
-      $result.status = status;
+      _result.status = status;
     }
     if (createdAt != null) {
-      $result.createdAt = createdAt;
+      _result.createdAt = createdAt;
     }
     if (expiresAt != null) {
-      $result.expiresAt = expiresAt;
+      _result.expiresAt = expiresAt;
     }
     if (paidAt != null) {
-      $result.paidAt = paidAt;
+      _result.paidAt = paidAt;
     }
-    return $result;
+    return _result;
   }
-  QRCode._() : super();
   factory QRCode.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory QRCode.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'QRCode', package: const $pb.PackageName(_omitMessageNames ? '' : 'qr_pay'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..aOS(2, _omitFieldNames ? '' : 'userId')
-    ..aOS(3, _omitFieldNames ? '' : 'username')
-    ..aOS(4, _omitFieldNames ? '' : 'fullName')
-    ..aOS(5, _omitFieldNames ? '' : 'qrCode')
-    ..a<$core.double>(6, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(7, _omitFieldNames ? '' : 'currency')
-    ..aOS(8, _omitFieldNames ? '' : 'description')
-    ..e<QRType>(9, _omitFieldNames ? '' : 'qrType', $pb.PbFieldType.OE, defaultOrMaker: QRType.QR_TYPE_DYNAMIC, valueOf: QRType.valueOf, enumValues: QRType.values)
-    ..e<QRStatus>(10, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: QRStatus.QR_STATUS_PENDING, valueOf: QRStatus.valueOf, enumValues: QRStatus.values)
-    ..aOM<$1.Timestamp>(11, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(12, _omitFieldNames ? '' : 'expiresAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(13, _omitFieldNames ? '' : 'paidAt', subBuilder: $1.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -107,10 +102,8 @@ class QRCode extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  QRCode copyWith(void Function(QRCode) updates) => super.copyWith((message) => updates(message as QRCode)) as QRCode;
-
+  QRCode copyWith(void Function(QRCode) updates) => super.copyWith((message) => updates(message as QRCode)) as QRCode; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static QRCode create() => QRCode._();
   QRCode createEmptyInstance() => create();
@@ -244,6 +237,25 @@ class QRCode extends $pb.GeneratedMessage {
 }
 
 class QRTransaction extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'QRTransaction', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'qr_pay'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'qrId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payerId')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payerUsername')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payerName')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientId')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientUsername')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientName')
+    ..a<$core.double>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
+    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'referenceNumber')
+    ..e<QRStatus>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: QRStatus.QR_STATUS_PENDING, valueOf: QRStatus.valueOf, enumValues: QRStatus.values)
+    ..aOM<$1.Timestamp>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
+  QRTransaction._() : super();
   factory QRTransaction({
     $core.String? id,
     $core.String? qrId,
@@ -260,73 +272,53 @@ class QRTransaction extends $pb.GeneratedMessage {
     QRStatus? status,
     $1.Timestamp? createdAt,
   }) {
-    final $result = create();
+    final _result = create();
     if (id != null) {
-      $result.id = id;
+      _result.id = id;
     }
     if (qrId != null) {
-      $result.qrId = qrId;
+      _result.qrId = qrId;
     }
     if (payerId != null) {
-      $result.payerId = payerId;
+      _result.payerId = payerId;
     }
     if (payerUsername != null) {
-      $result.payerUsername = payerUsername;
+      _result.payerUsername = payerUsername;
     }
     if (payerName != null) {
-      $result.payerName = payerName;
+      _result.payerName = payerName;
     }
     if (recipientId != null) {
-      $result.recipientId = recipientId;
+      _result.recipientId = recipientId;
     }
     if (recipientUsername != null) {
-      $result.recipientUsername = recipientUsername;
+      _result.recipientUsername = recipientUsername;
     }
     if (recipientName != null) {
-      $result.recipientName = recipientName;
+      _result.recipientName = recipientName;
     }
     if (amount != null) {
-      $result.amount = amount;
+      _result.amount = amount;
     }
     if (currency != null) {
-      $result.currency = currency;
+      _result.currency = currency;
     }
     if (description != null) {
-      $result.description = description;
+      _result.description = description;
     }
     if (referenceNumber != null) {
-      $result.referenceNumber = referenceNumber;
+      _result.referenceNumber = referenceNumber;
     }
     if (status != null) {
-      $result.status = status;
+      _result.status = status;
     }
     if (createdAt != null) {
-      $result.createdAt = createdAt;
+      _result.createdAt = createdAt;
     }
-    return $result;
+    return _result;
   }
-  QRTransaction._() : super();
   factory QRTransaction.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory QRTransaction.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'QRTransaction', package: const $pb.PackageName(_omitMessageNames ? '' : 'qr_pay'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..aOS(2, _omitFieldNames ? '' : 'qrId')
-    ..aOS(3, _omitFieldNames ? '' : 'payerId')
-    ..aOS(4, _omitFieldNames ? '' : 'payerUsername')
-    ..aOS(5, _omitFieldNames ? '' : 'payerName')
-    ..aOS(6, _omitFieldNames ? '' : 'recipientId')
-    ..aOS(7, _omitFieldNames ? '' : 'recipientUsername')
-    ..aOS(8, _omitFieldNames ? '' : 'recipientName')
-    ..a<$core.double>(9, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(10, _omitFieldNames ? '' : 'currency')
-    ..aOS(11, _omitFieldNames ? '' : 'description')
-    ..aOS(12, _omitFieldNames ? '' : 'referenceNumber')
-    ..e<QRStatus>(13, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: QRStatus.QR_STATUS_PENDING, valueOf: QRStatus.valueOf, enumValues: QRStatus.values)
-    ..aOM<$1.Timestamp>(14, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -336,10 +328,8 @@ class QRTransaction extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  QRTransaction copyWith(void Function(QRTransaction) updates) => super.copyWith((message) => updates(message as QRTransaction)) as QRTransaction;
-
+  QRTransaction copyWith(void Function(QRTransaction) updates) => super.copyWith((message) => updates(message as QRTransaction)) as QRTransaction; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static QRTransaction create() => QRTransaction._();
   QRTransaction createEmptyInstance() => create();
@@ -477,8 +467,17 @@ class QRTransaction extends $pb.GeneratedMessage {
   $1.Timestamp ensureCreatedAt() => $_ensure(13);
 }
 
-/// Request/Response messages
 class GenerateQRRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GenerateQRRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'qr_pay'), createEmptyInstance: create)
+    ..a<$core.double>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
+    ..e<QRType>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'qrType', $pb.PbFieldType.OE, defaultOrMaker: QRType.QR_TYPE_DYNAMIC, valueOf: QRType.valueOf, enumValues: QRType.values)
+    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'validityMinutes', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  GenerateQRRequest._() : super();
   factory GenerateQRRequest({
     $core.double? amount,
     $core.String? currency,
@@ -486,37 +485,26 @@ class GenerateQRRequest extends $pb.GeneratedMessage {
     QRType? qrType,
     $core.int? validityMinutes,
   }) {
-    final $result = create();
+    final _result = create();
     if (amount != null) {
-      $result.amount = amount;
+      _result.amount = amount;
     }
     if (currency != null) {
-      $result.currency = currency;
+      _result.currency = currency;
     }
     if (description != null) {
-      $result.description = description;
+      _result.description = description;
     }
     if (qrType != null) {
-      $result.qrType = qrType;
+      _result.qrType = qrType;
     }
     if (validityMinutes != null) {
-      $result.validityMinutes = validityMinutes;
+      _result.validityMinutes = validityMinutes;
     }
-    return $result;
+    return _result;
   }
-  GenerateQRRequest._() : super();
   factory GenerateQRRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GenerateQRRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GenerateQRRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'qr_pay'), createEmptyInstance: create)
-    ..a<$core.double>(1, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(2, _omitFieldNames ? '' : 'currency')
-    ..aOS(3, _omitFieldNames ? '' : 'description')
-    ..e<QRType>(4, _omitFieldNames ? '' : 'qrType', $pb.PbFieldType.OE, defaultOrMaker: QRType.QR_TYPE_DYNAMIC, valueOf: QRType.valueOf, enumValues: QRType.values)
-    ..a<$core.int>(5, _omitFieldNames ? '' : 'validityMinutes', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -526,10 +514,8 @@ class GenerateQRRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GenerateQRRequest copyWith(void Function(GenerateQRRequest) updates) => super.copyWith((message) => updates(message as GenerateQRRequest)) as GenerateQRRequest;
-
+  GenerateQRRequest copyWith(void Function(GenerateQRRequest) updates) => super.copyWith((message) => updates(message as GenerateQRRequest)) as GenerateQRRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GenerateQRRequest create() => GenerateQRRequest._();
   GenerateQRRequest createEmptyInstance() => create();
@@ -585,34 +571,33 @@ class GenerateQRRequest extends $pb.GeneratedMessage {
 }
 
 class GenerateQRResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GenerateQRResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'qr_pay'), createEmptyInstance: create)
+    ..aOM<QRCode>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'qrCode', subBuilder: QRCode.create)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'qrData')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  GenerateQRResponse._() : super();
   factory GenerateQRResponse({
     QRCode? qrCode,
     $core.String? qrData,
     $core.String? message,
   }) {
-    final $result = create();
+    final _result = create();
     if (qrCode != null) {
-      $result.qrCode = qrCode;
+      _result.qrCode = qrCode;
     }
     if (qrData != null) {
-      $result.qrData = qrData;
+      _result.qrData = qrData;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
-    return $result;
+    return _result;
   }
-  GenerateQRResponse._() : super();
   factory GenerateQRResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GenerateQRResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GenerateQRResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'qr_pay'), createEmptyInstance: create)
-    ..aOM<QRCode>(1, _omitFieldNames ? '' : 'qrCode', subBuilder: QRCode.create)
-    ..aOS(2, _omitFieldNames ? '' : 'qrData')
-    ..aOS(3, _omitFieldNames ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -622,10 +607,8 @@ class GenerateQRResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GenerateQRResponse copyWith(void Function(GenerateQRResponse) updates) => super.copyWith((message) => updates(message as GenerateQRResponse)) as GenerateQRResponse;
-
+  GenerateQRResponse copyWith(void Function(GenerateQRResponse) updates) => super.copyWith((message) => updates(message as GenerateQRResponse)) as GenerateQRResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GenerateQRResponse create() => GenerateQRResponse._();
   GenerateQRResponse createEmptyInstance() => create();
@@ -665,24 +648,23 @@ class GenerateQRResponse extends $pb.GeneratedMessage {
 }
 
 class GetQRDetailsRequest extends $pb.GeneratedMessage {
-  factory GetQRDetailsRequest({
-    $core.String? qrCode,
-  }) {
-    final $result = create();
-    if (qrCode != null) {
-      $result.qrCode = qrCode;
-    }
-    return $result;
-  }
-  GetQRDetailsRequest._() : super();
-  factory GetQRDetailsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetQRDetailsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetQRDetailsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'qr_pay'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'qrCode')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetQRDetailsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'qr_pay'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'qrCode')
     ..hasRequiredFields = false
   ;
 
+  GetQRDetailsRequest._() : super();
+  factory GetQRDetailsRequest({
+    $core.String? qrCode,
+  }) {
+    final _result = create();
+    if (qrCode != null) {
+      _result.qrCode = qrCode;
+    }
+    return _result;
+  }
+  factory GetQRDetailsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetQRDetailsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -692,10 +674,8 @@ class GetQRDetailsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetQRDetailsRequest copyWith(void Function(GetQRDetailsRequest) updates) => super.copyWith((message) => updates(message as GetQRDetailsRequest)) as GetQRDetailsRequest;
-
+  GetQRDetailsRequest copyWith(void Function(GetQRDetailsRequest) updates) => super.copyWith((message) => updates(message as GetQRDetailsRequest)) as GetQRDetailsRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetQRDetailsRequest create() => GetQRDetailsRequest._();
   GetQRDetailsRequest createEmptyInstance() => create();
@@ -715,24 +695,23 @@ class GetQRDetailsRequest extends $pb.GeneratedMessage {
 }
 
 class GetQRDetailsResponse extends $pb.GeneratedMessage {
-  factory GetQRDetailsResponse({
-    QRCode? qrCode,
-  }) {
-    final $result = create();
-    if (qrCode != null) {
-      $result.qrCode = qrCode;
-    }
-    return $result;
-  }
-  GetQRDetailsResponse._() : super();
-  factory GetQRDetailsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetQRDetailsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetQRDetailsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'qr_pay'), createEmptyInstance: create)
-    ..aOM<QRCode>(1, _omitFieldNames ? '' : 'qrCode', subBuilder: QRCode.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetQRDetailsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'qr_pay'), createEmptyInstance: create)
+    ..aOM<QRCode>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'qrCode', subBuilder: QRCode.create)
     ..hasRequiredFields = false
   ;
 
+  GetQRDetailsResponse._() : super();
+  factory GetQRDetailsResponse({
+    QRCode? qrCode,
+  }) {
+    final _result = create();
+    if (qrCode != null) {
+      _result.qrCode = qrCode;
+    }
+    return _result;
+  }
+  factory GetQRDetailsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetQRDetailsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -742,10 +721,8 @@ class GetQRDetailsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetQRDetailsResponse copyWith(void Function(GetQRDetailsResponse) updates) => super.copyWith((message) => updates(message as GetQRDetailsResponse)) as GetQRDetailsResponse;
-
+  GetQRDetailsResponse copyWith(void Function(GetQRDetailsResponse) updates) => super.copyWith((message) => updates(message as GetQRDetailsResponse)) as GetQRDetailsResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetQRDetailsResponse create() => GetQRDetailsResponse._();
   GetQRDetailsResponse createEmptyInstance() => create();
@@ -767,6 +744,16 @@ class GetQRDetailsResponse extends $pb.GeneratedMessage {
 }
 
 class ProcessQRPaymentRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ProcessQRPaymentRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'qr_pay'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'qrCode')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceAccountId')
+    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionPin')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'idempotencyKey')
+    ..hasRequiredFields = false
+  ;
+
+  ProcessQRPaymentRequest._() : super();
   factory ProcessQRPaymentRequest({
     $core.String? qrCode,
     $core.String? sourceAccountId,
@@ -774,37 +761,26 @@ class ProcessQRPaymentRequest extends $pb.GeneratedMessage {
     $core.String? transactionPin,
     $core.String? idempotencyKey,
   }) {
-    final $result = create();
+    final _result = create();
     if (qrCode != null) {
-      $result.qrCode = qrCode;
+      _result.qrCode = qrCode;
     }
     if (sourceAccountId != null) {
-      $result.sourceAccountId = sourceAccountId;
+      _result.sourceAccountId = sourceAccountId;
     }
     if (amount != null) {
-      $result.amount = amount;
+      _result.amount = amount;
     }
     if (transactionPin != null) {
-      $result.transactionPin = transactionPin;
+      _result.transactionPin = transactionPin;
     }
     if (idempotencyKey != null) {
-      $result.idempotencyKey = idempotencyKey;
+      _result.idempotencyKey = idempotencyKey;
     }
-    return $result;
+    return _result;
   }
-  ProcessQRPaymentRequest._() : super();
   factory ProcessQRPaymentRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ProcessQRPaymentRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ProcessQRPaymentRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'qr_pay'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'qrCode')
-    ..aOS(2, _omitFieldNames ? '' : 'sourceAccountId')
-    ..a<$core.double>(3, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(4, _omitFieldNames ? '' : 'transactionPin')
-    ..aOS(5, _omitFieldNames ? '' : 'idempotencyKey')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -814,10 +790,8 @@ class ProcessQRPaymentRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ProcessQRPaymentRequest copyWith(void Function(ProcessQRPaymentRequest) updates) => super.copyWith((message) => updates(message as ProcessQRPaymentRequest)) as ProcessQRPaymentRequest;
-
+  ProcessQRPaymentRequest copyWith(void Function(ProcessQRPaymentRequest) updates) => super.copyWith((message) => updates(message as ProcessQRPaymentRequest)) as ProcessQRPaymentRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ProcessQRPaymentRequest create() => ProcessQRPaymentRequest._();
   ProcessQRPaymentRequest createEmptyInstance() => create();
@@ -873,34 +847,33 @@ class ProcessQRPaymentRequest extends $pb.GeneratedMessage {
 }
 
 class ProcessQRPaymentResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ProcessQRPaymentResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'qr_pay'), createEmptyInstance: create)
+    ..aOM<QRTransaction>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transaction', subBuilder: QRTransaction.create)
+    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'newBalance', $pb.PbFieldType.OD)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  ProcessQRPaymentResponse._() : super();
   factory ProcessQRPaymentResponse({
     QRTransaction? transaction,
     $core.double? newBalance,
     $core.String? message,
   }) {
-    final $result = create();
+    final _result = create();
     if (transaction != null) {
-      $result.transaction = transaction;
+      _result.transaction = transaction;
     }
     if (newBalance != null) {
-      $result.newBalance = newBalance;
+      _result.newBalance = newBalance;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
-    return $result;
+    return _result;
   }
-  ProcessQRPaymentResponse._() : super();
   factory ProcessQRPaymentResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ProcessQRPaymentResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ProcessQRPaymentResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'qr_pay'), createEmptyInstance: create)
-    ..aOM<QRTransaction>(1, _omitFieldNames ? '' : 'transaction', subBuilder: QRTransaction.create)
-    ..a<$core.double>(2, _omitFieldNames ? '' : 'newBalance', $pb.PbFieldType.OD)
-    ..aOS(3, _omitFieldNames ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -910,10 +883,8 @@ class ProcessQRPaymentResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ProcessQRPaymentResponse copyWith(void Function(ProcessQRPaymentResponse) updates) => super.copyWith((message) => updates(message as ProcessQRPaymentResponse)) as ProcessQRPaymentResponse;
-
+  ProcessQRPaymentResponse copyWith(void Function(ProcessQRPaymentResponse) updates) => super.copyWith((message) => updates(message as ProcessQRPaymentResponse)) as ProcessQRPaymentResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ProcessQRPaymentResponse create() => ProcessQRPaymentResponse._();
   ProcessQRPaymentResponse createEmptyInstance() => create();
@@ -953,34 +924,33 @@ class ProcessQRPaymentResponse extends $pb.GeneratedMessage {
 }
 
 class GetMyGeneratedQRCodesRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetMyGeneratedQRCodesRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'qr_pay'), createEmptyInstance: create)
+    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'offset', $pb.PbFieldType.O3)
+    ..e<QRStatus>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'statusFilter', $pb.PbFieldType.OE, defaultOrMaker: QRStatus.QR_STATUS_PENDING, valueOf: QRStatus.valueOf, enumValues: QRStatus.values)
+    ..hasRequiredFields = false
+  ;
+
+  GetMyGeneratedQRCodesRequest._() : super();
   factory GetMyGeneratedQRCodesRequest({
     $core.int? limit,
     $core.int? offset,
     QRStatus? statusFilter,
   }) {
-    final $result = create();
+    final _result = create();
     if (limit != null) {
-      $result.limit = limit;
+      _result.limit = limit;
     }
     if (offset != null) {
-      $result.offset = offset;
+      _result.offset = offset;
     }
     if (statusFilter != null) {
-      $result.statusFilter = statusFilter;
+      _result.statusFilter = statusFilter;
     }
-    return $result;
+    return _result;
   }
-  GetMyGeneratedQRCodesRequest._() : super();
   factory GetMyGeneratedQRCodesRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetMyGeneratedQRCodesRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMyGeneratedQRCodesRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'qr_pay'), createEmptyInstance: create)
-    ..a<$core.int>(1, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'offset', $pb.PbFieldType.O3)
-    ..e<QRStatus>(3, _omitFieldNames ? '' : 'statusFilter', $pb.PbFieldType.OE, defaultOrMaker: QRStatus.QR_STATUS_PENDING, valueOf: QRStatus.valueOf, enumValues: QRStatus.values)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -990,10 +960,8 @@ class GetMyGeneratedQRCodesRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetMyGeneratedQRCodesRequest copyWith(void Function(GetMyGeneratedQRCodesRequest) updates) => super.copyWith((message) => updates(message as GetMyGeneratedQRCodesRequest)) as GetMyGeneratedQRCodesRequest;
-
+  GetMyGeneratedQRCodesRequest copyWith(void Function(GetMyGeneratedQRCodesRequest) updates) => super.copyWith((message) => updates(message as GetMyGeneratedQRCodesRequest)) as GetMyGeneratedQRCodesRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetMyGeneratedQRCodesRequest create() => GetMyGeneratedQRCodesRequest._();
   GetMyGeneratedQRCodesRequest createEmptyInstance() => create();
@@ -1031,29 +999,28 @@ class GetMyGeneratedQRCodesRequest extends $pb.GeneratedMessage {
 }
 
 class GetMyGeneratedQRCodesResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetMyGeneratedQRCodesResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'qr_pay'), createEmptyInstance: create)
+    ..pc<QRCode>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'qrCodes', $pb.PbFieldType.PM, subBuilder: QRCode.create)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'total', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  GetMyGeneratedQRCodesResponse._() : super();
   factory GetMyGeneratedQRCodesResponse({
     $core.Iterable<QRCode>? qrCodes,
     $core.int? total,
   }) {
-    final $result = create();
+    final _result = create();
     if (qrCodes != null) {
-      $result.qrCodes.addAll(qrCodes);
+      _result.qrCodes.addAll(qrCodes);
     }
     if (total != null) {
-      $result.total = total;
+      _result.total = total;
     }
-    return $result;
+    return _result;
   }
-  GetMyGeneratedQRCodesResponse._() : super();
   factory GetMyGeneratedQRCodesResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetMyGeneratedQRCodesResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMyGeneratedQRCodesResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'qr_pay'), createEmptyInstance: create)
-    ..pc<QRCode>(1, _omitFieldNames ? '' : 'qrCodes', $pb.PbFieldType.PM, subBuilder: QRCode.create)
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1063,10 +1030,8 @@ class GetMyGeneratedQRCodesResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetMyGeneratedQRCodesResponse copyWith(void Function(GetMyGeneratedQRCodesResponse) updates) => super.copyWith((message) => updates(message as GetMyGeneratedQRCodesResponse)) as GetMyGeneratedQRCodesResponse;
-
+  GetMyGeneratedQRCodesResponse copyWith(void Function(GetMyGeneratedQRCodesResponse) updates) => super.copyWith((message) => updates(message as GetMyGeneratedQRCodesResponse)) as GetMyGeneratedQRCodesResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetMyGeneratedQRCodesResponse create() => GetMyGeneratedQRCodesResponse._();
   GetMyGeneratedQRCodesResponse createEmptyInstance() => create();
@@ -1089,29 +1054,28 @@ class GetMyGeneratedQRCodesResponse extends $pb.GeneratedMessage {
 }
 
 class GetMyQRPaymentsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetMyQRPaymentsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'qr_pay'), createEmptyInstance: create)
+    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'offset', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  GetMyQRPaymentsRequest._() : super();
   factory GetMyQRPaymentsRequest({
     $core.int? limit,
     $core.int? offset,
   }) {
-    final $result = create();
+    final _result = create();
     if (limit != null) {
-      $result.limit = limit;
+      _result.limit = limit;
     }
     if (offset != null) {
-      $result.offset = offset;
+      _result.offset = offset;
     }
-    return $result;
+    return _result;
   }
-  GetMyQRPaymentsRequest._() : super();
   factory GetMyQRPaymentsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetMyQRPaymentsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMyQRPaymentsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'qr_pay'), createEmptyInstance: create)
-    ..a<$core.int>(1, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'offset', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1121,10 +1085,8 @@ class GetMyQRPaymentsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetMyQRPaymentsRequest copyWith(void Function(GetMyQRPaymentsRequest) updates) => super.copyWith((message) => updates(message as GetMyQRPaymentsRequest)) as GetMyQRPaymentsRequest;
-
+  GetMyQRPaymentsRequest copyWith(void Function(GetMyQRPaymentsRequest) updates) => super.copyWith((message) => updates(message as GetMyQRPaymentsRequest)) as GetMyQRPaymentsRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetMyQRPaymentsRequest create() => GetMyQRPaymentsRequest._();
   GetMyQRPaymentsRequest createEmptyInstance() => create();
@@ -1153,29 +1115,28 @@ class GetMyQRPaymentsRequest extends $pb.GeneratedMessage {
 }
 
 class GetMyQRPaymentsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetMyQRPaymentsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'qr_pay'), createEmptyInstance: create)
+    ..pc<QRTransaction>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactions', $pb.PbFieldType.PM, subBuilder: QRTransaction.create)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'total', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  GetMyQRPaymentsResponse._() : super();
   factory GetMyQRPaymentsResponse({
     $core.Iterable<QRTransaction>? transactions,
     $core.int? total,
   }) {
-    final $result = create();
+    final _result = create();
     if (transactions != null) {
-      $result.transactions.addAll(transactions);
+      _result.transactions.addAll(transactions);
     }
     if (total != null) {
-      $result.total = total;
+      _result.total = total;
     }
-    return $result;
+    return _result;
   }
-  GetMyQRPaymentsResponse._() : super();
   factory GetMyQRPaymentsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetMyQRPaymentsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMyQRPaymentsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'qr_pay'), createEmptyInstance: create)
-    ..pc<QRTransaction>(1, _omitFieldNames ? '' : 'transactions', $pb.PbFieldType.PM, subBuilder: QRTransaction.create)
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1185,10 +1146,8 @@ class GetMyQRPaymentsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetMyQRPaymentsResponse copyWith(void Function(GetMyQRPaymentsResponse) updates) => super.copyWith((message) => updates(message as GetMyQRPaymentsResponse)) as GetMyQRPaymentsResponse;
-
+  GetMyQRPaymentsResponse copyWith(void Function(GetMyQRPaymentsResponse) updates) => super.copyWith((message) => updates(message as GetMyQRPaymentsResponse)) as GetMyQRPaymentsResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetMyQRPaymentsResponse create() => GetMyQRPaymentsResponse._();
   GetMyQRPaymentsResponse createEmptyInstance() => create();
@@ -1211,24 +1170,23 @@ class GetMyQRPaymentsResponse extends $pb.GeneratedMessage {
 }
 
 class CancelQRRequest extends $pb.GeneratedMessage {
-  factory CancelQRRequest({
-    $core.String? qrId,
-  }) {
-    final $result = create();
-    if (qrId != null) {
-      $result.qrId = qrId;
-    }
-    return $result;
-  }
-  CancelQRRequest._() : super();
-  factory CancelQRRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory CancelQRRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CancelQRRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'qr_pay'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'qrId')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CancelQRRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'qr_pay'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'qrId')
     ..hasRequiredFields = false
   ;
 
+  CancelQRRequest._() : super();
+  factory CancelQRRequest({
+    $core.String? qrId,
+  }) {
+    final _result = create();
+    if (qrId != null) {
+      _result.qrId = qrId;
+    }
+    return _result;
+  }
+  factory CancelQRRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CancelQRRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1238,10 +1196,8 @@ class CancelQRRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CancelQRRequest copyWith(void Function(CancelQRRequest) updates) => super.copyWith((message) => updates(message as CancelQRRequest)) as CancelQRRequest;
-
+  CancelQRRequest copyWith(void Function(CancelQRRequest) updates) => super.copyWith((message) => updates(message as CancelQRRequest)) as CancelQRRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CancelQRRequest create() => CancelQRRequest._();
   CancelQRRequest createEmptyInstance() => create();
@@ -1261,24 +1217,23 @@ class CancelQRRequest extends $pb.GeneratedMessage {
 }
 
 class CancelQRResponse extends $pb.GeneratedMessage {
-  factory CancelQRResponse({
-    $core.String? message,
-  }) {
-    final $result = create();
-    if (message != null) {
-      $result.message = message;
-    }
-    return $result;
-  }
-  CancelQRResponse._() : super();
-  factory CancelQRResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory CancelQRResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CancelQRResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'qr_pay'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'message')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CancelQRResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'qr_pay'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
     ..hasRequiredFields = false
   ;
 
+  CancelQRResponse._() : super();
+  factory CancelQRResponse({
+    $core.String? message,
+  }) {
+    final _result = create();
+    if (message != null) {
+      _result.message = message;
+    }
+    return _result;
+  }
+  factory CancelQRResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CancelQRResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1288,10 +1243,8 @@ class CancelQRResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CancelQRResponse copyWith(void Function(CancelQRResponse) updates) => super.copyWith((message) => updates(message as CancelQRResponse)) as CancelQRResponse;
-
+  CancelQRResponse copyWith(void Function(CancelQRResponse) updates) => super.copyWith((message) => updates(message as CancelQRResponse)) as CancelQRResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CancelQRResponse create() => CancelQRResponse._();
   CancelQRResponse createEmptyInstance() => create();
@@ -1311,24 +1264,23 @@ class CancelQRResponse extends $pb.GeneratedMessage {
 }
 
 class GetQRTransactionReceiptRequest extends $pb.GeneratedMessage {
-  factory GetQRTransactionReceiptRequest({
-    $core.String? transactionId,
-  }) {
-    final $result = create();
-    if (transactionId != null) {
-      $result.transactionId = transactionId;
-    }
-    return $result;
-  }
-  GetQRTransactionReceiptRequest._() : super();
-  factory GetQRTransactionReceiptRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetQRTransactionReceiptRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetQRTransactionReceiptRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'qr_pay'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'transactionId')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetQRTransactionReceiptRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'qr_pay'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionId')
     ..hasRequiredFields = false
   ;
 
+  GetQRTransactionReceiptRequest._() : super();
+  factory GetQRTransactionReceiptRequest({
+    $core.String? transactionId,
+  }) {
+    final _result = create();
+    if (transactionId != null) {
+      _result.transactionId = transactionId;
+    }
+    return _result;
+  }
+  factory GetQRTransactionReceiptRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetQRTransactionReceiptRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1338,10 +1290,8 @@ class GetQRTransactionReceiptRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetQRTransactionReceiptRequest copyWith(void Function(GetQRTransactionReceiptRequest) updates) => super.copyWith((message) => updates(message as GetQRTransactionReceiptRequest)) as GetQRTransactionReceiptRequest;
-
+  GetQRTransactionReceiptRequest copyWith(void Function(GetQRTransactionReceiptRequest) updates) => super.copyWith((message) => updates(message as GetQRTransactionReceiptRequest)) as GetQRTransactionReceiptRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetQRTransactionReceiptRequest create() => GetQRTransactionReceiptRequest._();
   GetQRTransactionReceiptRequest createEmptyInstance() => create();
@@ -1361,24 +1311,23 @@ class GetQRTransactionReceiptRequest extends $pb.GeneratedMessage {
 }
 
 class GetQRTransactionReceiptResponse extends $pb.GeneratedMessage {
-  factory GetQRTransactionReceiptResponse({
-    QRTransaction? transaction,
-  }) {
-    final $result = create();
-    if (transaction != null) {
-      $result.transaction = transaction;
-    }
-    return $result;
-  }
-  GetQRTransactionReceiptResponse._() : super();
-  factory GetQRTransactionReceiptResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetQRTransactionReceiptResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetQRTransactionReceiptResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'qr_pay'), createEmptyInstance: create)
-    ..aOM<QRTransaction>(1, _omitFieldNames ? '' : 'transaction', subBuilder: QRTransaction.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetQRTransactionReceiptResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'qr_pay'), createEmptyInstance: create)
+    ..aOM<QRTransaction>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transaction', subBuilder: QRTransaction.create)
     ..hasRequiredFields = false
   ;
 
+  GetQRTransactionReceiptResponse._() : super();
+  factory GetQRTransactionReceiptResponse({
+    QRTransaction? transaction,
+  }) {
+    final _result = create();
+    if (transaction != null) {
+      _result.transaction = transaction;
+    }
+    return _result;
+  }
+  factory GetQRTransactionReceiptResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetQRTransactionReceiptResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1388,10 +1337,8 @@ class GetQRTransactionReceiptResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetQRTransactionReceiptResponse copyWith(void Function(GetQRTransactionReceiptResponse) updates) => super.copyWith((message) => updates(message as GetQRTransactionReceiptResponse)) as GetQRTransactionReceiptResponse;
-
+  GetQRTransactionReceiptResponse copyWith(void Function(GetQRTransactionReceiptResponse) updates) => super.copyWith((message) => updates(message as GetQRTransactionReceiptResponse)) as GetQRTransactionReceiptResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetQRTransactionReceiptResponse create() => GetQRTransactionReceiptResponse._();
   GetQRTransactionReceiptResponse createEmptyInstance() => create();
@@ -1412,6 +1359,3 @@ class GetQRTransactionReceiptResponse extends $pb.GeneratedMessage {
   QRTransaction ensureTransaction() => $_ensure(0);
 }
 
-
-const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
-const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');

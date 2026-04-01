@@ -1,21 +1,31 @@
-//
+///
 //  Generated code. Do not modify.
 //  source: ai_chat.proto
 //
 // @dart = 2.12
-
-// ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
 
 import 'dart:core' as $core;
 
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-/// Request message for the AI Chat endpoint
 class ProcessChatRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ProcessChatRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'query')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'txHistory')
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', $pb.PbFieldType.OU3)
+    ..aOM<ChatFile>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'uploadedFile', subBuilder: ChatFile.create)
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sessionId')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceContext')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'language')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountId')
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userCountry')
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..hasRequiredFields = false
+  ;
+
+  ProcessChatRequest._() : super();
   factory ProcessChatRequest({
     $core.String? query,
     $core.String? txHistory,
@@ -28,57 +38,41 @@ class ProcessChatRequest extends $pb.GeneratedMessage {
     $core.String? userCountry,
     $core.String? currency,
   }) {
-    final $result = create();
+    final _result = create();
     if (query != null) {
-      $result.query = query;
+      _result.query = query;
     }
     if (txHistory != null) {
-      $result.txHistory = txHistory;
+      _result.txHistory = txHistory;
     }
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (uploadedFile != null) {
-      $result.uploadedFile = uploadedFile;
+      _result.uploadedFile = uploadedFile;
     }
     if (sessionId != null) {
-      $result.sessionId = sessionId;
+      _result.sessionId = sessionId;
     }
     if (sourceContext != null) {
-      $result.sourceContext = sourceContext;
+      _result.sourceContext = sourceContext;
     }
     if (language != null) {
-      $result.language = language;
+      _result.language = language;
     }
     if (accountId != null) {
-      $result.accountId = accountId;
+      _result.accountId = accountId;
     }
     if (userCountry != null) {
-      $result.userCountry = userCountry;
+      _result.userCountry = userCountry;
     }
     if (currency != null) {
-      $result.currency = currency;
+      _result.currency = currency;
     }
-    return $result;
+    return _result;
   }
-  ProcessChatRequest._() : super();
   factory ProcessChatRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ProcessChatRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ProcessChatRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'query')
-    ..aOS(2, _omitFieldNames ? '' : 'txHistory')
-    ..a<$core.int>(3, _omitFieldNames ? '' : 'userId', $pb.PbFieldType.OU3)
-    ..aOM<ChatFile>(4, _omitFieldNames ? '' : 'uploadedFile', subBuilder: ChatFile.create)
-    ..aOS(5, _omitFieldNames ? '' : 'sessionId')
-    ..aOS(6, _omitFieldNames ? '' : 'sourceContext')
-    ..aOS(7, _omitFieldNames ? '' : 'language')
-    ..aOS(8, _omitFieldNames ? '' : 'accountId')
-    ..aOS(9, _omitFieldNames ? '' : 'userCountry')
-    ..aOS(10, _omitFieldNames ? '' : 'currency')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -88,10 +82,8 @@ class ProcessChatRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ProcessChatRequest copyWith(void Function(ProcessChatRequest) updates) => super.copyWith((message) => updates(message as ProcessChatRequest)) as ProcessChatRequest;
-
+  ProcessChatRequest copyWith(void Function(ProcessChatRequest) updates) => super.copyWith((message) => updates(message as ProcessChatRequest)) as ProcessChatRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ProcessChatRequest create() => ProcessChatRequest._();
   ProcessChatRequest createEmptyInstance() => create();
@@ -127,7 +119,6 @@ class ProcessChatRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   void clearUserId() => clearField(3);
 
-  /// Optional file handling field
   @$pb.TagNumber(4)
   ChatFile get uploadedFile => $_getN(3);
   @$pb.TagNumber(4)
@@ -139,7 +130,6 @@ class ProcessChatRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   ChatFile ensureUploadedFile() => $_ensure(3);
 
-  /// Conversation context fields
   @$pb.TagNumber(5)
   $core.String get sessionId => $_getSZ(4);
   @$pb.TagNumber(5)
@@ -167,7 +157,6 @@ class ProcessChatRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(7)
   void clearLanguage() => clearField(7);
 
-  /// Account context fields for agent routing
   @$pb.TagNumber(8)
   $core.String get accountId => $_getSZ(7);
   @$pb.TagNumber(8)
@@ -196,8 +185,25 @@ class ProcessChatRequest extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(10);
 }
 
-/// Response message for the AI Chat endpoint
 class ProcessChatResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ProcessChatResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'query')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'response')
+    ..pc<ChatFile>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'generatedFiles', $pb.PbFieldType.PM, subBuilder: ChatFile.create)
+    ..aOM<FileAnalysis>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fileAnalysis', subBuilder: FileAnalysis.create)
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'intent')
+    ..m<$core.String, $core.String>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'entities', entryClassName: 'ProcessChatResponse.EntitiesEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OS, packageName: const $pb.PackageName('pb'))
+    ..aOB(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'requiresConfirmation')
+    ..pc<ActionButton>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'actionButtons', $pb.PbFieldType.PM, subBuilder: ActionButton.create)
+    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sessionId')
+    ..aOM<ConfirmationData>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'confirmationData', subBuilder: ConfirmationData.create)
+    ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'conversationState')
+    ..hasRequiredFields = false
+  ;
+
+  ProcessChatResponse._() : super();
   factory ProcessChatResponse({
     $core.bool? success,
     $core.String? msg,
@@ -213,69 +219,50 @@ class ProcessChatResponse extends $pb.GeneratedMessage {
     ConfirmationData? confirmationData,
     $core.String? conversationState,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (msg != null) {
-      $result.msg = msg;
+      _result.msg = msg;
     }
     if (query != null) {
-      $result.query = query;
+      _result.query = query;
     }
     if (response != null) {
-      $result.response = response;
+      _result.response = response;
     }
     if (generatedFiles != null) {
-      $result.generatedFiles.addAll(generatedFiles);
+      _result.generatedFiles.addAll(generatedFiles);
     }
     if (fileAnalysis != null) {
-      $result.fileAnalysis = fileAnalysis;
+      _result.fileAnalysis = fileAnalysis;
     }
     if (intent != null) {
-      $result.intent = intent;
+      _result.intent = intent;
     }
     if (entities != null) {
-      $result.entities.addAll(entities);
+      _result.entities.addAll(entities);
     }
     if (requiresConfirmation != null) {
-      $result.requiresConfirmation = requiresConfirmation;
+      _result.requiresConfirmation = requiresConfirmation;
     }
     if (actionButtons != null) {
-      $result.actionButtons.addAll(actionButtons);
+      _result.actionButtons.addAll(actionButtons);
     }
     if (sessionId != null) {
-      $result.sessionId = sessionId;
+      _result.sessionId = sessionId;
     }
     if (confirmationData != null) {
-      $result.confirmationData = confirmationData;
+      _result.confirmationData = confirmationData;
     }
     if (conversationState != null) {
-      $result.conversationState = conversationState;
+      _result.conversationState = conversationState;
     }
-    return $result;
+    return _result;
   }
-  ProcessChatResponse._() : super();
   factory ProcessChatResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ProcessChatResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ProcessChatResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'msg')
-    ..aOS(3, _omitFieldNames ? '' : 'query')
-    ..aOS(4, _omitFieldNames ? '' : 'response')
-    ..pc<ChatFile>(5, _omitFieldNames ? '' : 'generatedFiles', $pb.PbFieldType.PM, subBuilder: ChatFile.create)
-    ..aOM<FileAnalysis>(6, _omitFieldNames ? '' : 'fileAnalysis', subBuilder: FileAnalysis.create)
-    ..aOS(7, _omitFieldNames ? '' : 'intent')
-    ..m<$core.String, $core.String>(8, _omitFieldNames ? '' : 'entities', entryClassName: 'ProcessChatResponse.EntitiesEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OS, packageName: const $pb.PackageName('pb'))
-    ..aOB(9, _omitFieldNames ? '' : 'requiresConfirmation')
-    ..pc<ActionButton>(10, _omitFieldNames ? '' : 'actionButtons', $pb.PbFieldType.PM, subBuilder: ActionButton.create)
-    ..aOS(11, _omitFieldNames ? '' : 'sessionId')
-    ..aOM<ConfirmationData>(12, _omitFieldNames ? '' : 'confirmationData', subBuilder: ConfirmationData.create)
-    ..aOS(13, _omitFieldNames ? '' : 'conversationState')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -285,10 +272,8 @@ class ProcessChatResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ProcessChatResponse copyWith(void Function(ProcessChatResponse) updates) => super.copyWith((message) => updates(message as ProcessChatResponse)) as ProcessChatResponse;
-
+  ProcessChatResponse copyWith(void Function(ProcessChatResponse) updates) => super.copyWith((message) => updates(message as ProcessChatResponse)) as ProcessChatResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ProcessChatResponse create() => ProcessChatResponse._();
   ProcessChatResponse createEmptyInstance() => create();
@@ -333,7 +318,6 @@ class ProcessChatResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   void clearResponse() => clearField(4);
 
-  /// Optional file handling response fields
   @$pb.TagNumber(5)
   $core.List<ChatFile> get generatedFiles => $_getList(4);
 
@@ -348,7 +332,6 @@ class ProcessChatResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(6)
   FileAnalysis ensureFileAnalysis() => $_ensure(5);
 
-  /// Conversation intelligence fields
   @$pb.TagNumber(7)
   $core.String get intent => $_getSZ(6);
   @$pb.TagNumber(7)
@@ -403,8 +386,19 @@ class ProcessChatResponse extends $pb.GeneratedMessage {
   void clearConversationState() => clearField(13);
 }
 
-/// Represents a file in chat context
 class ChatFile extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ChatFile', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'filename')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'contentType')
+    ..a<$core.List<$core.int>>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fileContent', $pb.PbFieldType.OY)
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fileId')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fileUrl')
+    ..aInt64(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fileSize')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'uploadTimestamp')
+    ..hasRequiredFields = false
+  ;
+
+  ChatFile._() : super();
   factory ChatFile({
     $core.String? filename,
     $core.String? contentType,
@@ -414,45 +408,32 @@ class ChatFile extends $pb.GeneratedMessage {
     $fixnum.Int64? fileSize,
     $core.String? uploadTimestamp,
   }) {
-    final $result = create();
+    final _result = create();
     if (filename != null) {
-      $result.filename = filename;
+      _result.filename = filename;
     }
     if (contentType != null) {
-      $result.contentType = contentType;
+      _result.contentType = contentType;
     }
     if (fileContent != null) {
-      $result.fileContent = fileContent;
+      _result.fileContent = fileContent;
     }
     if (fileId != null) {
-      $result.fileId = fileId;
+      _result.fileId = fileId;
     }
     if (fileUrl != null) {
-      $result.fileUrl = fileUrl;
+      _result.fileUrl = fileUrl;
     }
     if (fileSize != null) {
-      $result.fileSize = fileSize;
+      _result.fileSize = fileSize;
     }
     if (uploadTimestamp != null) {
-      $result.uploadTimestamp = uploadTimestamp;
+      _result.uploadTimestamp = uploadTimestamp;
     }
-    return $result;
+    return _result;
   }
-  ChatFile._() : super();
   factory ChatFile.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ChatFile.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ChatFile', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'filename')
-    ..aOS(2, _omitFieldNames ? '' : 'contentType')
-    ..a<$core.List<$core.int>>(3, _omitFieldNames ? '' : 'fileContent', $pb.PbFieldType.OY)
-    ..aOS(4, _omitFieldNames ? '' : 'fileId')
-    ..aOS(5, _omitFieldNames ? '' : 'fileUrl')
-    ..aInt64(6, _omitFieldNames ? '' : 'fileSize')
-    ..aOS(7, _omitFieldNames ? '' : 'uploadTimestamp')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -462,10 +443,8 @@ class ChatFile extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ChatFile copyWith(void Function(ChatFile) updates) => super.copyWith((message) => updates(message as ChatFile)) as ChatFile;
-
+  ChatFile copyWith(void Function(ChatFile) updates) => super.copyWith((message) => updates(message as ChatFile)) as ChatFile; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ChatFile create() => ChatFile._();
   ChatFile createEmptyInstance() => create();
@@ -474,7 +453,6 @@ class ChatFile extends $pb.GeneratedMessage {
   static ChatFile getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ChatFile>(create);
   static ChatFile? _defaultInstance;
 
-  /// For uploads - client provides these fields
   @$pb.TagNumber(1)
   $core.String get filename => $_getSZ(0);
   @$pb.TagNumber(1)
@@ -502,7 +480,6 @@ class ChatFile extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   void clearFileContent() => clearField(3);
 
-  /// For responses - server provides these fields
   @$pb.TagNumber(4)
   $core.String get fileId => $_getSZ(3);
   @$pb.TagNumber(4)
@@ -540,31 +517,29 @@ class ChatFile extends $pb.GeneratedMessage {
   void clearUploadTimestamp() => clearField(7);
 }
 
-/// File analysis results from AI
 class FileAnalysis extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'FileAnalysis', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<FileAnalysisResult>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'results', $pb.PbFieldType.PM, subBuilder: FileAnalysisResult.create)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'summary')
+    ..hasRequiredFields = false
+  ;
+
+  FileAnalysis._() : super();
   factory FileAnalysis({
     $core.Iterable<FileAnalysisResult>? results,
     $core.String? summary,
   }) {
-    final $result = create();
+    final _result = create();
     if (results != null) {
-      $result.results.addAll(results);
+      _result.results.addAll(results);
     }
     if (summary != null) {
-      $result.summary = summary;
+      _result.summary = summary;
     }
-    return $result;
+    return _result;
   }
-  FileAnalysis._() : super();
   factory FileAnalysis.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory FileAnalysis.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'FileAnalysis', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<FileAnalysisResult>(1, _omitFieldNames ? '' : 'results', $pb.PbFieldType.PM, subBuilder: FileAnalysisResult.create)
-    ..aOS(2, _omitFieldNames ? '' : 'summary')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -574,10 +549,8 @@ class FileAnalysis extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  FileAnalysis copyWith(void Function(FileAnalysis) updates) => super.copyWith((message) => updates(message as FileAnalysis)) as FileAnalysis;
-
+  FileAnalysis copyWith(void Function(FileAnalysis) updates) => super.copyWith((message) => updates(message as FileAnalysis)) as FileAnalysis; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static FileAnalysis create() => FileAnalysis._();
   FileAnalysis createEmptyInstance() => create();
@@ -599,8 +572,19 @@ class FileAnalysis extends $pb.GeneratedMessage {
   void clearSummary() => clearField(2);
 }
 
-/// Individual file analysis result
 class FileAnalysisResult extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'FileAnalysisResult', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fileId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'filename')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'analysisType')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'analysisResult')
+    ..m<$core.String, $core.String>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'metadata', entryClassName: 'FileAnalysisResult.MetadataEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OS, packageName: const $pb.PackageName('pb'))
+    ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'processingSuccess')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorMessage')
+    ..hasRequiredFields = false
+  ;
+
+  FileAnalysisResult._() : super();
   factory FileAnalysisResult({
     $core.String? fileId,
     $core.String? filename,
@@ -610,45 +594,32 @@ class FileAnalysisResult extends $pb.GeneratedMessage {
     $core.bool? processingSuccess,
     $core.String? errorMessage,
   }) {
-    final $result = create();
+    final _result = create();
     if (fileId != null) {
-      $result.fileId = fileId;
+      _result.fileId = fileId;
     }
     if (filename != null) {
-      $result.filename = filename;
+      _result.filename = filename;
     }
     if (analysisType != null) {
-      $result.analysisType = analysisType;
+      _result.analysisType = analysisType;
     }
     if (analysisResult != null) {
-      $result.analysisResult = analysisResult;
+      _result.analysisResult = analysisResult;
     }
     if (metadata != null) {
-      $result.metadata.addAll(metadata);
+      _result.metadata.addAll(metadata);
     }
     if (processingSuccess != null) {
-      $result.processingSuccess = processingSuccess;
+      _result.processingSuccess = processingSuccess;
     }
     if (errorMessage != null) {
-      $result.errorMessage = errorMessage;
+      _result.errorMessage = errorMessage;
     }
-    return $result;
+    return _result;
   }
-  FileAnalysisResult._() : super();
   factory FileAnalysisResult.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory FileAnalysisResult.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'FileAnalysisResult', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'fileId')
-    ..aOS(2, _omitFieldNames ? '' : 'filename')
-    ..aOS(3, _omitFieldNames ? '' : 'analysisType')
-    ..aOS(4, _omitFieldNames ? '' : 'analysisResult')
-    ..m<$core.String, $core.String>(5, _omitFieldNames ? '' : 'metadata', entryClassName: 'FileAnalysisResult.MetadataEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OS, packageName: const $pb.PackageName('pb'))
-    ..aOB(6, _omitFieldNames ? '' : 'processingSuccess')
-    ..aOS(7, _omitFieldNames ? '' : 'errorMessage')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -658,10 +629,8 @@ class FileAnalysisResult extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  FileAnalysisResult copyWith(void Function(FileAnalysisResult) updates) => super.copyWith((message) => updates(message as FileAnalysisResult)) as FileAnalysisResult;
-
+  FileAnalysisResult copyWith(void Function(FileAnalysisResult) updates) => super.copyWith((message) => updates(message as FileAnalysisResult)) as FileAnalysisResult; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static FileAnalysisResult create() => FileAnalysisResult._();
   FileAnalysisResult createEmptyInstance() => create();
@@ -728,17 +697,15 @@ class FileAnalysisResult extends $pb.GeneratedMessage {
   void clearErrorMessage() => clearField(7);
 }
 
-/// Request message for triggering chat history indexing for the authenticated user
 class IndexChatHistoryRequest extends $pb.GeneratedMessage {
-  factory IndexChatHistoryRequest() => create();
-  IndexChatHistoryRequest._() : super();
-  factory IndexChatHistoryRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory IndexChatHistoryRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'IndexChatHistoryRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'IndexChatHistoryRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..hasRequiredFields = false
   ;
 
+  IndexChatHistoryRequest._() : super();
+  factory IndexChatHistoryRequest() => create();
+  factory IndexChatHistoryRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory IndexChatHistoryRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -748,10 +715,8 @@ class IndexChatHistoryRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  IndexChatHistoryRequest copyWith(void Function(IndexChatHistoryRequest) updates) => super.copyWith((message) => updates(message as IndexChatHistoryRequest)) as IndexChatHistoryRequest;
-
+  IndexChatHistoryRequest copyWith(void Function(IndexChatHistoryRequest) updates) => super.copyWith((message) => updates(message as IndexChatHistoryRequest)) as IndexChatHistoryRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static IndexChatHistoryRequest create() => IndexChatHistoryRequest._();
   IndexChatHistoryRequest createEmptyInstance() => create();
@@ -761,31 +726,29 @@ class IndexChatHistoryRequest extends $pb.GeneratedMessage {
   static IndexChatHistoryRequest? _defaultInstance;
 }
 
-/// Response message for chat history indexing trigger
 class IndexChatHistoryResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'IndexChatHistoryResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
+    ..hasRequiredFields = false
+  ;
+
+  IndexChatHistoryResponse._() : super();
   factory IndexChatHistoryResponse({
     $core.bool? success,
     $core.String? msg,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (msg != null) {
-      $result.msg = msg;
+      _result.msg = msg;
     }
-    return $result;
+    return _result;
   }
-  IndexChatHistoryResponse._() : super();
   factory IndexChatHistoryResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory IndexChatHistoryResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'IndexChatHistoryResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'msg')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -795,10 +758,8 @@ class IndexChatHistoryResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  IndexChatHistoryResponse copyWith(void Function(IndexChatHistoryResponse) updates) => super.copyWith((message) => updates(message as IndexChatHistoryResponse)) as IndexChatHistoryResponse;
-
+  IndexChatHistoryResponse copyWith(void Function(IndexChatHistoryResponse) updates) => super.copyWith((message) => updates(message as IndexChatHistoryResponse)) as IndexChatHistoryResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static IndexChatHistoryResponse create() => IndexChatHistoryResponse._();
   IndexChatHistoryResponse createEmptyInstance() => create();
@@ -826,17 +787,15 @@ class IndexChatHistoryResponse extends $pb.GeneratedMessage {
   void clearMsg() => clearField(2);
 }
 
-/// Request message for triggering transaction file indexing for the authenticated user
 class IndexTransactionFileRequest extends $pb.GeneratedMessage {
-  factory IndexTransactionFileRequest() => create();
-  IndexTransactionFileRequest._() : super();
-  factory IndexTransactionFileRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory IndexTransactionFileRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'IndexTransactionFileRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'IndexTransactionFileRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..hasRequiredFields = false
   ;
 
+  IndexTransactionFileRequest._() : super();
+  factory IndexTransactionFileRequest() => create();
+  factory IndexTransactionFileRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory IndexTransactionFileRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -846,10 +805,8 @@ class IndexTransactionFileRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  IndexTransactionFileRequest copyWith(void Function(IndexTransactionFileRequest) updates) => super.copyWith((message) => updates(message as IndexTransactionFileRequest)) as IndexTransactionFileRequest;
-
+  IndexTransactionFileRequest copyWith(void Function(IndexTransactionFileRequest) updates) => super.copyWith((message) => updates(message as IndexTransactionFileRequest)) as IndexTransactionFileRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static IndexTransactionFileRequest create() => IndexTransactionFileRequest._();
   IndexTransactionFileRequest createEmptyInstance() => create();
@@ -859,31 +816,29 @@ class IndexTransactionFileRequest extends $pb.GeneratedMessage {
   static IndexTransactionFileRequest? _defaultInstance;
 }
 
-/// Response message for transaction file indexing trigger
 class IndexTransactionFileResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'IndexTransactionFileResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
+    ..hasRequiredFields = false
+  ;
+
+  IndexTransactionFileResponse._() : super();
   factory IndexTransactionFileResponse({
     $core.bool? success,
     $core.String? msg,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (msg != null) {
-      $result.msg = msg;
+      _result.msg = msg;
     }
-    return $result;
+    return _result;
   }
-  IndexTransactionFileResponse._() : super();
   factory IndexTransactionFileResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory IndexTransactionFileResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'IndexTransactionFileResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'msg')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -893,10 +848,8 @@ class IndexTransactionFileResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  IndexTransactionFileResponse copyWith(void Function(IndexTransactionFileResponse) updates) => super.copyWith((message) => updates(message as IndexTransactionFileResponse)) as IndexTransactionFileResponse;
-
+  IndexTransactionFileResponse copyWith(void Function(IndexTransactionFileResponse) updates) => super.copyWith((message) => updates(message as IndexTransactionFileResponse)) as IndexTransactionFileResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static IndexTransactionFileResponse create() => IndexTransactionFileResponse._();
   IndexTransactionFileResponse createEmptyInstance() => create();
@@ -924,36 +877,34 @@ class IndexTransactionFileResponse extends $pb.GeneratedMessage {
   void clearMsg() => clearField(2);
 }
 
-/// Represents a single entry in the AI chat history
 class AIChatHistoryEntry extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AIChatHistoryEntry', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'query')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'response')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'timestamp')
+    ..hasRequiredFields = false
+  ;
+
+  AIChatHistoryEntry._() : super();
   factory AIChatHistoryEntry({
     $core.String? query,
     $core.String? response,
     $core.String? timestamp,
   }) {
-    final $result = create();
+    final _result = create();
     if (query != null) {
-      $result.query = query;
+      _result.query = query;
     }
     if (response != null) {
-      $result.response = response;
+      _result.response = response;
     }
     if (timestamp != null) {
-      $result.timestamp = timestamp;
+      _result.timestamp = timestamp;
     }
-    return $result;
+    return _result;
   }
-  AIChatHistoryEntry._() : super();
   factory AIChatHistoryEntry.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory AIChatHistoryEntry.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AIChatHistoryEntry', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'query')
-    ..aOS(2, _omitFieldNames ? '' : 'response')
-    ..aOS(3, _omitFieldNames ? '' : 'timestamp')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -963,10 +914,8 @@ class AIChatHistoryEntry extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  AIChatHistoryEntry copyWith(void Function(AIChatHistoryEntry) updates) => super.copyWith((message) => updates(message as AIChatHistoryEntry)) as AIChatHistoryEntry;
-
+  AIChatHistoryEntry copyWith(void Function(AIChatHistoryEntry) updates) => super.copyWith((message) => updates(message as AIChatHistoryEntry)) as AIChatHistoryEntry; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static AIChatHistoryEntry create() => AIChatHistoryEntry._();
   AIChatHistoryEntry createEmptyInstance() => create();
@@ -1003,17 +952,15 @@ class AIChatHistoryEntry extends $pb.GeneratedMessage {
   void clearTimestamp() => clearField(3);
 }
 
-/// Request message for getting the user's AI chat history
 class GetAIChatHistoryRequest extends $pb.GeneratedMessage {
-  factory GetAIChatHistoryRequest() => create();
-  GetAIChatHistoryRequest._() : super();
-  factory GetAIChatHistoryRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetAIChatHistoryRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetAIChatHistoryRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetAIChatHistoryRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..hasRequiredFields = false
   ;
 
+  GetAIChatHistoryRequest._() : super();
+  factory GetAIChatHistoryRequest() => create();
+  factory GetAIChatHistoryRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetAIChatHistoryRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1023,10 +970,8 @@ class GetAIChatHistoryRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetAIChatHistoryRequest copyWith(void Function(GetAIChatHistoryRequest) updates) => super.copyWith((message) => updates(message as GetAIChatHistoryRequest)) as GetAIChatHistoryRequest;
-
+  GetAIChatHistoryRequest copyWith(void Function(GetAIChatHistoryRequest) updates) => super.copyWith((message) => updates(message as GetAIChatHistoryRequest)) as GetAIChatHistoryRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetAIChatHistoryRequest create() => GetAIChatHistoryRequest._();
   GetAIChatHistoryRequest createEmptyInstance() => create();
@@ -1036,26 +981,24 @@ class GetAIChatHistoryRequest extends $pb.GeneratedMessage {
   static GetAIChatHistoryRequest? _defaultInstance;
 }
 
-/// Response message containing the user's AI chat history
 class GetAIChatHistoryResponse extends $pb.GeneratedMessage {
-  factory GetAIChatHistoryResponse({
-    $core.Iterable<AIChatHistoryEntry>? history,
-  }) {
-    final $result = create();
-    if (history != null) {
-      $result.history.addAll(history);
-    }
-    return $result;
-  }
-  GetAIChatHistoryResponse._() : super();
-  factory GetAIChatHistoryResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetAIChatHistoryResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetAIChatHistoryResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<AIChatHistoryEntry>(1, _omitFieldNames ? '' : 'history', $pb.PbFieldType.PM, subBuilder: AIChatHistoryEntry.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetAIChatHistoryResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<AIChatHistoryEntry>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'history', $pb.PbFieldType.PM, subBuilder: AIChatHistoryEntry.create)
     ..hasRequiredFields = false
   ;
 
+  GetAIChatHistoryResponse._() : super();
+  factory GetAIChatHistoryResponse({
+    $core.Iterable<AIChatHistoryEntry>? history,
+  }) {
+    final _result = create();
+    if (history != null) {
+      _result.history.addAll(history);
+    }
+    return _result;
+  }
+  factory GetAIChatHistoryResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetAIChatHistoryResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1065,10 +1008,8 @@ class GetAIChatHistoryResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetAIChatHistoryResponse copyWith(void Function(GetAIChatHistoryResponse) updates) => super.copyWith((message) => updates(message as GetAIChatHistoryResponse)) as GetAIChatHistoryResponse;
-
+  GetAIChatHistoryResponse copyWith(void Function(GetAIChatHistoryResponse) updates) => super.copyWith((message) => updates(message as GetAIChatHistoryResponse)) as GetAIChatHistoryResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetAIChatHistoryResponse create() => GetAIChatHistoryResponse._();
   GetAIChatHistoryResponse createEmptyInstance() => create();
@@ -1081,41 +1022,39 @@ class GetAIChatHistoryResponse extends $pb.GeneratedMessage {
   $core.List<AIChatHistoryEntry> get history => $_getList(0);
 }
 
-/// Action button for rich chat responses
 class ActionButton extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ActionButton', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'label')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'actionType')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payload')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'icon')
+    ..hasRequiredFields = false
+  ;
+
+  ActionButton._() : super();
   factory ActionButton({
     $core.String? label,
     $core.String? actionType,
     $core.String? payload,
     $core.String? icon,
   }) {
-    final $result = create();
+    final _result = create();
     if (label != null) {
-      $result.label = label;
+      _result.label = label;
     }
     if (actionType != null) {
-      $result.actionType = actionType;
+      _result.actionType = actionType;
     }
     if (payload != null) {
-      $result.payload = payload;
+      _result.payload = payload;
     }
     if (icon != null) {
-      $result.icon = icon;
+      _result.icon = icon;
     }
-    return $result;
+    return _result;
   }
-  ActionButton._() : super();
   factory ActionButton.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ActionButton.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ActionButton', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'label')
-    ..aOS(2, _omitFieldNames ? '' : 'actionType')
-    ..aOS(3, _omitFieldNames ? '' : 'payload')
-    ..aOS(4, _omitFieldNames ? '' : 'icon')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1125,10 +1064,8 @@ class ActionButton extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ActionButton copyWith(void Function(ActionButton) updates) => super.copyWith((message) => updates(message as ActionButton)) as ActionButton;
-
+  ActionButton copyWith(void Function(ActionButton) updates) => super.copyWith((message) => updates(message as ActionButton)) as ActionButton; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ActionButton create() => ActionButton._();
   ActionButton createEmptyInstance() => create();
@@ -1174,8 +1111,19 @@ class ActionButton extends $pb.GeneratedMessage {
   void clearIcon() => clearField(4);
 }
 
-/// Structured confirmation data for financial actions
 class ConfirmationData extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ConfirmationData', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'actionType')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientName')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientId')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
+    ..m<$core.String, $core.String>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'extra', entryClassName: 'ConfirmationData.ExtraEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OS, packageName: const $pb.PackageName('pb'))
+    ..hasRequiredFields = false
+  ;
+
+  ConfirmationData._() : super();
   factory ConfirmationData({
     $core.String? actionType,
     $core.String? amount,
@@ -1185,45 +1133,32 @@ class ConfirmationData extends $pb.GeneratedMessage {
     $core.String? description,
     $core.Map<$core.String, $core.String>? extra,
   }) {
-    final $result = create();
+    final _result = create();
     if (actionType != null) {
-      $result.actionType = actionType;
+      _result.actionType = actionType;
     }
     if (amount != null) {
-      $result.amount = amount;
+      _result.amount = amount;
     }
     if (currency != null) {
-      $result.currency = currency;
+      _result.currency = currency;
     }
     if (recipientName != null) {
-      $result.recipientName = recipientName;
+      _result.recipientName = recipientName;
     }
     if (recipientId != null) {
-      $result.recipientId = recipientId;
+      _result.recipientId = recipientId;
     }
     if (description != null) {
-      $result.description = description;
+      _result.description = description;
     }
     if (extra != null) {
-      $result.extra.addAll(extra);
+      _result.extra.addAll(extra);
     }
-    return $result;
+    return _result;
   }
-  ConfirmationData._() : super();
   factory ConfirmationData.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ConfirmationData.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ConfirmationData', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'actionType')
-    ..aOS(2, _omitFieldNames ? '' : 'amount')
-    ..aOS(3, _omitFieldNames ? '' : 'currency')
-    ..aOS(4, _omitFieldNames ? '' : 'recipientName')
-    ..aOS(5, _omitFieldNames ? '' : 'recipientId')
-    ..aOS(6, _omitFieldNames ? '' : 'description')
-    ..m<$core.String, $core.String>(7, _omitFieldNames ? '' : 'extra', entryClassName: 'ConfirmationData.ExtraEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OS, packageName: const $pb.PackageName('pb'))
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1233,10 +1168,8 @@ class ConfirmationData extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ConfirmationData copyWith(void Function(ConfirmationData) updates) => super.copyWith((message) => updates(message as ConfirmationData)) as ConfirmationData;
-
+  ConfirmationData copyWith(void Function(ConfirmationData) updates) => super.copyWith((message) => updates(message as ConfirmationData)) as ConfirmationData; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ConfirmationData create() => ConfirmationData._();
   ConfirmationData createEmptyInstance() => create();
@@ -1303,6 +1236,3 @@ class ConfirmationData extends $pb.GeneratedMessage {
   $core.Map<$core.String, $core.String> get extra => $_getMap(6);
 }
 
-
-const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
-const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');

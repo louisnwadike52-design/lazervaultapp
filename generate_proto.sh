@@ -37,66 +37,102 @@ curl -s -o proto/protoc-gen-openapiv2/options/annotations.proto https://raw.gith
 curl -s -o proto/protoc-gen-openapiv2/options/openapiv2.proto https://raw.githubusercontent.com/grpc-ecosystem/grpc-gateway/master/protoc-gen-openapiv2/options/openapiv2.proto
 echo "Proto dependencies downloaded."
 
-# Generate Dart code from proto files
+# Generate Dart code from proto files.
+# Exclude lazervaultapp/proto/auth.proto here: it can drift from auth-microservice; Dart auth is built from ../microservices/auth-service/... below.
 echo "Generating Dart code from proto files..."
-protoc --dart_out=grpc:lib/src/generated -Iproto proto/*.proto proto/google/protobuf/*.proto proto/stocks/*.proto
+LAZER_PROTO_FILES=()
+for f in proto/*.proto; do
+  case "$(basename "$f")" in
+    auth.proto|payroll.proto) continue ;; # auth: auth-microservice; payroll: payroll-service (full RPC set)
+  esac
+  LAZER_PROTO_FILES+=("$f")
+done
+if ! protoc --dart_out=grpc:lib/src/generated -Iproto "${LAZER_PROTO_FILES[@]}" proto/google/protobuf/*.proto proto/stocks/*.proto; then
+  echo "ERROR: lazervaultapp proto batch failed."
+  exit 1
+fi
+
+# voice_session + ai_scan: always regenerate in isolation so gateway-synced definitions stay fresh even if the batch is changed later.
+echo "Refreshing voice_session.proto and ai_scan.proto (isolated)..."
+if ! protoc --dart_out=grpc:lib/src/generated -Iproto proto/voice_session.proto proto/ai_scan.proto; then
+  echo "ERROR: voice_session / ai_scan regeneration failed."
+  exit 1
+fi
 
 # Generate crypto.proto from crypto-microservice
 echo "Generating Dart code from crypto.proto..."
-protoc --dart_out=grpc:lib/src/generated \
-  -I../crypto-microservice/proto \
-  -Iproto \
-  ../crypto-microservice/proto/crypto.proto
-
-# Generate voice_session.proto from lazervault-golang
-echo "Generating Dart code from voice_session.proto..."
-protoc --dart_out=grpc:lib/src/generated \
-  -I../lazervault-golang/proto \
-  -Iproto \
-  ../lazervault-golang/proto/voice_session.proto
+if [ -f ../crypto-microservice/proto/crypto.proto ]; then
+  protoc --dart_out=grpc:lib/src/generated \
+    -I../crypto-microservice/proto \
+    -Iproto \
+    ../crypto-microservice/proto/crypto.proto
+else
+  echo "Skipping crypto.proto (../crypto-microservice/proto not present)."
+fi
 
 # Generate insurance.proto from insurance-microservice
 echo "Generating Dart code from insurance.proto..."
-protoc --dart_out=grpc:lib/src/generated \
-  -I../insurance-microservice/proto \
-  -I../lazervault-golang/proto \
-  -Iproto \
-  ../insurance-microservice/proto/insurance.proto \
-  ../insurance-microservice/proto/common.proto
+if [ -f ../insurance-microservice/proto/insurance.proto ]; then
+  protoc --dart_out=grpc:lib/src/generated \
+    -I../insurance-microservice/proto \
+    -I../lazervault-golang/proto \
+    -Iproto \
+    ../insurance-microservice/proto/insurance.proto \
+    ../insurance-microservice/proto/common.proto
+else
+  echo "Skipping insurance.proto (../insurance-microservice/proto not present)."
+fi
 
 # Generate accounts.proto from accounts-microservice
 echo "Generating Dart code from accounts.proto..."
-protoc --dart_out=grpc:lib/src/generated \
+if ! protoc --dart_out=grpc:lib/src/generated \
   -I../microservices/accounts-service/accounts-microservice/proto \
   -Iproto \
-  ../microservices/accounts-service/accounts-microservice/proto/accounts.proto
+  ../microservices/accounts-service/accounts-microservice/proto/accounts.proto; then
+  echo "ERROR: accounts.proto generation failed."
+  exit 1
+fi
 
 # Generate auth.proto from auth-service
 echo "Generating Dart code from auth.proto..."
-protoc --dart_out=grpc:lib/src/generated \
+if ! protoc --dart_out=grpc:lib/src/generated \
   -I../microservices/auth-service/auth-microservice/proto \
   -Iproto \
-  ../microservices/auth-service/auth-microservice/proto/auth.proto
+  ../microservices/auth-service/auth-microservice/proto/auth.proto; then
+  echo "ERROR: auth.proto generation failed."
+  exit 1
+fi
 
 # Generate banking.proto from banking-service
 echo "Generating Dart code from banking.proto..."
-protoc --dart_out=grpc:lib/src/generated \
+if ! protoc --dart_out=grpc:lib/src/generated \
   -I../microservices/banking-service/proto \
   -I../services/core-gateway/proto \
   -Iproto \
-  ../microservices/banking-service/proto/banking.proto
+  ../microservices/banking-service/proto/banking.proto; then
+  echo "ERROR: banking.proto generation failed."
+  exit 1
+fi
 
 # Generate invoice.proto from invoice-service
 echo "Generating Dart code from invoice.proto..."
-protoc --dart_out=grpc:lib/src/generated \
+if ! protoc --dart_out=grpc:lib/src/generated \
   -I../microservices/invoice-service/invoice-microservice/proto \
   -I../services/core-gateway/proto \
   -Iproto \
-  ../microservices/invoice-service/invoice-microservice/proto/invoice.proto
+  ../microservices/invoice-service/invoice-microservice/proto/invoice.proto; then
+  echo "ERROR: invoice.proto generation failed."
+  exit 1
+fi
 
-if [ $? -eq 0 ]; then
-    echo "Dart code generation successful."
-else
-    echo "Dart code generation failed. Please check prerequisites and PATH."
-    exit 1
-fi 
+# Generate payroll.proto from payroll-service (canonical; lazervaultapp/proto/payroll.proto may be a trimmed copy for reference only)
+echo "Generating Dart code from payroll.proto (payroll-service canonical)..."
+if ! protoc --dart_out=grpc:lib/src/generated \
+  -I../microservices/payroll-service/proto \
+  -Iproto \
+  ../microservices/payroll-service/proto/payroll.proto; then
+  echo "ERROR: payroll.proto generation failed."
+  exit 1
+fi
+
+echo "Dart code generation successful." 

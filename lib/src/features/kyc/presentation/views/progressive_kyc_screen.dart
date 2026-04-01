@@ -29,11 +29,30 @@ class _ProgressiveKYCScreenState extends State<ProgressiveKYCScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(
         title: const Text('Identity Verification'),
         elevation: 0,
+        backgroundColor: const Color(0xFF0A0A0A),
+        foregroundColor: Colors.white,
       ),
-      body: BlocConsumer<KYCCubit, KYCState>(
+      body: Theme(
+        data: Theme.of(context).copyWith(
+          cardTheme: CardThemeData(
+            color: const Color(0xFF1F1F1F),
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: const BorderSide(color: Color(0xFF2D2D2D)),
+            ),
+          ),
+          dividerColor: const Color(0xFF2D2D2D),
+          textTheme: Theme.of(context).textTheme.apply(
+            bodyColor: Colors.white,
+            displayColor: Colors.white,
+          ),
+        ),
+        child: BlocConsumer<KYCCubit, KYCState>(
         listener: (context, state) {
           if (!mounted) return;
           if (state is IDVerificationSuccess) {
@@ -65,6 +84,7 @@ class _ProgressiveKYCScreenState extends State<ProgressiveKYCScreen> {
 
           return _buildInitialContent(context);
         },
+      ),
       ),
     );
   }
@@ -617,6 +637,8 @@ class _ProgressiveKYCScreenState extends State<ProgressiveKYCScreen> {
           child: IdVerificationScreen(
             targetTier: tier,
             countryCode: countryCode,
+            bvnOnlyEntry: countryCode == 'NG' && tier == KYCTier.tier2,
+            onSkipPressed: () => _skipForNow(context),
           ),
         ),
       ),
@@ -885,8 +907,11 @@ class _ProgressiveKYCScreenState extends State<ProgressiveKYCScreen> {
             size: 30,
           ),
         ),
-        title: const Text('Verification Failed'),
-        content: Text(state.userMessage ?? state.failure.message),
+        title: const Text('We couldn\'t complete that'),
+        content: Text(
+          state.userMessage ?? state.failure.message,
+          style: const TextStyle(height: 1.35),
+        ),
         actions: [
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(),

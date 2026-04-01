@@ -140,8 +140,8 @@ class _EmailOtpVerificationViewState extends State<_EmailOtpVerificationView> {
     }).catchError((e) {
       if (mounted) {
         Get.snackbar(
-          'Error',
-          'Failed to send verification email. Tap "Resend Code" to try again.',
+          "Couldn't send email",
+          'We could not send your verification code. Tap "Resend Code" to try again.',
           snackPosition: SnackPosition.TOP,
           backgroundColor: Colors.red,
           colorText: Colors.white,

@@ -1,25 +1,32 @@
-//
+///
 //  Generated code. Do not modify.
 //  source: transaction_pin.proto
 //
 // @dart = 2.12
-
-// ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
 
 import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $2;
+import 'google/protobuf/timestamp.pb.dart' as $1;
+
 import 'transaction_pin.pbenum.dart';
 
 export 'transaction_pin.pbenum.dart';
 
-/// CreateTransactionPinRequest creates a new PIN
 class CreateTransactionPinRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateTransactionPinRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pin')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'confirmPin')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deviceId')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deviceName')
+    ..e<PinChannelType>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelType', $pb.PbFieldType.OE, defaultOrMaker: PinChannelType.PIN_CHANNEL_APP, valueOf: PinChannelType.valueOf, enumValues: PinChannelType.values)
+    ..hasRequiredFields = false
+  ;
+
+  CreateTransactionPinRequest._() : super();
   factory CreateTransactionPinRequest({
     $core.String? userId,
     $core.String? pin,
@@ -28,41 +35,29 @@ class CreateTransactionPinRequest extends $pb.GeneratedMessage {
     $core.String? deviceName,
     PinChannelType? channelType,
   }) {
-    final $result = create();
+    final _result = create();
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (pin != null) {
-      $result.pin = pin;
+      _result.pin = pin;
     }
     if (confirmPin != null) {
-      $result.confirmPin = confirmPin;
+      _result.confirmPin = confirmPin;
     }
     if (deviceId != null) {
-      $result.deviceId = deviceId;
+      _result.deviceId = deviceId;
     }
     if (deviceName != null) {
-      $result.deviceName = deviceName;
+      _result.deviceName = deviceName;
     }
     if (channelType != null) {
-      $result.channelType = channelType;
+      _result.channelType = channelType;
     }
-    return $result;
+    return _result;
   }
-  CreateTransactionPinRequest._() : super();
   factory CreateTransactionPinRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateTransactionPinRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateTransactionPinRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..aOS(2, _omitFieldNames ? '' : 'pin')
-    ..aOS(3, _omitFieldNames ? '' : 'confirmPin')
-    ..aOS(4, _omitFieldNames ? '' : 'deviceId')
-    ..aOS(5, _omitFieldNames ? '' : 'deviceName')
-    ..e<PinChannelType>(6, _omitFieldNames ? '' : 'channelType', $pb.PbFieldType.OE, defaultOrMaker: PinChannelType.PIN_CHANNEL_APP, valueOf: PinChannelType.valueOf, enumValues: PinChannelType.values)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -72,10 +67,8 @@ class CreateTransactionPinRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateTransactionPinRequest copyWith(void Function(CreateTransactionPinRequest) updates) => super.copyWith((message) => updates(message as CreateTransactionPinRequest)) as CreateTransactionPinRequest;
-
+  CreateTransactionPinRequest copyWith(void Function(CreateTransactionPinRequest) updates) => super.copyWith((message) => updates(message as CreateTransactionPinRequest)) as CreateTransactionPinRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CreateTransactionPinRequest create() => CreateTransactionPinRequest._();
   CreateTransactionPinRequest createEmptyInstance() => create();
@@ -140,34 +133,33 @@ class CreateTransactionPinRequest extends $pb.GeneratedMessage {
 }
 
 class CreateTransactionPinResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateTransactionPinResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOM<TransactionPinDetails>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pinDetails', subBuilder: TransactionPinDetails.create)
+    ..hasRequiredFields = false
+  ;
+
+  CreateTransactionPinResponse._() : super();
   factory CreateTransactionPinResponse({
     $core.bool? success,
     $core.String? message,
     TransactionPinDetails? pinDetails,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (pinDetails != null) {
-      $result.pinDetails = pinDetails;
+      _result.pinDetails = pinDetails;
     }
-    return $result;
+    return _result;
   }
-  CreateTransactionPinResponse._() : super();
   factory CreateTransactionPinResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateTransactionPinResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateTransactionPinResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOM<TransactionPinDetails>(3, _omitFieldNames ? '' : 'pinDetails', subBuilder: TransactionPinDetails.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -177,10 +169,8 @@ class CreateTransactionPinResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateTransactionPinResponse copyWith(void Function(CreateTransactionPinResponse) updates) => super.copyWith((message) => updates(message as CreateTransactionPinResponse)) as CreateTransactionPinResponse;
-
+  CreateTransactionPinResponse copyWith(void Function(CreateTransactionPinResponse) updates) => super.copyWith((message) => updates(message as CreateTransactionPinResponse)) as CreateTransactionPinResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CreateTransactionPinResponse create() => CreateTransactionPinResponse._();
   CreateTransactionPinResponse createEmptyInstance() => create();
@@ -219,8 +209,20 @@ class CreateTransactionPinResponse extends $pb.GeneratedMessage {
   TransactionPinDetails ensurePinDetails() => $_ensure(2);
 }
 
-/// VerifyTransactionPinRequest verifies a PIN before payment
 class VerifyTransactionPinRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VerifyTransactionPinRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pin')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionId')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionType')
+    ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deviceId')
+    ..e<PinChannelType>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelType', $pb.PbFieldType.OE, defaultOrMaker: PinChannelType.PIN_CHANNEL_APP, valueOf: PinChannelType.valueOf, enumValues: PinChannelType.values)
+    ..hasRequiredFields = false
+  ;
+
+  VerifyTransactionPinRequest._() : super();
   factory VerifyTransactionPinRequest({
     $core.String? userId,
     $core.String? pin,
@@ -231,49 +233,35 @@ class VerifyTransactionPinRequest extends $pb.GeneratedMessage {
     $core.String? deviceId,
     PinChannelType? channelType,
   }) {
-    final $result = create();
+    final _result = create();
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (pin != null) {
-      $result.pin = pin;
+      _result.pin = pin;
     }
     if (transactionId != null) {
-      $result.transactionId = transactionId;
+      _result.transactionId = transactionId;
     }
     if (transactionType != null) {
-      $result.transactionType = transactionType;
+      _result.transactionType = transactionType;
     }
     if (amount != null) {
-      $result.amount = amount;
+      _result.amount = amount;
     }
     if (currency != null) {
-      $result.currency = currency;
+      _result.currency = currency;
     }
     if (deviceId != null) {
-      $result.deviceId = deviceId;
+      _result.deviceId = deviceId;
     }
     if (channelType != null) {
-      $result.channelType = channelType;
+      _result.channelType = channelType;
     }
-    return $result;
+    return _result;
   }
-  VerifyTransactionPinRequest._() : super();
   factory VerifyTransactionPinRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory VerifyTransactionPinRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyTransactionPinRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..aOS(2, _omitFieldNames ? '' : 'pin')
-    ..aOS(3, _omitFieldNames ? '' : 'transactionId')
-    ..aOS(4, _omitFieldNames ? '' : 'transactionType')
-    ..a<$core.double>(5, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(6, _omitFieldNames ? '' : 'currency')
-    ..aOS(7, _omitFieldNames ? '' : 'deviceId')
-    ..e<PinChannelType>(8, _omitFieldNames ? '' : 'channelType', $pb.PbFieldType.OE, defaultOrMaker: PinChannelType.PIN_CHANNEL_APP, valueOf: PinChannelType.valueOf, enumValues: PinChannelType.values)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -283,10 +271,8 @@ class VerifyTransactionPinRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  VerifyTransactionPinRequest copyWith(void Function(VerifyTransactionPinRequest) updates) => super.copyWith((message) => updates(message as VerifyTransactionPinRequest)) as VerifyTransactionPinRequest;
-
+  VerifyTransactionPinRequest copyWith(void Function(VerifyTransactionPinRequest) updates) => super.copyWith((message) => updates(message as VerifyTransactionPinRequest)) as VerifyTransactionPinRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static VerifyTransactionPinRequest create() => VerifyTransactionPinRequest._();
   VerifyTransactionPinRequest createEmptyInstance() => create();
@@ -369,49 +355,48 @@ class VerifyTransactionPinRequest extends $pb.GeneratedMessage {
 }
 
 class VerifyTransactionPinResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VerifyTransactionPinResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verificationToken')
+    ..aOM<$1.Timestamp>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt', subBuilder: $1.Timestamp.create)
+    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'remainingAttempts', $pb.PbFieldType.O3)
+    ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isLocked')
+    ..hasRequiredFields = false
+  ;
+
+  VerifyTransactionPinResponse._() : super();
   factory VerifyTransactionPinResponse({
     $core.bool? success,
     $core.String? message,
     $core.String? verificationToken,
-    $2.Timestamp? expiresAt,
+    $1.Timestamp? expiresAt,
     $core.int? remainingAttempts,
     $core.bool? isLocked,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (verificationToken != null) {
-      $result.verificationToken = verificationToken;
+      _result.verificationToken = verificationToken;
     }
     if (expiresAt != null) {
-      $result.expiresAt = expiresAt;
+      _result.expiresAt = expiresAt;
     }
     if (remainingAttempts != null) {
-      $result.remainingAttempts = remainingAttempts;
+      _result.remainingAttempts = remainingAttempts;
     }
     if (isLocked != null) {
-      $result.isLocked = isLocked;
+      _result.isLocked = isLocked;
     }
-    return $result;
+    return _result;
   }
-  VerifyTransactionPinResponse._() : super();
   factory VerifyTransactionPinResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory VerifyTransactionPinResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyTransactionPinResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOS(3, _omitFieldNames ? '' : 'verificationToken')
-    ..aOM<$2.Timestamp>(4, _omitFieldNames ? '' : 'expiresAt', subBuilder: $2.Timestamp.create)
-    ..a<$core.int>(5, _omitFieldNames ? '' : 'remainingAttempts', $pb.PbFieldType.O3)
-    ..aOB(6, _omitFieldNames ? '' : 'isLocked')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -421,10 +406,8 @@ class VerifyTransactionPinResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  VerifyTransactionPinResponse copyWith(void Function(VerifyTransactionPinResponse) updates) => super.copyWith((message) => updates(message as VerifyTransactionPinResponse)) as VerifyTransactionPinResponse;
-
+  VerifyTransactionPinResponse copyWith(void Function(VerifyTransactionPinResponse) updates) => super.copyWith((message) => updates(message as VerifyTransactionPinResponse)) as VerifyTransactionPinResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static VerifyTransactionPinResponse create() => VerifyTransactionPinResponse._();
   VerifyTransactionPinResponse createEmptyInstance() => create();
@@ -461,15 +444,15 @@ class VerifyTransactionPinResponse extends $pb.GeneratedMessage {
   void clearVerificationToken() => clearField(3);
 
   @$pb.TagNumber(4)
-  $2.Timestamp get expiresAt => $_getN(3);
+  $1.Timestamp get expiresAt => $_getN(3);
   @$pb.TagNumber(4)
-  set expiresAt($2.Timestamp v) { setField(4, v); }
+  set expiresAt($1.Timestamp v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasExpiresAt() => $_has(3);
   @$pb.TagNumber(4)
   void clearExpiresAt() => clearField(4);
   @$pb.TagNumber(4)
-  $2.Timestamp ensureExpiresAt() => $_ensure(3);
+  $1.Timestamp ensureExpiresAt() => $_ensure(3);
 
   @$pb.TagNumber(5)
   $core.int get remainingAttempts => $_getIZ(4);
@@ -490,8 +473,17 @@ class VerifyTransactionPinResponse extends $pb.GeneratedMessage {
   void clearIsLocked() => clearField(6);
 }
 
-/// ChangeTransactionPinRequest changes an existing PIN
 class ChangeTransactionPinRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ChangeTransactionPinRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentPin')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'newPin')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'confirmNewPin')
+    ..e<PinChannelType>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelType', $pb.PbFieldType.OE, defaultOrMaker: PinChannelType.PIN_CHANNEL_APP, valueOf: PinChannelType.valueOf, enumValues: PinChannelType.values)
+    ..hasRequiredFields = false
+  ;
+
+  ChangeTransactionPinRequest._() : super();
   factory ChangeTransactionPinRequest({
     $core.String? userId,
     $core.String? currentPin,
@@ -499,37 +491,26 @@ class ChangeTransactionPinRequest extends $pb.GeneratedMessage {
     $core.String? confirmNewPin,
     PinChannelType? channelType,
   }) {
-    final $result = create();
+    final _result = create();
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (currentPin != null) {
-      $result.currentPin = currentPin;
+      _result.currentPin = currentPin;
     }
     if (newPin != null) {
-      $result.newPin = newPin;
+      _result.newPin = newPin;
     }
     if (confirmNewPin != null) {
-      $result.confirmNewPin = confirmNewPin;
+      _result.confirmNewPin = confirmNewPin;
     }
     if (channelType != null) {
-      $result.channelType = channelType;
+      _result.channelType = channelType;
     }
-    return $result;
+    return _result;
   }
-  ChangeTransactionPinRequest._() : super();
   factory ChangeTransactionPinRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ChangeTransactionPinRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ChangeTransactionPinRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..aOS(2, _omitFieldNames ? '' : 'currentPin')
-    ..aOS(3, _omitFieldNames ? '' : 'newPin')
-    ..aOS(4, _omitFieldNames ? '' : 'confirmNewPin')
-    ..e<PinChannelType>(5, _omitFieldNames ? '' : 'channelType', $pb.PbFieldType.OE, defaultOrMaker: PinChannelType.PIN_CHANNEL_APP, valueOf: PinChannelType.valueOf, enumValues: PinChannelType.values)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -539,10 +520,8 @@ class ChangeTransactionPinRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ChangeTransactionPinRequest copyWith(void Function(ChangeTransactionPinRequest) updates) => super.copyWith((message) => updates(message as ChangeTransactionPinRequest)) as ChangeTransactionPinRequest;
-
+  ChangeTransactionPinRequest copyWith(void Function(ChangeTransactionPinRequest) updates) => super.copyWith((message) => updates(message as ChangeTransactionPinRequest)) as ChangeTransactionPinRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ChangeTransactionPinRequest create() => ChangeTransactionPinRequest._();
   ChangeTransactionPinRequest createEmptyInstance() => create();
@@ -598,29 +577,28 @@ class ChangeTransactionPinRequest extends $pb.GeneratedMessage {
 }
 
 class ChangeTransactionPinResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ChangeTransactionPinResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  ChangeTransactionPinResponse._() : super();
   factory ChangeTransactionPinResponse({
     $core.bool? success,
     $core.String? message,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
-    return $result;
+    return _result;
   }
-  ChangeTransactionPinResponse._() : super();
   factory ChangeTransactionPinResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ChangeTransactionPinResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ChangeTransactionPinResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -630,10 +608,8 @@ class ChangeTransactionPinResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ChangeTransactionPinResponse copyWith(void Function(ChangeTransactionPinResponse) updates) => super.copyWith((message) => updates(message as ChangeTransactionPinResponse)) as ChangeTransactionPinResponse;
-
+  ChangeTransactionPinResponse copyWith(void Function(ChangeTransactionPinResponse) updates) => super.copyWith((message) => updates(message as ChangeTransactionPinResponse)) as ChangeTransactionPinResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ChangeTransactionPinResponse create() => ChangeTransactionPinResponse._();
   ChangeTransactionPinResponse createEmptyInstance() => create();
@@ -661,8 +637,18 @@ class ChangeTransactionPinResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(2);
 }
 
-/// ResetTransactionPinRequest resets a forgotten PIN
 class ResetTransactionPinRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ResetTransactionPinRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verificationMethod')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verificationCode')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'newPin')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'confirmNewPin')
+    ..e<PinChannelType>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelType', $pb.PbFieldType.OE, defaultOrMaker: PinChannelType.PIN_CHANNEL_APP, valueOf: PinChannelType.valueOf, enumValues: PinChannelType.values)
+    ..hasRequiredFields = false
+  ;
+
+  ResetTransactionPinRequest._() : super();
   factory ResetTransactionPinRequest({
     $core.String? userId,
     $core.String? verificationMethod,
@@ -671,41 +657,29 @@ class ResetTransactionPinRequest extends $pb.GeneratedMessage {
     $core.String? confirmNewPin,
     PinChannelType? channelType,
   }) {
-    final $result = create();
+    final _result = create();
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (verificationMethod != null) {
-      $result.verificationMethod = verificationMethod;
+      _result.verificationMethod = verificationMethod;
     }
     if (verificationCode != null) {
-      $result.verificationCode = verificationCode;
+      _result.verificationCode = verificationCode;
     }
     if (newPin != null) {
-      $result.newPin = newPin;
+      _result.newPin = newPin;
     }
     if (confirmNewPin != null) {
-      $result.confirmNewPin = confirmNewPin;
+      _result.confirmNewPin = confirmNewPin;
     }
     if (channelType != null) {
-      $result.channelType = channelType;
+      _result.channelType = channelType;
     }
-    return $result;
+    return _result;
   }
-  ResetTransactionPinRequest._() : super();
   factory ResetTransactionPinRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ResetTransactionPinRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ResetTransactionPinRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..aOS(2, _omitFieldNames ? '' : 'verificationMethod')
-    ..aOS(3, _omitFieldNames ? '' : 'verificationCode')
-    ..aOS(4, _omitFieldNames ? '' : 'newPin')
-    ..aOS(5, _omitFieldNames ? '' : 'confirmNewPin')
-    ..e<PinChannelType>(6, _omitFieldNames ? '' : 'channelType', $pb.PbFieldType.OE, defaultOrMaker: PinChannelType.PIN_CHANNEL_APP, valueOf: PinChannelType.valueOf, enumValues: PinChannelType.values)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -715,10 +689,8 @@ class ResetTransactionPinRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ResetTransactionPinRequest copyWith(void Function(ResetTransactionPinRequest) updates) => super.copyWith((message) => updates(message as ResetTransactionPinRequest)) as ResetTransactionPinRequest;
-
+  ResetTransactionPinRequest copyWith(void Function(ResetTransactionPinRequest) updates) => super.copyWith((message) => updates(message as ResetTransactionPinRequest)) as ResetTransactionPinRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ResetTransactionPinRequest create() => ResetTransactionPinRequest._();
   ResetTransactionPinRequest createEmptyInstance() => create();
@@ -783,29 +755,28 @@ class ResetTransactionPinRequest extends $pb.GeneratedMessage {
 }
 
 class ResetTransactionPinResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ResetTransactionPinResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  ResetTransactionPinResponse._() : super();
   factory ResetTransactionPinResponse({
     $core.bool? success,
     $core.String? message,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
-    return $result;
+    return _result;
   }
-  ResetTransactionPinResponse._() : super();
   factory ResetTransactionPinResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ResetTransactionPinResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ResetTransactionPinResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -815,10 +786,8 @@ class ResetTransactionPinResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ResetTransactionPinResponse copyWith(void Function(ResetTransactionPinResponse) updates) => super.copyWith((message) => updates(message as ResetTransactionPinResponse)) as ResetTransactionPinResponse;
-
+  ResetTransactionPinResponse copyWith(void Function(ResetTransactionPinResponse) updates) => super.copyWith((message) => updates(message as ResetTransactionPinResponse)) as ResetTransactionPinResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ResetTransactionPinResponse create() => ResetTransactionPinResponse._();
   ResetTransactionPinResponse createEmptyInstance() => create();
@@ -846,31 +815,29 @@ class ResetTransactionPinResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(2);
 }
 
-/// CheckUserHasPinRequest checks if user has PIN setup
 class CheckUserHasPinRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CheckUserHasPinRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..e<PinChannelType>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelType', $pb.PbFieldType.OE, defaultOrMaker: PinChannelType.PIN_CHANNEL_APP, valueOf: PinChannelType.valueOf, enumValues: PinChannelType.values)
+    ..hasRequiredFields = false
+  ;
+
+  CheckUserHasPinRequest._() : super();
   factory CheckUserHasPinRequest({
     $core.String? userId,
     PinChannelType? channelType,
   }) {
-    final $result = create();
+    final _result = create();
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (channelType != null) {
-      $result.channelType = channelType;
+      _result.channelType = channelType;
     }
-    return $result;
+    return _result;
   }
-  CheckUserHasPinRequest._() : super();
   factory CheckUserHasPinRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CheckUserHasPinRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CheckUserHasPinRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..e<PinChannelType>(2, _omitFieldNames ? '' : 'channelType', $pb.PbFieldType.OE, defaultOrMaker: PinChannelType.PIN_CHANNEL_APP, valueOf: PinChannelType.valueOf, enumValues: PinChannelType.values)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -880,10 +847,8 @@ class CheckUserHasPinRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CheckUserHasPinRequest copyWith(void Function(CheckUserHasPinRequest) updates) => super.copyWith((message) => updates(message as CheckUserHasPinRequest)) as CheckUserHasPinRequest;
-
+  CheckUserHasPinRequest copyWith(void Function(CheckUserHasPinRequest) updates) => super.copyWith((message) => updates(message as CheckUserHasPinRequest)) as CheckUserHasPinRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CheckUserHasPinRequest create() => CheckUserHasPinRequest._();
   CheckUserHasPinRequest createEmptyInstance() => create();
@@ -912,39 +877,38 @@ class CheckUserHasPinRequest extends $pb.GeneratedMessage {
 }
 
 class CheckUserHasPinResponse extends $pb.GeneratedMessage {
-  factory CheckUserHasPinResponse({
-    $core.bool? hasPin,
-    $core.bool? isActive,
-    $2.Timestamp? createdAt,
-    $2.Timestamp? lastChangedAt,
-  }) {
-    final $result = create();
-    if (hasPin != null) {
-      $result.hasPin = hasPin;
-    }
-    if (isActive != null) {
-      $result.isActive = isActive;
-    }
-    if (createdAt != null) {
-      $result.createdAt = createdAt;
-    }
-    if (lastChangedAt != null) {
-      $result.lastChangedAt = lastChangedAt;
-    }
-    return $result;
-  }
-  CheckUserHasPinResponse._() : super();
-  factory CheckUserHasPinResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory CheckUserHasPinResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CheckUserHasPinResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'hasPin')
-    ..aOB(2, _omitFieldNames ? '' : 'isActive')
-    ..aOM<$2.Timestamp>(3, _omitFieldNames ? '' : 'createdAt', subBuilder: $2.Timestamp.create)
-    ..aOM<$2.Timestamp>(4, _omitFieldNames ? '' : 'lastChangedAt', subBuilder: $2.Timestamp.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CheckUserHasPinResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasPin')
+    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isActive')
+    ..aOM<$1.Timestamp>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastChangedAt', subBuilder: $1.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
+  CheckUserHasPinResponse._() : super();
+  factory CheckUserHasPinResponse({
+    $core.bool? hasPin,
+    $core.bool? isActive,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? lastChangedAt,
+  }) {
+    final _result = create();
+    if (hasPin != null) {
+      _result.hasPin = hasPin;
+    }
+    if (isActive != null) {
+      _result.isActive = isActive;
+    }
+    if (createdAt != null) {
+      _result.createdAt = createdAt;
+    }
+    if (lastChangedAt != null) {
+      _result.lastChangedAt = lastChangedAt;
+    }
+    return _result;
+  }
+  factory CheckUserHasPinResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CheckUserHasPinResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -954,10 +918,8 @@ class CheckUserHasPinResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CheckUserHasPinResponse copyWith(void Function(CheckUserHasPinResponse) updates) => super.copyWith((message) => updates(message as CheckUserHasPinResponse)) as CheckUserHasPinResponse;
-
+  CheckUserHasPinResponse copyWith(void Function(CheckUserHasPinResponse) updates) => super.copyWith((message) => updates(message as CheckUserHasPinResponse)) as CheckUserHasPinResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CheckUserHasPinResponse create() => CheckUserHasPinResponse._();
   CheckUserHasPinResponse createEmptyInstance() => create();
@@ -985,58 +947,56 @@ class CheckUserHasPinResponse extends $pb.GeneratedMessage {
   void clearIsActive() => clearField(2);
 
   @$pb.TagNumber(3)
-  $2.Timestamp get createdAt => $_getN(2);
+  $1.Timestamp get createdAt => $_getN(2);
   @$pb.TagNumber(3)
-  set createdAt($2.Timestamp v) { setField(3, v); }
+  set createdAt($1.Timestamp v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasCreatedAt() => $_has(2);
   @$pb.TagNumber(3)
   void clearCreatedAt() => clearField(3);
   @$pb.TagNumber(3)
-  $2.Timestamp ensureCreatedAt() => $_ensure(2);
+  $1.Timestamp ensureCreatedAt() => $_ensure(2);
 
   @$pb.TagNumber(4)
-  $2.Timestamp get lastChangedAt => $_getN(3);
+  $1.Timestamp get lastChangedAt => $_getN(3);
   @$pb.TagNumber(4)
-  set lastChangedAt($2.Timestamp v) { setField(4, v); }
+  set lastChangedAt($1.Timestamp v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasLastChangedAt() => $_has(3);
   @$pb.TagNumber(4)
   void clearLastChangedAt() => clearField(4);
   @$pb.TagNumber(4)
-  $2.Timestamp ensureLastChangedAt() => $_ensure(3);
+  $1.Timestamp ensureLastChangedAt() => $_ensure(3);
 }
 
-/// ValidateTransactionPinTokenRequest validates a verification token
 class ValidateTransactionPinTokenRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ValidateTransactionPinTokenRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'token')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionId')
+    ..hasRequiredFields = false
+  ;
+
+  ValidateTransactionPinTokenRequest._() : super();
   factory ValidateTransactionPinTokenRequest({
     $core.String? token,
     $core.String? userId,
     $core.String? transactionId,
   }) {
-    final $result = create();
+    final _result = create();
     if (token != null) {
-      $result.token = token;
+      _result.token = token;
     }
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (transactionId != null) {
-      $result.transactionId = transactionId;
+      _result.transactionId = transactionId;
     }
-    return $result;
+    return _result;
   }
-  ValidateTransactionPinTokenRequest._() : super();
   factory ValidateTransactionPinTokenRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ValidateTransactionPinTokenRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ValidateTransactionPinTokenRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'token')
-    ..aOS(2, _omitFieldNames ? '' : 'userId')
-    ..aOS(3, _omitFieldNames ? '' : 'transactionId')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1046,10 +1006,8 @@ class ValidateTransactionPinTokenRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ValidateTransactionPinTokenRequest copyWith(void Function(ValidateTransactionPinTokenRequest) updates) => super.copyWith((message) => updates(message as ValidateTransactionPinTokenRequest)) as ValidateTransactionPinTokenRequest;
-
+  ValidateTransactionPinTokenRequest copyWith(void Function(ValidateTransactionPinTokenRequest) updates) => super.copyWith((message) => updates(message as ValidateTransactionPinTokenRequest)) as ValidateTransactionPinTokenRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ValidateTransactionPinTokenRequest create() => ValidateTransactionPinTokenRequest._();
   ValidateTransactionPinTokenRequest createEmptyInstance() => create();
@@ -1087,39 +1045,38 @@ class ValidateTransactionPinTokenRequest extends $pb.GeneratedMessage {
 }
 
 class ValidateTransactionPinTokenResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ValidateTransactionPinTokenResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'valid')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionId')
+    ..aOM<$1.Timestamp>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt', subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
+  ValidateTransactionPinTokenResponse._() : super();
   factory ValidateTransactionPinTokenResponse({
     $core.bool? valid,
     $core.String? userId,
     $core.String? transactionId,
-    $2.Timestamp? expiresAt,
+    $1.Timestamp? expiresAt,
   }) {
-    final $result = create();
+    final _result = create();
     if (valid != null) {
-      $result.valid = valid;
+      _result.valid = valid;
     }
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (transactionId != null) {
-      $result.transactionId = transactionId;
+      _result.transactionId = transactionId;
     }
     if (expiresAt != null) {
-      $result.expiresAt = expiresAt;
+      _result.expiresAt = expiresAt;
     }
-    return $result;
+    return _result;
   }
-  ValidateTransactionPinTokenResponse._() : super();
   factory ValidateTransactionPinTokenResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ValidateTransactionPinTokenResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ValidateTransactionPinTokenResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'valid')
-    ..aOS(2, _omitFieldNames ? '' : 'userId')
-    ..aOS(3, _omitFieldNames ? '' : 'transactionId')
-    ..aOM<$2.Timestamp>(4, _omitFieldNames ? '' : 'expiresAt', subBuilder: $2.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1129,10 +1086,8 @@ class ValidateTransactionPinTokenResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ValidateTransactionPinTokenResponse copyWith(void Function(ValidateTransactionPinTokenResponse) updates) => super.copyWith((message) => updates(message as ValidateTransactionPinTokenResponse)) as ValidateTransactionPinTokenResponse;
-
+  ValidateTransactionPinTokenResponse copyWith(void Function(ValidateTransactionPinTokenResponse) updates) => super.copyWith((message) => updates(message as ValidateTransactionPinTokenResponse)) as ValidateTransactionPinTokenResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ValidateTransactionPinTokenResponse create() => ValidateTransactionPinTokenResponse._();
   ValidateTransactionPinTokenResponse createEmptyInstance() => create();
@@ -1169,82 +1124,80 @@ class ValidateTransactionPinTokenResponse extends $pb.GeneratedMessage {
   void clearTransactionId() => clearField(3);
 
   @$pb.TagNumber(4)
-  $2.Timestamp get expiresAt => $_getN(3);
+  $1.Timestamp get expiresAt => $_getN(3);
   @$pb.TagNumber(4)
-  set expiresAt($2.Timestamp v) { setField(4, v); }
+  set expiresAt($1.Timestamp v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasExpiresAt() => $_has(3);
   @$pb.TagNumber(4)
   void clearExpiresAt() => clearField(4);
   @$pb.TagNumber(4)
-  $2.Timestamp ensureExpiresAt() => $_ensure(3);
+  $1.Timestamp ensureExpiresAt() => $_ensure(3);
 }
 
-/// TransactionPinDetails contains PIN metadata
 class TransactionPinDetails extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'TransactionPinDetails', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOB(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isActive')
+    ..aOM<$1.Timestamp>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastUsedAt', subBuilder: $1.Timestamp.create)
+    ..a<$core.int>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failedAttempts', $pb.PbFieldType.O3)
+    ..aOB(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isLocked')
+    ..aOM<$1.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lockedUntil', subBuilder: $1.Timestamp.create)
+    ..e<PinChannelType>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelType', $pb.PbFieldType.OE, defaultOrMaker: PinChannelType.PIN_CHANNEL_APP, valueOf: PinChannelType.valueOf, enumValues: PinChannelType.values)
+    ..hasRequiredFields = false
+  ;
+
+  TransactionPinDetails._() : super();
   factory TransactionPinDetails({
     $core.String? id,
     $core.String? userId,
     $core.bool? isActive,
-    $2.Timestamp? createdAt,
-    $2.Timestamp? updatedAt,
-    $2.Timestamp? lastUsedAt,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? updatedAt,
+    $1.Timestamp? lastUsedAt,
     $core.int? failedAttempts,
     $core.bool? isLocked,
-    $2.Timestamp? lockedUntil,
+    $1.Timestamp? lockedUntil,
     PinChannelType? channelType,
   }) {
-    final $result = create();
+    final _result = create();
     if (id != null) {
-      $result.id = id;
+      _result.id = id;
     }
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (isActive != null) {
-      $result.isActive = isActive;
+      _result.isActive = isActive;
     }
     if (createdAt != null) {
-      $result.createdAt = createdAt;
+      _result.createdAt = createdAt;
     }
     if (updatedAt != null) {
-      $result.updatedAt = updatedAt;
+      _result.updatedAt = updatedAt;
     }
     if (lastUsedAt != null) {
-      $result.lastUsedAt = lastUsedAt;
+      _result.lastUsedAt = lastUsedAt;
     }
     if (failedAttempts != null) {
-      $result.failedAttempts = failedAttempts;
+      _result.failedAttempts = failedAttempts;
     }
     if (isLocked != null) {
-      $result.isLocked = isLocked;
+      _result.isLocked = isLocked;
     }
     if (lockedUntil != null) {
-      $result.lockedUntil = lockedUntil;
+      _result.lockedUntil = lockedUntil;
     }
     if (channelType != null) {
-      $result.channelType = channelType;
+      _result.channelType = channelType;
     }
-    return $result;
+    return _result;
   }
-  TransactionPinDetails._() : super();
   factory TransactionPinDetails.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory TransactionPinDetails.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'TransactionPinDetails', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..aOS(2, _omitFieldNames ? '' : 'userId')
-    ..aOB(3, _omitFieldNames ? '' : 'isActive')
-    ..aOM<$2.Timestamp>(4, _omitFieldNames ? '' : 'createdAt', subBuilder: $2.Timestamp.create)
-    ..aOM<$2.Timestamp>(5, _omitFieldNames ? '' : 'updatedAt', subBuilder: $2.Timestamp.create)
-    ..aOM<$2.Timestamp>(6, _omitFieldNames ? '' : 'lastUsedAt', subBuilder: $2.Timestamp.create)
-    ..a<$core.int>(7, _omitFieldNames ? '' : 'failedAttempts', $pb.PbFieldType.O3)
-    ..aOB(8, _omitFieldNames ? '' : 'isLocked')
-    ..aOM<$2.Timestamp>(9, _omitFieldNames ? '' : 'lockedUntil', subBuilder: $2.Timestamp.create)
-    ..e<PinChannelType>(10, _omitFieldNames ? '' : 'channelType', $pb.PbFieldType.OE, defaultOrMaker: PinChannelType.PIN_CHANNEL_APP, valueOf: PinChannelType.valueOf, enumValues: PinChannelType.values)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1254,10 +1207,8 @@ class TransactionPinDetails extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  TransactionPinDetails copyWith(void Function(TransactionPinDetails) updates) => super.copyWith((message) => updates(message as TransactionPinDetails)) as TransactionPinDetails;
-
+  TransactionPinDetails copyWith(void Function(TransactionPinDetails) updates) => super.copyWith((message) => updates(message as TransactionPinDetails)) as TransactionPinDetails; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static TransactionPinDetails create() => TransactionPinDetails._();
   TransactionPinDetails createEmptyInstance() => create();
@@ -1294,37 +1245,37 @@ class TransactionPinDetails extends $pb.GeneratedMessage {
   void clearIsActive() => clearField(3);
 
   @$pb.TagNumber(4)
-  $2.Timestamp get createdAt => $_getN(3);
+  $1.Timestamp get createdAt => $_getN(3);
   @$pb.TagNumber(4)
-  set createdAt($2.Timestamp v) { setField(4, v); }
+  set createdAt($1.Timestamp v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasCreatedAt() => $_has(3);
   @$pb.TagNumber(4)
   void clearCreatedAt() => clearField(4);
   @$pb.TagNumber(4)
-  $2.Timestamp ensureCreatedAt() => $_ensure(3);
+  $1.Timestamp ensureCreatedAt() => $_ensure(3);
 
   @$pb.TagNumber(5)
-  $2.Timestamp get updatedAt => $_getN(4);
+  $1.Timestamp get updatedAt => $_getN(4);
   @$pb.TagNumber(5)
-  set updatedAt($2.Timestamp v) { setField(5, v); }
+  set updatedAt($1.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasUpdatedAt() => $_has(4);
   @$pb.TagNumber(5)
   void clearUpdatedAt() => clearField(5);
   @$pb.TagNumber(5)
-  $2.Timestamp ensureUpdatedAt() => $_ensure(4);
+  $1.Timestamp ensureUpdatedAt() => $_ensure(4);
 
   @$pb.TagNumber(6)
-  $2.Timestamp get lastUsedAt => $_getN(5);
+  $1.Timestamp get lastUsedAt => $_getN(5);
   @$pb.TagNumber(6)
-  set lastUsedAt($2.Timestamp v) { setField(6, v); }
+  set lastUsedAt($1.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasLastUsedAt() => $_has(5);
   @$pb.TagNumber(6)
   void clearLastUsedAt() => clearField(6);
   @$pb.TagNumber(6)
-  $2.Timestamp ensureLastUsedAt() => $_ensure(5);
+  $1.Timestamp ensureLastUsedAt() => $_ensure(5);
 
   @$pb.TagNumber(7)
   $core.int get failedAttempts => $_getIZ(6);
@@ -1345,15 +1296,15 @@ class TransactionPinDetails extends $pb.GeneratedMessage {
   void clearIsLocked() => clearField(8);
 
   @$pb.TagNumber(9)
-  $2.Timestamp get lockedUntil => $_getN(8);
+  $1.Timestamp get lockedUntil => $_getN(8);
   @$pb.TagNumber(9)
-  set lockedUntil($2.Timestamp v) { setField(9, v); }
+  set lockedUntil($1.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasLockedUntil() => $_has(8);
   @$pb.TagNumber(9)
   void clearLockedUntil() => clearField(9);
   @$pb.TagNumber(9)
-  $2.Timestamp ensureLockedUntil() => $_ensure(8);
+  $1.Timestamp ensureLockedUntil() => $_ensure(8);
 
   @$pb.TagNumber(10)
   PinChannelType get channelType => $_getN(9);
@@ -1365,41 +1316,39 @@ class TransactionPinDetails extends $pb.GeneratedMessage {
   void clearChannelType() => clearField(10);
 }
 
-/// InitiatePinOTP request - sends OTP for PIN create/change/reset
 class InitiatePinOTPRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'InitiatePinOTPRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'operationType')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channel')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deviceId')
+    ..hasRequiredFields = false
+  ;
+
+  InitiatePinOTPRequest._() : super();
   factory InitiatePinOTPRequest({
     $core.String? userId,
     $core.String? operationType,
     $core.String? channel,
     $core.String? deviceId,
   }) {
-    final $result = create();
+    final _result = create();
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (operationType != null) {
-      $result.operationType = operationType;
+      _result.operationType = operationType;
     }
     if (channel != null) {
-      $result.channel = channel;
+      _result.channel = channel;
     }
     if (deviceId != null) {
-      $result.deviceId = deviceId;
+      _result.deviceId = deviceId;
     }
-    return $result;
+    return _result;
   }
-  InitiatePinOTPRequest._() : super();
   factory InitiatePinOTPRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory InitiatePinOTPRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InitiatePinOTPRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..aOS(2, _omitFieldNames ? '' : 'operationType')
-    ..aOS(3, _omitFieldNames ? '' : 'channel')
-    ..aOS(4, _omitFieldNames ? '' : 'deviceId')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1409,10 +1358,8 @@ class InitiatePinOTPRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  InitiatePinOTPRequest copyWith(void Function(InitiatePinOTPRequest) updates) => super.copyWith((message) => updates(message as InitiatePinOTPRequest)) as InitiatePinOTPRequest;
-
+  InitiatePinOTPRequest copyWith(void Function(InitiatePinOTPRequest) updates) => super.copyWith((message) => updates(message as InitiatePinOTPRequest)) as InitiatePinOTPRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static InitiatePinOTPRequest create() => InitiatePinOTPRequest._();
   InitiatePinOTPRequest createEmptyInstance() => create();
@@ -1459,6 +1406,17 @@ class InitiatePinOTPRequest extends $pb.GeneratedMessage {
 }
 
 class InitiatePinOTPResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'InitiatePinOTPResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channel')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'maskedDestination')
+    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresInSeconds', $pb.PbFieldType.O3)
+    ..a<$core.int>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cooldownSeconds', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  InitiatePinOTPResponse._() : super();
   factory InitiatePinOTPResponse({
     $core.bool? success,
     $core.String? message,
@@ -1467,41 +1425,29 @@ class InitiatePinOTPResponse extends $pb.GeneratedMessage {
     $core.int? expiresInSeconds,
     $core.int? cooldownSeconds,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (channel != null) {
-      $result.channel = channel;
+      _result.channel = channel;
     }
     if (maskedDestination != null) {
-      $result.maskedDestination = maskedDestination;
+      _result.maskedDestination = maskedDestination;
     }
     if (expiresInSeconds != null) {
-      $result.expiresInSeconds = expiresInSeconds;
+      _result.expiresInSeconds = expiresInSeconds;
     }
     if (cooldownSeconds != null) {
-      $result.cooldownSeconds = cooldownSeconds;
+      _result.cooldownSeconds = cooldownSeconds;
     }
-    return $result;
+    return _result;
   }
-  InitiatePinOTPResponse._() : super();
   factory InitiatePinOTPResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory InitiatePinOTPResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InitiatePinOTPResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOS(3, _omitFieldNames ? '' : 'channel')
-    ..aOS(4, _omitFieldNames ? '' : 'maskedDestination')
-    ..a<$core.int>(5, _omitFieldNames ? '' : 'expiresInSeconds', $pb.PbFieldType.O3)
-    ..a<$core.int>(6, _omitFieldNames ? '' : 'cooldownSeconds', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1511,10 +1457,8 @@ class InitiatePinOTPResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  InitiatePinOTPResponse copyWith(void Function(InitiatePinOTPResponse) updates) => super.copyWith((message) => updates(message as InitiatePinOTPResponse)) as InitiatePinOTPResponse;
-
+  InitiatePinOTPResponse copyWith(void Function(InitiatePinOTPResponse) updates) => super.copyWith((message) => updates(message as InitiatePinOTPResponse)) as InitiatePinOTPResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static InitiatePinOTPResponse create() => InitiatePinOTPResponse._();
   InitiatePinOTPResponse createEmptyInstance() => create();
@@ -1578,8 +1522,21 @@ class InitiatePinOTPResponse extends $pb.GeneratedMessage {
   void clearCooldownSeconds() => clearField(6);
 }
 
-/// VerifyPinOTP request - verifies OTP and executes PIN operation
 class VerifyPinOTPRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VerifyPinOTPRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'otpCode')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'operationType')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentPin')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'newPin')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'confirmNewPin')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deviceId')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deviceName')
+    ..e<PinChannelType>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelType', $pb.PbFieldType.OE, defaultOrMaker: PinChannelType.PIN_CHANNEL_APP, valueOf: PinChannelType.valueOf, enumValues: PinChannelType.values)
+    ..hasRequiredFields = false
+  ;
+
+  VerifyPinOTPRequest._() : super();
   factory VerifyPinOTPRequest({
     $core.String? userId,
     $core.String? otpCode,
@@ -1591,53 +1548,38 @@ class VerifyPinOTPRequest extends $pb.GeneratedMessage {
     $core.String? deviceName,
     PinChannelType? channelType,
   }) {
-    final $result = create();
+    final _result = create();
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (otpCode != null) {
-      $result.otpCode = otpCode;
+      _result.otpCode = otpCode;
     }
     if (operationType != null) {
-      $result.operationType = operationType;
+      _result.operationType = operationType;
     }
     if (currentPin != null) {
-      $result.currentPin = currentPin;
+      _result.currentPin = currentPin;
     }
     if (newPin != null) {
-      $result.newPin = newPin;
+      _result.newPin = newPin;
     }
     if (confirmNewPin != null) {
-      $result.confirmNewPin = confirmNewPin;
+      _result.confirmNewPin = confirmNewPin;
     }
     if (deviceId != null) {
-      $result.deviceId = deviceId;
+      _result.deviceId = deviceId;
     }
     if (deviceName != null) {
-      $result.deviceName = deviceName;
+      _result.deviceName = deviceName;
     }
     if (channelType != null) {
-      $result.channelType = channelType;
+      _result.channelType = channelType;
     }
-    return $result;
+    return _result;
   }
-  VerifyPinOTPRequest._() : super();
   factory VerifyPinOTPRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory VerifyPinOTPRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyPinOTPRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..aOS(2, _omitFieldNames ? '' : 'otpCode')
-    ..aOS(3, _omitFieldNames ? '' : 'operationType')
-    ..aOS(4, _omitFieldNames ? '' : 'currentPin')
-    ..aOS(5, _omitFieldNames ? '' : 'newPin')
-    ..aOS(6, _omitFieldNames ? '' : 'confirmNewPin')
-    ..aOS(7, _omitFieldNames ? '' : 'deviceId')
-    ..aOS(8, _omitFieldNames ? '' : 'deviceName')
-    ..e<PinChannelType>(9, _omitFieldNames ? '' : 'channelType', $pb.PbFieldType.OE, defaultOrMaker: PinChannelType.PIN_CHANNEL_APP, valueOf: PinChannelType.valueOf, enumValues: PinChannelType.values)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1647,10 +1589,8 @@ class VerifyPinOTPRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  VerifyPinOTPRequest copyWith(void Function(VerifyPinOTPRequest) updates) => super.copyWith((message) => updates(message as VerifyPinOTPRequest)) as VerifyPinOTPRequest;
-
+  VerifyPinOTPRequest copyWith(void Function(VerifyPinOTPRequest) updates) => super.copyWith((message) => updates(message as VerifyPinOTPRequest)) as VerifyPinOTPRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static VerifyPinOTPRequest create() => VerifyPinOTPRequest._();
   VerifyPinOTPRequest createEmptyInstance() => create();
@@ -1742,34 +1682,33 @@ class VerifyPinOTPRequest extends $pb.GeneratedMessage {
 }
 
 class VerifyPinOTPResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VerifyPinOTPResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'remainingAttempts', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  VerifyPinOTPResponse._() : super();
   factory VerifyPinOTPResponse({
     $core.bool? success,
     $core.String? message,
     $core.int? remainingAttempts,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (remainingAttempts != null) {
-      $result.remainingAttempts = remainingAttempts;
+      _result.remainingAttempts = remainingAttempts;
     }
-    return $result;
+    return _result;
   }
-  VerifyPinOTPResponse._() : super();
   factory VerifyPinOTPResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory VerifyPinOTPResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyPinOTPResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..a<$core.int>(3, _omitFieldNames ? '' : 'remainingAttempts', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1779,10 +1718,8 @@ class VerifyPinOTPResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  VerifyPinOTPResponse copyWith(void Function(VerifyPinOTPResponse) updates) => super.copyWith((message) => updates(message as VerifyPinOTPResponse)) as VerifyPinOTPResponse;
-
+  VerifyPinOTPResponse copyWith(void Function(VerifyPinOTPResponse) updates) => super.copyWith((message) => updates(message as VerifyPinOTPResponse)) as VerifyPinOTPResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static VerifyPinOTPResponse create() => VerifyPinOTPResponse._();
   VerifyPinOTPResponse createEmptyInstance() => create();
@@ -1819,26 +1756,24 @@ class VerifyPinOTPResponse extends $pb.GeneratedMessage {
   void clearRemainingAttempts() => clearField(3);
 }
 
-/// GetPinOTPChannels - returns available OTP channels
 class GetPinOTPChannelsRequest extends $pb.GeneratedMessage {
-  factory GetPinOTPChannelsRequest({
-    $core.String? userId,
-  }) {
-    final $result = create();
-    if (userId != null) {
-      $result.userId = userId;
-    }
-    return $result;
-  }
-  GetPinOTPChannelsRequest._() : super();
-  factory GetPinOTPChannelsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetPinOTPChannelsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetPinOTPChannelsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'userId')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetPinOTPChannelsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
     ..hasRequiredFields = false
   ;
 
+  GetPinOTPChannelsRequest._() : super();
+  factory GetPinOTPChannelsRequest({
+    $core.String? userId,
+  }) {
+    final _result = create();
+    if (userId != null) {
+      _result.userId = userId;
+    }
+    return _result;
+  }
+  factory GetPinOTPChannelsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetPinOTPChannelsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1848,10 +1783,8 @@ class GetPinOTPChannelsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetPinOTPChannelsRequest copyWith(void Function(GetPinOTPChannelsRequest) updates) => super.copyWith((message) => updates(message as GetPinOTPChannelsRequest)) as GetPinOTPChannelsRequest;
-
+  GetPinOTPChannelsRequest copyWith(void Function(GetPinOTPChannelsRequest) updates) => super.copyWith((message) => updates(message as GetPinOTPChannelsRequest)) as GetPinOTPChannelsRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetPinOTPChannelsRequest create() => GetPinOTPChannelsRequest._();
   GetPinOTPChannelsRequest createEmptyInstance() => create();
@@ -1871,29 +1804,28 @@ class GetPinOTPChannelsRequest extends $pb.GeneratedMessage {
 }
 
 class GetPinOTPChannelsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetPinOTPChannelsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<OTPChannel>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channels', $pb.PbFieldType.PM, subBuilder: OTPChannel.create)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recommendedChannel')
+    ..hasRequiredFields = false
+  ;
+
+  GetPinOTPChannelsResponse._() : super();
   factory GetPinOTPChannelsResponse({
     $core.Iterable<OTPChannel>? channels,
     $core.String? recommendedChannel,
   }) {
-    final $result = create();
+    final _result = create();
     if (channels != null) {
-      $result.channels.addAll(channels);
+      _result.channels.addAll(channels);
     }
     if (recommendedChannel != null) {
-      $result.recommendedChannel = recommendedChannel;
+      _result.recommendedChannel = recommendedChannel;
     }
-    return $result;
+    return _result;
   }
-  GetPinOTPChannelsResponse._() : super();
   factory GetPinOTPChannelsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetPinOTPChannelsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetPinOTPChannelsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..pc<OTPChannel>(1, _omitFieldNames ? '' : 'channels', $pb.PbFieldType.PM, subBuilder: OTPChannel.create)
-    ..aOS(2, _omitFieldNames ? '' : 'recommendedChannel')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1903,10 +1835,8 @@ class GetPinOTPChannelsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetPinOTPChannelsResponse copyWith(void Function(GetPinOTPChannelsResponse) updates) => super.copyWith((message) => updates(message as GetPinOTPChannelsResponse)) as GetPinOTPChannelsResponse;
-
+  GetPinOTPChannelsResponse copyWith(void Function(GetPinOTPChannelsResponse) updates) => super.copyWith((message) => updates(message as GetPinOTPChannelsResponse)) as GetPinOTPChannelsResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetPinOTPChannelsResponse create() => GetPinOTPChannelsResponse._();
   GetPinOTPChannelsResponse createEmptyInstance() => create();
@@ -1929,39 +1859,38 @@ class GetPinOTPChannelsResponse extends $pb.GeneratedMessage {
 }
 
 class OTPChannel extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'OTPChannel', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'type')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'maskedDestination')
+    ..aOB(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isVerified')
+    ..aOB(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isAvailable')
+    ..hasRequiredFields = false
+  ;
+
+  OTPChannel._() : super();
   factory OTPChannel({
     $core.String? type,
     $core.String? maskedDestination,
     $core.bool? isVerified,
     $core.bool? isAvailable,
   }) {
-    final $result = create();
+    final _result = create();
     if (type != null) {
-      $result.type = type;
+      _result.type = type;
     }
     if (maskedDestination != null) {
-      $result.maskedDestination = maskedDestination;
+      _result.maskedDestination = maskedDestination;
     }
     if (isVerified != null) {
-      $result.isVerified = isVerified;
+      _result.isVerified = isVerified;
     }
     if (isAvailable != null) {
-      $result.isAvailable = isAvailable;
+      _result.isAvailable = isAvailable;
     }
-    return $result;
+    return _result;
   }
-  OTPChannel._() : super();
   factory OTPChannel.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory OTPChannel.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'OTPChannel', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'type')
-    ..aOS(2, _omitFieldNames ? '' : 'maskedDestination')
-    ..aOB(3, _omitFieldNames ? '' : 'isVerified')
-    ..aOB(4, _omitFieldNames ? '' : 'isAvailable')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1971,10 +1900,8 @@ class OTPChannel extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  OTPChannel copyWith(void Function(OTPChannel) updates) => super.copyWith((message) => updates(message as OTPChannel)) as OTPChannel;
-
+  OTPChannel copyWith(void Function(OTPChannel) updates) => super.copyWith((message) => updates(message as OTPChannel)) as OTPChannel; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static OTPChannel create() => OTPChannel._();
   OTPChannel createEmptyInstance() => create();
@@ -2020,8 +1947,18 @@ class OTPChannel extends $pb.GeneratedMessage {
   void clearIsAvailable() => clearField(4);
 }
 
-/// CompleteForgotPin - verifies OTP and resets PIN
 class CompleteForgotPinRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CompleteForgotPinRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'otpCode')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'newPin')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'confirmNewPin')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deviceId')
+    ..e<PinChannelType>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelType', $pb.PbFieldType.OE, defaultOrMaker: PinChannelType.PIN_CHANNEL_APP, valueOf: PinChannelType.valueOf, enumValues: PinChannelType.values)
+    ..hasRequiredFields = false
+  ;
+
+  CompleteForgotPinRequest._() : super();
   factory CompleteForgotPinRequest({
     $core.String? userId,
     $core.String? otpCode,
@@ -2030,41 +1967,29 @@ class CompleteForgotPinRequest extends $pb.GeneratedMessage {
     $core.String? deviceId,
     PinChannelType? channelType,
   }) {
-    final $result = create();
+    final _result = create();
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (otpCode != null) {
-      $result.otpCode = otpCode;
+      _result.otpCode = otpCode;
     }
     if (newPin != null) {
-      $result.newPin = newPin;
+      _result.newPin = newPin;
     }
     if (confirmNewPin != null) {
-      $result.confirmNewPin = confirmNewPin;
+      _result.confirmNewPin = confirmNewPin;
     }
     if (deviceId != null) {
-      $result.deviceId = deviceId;
+      _result.deviceId = deviceId;
     }
     if (channelType != null) {
-      $result.channelType = channelType;
+      _result.channelType = channelType;
     }
-    return $result;
+    return _result;
   }
-  CompleteForgotPinRequest._() : super();
   factory CompleteForgotPinRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CompleteForgotPinRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CompleteForgotPinRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..aOS(2, _omitFieldNames ? '' : 'otpCode')
-    ..aOS(3, _omitFieldNames ? '' : 'newPin')
-    ..aOS(4, _omitFieldNames ? '' : 'confirmNewPin')
-    ..aOS(5, _omitFieldNames ? '' : 'deviceId')
-    ..e<PinChannelType>(6, _omitFieldNames ? '' : 'channelType', $pb.PbFieldType.OE, defaultOrMaker: PinChannelType.PIN_CHANNEL_APP, valueOf: PinChannelType.valueOf, enumValues: PinChannelType.values)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2074,10 +1999,8 @@ class CompleteForgotPinRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CompleteForgotPinRequest copyWith(void Function(CompleteForgotPinRequest) updates) => super.copyWith((message) => updates(message as CompleteForgotPinRequest)) as CompleteForgotPinRequest;
-
+  CompleteForgotPinRequest copyWith(void Function(CompleteForgotPinRequest) updates) => super.copyWith((message) => updates(message as CompleteForgotPinRequest)) as CompleteForgotPinRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CompleteForgotPinRequest create() => CompleteForgotPinRequest._();
   CompleteForgotPinRequest createEmptyInstance() => create();
@@ -2142,34 +2065,33 @@ class CompleteForgotPinRequest extends $pb.GeneratedMessage {
 }
 
 class CompleteForgotPinResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CompleteForgotPinResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'remainingAttempts', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  CompleteForgotPinResponse._() : super();
   factory CompleteForgotPinResponse({
     $core.bool? success,
     $core.String? message,
     $core.int? remainingAttempts,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (remainingAttempts != null) {
-      $result.remainingAttempts = remainingAttempts;
+      _result.remainingAttempts = remainingAttempts;
     }
-    return $result;
+    return _result;
   }
-  CompleteForgotPinResponse._() : super();
   factory CompleteForgotPinResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CompleteForgotPinResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CompleteForgotPinResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..a<$core.int>(3, _omitFieldNames ? '' : 'remainingAttempts', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2179,10 +2101,8 @@ class CompleteForgotPinResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CompleteForgotPinResponse copyWith(void Function(CompleteForgotPinResponse) updates) => super.copyWith((message) => updates(message as CompleteForgotPinResponse)) as CompleteForgotPinResponse;
-
+  CompleteForgotPinResponse copyWith(void Function(CompleteForgotPinResponse) updates) => super.copyWith((message) => updates(message as CompleteForgotPinResponse)) as CompleteForgotPinResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CompleteForgotPinResponse create() => CompleteForgotPinResponse._();
   CompleteForgotPinResponse createEmptyInstance() => create();
@@ -2219,8 +2139,17 @@ class CompleteForgotPinResponse extends $pb.GeneratedMessage {
   void clearRemainingAttempts() => clearField(3);
 }
 
-/// PIN configuration constants
 class PinConfig extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'PinConfig', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'minLength', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'maxLength', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'maxAttempts', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lockoutDurationMinutes', $pb.PbFieldType.O3)
+    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'tokenExpiryMinutes', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  PinConfig._() : super();
   factory PinConfig({
     $core.int? minLength,
     $core.int? maxLength,
@@ -2228,37 +2157,26 @@ class PinConfig extends $pb.GeneratedMessage {
     $core.int? lockoutDurationMinutes,
     $core.int? tokenExpiryMinutes,
   }) {
-    final $result = create();
+    final _result = create();
     if (minLength != null) {
-      $result.minLength = minLength;
+      _result.minLength = minLength;
     }
     if (maxLength != null) {
-      $result.maxLength = maxLength;
+      _result.maxLength = maxLength;
     }
     if (maxAttempts != null) {
-      $result.maxAttempts = maxAttempts;
+      _result.maxAttempts = maxAttempts;
     }
     if (lockoutDurationMinutes != null) {
-      $result.lockoutDurationMinutes = lockoutDurationMinutes;
+      _result.lockoutDurationMinutes = lockoutDurationMinutes;
     }
     if (tokenExpiryMinutes != null) {
-      $result.tokenExpiryMinutes = tokenExpiryMinutes;
+      _result.tokenExpiryMinutes = tokenExpiryMinutes;
     }
-    return $result;
+    return _result;
   }
-  PinConfig._() : super();
   factory PinConfig.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory PinConfig.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'PinConfig', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..a<$core.int>(1, _omitFieldNames ? '' : 'minLength', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'maxLength', $pb.PbFieldType.O3)
-    ..a<$core.int>(3, _omitFieldNames ? '' : 'maxAttempts', $pb.PbFieldType.O3)
-    ..a<$core.int>(4, _omitFieldNames ? '' : 'lockoutDurationMinutes', $pb.PbFieldType.O3)
-    ..a<$core.int>(5, _omitFieldNames ? '' : 'tokenExpiryMinutes', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2268,10 +2186,8 @@ class PinConfig extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  PinConfig copyWith(void Function(PinConfig) updates) => super.copyWith((message) => updates(message as PinConfig)) as PinConfig;
-
+  PinConfig copyWith(void Function(PinConfig) updates) => super.copyWith((message) => updates(message as PinConfig)) as PinConfig; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static PinConfig create() => PinConfig._();
   PinConfig createEmptyInstance() => create();
@@ -2326,26 +2242,24 @@ class PinConfig extends $pb.GeneratedMessage {
   void clearTokenExpiryMinutes() => clearField(5);
 }
 
-/// GetUserChannelPins - returns PIN status for all channels
 class GetUserChannelPinsRequest extends $pb.GeneratedMessage {
-  factory GetUserChannelPinsRequest({
-    $core.String? userId,
-  }) {
-    final $result = create();
-    if (userId != null) {
-      $result.userId = userId;
-    }
-    return $result;
-  }
-  GetUserChannelPinsRequest._() : super();
-  factory GetUserChannelPinsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetUserChannelPinsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetUserChannelPinsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'userId')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetUserChannelPinsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
     ..hasRequiredFields = false
   ;
 
+  GetUserChannelPinsRequest._() : super();
+  factory GetUserChannelPinsRequest({
+    $core.String? userId,
+  }) {
+    final _result = create();
+    if (userId != null) {
+      _result.userId = userId;
+    }
+    return _result;
+  }
+  factory GetUserChannelPinsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetUserChannelPinsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2355,10 +2269,8 @@ class GetUserChannelPinsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetUserChannelPinsRequest copyWith(void Function(GetUserChannelPinsRequest) updates) => super.copyWith((message) => updates(message as GetUserChannelPinsRequest)) as GetUserChannelPinsRequest;
-
+  GetUserChannelPinsRequest copyWith(void Function(GetUserChannelPinsRequest) updates) => super.copyWith((message) => updates(message as GetUserChannelPinsRequest)) as GetUserChannelPinsRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetUserChannelPinsRequest create() => GetUserChannelPinsRequest._();
   GetUserChannelPinsRequest createEmptyInstance() => create();
@@ -2378,24 +2290,23 @@ class GetUserChannelPinsRequest extends $pb.GeneratedMessage {
 }
 
 class GetUserChannelPinsResponse extends $pb.GeneratedMessage {
-  factory GetUserChannelPinsResponse({
-    $core.Iterable<ChannelPinStatus>? channelPins,
-  }) {
-    final $result = create();
-    if (channelPins != null) {
-      $result.channelPins.addAll(channelPins);
-    }
-    return $result;
-  }
-  GetUserChannelPinsResponse._() : super();
-  factory GetUserChannelPinsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetUserChannelPinsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetUserChannelPinsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..pc<ChannelPinStatus>(1, _omitFieldNames ? '' : 'channelPins', $pb.PbFieldType.PM, subBuilder: ChannelPinStatus.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetUserChannelPinsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<ChannelPinStatus>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelPins', $pb.PbFieldType.PM, subBuilder: ChannelPinStatus.create)
     ..hasRequiredFields = false
   ;
 
+  GetUserChannelPinsResponse._() : super();
+  factory GetUserChannelPinsResponse({
+    $core.Iterable<ChannelPinStatus>? channelPins,
+  }) {
+    final _result = create();
+    if (channelPins != null) {
+      _result.channelPins.addAll(channelPins);
+    }
+    return _result;
+  }
+  factory GetUserChannelPinsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetUserChannelPinsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2405,10 +2316,8 @@ class GetUserChannelPinsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetUserChannelPinsResponse copyWith(void Function(GetUserChannelPinsResponse) updates) => super.copyWith((message) => updates(message as GetUserChannelPinsResponse)) as GetUserChannelPinsResponse;
-
+  GetUserChannelPinsResponse copyWith(void Function(GetUserChannelPinsResponse) updates) => super.copyWith((message) => updates(message as GetUserChannelPinsResponse)) as GetUserChannelPinsResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetUserChannelPinsResponse create() => GetUserChannelPinsResponse._();
   GetUserChannelPinsResponse createEmptyInstance() => create();
@@ -2422,49 +2331,48 @@ class GetUserChannelPinsResponse extends $pb.GeneratedMessage {
 }
 
 class ChannelPinStatus extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ChannelPinStatus', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..e<PinChannelType>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelType', $pb.PbFieldType.OE, defaultOrMaker: PinChannelType.PIN_CHANNEL_APP, valueOf: PinChannelType.valueOf, enumValues: PinChannelType.values)
+    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasPin')
+    ..aOB(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isActive')
+    ..aOB(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isLocked')
+    ..aOM<$1.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastUsedAt', subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
+  ChannelPinStatus._() : super();
   factory ChannelPinStatus({
     PinChannelType? channelType,
     $core.bool? hasPin,
     $core.bool? isActive,
     $core.bool? isLocked,
-    $2.Timestamp? createdAt,
-    $2.Timestamp? lastUsedAt,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? lastUsedAt,
   }) {
-    final $result = create();
+    final _result = create();
     if (channelType != null) {
-      $result.channelType = channelType;
+      _result.channelType = channelType;
     }
     if (hasPin != null) {
-      $result.hasPin = hasPin;
+      _result.hasPin = hasPin;
     }
     if (isActive != null) {
-      $result.isActive = isActive;
+      _result.isActive = isActive;
     }
     if (isLocked != null) {
-      $result.isLocked = isLocked;
+      _result.isLocked = isLocked;
     }
     if (createdAt != null) {
-      $result.createdAt = createdAt;
+      _result.createdAt = createdAt;
     }
     if (lastUsedAt != null) {
-      $result.lastUsedAt = lastUsedAt;
+      _result.lastUsedAt = lastUsedAt;
     }
-    return $result;
+    return _result;
   }
-  ChannelPinStatus._() : super();
   factory ChannelPinStatus.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ChannelPinStatus.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ChannelPinStatus', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..e<PinChannelType>(1, _omitFieldNames ? '' : 'channelType', $pb.PbFieldType.OE, defaultOrMaker: PinChannelType.PIN_CHANNEL_APP, valueOf: PinChannelType.valueOf, enumValues: PinChannelType.values)
-    ..aOB(2, _omitFieldNames ? '' : 'hasPin')
-    ..aOB(3, _omitFieldNames ? '' : 'isActive')
-    ..aOB(4, _omitFieldNames ? '' : 'isLocked')
-    ..aOM<$2.Timestamp>(5, _omitFieldNames ? '' : 'createdAt', subBuilder: $2.Timestamp.create)
-    ..aOM<$2.Timestamp>(6, _omitFieldNames ? '' : 'lastUsedAt', subBuilder: $2.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2474,10 +2382,8 @@ class ChannelPinStatus extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ChannelPinStatus copyWith(void Function(ChannelPinStatus) updates) => super.copyWith((message) => updates(message as ChannelPinStatus)) as ChannelPinStatus;
-
+  ChannelPinStatus copyWith(void Function(ChannelPinStatus) updates) => super.copyWith((message) => updates(message as ChannelPinStatus)) as ChannelPinStatus; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ChannelPinStatus create() => ChannelPinStatus._();
   ChannelPinStatus createEmptyInstance() => create();
@@ -2523,58 +2429,56 @@ class ChannelPinStatus extends $pb.GeneratedMessage {
   void clearIsLocked() => clearField(4);
 
   @$pb.TagNumber(5)
-  $2.Timestamp get createdAt => $_getN(4);
+  $1.Timestamp get createdAt => $_getN(4);
   @$pb.TagNumber(5)
-  set createdAt($2.Timestamp v) { setField(5, v); }
+  set createdAt($1.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasCreatedAt() => $_has(4);
   @$pb.TagNumber(5)
   void clearCreatedAt() => clearField(5);
   @$pb.TagNumber(5)
-  $2.Timestamp ensureCreatedAt() => $_ensure(4);
+  $1.Timestamp ensureCreatedAt() => $_ensure(4);
 
   @$pb.TagNumber(6)
-  $2.Timestamp get lastUsedAt => $_getN(5);
+  $1.Timestamp get lastUsedAt => $_getN(5);
   @$pb.TagNumber(6)
-  set lastUsedAt($2.Timestamp v) { setField(6, v); }
+  set lastUsedAt($1.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasLastUsedAt() => $_has(5);
   @$pb.TagNumber(6)
   void clearLastUsedAt() => clearField(6);
   @$pb.TagNumber(6)
-  $2.Timestamp ensureLastUsedAt() => $_ensure(5);
+  $1.Timestamp ensureLastUsedAt() => $_ensure(5);
 }
 
-/// CreateChannelRegistration
 class CreateChannelRegistrationRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateChannelRegistrationRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelType')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumber')
+    ..hasRequiredFields = false
+  ;
+
+  CreateChannelRegistrationRequest._() : super();
   factory CreateChannelRegistrationRequest({
     $core.String? userId,
     $core.String? channelType,
     $core.String? phoneNumber,
   }) {
-    final $result = create();
+    final _result = create();
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (channelType != null) {
-      $result.channelType = channelType;
+      _result.channelType = channelType;
     }
     if (phoneNumber != null) {
-      $result.phoneNumber = phoneNumber;
+      _result.phoneNumber = phoneNumber;
     }
-    return $result;
+    return _result;
   }
-  CreateChannelRegistrationRequest._() : super();
   factory CreateChannelRegistrationRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateChannelRegistrationRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateChannelRegistrationRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..aOS(2, _omitFieldNames ? '' : 'channelType')
-    ..aOS(3, _omitFieldNames ? '' : 'phoneNumber')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2584,10 +2488,8 @@ class CreateChannelRegistrationRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateChannelRegistrationRequest copyWith(void Function(CreateChannelRegistrationRequest) updates) => super.copyWith((message) => updates(message as CreateChannelRegistrationRequest)) as CreateChannelRegistrationRequest;
-
+  CreateChannelRegistrationRequest copyWith(void Function(CreateChannelRegistrationRequest) updates) => super.copyWith((message) => updates(message as CreateChannelRegistrationRequest)) as CreateChannelRegistrationRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CreateChannelRegistrationRequest create() => CreateChannelRegistrationRequest._();
   CreateChannelRegistrationRequest createEmptyInstance() => create();
@@ -2625,39 +2527,38 @@ class CreateChannelRegistrationRequest extends $pb.GeneratedMessage {
 }
 
 class CreateChannelRegistrationResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateChannelRegistrationResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'maskedPhone')
+    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'otpExpiresInSeconds', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  CreateChannelRegistrationResponse._() : super();
   factory CreateChannelRegistrationResponse({
     $core.bool? success,
     $core.String? message,
     $core.String? maskedPhone,
     $core.int? otpExpiresInSeconds,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (maskedPhone != null) {
-      $result.maskedPhone = maskedPhone;
+      _result.maskedPhone = maskedPhone;
     }
     if (otpExpiresInSeconds != null) {
-      $result.otpExpiresInSeconds = otpExpiresInSeconds;
+      _result.otpExpiresInSeconds = otpExpiresInSeconds;
     }
-    return $result;
+    return _result;
   }
-  CreateChannelRegistrationResponse._() : super();
   factory CreateChannelRegistrationResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateChannelRegistrationResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateChannelRegistrationResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOS(3, _omitFieldNames ? '' : 'maskedPhone')
-    ..a<$core.int>(4, _omitFieldNames ? '' : 'otpExpiresInSeconds', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2667,10 +2568,8 @@ class CreateChannelRegistrationResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateChannelRegistrationResponse copyWith(void Function(CreateChannelRegistrationResponse) updates) => super.copyWith((message) => updates(message as CreateChannelRegistrationResponse)) as CreateChannelRegistrationResponse;
-
+  CreateChannelRegistrationResponse copyWith(void Function(CreateChannelRegistrationResponse) updates) => super.copyWith((message) => updates(message as CreateChannelRegistrationResponse)) as CreateChannelRegistrationResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CreateChannelRegistrationResponse create() => CreateChannelRegistrationResponse._();
   CreateChannelRegistrationResponse createEmptyInstance() => create();
@@ -2716,36 +2615,34 @@ class CreateChannelRegistrationResponse extends $pb.GeneratedMessage {
   void clearOtpExpiresInSeconds() => clearField(4);
 }
 
-/// VerifyChannelOTP
 class VerifyChannelOTPRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VerifyChannelOTPRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelType')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'otpCode')
+    ..hasRequiredFields = false
+  ;
+
+  VerifyChannelOTPRequest._() : super();
   factory VerifyChannelOTPRequest({
     $core.String? userId,
     $core.String? channelType,
     $core.String? otpCode,
   }) {
-    final $result = create();
+    final _result = create();
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (channelType != null) {
-      $result.channelType = channelType;
+      _result.channelType = channelType;
     }
     if (otpCode != null) {
-      $result.otpCode = otpCode;
+      _result.otpCode = otpCode;
     }
-    return $result;
+    return _result;
   }
-  VerifyChannelOTPRequest._() : super();
   factory VerifyChannelOTPRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory VerifyChannelOTPRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyChannelOTPRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..aOS(2, _omitFieldNames ? '' : 'channelType')
-    ..aOS(3, _omitFieldNames ? '' : 'otpCode')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2755,10 +2652,8 @@ class VerifyChannelOTPRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  VerifyChannelOTPRequest copyWith(void Function(VerifyChannelOTPRequest) updates) => super.copyWith((message) => updates(message as VerifyChannelOTPRequest)) as VerifyChannelOTPRequest;
-
+  VerifyChannelOTPRequest copyWith(void Function(VerifyChannelOTPRequest) updates) => super.copyWith((message) => updates(message as VerifyChannelOTPRequest)) as VerifyChannelOTPRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static VerifyChannelOTPRequest create() => VerifyChannelOTPRequest._();
   VerifyChannelOTPRequest createEmptyInstance() => create();
@@ -2796,34 +2691,33 @@ class VerifyChannelOTPRequest extends $pb.GeneratedMessage {
 }
 
 class VerifyChannelOTPResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VerifyChannelOTPResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOM<ChannelRegistrationDetails>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'registration', subBuilder: ChannelRegistrationDetails.create)
+    ..hasRequiredFields = false
+  ;
+
+  VerifyChannelOTPResponse._() : super();
   factory VerifyChannelOTPResponse({
     $core.bool? success,
     $core.String? message,
     ChannelRegistrationDetails? registration,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (registration != null) {
-      $result.registration = registration;
+      _result.registration = registration;
     }
-    return $result;
+    return _result;
   }
-  VerifyChannelOTPResponse._() : super();
   factory VerifyChannelOTPResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory VerifyChannelOTPResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'VerifyChannelOTPResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOM<ChannelRegistrationDetails>(3, _omitFieldNames ? '' : 'registration', subBuilder: ChannelRegistrationDetails.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2833,10 +2727,8 @@ class VerifyChannelOTPResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  VerifyChannelOTPResponse copyWith(void Function(VerifyChannelOTPResponse) updates) => super.copyWith((message) => updates(message as VerifyChannelOTPResponse)) as VerifyChannelOTPResponse;
-
+  VerifyChannelOTPResponse copyWith(void Function(VerifyChannelOTPResponse) updates) => super.copyWith((message) => updates(message as VerifyChannelOTPResponse)) as VerifyChannelOTPResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static VerifyChannelOTPResponse create() => VerifyChannelOTPResponse._();
   VerifyChannelOTPResponse createEmptyInstance() => create();
@@ -2875,26 +2767,24 @@ class VerifyChannelOTPResponse extends $pb.GeneratedMessage {
   ChannelRegistrationDetails ensureRegistration() => $_ensure(2);
 }
 
-/// GetChannelRegistrations
 class GetChannelRegistrationsRequest extends $pb.GeneratedMessage {
-  factory GetChannelRegistrationsRequest({
-    $core.String? userId,
-  }) {
-    final $result = create();
-    if (userId != null) {
-      $result.userId = userId;
-    }
-    return $result;
-  }
-  GetChannelRegistrationsRequest._() : super();
-  factory GetChannelRegistrationsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetChannelRegistrationsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetChannelRegistrationsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'userId')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetChannelRegistrationsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
     ..hasRequiredFields = false
   ;
 
+  GetChannelRegistrationsRequest._() : super();
+  factory GetChannelRegistrationsRequest({
+    $core.String? userId,
+  }) {
+    final _result = create();
+    if (userId != null) {
+      _result.userId = userId;
+    }
+    return _result;
+  }
+  factory GetChannelRegistrationsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetChannelRegistrationsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2904,10 +2794,8 @@ class GetChannelRegistrationsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetChannelRegistrationsRequest copyWith(void Function(GetChannelRegistrationsRequest) updates) => super.copyWith((message) => updates(message as GetChannelRegistrationsRequest)) as GetChannelRegistrationsRequest;
-
+  GetChannelRegistrationsRequest copyWith(void Function(GetChannelRegistrationsRequest) updates) => super.copyWith((message) => updates(message as GetChannelRegistrationsRequest)) as GetChannelRegistrationsRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetChannelRegistrationsRequest create() => GetChannelRegistrationsRequest._();
   GetChannelRegistrationsRequest createEmptyInstance() => create();
@@ -2927,24 +2815,23 @@ class GetChannelRegistrationsRequest extends $pb.GeneratedMessage {
 }
 
 class GetChannelRegistrationsResponse extends $pb.GeneratedMessage {
-  factory GetChannelRegistrationsResponse({
-    $core.Iterable<ChannelRegistrationDetails>? registrations,
-  }) {
-    final $result = create();
-    if (registrations != null) {
-      $result.registrations.addAll(registrations);
-    }
-    return $result;
-  }
-  GetChannelRegistrationsResponse._() : super();
-  factory GetChannelRegistrationsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetChannelRegistrationsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetChannelRegistrationsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..pc<ChannelRegistrationDetails>(1, _omitFieldNames ? '' : 'registrations', $pb.PbFieldType.PM, subBuilder: ChannelRegistrationDetails.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetChannelRegistrationsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<ChannelRegistrationDetails>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'registrations', $pb.PbFieldType.PM, subBuilder: ChannelRegistrationDetails.create)
     ..hasRequiredFields = false
   ;
 
+  GetChannelRegistrationsResponse._() : super();
+  factory GetChannelRegistrationsResponse({
+    $core.Iterable<ChannelRegistrationDetails>? registrations,
+  }) {
+    final _result = create();
+    if (registrations != null) {
+      _result.registrations.addAll(registrations);
+    }
+    return _result;
+  }
+  factory GetChannelRegistrationsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetChannelRegistrationsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -2954,10 +2841,8 @@ class GetChannelRegistrationsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetChannelRegistrationsResponse copyWith(void Function(GetChannelRegistrationsResponse) updates) => super.copyWith((message) => updates(message as GetChannelRegistrationsResponse)) as GetChannelRegistrationsResponse;
-
+  GetChannelRegistrationsResponse copyWith(void Function(GetChannelRegistrationsResponse) updates) => super.copyWith((message) => updates(message as GetChannelRegistrationsResponse)) as GetChannelRegistrationsResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetChannelRegistrationsResponse create() => GetChannelRegistrationsResponse._();
   GetChannelRegistrationsResponse createEmptyInstance() => create();
@@ -2971,6 +2856,19 @@ class GetChannelRegistrationsResponse extends $pb.GeneratedMessage {
 }
 
 class ChannelRegistrationDetails extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ChannelRegistrationDetails', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelType')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumber')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+    ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasPin')
+    ..aOM<$1.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'activatedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
+  ChannelRegistrationDetails._() : super();
   factory ChannelRegistrationDetails({
     $core.String? id,
     $core.String? userId,
@@ -2978,52 +2876,38 @@ class ChannelRegistrationDetails extends $pb.GeneratedMessage {
     $core.String? phoneNumber,
     $core.String? status,
     $core.bool? hasPin,
-    $2.Timestamp? activatedAt,
-    $2.Timestamp? createdAt,
+    $1.Timestamp? activatedAt,
+    $1.Timestamp? createdAt,
   }) {
-    final $result = create();
+    final _result = create();
     if (id != null) {
-      $result.id = id;
+      _result.id = id;
     }
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (channelType != null) {
-      $result.channelType = channelType;
+      _result.channelType = channelType;
     }
     if (phoneNumber != null) {
-      $result.phoneNumber = phoneNumber;
+      _result.phoneNumber = phoneNumber;
     }
     if (status != null) {
-      $result.status = status;
+      _result.status = status;
     }
     if (hasPin != null) {
-      $result.hasPin = hasPin;
+      _result.hasPin = hasPin;
     }
     if (activatedAt != null) {
-      $result.activatedAt = activatedAt;
+      _result.activatedAt = activatedAt;
     }
     if (createdAt != null) {
-      $result.createdAt = createdAt;
+      _result.createdAt = createdAt;
     }
-    return $result;
+    return _result;
   }
-  ChannelRegistrationDetails._() : super();
   factory ChannelRegistrationDetails.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ChannelRegistrationDetails.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ChannelRegistrationDetails', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..aOS(2, _omitFieldNames ? '' : 'userId')
-    ..aOS(3, _omitFieldNames ? '' : 'channelType')
-    ..aOS(4, _omitFieldNames ? '' : 'phoneNumber')
-    ..aOS(5, _omitFieldNames ? '' : 'status')
-    ..aOB(6, _omitFieldNames ? '' : 'hasPin')
-    ..aOM<$2.Timestamp>(7, _omitFieldNames ? '' : 'activatedAt', subBuilder: $2.Timestamp.create)
-    ..aOM<$2.Timestamp>(8, _omitFieldNames ? '' : 'createdAt', subBuilder: $2.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3033,10 +2917,8 @@ class ChannelRegistrationDetails extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ChannelRegistrationDetails copyWith(void Function(ChannelRegistrationDetails) updates) => super.copyWith((message) => updates(message as ChannelRegistrationDetails)) as ChannelRegistrationDetails;
-
+  ChannelRegistrationDetails copyWith(void Function(ChannelRegistrationDetails) updates) => super.copyWith((message) => updates(message as ChannelRegistrationDetails)) as ChannelRegistrationDetails; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ChannelRegistrationDetails create() => ChannelRegistrationDetails._();
   ChannelRegistrationDetails createEmptyInstance() => create();
@@ -3100,53 +2982,51 @@ class ChannelRegistrationDetails extends $pb.GeneratedMessage {
   void clearHasPin() => clearField(6);
 
   @$pb.TagNumber(7)
-  $2.Timestamp get activatedAt => $_getN(6);
+  $1.Timestamp get activatedAt => $_getN(6);
   @$pb.TagNumber(7)
-  set activatedAt($2.Timestamp v) { setField(7, v); }
+  set activatedAt($1.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasActivatedAt() => $_has(6);
   @$pb.TagNumber(7)
   void clearActivatedAt() => clearField(7);
   @$pb.TagNumber(7)
-  $2.Timestamp ensureActivatedAt() => $_ensure(6);
+  $1.Timestamp ensureActivatedAt() => $_ensure(6);
 
   @$pb.TagNumber(8)
-  $2.Timestamp get createdAt => $_getN(7);
+  $1.Timestamp get createdAt => $_getN(7);
   @$pb.TagNumber(8)
-  set createdAt($2.Timestamp v) { setField(8, v); }
+  set createdAt($1.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasCreatedAt() => $_has(7);
   @$pb.TagNumber(8)
   void clearCreatedAt() => clearField(8);
   @$pb.TagNumber(8)
-  $2.Timestamp ensureCreatedAt() => $_ensure(7);
+  $1.Timestamp ensureCreatedAt() => $_ensure(7);
 }
 
-/// DeactivateChannel
 class DeactivateChannelRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DeactivateChannelRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelType')
+    ..hasRequiredFields = false
+  ;
+
+  DeactivateChannelRequest._() : super();
   factory DeactivateChannelRequest({
     $core.String? userId,
     $core.String? channelType,
   }) {
-    final $result = create();
+    final _result = create();
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (channelType != null) {
-      $result.channelType = channelType;
+      _result.channelType = channelType;
     }
-    return $result;
+    return _result;
   }
-  DeactivateChannelRequest._() : super();
   factory DeactivateChannelRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory DeactivateChannelRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DeactivateChannelRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..aOS(2, _omitFieldNames ? '' : 'channelType')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3156,10 +3036,8 @@ class DeactivateChannelRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  DeactivateChannelRequest copyWith(void Function(DeactivateChannelRequest) updates) => super.copyWith((message) => updates(message as DeactivateChannelRequest)) as DeactivateChannelRequest;
-
+  DeactivateChannelRequest copyWith(void Function(DeactivateChannelRequest) updates) => super.copyWith((message) => updates(message as DeactivateChannelRequest)) as DeactivateChannelRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static DeactivateChannelRequest create() => DeactivateChannelRequest._();
   DeactivateChannelRequest createEmptyInstance() => create();
@@ -3188,29 +3066,28 @@ class DeactivateChannelRequest extends $pb.GeneratedMessage {
 }
 
 class DeactivateChannelResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DeactivateChannelResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  DeactivateChannelResponse._() : super();
   factory DeactivateChannelResponse({
     $core.bool? success,
     $core.String? message,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
-    return $result;
+    return _result;
   }
-  DeactivateChannelResponse._() : super();
   factory DeactivateChannelResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory DeactivateChannelResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DeactivateChannelResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3220,10 +3097,8 @@ class DeactivateChannelResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  DeactivateChannelResponse copyWith(void Function(DeactivateChannelResponse) updates) => super.copyWith((message) => updates(message as DeactivateChannelResponse)) as DeactivateChannelResponse;
-
+  DeactivateChannelResponse copyWith(void Function(DeactivateChannelResponse) updates) => super.copyWith((message) => updates(message as DeactivateChannelResponse)) as DeactivateChannelResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static DeactivateChannelResponse create() => DeactivateChannelResponse._();
   DeactivateChannelResponse createEmptyInstance() => create();
@@ -3251,31 +3126,29 @@ class DeactivateChannelResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(2);
 }
 
-/// ResolvePhoneToUser - service-to-service only
 class ResolvePhoneToUserRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ResolvePhoneToUserRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumber')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelType')
+    ..hasRequiredFields = false
+  ;
+
+  ResolvePhoneToUserRequest._() : super();
   factory ResolvePhoneToUserRequest({
     $core.String? phoneNumber,
     $core.String? channelType,
   }) {
-    final $result = create();
+    final _result = create();
     if (phoneNumber != null) {
-      $result.phoneNumber = phoneNumber;
+      _result.phoneNumber = phoneNumber;
     }
     if (channelType != null) {
-      $result.channelType = channelType;
+      _result.channelType = channelType;
     }
-    return $result;
+    return _result;
   }
-  ResolvePhoneToUserRequest._() : super();
   factory ResolvePhoneToUserRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ResolvePhoneToUserRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ResolvePhoneToUserRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'phoneNumber')
-    ..aOS(2, _omitFieldNames ? '' : 'channelType')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3285,10 +3158,8 @@ class ResolvePhoneToUserRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ResolvePhoneToUserRequest copyWith(void Function(ResolvePhoneToUserRequest) updates) => super.copyWith((message) => updates(message as ResolvePhoneToUserRequest)) as ResolvePhoneToUserRequest;
-
+  ResolvePhoneToUserRequest copyWith(void Function(ResolvePhoneToUserRequest) updates) => super.copyWith((message) => updates(message as ResolvePhoneToUserRequest)) as ResolvePhoneToUserRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ResolvePhoneToUserRequest create() => ResolvePhoneToUserRequest._();
   ResolvePhoneToUserRequest createEmptyInstance() => create();
@@ -3317,39 +3188,38 @@ class ResolvePhoneToUserRequest extends $pb.GeneratedMessage {
 }
 
 class ResolvePhoneToUserResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ResolvePhoneToUserResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'found')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'channelStatus')
+    ..aOB(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasPin')
+    ..hasRequiredFields = false
+  ;
+
+  ResolvePhoneToUserResponse._() : super();
   factory ResolvePhoneToUserResponse({
     $core.bool? found,
     $core.String? userId,
     $core.String? channelStatus,
     $core.bool? hasPin,
   }) {
-    final $result = create();
+    final _result = create();
     if (found != null) {
-      $result.found = found;
+      _result.found = found;
     }
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (channelStatus != null) {
-      $result.channelStatus = channelStatus;
+      _result.channelStatus = channelStatus;
     }
     if (hasPin != null) {
-      $result.hasPin = hasPin;
+      _result.hasPin = hasPin;
     }
-    return $result;
+    return _result;
   }
-  ResolvePhoneToUserResponse._() : super();
   factory ResolvePhoneToUserResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ResolvePhoneToUserResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ResolvePhoneToUserResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'auth'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'found')
-    ..aOS(2, _omitFieldNames ? '' : 'userId')
-    ..aOS(3, _omitFieldNames ? '' : 'channelStatus')
-    ..aOB(4, _omitFieldNames ? '' : 'hasPin')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -3359,10 +3229,8 @@ class ResolvePhoneToUserResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ResolvePhoneToUserResponse copyWith(void Function(ResolvePhoneToUserResponse) updates) => super.copyWith((message) => updates(message as ResolvePhoneToUserResponse)) as ResolvePhoneToUserResponse;
-
+  ResolvePhoneToUserResponse copyWith(void Function(ResolvePhoneToUserResponse) updates) => super.copyWith((message) => updates(message as ResolvePhoneToUserResponse)) as ResolvePhoneToUserResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ResolvePhoneToUserResponse create() => ResolvePhoneToUserResponse._();
   ResolvePhoneToUserResponse createEmptyInstance() => create();
@@ -3408,6 +3276,3 @@ class ResolvePhoneToUserResponse extends $pb.GeneratedMessage {
   void clearHasPin() => clearField(4);
 }
 
-
-const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
-const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');

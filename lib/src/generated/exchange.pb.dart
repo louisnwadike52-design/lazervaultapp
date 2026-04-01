@@ -1,53 +1,48 @@
-//
+///
 //  Generated code. Do not modify.
 //  source: exchange.proto
 //
 // @dart = 2.12
-
-// ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
 
 import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'exchange.pbenum.dart';
 import 'google/protobuf/timestamp.pb.dart' as $1;
+
+import 'exchange.pbenum.dart';
 
 export 'exchange.pbenum.dart';
 
-/// Request to get the current exchange rate
 class GetExchangeRateRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetExchangeRateRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'exchange'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fromCurrency')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'toCurrency')
+    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
+  GetExchangeRateRequest._() : super();
   factory GetExchangeRateRequest({
     $core.String? fromCurrency,
     $core.String? toCurrency,
     $core.double? amount,
   }) {
-    final $result = create();
+    final _result = create();
     if (fromCurrency != null) {
-      $result.fromCurrency = fromCurrency;
+      _result.fromCurrency = fromCurrency;
     }
     if (toCurrency != null) {
-      $result.toCurrency = toCurrency;
+      _result.toCurrency = toCurrency;
     }
     if (amount != null) {
-      $result.amount = amount;
+      _result.amount = amount;
     }
-    return $result;
+    return _result;
   }
-  GetExchangeRateRequest._() : super();
   factory GetExchangeRateRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetExchangeRateRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetExchangeRateRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'exchange'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'fromCurrency')
-    ..aOS(2, _omitFieldNames ? '' : 'toCurrency')
-    ..a<$core.double>(3, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -57,10 +52,8 @@ class GetExchangeRateRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetExchangeRateRequest copyWith(void Function(GetExchangeRateRequest) updates) => super.copyWith((message) => updates(message as GetExchangeRateRequest)) as GetExchangeRateRequest;
-
+  GetExchangeRateRequest copyWith(void Function(GetExchangeRateRequest) updates) => super.copyWith((message) => updates(message as GetExchangeRateRequest)) as GetExchangeRateRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetExchangeRateRequest create() => GetExchangeRateRequest._();
   GetExchangeRateRequest createEmptyInstance() => create();
@@ -97,8 +90,20 @@ class GetExchangeRateRequest extends $pb.GeneratedMessage {
   void clearAmount() => clearField(3);
 }
 
-/// Response containing the exchange rate
 class GetExchangeRateResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetExchangeRateResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'exchange'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fromCurrency')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'toCurrency')
+    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'rate', $pb.PbFieldType.OD)
+    ..aOM<$1.Timestamp>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'timestamp', subBuilder: $1.Timestamp.create)
+    ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fee', $pb.PbFieldType.OD)
+    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'feePercentage', $pb.PbFieldType.OD)
+    ..a<$core.int>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'rateValidSeconds', $pb.PbFieldType.O3)
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'rateId')
+    ..hasRequiredFields = false
+  ;
+
+  GetExchangeRateResponse._() : super();
   factory GetExchangeRateResponse({
     $core.String? fromCurrency,
     $core.String? toCurrency,
@@ -109,49 +114,35 @@ class GetExchangeRateResponse extends $pb.GeneratedMessage {
     $core.int? rateValidSeconds,
     $core.String? rateId,
   }) {
-    final $result = create();
+    final _result = create();
     if (fromCurrency != null) {
-      $result.fromCurrency = fromCurrency;
+      _result.fromCurrency = fromCurrency;
     }
     if (toCurrency != null) {
-      $result.toCurrency = toCurrency;
+      _result.toCurrency = toCurrency;
     }
     if (rate != null) {
-      $result.rate = rate;
+      _result.rate = rate;
     }
     if (timestamp != null) {
-      $result.timestamp = timestamp;
+      _result.timestamp = timestamp;
     }
     if (fee != null) {
-      $result.fee = fee;
+      _result.fee = fee;
     }
     if (feePercentage != null) {
-      $result.feePercentage = feePercentage;
+      _result.feePercentage = feePercentage;
     }
     if (rateValidSeconds != null) {
-      $result.rateValidSeconds = rateValidSeconds;
+      _result.rateValidSeconds = rateValidSeconds;
     }
     if (rateId != null) {
-      $result.rateId = rateId;
+      _result.rateId = rateId;
     }
-    return $result;
+    return _result;
   }
-  GetExchangeRateResponse._() : super();
   factory GetExchangeRateResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetExchangeRateResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetExchangeRateResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'exchange'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'fromCurrency')
-    ..aOS(2, _omitFieldNames ? '' : 'toCurrency')
-    ..a<$core.double>(3, _omitFieldNames ? '' : 'rate', $pb.PbFieldType.OD)
-    ..aOM<$1.Timestamp>(4, _omitFieldNames ? '' : 'timestamp', subBuilder: $1.Timestamp.create)
-    ..a<$core.double>(5, _omitFieldNames ? '' : 'fee', $pb.PbFieldType.OD)
-    ..a<$core.double>(6, _omitFieldNames ? '' : 'feePercentage', $pb.PbFieldType.OD)
-    ..a<$core.int>(7, _omitFieldNames ? '' : 'rateValidSeconds', $pb.PbFieldType.O3)
-    ..aOS(8, _omitFieldNames ? '' : 'rateId')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -161,10 +152,8 @@ class GetExchangeRateResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetExchangeRateResponse copyWith(void Function(GetExchangeRateResponse) updates) => super.copyWith((message) => updates(message as GetExchangeRateResponse)) as GetExchangeRateResponse;
-
+  GetExchangeRateResponse copyWith(void Function(GetExchangeRateResponse) updates) => super.copyWith((message) => updates(message as GetExchangeRateResponse)) as GetExchangeRateResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetExchangeRateResponse create() => GetExchangeRateResponse._();
   GetExchangeRateResponse createEmptyInstance() => create();
@@ -248,10 +237,23 @@ class GetExchangeRateResponse extends $pb.GeneratedMessage {
   void clearRateId() => clearField(8);
 }
 
-/// Represents receiver details for an international transfer.
-/// Fields are provider-agnostic; which ones are required depends on the destination currency.
-/// Use GetTransferRequirements to discover required fields per currency.
 class ReceiverDetails extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ReceiverDetails', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'exchange'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fullName')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountNumber')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bankName')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'swiftBicCode')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'country')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bankCode')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'routingNumber')
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'branchCode')
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phone')
+    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'address')
+    ..hasRequiredFields = false
+  ;
+
+  ReceiverDetails._() : super();
   factory ReceiverDetails({
     $core.String? fullName,
     $core.String? accountNumber,
@@ -265,61 +267,44 @@ class ReceiverDetails extends $pb.GeneratedMessage {
     $core.String? phone,
     $core.String? address,
   }) {
-    final $result = create();
+    final _result = create();
     if (fullName != null) {
-      $result.fullName = fullName;
+      _result.fullName = fullName;
     }
     if (accountNumber != null) {
-      $result.accountNumber = accountNumber;
+      _result.accountNumber = accountNumber;
     }
     if (bankName != null) {
-      $result.bankName = bankName;
+      _result.bankName = bankName;
     }
     if (swiftBicCode != null) {
-      $result.swiftBicCode = swiftBicCode;
+      _result.swiftBicCode = swiftBicCode;
     }
     if (country != null) {
-      $result.country = country;
+      _result.country = country;
     }
     if (bankCode != null) {
-      $result.bankCode = bankCode;
+      _result.bankCode = bankCode;
     }
     if (email != null) {
-      $result.email = email;
+      _result.email = email;
     }
     if (routingNumber != null) {
-      $result.routingNumber = routingNumber;
+      _result.routingNumber = routingNumber;
     }
     if (branchCode != null) {
-      $result.branchCode = branchCode;
+      _result.branchCode = branchCode;
     }
     if (phone != null) {
-      $result.phone = phone;
+      _result.phone = phone;
     }
     if (address != null) {
-      $result.address = address;
+      _result.address = address;
     }
-    return $result;
+    return _result;
   }
-  ReceiverDetails._() : super();
   factory ReceiverDetails.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ReceiverDetails.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ReceiverDetails', package: const $pb.PackageName(_omitMessageNames ? '' : 'exchange'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'fullName')
-    ..aOS(2, _omitFieldNames ? '' : 'accountNumber')
-    ..aOS(3, _omitFieldNames ? '' : 'bankName')
-    ..aOS(4, _omitFieldNames ? '' : 'swiftBicCode')
-    ..aOS(5, _omitFieldNames ? '' : 'country')
-    ..aOS(6, _omitFieldNames ? '' : 'bankCode')
-    ..aOS(7, _omitFieldNames ? '' : 'email')
-    ..aOS(8, _omitFieldNames ? '' : 'routingNumber')
-    ..aOS(9, _omitFieldNames ? '' : 'branchCode')
-    ..aOS(10, _omitFieldNames ? '' : 'phone')
-    ..aOS(11, _omitFieldNames ? '' : 'address')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -329,10 +314,8 @@ class ReceiverDetails extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ReceiverDetails copyWith(void Function(ReceiverDetails) updates) => super.copyWith((message) => updates(message as ReceiverDetails)) as ReceiverDetails;
-
+  ReceiverDetails copyWith(void Function(ReceiverDetails) updates) => super.copyWith((message) => updates(message as ReceiverDetails)) as ReceiverDetails; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ReceiverDetails create() => ReceiverDetails._();
   ReceiverDetails createEmptyInstance() => create();
@@ -441,8 +424,20 @@ class ReceiverDetails extends $pb.GeneratedMessage {
   void clearAddress() => clearField(11);
 }
 
-/// Request to initiate an international currency transfer
 class InitiateInternationalTransferRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'InitiateInternationalTransferRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'exchange'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fromCurrency')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'toCurrency')
+    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amountFrom', $pb.PbFieldType.OD)
+    ..aOM<ReceiverDetails>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receiverDetails', subBuilder: ReceiverDetails.create)
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verificationToken')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'idempotencyKey')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'rateId')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'purposeOfPayment')
+    ..hasRequiredFields = false
+  ;
+
+  InitiateInternationalTransferRequest._() : super();
   factory InitiateInternationalTransferRequest({
     $core.String? fromCurrency,
     $core.String? toCurrency,
@@ -453,49 +448,35 @@ class InitiateInternationalTransferRequest extends $pb.GeneratedMessage {
     $core.String? rateId,
     $core.String? purposeOfPayment,
   }) {
-    final $result = create();
+    final _result = create();
     if (fromCurrency != null) {
-      $result.fromCurrency = fromCurrency;
+      _result.fromCurrency = fromCurrency;
     }
     if (toCurrency != null) {
-      $result.toCurrency = toCurrency;
+      _result.toCurrency = toCurrency;
     }
     if (amountFrom != null) {
-      $result.amountFrom = amountFrom;
+      _result.amountFrom = amountFrom;
     }
     if (receiverDetails != null) {
-      $result.receiverDetails = receiverDetails;
+      _result.receiverDetails = receiverDetails;
     }
     if (verificationToken != null) {
-      $result.verificationToken = verificationToken;
+      _result.verificationToken = verificationToken;
     }
     if (idempotencyKey != null) {
-      $result.idempotencyKey = idempotencyKey;
+      _result.idempotencyKey = idempotencyKey;
     }
     if (rateId != null) {
-      $result.rateId = rateId;
+      _result.rateId = rateId;
     }
     if (purposeOfPayment != null) {
-      $result.purposeOfPayment = purposeOfPayment;
+      _result.purposeOfPayment = purposeOfPayment;
     }
-    return $result;
+    return _result;
   }
-  InitiateInternationalTransferRequest._() : super();
   factory InitiateInternationalTransferRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory InitiateInternationalTransferRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InitiateInternationalTransferRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'exchange'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'fromCurrency')
-    ..aOS(2, _omitFieldNames ? '' : 'toCurrency')
-    ..a<$core.double>(3, _omitFieldNames ? '' : 'amountFrom', $pb.PbFieldType.OD)
-    ..aOM<ReceiverDetails>(4, _omitFieldNames ? '' : 'receiverDetails', subBuilder: ReceiverDetails.create)
-    ..aOS(5, _omitFieldNames ? '' : 'verificationToken')
-    ..aOS(6, _omitFieldNames ? '' : 'idempotencyKey')
-    ..aOS(7, _omitFieldNames ? '' : 'rateId')
-    ..aOS(8, _omitFieldNames ? '' : 'purposeOfPayment')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -505,10 +486,8 @@ class InitiateInternationalTransferRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  InitiateInternationalTransferRequest copyWith(void Function(InitiateInternationalTransferRequest) updates) => super.copyWith((message) => updates(message as InitiateInternationalTransferRequest)) as InitiateInternationalTransferRequest;
-
+  InitiateInternationalTransferRequest copyWith(void Function(InitiateInternationalTransferRequest) updates) => super.copyWith((message) => updates(message as InitiateInternationalTransferRequest)) as InitiateInternationalTransferRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static InitiateInternationalTransferRequest create() => InitiateInternationalTransferRequest._();
   InitiateInternationalTransferRequest createEmptyInstance() => create();
@@ -592,8 +571,28 @@ class InitiateInternationalTransferRequest extends $pb.GeneratedMessage {
   void clearPurposeOfPayment() => clearField(8);
 }
 
-/// Represents a recorded exchange transaction
 class ExchangeTransaction extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ExchangeTransaction', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'exchange'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fromCurrency')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'toCurrency')
+    ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amountFrom', $pb.PbFieldType.OD)
+    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amountTo', $pb.PbFieldType.OD)
+    ..a<$core.double>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'exchangeRate', $pb.PbFieldType.OD)
+    ..a<$core.double>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fees', $pb.PbFieldType.OD)
+    ..aOM<ReceiverDetails>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receiverDetails', subBuilder: ReceiverDetails.create)
+    ..e<ExchangeStatus>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: ExchangeStatus.PENDING, valueOf: ExchangeStatus.valueOf, enumValues: ExchangeStatus.values)
+    ..aOM<$1.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
+    ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reference')
+    ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'providerReference')
+    ..e<ExchangeType>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'exchangeType', $pb.PbFieldType.OE, defaultOrMaker: ExchangeType.EXCHANGE_TYPE_UNSPECIFIED, valueOf: ExchangeType.valueOf, enumValues: ExchangeType.values)
+    ..aOS(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failureReason')
+    ..hasRequiredFields = false
+  ;
+
+  ExchangeTransaction._() : super();
   factory ExchangeTransaction({
     $core.String? transactionId,
     $core.String? userId,
@@ -612,81 +611,59 @@ class ExchangeTransaction extends $pb.GeneratedMessage {
     ExchangeType? exchangeType,
     $core.String? failureReason,
   }) {
-    final $result = create();
+    final _result = create();
     if (transactionId != null) {
-      $result.transactionId = transactionId;
+      _result.transactionId = transactionId;
     }
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (fromCurrency != null) {
-      $result.fromCurrency = fromCurrency;
+      _result.fromCurrency = fromCurrency;
     }
     if (toCurrency != null) {
-      $result.toCurrency = toCurrency;
+      _result.toCurrency = toCurrency;
     }
     if (amountFrom != null) {
-      $result.amountFrom = amountFrom;
+      _result.amountFrom = amountFrom;
     }
     if (amountTo != null) {
-      $result.amountTo = amountTo;
+      _result.amountTo = amountTo;
     }
     if (exchangeRate != null) {
-      $result.exchangeRate = exchangeRate;
+      _result.exchangeRate = exchangeRate;
     }
     if (fees != null) {
-      $result.fees = fees;
+      _result.fees = fees;
     }
     if (receiverDetails != null) {
-      $result.receiverDetails = receiverDetails;
+      _result.receiverDetails = receiverDetails;
     }
     if (status != null) {
-      $result.status = status;
+      _result.status = status;
     }
     if (createdAt != null) {
-      $result.createdAt = createdAt;
+      _result.createdAt = createdAt;
     }
     if (updatedAt != null) {
-      $result.updatedAt = updatedAt;
+      _result.updatedAt = updatedAt;
     }
     if (reference != null) {
-      $result.reference = reference;
+      _result.reference = reference;
     }
     if (providerReference != null) {
-      $result.providerReference = providerReference;
+      _result.providerReference = providerReference;
     }
     if (exchangeType != null) {
-      $result.exchangeType = exchangeType;
+      _result.exchangeType = exchangeType;
     }
     if (failureReason != null) {
-      $result.failureReason = failureReason;
+      _result.failureReason = failureReason;
     }
-    return $result;
+    return _result;
   }
-  ExchangeTransaction._() : super();
   factory ExchangeTransaction.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ExchangeTransaction.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ExchangeTransaction', package: const $pb.PackageName(_omitMessageNames ? '' : 'exchange'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'transactionId')
-    ..aOS(2, _omitFieldNames ? '' : 'userId')
-    ..aOS(3, _omitFieldNames ? '' : 'fromCurrency')
-    ..aOS(4, _omitFieldNames ? '' : 'toCurrency')
-    ..a<$core.double>(5, _omitFieldNames ? '' : 'amountFrom', $pb.PbFieldType.OD)
-    ..a<$core.double>(6, _omitFieldNames ? '' : 'amountTo', $pb.PbFieldType.OD)
-    ..a<$core.double>(7, _omitFieldNames ? '' : 'exchangeRate', $pb.PbFieldType.OD)
-    ..a<$core.double>(8, _omitFieldNames ? '' : 'fees', $pb.PbFieldType.OD)
-    ..aOM<ReceiverDetails>(9, _omitFieldNames ? '' : 'receiverDetails', subBuilder: ReceiverDetails.create)
-    ..e<ExchangeStatus>(10, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: ExchangeStatus.PENDING, valueOf: ExchangeStatus.valueOf, enumValues: ExchangeStatus.values)
-    ..aOM<$1.Timestamp>(11, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(12, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
-    ..aOS(13, _omitFieldNames ? '' : 'reference')
-    ..aOS(14, _omitFieldNames ? '' : 'providerReference')
-    ..e<ExchangeType>(15, _omitFieldNames ? '' : 'exchangeType', $pb.PbFieldType.OE, defaultOrMaker: ExchangeType.EXCHANGE_TYPE_UNSPECIFIED, valueOf: ExchangeType.valueOf, enumValues: ExchangeType.values)
-    ..aOS(16, _omitFieldNames ? '' : 'failureReason')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -696,10 +673,8 @@ class ExchangeTransaction extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ExchangeTransaction copyWith(void Function(ExchangeTransaction) updates) => super.copyWith((message) => updates(message as ExchangeTransaction)) as ExchangeTransaction;
-
+  ExchangeTransaction copyWith(void Function(ExchangeTransaction) updates) => super.copyWith((message) => updates(message as ExchangeTransaction)) as ExchangeTransaction; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ExchangeTransaction create() => ExchangeTransaction._();
   ExchangeTransaction createEmptyInstance() => create();
@@ -859,26 +834,24 @@ class ExchangeTransaction extends $pb.GeneratedMessage {
   void clearFailureReason() => clearField(16);
 }
 
-/// Response after initiating a transfer
 class InitiateInternationalTransferResponse extends $pb.GeneratedMessage {
-  factory InitiateInternationalTransferResponse({
-    ExchangeTransaction? transaction,
-  }) {
-    final $result = create();
-    if (transaction != null) {
-      $result.transaction = transaction;
-    }
-    return $result;
-  }
-  InitiateInternationalTransferResponse._() : super();
-  factory InitiateInternationalTransferResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory InitiateInternationalTransferResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'InitiateInternationalTransferResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'exchange'), createEmptyInstance: create)
-    ..aOM<ExchangeTransaction>(1, _omitFieldNames ? '' : 'transaction', subBuilder: ExchangeTransaction.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'InitiateInternationalTransferResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'exchange'), createEmptyInstance: create)
+    ..aOM<ExchangeTransaction>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transaction', subBuilder: ExchangeTransaction.create)
     ..hasRequiredFields = false
   ;
 
+  InitiateInternationalTransferResponse._() : super();
+  factory InitiateInternationalTransferResponse({
+    ExchangeTransaction? transaction,
+  }) {
+    final _result = create();
+    if (transaction != null) {
+      _result.transaction = transaction;
+    }
+    return _result;
+  }
+  factory InitiateInternationalTransferResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory InitiateInternationalTransferResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -888,10 +861,8 @@ class InitiateInternationalTransferResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  InitiateInternationalTransferResponse copyWith(void Function(InitiateInternationalTransferResponse) updates) => super.copyWith((message) => updates(message as InitiateInternationalTransferResponse)) as InitiateInternationalTransferResponse;
-
+  InitiateInternationalTransferResponse copyWith(void Function(InitiateInternationalTransferResponse) updates) => super.copyWith((message) => updates(message as InitiateInternationalTransferResponse)) as InitiateInternationalTransferResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static InitiateInternationalTransferResponse create() => InitiateInternationalTransferResponse._();
   InitiateInternationalTransferResponse createEmptyInstance() => create();
@@ -912,31 +883,29 @@ class InitiateInternationalTransferResponse extends $pb.GeneratedMessage {
   ExchangeTransaction ensureTransaction() => $_ensure(0);
 }
 
-/// Request to get recent exchange transactions
 class GetRecentExchangesRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetRecentExchangesRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'exchange'), createEmptyInstance: create)
+    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageToken')
+    ..hasRequiredFields = false
+  ;
+
+  GetRecentExchangesRequest._() : super();
   factory GetRecentExchangesRequest({
     $core.int? pageSize,
     $core.String? pageToken,
   }) {
-    final $result = create();
+    final _result = create();
     if (pageSize != null) {
-      $result.pageSize = pageSize;
+      _result.pageSize = pageSize;
     }
     if (pageToken != null) {
-      $result.pageToken = pageToken;
+      _result.pageToken = pageToken;
     }
-    return $result;
+    return _result;
   }
-  GetRecentExchangesRequest._() : super();
   factory GetRecentExchangesRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetRecentExchangesRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetRecentExchangesRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'exchange'), createEmptyInstance: create)
-    ..a<$core.int>(1, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
-    ..aOS(2, _omitFieldNames ? '' : 'pageToken')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -946,10 +915,8 @@ class GetRecentExchangesRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetRecentExchangesRequest copyWith(void Function(GetRecentExchangesRequest) updates) => super.copyWith((message) => updates(message as GetRecentExchangesRequest)) as GetRecentExchangesRequest;
-
+  GetRecentExchangesRequest copyWith(void Function(GetRecentExchangesRequest) updates) => super.copyWith((message) => updates(message as GetRecentExchangesRequest)) as GetRecentExchangesRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetRecentExchangesRequest create() => GetRecentExchangesRequest._();
   GetRecentExchangesRequest createEmptyInstance() => create();
@@ -977,31 +944,29 @@ class GetRecentExchangesRequest extends $pb.GeneratedMessage {
   void clearPageToken() => clearField(2);
 }
 
-/// Response containing recent exchange transactions
 class GetRecentExchangesResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetRecentExchangesResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'exchange'), createEmptyInstance: create)
+    ..pc<ExchangeTransaction>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactions', $pb.PbFieldType.PM, subBuilder: ExchangeTransaction.create)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nextPageToken')
+    ..hasRequiredFields = false
+  ;
+
+  GetRecentExchangesResponse._() : super();
   factory GetRecentExchangesResponse({
     $core.Iterable<ExchangeTransaction>? transactions,
     $core.String? nextPageToken,
   }) {
-    final $result = create();
+    final _result = create();
     if (transactions != null) {
-      $result.transactions.addAll(transactions);
+      _result.transactions.addAll(transactions);
     }
     if (nextPageToken != null) {
-      $result.nextPageToken = nextPageToken;
+      _result.nextPageToken = nextPageToken;
     }
-    return $result;
+    return _result;
   }
-  GetRecentExchangesResponse._() : super();
   factory GetRecentExchangesResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetRecentExchangesResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetRecentExchangesResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'exchange'), createEmptyInstance: create)
-    ..pc<ExchangeTransaction>(1, _omitFieldNames ? '' : 'transactions', $pb.PbFieldType.PM, subBuilder: ExchangeTransaction.create)
-    ..aOS(2, _omitFieldNames ? '' : 'nextPageToken')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1011,10 +976,8 @@ class GetRecentExchangesResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetRecentExchangesResponse copyWith(void Function(GetRecentExchangesResponse) updates) => super.copyWith((message) => updates(message as GetRecentExchangesResponse)) as GetRecentExchangesResponse;
-
+  GetRecentExchangesResponse copyWith(void Function(GetRecentExchangesResponse) updates) => super.copyWith((message) => updates(message as GetRecentExchangesResponse)) as GetRecentExchangesResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetRecentExchangesResponse create() => GetRecentExchangesResponse._();
   GetRecentExchangesResponse createEmptyInstance() => create();
@@ -1037,6 +1000,17 @@ class GetRecentExchangesResponse extends $pb.GeneratedMessage {
 }
 
 class ConvertCurrencyRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ConvertCurrencyRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'exchange'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fromCurrency')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'toCurrency')
+    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verificationToken')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'idempotencyKey')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'rateId')
+    ..hasRequiredFields = false
+  ;
+
+  ConvertCurrencyRequest._() : super();
   factory ConvertCurrencyRequest({
     $core.String? fromCurrency,
     $core.String? toCurrency,
@@ -1045,41 +1019,29 @@ class ConvertCurrencyRequest extends $pb.GeneratedMessage {
     $core.String? idempotencyKey,
     $core.String? rateId,
   }) {
-    final $result = create();
+    final _result = create();
     if (fromCurrency != null) {
-      $result.fromCurrency = fromCurrency;
+      _result.fromCurrency = fromCurrency;
     }
     if (toCurrency != null) {
-      $result.toCurrency = toCurrency;
+      _result.toCurrency = toCurrency;
     }
     if (amount != null) {
-      $result.amount = amount;
+      _result.amount = amount;
     }
     if (verificationToken != null) {
-      $result.verificationToken = verificationToken;
+      _result.verificationToken = verificationToken;
     }
     if (idempotencyKey != null) {
-      $result.idempotencyKey = idempotencyKey;
+      _result.idempotencyKey = idempotencyKey;
     }
     if (rateId != null) {
-      $result.rateId = rateId;
+      _result.rateId = rateId;
     }
-    return $result;
+    return _result;
   }
-  ConvertCurrencyRequest._() : super();
   factory ConvertCurrencyRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ConvertCurrencyRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ConvertCurrencyRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'exchange'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'fromCurrency')
-    ..aOS(2, _omitFieldNames ? '' : 'toCurrency')
-    ..a<$core.double>(3, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(4, _omitFieldNames ? '' : 'verificationToken')
-    ..aOS(5, _omitFieldNames ? '' : 'idempotencyKey')
-    ..aOS(6, _omitFieldNames ? '' : 'rateId')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1089,10 +1051,8 @@ class ConvertCurrencyRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ConvertCurrencyRequest copyWith(void Function(ConvertCurrencyRequest) updates) => super.copyWith((message) => updates(message as ConvertCurrencyRequest)) as ConvertCurrencyRequest;
-
+  ConvertCurrencyRequest copyWith(void Function(ConvertCurrencyRequest) updates) => super.copyWith((message) => updates(message as ConvertCurrencyRequest)) as ConvertCurrencyRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ConvertCurrencyRequest create() => ConvertCurrencyRequest._();
   ConvertCurrencyRequest createEmptyInstance() => create();
@@ -1157,24 +1117,23 @@ class ConvertCurrencyRequest extends $pb.GeneratedMessage {
 }
 
 class ConvertCurrencyResponse extends $pb.GeneratedMessage {
-  factory ConvertCurrencyResponse({
-    ExchangeTransaction? transaction,
-  }) {
-    final $result = create();
-    if (transaction != null) {
-      $result.transaction = transaction;
-    }
-    return $result;
-  }
-  ConvertCurrencyResponse._() : super();
-  factory ConvertCurrencyResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory ConvertCurrencyResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ConvertCurrencyResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'exchange'), createEmptyInstance: create)
-    ..aOM<ExchangeTransaction>(1, _omitFieldNames ? '' : 'transaction', subBuilder: ExchangeTransaction.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ConvertCurrencyResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'exchange'), createEmptyInstance: create)
+    ..aOM<ExchangeTransaction>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transaction', subBuilder: ExchangeTransaction.create)
     ..hasRequiredFields = false
   ;
 
+  ConvertCurrencyResponse._() : super();
+  factory ConvertCurrencyResponse({
+    ExchangeTransaction? transaction,
+  }) {
+    final _result = create();
+    if (transaction != null) {
+      _result.transaction = transaction;
+    }
+    return _result;
+  }
+  factory ConvertCurrencyResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ConvertCurrencyResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1184,10 +1143,8 @@ class ConvertCurrencyResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ConvertCurrencyResponse copyWith(void Function(ConvertCurrencyResponse) updates) => super.copyWith((message) => updates(message as ConvertCurrencyResponse)) as ConvertCurrencyResponse;
-
+  ConvertCurrencyResponse copyWith(void Function(ConvertCurrencyResponse) updates) => super.copyWith((message) => updates(message as ConvertCurrencyResponse)) as ConvertCurrencyResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ConvertCurrencyResponse create() => ConvertCurrencyResponse._();
   ConvertCurrencyResponse createEmptyInstance() => create();
@@ -1209,24 +1166,23 @@ class ConvertCurrencyResponse extends $pb.GeneratedMessage {
 }
 
 class GetTransactionStatusRequest extends $pb.GeneratedMessage {
-  factory GetTransactionStatusRequest({
-    $core.String? transactionId,
-  }) {
-    final $result = create();
-    if (transactionId != null) {
-      $result.transactionId = transactionId;
-    }
-    return $result;
-  }
-  GetTransactionStatusRequest._() : super();
-  factory GetTransactionStatusRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetTransactionStatusRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTransactionStatusRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'exchange'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'transactionId')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTransactionStatusRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'exchange'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionId')
     ..hasRequiredFields = false
   ;
 
+  GetTransactionStatusRequest._() : super();
+  factory GetTransactionStatusRequest({
+    $core.String? transactionId,
+  }) {
+    final _result = create();
+    if (transactionId != null) {
+      _result.transactionId = transactionId;
+    }
+    return _result;
+  }
+  factory GetTransactionStatusRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetTransactionStatusRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1236,10 +1192,8 @@ class GetTransactionStatusRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetTransactionStatusRequest copyWith(void Function(GetTransactionStatusRequest) updates) => super.copyWith((message) => updates(message as GetTransactionStatusRequest)) as GetTransactionStatusRequest;
-
+  GetTransactionStatusRequest copyWith(void Function(GetTransactionStatusRequest) updates) => super.copyWith((message) => updates(message as GetTransactionStatusRequest)) as GetTransactionStatusRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetTransactionStatusRequest create() => GetTransactionStatusRequest._();
   GetTransactionStatusRequest createEmptyInstance() => create();
@@ -1259,24 +1213,23 @@ class GetTransactionStatusRequest extends $pb.GeneratedMessage {
 }
 
 class GetTransactionStatusResponse extends $pb.GeneratedMessage {
-  factory GetTransactionStatusResponse({
-    ExchangeTransaction? transaction,
-  }) {
-    final $result = create();
-    if (transaction != null) {
-      $result.transaction = transaction;
-    }
-    return $result;
-  }
-  GetTransactionStatusResponse._() : super();
-  factory GetTransactionStatusResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetTransactionStatusResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetTransactionStatusResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'exchange'), createEmptyInstance: create)
-    ..aOM<ExchangeTransaction>(1, _omitFieldNames ? '' : 'transaction', subBuilder: ExchangeTransaction.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTransactionStatusResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'exchange'), createEmptyInstance: create)
+    ..aOM<ExchangeTransaction>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transaction', subBuilder: ExchangeTransaction.create)
     ..hasRequiredFields = false
   ;
 
+  GetTransactionStatusResponse._() : super();
+  factory GetTransactionStatusResponse({
+    ExchangeTransaction? transaction,
+  }) {
+    final _result = create();
+    if (transaction != null) {
+      _result.transaction = transaction;
+    }
+    return _result;
+  }
+  factory GetTransactionStatusResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetTransactionStatusResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1286,10 +1239,8 @@ class GetTransactionStatusResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetTransactionStatusResponse copyWith(void Function(GetTransactionStatusResponse) updates) => super.copyWith((message) => updates(message as GetTransactionStatusResponse)) as GetTransactionStatusResponse;
-
+  GetTransactionStatusResponse copyWith(void Function(GetTransactionStatusResponse) updates) => super.copyWith((message) => updates(message as GetTransactionStatusResponse)) as GetTransactionStatusResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetTransactionStatusResponse create() => GetTransactionStatusResponse._();
   GetTransactionStatusResponse createEmptyInstance() => create();
@@ -1311,15 +1262,14 @@ class GetTransactionStatusResponse extends $pb.GeneratedMessage {
 }
 
 class GetSupportedCurrenciesRequest extends $pb.GeneratedMessage {
-  factory GetSupportedCurrenciesRequest() => create();
-  GetSupportedCurrenciesRequest._() : super();
-  factory GetSupportedCurrenciesRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetSupportedCurrenciesRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSupportedCurrenciesRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'exchange'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetSupportedCurrenciesRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'exchange'), createEmptyInstance: create)
     ..hasRequiredFields = false
   ;
 
+  GetSupportedCurrenciesRequest._() : super();
+  factory GetSupportedCurrenciesRequest() => create();
+  factory GetSupportedCurrenciesRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetSupportedCurrenciesRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1329,10 +1279,8 @@ class GetSupportedCurrenciesRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetSupportedCurrenciesRequest copyWith(void Function(GetSupportedCurrenciesRequest) updates) => super.copyWith((message) => updates(message as GetSupportedCurrenciesRequest)) as GetSupportedCurrenciesRequest;
-
+  GetSupportedCurrenciesRequest copyWith(void Function(GetSupportedCurrenciesRequest) updates) => super.copyWith((message) => updates(message as GetSupportedCurrenciesRequest)) as GetSupportedCurrenciesRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetSupportedCurrenciesRequest create() => GetSupportedCurrenciesRequest._();
   GetSupportedCurrenciesRequest createEmptyInstance() => create();
@@ -1343,6 +1291,19 @@ class GetSupportedCurrenciesRequest extends $pb.GeneratedMessage {
 }
 
 class SupportedCurrency extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SupportedCurrency', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'exchange'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'code')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'symbol')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'country')
+    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'supportsConversion')
+    ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'supportsInternational')
+    ..a<$core.double>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'minAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'maxAmount', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
+  SupportedCurrency._() : super();
   factory SupportedCurrency({
     $core.String? code,
     $core.String? name,
@@ -1353,49 +1314,35 @@ class SupportedCurrency extends $pb.GeneratedMessage {
     $core.double? minAmount,
     $core.double? maxAmount,
   }) {
-    final $result = create();
+    final _result = create();
     if (code != null) {
-      $result.code = code;
+      _result.code = code;
     }
     if (name != null) {
-      $result.name = name;
+      _result.name = name;
     }
     if (symbol != null) {
-      $result.symbol = symbol;
+      _result.symbol = symbol;
     }
     if (country != null) {
-      $result.country = country;
+      _result.country = country;
     }
     if (supportsConversion != null) {
-      $result.supportsConversion = supportsConversion;
+      _result.supportsConversion = supportsConversion;
     }
     if (supportsInternational != null) {
-      $result.supportsInternational = supportsInternational;
+      _result.supportsInternational = supportsInternational;
     }
     if (minAmount != null) {
-      $result.minAmount = minAmount;
+      _result.minAmount = minAmount;
     }
     if (maxAmount != null) {
-      $result.maxAmount = maxAmount;
+      _result.maxAmount = maxAmount;
     }
-    return $result;
+    return _result;
   }
-  SupportedCurrency._() : super();
   factory SupportedCurrency.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SupportedCurrency.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SupportedCurrency', package: const $pb.PackageName(_omitMessageNames ? '' : 'exchange'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'code')
-    ..aOS(2, _omitFieldNames ? '' : 'name')
-    ..aOS(3, _omitFieldNames ? '' : 'symbol')
-    ..aOS(4, _omitFieldNames ? '' : 'country')
-    ..aOB(5, _omitFieldNames ? '' : 'supportsConversion')
-    ..aOB(6, _omitFieldNames ? '' : 'supportsInternational')
-    ..a<$core.double>(7, _omitFieldNames ? '' : 'minAmount', $pb.PbFieldType.OD)
-    ..a<$core.double>(8, _omitFieldNames ? '' : 'maxAmount', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1405,10 +1352,8 @@ class SupportedCurrency extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SupportedCurrency copyWith(void Function(SupportedCurrency) updates) => super.copyWith((message) => updates(message as SupportedCurrency)) as SupportedCurrency;
-
+  SupportedCurrency copyWith(void Function(SupportedCurrency) updates) => super.copyWith((message) => updates(message as SupportedCurrency)) as SupportedCurrency; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SupportedCurrency create() => SupportedCurrency._();
   SupportedCurrency createEmptyInstance() => create();
@@ -1491,24 +1436,23 @@ class SupportedCurrency extends $pb.GeneratedMessage {
 }
 
 class GetSupportedCurrenciesResponse extends $pb.GeneratedMessage {
-  factory GetSupportedCurrenciesResponse({
-    $core.Iterable<SupportedCurrency>? currencies,
-  }) {
-    final $result = create();
-    if (currencies != null) {
-      $result.currencies.addAll(currencies);
-    }
-    return $result;
-  }
-  GetSupportedCurrenciesResponse._() : super();
-  factory GetSupportedCurrenciesResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetSupportedCurrenciesResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSupportedCurrenciesResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'exchange'), createEmptyInstance: create)
-    ..pc<SupportedCurrency>(1, _omitFieldNames ? '' : 'currencies', $pb.PbFieldType.PM, subBuilder: SupportedCurrency.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetSupportedCurrenciesResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'exchange'), createEmptyInstance: create)
+    ..pc<SupportedCurrency>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currencies', $pb.PbFieldType.PM, subBuilder: SupportedCurrency.create)
     ..hasRequiredFields = false
   ;
 
+  GetSupportedCurrenciesResponse._() : super();
+  factory GetSupportedCurrenciesResponse({
+    $core.Iterable<SupportedCurrency>? currencies,
+  }) {
+    final _result = create();
+    if (currencies != null) {
+      _result.currencies.addAll(currencies);
+    }
+    return _result;
+  }
+  factory GetSupportedCurrenciesResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetSupportedCurrenciesResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1518,10 +1462,8 @@ class GetSupportedCurrenciesResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetSupportedCurrenciesResponse copyWith(void Function(GetSupportedCurrenciesResponse) updates) => super.copyWith((message) => updates(message as GetSupportedCurrenciesResponse)) as GetSupportedCurrenciesResponse;
-
+  GetSupportedCurrenciesResponse copyWith(void Function(GetSupportedCurrenciesResponse) updates) => super.copyWith((message) => updates(message as GetSupportedCurrenciesResponse)) as GetSupportedCurrenciesResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetSupportedCurrenciesResponse create() => GetSupportedCurrenciesResponse._();
   GetSupportedCurrenciesResponse createEmptyInstance() => create();
@@ -1535,24 +1477,23 @@ class GetSupportedCurrenciesResponse extends $pb.GeneratedMessage {
 }
 
 class GetExchangeLimitsRequest extends $pb.GeneratedMessage {
-  factory GetExchangeLimitsRequest({
-    $core.String? currency,
-  }) {
-    final $result = create();
-    if (currency != null) {
-      $result.currency = currency;
-    }
-    return $result;
-  }
-  GetExchangeLimitsRequest._() : super();
-  factory GetExchangeLimitsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetExchangeLimitsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetExchangeLimitsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'exchange'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'currency')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetExchangeLimitsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'exchange'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
     ..hasRequiredFields = false
   ;
 
+  GetExchangeLimitsRequest._() : super();
+  factory GetExchangeLimitsRequest({
+    $core.String? currency,
+  }) {
+    final _result = create();
+    if (currency != null) {
+      _result.currency = currency;
+    }
+    return _result;
+  }
+  factory GetExchangeLimitsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetExchangeLimitsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1562,10 +1503,8 @@ class GetExchangeLimitsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetExchangeLimitsRequest copyWith(void Function(GetExchangeLimitsRequest) updates) => super.copyWith((message) => updates(message as GetExchangeLimitsRequest)) as GetExchangeLimitsRequest;
-
+  GetExchangeLimitsRequest copyWith(void Function(GetExchangeLimitsRequest) updates) => super.copyWith((message) => updates(message as GetExchangeLimitsRequest)) as GetExchangeLimitsRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetExchangeLimitsRequest create() => GetExchangeLimitsRequest._();
   GetExchangeLimitsRequest createEmptyInstance() => create();
@@ -1585,6 +1524,18 @@ class GetExchangeLimitsRequest extends $pb.GeneratedMessage {
 }
 
 class GetExchangeLimitsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetExchangeLimitsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'exchange'), createEmptyInstance: create)
+    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'kycTier', $pb.PbFieldType.O3)
+    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dailyLimit', $pb.PbFieldType.OD)
+    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dailyUsed', $pb.PbFieldType.OD)
+    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dailyRemaining', $pb.PbFieldType.OD)
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'minPerTransaction', $pb.PbFieldType.OD)
+    ..a<$core.double>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'maxPerTransaction', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
+  GetExchangeLimitsResponse._() : super();
   factory GetExchangeLimitsResponse({
     $core.int? kycTier,
     $core.double? dailyLimit,
@@ -1594,45 +1545,32 @@ class GetExchangeLimitsResponse extends $pb.GeneratedMessage {
     $core.double? minPerTransaction,
     $core.double? maxPerTransaction,
   }) {
-    final $result = create();
+    final _result = create();
     if (kycTier != null) {
-      $result.kycTier = kycTier;
+      _result.kycTier = kycTier;
     }
     if (dailyLimit != null) {
-      $result.dailyLimit = dailyLimit;
+      _result.dailyLimit = dailyLimit;
     }
     if (dailyUsed != null) {
-      $result.dailyUsed = dailyUsed;
+      _result.dailyUsed = dailyUsed;
     }
     if (dailyRemaining != null) {
-      $result.dailyRemaining = dailyRemaining;
+      _result.dailyRemaining = dailyRemaining;
     }
     if (currency != null) {
-      $result.currency = currency;
+      _result.currency = currency;
     }
     if (minPerTransaction != null) {
-      $result.minPerTransaction = minPerTransaction;
+      _result.minPerTransaction = minPerTransaction;
     }
     if (maxPerTransaction != null) {
-      $result.maxPerTransaction = maxPerTransaction;
+      _result.maxPerTransaction = maxPerTransaction;
     }
-    return $result;
+    return _result;
   }
-  GetExchangeLimitsResponse._() : super();
   factory GetExchangeLimitsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetExchangeLimitsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetExchangeLimitsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'exchange'), createEmptyInstance: create)
-    ..a<$core.int>(1, _omitFieldNames ? '' : 'kycTier', $pb.PbFieldType.O3)
-    ..a<$core.double>(2, _omitFieldNames ? '' : 'dailyLimit', $pb.PbFieldType.OD)
-    ..a<$core.double>(3, _omitFieldNames ? '' : 'dailyUsed', $pb.PbFieldType.OD)
-    ..a<$core.double>(4, _omitFieldNames ? '' : 'dailyRemaining', $pb.PbFieldType.OD)
-    ..aOS(5, _omitFieldNames ? '' : 'currency')
-    ..a<$core.double>(6, _omitFieldNames ? '' : 'minPerTransaction', $pb.PbFieldType.OD)
-    ..a<$core.double>(7, _omitFieldNames ? '' : 'maxPerTransaction', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1642,10 +1580,8 @@ class GetExchangeLimitsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetExchangeLimitsResponse copyWith(void Function(GetExchangeLimitsResponse) updates) => super.copyWith((message) => updates(message as GetExchangeLimitsResponse)) as GetExchangeLimitsResponse;
-
+  GetExchangeLimitsResponse copyWith(void Function(GetExchangeLimitsResponse) updates) => super.copyWith((message) => updates(message as GetExchangeLimitsResponse)) as GetExchangeLimitsResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetExchangeLimitsResponse create() => GetExchangeLimitsResponse._();
   GetExchangeLimitsResponse createEmptyInstance() => create();
@@ -1718,6 +1654,3 @@ class GetExchangeLimitsResponse extends $pb.GeneratedMessage {
   void clearMaxPerTransaction() => clearField(7);
 }
 
-
-const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
-const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');

@@ -1,24 +1,43 @@
-//
+///
 //  Generated code. Do not modify.
 //  source: split_bill.proto
 //
 // @dart = 2.12
-
-// ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
 
 import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
 import 'google/protobuf/timestamp.pb.dart' as $1;
+
 import 'split_bill.pbenum.dart';
 
 export 'split_bill.pbenum.dart';
 
 class SplitBill extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SplitBill', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'split_bill'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'creatorId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'creatorUsername')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'creatorName')
+    ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'creatorShare', $pb.PbFieldType.OD)
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
+    ..e<SplitMethod>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'splitMethod', $pb.PbFieldType.OE, defaultOrMaker: SplitMethod.SPLIT_METHOD_EQUAL, valueOf: SplitMethod.valueOf, enumValues: SplitMethod.values)
+    ..e<SplitBillStatus>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: SplitBillStatus.SPLIT_BILL_STATUS_ACTIVE, valueOf: SplitBillStatus.valueOf, enumValues: SplitBillStatus.values)
+    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reference')
+    ..a<$core.int>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalParticipants', $pb.PbFieldType.O3)
+    ..a<$core.int>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paidCount', $pb.PbFieldType.O3)
+    ..a<$core.double>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paidAmount', $pb.PbFieldType.OD)
+    ..pc<SplitBillParticipant>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'participants', $pb.PbFieldType.PM, subBuilder: SplitBillParticipant.create)
+    ..aOM<$1.Timestamp>(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
+  SplitBill._() : super();
   factory SplitBill({
     $core.String? id,
     $core.String? creatorId,
@@ -38,85 +57,62 @@ class SplitBill extends $pb.GeneratedMessage {
     $1.Timestamp? createdAt,
     $1.Timestamp? updatedAt,
   }) {
-    final $result = create();
+    final _result = create();
     if (id != null) {
-      $result.id = id;
+      _result.id = id;
     }
     if (creatorId != null) {
-      $result.creatorId = creatorId;
+      _result.creatorId = creatorId;
     }
     if (creatorUsername != null) {
-      $result.creatorUsername = creatorUsername;
+      _result.creatorUsername = creatorUsername;
     }
     if (creatorName != null) {
-      $result.creatorName = creatorName;
+      _result.creatorName = creatorName;
     }
     if (totalAmount != null) {
-      $result.totalAmount = totalAmount;
+      _result.totalAmount = totalAmount;
     }
     if (creatorShare != null) {
-      $result.creatorShare = creatorShare;
+      _result.creatorShare = creatorShare;
     }
     if (currency != null) {
-      $result.currency = currency;
+      _result.currency = currency;
     }
     if (description != null) {
-      $result.description = description;
+      _result.description = description;
     }
     if (splitMethod != null) {
-      $result.splitMethod = splitMethod;
+      _result.splitMethod = splitMethod;
     }
     if (status != null) {
-      $result.status = status;
+      _result.status = status;
     }
     if (reference != null) {
-      $result.reference = reference;
+      _result.reference = reference;
     }
     if (totalParticipants != null) {
-      $result.totalParticipants = totalParticipants;
+      _result.totalParticipants = totalParticipants;
     }
     if (paidCount != null) {
-      $result.paidCount = paidCount;
+      _result.paidCount = paidCount;
     }
     if (paidAmount != null) {
-      $result.paidAmount = paidAmount;
+      _result.paidAmount = paidAmount;
     }
     if (participants != null) {
-      $result.participants.addAll(participants);
+      _result.participants.addAll(participants);
     }
     if (createdAt != null) {
-      $result.createdAt = createdAt;
+      _result.createdAt = createdAt;
     }
     if (updatedAt != null) {
-      $result.updatedAt = updatedAt;
+      _result.updatedAt = updatedAt;
     }
-    return $result;
+    return _result;
   }
-  SplitBill._() : super();
   factory SplitBill.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SplitBill.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SplitBill', package: const $pb.PackageName(_omitMessageNames ? '' : 'split_bill'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..aOS(2, _omitFieldNames ? '' : 'creatorId')
-    ..aOS(3, _omitFieldNames ? '' : 'creatorUsername')
-    ..aOS(4, _omitFieldNames ? '' : 'creatorName')
-    ..a<$core.double>(5, _omitFieldNames ? '' : 'totalAmount', $pb.PbFieldType.OD)
-    ..a<$core.double>(6, _omitFieldNames ? '' : 'creatorShare', $pb.PbFieldType.OD)
-    ..aOS(7, _omitFieldNames ? '' : 'currency')
-    ..aOS(8, _omitFieldNames ? '' : 'description')
-    ..e<SplitMethod>(9, _omitFieldNames ? '' : 'splitMethod', $pb.PbFieldType.OE, defaultOrMaker: SplitMethod.SPLIT_METHOD_EQUAL, valueOf: SplitMethod.valueOf, enumValues: SplitMethod.values)
-    ..e<SplitBillStatus>(10, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: SplitBillStatus.SPLIT_BILL_STATUS_ACTIVE, valueOf: SplitBillStatus.valueOf, enumValues: SplitBillStatus.values)
-    ..aOS(11, _omitFieldNames ? '' : 'reference')
-    ..a<$core.int>(12, _omitFieldNames ? '' : 'totalParticipants', $pb.PbFieldType.O3)
-    ..a<$core.int>(13, _omitFieldNames ? '' : 'paidCount', $pb.PbFieldType.O3)
-    ..a<$core.double>(14, _omitFieldNames ? '' : 'paidAmount', $pb.PbFieldType.OD)
-    ..pc<SplitBillParticipant>(15, _omitFieldNames ? '' : 'participants', $pb.PbFieldType.PM, subBuilder: SplitBillParticipant.create)
-    ..aOM<$1.Timestamp>(16, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(17, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -126,10 +122,8 @@ class SplitBill extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SplitBill copyWith(void Function(SplitBill) updates) => super.copyWith((message) => updates(message as SplitBill)) as SplitBill;
-
+  SplitBill copyWith(void Function(SplitBill) updates) => super.copyWith((message) => updates(message as SplitBill)) as SplitBill; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SplitBill create() => SplitBill._();
   SplitBill createEmptyInstance() => create();
@@ -291,6 +285,21 @@ class SplitBill extends $pb.GeneratedMessage {
 }
 
 class SplitBillParticipant extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SplitBillParticipant', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'split_bill'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'splitBillId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'username')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'displayName')
+    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
+    ..a<$core.double>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'percentage', $pb.PbFieldType.OD)
+    ..e<SplitBillParticipantStatus>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: SplitBillParticipantStatus.SPLIT_BILL_PARTICIPANT_STATUS_PENDING, valueOf: SplitBillParticipantStatus.valueOf, enumValues: SplitBillParticipantStatus.values)
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionReference')
+    ..aOM<$1.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paidAt', subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
+  SplitBillParticipant._() : super();
   factory SplitBillParticipant({
     $core.String? id,
     $core.String? splitBillId,
@@ -303,57 +312,41 @@ class SplitBillParticipant extends $pb.GeneratedMessage {
     $core.String? transactionReference,
     $1.Timestamp? paidAt,
   }) {
-    final $result = create();
+    final _result = create();
     if (id != null) {
-      $result.id = id;
+      _result.id = id;
     }
     if (splitBillId != null) {
-      $result.splitBillId = splitBillId;
+      _result.splitBillId = splitBillId;
     }
     if (userId != null) {
-      $result.userId = userId;
+      _result.userId = userId;
     }
     if (username != null) {
-      $result.username = username;
+      _result.username = username;
     }
     if (displayName != null) {
-      $result.displayName = displayName;
+      _result.displayName = displayName;
     }
     if (amount != null) {
-      $result.amount = amount;
+      _result.amount = amount;
     }
     if (percentage != null) {
-      $result.percentage = percentage;
+      _result.percentage = percentage;
     }
     if (status != null) {
-      $result.status = status;
+      _result.status = status;
     }
     if (transactionReference != null) {
-      $result.transactionReference = transactionReference;
+      _result.transactionReference = transactionReference;
     }
     if (paidAt != null) {
-      $result.paidAt = paidAt;
+      _result.paidAt = paidAt;
     }
-    return $result;
+    return _result;
   }
-  SplitBillParticipant._() : super();
   factory SplitBillParticipant.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SplitBillParticipant.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SplitBillParticipant', package: const $pb.PackageName(_omitMessageNames ? '' : 'split_bill'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..aOS(2, _omitFieldNames ? '' : 'splitBillId')
-    ..aOS(3, _omitFieldNames ? '' : 'userId')
-    ..aOS(4, _omitFieldNames ? '' : 'username')
-    ..aOS(5, _omitFieldNames ? '' : 'displayName')
-    ..a<$core.double>(6, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
-    ..a<$core.double>(7, _omitFieldNames ? '' : 'percentage', $pb.PbFieldType.OD)
-    ..e<SplitBillParticipantStatus>(8, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: SplitBillParticipantStatus.SPLIT_BILL_PARTICIPANT_STATUS_PENDING, valueOf: SplitBillParticipantStatus.valueOf, enumValues: SplitBillParticipantStatus.values)
-    ..aOS(9, _omitFieldNames ? '' : 'transactionReference')
-    ..aOM<$1.Timestamp>(10, _omitFieldNames ? '' : 'paidAt', subBuilder: $1.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -363,10 +356,8 @@ class SplitBillParticipant extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SplitBillParticipant copyWith(void Function(SplitBillParticipant) updates) => super.copyWith((message) => updates(message as SplitBillParticipant)) as SplitBillParticipant;
-
+  SplitBillParticipant copyWith(void Function(SplitBillParticipant) updates) => super.copyWith((message) => updates(message as SplitBillParticipant)) as SplitBillParticipant; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SplitBillParticipant create() => SplitBillParticipant._();
   SplitBillParticipant createEmptyInstance() => create();
@@ -469,34 +460,33 @@ class SplitBillParticipant extends $pb.GeneratedMessage {
 }
 
 class SplitBillParticipantInput extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SplitBillParticipantInput', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'split_bill'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'username')
+    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
+    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'percentage', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
+  SplitBillParticipantInput._() : super();
   factory SplitBillParticipantInput({
     $core.String? username,
     $core.double? amount,
     $core.double? percentage,
   }) {
-    final $result = create();
+    final _result = create();
     if (username != null) {
-      $result.username = username;
+      _result.username = username;
     }
     if (amount != null) {
-      $result.amount = amount;
+      _result.amount = amount;
     }
     if (percentage != null) {
-      $result.percentage = percentage;
+      _result.percentage = percentage;
     }
-    return $result;
+    return _result;
   }
-  SplitBillParticipantInput._() : super();
   factory SplitBillParticipantInput.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SplitBillParticipantInput.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SplitBillParticipantInput', package: const $pb.PackageName(_omitMessageNames ? '' : 'split_bill'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'username')
-    ..a<$core.double>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
-    ..a<$core.double>(3, _omitFieldNames ? '' : 'percentage', $pb.PbFieldType.OD)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -506,10 +496,8 @@ class SplitBillParticipantInput extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SplitBillParticipantInput copyWith(void Function(SplitBillParticipantInput) updates) => super.copyWith((message) => updates(message as SplitBillParticipantInput)) as SplitBillParticipantInput;
-
+  SplitBillParticipantInput copyWith(void Function(SplitBillParticipantInput) updates) => super.copyWith((message) => updates(message as SplitBillParticipantInput)) as SplitBillParticipantInput; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SplitBillParticipantInput create() => SplitBillParticipantInput._();
   SplitBillParticipantInput createEmptyInstance() => create();
@@ -547,6 +535,25 @@ class SplitBillParticipantInput extends $pb.GeneratedMessage {
 }
 
 class SplitBillTransaction extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SplitBillTransaction', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'split_bill'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payerId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payerUsername')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payerName')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientId')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientUsername')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientName')
+    ..a<$core.double>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
+    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reference')
+    ..aOM<$1.Timestamp>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completedAt', subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
+  SplitBillTransaction._() : super();
   factory SplitBillTransaction({
     $core.String? id,
     $core.String? payerId,
@@ -563,73 +570,53 @@ class SplitBillTransaction extends $pb.GeneratedMessage {
     $1.Timestamp? createdAt,
     $1.Timestamp? completedAt,
   }) {
-    final $result = create();
+    final _result = create();
     if (id != null) {
-      $result.id = id;
+      _result.id = id;
     }
     if (payerId != null) {
-      $result.payerId = payerId;
+      _result.payerId = payerId;
     }
     if (payerUsername != null) {
-      $result.payerUsername = payerUsername;
+      _result.payerUsername = payerUsername;
     }
     if (payerName != null) {
-      $result.payerName = payerName;
+      _result.payerName = payerName;
     }
     if (recipientId != null) {
-      $result.recipientId = recipientId;
+      _result.recipientId = recipientId;
     }
     if (recipientUsername != null) {
-      $result.recipientUsername = recipientUsername;
+      _result.recipientUsername = recipientUsername;
     }
     if (recipientName != null) {
-      $result.recipientName = recipientName;
+      _result.recipientName = recipientName;
     }
     if (amount != null) {
-      $result.amount = amount;
+      _result.amount = amount;
     }
     if (currency != null) {
-      $result.currency = currency;
+      _result.currency = currency;
     }
     if (description != null) {
-      $result.description = description;
+      _result.description = description;
     }
     if (status != null) {
-      $result.status = status;
+      _result.status = status;
     }
     if (reference != null) {
-      $result.reference = reference;
+      _result.reference = reference;
     }
     if (createdAt != null) {
-      $result.createdAt = createdAt;
+      _result.createdAt = createdAt;
     }
     if (completedAt != null) {
-      $result.completedAt = completedAt;
+      _result.completedAt = completedAt;
     }
-    return $result;
+    return _result;
   }
-  SplitBillTransaction._() : super();
   factory SplitBillTransaction.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SplitBillTransaction.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SplitBillTransaction', package: const $pb.PackageName(_omitMessageNames ? '' : 'split_bill'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'id')
-    ..aOS(2, _omitFieldNames ? '' : 'payerId')
-    ..aOS(3, _omitFieldNames ? '' : 'payerUsername')
-    ..aOS(4, _omitFieldNames ? '' : 'payerName')
-    ..aOS(5, _omitFieldNames ? '' : 'recipientId')
-    ..aOS(6, _omitFieldNames ? '' : 'recipientUsername')
-    ..aOS(7, _omitFieldNames ? '' : 'recipientName')
-    ..a<$core.double>(8, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
-    ..aOS(9, _omitFieldNames ? '' : 'currency')
-    ..aOS(10, _omitFieldNames ? '' : 'description')
-    ..aOS(11, _omitFieldNames ? '' : 'status')
-    ..aOS(12, _omitFieldNames ? '' : 'reference')
-    ..aOM<$1.Timestamp>(13, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(14, _omitFieldNames ? '' : 'completedAt', subBuilder: $1.Timestamp.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -639,10 +626,8 @@ class SplitBillTransaction extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SplitBillTransaction copyWith(void Function(SplitBillTransaction) updates) => super.copyWith((message) => updates(message as SplitBillTransaction)) as SplitBillTransaction;
-
+  SplitBillTransaction copyWith(void Function(SplitBillTransaction) updates) => super.copyWith((message) => updates(message as SplitBillTransaction)) as SplitBillTransaction; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SplitBillTransaction create() => SplitBillTransaction._();
   SplitBillTransaction createEmptyInstance() => create();
@@ -783,6 +768,17 @@ class SplitBillTransaction extends $pb.GeneratedMessage {
 }
 
 class CreateSplitBillRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateSplitBillRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'split_bill'), createEmptyInstance: create)
+    ..a<$core.double>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmount', $pb.PbFieldType.OD)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
+    ..e<SplitMethod>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'splitMethod', $pb.PbFieldType.OE, defaultOrMaker: SplitMethod.SPLIT_METHOD_EQUAL, valueOf: SplitMethod.valueOf, enumValues: SplitMethod.values)
+    ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'creatorShare', $pb.PbFieldType.OD)
+    ..pc<SplitBillParticipantInput>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'participants', $pb.PbFieldType.PM, subBuilder: SplitBillParticipantInput.create)
+    ..hasRequiredFields = false
+  ;
+
+  CreateSplitBillRequest._() : super();
   factory CreateSplitBillRequest({
     $core.double? totalAmount,
     $core.String? currency,
@@ -791,41 +787,29 @@ class CreateSplitBillRequest extends $pb.GeneratedMessage {
     $core.double? creatorShare,
     $core.Iterable<SplitBillParticipantInput>? participants,
   }) {
-    final $result = create();
+    final _result = create();
     if (totalAmount != null) {
-      $result.totalAmount = totalAmount;
+      _result.totalAmount = totalAmount;
     }
     if (currency != null) {
-      $result.currency = currency;
+      _result.currency = currency;
     }
     if (description != null) {
-      $result.description = description;
+      _result.description = description;
     }
     if (splitMethod != null) {
-      $result.splitMethod = splitMethod;
+      _result.splitMethod = splitMethod;
     }
     if (creatorShare != null) {
-      $result.creatorShare = creatorShare;
+      _result.creatorShare = creatorShare;
     }
     if (participants != null) {
-      $result.participants.addAll(participants);
+      _result.participants.addAll(participants);
     }
-    return $result;
+    return _result;
   }
-  CreateSplitBillRequest._() : super();
   factory CreateSplitBillRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateSplitBillRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateSplitBillRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'split_bill'), createEmptyInstance: create)
-    ..a<$core.double>(1, _omitFieldNames ? '' : 'totalAmount', $pb.PbFieldType.OD)
-    ..aOS(2, _omitFieldNames ? '' : 'currency')
-    ..aOS(3, _omitFieldNames ? '' : 'description')
-    ..e<SplitMethod>(4, _omitFieldNames ? '' : 'splitMethod', $pb.PbFieldType.OE, defaultOrMaker: SplitMethod.SPLIT_METHOD_EQUAL, valueOf: SplitMethod.valueOf, enumValues: SplitMethod.values)
-    ..a<$core.double>(5, _omitFieldNames ? '' : 'creatorShare', $pb.PbFieldType.OD)
-    ..pc<SplitBillParticipantInput>(6, _omitFieldNames ? '' : 'participants', $pb.PbFieldType.PM, subBuilder: SplitBillParticipantInput.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -835,10 +819,8 @@ class CreateSplitBillRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateSplitBillRequest copyWith(void Function(CreateSplitBillRequest) updates) => super.copyWith((message) => updates(message as CreateSplitBillRequest)) as CreateSplitBillRequest;
-
+  CreateSplitBillRequest copyWith(void Function(CreateSplitBillRequest) updates) => super.copyWith((message) => updates(message as CreateSplitBillRequest)) as CreateSplitBillRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CreateSplitBillRequest create() => CreateSplitBillRequest._();
   CreateSplitBillRequest createEmptyInstance() => create();
@@ -897,34 +879,33 @@ class CreateSplitBillRequest extends $pb.GeneratedMessage {
 }
 
 class CreateSplitBillResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateSplitBillResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'split_bill'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOM<SplitBill>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'splitBill', subBuilder: SplitBill.create)
+    ..hasRequiredFields = false
+  ;
+
+  CreateSplitBillResponse._() : super();
   factory CreateSplitBillResponse({
     $core.bool? success,
     $core.String? message,
     SplitBill? splitBill,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (splitBill != null) {
-      $result.splitBill = splitBill;
+      _result.splitBill = splitBill;
     }
-    return $result;
+    return _result;
   }
-  CreateSplitBillResponse._() : super();
   factory CreateSplitBillResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CreateSplitBillResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateSplitBillResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'split_bill'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOM<SplitBill>(3, _omitFieldNames ? '' : 'splitBill', subBuilder: SplitBill.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -934,10 +915,8 @@ class CreateSplitBillResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CreateSplitBillResponse copyWith(void Function(CreateSplitBillResponse) updates) => super.copyWith((message) => updates(message as CreateSplitBillResponse)) as CreateSplitBillResponse;
-
+  CreateSplitBillResponse copyWith(void Function(CreateSplitBillResponse) updates) => super.copyWith((message) => updates(message as CreateSplitBillResponse)) as CreateSplitBillResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CreateSplitBillResponse create() => CreateSplitBillResponse._();
   CreateSplitBillResponse createEmptyInstance() => create();
@@ -977,24 +956,23 @@ class CreateSplitBillResponse extends $pb.GeneratedMessage {
 }
 
 class GetSplitBillRequest extends $pb.GeneratedMessage {
-  factory GetSplitBillRequest({
-    $core.String? splitBillId,
-  }) {
-    final $result = create();
-    if (splitBillId != null) {
-      $result.splitBillId = splitBillId;
-    }
-    return $result;
-  }
-  GetSplitBillRequest._() : super();
-  factory GetSplitBillRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory GetSplitBillRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSplitBillRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'split_bill'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'splitBillId')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetSplitBillRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'split_bill'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'splitBillId')
     ..hasRequiredFields = false
   ;
 
+  GetSplitBillRequest._() : super();
+  factory GetSplitBillRequest({
+    $core.String? splitBillId,
+  }) {
+    final _result = create();
+    if (splitBillId != null) {
+      _result.splitBillId = splitBillId;
+    }
+    return _result;
+  }
+  factory GetSplitBillRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetSplitBillRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1004,10 +982,8 @@ class GetSplitBillRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetSplitBillRequest copyWith(void Function(GetSplitBillRequest) updates) => super.copyWith((message) => updates(message as GetSplitBillRequest)) as GetSplitBillRequest;
-
+  GetSplitBillRequest copyWith(void Function(GetSplitBillRequest) updates) => super.copyWith((message) => updates(message as GetSplitBillRequest)) as GetSplitBillRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetSplitBillRequest create() => GetSplitBillRequest._();
   GetSplitBillRequest createEmptyInstance() => create();
@@ -1027,34 +1003,33 @@ class GetSplitBillRequest extends $pb.GeneratedMessage {
 }
 
 class GetSplitBillResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetSplitBillResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'split_bill'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOM<SplitBill>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'splitBill', subBuilder: SplitBill.create)
+    ..hasRequiredFields = false
+  ;
+
+  GetSplitBillResponse._() : super();
   factory GetSplitBillResponse({
     $core.bool? success,
     $core.String? message,
     SplitBill? splitBill,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (splitBill != null) {
-      $result.splitBill = splitBill;
+      _result.splitBill = splitBill;
     }
-    return $result;
+    return _result;
   }
-  GetSplitBillResponse._() : super();
   factory GetSplitBillResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetSplitBillResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSplitBillResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'split_bill'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOM<SplitBill>(3, _omitFieldNames ? '' : 'splitBill', subBuilder: SplitBill.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1064,10 +1039,8 @@ class GetSplitBillResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetSplitBillResponse copyWith(void Function(GetSplitBillResponse) updates) => super.copyWith((message) => updates(message as GetSplitBillResponse)) as GetSplitBillResponse;
-
+  GetSplitBillResponse copyWith(void Function(GetSplitBillResponse) updates) => super.copyWith((message) => updates(message as GetSplitBillResponse)) as GetSplitBillResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetSplitBillResponse create() => GetSplitBillResponse._();
   GetSplitBillResponse createEmptyInstance() => create();
@@ -1107,34 +1080,33 @@ class GetSplitBillResponse extends $pb.GeneratedMessage {
 }
 
 class GetMySplitBillsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetMySplitBillsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'split_bill'), createEmptyInstance: create)
+    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
+    ..e<SplitBillStatus>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: SplitBillStatus.SPLIT_BILL_STATUS_ACTIVE, valueOf: SplitBillStatus.valueOf, enumValues: SplitBillStatus.values)
+    ..hasRequiredFields = false
+  ;
+
+  GetMySplitBillsRequest._() : super();
   factory GetMySplitBillsRequest({
     $core.int? page,
     $core.int? limit,
     SplitBillStatus? status,
   }) {
-    final $result = create();
+    final _result = create();
     if (page != null) {
-      $result.page = page;
+      _result.page = page;
     }
     if (limit != null) {
-      $result.limit = limit;
+      _result.limit = limit;
     }
     if (status != null) {
-      $result.status = status;
+      _result.status = status;
     }
-    return $result;
+    return _result;
   }
-  GetMySplitBillsRequest._() : super();
   factory GetMySplitBillsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetMySplitBillsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetMySplitBillsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'split_bill'), createEmptyInstance: create)
-    ..a<$core.int>(1, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
-    ..e<SplitBillStatus>(3, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: SplitBillStatus.SPLIT_BILL_STATUS_ACTIVE, valueOf: SplitBillStatus.valueOf, enumValues: SplitBillStatus.values)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1144,10 +1116,8 @@ class GetMySplitBillsRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetMySplitBillsRequest copyWith(void Function(GetMySplitBillsRequest) updates) => super.copyWith((message) => updates(message as GetMySplitBillsRequest)) as GetMySplitBillsRequest;
-
+  GetMySplitBillsRequest copyWith(void Function(GetMySplitBillsRequest) updates) => super.copyWith((message) => updates(message as GetMySplitBillsRequest)) as GetMySplitBillsRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetMySplitBillsRequest create() => GetMySplitBillsRequest._();
   GetMySplitBillsRequest createEmptyInstance() => create();
@@ -1185,39 +1155,38 @@ class GetMySplitBillsRequest extends $pb.GeneratedMessage {
 }
 
 class GetSplitBillsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetSplitBillsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'split_bill'), createEmptyInstance: create)
+    ..pc<SplitBill>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'splitBills', $pb.PbFieldType.PM, subBuilder: SplitBill.create)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'total', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalPages', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  GetSplitBillsResponse._() : super();
   factory GetSplitBillsResponse({
     $core.Iterable<SplitBill>? splitBills,
     $core.int? total,
     $core.int? page,
     $core.int? totalPages,
   }) {
-    final $result = create();
+    final _result = create();
     if (splitBills != null) {
-      $result.splitBills.addAll(splitBills);
+      _result.splitBills.addAll(splitBills);
     }
     if (total != null) {
-      $result.total = total;
+      _result.total = total;
     }
     if (page != null) {
-      $result.page = page;
+      _result.page = page;
     }
     if (totalPages != null) {
-      $result.totalPages = totalPages;
+      _result.totalPages = totalPages;
     }
-    return $result;
+    return _result;
   }
-  GetSplitBillsResponse._() : super();
   factory GetSplitBillsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetSplitBillsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSplitBillsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'split_bill'), createEmptyInstance: create)
-    ..pc<SplitBill>(1, _omitFieldNames ? '' : 'splitBills', $pb.PbFieldType.PM, subBuilder: SplitBill.create)
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
-    ..a<$core.int>(3, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
-    ..a<$core.int>(4, _omitFieldNames ? '' : 'totalPages', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1227,10 +1196,8 @@ class GetSplitBillsResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetSplitBillsResponse copyWith(void Function(GetSplitBillsResponse) updates) => super.copyWith((message) => updates(message as GetSplitBillsResponse)) as GetSplitBillsResponse;
-
+  GetSplitBillsResponse copyWith(void Function(GetSplitBillsResponse) updates) => super.copyWith((message) => updates(message as GetSplitBillsResponse)) as GetSplitBillsResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetSplitBillsResponse create() => GetSplitBillsResponse._();
   GetSplitBillsResponse createEmptyInstance() => create();
@@ -1271,34 +1238,33 @@ class GetSplitBillsResponse extends $pb.GeneratedMessage {
 }
 
 class PaySplitBillShareRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'PaySplitBillShareRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'split_bill'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'splitBillId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceAccountId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionPin')
+    ..hasRequiredFields = false
+  ;
+
+  PaySplitBillShareRequest._() : super();
   factory PaySplitBillShareRequest({
     $core.String? splitBillId,
     $core.String? sourceAccountId,
     $core.String? transactionPin,
   }) {
-    final $result = create();
+    final _result = create();
     if (splitBillId != null) {
-      $result.splitBillId = splitBillId;
+      _result.splitBillId = splitBillId;
     }
     if (sourceAccountId != null) {
-      $result.sourceAccountId = sourceAccountId;
+      _result.sourceAccountId = sourceAccountId;
     }
     if (transactionPin != null) {
-      $result.transactionPin = transactionPin;
+      _result.transactionPin = transactionPin;
     }
-    return $result;
+    return _result;
   }
-  PaySplitBillShareRequest._() : super();
   factory PaySplitBillShareRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory PaySplitBillShareRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'PaySplitBillShareRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'split_bill'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'splitBillId')
-    ..aOS(2, _omitFieldNames ? '' : 'sourceAccountId')
-    ..aOS(3, _omitFieldNames ? '' : 'transactionPin')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1308,10 +1274,8 @@ class PaySplitBillShareRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  PaySplitBillShareRequest copyWith(void Function(PaySplitBillShareRequest) updates) => super.copyWith((message) => updates(message as PaySplitBillShareRequest)) as PaySplitBillShareRequest;
-
+  PaySplitBillShareRequest copyWith(void Function(PaySplitBillShareRequest) updates) => super.copyWith((message) => updates(message as PaySplitBillShareRequest)) as PaySplitBillShareRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static PaySplitBillShareRequest create() => PaySplitBillShareRequest._();
   PaySplitBillShareRequest createEmptyInstance() => create();
@@ -1349,39 +1313,38 @@ class PaySplitBillShareRequest extends $pb.GeneratedMessage {
 }
 
 class PaySplitBillShareResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'PaySplitBillShareResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'split_bill'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOM<SplitBillTransaction>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transaction', subBuilder: SplitBillTransaction.create)
+    ..aOM<SplitBill>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'splitBill', subBuilder: SplitBill.create)
+    ..hasRequiredFields = false
+  ;
+
+  PaySplitBillShareResponse._() : super();
   factory PaySplitBillShareResponse({
     $core.bool? success,
     $core.String? message,
     SplitBillTransaction? transaction,
     SplitBill? splitBill,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (transaction != null) {
-      $result.transaction = transaction;
+      _result.transaction = transaction;
     }
     if (splitBill != null) {
-      $result.splitBill = splitBill;
+      _result.splitBill = splitBill;
     }
-    return $result;
+    return _result;
   }
-  PaySplitBillShareResponse._() : super();
   factory PaySplitBillShareResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory PaySplitBillShareResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'PaySplitBillShareResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'split_bill'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOM<SplitBillTransaction>(3, _omitFieldNames ? '' : 'transaction', subBuilder: SplitBillTransaction.create)
-    ..aOM<SplitBill>(4, _omitFieldNames ? '' : 'splitBill', subBuilder: SplitBill.create)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1391,10 +1354,8 @@ class PaySplitBillShareResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  PaySplitBillShareResponse copyWith(void Function(PaySplitBillShareResponse) updates) => super.copyWith((message) => updates(message as PaySplitBillShareResponse)) as PaySplitBillShareResponse;
-
+  PaySplitBillShareResponse copyWith(void Function(PaySplitBillShareResponse) updates) => super.copyWith((message) => updates(message as PaySplitBillShareResponse)) as PaySplitBillShareResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static PaySplitBillShareResponse create() => PaySplitBillShareResponse._();
   PaySplitBillShareResponse createEmptyInstance() => create();
@@ -1445,24 +1406,23 @@ class PaySplitBillShareResponse extends $pb.GeneratedMessage {
 }
 
 class CancelSplitBillRequest extends $pb.GeneratedMessage {
-  factory CancelSplitBillRequest({
-    $core.String? splitBillId,
-  }) {
-    final $result = create();
-    if (splitBillId != null) {
-      $result.splitBillId = splitBillId;
-    }
-    return $result;
-  }
-  CancelSplitBillRequest._() : super();
-  factory CancelSplitBillRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory CancelSplitBillRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CancelSplitBillRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'split_bill'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'splitBillId')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CancelSplitBillRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'split_bill'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'splitBillId')
     ..hasRequiredFields = false
   ;
 
+  CancelSplitBillRequest._() : super();
+  factory CancelSplitBillRequest({
+    $core.String? splitBillId,
+  }) {
+    final _result = create();
+    if (splitBillId != null) {
+      _result.splitBillId = splitBillId;
+    }
+    return _result;
+  }
+  factory CancelSplitBillRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CancelSplitBillRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1472,10 +1432,8 @@ class CancelSplitBillRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CancelSplitBillRequest copyWith(void Function(CancelSplitBillRequest) updates) => super.copyWith((message) => updates(message as CancelSplitBillRequest)) as CancelSplitBillRequest;
-
+  CancelSplitBillRequest copyWith(void Function(CancelSplitBillRequest) updates) => super.copyWith((message) => updates(message as CancelSplitBillRequest)) as CancelSplitBillRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CancelSplitBillRequest create() => CancelSplitBillRequest._();
   CancelSplitBillRequest createEmptyInstance() => create();
@@ -1495,29 +1453,28 @@ class CancelSplitBillRequest extends $pb.GeneratedMessage {
 }
 
 class CancelSplitBillResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CancelSplitBillResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'split_bill'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  CancelSplitBillResponse._() : super();
   factory CancelSplitBillResponse({
     $core.bool? success,
     $core.String? message,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
-    return $result;
+    return _result;
   }
-  CancelSplitBillResponse._() : super();
   factory CancelSplitBillResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory CancelSplitBillResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CancelSplitBillResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'split_bill'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1527,10 +1484,8 @@ class CancelSplitBillResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  CancelSplitBillResponse copyWith(void Function(CancelSplitBillResponse) updates) => super.copyWith((message) => updates(message as CancelSplitBillResponse)) as CancelSplitBillResponse;
-
+  CancelSplitBillResponse copyWith(void Function(CancelSplitBillResponse) updates) => super.copyWith((message) => updates(message as CancelSplitBillResponse)) as CancelSplitBillResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static CancelSplitBillResponse create() => CancelSplitBillResponse._();
   CancelSplitBillResponse createEmptyInstance() => create();
@@ -1559,29 +1514,28 @@ class CancelSplitBillResponse extends $pb.GeneratedMessage {
 }
 
 class DeclineSplitBillShareRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DeclineSplitBillShareRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'split_bill'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'splitBillId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reason')
+    ..hasRequiredFields = false
+  ;
+
+  DeclineSplitBillShareRequest._() : super();
   factory DeclineSplitBillShareRequest({
     $core.String? splitBillId,
     $core.String? reason,
   }) {
-    final $result = create();
+    final _result = create();
     if (splitBillId != null) {
-      $result.splitBillId = splitBillId;
+      _result.splitBillId = splitBillId;
     }
     if (reason != null) {
-      $result.reason = reason;
+      _result.reason = reason;
     }
-    return $result;
+    return _result;
   }
-  DeclineSplitBillShareRequest._() : super();
   factory DeclineSplitBillShareRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory DeclineSplitBillShareRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DeclineSplitBillShareRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'split_bill'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'splitBillId')
-    ..aOS(2, _omitFieldNames ? '' : 'reason')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1591,10 +1545,8 @@ class DeclineSplitBillShareRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  DeclineSplitBillShareRequest copyWith(void Function(DeclineSplitBillShareRequest) updates) => super.copyWith((message) => updates(message as DeclineSplitBillShareRequest)) as DeclineSplitBillShareRequest;
-
+  DeclineSplitBillShareRequest copyWith(void Function(DeclineSplitBillShareRequest) updates) => super.copyWith((message) => updates(message as DeclineSplitBillShareRequest)) as DeclineSplitBillShareRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static DeclineSplitBillShareRequest create() => DeclineSplitBillShareRequest._();
   DeclineSplitBillShareRequest createEmptyInstance() => create();
@@ -1623,29 +1575,28 @@ class DeclineSplitBillShareRequest extends $pb.GeneratedMessage {
 }
 
 class DeclineSplitBillShareResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DeclineSplitBillShareResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'split_bill'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  DeclineSplitBillShareResponse._() : super();
   factory DeclineSplitBillShareResponse({
     $core.bool? success,
     $core.String? message,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
-    return $result;
+    return _result;
   }
-  DeclineSplitBillShareResponse._() : super();
   factory DeclineSplitBillShareResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory DeclineSplitBillShareResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DeclineSplitBillShareResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'split_bill'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1655,10 +1606,8 @@ class DeclineSplitBillShareResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  DeclineSplitBillShareResponse copyWith(void Function(DeclineSplitBillShareResponse) updates) => super.copyWith((message) => updates(message as DeclineSplitBillShareResponse)) as DeclineSplitBillShareResponse;
-
+  DeclineSplitBillShareResponse copyWith(void Function(DeclineSplitBillShareResponse) updates) => super.copyWith((message) => updates(message as DeclineSplitBillShareResponse)) as DeclineSplitBillShareResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static DeclineSplitBillShareResponse create() => DeclineSplitBillShareResponse._();
   DeclineSplitBillShareResponse createEmptyInstance() => create();
@@ -1687,24 +1636,23 @@ class DeclineSplitBillShareResponse extends $pb.GeneratedMessage {
 }
 
 class SendSplitBillReminderRequest extends $pb.GeneratedMessage {
-  factory SendSplitBillReminderRequest({
-    $core.String? splitBillId,
-  }) {
-    final $result = create();
-    if (splitBillId != null) {
-      $result.splitBillId = splitBillId;
-    }
-    return $result;
-  }
-  SendSplitBillReminderRequest._() : super();
-  factory SendSplitBillReminderRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory SendSplitBillReminderRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SendSplitBillReminderRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'split_bill'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'splitBillId')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SendSplitBillReminderRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'split_bill'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'splitBillId')
     ..hasRequiredFields = false
   ;
 
+  SendSplitBillReminderRequest._() : super();
+  factory SendSplitBillReminderRequest({
+    $core.String? splitBillId,
+  }) {
+    final _result = create();
+    if (splitBillId != null) {
+      _result.splitBillId = splitBillId;
+    }
+    return _result;
+  }
+  factory SendSplitBillReminderRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory SendSplitBillReminderRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1714,10 +1662,8 @@ class SendSplitBillReminderRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SendSplitBillReminderRequest copyWith(void Function(SendSplitBillReminderRequest) updates) => super.copyWith((message) => updates(message as SendSplitBillReminderRequest)) as SendSplitBillReminderRequest;
-
+  SendSplitBillReminderRequest copyWith(void Function(SendSplitBillReminderRequest) updates) => super.copyWith((message) => updates(message as SendSplitBillReminderRequest)) as SendSplitBillReminderRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SendSplitBillReminderRequest create() => SendSplitBillReminderRequest._();
   SendSplitBillReminderRequest createEmptyInstance() => create();
@@ -1737,34 +1683,33 @@ class SendSplitBillReminderRequest extends $pb.GeneratedMessage {
 }
 
 class SendSplitBillReminderResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SendSplitBillReminderResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'split_bill'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'remindersSent', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  SendSplitBillReminderResponse._() : super();
   factory SendSplitBillReminderResponse({
     $core.bool? success,
     $core.String? message,
     $core.int? remindersSent,
   }) {
-    final $result = create();
+    final _result = create();
     if (success != null) {
-      $result.success = success;
+      _result.success = success;
     }
     if (message != null) {
-      $result.message = message;
+      _result.message = message;
     }
     if (remindersSent != null) {
-      $result.remindersSent = remindersSent;
+      _result.remindersSent = remindersSent;
     }
-    return $result;
+    return _result;
   }
-  SendSplitBillReminderResponse._() : super();
   factory SendSplitBillReminderResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SendSplitBillReminderResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SendSplitBillReminderResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'split_bill'), createEmptyInstance: create)
-    ..aOB(1, _omitFieldNames ? '' : 'success')
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..a<$core.int>(3, _omitFieldNames ? '' : 'remindersSent', $pb.PbFieldType.O3)
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -1774,10 +1719,8 @@ class SendSplitBillReminderResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SendSplitBillReminderResponse copyWith(void Function(SendSplitBillReminderResponse) updates) => super.copyWith((message) => updates(message as SendSplitBillReminderResponse)) as SendSplitBillReminderResponse;
-
+  SendSplitBillReminderResponse copyWith(void Function(SendSplitBillReminderResponse) updates) => super.copyWith((message) => updates(message as SendSplitBillReminderResponse)) as SendSplitBillReminderResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SendSplitBillReminderResponse create() => SendSplitBillReminderResponse._();
   SendSplitBillReminderResponse createEmptyInstance() => create();
@@ -1814,6 +1757,3 @@ class SendSplitBillReminderResponse extends $pb.GeneratedMessage {
   void clearRemindersSent() => clearField(3);
 }
 
-
-const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
-const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');

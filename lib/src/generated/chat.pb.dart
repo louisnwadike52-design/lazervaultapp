@@ -1,25 +1,34 @@
-//
+///
 //  Generated code. Do not modify.
 //  source: chat.proto
 //
 // @dart = 2.12
-
-// ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
 
 import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'chat.pbenum.dart';
 import 'google/protobuf/timestamp.pb.dart' as $1;
+
+import 'chat.pbenum.dart';
 
 export 'chat.pbenum.dart';
 
-/// Represents a single chat message
 class ChatMessage extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ChatMessage', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'messageId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'senderUserId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receiverUserId')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'content')
+    ..aOM<$1.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'timestamp', subBuilder: $1.Timestamp.create)
+    ..e<MessageType>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'messageType', $pb.PbFieldType.OE, defaultOrMaker: MessageType.TEXT, valueOf: MessageType.valueOf, enumValues: MessageType.values)
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'attachmentUrl')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'replyToMessageId')
+    ..hasRequiredFields = false
+  ;
+
+  ChatMessage._() : super();
   factory ChatMessage({
     $core.String? messageId,
     $core.String? senderUserId,
@@ -30,49 +39,35 @@ class ChatMessage extends $pb.GeneratedMessage {
     $core.String? attachmentUrl,
     $core.String? replyToMessageId,
   }) {
-    final $result = create();
+    final _result = create();
     if (messageId != null) {
-      $result.messageId = messageId;
+      _result.messageId = messageId;
     }
     if (senderUserId != null) {
-      $result.senderUserId = senderUserId;
+      _result.senderUserId = senderUserId;
     }
     if (receiverUserId != null) {
-      $result.receiverUserId = receiverUserId;
+      _result.receiverUserId = receiverUserId;
     }
     if (content != null) {
-      $result.content = content;
+      _result.content = content;
     }
     if (timestamp != null) {
-      $result.timestamp = timestamp;
+      _result.timestamp = timestamp;
     }
     if (messageType != null) {
-      $result.messageType = messageType;
+      _result.messageType = messageType;
     }
     if (attachmentUrl != null) {
-      $result.attachmentUrl = attachmentUrl;
+      _result.attachmentUrl = attachmentUrl;
     }
     if (replyToMessageId != null) {
-      $result.replyToMessageId = replyToMessageId;
+      _result.replyToMessageId = replyToMessageId;
     }
-    return $result;
+    return _result;
   }
-  ChatMessage._() : super();
   factory ChatMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory ChatMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ChatMessage', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'messageId')
-    ..aOS(2, _omitFieldNames ? '' : 'senderUserId')
-    ..aOS(3, _omitFieldNames ? '' : 'receiverUserId')
-    ..aOS(4, _omitFieldNames ? '' : 'content')
-    ..aOM<$1.Timestamp>(5, _omitFieldNames ? '' : 'timestamp', subBuilder: $1.Timestamp.create)
-    ..e<MessageType>(6, _omitFieldNames ? '' : 'messageType', $pb.PbFieldType.OE, defaultOrMaker: MessageType.TEXT, valueOf: MessageType.valueOf, enumValues: MessageType.values)
-    ..aOS(7, _omitFieldNames ? '' : 'attachmentUrl')
-    ..aOS(8, _omitFieldNames ? '' : 'replyToMessageId')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -82,10 +77,8 @@ class ChatMessage extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  ChatMessage copyWith(void Function(ChatMessage) updates) => super.copyWith((message) => updates(message as ChatMessage)) as ChatMessage;
-
+  ChatMessage copyWith(void Function(ChatMessage) updates) => super.copyWith((message) => updates(message as ChatMessage)) as ChatMessage; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static ChatMessage create() => ChatMessage._();
   ChatMessage createEmptyInstance() => create();
@@ -169,8 +162,17 @@ class ChatMessage extends $pb.GeneratedMessage {
   void clearReplyToMessageId() => clearField(8);
 }
 
-/// Request to send a new message
 class SendMessageRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SendMessageRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receiverUserId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'content')
+    ..e<MessageType>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'messageType', $pb.PbFieldType.OE, defaultOrMaker: MessageType.TEXT, valueOf: MessageType.valueOf, enumValues: MessageType.values)
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'attachmentUrl')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'replyToMessageId')
+    ..hasRequiredFields = false
+  ;
+
+  SendMessageRequest._() : super();
   factory SendMessageRequest({
     $core.String? receiverUserId,
     $core.String? content,
@@ -178,37 +180,26 @@ class SendMessageRequest extends $pb.GeneratedMessage {
     $core.String? attachmentUrl,
     $core.String? replyToMessageId,
   }) {
-    final $result = create();
+    final _result = create();
     if (receiverUserId != null) {
-      $result.receiverUserId = receiverUserId;
+      _result.receiverUserId = receiverUserId;
     }
     if (content != null) {
-      $result.content = content;
+      _result.content = content;
     }
     if (messageType != null) {
-      $result.messageType = messageType;
+      _result.messageType = messageType;
     }
     if (attachmentUrl != null) {
-      $result.attachmentUrl = attachmentUrl;
+      _result.attachmentUrl = attachmentUrl;
     }
     if (replyToMessageId != null) {
-      $result.replyToMessageId = replyToMessageId;
+      _result.replyToMessageId = replyToMessageId;
     }
-    return $result;
+    return _result;
   }
-  SendMessageRequest._() : super();
   factory SendMessageRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory SendMessageRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SendMessageRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'receiverUserId')
-    ..aOS(2, _omitFieldNames ? '' : 'content')
-    ..e<MessageType>(3, _omitFieldNames ? '' : 'messageType', $pb.PbFieldType.OE, defaultOrMaker: MessageType.TEXT, valueOf: MessageType.valueOf, enumValues: MessageType.values)
-    ..aOS(4, _omitFieldNames ? '' : 'attachmentUrl')
-    ..aOS(5, _omitFieldNames ? '' : 'replyToMessageId')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -218,10 +209,8 @@ class SendMessageRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SendMessageRequest copyWith(void Function(SendMessageRequest) updates) => super.copyWith((message) => updates(message as SendMessageRequest)) as SendMessageRequest;
-
+  SendMessageRequest copyWith(void Function(SendMessageRequest) updates) => super.copyWith((message) => updates(message as SendMessageRequest)) as SendMessageRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SendMessageRequest create() => SendMessageRequest._();
   SendMessageRequest createEmptyInstance() => create();
@@ -276,26 +265,24 @@ class SendMessageRequest extends $pb.GeneratedMessage {
   void clearReplyToMessageId() => clearField(5);
 }
 
-/// Response after sending a message (contains the created message)
 class SendMessageResponse extends $pb.GeneratedMessage {
-  factory SendMessageResponse({
-    ChatMessage? message,
-  }) {
-    final $result = create();
-    if (message != null) {
-      $result.message = message;
-    }
-    return $result;
-  }
-  SendMessageResponse._() : super();
-  factory SendMessageResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory SendMessageResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SendMessageResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<ChatMessage>(1, _omitFieldNames ? '' : 'message', subBuilder: ChatMessage.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SendMessageResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOM<ChatMessage>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message', subBuilder: ChatMessage.create)
     ..hasRequiredFields = false
   ;
 
+  SendMessageResponse._() : super();
+  factory SendMessageResponse({
+    ChatMessage? message,
+  }) {
+    final _result = create();
+    if (message != null) {
+      _result.message = message;
+    }
+    return _result;
+  }
+  factory SendMessageResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory SendMessageResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -305,10 +292,8 @@ class SendMessageResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  SendMessageResponse copyWith(void Function(SendMessageResponse) updates) => super.copyWith((message) => updates(message as SendMessageResponse)) as SendMessageResponse;
-
+  SendMessageResponse copyWith(void Function(SendMessageResponse) updates) => super.copyWith((message) => updates(message as SendMessageResponse)) as SendMessageResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static SendMessageResponse create() => SendMessageResponse._();
   SendMessageResponse createEmptyInstance() => create();
@@ -329,36 +314,34 @@ class SendMessageResponse extends $pb.GeneratedMessage {
   ChatMessage ensureMessage() => $_ensure(0);
 }
 
-/// Request to get chat history between two users
 class GetChatHistoryRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetChatHistoryRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'peerUserId')
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageToken')
+    ..hasRequiredFields = false
+  ;
+
+  GetChatHistoryRequest._() : super();
   factory GetChatHistoryRequest({
     $core.String? peerUserId,
     $core.int? pageSize,
     $core.String? pageToken,
   }) {
-    final $result = create();
+    final _result = create();
     if (peerUserId != null) {
-      $result.peerUserId = peerUserId;
+      _result.peerUserId = peerUserId;
     }
     if (pageSize != null) {
-      $result.pageSize = pageSize;
+      _result.pageSize = pageSize;
     }
     if (pageToken != null) {
-      $result.pageToken = pageToken;
+      _result.pageToken = pageToken;
     }
-    return $result;
+    return _result;
   }
-  GetChatHistoryRequest._() : super();
   factory GetChatHistoryRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetChatHistoryRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetChatHistoryRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'peerUserId')
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'pageSize', $pb.PbFieldType.O3)
-    ..aOS(3, _omitFieldNames ? '' : 'pageToken')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -368,10 +351,8 @@ class GetChatHistoryRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetChatHistoryRequest copyWith(void Function(GetChatHistoryRequest) updates) => super.copyWith((message) => updates(message as GetChatHistoryRequest)) as GetChatHistoryRequest;
-
+  GetChatHistoryRequest copyWith(void Function(GetChatHistoryRequest) updates) => super.copyWith((message) => updates(message as GetChatHistoryRequest)) as GetChatHistoryRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetChatHistoryRequest create() => GetChatHistoryRequest._();
   GetChatHistoryRequest createEmptyInstance() => create();
@@ -408,31 +389,29 @@ class GetChatHistoryRequest extends $pb.GeneratedMessage {
   void clearPageToken() => clearField(3);
 }
 
-/// Response containing a list of chat messages
 class GetChatHistoryResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetChatHistoryResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..pc<ChatMessage>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'messages', $pb.PbFieldType.PM, subBuilder: ChatMessage.create)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nextPageToken')
+    ..hasRequiredFields = false
+  ;
+
+  GetChatHistoryResponse._() : super();
   factory GetChatHistoryResponse({
     $core.Iterable<ChatMessage>? messages,
     $core.String? nextPageToken,
   }) {
-    final $result = create();
+    final _result = create();
     if (messages != null) {
-      $result.messages.addAll(messages);
+      _result.messages.addAll(messages);
     }
     if (nextPageToken != null) {
-      $result.nextPageToken = nextPageToken;
+      _result.nextPageToken = nextPageToken;
     }
-    return $result;
+    return _result;
   }
-  GetChatHistoryResponse._() : super();
   factory GetChatHistoryResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory GetChatHistoryResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetChatHistoryResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..pc<ChatMessage>(1, _omitFieldNames ? '' : 'messages', $pb.PbFieldType.PM, subBuilder: ChatMessage.create)
-    ..aOS(2, _omitFieldNames ? '' : 'nextPageToken')
-    ..hasRequiredFields = false
-  ;
-
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -442,10 +421,8 @@ class GetChatHistoryResponse extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  GetChatHistoryResponse copyWith(void Function(GetChatHistoryResponse) updates) => super.copyWith((message) => updates(message as GetChatHistoryResponse)) as GetChatHistoryResponse;
-
+  GetChatHistoryResponse copyWith(void Function(GetChatHistoryResponse) updates) => super.copyWith((message) => updates(message as GetChatHistoryResponse)) as GetChatHistoryResponse; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static GetChatHistoryResponse create() => GetChatHistoryResponse._();
   GetChatHistoryResponse createEmptyInstance() => create();
@@ -467,26 +444,24 @@ class GetChatHistoryResponse extends $pb.GeneratedMessage {
   void clearNextPageToken() => clearField(2);
 }
 
-/// Request to initiate streaming for chat history
 class StreamChatHistoryRequest extends $pb.GeneratedMessage {
-  factory StreamChatHistoryRequest({
-    $core.String? peerUserId,
-  }) {
-    final $result = create();
-    if (peerUserId != null) {
-      $result.peerUserId = peerUserId;
-    }
-    return $result;
-  }
-  StreamChatHistoryRequest._() : super();
-  factory StreamChatHistoryRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory StreamChatHistoryRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'StreamChatHistoryRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'peerUserId')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'StreamChatHistoryRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'peerUserId')
     ..hasRequiredFields = false
   ;
 
+  StreamChatHistoryRequest._() : super();
+  factory StreamChatHistoryRequest({
+    $core.String? peerUserId,
+  }) {
+    final _result = create();
+    if (peerUserId != null) {
+      _result.peerUserId = peerUserId;
+    }
+    return _result;
+  }
+  factory StreamChatHistoryRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory StreamChatHistoryRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
@@ -496,10 +471,8 @@ class StreamChatHistoryRequest extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  StreamChatHistoryRequest copyWith(void Function(StreamChatHistoryRequest) updates) => super.copyWith((message) => updates(message as StreamChatHistoryRequest)) as StreamChatHistoryRequest;
-
+  StreamChatHistoryRequest copyWith(void Function(StreamChatHistoryRequest) updates) => super.copyWith((message) => updates(message as StreamChatHistoryRequest)) as StreamChatHistoryRequest; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
-
   @$core.pragma('dart2js:noInline')
   static StreamChatHistoryRequest create() => StreamChatHistoryRequest._();
   StreamChatHistoryRequest createEmptyInstance() => create();
@@ -518,6 +491,3 @@ class StreamChatHistoryRequest extends $pb.GeneratedMessage {
   void clearPeerUserId() => clearField(1);
 }
 
-
-const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
-const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');
