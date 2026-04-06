@@ -909,6 +909,38 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     }
   }
 
+  Future<void> loadSettlementHistory() async {
+    try {
+      if (isClosed) return;
+      emit(GiftCardLoading());
+
+      final result = await _repository.getSettlementHistory();
+      if (isClosed) return;
+
+      result.fold(
+        (failure) => emit(GiftCardNetworkError(
+          message: failure.message,
+          canRetry: true,
+          operation: 'Loading settlement history',
+        )),
+        (settlements) {
+          if (settlements.isEmpty) {
+            emit(const SettlementHistoryLoaded([]));
+          } else {
+            emit(SettlementHistoryLoaded(settlements));
+          }
+        },
+      );
+    } catch (e) {
+      if (isClosed) return;
+      emit(GiftCardNetworkError(
+        message: e.toString(),
+        canRetry: true,
+        operation: 'Loading settlement history',
+      ));
+    }
+  }
+
   // ============================================
   // IMAGE UPLOAD & OCR METHODS
   // ============================================
@@ -962,6 +994,22 @@ class GiftCardCubit extends Cubit<GiftCardState> {
   static bool _isValidEmail(String email) {
     final regex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
     return regex.hasMatch(email);
+  }
+
+  // Get active sell provider (admin only - returns default for now)
+  Future<void> getSellProvider() async {
+    try {
+      emit(SellProviderLoading());
+      // TODO: Implement actual provider fetching from backend
+      // For now, return a default value
+      emit(const SellProviderLoaded(
+        provider: 'manual',
+        description: 'Manual review mode',
+      ));
+    } catch (e) {
+      if (isClosed) return;
+      emit(SellProviderError(e.toString()));
+    }
   }
 
   @override

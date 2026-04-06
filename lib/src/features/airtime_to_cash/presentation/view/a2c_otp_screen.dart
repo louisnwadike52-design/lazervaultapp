@@ -190,42 +190,43 @@ class _A2COTPScreenState extends State<A2COTPScreen>
   }
 
   void _handleOTPVerified(AirtimeToCashOTPVerified state) async {
-    if (phoneNumber == null || amount == null) return;
-
-    final transactionId =
-        'a2c_${DateTime.now().millisecondsSinceEpoch}_${phoneNumber!.replaceAll(RegExp(r'[^\d]'), '')}';
-
-    String? verificationToken;
-
-    final success = await validateTransactionPin(
-      context: context,
-      transactionId: transactionId,
-      transactionType: 'airtime_to_cash',
-      amount: amount!,
-      currency: 'NGN',
-      title: 'Confirm Airtime to Cash',
-      message: 'Confirm airtime to cash conversion',
-      onPinValidated: (token) async {
-        verificationToken = token;
-      },
-    );
-
-    if (!success || verificationToken == null) {
-      if (mounted) setState(() => _isVerifying = false);
+    if (phoneNumber == null || amount == null) {
+      Get.snackbar(
+        'Error',
+        'Missing required information. Please start over.',
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+      Get.until((route) => route.settings.name == AppRoutes.airtimeToCash);
       return;
     }
-    if (!mounted) return;
 
-    // Navigate AFTER modal is dismissed
-    Get.offNamed(AppRoutes.airtimeToCashProcessing, arguments: {
+    // Validate sessionToken and sessionId before proceeding
+    if (state.sessionToken.isEmpty || state.sessionId.isEmpty) {
+      Get.snackbar(
+        'Session Error',
+        'Invalid session received from server. Please try again.',
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+      setState(() => _isVerifying = false);
+      // Go back to review screen to retry
+      Get.back();
+      return;
+    }
+
+    // Navigate to PIN input screen after successful OTP verification
+    // The PIN input screen will collect the SIM Transfer PIN required by Automation API
+    Get.offNamed(AppRoutes.airtimeToCashPinInput, arguments: {
       'phoneNumber': phoneNumber,
       'network': network,
       'amount': amount,
       'rate': rate,
       'estimatedCash': estimatedCash,
       'sessionToken': state.sessionToken,
-      'transactionId': transactionId,
-      'verificationToken': verificationToken!,
+      'sessionId': state.sessionId,
       'sourceAccountId': _sourceAccountId,
     });
   }
@@ -337,7 +338,11 @@ class _A2COTPScreenState extends State<A2COTPScreen>
           child: Column(
             children: [
               _buildHeader(),
-              const A2CStepIndicator(currentStep: 3),
+              const A2CStepIndicator(
+                currentStep: 3,
+                totalSteps: 5,
+                stepLabels: ['Network', 'Details', 'Review', 'Verify', 'PIN'],
+              ),
               Expanded(
                 child: SingleChildScrollView(
                   padding: EdgeInsets.symmetric(horizontal: 20.w),

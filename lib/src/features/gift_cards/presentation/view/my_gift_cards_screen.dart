@@ -501,21 +501,6 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
     );
   }
 
-  String _getStatusText(int index) {
-    switch (index) {
-      case 0:
-        return 'available';
-      case 1:
-        return 'expired';
-      case 2:
-        return 'transferred';
-      case 3:
-        return 'all';
-      default:
-        return '';
-    }
-  }
-
   String _getDisplayStatus(GiftCard card) {
     if (_isExpired(card)) return 'expired';
     if (card.status == 'available') return 'available';

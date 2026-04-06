@@ -1144,11 +1144,13 @@ const RequestAirtimeToCashOTPResponse$json = const {
     const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
     const {'1': 'session_id', '3': 3, '4': 1, '5': 9, '10': 'sessionId'},
     const {'1': 'otp_required', '3': 4, '4': 1, '5': 8, '10': 'otpRequired'},
+    const {'1': 'destination_phone', '3': 5, '4': 1, '5': 9, '10': 'destinationPhone'},
+    const {'1': 'provider_name', '3': 6, '4': 1, '5': 9, '10': 'providerName'},
   ],
 };
 
 /// Descriptor for `RequestAirtimeToCashOTPResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List requestAirtimeToCashOTPResponseDescriptor = $convert.base64Decode('Ch9SZXF1ZXN0QWlydGltZVRvQ2FzaE9UUFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRIdCgpzZXNzaW9uX2lkGAMgASgJUglzZXNzaW9uSWQSIQoMb3RwX3JlcXVpcmVkGAQgASgIUgtvdHBSZXF1aXJlZA==');
+final $typed_data.Uint8List requestAirtimeToCashOTPResponseDescriptor = $convert.base64Decode('Ch9SZXF1ZXN0QWlydGltZVRvQ2FzaE9UUFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRIdCgpzZXNzaW9uX2lkGAMgASgJUglzZXNzaW9uSWQSIQoMb3RwX3JlcXVpcmVkGAQgASgIUgtvdHBSZXF1aXJlZBIrChFkZXN0aW5hdGlvbl9waG9uZRgFIAEoCVIQZGVzdGluYXRpb25QaG9uZRIjCg1wcm92aWRlcl9uYW1lGAYgASgJUgxwcm92aWRlck5hbWU=');
 @$core.Deprecated('Use verifyAirtimeToCashOTPRequestDescriptor instead')
 const VerifyAirtimeToCashOTPRequest$json = const {
   '1': 'VerifyAirtimeToCashOTPRequest',
@@ -1169,11 +1171,12 @@ const VerifyAirtimeToCashOTPResponse$json = const {
     const {'1': 'verified', '3': 1, '4': 1, '5': 8, '10': 'verified'},
     const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
     const {'1': 'session_token', '3': 3, '4': 1, '5': 9, '10': 'sessionToken'},
+    const {'1': 'session_id', '3': 4, '4': 1, '5': 9, '10': 'sessionId'},
   ],
 };
 
 /// Descriptor for `VerifyAirtimeToCashOTPResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List verifyAirtimeToCashOTPResponseDescriptor = $convert.base64Decode('Ch5WZXJpZnlBaXJ0aW1lVG9DYXNoT1RQUmVzcG9uc2USGgoIdmVyaWZpZWQYASABKAhSCHZlcmlmaWVkEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USIwoNc2Vzc2lvbl90b2tlbhgDIAEoCVIMc2Vzc2lvblRva2Vu');
+final $typed_data.Uint8List verifyAirtimeToCashOTPResponseDescriptor = $convert.base64Decode('Ch5WZXJpZnlBaXJ0aW1lVG9DYXNoT1RQUmVzcG9uc2USGgoIdmVyaWZpZWQYASABKAhSCHZlcmlmaWVkEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USIwoNc2Vzc2lvbl90b2tlbhgDIAEoCVIMc2Vzc2lvblRva2VuEh0KCnNlc3Npb25faWQYBCABKAlSCXNlc3Npb25JZA==');
 @$core.Deprecated('Use convertAirtimeToCashRequestDescriptor instead')
 const ConvertAirtimeToCashRequest$json = const {
   '1': 'ConvertAirtimeToCashRequest',
@@ -1182,14 +1185,16 @@ const ConvertAirtimeToCashRequest$json = const {
     const {'1': 'network', '3': 2, '4': 1, '5': 9, '10': 'network'},
     const {'1': 'amount', '3': 3, '4': 1, '5': 1, '10': 'amount'},
     const {'1': 'session_token', '3': 4, '4': 1, '5': 9, '10': 'sessionToken'},
-    const {'1': 'transaction_id', '3': 5, '4': 1, '5': 9, '10': 'transactionId'},
-    const {'1': 'verification_token', '3': 6, '4': 1, '5': 9, '10': 'verificationToken'},
-    const {'1': 'idempotency_key', '3': 7, '4': 1, '5': 9, '10': 'idempotencyKey'},
+    const {'1': 'session_id', '3': 5, '4': 1, '5': 9, '10': 'sessionId'},
+    const {'1': 'pin', '3': 6, '4': 1, '5': 9, '10': 'pin'},
+    const {'1': 'transaction_id', '3': 7, '4': 1, '5': 9, '10': 'transactionId'},
+    const {'1': 'verification_token', '3': 8, '4': 1, '5': 9, '10': 'verificationToken'},
+    const {'1': 'idempotency_key', '3': 9, '4': 1, '5': 9, '10': 'idempotencyKey'},
   ],
 };
 
 /// Descriptor for `ConvertAirtimeToCashRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List convertAirtimeToCashRequestDescriptor = $convert.base64Decode('ChtDb252ZXJ0QWlydGltZVRvQ2FzaFJlcXVlc3QSIQoMcGhvbmVfbnVtYmVyGAEgASgJUgtwaG9uZU51bWJlchIYCgduZXR3b3JrGAIgASgJUgduZXR3b3JrEhYKBmFtb3VudBgDIAEoAVIGYW1vdW50EiMKDXNlc3Npb25fdG9rZW4YBCABKAlSDHNlc3Npb25Ub2tlbhIlCg50cmFuc2FjdGlvbl9pZBgFIAEoCVINdHJhbnNhY3Rpb25JZBItChJ2ZXJpZmljYXRpb25fdG9rZW4YBiABKAlSEXZlcmlmaWNhdGlvblRva2VuEicKD2lkZW1wb3RlbmN5X2tleRgHIAEoCVIOaWRlbXBvdGVuY3lLZXk=');
+final $typed_data.Uint8List convertAirtimeToCashRequestDescriptor = $convert.base64Decode('ChtDb252ZXJ0QWlydGltZVRvQ2FzaFJlcXVlc3QSIQoMcGhvbmVfbnVtYmVyGAEgASgJUgtwaG9uZU51bWJlchIYCgduZXR3b3JrGAIgASgJUgduZXR3b3JrEhYKBmFtb3VudBgDIAEoAVIGYW1vdW50EiMKDXNlc3Npb25fdG9rZW4YBCABKAlSDHNlc3Npb25Ub2tlbhIdCgpzZXNzaW9uX2lkGAUgASgJUglzZXNzaW9uSWQSEAoDcGluGAYgASgJUgNwaW4SJQoOdHJhbnNhY3Rpb25faWQYByABKAlSDXRyYW5zYWN0aW9uSWQSLQoSdmVyaWZpY2F0aW9uX3Rva2VuGAggASgJUhF2ZXJpZmljYXRpb25Ub2tlbhInCg9pZGVtcG90ZW5jeV9rZXkYCSABKAlSDmlkZW1wb3RlbmN5S2V5');
 @$core.Deprecated('Use convertAirtimeToCashResponseDescriptor instead')
 const ConvertAirtimeToCashResponse$json = const {
   '1': 'ConvertAirtimeToCashResponse',
@@ -1253,3 +1258,87 @@ const GetAirtimeToCashHistoryResponse$json = const {
 
 /// Descriptor for `GetAirtimeToCashHistoryResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getAirtimeToCashHistoryResponseDescriptor = $convert.base64Decode('Ch9HZXRBaXJ0aW1lVG9DYXNoSGlzdG9yeVJlc3BvbnNlEkoKC2NvbnZlcnNpb25zGAEgAygLMigudXRpbGl0eXBheW1lbnRzLkFpcnRpbWVUb0Nhc2hDb252ZXJzaW9uUgtjb252ZXJzaW9ucxIfCgt0b3RhbF9jb3VudBgCIAEoA1IKdG90YWxDb3VudA==');
+@$core.Deprecated('Use verifyAirtimeToCashServiceRequestDescriptor instead')
+const VerifyAirtimeToCashServiceRequest$json = const {
+  '1': 'VerifyAirtimeToCashServiceRequest',
+  '2': const [
+    const {'1': 'network', '3': 1, '4': 1, '5': 9, '10': 'network'},
+  ],
+};
+
+/// Descriptor for `VerifyAirtimeToCashServiceRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List verifyAirtimeToCashServiceRequestDescriptor = $convert.base64Decode('CiFWZXJpZnlBaXJ0aW1lVG9DYXNoU2VydmljZVJlcXVlc3QSGAoHbmV0d29yaxgBIAEoCVIHbmV0d29yaw==');
+@$core.Deprecated('Use verifyAirtimeToCashServiceResponseDescriptor instead')
+const VerifyAirtimeToCashServiceResponse$json = const {
+  '1': 'VerifyAirtimeToCashServiceResponse',
+  '2': const [
+    const {'1': 'is_available', '3': 1, '4': 1, '5': 8, '10': 'isAvailable'},
+    const {'1': 'provider_name', '3': 2, '4': 1, '5': 9, '10': 'providerName'},
+    const {'1': 'destination_phone', '3': 3, '4': 1, '5': 9, '10': 'destinationPhone'},
+    const {'1': 'message', '3': 4, '4': 1, '5': 9, '10': 'message'},
+    const {'1': 'network', '3': 5, '4': 1, '5': 9, '10': 'network'},
+    const {'1': 'requires_transfer', '3': 6, '4': 1, '5': 8, '10': 'requiresTransfer'},
+  ],
+};
+
+/// Descriptor for `VerifyAirtimeToCashServiceResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List verifyAirtimeToCashServiceResponseDescriptor = $convert.base64Decode('CiJWZXJpZnlBaXJ0aW1lVG9DYXNoU2VydmljZVJlc3BvbnNlEiEKDGlzX2F2YWlsYWJsZRgBIAEoCFILaXNBdmFpbGFibGUSIwoNcHJvdmlkZXJfbmFtZRgCIAEoCVIMcHJvdmlkZXJOYW1lEisKEWRlc3RpbmF0aW9uX3Bob25lGAMgASgJUhBkZXN0aW5hdGlvblBob25lEhgKB21lc3NhZ2UYBCABKAlSB21lc3NhZ2USGAoHbmV0d29yaxgFIAEoCVIHbmV0d29yaxIrChFyZXF1aXJlc190cmFuc2ZlchgGIAEoCFIQcmVxdWlyZXNUcmFuc2Zlcg==');
+@$core.Deprecated('Use getAirtimeToCashProviderInfoRequestDescriptor instead')
+const GetAirtimeToCashProviderInfoRequest$json = const {
+  '1': 'GetAirtimeToCashProviderInfoRequest',
+};
+
+/// Descriptor for `GetAirtimeToCashProviderInfoRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getAirtimeToCashProviderInfoRequestDescriptor = $convert.base64Decode('CiNHZXRBaXJ0aW1lVG9DYXNoUHJvdmlkZXJJbmZvUmVxdWVzdA==');
+@$core.Deprecated('Use getAirtimeToCashProviderInfoResponseDescriptor instead')
+const GetAirtimeToCashProviderInfoResponse$json = const {
+  '1': 'GetAirtimeToCashProviderInfoResponse',
+  '2': const [
+    const {'1': 'provider_name', '3': 1, '4': 1, '5': 9, '10': 'providerName'},
+    const {'1': 'requires_otp', '3': 2, '4': 1, '5': 8, '10': 'requiresOtp'},
+    const {'1': 'requires_transfer', '3': 3, '4': 1, '5': 8, '10': 'requiresTransfer'},
+    const {'1': 'display_name', '3': 4, '4': 1, '5': 9, '10': 'displayName'},
+    const {'1': 'providers', '3': 5, '4': 3, '5': 11, '6': '.utilitypayments.ProviderStatus', '10': 'providers'},
+  ],
+};
+
+/// Descriptor for `GetAirtimeToCashProviderInfoResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getAirtimeToCashProviderInfoResponseDescriptor = $convert.base64Decode('CiRHZXRBaXJ0aW1lVG9DYXNoUHJvdmlkZXJJbmZvUmVzcG9uc2USIwoNcHJvdmlkZXJfbmFtZRgBIAEoCVIMcHJvdmlkZXJOYW1lEiEKDHJlcXVpcmVzX290cBgCIAEoCFILcmVxdWlyZXNPdHASKwoRcmVxdWlyZXNfdHJhbnNmZXIYAyABKAhSEHJlcXVpcmVzVHJhbnNmZXISIQoMZGlzcGxheV9uYW1lGAQgASgJUgtkaXNwbGF5TmFtZRI9Cglwcm92aWRlcnMYBSADKAsyHy51dGlsaXR5cGF5bWVudHMuUHJvdmlkZXJTdGF0dXNSCXByb3ZpZGVycw==');
+@$core.Deprecated('Use providerStatusDescriptor instead')
+const ProviderStatus$json = const {
+  '1': 'ProviderStatus',
+  '2': const [
+    const {'1': 'name', '3': 1, '4': 1, '5': 9, '10': 'name'},
+    const {'1': 'display_name', '3': 2, '4': 1, '5': 9, '10': 'displayName'},
+    const {'1': 'is_active', '3': 3, '4': 1, '5': 8, '10': 'isActive'},
+    const {'1': 'is_healthy', '3': 4, '4': 1, '5': 8, '10': 'isHealthy'},
+    const {'1': 'network_count', '3': 5, '4': 1, '5': 5, '10': 'networkCount'},
+    const {'1': 'error_message', '3': 6, '4': 1, '5': 9, '10': 'errorMessage'},
+  ],
+};
+
+/// Descriptor for `ProviderStatus`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List providerStatusDescriptor = $convert.base64Decode('Cg5Qcm92aWRlclN0YXR1cxISCgRuYW1lGAEgASgJUgRuYW1lEiEKDGRpc3BsYXlfbmFtZRgCIAEoCVILZGlzcGxheU5hbWUSGwoJaXNfYWN0aXZlGAMgASgIUghpc0FjdGl2ZRIdCgppc19oZWFsdGh5GAQgASgIUglpc0hlYWx0aHkSIwoNbmV0d29ya19jb3VudBgFIAEoBVIMbmV0d29ya0NvdW50EiMKDWVycm9yX21lc3NhZ2UYBiABKAlSDGVycm9yTWVzc2FnZQ==');
+@$core.Deprecated('Use checkAirtimeToCashQuotaRequestDescriptor instead')
+const CheckAirtimeToCashQuotaRequest$json = const {
+  '1': 'CheckAirtimeToCashQuotaRequest',
+  '2': const [
+    const {'1': 'network', '3': 1, '4': 1, '5': 9, '10': 'network'},
+    const {'1': 'amount', '3': 2, '4': 1, '5': 1, '10': 'amount'},
+  ],
+};
+
+/// Descriptor for `CheckAirtimeToCashQuotaRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List checkAirtimeToCashQuotaRequestDescriptor = $convert.base64Decode('Ch5DaGVja0FpcnRpbWVUb0Nhc2hRdW90YVJlcXVlc3QSGAoHbmV0d29yaxgBIAEoCVIHbmV0d29yaxIWCgZhbW91bnQYAiABKAFSBmFtb3VudA==');
+@$core.Deprecated('Use checkAirtimeToCashQuotaResponseDescriptor instead')
+const CheckAirtimeToCashQuotaResponse$json = const {
+  '1': 'CheckAirtimeToCashQuotaResponse',
+  '2': const [
+    const {'1': 'available', '3': 1, '4': 1, '5': 8, '10': 'available'},
+    const {'1': 'max_amount', '3': 2, '4': 1, '5': 1, '10': 'maxAmount'},
+    const {'1': 'message', '3': 3, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `CheckAirtimeToCashQuotaResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List checkAirtimeToCashQuotaResponseDescriptor = $convert.base64Decode('Ch9DaGVja0FpcnRpbWVUb0Nhc2hRdW90YVJlc3BvbnNlEhwKCWF2YWlsYWJsZRgBIAEoCFIJYXZhaWxhYmxlEh0KCm1heF9hbW91bnQYAiABKAFSCW1heEFtb3VudBIYCgdtZXNzYWdlGAMgASgJUgdtZXNzYWdl');

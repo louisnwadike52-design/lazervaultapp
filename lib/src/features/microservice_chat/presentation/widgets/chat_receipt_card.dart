@@ -532,14 +532,19 @@ class _ChatReceiptCardState extends State<ChatReceiptCard> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    r.reference,
-                    style: const TextStyle(
-                      color: Color(0xFF6B7280),
-                      fontSize: 11,
-                      fontFamily: 'monospace',
+                  Expanded(
+                    child: Text(
+                      r.reference,
+                      style: const TextStyle(
+                        color: Color(0xFF6B7280),
+                        fontSize: 11,
+                        fontFamily: 'monospace',
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                   ),
+                  const SizedBox(width: 8),
                   Text(
                     DateFormat('HH:mm').format(r.timestamp.toLocal()),
                     style: const TextStyle(

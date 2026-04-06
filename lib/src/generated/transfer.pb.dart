@@ -10,7 +10,7 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $1;
+import 'google/protobuf/timestamp.pb.dart' as $48;
 
 import 'transfer.pbenum.dart';
 
@@ -27,7 +27,7 @@ class TransferTransaction extends $pb.GeneratedMessage {
     ..e<TransferType>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transferType', $pb.PbFieldType.OE, defaultOrMaker: TransferType.TRANSFER_TYPE_UNSPECIFIED, valueOf: TransferType.valueOf, enumValues: TransferType.values)
     ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category')
     ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..aOM<$1.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $48.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -42,7 +42,7 @@ class TransferTransaction extends $pb.GeneratedMessage {
     TransferType? transferType,
     $core.String? category,
     $core.String? description,
-    $1.Timestamp? createdAt,
+    $48.Timestamp? createdAt,
   }) {
     final _result = create();
     if (transactionId != null) {
@@ -180,15 +180,15 @@ class TransferTransaction extends $pb.GeneratedMessage {
   void clearDescription() => clearField(9);
 
   @$pb.TagNumber(10)
-  $1.Timestamp get createdAt => $_getN(9);
+  $48.Timestamp get createdAt => $_getN(9);
   @$pb.TagNumber(10)
-  set createdAt($1.Timestamp v) { setField(10, v); }
+  set createdAt($48.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasCreatedAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearCreatedAt() => clearField(10);
   @$pb.TagNumber(10)
-  $1.Timestamp ensureCreatedAt() => $_ensure(9);
+  $48.Timestamp ensureCreatedAt() => $_ensure(9);
 }
 
 class InitiateTransferRequest extends $pb.GeneratedMessage {
@@ -357,7 +357,7 @@ class InitiateTransferResponse extends $pb.GeneratedMessage {
     ..a<$fixnum.Int64>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..a<$fixnum.Int64>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fee', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..a<$fixnum.Int64>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOM<$1.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $48.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -368,7 +368,7 @@ class InitiateTransferResponse extends $pb.GeneratedMessage {
     $fixnum.Int64? amount,
     $fixnum.Int64? fee,
     $fixnum.Int64? totalAmount,
-    $1.Timestamp? createdAt,
+    $48.Timestamp? createdAt,
   }) {
     final _result = create();
     if (transferId != null) {
@@ -458,27 +458,27 @@ class InitiateTransferResponse extends $pb.GeneratedMessage {
   void clearTotalAmount() => clearField(5);
 
   @$pb.TagNumber(6)
-  $1.Timestamp get createdAt => $_getN(5);
+  $48.Timestamp get createdAt => $_getN(5);
   @$pb.TagNumber(6)
-  set createdAt($1.Timestamp v) { setField(6, v); }
+  set createdAt($48.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasCreatedAt() => $_has(5);
   @$pb.TagNumber(6)
   void clearCreatedAt() => clearField(6);
   @$pb.TagNumber(6)
-  $1.Timestamp ensureCreatedAt() => $_ensure(5);
+  $48.Timestamp ensureCreatedAt() => $_ensure(5);
 }
 
 class TimeSeriesPoint extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'TimeSeriesPoint', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOM<$1.Timestamp>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'timestamp', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'timestamp', subBuilder: $48.Timestamp.create)
     ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
     ..hasRequiredFields = false
   ;
 
   TimeSeriesPoint._() : super();
   factory TimeSeriesPoint({
-    $1.Timestamp? timestamp,
+    $48.Timestamp? timestamp,
     $core.double? amount,
   }) {
     final _result = create();
@@ -512,15 +512,15 @@ class TimeSeriesPoint extends $pb.GeneratedMessage {
   static TimeSeriesPoint? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.Timestamp get timestamp => $_getN(0);
+  $48.Timestamp get timestamp => $_getN(0);
   @$pb.TagNumber(1)
-  set timestamp($1.Timestamp v) { setField(1, v); }
+  set timestamp($48.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasTimestamp() => $_has(0);
   @$pb.TagNumber(1)
   void clearTimestamp() => clearField(1);
   @$pb.TagNumber(1)
-  $1.Timestamp ensureTimestamp() => $_ensure(0);
+  $48.Timestamp ensureTimestamp() => $_ensure(0);
 
   @$pb.TagNumber(2)
   $core.double get amount => $_getN(1);
@@ -1030,10 +1030,10 @@ class GetTransferDetailsResponse extends $pb.GeneratedMessage {
     ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
     ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reference')
     ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category')
-    ..aOM<$1.Timestamp>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'created_at', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'created_at', subBuilder: $48.Timestamp.create)
     ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'scheduled_at')
-    ..aOM<$1.Timestamp>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completed_at', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failed_at', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completed_at', subBuilder: $48.Timestamp.create)
+    ..aOM<$48.Timestamp>(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failed_at', subBuilder: $48.Timestamp.create)
     ..aOS(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failure_reason')
     ..hasRequiredFields = false
   ;
@@ -1052,10 +1052,10 @@ class GetTransferDetailsResponse extends $pb.GeneratedMessage {
     $core.String? status,
     $core.String? reference,
     $core.String? category,
-    $1.Timestamp? createdAt,
+    $48.Timestamp? createdAt,
     $core.String? scheduledAt,
-    $1.Timestamp? completedAt,
-    $1.Timestamp? failedAt,
+    $48.Timestamp? completedAt,
+    $48.Timestamp? failedAt,
     $core.String? failureReason,
   }) {
     final _result = create();
@@ -1242,15 +1242,15 @@ class GetTransferDetailsResponse extends $pb.GeneratedMessage {
   void clearCategory() => clearField(12);
 
   @$pb.TagNumber(13)
-  $1.Timestamp get createdAt => $_getN(12);
+  $48.Timestamp get createdAt => $_getN(12);
   @$pb.TagNumber(13)
-  set createdAt($1.Timestamp v) { setField(13, v); }
+  set createdAt($48.Timestamp v) { setField(13, v); }
   @$pb.TagNumber(13)
   $core.bool hasCreatedAt() => $_has(12);
   @$pb.TagNumber(13)
   void clearCreatedAt() => clearField(13);
   @$pb.TagNumber(13)
-  $1.Timestamp ensureCreatedAt() => $_ensure(12);
+  $48.Timestamp ensureCreatedAt() => $_ensure(12);
 
   @$pb.TagNumber(14)
   $core.String get scheduledAt => $_getSZ(13);
@@ -1262,26 +1262,26 @@ class GetTransferDetailsResponse extends $pb.GeneratedMessage {
   void clearScheduledAt() => clearField(14);
 
   @$pb.TagNumber(15)
-  $1.Timestamp get completedAt => $_getN(14);
+  $48.Timestamp get completedAt => $_getN(14);
   @$pb.TagNumber(15)
-  set completedAt($1.Timestamp v) { setField(15, v); }
+  set completedAt($48.Timestamp v) { setField(15, v); }
   @$pb.TagNumber(15)
   $core.bool hasCompletedAt() => $_has(14);
   @$pb.TagNumber(15)
   void clearCompletedAt() => clearField(15);
   @$pb.TagNumber(15)
-  $1.Timestamp ensureCompletedAt() => $_ensure(14);
+  $48.Timestamp ensureCompletedAt() => $_ensure(14);
 
   @$pb.TagNumber(16)
-  $1.Timestamp get failedAt => $_getN(15);
+  $48.Timestamp get failedAt => $_getN(15);
   @$pb.TagNumber(16)
-  set failedAt($1.Timestamp v) { setField(16, v); }
+  set failedAt($48.Timestamp v) { setField(16, v); }
   @$pb.TagNumber(16)
   $core.bool hasFailedAt() => $_has(15);
   @$pb.TagNumber(16)
   void clearFailedAt() => clearField(16);
   @$pb.TagNumber(16)
-  $1.Timestamp ensureFailedAt() => $_ensure(15);
+  $48.Timestamp ensureFailedAt() => $_ensure(15);
 
   @$pb.TagNumber(17)
   $core.String get failureReason => $_getSZ(16);

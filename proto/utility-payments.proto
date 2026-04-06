@@ -296,6 +296,26 @@ service UtilityPaymentsService {
       get: "/api/v1/bills/airtime-to-cash/history"
     };
   }
+
+  rpc VerifyAirtimeToCashService(VerifyAirtimeToCashServiceRequest) returns (VerifyAirtimeToCashServiceResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/airtime-to-cash/verify"
+      body: "*"
+    };
+  }
+
+  rpc GetAirtimeToCashProviderInfo(GetAirtimeToCashProviderInfoRequest) returns (GetAirtimeToCashProviderInfoResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/airtime-to-cash/provider"
+    };
+  }
+
+  rpc CheckAirtimeToCashQuota(CheckAirtimeToCashQuotaRequest) returns (CheckAirtimeToCashQuotaResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/airtime-to-cash/checkquota"
+      body: "*"
+    };
+  }
 }
 
 // ===== MODELS =====
@@ -1005,6 +1025,8 @@ message RequestAirtimeToCashOTPResponse {
   string message = 2;
   string session_id = 3;
   bool otp_required = 4;
+  string destination_phone = 5;  // VTU Africa: phone to transfer airtime to
+  string provider_name = 6;      // "airtimetocash" or "vtuafrica"
 }
 
 message VerifyAirtimeToCashOTPRequest {
@@ -1018,6 +1040,7 @@ message VerifyAirtimeToCashOTPResponse {
   bool verified = 1;
   string message = 2;
   string session_token = 3;
+  string session_id = 4;  // Session ID for transfer (required for Automation API)
 }
 
 message ConvertAirtimeToCashRequest {
@@ -1025,9 +1048,11 @@ message ConvertAirtimeToCashRequest {
   string network = 2;
   double amount = 3;
   string session_token = 4;
-  string transaction_id = 5;
-  string verification_token = 6;
-  string idempotency_key = 7;
+  string session_id = 5;     // Session ID from OTP verification (required for Automation API)
+  string pin = 6;           // SIM Transfer PIN (required for Automation API)
+  string transaction_id = 7;
+  string verification_token = 8;
+  string idempotency_key = 9;
 }
 
 message ConvertAirtimeToCashResponse {
@@ -1067,4 +1092,47 @@ message GetAirtimeToCashHistoryRequest {
 message GetAirtimeToCashHistoryResponse {
   repeated AirtimeToCashConversion conversions = 1;
   int64 total_count = 2;
+}
+
+message VerifyAirtimeToCashServiceRequest {
+  string network = 1;  // "MTN", "AIRTEL", "GLO", "9MOBILE"
+}
+
+message VerifyAirtimeToCashServiceResponse {
+  bool is_available = 1;
+  string provider_name = 2;       // "airtimetocash" or "vtuafrica"
+  string destination_phone = 3;   // VTU Africa: phone to transfer airtime to
+  string message = 4;
+  string network = 5;
+  bool requires_transfer = 6;     // VTU Africa: true, Automation: false
+}
+
+message GetAirtimeToCashProviderInfoRequest {}
+
+message GetAirtimeToCashProviderInfoResponse {
+  string provider_name = 1;  // "airtimetocash" or "vtuafrica"
+  bool requires_otp = 2;     // Automation: true, VTU Africa: false
+  bool requires_transfer = 3; // Automation: false, VTU Africa: true
+  string display_name = 4;
+  repeated ProviderStatus providers = 5;
+}
+
+message ProviderStatus {
+  string name = 1;           // "airtimetocash" or "vtuafrica"
+  string display_name = 2;
+  bool is_active = 3;
+  bool is_healthy = 4;
+  int32 network_count = 5;
+  string error_message = 6;
+}
+
+message CheckAirtimeToCashQuotaRequest {
+  string network = 1;  // "MTN", "AIRTEL", "GLO", "9MOBILE"
+  double amount = 2;
+}
+
+message CheckAirtimeToCashQuotaResponse {
+  bool available = 1;
+  double max_amount = 2;
+  string message = 3;
 }

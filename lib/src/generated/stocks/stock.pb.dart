@@ -9,7 +9,7 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import '../google/protobuf/timestamp.pb.dart' as $1;
+import '../google/protobuf/timestamp.pb.dart' as $48;
 
 import 'stock.pbenum.dart';
 
@@ -17,7 +17,7 @@ export 'stock.pbenum.dart';
 
 class PricePoint extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'PricePoint', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'stockspb'), createEmptyInstance: create)
-    ..aOM<$1.Timestamp>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'timestamp', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'timestamp', subBuilder: $48.Timestamp.create)
     ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'open', $pb.PbFieldType.OD)
     ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'high', $pb.PbFieldType.OD)
     ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'low', $pb.PbFieldType.OD)
@@ -28,7 +28,7 @@ class PricePoint extends $pb.GeneratedMessage {
 
   PricePoint._() : super();
   factory PricePoint({
-    $1.Timestamp? timestamp,
+    $48.Timestamp? timestamp,
     $core.double? open,
     $core.double? high,
     $core.double? low,
@@ -78,15 +78,15 @@ class PricePoint extends $pb.GeneratedMessage {
   static PricePoint? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $1.Timestamp get timestamp => $_getN(0);
+  $48.Timestamp get timestamp => $_getN(0);
   @$pb.TagNumber(1)
-  set timestamp($1.Timestamp v) { setField(1, v); }
+  set timestamp($48.Timestamp v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasTimestamp() => $_has(0);
   @$pb.TagNumber(1)
   void clearTimestamp() => clearField(1);
   @$pb.TagNumber(1)
-  $1.Timestamp ensureTimestamp() => $_ensure(0);
+  $48.Timestamp ensureTimestamp() => $_ensure(0);
 
   @$pb.TagNumber(2)
   $core.double get open => $_getN(1);
@@ -152,7 +152,7 @@ class StockMessage extends $pb.GeneratedMessage {
     ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'industry')
     ..aOS(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'logoUrl')
     ..pc<PricePoint>(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'priceHistory', $pb.PbFieldType.PM, subBuilder: PricePoint.create)
-    ..aOM<$1.Timestamp>(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastUpdated', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastUpdated', subBuilder: $48.Timestamp.create)
     ..a<$core.double>(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'weekHigh52', $pb.PbFieldType.OD, protoName: 'week_high_52')
     ..a<$core.double>(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'weekLow52', $pb.PbFieldType.OD, protoName: 'week_low_52')
     ..a<$core.double>(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'avgVolume', $pb.PbFieldType.OD)
@@ -182,7 +182,7 @@ class StockMessage extends $pb.GeneratedMessage {
     $core.String? industry,
     $core.String? logoUrl,
     $core.Iterable<PricePoint>? priceHistory,
-    $1.Timestamp? lastUpdated,
+    $48.Timestamp? lastUpdated,
     $core.double? weekHigh52,
     $core.double? weekLow52,
     $core.double? avgVolume,
@@ -430,15 +430,15 @@ class StockMessage extends $pb.GeneratedMessage {
   $core.List<PricePoint> get priceHistory => $_getList(15);
 
   @$pb.TagNumber(17)
-  $1.Timestamp get lastUpdated => $_getN(16);
+  $48.Timestamp get lastUpdated => $_getN(16);
   @$pb.TagNumber(17)
-  set lastUpdated($1.Timestamp v) { setField(17, v); }
+  set lastUpdated($48.Timestamp v) { setField(17, v); }
   @$pb.TagNumber(17)
   $core.bool hasLastUpdated() => $_has(16);
   @$pb.TagNumber(17)
   void clearLastUpdated() => clearField(17);
   @$pb.TagNumber(17)
-  $1.Timestamp ensureLastUpdated() => $_ensure(16);
+  $48.Timestamp ensureLastUpdated() => $_ensure(16);
 
   @$pb.TagNumber(18)
   $core.double get weekHigh52 => $_getN(17);
@@ -524,7 +524,7 @@ class PortfolioMessage extends $pb.GeneratedMessage {
     ..a<$core.double>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dayChange', $pb.PbFieldType.OD)
     ..a<$core.double>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dayChangePercent', $pb.PbFieldType.OD)
     ..pc<HoldingMessage>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'holdings', $pb.PbFieldType.PM, subBuilder: HoldingMessage.create)
-    ..aOM<$1.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastUpdated', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastUpdated', subBuilder: $48.Timestamp.create)
     ..a<$core.double>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'availableCash', $pb.PbFieldType.OD)
     ..a<$core.double>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalInvested', $pb.PbFieldType.OD)
     ..hasRequiredFields = false
@@ -541,7 +541,7 @@ class PortfolioMessage extends $pb.GeneratedMessage {
     $core.double? dayChange,
     $core.double? dayChangePercent,
     $core.Iterable<HoldingMessage>? holdings,
-    $1.Timestamp? lastUpdated,
+    $48.Timestamp? lastUpdated,
     $core.double? availableCash,
     $core.double? totalInvested,
   }) {
@@ -681,15 +681,15 @@ class PortfolioMessage extends $pb.GeneratedMessage {
   $core.List<HoldingMessage> get holdings => $_getList(8);
 
   @$pb.TagNumber(10)
-  $1.Timestamp get lastUpdated => $_getN(9);
+  $48.Timestamp get lastUpdated => $_getN(9);
   @$pb.TagNumber(10)
-  set lastUpdated($1.Timestamp v) { setField(10, v); }
+  set lastUpdated($48.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasLastUpdated() => $_has(9);
   @$pb.TagNumber(10)
   void clearLastUpdated() => clearField(10);
   @$pb.TagNumber(10)
-  $1.Timestamp ensureLastUpdated() => $_ensure(9);
+  $48.Timestamp ensureLastUpdated() => $_ensure(9);
 
   @$pb.TagNumber(11)
   $core.double get availableCash => $_getN(10);
@@ -723,7 +723,7 @@ class HoldingMessage extends $pb.GeneratedMessage {
     ..a<$core.double>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalReturnPercent', $pb.PbFieldType.OD)
     ..a<$core.double>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dayChange', $pb.PbFieldType.OD)
     ..a<$core.double>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dayChangePercent', $pb.PbFieldType.OD)
-    ..aOM<$1.Timestamp>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'purchaseDate', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'purchaseDate', subBuilder: $48.Timestamp.create)
     ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'logoUrl')
     ..hasRequiredFields = false
   ;
@@ -741,7 +741,7 @@ class HoldingMessage extends $pb.GeneratedMessage {
     $core.double? totalReturnPercent,
     $core.double? dayChange,
     $core.double? dayChangePercent,
-    $1.Timestamp? purchaseDate,
+    $48.Timestamp? purchaseDate,
     $core.String? logoUrl,
   }) {
     final _result = create();
@@ -907,15 +907,15 @@ class HoldingMessage extends $pb.GeneratedMessage {
   void clearDayChangePercent() => clearField(11);
 
   @$pb.TagNumber(12)
-  $1.Timestamp get purchaseDate => $_getN(11);
+  $48.Timestamp get purchaseDate => $_getN(11);
   @$pb.TagNumber(12)
-  set purchaseDate($1.Timestamp v) { setField(12, v); }
+  set purchaseDate($48.Timestamp v) { setField(12, v); }
   @$pb.TagNumber(12)
   $core.bool hasPurchaseDate() => $_has(11);
   @$pb.TagNumber(12)
   void clearPurchaseDate() => clearField(12);
   @$pb.TagNumber(12)
-  $1.Timestamp ensurePurchaseDate() => $_ensure(11);
+  $48.Timestamp ensurePurchaseDate() => $_ensure(11);
 
   @$pb.TagNumber(13)
   $core.String get logoUrl => $_getSZ(12);
@@ -937,8 +937,8 @@ class OrderMessage extends $pb.GeneratedMessage {
     ..a<$core.int>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'quantity', $pb.PbFieldType.O3)
     ..a<$core.double>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'price', $pb.PbFieldType.OD)
     ..e<OrderStatus>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: OrderStatus.ORDER_STATUS_UNSPECIFIED, valueOf: OrderStatus.valueOf, enumValues: OrderStatus.values)
-    ..aOM<$1.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'executedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $48.Timestamp.create)
+    ..aOM<$48.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'executedAt', subBuilder: $48.Timestamp.create)
     ..a<$core.double>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'executedPrice', $pb.PbFieldType.OD)
     ..a<$core.int>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'executedQuantity', $pb.PbFieldType.O3)
     ..a<$core.double>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fees', $pb.PbFieldType.OD)
@@ -957,8 +957,8 @@ class OrderMessage extends $pb.GeneratedMessage {
     $core.int? quantity,
     $core.double? price,
     OrderStatus? status,
-    $1.Timestamp? createdAt,
-    $1.Timestamp? executedAt,
+    $48.Timestamp? createdAt,
+    $48.Timestamp? executedAt,
     $core.double? executedPrice,
     $core.int? executedQuantity,
     $core.double? fees,
@@ -1107,26 +1107,26 @@ class OrderMessage extends $pb.GeneratedMessage {
   void clearStatus() => clearField(8);
 
   @$pb.TagNumber(9)
-  $1.Timestamp get createdAt => $_getN(8);
+  $48.Timestamp get createdAt => $_getN(8);
   @$pb.TagNumber(9)
-  set createdAt($1.Timestamp v) { setField(9, v); }
+  set createdAt($48.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasCreatedAt() => $_has(8);
   @$pb.TagNumber(9)
   void clearCreatedAt() => clearField(9);
   @$pb.TagNumber(9)
-  $1.Timestamp ensureCreatedAt() => $_ensure(8);
+  $48.Timestamp ensureCreatedAt() => $_ensure(8);
 
   @$pb.TagNumber(10)
-  $1.Timestamp get executedAt => $_getN(9);
+  $48.Timestamp get executedAt => $_getN(9);
   @$pb.TagNumber(10)
-  set executedAt($1.Timestamp v) { setField(10, v); }
+  set executedAt($48.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasExecutedAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearExecutedAt() => clearField(10);
   @$pb.TagNumber(10)
-  $1.Timestamp ensureExecutedAt() => $_ensure(9);
+  $48.Timestamp ensureExecutedAt() => $_ensure(9);
 
   @$pb.TagNumber(11)
   $core.double get executedPrice => $_getN(10);
@@ -1180,8 +1180,8 @@ class WatchlistMessage extends $pb.GeneratedMessage {
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
     ..pc<WatchlistStockMessage>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'stocks', $pb.PbFieldType.PM, subBuilder: WatchlistStockMessage.create)
-    ..aOM<$1.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $48.Timestamp.create)
+    ..aOM<$48.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $48.Timestamp.create)
     ..aOB(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isDefault')
     ..hasRequiredFields = false
   ;
@@ -1192,8 +1192,8 @@ class WatchlistMessage extends $pb.GeneratedMessage {
     $core.String? userId,
     $core.String? name,
     $core.Iterable<WatchlistStockMessage>? stocks,
-    $1.Timestamp? createdAt,
-    $1.Timestamp? updatedAt,
+    $48.Timestamp? createdAt,
+    $48.Timestamp? updatedAt,
     $core.bool? isDefault,
   }) {
     final _result = create();
@@ -1272,26 +1272,26 @@ class WatchlistMessage extends $pb.GeneratedMessage {
   $core.List<WatchlistStockMessage> get stocks => $_getList(3);
 
   @$pb.TagNumber(5)
-  $1.Timestamp get createdAt => $_getN(4);
+  $48.Timestamp get createdAt => $_getN(4);
   @$pb.TagNumber(5)
-  set createdAt($1.Timestamp v) { setField(5, v); }
+  set createdAt($48.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasCreatedAt() => $_has(4);
   @$pb.TagNumber(5)
   void clearCreatedAt() => clearField(5);
   @$pb.TagNumber(5)
-  $1.Timestamp ensureCreatedAt() => $_ensure(4);
+  $48.Timestamp ensureCreatedAt() => $_ensure(4);
 
   @$pb.TagNumber(6)
-  $1.Timestamp get updatedAt => $_getN(5);
+  $48.Timestamp get updatedAt => $_getN(5);
   @$pb.TagNumber(6)
-  set updatedAt($1.Timestamp v) { setField(6, v); }
+  set updatedAt($48.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasUpdatedAt() => $_has(5);
   @$pb.TagNumber(6)
   void clearUpdatedAt() => clearField(6);
   @$pb.TagNumber(6)
-  $1.Timestamp ensureUpdatedAt() => $_ensure(5);
+  $48.Timestamp ensureUpdatedAt() => $_ensure(5);
 
   @$pb.TagNumber(7)
   $core.bool get isDefault => $_getBF(6);
@@ -1309,7 +1309,7 @@ class WatchlistStockMessage extends $pb.GeneratedMessage {
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
     ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentPrice', $pb.PbFieldType.OD)
     ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'changePercent', $pb.PbFieldType.OD)
-    ..aOM<$1.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'addedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'addedAt', subBuilder: $48.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -1319,7 +1319,7 @@ class WatchlistStockMessage extends $pb.GeneratedMessage {
     $core.String? name,
     $core.double? currentPrice,
     $core.double? changePercent,
-    $1.Timestamp? addedAt,
+    $48.Timestamp? addedAt,
   }) {
     final _result = create();
     if (symbol != null) {
@@ -1397,15 +1397,15 @@ class WatchlistStockMessage extends $pb.GeneratedMessage {
   void clearChangePercent() => clearField(4);
 
   @$pb.TagNumber(5)
-  $1.Timestamp get addedAt => $_getN(4);
+  $48.Timestamp get addedAt => $_getN(4);
   @$pb.TagNumber(5)
-  set addedAt($1.Timestamp v) { setField(5, v); }
+  set addedAt($48.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasAddedAt() => $_has(4);
   @$pb.TagNumber(5)
   void clearAddedAt() => clearField(5);
   @$pb.TagNumber(5)
-  $1.Timestamp ensureAddedAt() => $_ensure(4);
+  $48.Timestamp ensureAddedAt() => $_ensure(4);
 }
 
 class MarketIndexMessage extends $pb.GeneratedMessage {
@@ -1415,7 +1415,7 @@ class MarketIndexMessage extends $pb.GeneratedMessage {
     ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'value', $pb.PbFieldType.OD)
     ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'change', $pb.PbFieldType.OD)
     ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'changePercent', $pb.PbFieldType.OD)
-    ..aOM<$1.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastUpdated', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastUpdated', subBuilder: $48.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -1426,7 +1426,7 @@ class MarketIndexMessage extends $pb.GeneratedMessage {
     $core.double? value,
     $core.double? change,
     $core.double? changePercent,
-    $1.Timestamp? lastUpdated,
+    $48.Timestamp? lastUpdated,
   }) {
     final _result = create();
     if (symbol != null) {
@@ -1516,15 +1516,15 @@ class MarketIndexMessage extends $pb.GeneratedMessage {
   void clearChangePercent() => clearField(5);
 
   @$pb.TagNumber(6)
-  $1.Timestamp get lastUpdated => $_getN(5);
+  $48.Timestamp get lastUpdated => $_getN(5);
   @$pb.TagNumber(6)
-  set lastUpdated($1.Timestamp v) { setField(6, v); }
+  set lastUpdated($48.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasLastUpdated() => $_has(5);
   @$pb.TagNumber(6)
   void clearLastUpdated() => clearField(6);
   @$pb.TagNumber(6)
-  $1.Timestamp ensureLastUpdated() => $_ensure(5);
+  $48.Timestamp ensureLastUpdated() => $_ensure(5);
 }
 
 class StocksPaginationInfo extends $pb.GeneratedMessage {
@@ -4295,9 +4295,9 @@ class GetMarketStatusResponse extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetMarketStatusResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'stockspb'), createEmptyInstance: create)
     ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isOpen')
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'tradingSession')
-    ..aOM<$1.Timestamp>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nextOpen', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nextClose', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'timestamp', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nextOpen', subBuilder: $48.Timestamp.create)
+    ..aOM<$48.Timestamp>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nextClose', subBuilder: $48.Timestamp.create)
+    ..aOM<$48.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'timestamp', subBuilder: $48.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -4305,9 +4305,9 @@ class GetMarketStatusResponse extends $pb.GeneratedMessage {
   factory GetMarketStatusResponse({
     $core.bool? isOpen,
     $core.String? tradingSession,
-    $1.Timestamp? nextOpen,
-    $1.Timestamp? nextClose,
-    $1.Timestamp? timestamp,
+    $48.Timestamp? nextOpen,
+    $48.Timestamp? nextClose,
+    $48.Timestamp? timestamp,
   }) {
     final _result = create();
     if (isOpen != null) {
@@ -4367,37 +4367,37 @@ class GetMarketStatusResponse extends $pb.GeneratedMessage {
   void clearTradingSession() => clearField(2);
 
   @$pb.TagNumber(3)
-  $1.Timestamp get nextOpen => $_getN(2);
+  $48.Timestamp get nextOpen => $_getN(2);
   @$pb.TagNumber(3)
-  set nextOpen($1.Timestamp v) { setField(3, v); }
+  set nextOpen($48.Timestamp v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasNextOpen() => $_has(2);
   @$pb.TagNumber(3)
   void clearNextOpen() => clearField(3);
   @$pb.TagNumber(3)
-  $1.Timestamp ensureNextOpen() => $_ensure(2);
+  $48.Timestamp ensureNextOpen() => $_ensure(2);
 
   @$pb.TagNumber(4)
-  $1.Timestamp get nextClose => $_getN(3);
+  $48.Timestamp get nextClose => $_getN(3);
   @$pb.TagNumber(4)
-  set nextClose($1.Timestamp v) { setField(4, v); }
+  set nextClose($48.Timestamp v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasNextClose() => $_has(3);
   @$pb.TagNumber(4)
   void clearNextClose() => clearField(4);
   @$pb.TagNumber(4)
-  $1.Timestamp ensureNextClose() => $_ensure(3);
+  $48.Timestamp ensureNextClose() => $_ensure(3);
 
   @$pb.TagNumber(5)
-  $1.Timestamp get timestamp => $_getN(4);
+  $48.Timestamp get timestamp => $_getN(4);
   @$pb.TagNumber(5)
-  set timestamp($1.Timestamp v) { setField(5, v); }
+  set timestamp($48.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasTimestamp() => $_has(4);
   @$pb.TagNumber(5)
   void clearTimestamp() => clearField(5);
   @$pb.TagNumber(5)
-  $1.Timestamp ensureTimestamp() => $_ensure(4);
+  $48.Timestamp ensureTimestamp() => $_ensure(4);
 }
 
 class MarketNewsMessage extends $pb.GeneratedMessage {
@@ -4408,7 +4408,7 @@ class MarketNewsMessage extends $pb.GeneratedMessage {
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'source')
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'url')
     ..pPS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'symbols')
-    ..aOM<$1.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'publishedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'publishedAt', subBuilder: $48.Timestamp.create)
     ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'imageUrl')
     ..hasRequiredFields = false
   ;
@@ -4421,7 +4421,7 @@ class MarketNewsMessage extends $pb.GeneratedMessage {
     $core.String? source,
     $core.String? url,
     $core.Iterable<$core.String>? symbols,
-    $1.Timestamp? publishedAt,
+    $48.Timestamp? publishedAt,
     $core.String? imageUrl,
   }) {
     final _result = create();
@@ -4521,15 +4521,15 @@ class MarketNewsMessage extends $pb.GeneratedMessage {
   $core.List<$core.String> get symbols => $_getList(5);
 
   @$pb.TagNumber(7)
-  $1.Timestamp get publishedAt => $_getN(6);
+  $48.Timestamp get publishedAt => $_getN(6);
   @$pb.TagNumber(7)
-  set publishedAt($1.Timestamp v) { setField(7, v); }
+  set publishedAt($48.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasPublishedAt() => $_has(6);
   @$pb.TagNumber(7)
   void clearPublishedAt() => clearField(7);
   @$pb.TagNumber(7)
-  $1.Timestamp ensurePublishedAt() => $_ensure(6);
+  $48.Timestamp ensurePublishedAt() => $_ensure(6);
 
   @$pb.TagNumber(8)
   $core.String get imageUrl => $_getSZ(7);
@@ -4659,8 +4659,8 @@ class PriceAlertMessage extends $pb.GeneratedMessage {
     ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetValue', $pb.PbFieldType.OD)
     ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isActive')
     ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isTriggered')
-    ..aOM<$1.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'triggeredAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $48.Timestamp.create)
+    ..aOM<$48.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'triggeredAt', subBuilder: $48.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -4672,8 +4672,8 @@ class PriceAlertMessage extends $pb.GeneratedMessage {
     $core.double? targetValue,
     $core.bool? isActive,
     $core.bool? isTriggered,
-    $1.Timestamp? createdAt,
-    $1.Timestamp? triggeredAt,
+    $48.Timestamp? createdAt,
+    $48.Timestamp? triggeredAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -4778,26 +4778,26 @@ class PriceAlertMessage extends $pb.GeneratedMessage {
   void clearIsTriggered() => clearField(6);
 
   @$pb.TagNumber(7)
-  $1.Timestamp get createdAt => $_getN(6);
+  $48.Timestamp get createdAt => $_getN(6);
   @$pb.TagNumber(7)
-  set createdAt($1.Timestamp v) { setField(7, v); }
+  set createdAt($48.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasCreatedAt() => $_has(6);
   @$pb.TagNumber(7)
   void clearCreatedAt() => clearField(7);
   @$pb.TagNumber(7)
-  $1.Timestamp ensureCreatedAt() => $_ensure(6);
+  $48.Timestamp ensureCreatedAt() => $_ensure(6);
 
   @$pb.TagNumber(8)
-  $1.Timestamp get triggeredAt => $_getN(7);
+  $48.Timestamp get triggeredAt => $_getN(7);
   @$pb.TagNumber(8)
-  set triggeredAt($1.Timestamp v) { setField(8, v); }
+  set triggeredAt($48.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasTriggeredAt() => $_has(7);
   @$pb.TagNumber(8)
   void clearTriggeredAt() => clearField(8);
   @$pb.TagNumber(8)
-  $1.Timestamp ensureTriggeredAt() => $_ensure(7);
+  $48.Timestamp ensureTriggeredAt() => $_ensure(7);
 }
 
 class CreatePriceAlertRequest extends $pb.GeneratedMessage {

@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -120,13 +119,32 @@ class _A2CReviewScreenState extends State<A2CReviewScreen>
     setState(() => _isOTPRequestInProgress = false);
 
     if (state.sessionId.isEmpty) {
-      _showError('Failed to initiate verification. Please try again.');
+      _showError('Failed to initiate verification. Session ID is empty. Please try again.');
+      setState(() => _isProcessing = false);
+      return;
+    }
+
+    // Validate required fields before navigation
+    if (phoneNumber == null || phoneNumber!.isEmpty) {
+      _showError('Phone number is missing. Please try again.');
+      setState(() => _isProcessing = false);
+      return;
+    }
+
+    if (network == null || network!.isEmpty) {
+      _showError('Network provider is missing. Please try again.');
+      setState(() => _isProcessing = false);
+      return;
+    }
+
+    if (amount == null || amount! <= 0) {
+      _showError('Invalid amount. Please try again.');
       setState(() => _isProcessing = false);
       return;
     }
 
     if (state.otpRequired) {
-      // Navigate to OTP screen
+      // Navigate to OTP screen (which will then navigate to PIN input)
       Get.toNamed(AppRoutes.airtimeToCashOTP, arguments: {
         'phoneNumber': phoneNumber,
         'network': network,
@@ -138,132 +156,26 @@ class _A2CReviewScreenState extends State<A2CReviewScreen>
       });
       setState(() => _isProcessing = false);
     } else {
-      // OTP not required — use sessionId as session token directly
-      _proceedWithPinValidation(state.sessionId, state.sessionId);
-    }
-  }
-
-  Future<void> _proceedWithPinValidation(
-      String sessionId, String sessionToken) async {
-    final transactionId =
-        'a2c_${DateTime.now().millisecondsSinceEpoch}_${phoneNumber!.replaceAll(RegExp(r'[^\d]'), '')}';
-
-    String? verificationToken;
-
-    final success = await validateTransactionPin(
-      context: context,
-      transactionId: transactionId,
-      transactionType: 'airtime_to_cash',
-      amount: amount!,
-      currency: 'NGN',
-      title: 'Confirm Conversion',
-      message: 'Confirm airtime to cash conversion',
-      onPinValidated: (token) async {
-        verificationToken = token;
-      },
-    );
-
-    if (!success || verificationToken == null) {
-      if (mounted) {
-        setState(() {
-          _isProcessing = false;
-          _isOTPRequestInProgress = false;
-        });
+      // OTP not required — navigate directly to PIN input screen
+      // Use sessionId as sessionToken for Automation API
+      if (state.sessionId.isEmpty) {
+        _showError('Session ID is empty. Please try again.');
+        setState(() => _isProcessing = false);
+        return;
       }
-      return;
-    }
-    if (!mounted) return;
 
-    // Execute conversion AFTER modal is dismissed
-    final cubit = context.read<AirtimeToCashCubit>();
-    final completer = Completer<void>();
-    StreamSubscription<AirtimeToCashState>? subscription;
-
-    subscription = cubit.stream.listen((s) {
-      if (s is AirtimeToCashSuccess) {
-        subscription?.cancel();
-        if (mounted) {
-          Get.offNamed(AppRoutes.airtimeToCashProcessing, arguments: {
-            'phoneNumber': phoneNumber,
-            'network': network,
-            'amount': amount,
-            'rate': rate,
-            'estimatedCash': estimatedCash,
-            'sessionToken': sessionToken,
-            'transactionId': transactionId,
-            'verificationToken': verificationToken,
-            'sourceAccountId': _selectedAccountId,
-            'isAlreadyProcessed': true,
-            'conversion': s.conversion,
-            'newBalance': s.newBalance,
-          });
-        }
-        if (!completer.isCompleted) completer.complete();
-      } else if (s is AirtimeToCashProcessingPending) {
-        subscription?.cancel();
-        if (mounted) {
-          Get.offNamed(AppRoutes.airtimeToCashProcessing, arguments: {
-            'phoneNumber': phoneNumber,
-            'network': network,
-            'amount': amount,
-            'rate': rate,
-            'estimatedCash': estimatedCash,
-            'sessionToken': sessionToken,
-            'transactionId': transactionId,
-            'verificationToken': verificationToken,
-            'sourceAccountId': _selectedAccountId,
-            'isAlreadyProcessed': true,
-            'isProcessingPending': true,
-            'conversion': s.conversion,
-            'message': s.message,
-          });
-        }
-        if (!completer.isCompleted) completer.complete();
-      } else if (s is AirtimeToCashFailed) {
-        subscription?.cancel();
-        if (mounted) {
-          Get.snackbar('Conversion Failed', s.message,
-              backgroundColor: const Color(0xFFEF4444), colorText: Colors.white,
-              snackPosition: SnackPosition.TOP);
-          setState(() {
-            _isProcessing = false;
-            _isOTPRequestInProgress = false;
-          });
-        }
-        if (!completer.isCompleted) {
-          completer.completeError(Exception(s.message));
-        }
-      }
-    });
-
-    cubit.processConversion(
-      phoneNumber: phoneNumber!,
-      network: network!,
-      amount: amount!,
-      sessionToken: sessionToken,
-      transactionId: transactionId,
-      verificationToken: verificationToken!,
-      sourceAccountId: _selectedAccountId,
-    );
-
-    try {
-      await completer.future.timeout(
-        const Duration(seconds: 90),
-        onTimeout: () {
-          subscription?.cancel();
-          if (mounted) {
-            Get.snackbar('Timeout', 'Request timed out. Check your conversion history.',
-                backgroundColor: const Color(0xFFFB923C), colorText: Colors.white,
-                snackPosition: SnackPosition.TOP);
-            setState(() {
-              _isProcessing = false;
-              _isOTPRequestInProgress = false;
-            });
-          }
-        },
-      );
-    } catch (_) {
-      // Error already handled in stream listener
+      Get.toNamed(AppRoutes.airtimeToCashPinInput, arguments: {
+        'phoneNumber': phoneNumber,
+        'network': network,
+        'amount': amount,
+        'rate': rate,
+        'estimatedCash': estimatedCash,
+        'sessionToken': state.sessionId,
+        'sessionId': state.sessionId,
+        'sourceAccountId': _selectedAccountId,
+        'skipOTP': true, // Flag to indicate OTP was skipped
+      });
+      setState(() => _isProcessing = false);
     }
   }
 
@@ -484,7 +396,11 @@ class _A2CReviewScreenState extends State<A2CReviewScreen>
             child: Column(
               children: [
                 _buildHeader(),
-                const A2CStepIndicator(currentStep: 2),
+                const A2CStepIndicator(
+                  currentStep: 2,
+                  totalSteps: 5,
+                  stepLabels: ['Network', 'Details', 'Review', 'Verify', 'PIN'],
+                ),
                 Expanded(
                   child: SingleChildScrollView(
                     padding: EdgeInsets.symmetric(horizontal: 20.w),

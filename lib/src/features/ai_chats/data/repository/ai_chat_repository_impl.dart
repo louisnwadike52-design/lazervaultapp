@@ -140,8 +140,22 @@ class AiChatRepositoryImpl implements IAiChatRepository {
               Map<String, dynamic>? receiptData;
               if (role == 'assistant') {
                 final metadata = entry['metadata'];
-                if (metadata is Map && metadata.containsKey('receipt_data')) {
-                  final rd = metadata['receipt_data'];
+
+                // Parse metadata if it's a JSON string (stored as string in DB)
+                Map<String, dynamic>? parsedMetadata;
+                if (metadata is Map) {
+                  parsedMetadata = Map<String, dynamic>.from(metadata);
+                } else if (metadata is String && metadata.isNotEmpty) {
+                  try {
+                    parsedMetadata = jsonDecode(metadata) as Map<String, dynamic>;
+                  } catch (_) {
+                    parsedMetadata = null;
+                  }
+                }
+
+                // Extract receipt_data from parsed metadata
+                if (parsedMetadata != null && parsedMetadata.containsKey('receipt_data')) {
+                  final rd = parsedMetadata['receipt_data'];
                   if (rd is Map) {
                     receiptData = Map<String, dynamic>.from(rd);
                   } else if (rd is String) {

@@ -2813,29 +2813,28 @@ class GiftCardSale extends $pb.GeneratedMessage {
     ..aOS(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'submittedAt')
     ..aOS(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reviewedAt')
     ..aOS(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paidAt')
-    ..aOS(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payoutError')
-    ..aOS(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt')
-    ..aOS(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt')
-    ..pPS(21, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'imageUrls')
-    ..aOS(22, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'ocrBrand')
-    ..aOS(23, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'ocrCardNumber')
-    ..aOS(24, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'ocrPin')
-    ..a<$core.double>(25, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'ocrDenomination', $pb.PbFieldType.OD)
-    ..aOS(26, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'ocrCurrency')
-    ..aOS(27, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'adminReviewerId')
-    ..aOS(28, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'rejectionReason')
-    ..aOS(29, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'adminNotes')
-    ..aOS(30, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cardPin')
-    ..a<$core.double>(31, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'exitRatePercent', $pb.PbFieldType.OD)
-    ..a<$core.double>(32, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'baseMarginPercent', $pb.PbFieldType.OD)
-    ..a<$core.double>(33, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'riskBufferPercent', $pb.PbFieldType.OD)
-    ..a<$core.double>(34, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'commissionAmount', $pb.PbFieldType.OD)
-    ..a<$core.int>(35, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'riskScore', $pb.PbFieldType.O3)
-    ..aOS(36, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'riskLevel')
-    ..pPS(37, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'riskFlags')
-    ..aOS(38, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'riskAction')
-    ..aOS(39, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cardCountry')
-    ..aOS(40, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cardFormat')
+    ..aOS(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt')
+    ..aOS(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt')
+    ..pPS(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'imageUrls')
+    ..aOS(21, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'ocrBrand')
+    ..aOS(22, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'ocrCardNumber')
+    ..aOS(23, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'ocrPin')
+    ..a<$core.double>(24, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'ocrDenomination', $pb.PbFieldType.OD)
+    ..aOS(25, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'ocrCurrency')
+    ..aOS(26, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'adminReviewerId')
+    ..aOS(27, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'rejectionReason')
+    ..aOS(28, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'adminNotes')
+    ..aOS(29, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cardPin')
+    ..a<$core.double>(30, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'exitRatePercent', $pb.PbFieldType.OD)
+    ..a<$core.double>(31, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'baseMarginPercent', $pb.PbFieldType.OD)
+    ..a<$core.double>(32, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'riskBufferPercent', $pb.PbFieldType.OD)
+    ..a<$core.double>(33, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'commissionAmount', $pb.PbFieldType.OD)
+    ..a<$core.int>(34, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'riskScore', $pb.PbFieldType.O3)
+    ..aOS(35, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'riskLevel')
+    ..pPS(36, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'riskFlags')
+    ..aOS(37, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'riskAction')
+    ..aOS(38, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cardCountry')
+    ..aOS(39, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cardFormat')
     ..hasRequiredFields = false
   ;
 
@@ -2858,7 +2857,6 @@ class GiftCardSale extends $pb.GeneratedMessage {
     $core.String? submittedAt,
     $core.String? reviewedAt,
     $core.String? paidAt,
-    $core.String? payoutError,
     $core.String? createdAt,
     $core.String? updatedAt,
     $core.Iterable<$core.String>? imageUrls,
@@ -2933,9 +2931,6 @@ class GiftCardSale extends $pb.GeneratedMessage {
     }
     if (paidAt != null) {
       _result.paidAt = paidAt;
-    }
-    if (payoutError != null) {
-      _result.payoutError = payoutError;
     }
     if (createdAt != null) {
       _result.createdAt = createdAt;
@@ -3180,199 +3175,190 @@ class GiftCardSale extends $pb.GeneratedMessage {
   void clearPaidAt() => clearField(17);
 
   @$pb.TagNumber(18)
-  $core.String get payoutError => $_getSZ(17);
+  $core.String get createdAt => $_getSZ(17);
   @$pb.TagNumber(18)
-  set payoutError($core.String v) { $_setString(17, v); }
+  set createdAt($core.String v) { $_setString(17, v); }
   @$pb.TagNumber(18)
-  $core.bool hasPayoutError() => $_has(17);
+  $core.bool hasCreatedAt() => $_has(17);
   @$pb.TagNumber(18)
-  void clearPayoutError() => clearField(18);
+  void clearCreatedAt() => clearField(18);
 
   @$pb.TagNumber(19)
-  $core.String get createdAt => $_getSZ(18);
+  $core.String get updatedAt => $_getSZ(18);
   @$pb.TagNumber(19)
-  set createdAt($core.String v) { $_setString(18, v); }
+  set updatedAt($core.String v) { $_setString(18, v); }
   @$pb.TagNumber(19)
-  $core.bool hasCreatedAt() => $_has(18);
+  $core.bool hasUpdatedAt() => $_has(18);
   @$pb.TagNumber(19)
-  void clearCreatedAt() => clearField(19);
+  void clearUpdatedAt() => clearField(19);
 
   @$pb.TagNumber(20)
-  $core.String get updatedAt => $_getSZ(19);
-  @$pb.TagNumber(20)
-  set updatedAt($core.String v) { $_setString(19, v); }
-  @$pb.TagNumber(20)
-  $core.bool hasUpdatedAt() => $_has(19);
-  @$pb.TagNumber(20)
-  void clearUpdatedAt() => clearField(20);
+  $core.List<$core.String> get imageUrls => $_getList(19);
 
   @$pb.TagNumber(21)
-  $core.List<$core.String> get imageUrls => $_getList(20);
+  $core.String get ocrBrand => $_getSZ(20);
+  @$pb.TagNumber(21)
+  set ocrBrand($core.String v) { $_setString(20, v); }
+  @$pb.TagNumber(21)
+  $core.bool hasOcrBrand() => $_has(20);
+  @$pb.TagNumber(21)
+  void clearOcrBrand() => clearField(21);
 
   @$pb.TagNumber(22)
-  $core.String get ocrBrand => $_getSZ(21);
+  $core.String get ocrCardNumber => $_getSZ(21);
   @$pb.TagNumber(22)
-  set ocrBrand($core.String v) { $_setString(21, v); }
+  set ocrCardNumber($core.String v) { $_setString(21, v); }
   @$pb.TagNumber(22)
-  $core.bool hasOcrBrand() => $_has(21);
+  $core.bool hasOcrCardNumber() => $_has(21);
   @$pb.TagNumber(22)
-  void clearOcrBrand() => clearField(22);
+  void clearOcrCardNumber() => clearField(22);
 
   @$pb.TagNumber(23)
-  $core.String get ocrCardNumber => $_getSZ(22);
+  $core.String get ocrPin => $_getSZ(22);
   @$pb.TagNumber(23)
-  set ocrCardNumber($core.String v) { $_setString(22, v); }
+  set ocrPin($core.String v) { $_setString(22, v); }
   @$pb.TagNumber(23)
-  $core.bool hasOcrCardNumber() => $_has(22);
+  $core.bool hasOcrPin() => $_has(22);
   @$pb.TagNumber(23)
-  void clearOcrCardNumber() => clearField(23);
+  void clearOcrPin() => clearField(23);
 
   @$pb.TagNumber(24)
-  $core.String get ocrPin => $_getSZ(23);
+  $core.double get ocrDenomination => $_getN(23);
   @$pb.TagNumber(24)
-  set ocrPin($core.String v) { $_setString(23, v); }
+  set ocrDenomination($core.double v) { $_setDouble(23, v); }
   @$pb.TagNumber(24)
-  $core.bool hasOcrPin() => $_has(23);
+  $core.bool hasOcrDenomination() => $_has(23);
   @$pb.TagNumber(24)
-  void clearOcrPin() => clearField(24);
+  void clearOcrDenomination() => clearField(24);
 
   @$pb.TagNumber(25)
-  $core.double get ocrDenomination => $_getN(24);
+  $core.String get ocrCurrency => $_getSZ(24);
   @$pb.TagNumber(25)
-  set ocrDenomination($core.double v) { $_setDouble(24, v); }
+  set ocrCurrency($core.String v) { $_setString(24, v); }
   @$pb.TagNumber(25)
-  $core.bool hasOcrDenomination() => $_has(24);
+  $core.bool hasOcrCurrency() => $_has(24);
   @$pb.TagNumber(25)
-  void clearOcrDenomination() => clearField(25);
+  void clearOcrCurrency() => clearField(25);
 
   @$pb.TagNumber(26)
-  $core.String get ocrCurrency => $_getSZ(25);
+  $core.String get adminReviewerId => $_getSZ(25);
   @$pb.TagNumber(26)
-  set ocrCurrency($core.String v) { $_setString(25, v); }
+  set adminReviewerId($core.String v) { $_setString(25, v); }
   @$pb.TagNumber(26)
-  $core.bool hasOcrCurrency() => $_has(25);
+  $core.bool hasAdminReviewerId() => $_has(25);
   @$pb.TagNumber(26)
-  void clearOcrCurrency() => clearField(26);
+  void clearAdminReviewerId() => clearField(26);
 
   @$pb.TagNumber(27)
-  $core.String get adminReviewerId => $_getSZ(26);
+  $core.String get rejectionReason => $_getSZ(26);
   @$pb.TagNumber(27)
-  set adminReviewerId($core.String v) { $_setString(26, v); }
+  set rejectionReason($core.String v) { $_setString(26, v); }
   @$pb.TagNumber(27)
-  $core.bool hasAdminReviewerId() => $_has(26);
+  $core.bool hasRejectionReason() => $_has(26);
   @$pb.TagNumber(27)
-  void clearAdminReviewerId() => clearField(27);
+  void clearRejectionReason() => clearField(27);
 
   @$pb.TagNumber(28)
-  $core.String get rejectionReason => $_getSZ(27);
+  $core.String get adminNotes => $_getSZ(27);
   @$pb.TagNumber(28)
-  set rejectionReason($core.String v) { $_setString(27, v); }
+  set adminNotes($core.String v) { $_setString(27, v); }
   @$pb.TagNumber(28)
-  $core.bool hasRejectionReason() => $_has(27);
+  $core.bool hasAdminNotes() => $_has(27);
   @$pb.TagNumber(28)
-  void clearRejectionReason() => clearField(28);
+  void clearAdminNotes() => clearField(28);
 
   @$pb.TagNumber(29)
-  $core.String get adminNotes => $_getSZ(28);
+  $core.String get cardPin => $_getSZ(28);
   @$pb.TagNumber(29)
-  set adminNotes($core.String v) { $_setString(28, v); }
+  set cardPin($core.String v) { $_setString(28, v); }
   @$pb.TagNumber(29)
-  $core.bool hasAdminNotes() => $_has(28);
+  $core.bool hasCardPin() => $_has(28);
   @$pb.TagNumber(29)
-  void clearAdminNotes() => clearField(29);
+  void clearCardPin() => clearField(29);
 
   @$pb.TagNumber(30)
-  $core.String get cardPin => $_getSZ(29);
+  $core.double get exitRatePercent => $_getN(29);
   @$pb.TagNumber(30)
-  set cardPin($core.String v) { $_setString(29, v); }
+  set exitRatePercent($core.double v) { $_setDouble(29, v); }
   @$pb.TagNumber(30)
-  $core.bool hasCardPin() => $_has(29);
+  $core.bool hasExitRatePercent() => $_has(29);
   @$pb.TagNumber(30)
-  void clearCardPin() => clearField(30);
+  void clearExitRatePercent() => clearField(30);
 
   @$pb.TagNumber(31)
-  $core.double get exitRatePercent => $_getN(30);
+  $core.double get baseMarginPercent => $_getN(30);
   @$pb.TagNumber(31)
-  set exitRatePercent($core.double v) { $_setDouble(30, v); }
+  set baseMarginPercent($core.double v) { $_setDouble(30, v); }
   @$pb.TagNumber(31)
-  $core.bool hasExitRatePercent() => $_has(30);
+  $core.bool hasBaseMarginPercent() => $_has(30);
   @$pb.TagNumber(31)
-  void clearExitRatePercent() => clearField(31);
+  void clearBaseMarginPercent() => clearField(31);
 
   @$pb.TagNumber(32)
-  $core.double get baseMarginPercent => $_getN(31);
+  $core.double get riskBufferPercent => $_getN(31);
   @$pb.TagNumber(32)
-  set baseMarginPercent($core.double v) { $_setDouble(31, v); }
+  set riskBufferPercent($core.double v) { $_setDouble(31, v); }
   @$pb.TagNumber(32)
-  $core.bool hasBaseMarginPercent() => $_has(31);
+  $core.bool hasRiskBufferPercent() => $_has(31);
   @$pb.TagNumber(32)
-  void clearBaseMarginPercent() => clearField(32);
+  void clearRiskBufferPercent() => clearField(32);
 
   @$pb.TagNumber(33)
-  $core.double get riskBufferPercent => $_getN(32);
+  $core.double get commissionAmount => $_getN(32);
   @$pb.TagNumber(33)
-  set riskBufferPercent($core.double v) { $_setDouble(32, v); }
+  set commissionAmount($core.double v) { $_setDouble(32, v); }
   @$pb.TagNumber(33)
-  $core.bool hasRiskBufferPercent() => $_has(32);
+  $core.bool hasCommissionAmount() => $_has(32);
   @$pb.TagNumber(33)
-  void clearRiskBufferPercent() => clearField(33);
+  void clearCommissionAmount() => clearField(33);
 
   @$pb.TagNumber(34)
-  $core.double get commissionAmount => $_getN(33);
+  $core.int get riskScore => $_getIZ(33);
   @$pb.TagNumber(34)
-  set commissionAmount($core.double v) { $_setDouble(33, v); }
+  set riskScore($core.int v) { $_setSignedInt32(33, v); }
   @$pb.TagNumber(34)
-  $core.bool hasCommissionAmount() => $_has(33);
+  $core.bool hasRiskScore() => $_has(33);
   @$pb.TagNumber(34)
-  void clearCommissionAmount() => clearField(34);
+  void clearRiskScore() => clearField(34);
 
   @$pb.TagNumber(35)
-  $core.int get riskScore => $_getIZ(34);
+  $core.String get riskLevel => $_getSZ(34);
   @$pb.TagNumber(35)
-  set riskScore($core.int v) { $_setSignedInt32(34, v); }
+  set riskLevel($core.String v) { $_setString(34, v); }
   @$pb.TagNumber(35)
-  $core.bool hasRiskScore() => $_has(34);
+  $core.bool hasRiskLevel() => $_has(34);
   @$pb.TagNumber(35)
-  void clearRiskScore() => clearField(35);
+  void clearRiskLevel() => clearField(35);
 
   @$pb.TagNumber(36)
-  $core.String get riskLevel => $_getSZ(35);
-  @$pb.TagNumber(36)
-  set riskLevel($core.String v) { $_setString(35, v); }
-  @$pb.TagNumber(36)
-  $core.bool hasRiskLevel() => $_has(35);
-  @$pb.TagNumber(36)
-  void clearRiskLevel() => clearField(36);
+  $core.List<$core.String> get riskFlags => $_getList(35);
 
   @$pb.TagNumber(37)
-  $core.List<$core.String> get riskFlags => $_getList(36);
+  $core.String get riskAction => $_getSZ(36);
+  @$pb.TagNumber(37)
+  set riskAction($core.String v) { $_setString(36, v); }
+  @$pb.TagNumber(37)
+  $core.bool hasRiskAction() => $_has(36);
+  @$pb.TagNumber(37)
+  void clearRiskAction() => clearField(37);
 
   @$pb.TagNumber(38)
-  $core.String get riskAction => $_getSZ(37);
+  $core.String get cardCountry => $_getSZ(37);
   @$pb.TagNumber(38)
-  set riskAction($core.String v) { $_setString(37, v); }
+  set cardCountry($core.String v) { $_setString(37, v); }
   @$pb.TagNumber(38)
-  $core.bool hasRiskAction() => $_has(37);
+  $core.bool hasCardCountry() => $_has(37);
   @$pb.TagNumber(38)
-  void clearRiskAction() => clearField(38);
+  void clearCardCountry() => clearField(38);
 
   @$pb.TagNumber(39)
-  $core.String get cardCountry => $_getSZ(38);
+  $core.String get cardFormat => $_getSZ(38);
   @$pb.TagNumber(39)
-  set cardCountry($core.String v) { $_setString(38, v); }
+  set cardFormat($core.String v) { $_setString(38, v); }
   @$pb.TagNumber(39)
-  $core.bool hasCardCountry() => $_has(38);
+  $core.bool hasCardFormat() => $_has(38);
   @$pb.TagNumber(39)
-  void clearCardCountry() => clearField(39);
-
-  @$pb.TagNumber(40)
-  $core.String get cardFormat => $_getSZ(39);
-  @$pb.TagNumber(40)
-  set cardFormat($core.String v) { $_setString(39, v); }
-  @$pb.TagNumber(40)
-  $core.bool hasCardFormat() => $_has(39);
-  @$pb.TagNumber(40)
-  void clearCardFormat() => clearField(40);
+  void clearCardFormat() => clearField(39);
 }
 
 class GetSellableCardsRequest extends $pb.GeneratedMessage {
@@ -3587,6 +3573,96 @@ class GetSellRateResponse extends $pb.GeneratedMessage {
   SellRate ensureRate() => $_ensure(0);
 }
 
+class GetSellProviderRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetSellProviderRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'giftcards'), createEmptyInstance: create)
+    ..hasRequiredFields = false
+  ;
+
+  GetSellProviderRequest._() : super();
+  factory GetSellProviderRequest() => create();
+  factory GetSellProviderRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetSellProviderRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetSellProviderRequest clone() => GetSellProviderRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetSellProviderRequest copyWith(void Function(GetSellProviderRequest) updates) => super.copyWith((message) => updates(message as GetSellProviderRequest)) as GetSellProviderRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetSellProviderRequest create() => GetSellProviderRequest._();
+  GetSellProviderRequest createEmptyInstance() => create();
+  static $pb.PbList<GetSellProviderRequest> createRepeated() => $pb.PbList<GetSellProviderRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetSellProviderRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetSellProviderRequest>(create);
+  static GetSellProviderRequest? _defaultInstance;
+}
+
+class GetSellProviderResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetSellProviderResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'giftcards'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'provider')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
+    ..hasRequiredFields = false
+  ;
+
+  GetSellProviderResponse._() : super();
+  factory GetSellProviderResponse({
+    $core.String? provider,
+    $core.String? description,
+  }) {
+    final _result = create();
+    if (provider != null) {
+      _result.provider = provider;
+    }
+    if (description != null) {
+      _result.description = description;
+    }
+    return _result;
+  }
+  factory GetSellProviderResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetSellProviderResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetSellProviderResponse clone() => GetSellProviderResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetSellProviderResponse copyWith(void Function(GetSellProviderResponse) updates) => super.copyWith((message) => updates(message as GetSellProviderResponse)) as GetSellProviderResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetSellProviderResponse create() => GetSellProviderResponse._();
+  GetSellProviderResponse createEmptyInstance() => create();
+  static $pb.PbList<GetSellProviderResponse> createRepeated() => $pb.PbList<GetSellProviderResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetSellProviderResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetSellProviderResponse>(create);
+  static GetSellProviderResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get provider => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set provider($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasProvider() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearProvider() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get description => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set description($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasDescription() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearDescription() => clearField(2);
+}
+
 class SellGiftCardRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SellGiftCardRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'giftcards'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cardType')
@@ -3608,7 +3684,6 @@ class SellGiftCardRequest extends $pb.GeneratedMessage {
     ..aOS(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'ocrCurrency')
     ..aOS(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cardCountry')
     ..aOS(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cardFormat')
-    ..a<$core.double>(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'ocrConfidence', $pb.PbFieldType.OD)
     ..hasRequiredFields = false
   ;
 
@@ -3633,7 +3708,6 @@ class SellGiftCardRequest extends $pb.GeneratedMessage {
     $core.String? ocrCurrency,
     $core.String? cardCountry,
     $core.String? cardFormat,
-    $core.double? ocrConfidence,
   }) {
     final _result = create();
     if (cardType != null) {
@@ -3692,9 +3766,6 @@ class SellGiftCardRequest extends $pb.GeneratedMessage {
     }
     if (cardFormat != null) {
       _result.cardFormat = cardFormat;
-    }
-    if (ocrConfidence != null) {
-      _result.ocrConfidence = ocrConfidence;
     }
     return _result;
   }
@@ -3871,15 +3942,6 @@ class SellGiftCardRequest extends $pb.GeneratedMessage {
   $core.bool hasCardFormat() => $_has(18);
   @$pb.TagNumber(19)
   void clearCardFormat() => clearField(19);
-
-  @$pb.TagNumber(20)
-  $core.double get ocrConfidence => $_getN(19);
-  @$pb.TagNumber(20)
-  set ocrConfidence($core.double v) { $_setDouble(19, v); }
-  @$pb.TagNumber(20)
-  $core.bool hasOcrConfidence() => $_has(19);
-  @$pb.TagNumber(20)
-  void clearOcrConfidence() => clearField(20);
 }
 
 class SellGiftCardResponse extends $pb.GeneratedMessage {
@@ -4843,116 +4905,6 @@ class AdminApproveSaleResponse extends $pb.GeneratedMessage {
   @$core.pragma('dart2js:noInline')
   static AdminApproveSaleResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AdminApproveSaleResponse>(create);
   static AdminApproveSaleResponse? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  GiftCardSale get sale => $_getN(0);
-  @$pb.TagNumber(1)
-  set sale(GiftCardSale v) { setField(1, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasSale() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearSale() => clearField(1);
-  @$pb.TagNumber(1)
-  GiftCardSale ensureSale() => $_ensure(0);
-
-  @$pb.TagNumber(2)
-  $core.String get message => $_getSZ(1);
-  @$pb.TagNumber(2)
-  set message($core.String v) { $_setString(1, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasMessage() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearMessage() => clearField(2);
-}
-
-class AdminProcessPayoutRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AdminProcessPayoutRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'giftcards'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'saleId')
-    ..hasRequiredFields = false
-  ;
-
-  AdminProcessPayoutRequest._() : super();
-  factory AdminProcessPayoutRequest({
-    $core.String? saleId,
-  }) {
-    final _result = create();
-    if (saleId != null) {
-      _result.saleId = saleId;
-    }
-    return _result;
-  }
-  factory AdminProcessPayoutRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory AdminProcessPayoutRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  AdminProcessPayoutRequest clone() => AdminProcessPayoutRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  AdminProcessPayoutRequest copyWith(void Function(AdminProcessPayoutRequest) updates) => super.copyWith((message) => updates(message as AdminProcessPayoutRequest)) as AdminProcessPayoutRequest; // ignore: deprecated_member_use
-  $pb.BuilderInfo get info_ => _i;
-  @$core.pragma('dart2js:noInline')
-  static AdminProcessPayoutRequest create() => AdminProcessPayoutRequest._();
-  AdminProcessPayoutRequest createEmptyInstance() => create();
-  static $pb.PbList<AdminProcessPayoutRequest> createRepeated() => $pb.PbList<AdminProcessPayoutRequest>();
-  @$core.pragma('dart2js:noInline')
-  static AdminProcessPayoutRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AdminProcessPayoutRequest>(create);
-  static AdminProcessPayoutRequest? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.String get saleId => $_getSZ(0);
-  @$pb.TagNumber(1)
-  set saleId($core.String v) { $_setString(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasSaleId() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearSaleId() => clearField(1);
-}
-
-class AdminProcessPayoutResponse extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AdminProcessPayoutResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'giftcards'), createEmptyInstance: create)
-    ..aOM<GiftCardSale>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sale', subBuilder: GiftCardSale.create)
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..hasRequiredFields = false
-  ;
-
-  AdminProcessPayoutResponse._() : super();
-  factory AdminProcessPayoutResponse({
-    GiftCardSale? sale,
-    $core.String? message,
-  }) {
-    final _result = create();
-    if (sale != null) {
-      _result.sale = sale;
-    }
-    if (message != null) {
-      _result.message = message;
-    }
-    return _result;
-  }
-  factory AdminProcessPayoutResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory AdminProcessPayoutResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  AdminProcessPayoutResponse clone() => AdminProcessPayoutResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  AdminProcessPayoutResponse copyWith(void Function(AdminProcessPayoutResponse) updates) => super.copyWith((message) => updates(message as AdminProcessPayoutResponse)) as AdminProcessPayoutResponse; // ignore: deprecated_member_use
-  $pb.BuilderInfo get info_ => _i;
-  @$core.pragma('dart2js:noInline')
-  static AdminProcessPayoutResponse create() => AdminProcessPayoutResponse._();
-  AdminProcessPayoutResponse createEmptyInstance() => create();
-  static $pb.PbList<AdminProcessPayoutResponse> createRepeated() => $pb.PbList<AdminProcessPayoutResponse>();
-  @$core.pragma('dart2js:noInline')
-  static AdminProcessPayoutResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AdminProcessPayoutResponse>(create);
-  static AdminProcessPayoutResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   GiftCardSale get sale => $_getN(0);

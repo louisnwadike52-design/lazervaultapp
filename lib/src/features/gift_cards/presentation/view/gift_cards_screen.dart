@@ -11,7 +11,6 @@ import '../../domain/entities/gift_card_entity.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../../voice_session/widgets/voice_command_sheet.dart';
 import '../../../microservice_chat/presentation/widgets/microservice_chat_icon.dart';
-import 'widgets/brand_search_bottomsheet.dart';
 import 'widgets/country_selection_bottomsheet.dart';
 import 'widgets/gift_card_error_widget.dart';
 
@@ -26,7 +25,6 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
   String? _selectedCategory;
   int _currentTab = 0; // 0 = Buy, 1 = Sell
   String _selectedCountryCode = ''; // Empty = All Countries (default)
-  String _selectedCountryName = 'All Countries';
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
   List<GiftCardCountry> _supportedCountries = [];
@@ -192,13 +190,6 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
   }
 
   void _showVoiceAgentSheet() {
-    final giftCardSuggestions = [
-      'Buy Amazon gift card',
-      'Show my gift cards',
-      'Find gift card deals',
-      'Buy Netflix gift card',
-    ];
-
     Get.bottomSheet(
       FractionallySizedBox(
         heightFactor: 0.85,
@@ -273,48 +264,6 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  // Country selector
-  Widget _buildCountrySelector() {
-    return GestureDetector(
-      onTap: () => _showCountrySelection(),
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.w),
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1F1F1F),
-            borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(color: const Color(0xFF2D2D2D)),
-          ),
-          child: Row(
-            children: [
-              Text(
-                _getFlagForCountry(_selectedCountryCode),
-                style: TextStyle(fontSize: 20.sp),
-              ),
-              SizedBox(width: 10.w),
-              Expanded(
-                child: Text(
-                  _selectedCountryName,
-                  style: GoogleFonts.inter(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-              Icon(
-                Icons.keyboard_arrow_down_rounded,
-                color: const Color(0xFF9CA3AF),
-                size: 20.sp,
-              ),
-            ],
-          ),
         ),
       ),
     );
@@ -418,7 +367,6 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
       onCountrySelected: (countryCode, countryName) {
         setState(() {
           _selectedCountryCode = countryCode;
-          _selectedCountryName = countryName;
         });
         context.read<GiftCardCubit>().loadGiftCardBrands(
               category: _selectedCategory,
@@ -532,79 +480,6 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
               }),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSearchBar() {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-      child: Container(
-        height: 44.h,
-        decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: const Color(0xFF2D2D2D)),
-        ),
-        child: TextField(
-          controller: _searchController,
-          style: GoogleFonts.inter(
-            fontSize: 14.sp,
-            color: Colors.white,
-          ),
-          decoration: InputDecoration(
-            hintText: 'Search gift cards...',
-            hintStyle: GoogleFonts.inter(
-              fontSize: 14.sp,
-              color: const Color(0xFF6B7280),
-            ),
-            prefixIcon: Icon(
-              Icons.search,
-              size: 20.sp,
-              color: const Color(0xFF6B7280),
-            ),
-            suffixIcon: ValueListenableBuilder<TextEditingValue>(
-              valueListenable: _searchController,
-              builder: (context, value, _) {
-                if (value.text.isEmpty) return const SizedBox.shrink();
-                return GestureDetector(
-                  onTap: () {
-                    _searchController.clear();
-                    context.read<GiftCardCubit>().searchGiftCardBrands(
-                      '',
-                      countryCode: _selectedCountryCode.isEmpty ? null : _selectedCountryCode,
-                    );
-                  },
-                  child: Icon(
-                    Icons.close,
-                    size: 18.sp,
-                    color: const Color(0xFF9CA3AF),
-                  ),
-                );
-              },
-            ),
-            border: InputBorder.none,
-            contentPadding: EdgeInsets.symmetric(vertical: 12.h),
-          ),
-          textInputAction: TextInputAction.search,
-          onSubmitted: (query) {
-            context.read<GiftCardCubit>().searchGiftCardBrands(
-              query,
-              countryCode: _selectedCountryCode.isEmpty ? null : _selectedCountryCode,
-            );
-          },
-          onChanged: (query) {
-            // Debounce search — trigger after 500ms of no typing
-            Future.delayed(const Duration(milliseconds: 500), () {
-              if (_searchController.text == query) {
-                context.read<GiftCardCubit>().searchGiftCardBrands(
-                  query,
-                  countryCode: _selectedCountryCode.isEmpty ? null : _selectedCountryCode,
-                );
-              }
-            });
-          },
         ),
       ),
     );
@@ -1190,33 +1065,6 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
           ),
         ),
       ],
-    );
-  }
-
-  void _showBrandSearch() {
-    final currentState = context.read<GiftCardCubit>().state;
-    List<GiftCardBrand> availableBrands = [];
-
-    if (currentState is GiftCardBrandsLoaded) {
-      availableBrands = currentState.brands;
-    } else if (currentState is GiftCardBrandsSearched) {
-      availableBrands = currentState.brands;
-    }
-
-    Get.bottomSheet(
-      BlocProvider.value(
-        value: context.read<GiftCardCubit>(),
-        child: BrandSearchBottomSheet(
-          initialBrands: availableBrands,
-          onBrandSelected: (brand) {
-            Get.toNamed(AppRoutes.purchaseGiftCard, arguments: brand);
-          },
-        ),
-      ),
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      isDismissible: true,
-      enableDrag: true,
     );
   }
 

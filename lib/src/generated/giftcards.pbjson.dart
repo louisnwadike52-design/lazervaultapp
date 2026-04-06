@@ -370,34 +370,33 @@ const GiftCardSale$json = const {
     const {'1': 'submitted_at', '3': 15, '4': 1, '5': 9, '10': 'submittedAt'},
     const {'1': 'reviewed_at', '3': 16, '4': 1, '5': 9, '10': 'reviewedAt'},
     const {'1': 'paid_at', '3': 17, '4': 1, '5': 9, '10': 'paidAt'},
-    const {'1': 'payout_error', '3': 18, '4': 1, '5': 9, '10': 'payoutError'},
-    const {'1': 'created_at', '3': 19, '4': 1, '5': 9, '10': 'createdAt'},
-    const {'1': 'updated_at', '3': 20, '4': 1, '5': 9, '10': 'updatedAt'},
-    const {'1': 'image_urls', '3': 21, '4': 3, '5': 9, '10': 'imageUrls'},
-    const {'1': 'ocr_brand', '3': 22, '4': 1, '5': 9, '10': 'ocrBrand'},
-    const {'1': 'ocr_card_number', '3': 23, '4': 1, '5': 9, '10': 'ocrCardNumber'},
-    const {'1': 'ocr_pin', '3': 24, '4': 1, '5': 9, '10': 'ocrPin'},
-    const {'1': 'ocr_denomination', '3': 25, '4': 1, '5': 1, '10': 'ocrDenomination'},
-    const {'1': 'ocr_currency', '3': 26, '4': 1, '5': 9, '10': 'ocrCurrency'},
-    const {'1': 'admin_reviewer_id', '3': 27, '4': 1, '5': 9, '10': 'adminReviewerId'},
-    const {'1': 'rejection_reason', '3': 28, '4': 1, '5': 9, '10': 'rejectionReason'},
-    const {'1': 'admin_notes', '3': 29, '4': 1, '5': 9, '10': 'adminNotes'},
-    const {'1': 'card_pin', '3': 30, '4': 1, '5': 9, '10': 'cardPin'},
-    const {'1': 'exit_rate_percent', '3': 31, '4': 1, '5': 1, '10': 'exitRatePercent'},
-    const {'1': 'base_margin_percent', '3': 32, '4': 1, '5': 1, '10': 'baseMarginPercent'},
-    const {'1': 'risk_buffer_percent', '3': 33, '4': 1, '5': 1, '10': 'riskBufferPercent'},
-    const {'1': 'commission_amount', '3': 34, '4': 1, '5': 1, '10': 'commissionAmount'},
-    const {'1': 'risk_score', '3': 35, '4': 1, '5': 5, '10': 'riskScore'},
-    const {'1': 'risk_level', '3': 36, '4': 1, '5': 9, '10': 'riskLevel'},
-    const {'1': 'risk_flags', '3': 37, '4': 3, '5': 9, '10': 'riskFlags'},
-    const {'1': 'risk_action', '3': 38, '4': 1, '5': 9, '10': 'riskAction'},
-    const {'1': 'card_country', '3': 39, '4': 1, '5': 9, '10': 'cardCountry'},
-    const {'1': 'card_format', '3': 40, '4': 1, '5': 9, '10': 'cardFormat'},
+    const {'1': 'created_at', '3': 18, '4': 1, '5': 9, '10': 'createdAt'},
+    const {'1': 'updated_at', '3': 19, '4': 1, '5': 9, '10': 'updatedAt'},
+    const {'1': 'image_urls', '3': 20, '4': 3, '5': 9, '10': 'imageUrls'},
+    const {'1': 'ocr_brand', '3': 21, '4': 1, '5': 9, '10': 'ocrBrand'},
+    const {'1': 'ocr_card_number', '3': 22, '4': 1, '5': 9, '10': 'ocrCardNumber'},
+    const {'1': 'ocr_pin', '3': 23, '4': 1, '5': 9, '10': 'ocrPin'},
+    const {'1': 'ocr_denomination', '3': 24, '4': 1, '5': 1, '10': 'ocrDenomination'},
+    const {'1': 'ocr_currency', '3': 25, '4': 1, '5': 9, '10': 'ocrCurrency'},
+    const {'1': 'admin_reviewer_id', '3': 26, '4': 1, '5': 9, '10': 'adminReviewerId'},
+    const {'1': 'rejection_reason', '3': 27, '4': 1, '5': 9, '10': 'rejectionReason'},
+    const {'1': 'admin_notes', '3': 28, '4': 1, '5': 9, '10': 'adminNotes'},
+    const {'1': 'card_pin', '3': 29, '4': 1, '5': 9, '10': 'cardPin'},
+    const {'1': 'exit_rate_percent', '3': 30, '4': 1, '5': 1, '10': 'exitRatePercent'},
+    const {'1': 'base_margin_percent', '3': 31, '4': 1, '5': 1, '10': 'baseMarginPercent'},
+    const {'1': 'risk_buffer_percent', '3': 32, '4': 1, '5': 1, '10': 'riskBufferPercent'},
+    const {'1': 'commission_amount', '3': 33, '4': 1, '5': 1, '10': 'commissionAmount'},
+    const {'1': 'risk_score', '3': 34, '4': 1, '5': 5, '10': 'riskScore'},
+    const {'1': 'risk_level', '3': 35, '4': 1, '5': 9, '10': 'riskLevel'},
+    const {'1': 'risk_flags', '3': 36, '4': 3, '5': 9, '10': 'riskFlags'},
+    const {'1': 'risk_action', '3': 37, '4': 1, '5': 9, '10': 'riskAction'},
+    const {'1': 'card_country', '3': 38, '4': 1, '5': 9, '10': 'cardCountry'},
+    const {'1': 'card_format', '3': 39, '4': 1, '5': 9, '10': 'cardFormat'},
   ],
 };
 
 /// Descriptor for `GiftCardSale`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List giftCardSaleDescriptor = $convert.base64Decode('CgxHaWZ0Q2FyZFNhbGUSDgoCaWQYASABKAlSAmlkEhcKB3VzZXJfaWQYAiABKAlSBnVzZXJJZBIdCgphY2NvdW50X2lkGAMgASgJUglhY2NvdW50SWQSGwoJY2FyZF90eXBlGAQgASgJUghjYXJkVHlwZRIfCgtjYXJkX251bWJlchgFIAEoCVIKY2FyZE51bWJlchIiCgxkZW5vbWluYXRpb24YBiABKAFSDGRlbm9taW5hdGlvbhIaCghjdXJyZW5jeRgHIAEoCVIIY3VycmVuY3kSJwoPcmF0ZV9wZXJjZW50YWdlGAggASgBUg5yYXRlUGVyY2VudGFnZRInCg9leHBlY3RlZF9wYXlvdXQYCSABKAFSDmV4cGVjdGVkUGF5b3V0EiMKDWFjdHVhbF9wYXlvdXQYCiABKAFSDGFjdHVhbFBheW91dBIWCgZzdGF0dXMYCyABKAlSBnN0YXR1cxIoChBwcm92aWRlcl9zYWxlX2lkGAwgASgJUg5wcm92aWRlclNhbGVJZBIjCg1wcm92aWRlcl9uYW1lGA0gASgJUgxwcm92aWRlck5hbWUSHAoJcmVmZXJlbmNlGA4gASgJUglyZWZlcmVuY2USIQoMc3VibWl0dGVkX2F0GA8gASgJUgtzdWJtaXR0ZWRBdBIfCgtyZXZpZXdlZF9hdBgQIAEoCVIKcmV2aWV3ZWRBdBIXCgdwYWlkX2F0GBEgASgJUgZwYWlkQXQSIQoMcGF5b3V0X2Vycm9yGBIgASgJUgtwYXlvdXRFcnJvchIdCgpjcmVhdGVkX2F0GBMgASgJUgljcmVhdGVkQXQSHQoKdXBkYXRlZF9hdBgUIAEoCVIJdXBkYXRlZEF0Eh0KCmltYWdlX3VybHMYFSADKAlSCWltYWdlVXJscxIbCglvY3JfYnJhbmQYFiABKAlSCG9jckJyYW5kEiYKD29jcl9jYXJkX251bWJlchgXIAEoCVINb2NyQ2FyZE51bWJlchIXCgdvY3JfcGluGBggASgJUgZvY3JQaW4SKQoQb2NyX2Rlbm9taW5hdGlvbhgZIAEoAVIPb2NyRGVub21pbmF0aW9uEiEKDG9jcl9jdXJyZW5jeRgaIAEoCVILb2NyQ3VycmVuY3kSKgoRYWRtaW5fcmV2aWV3ZXJfaWQYGyABKAlSD2FkbWluUmV2aWV3ZXJJZBIpChByZWplY3Rpb25fcmVhc29uGBwgASgJUg9yZWplY3Rpb25SZWFzb24SHwoLYWRtaW5fbm90ZXMYHSABKAlSCmFkbWluTm90ZXMSGQoIY2FyZF9waW4YHiABKAlSB2NhcmRQaW4SKgoRZXhpdF9yYXRlX3BlcmNlbnQYHyABKAFSD2V4aXRSYXRlUGVyY2VudBIuChNiYXNlX21hcmdpbl9wZXJjZW50GCAgASgBUhFiYXNlTWFyZ2luUGVyY2VudBIuChNyaXNrX2J1ZmZlcl9wZXJjZW50GCEgASgBUhFyaXNrQnVmZmVyUGVyY2VudBIrChFjb21taXNzaW9uX2Ftb3VudBgiIAEoAVIQY29tbWlzc2lvbkFtb3VudBIdCgpyaXNrX3Njb3JlGCMgASgFUglyaXNrU2NvcmUSHQoKcmlza19sZXZlbBgkIAEoCVIJcmlza0xldmVsEh0KCnJpc2tfZmxhZ3MYJSADKAlSCXJpc2tGbGFncxIfCgtyaXNrX2FjdGlvbhgmIAEoCVIKcmlza0FjdGlvbhIhCgxjYXJkX2NvdW50cnkYJyABKAlSC2NhcmRDb3VudHJ5Eh8KC2NhcmRfZm9ybWF0GCggASgJUgpjYXJkRm9ybWF0');
+final $typed_data.Uint8List giftCardSaleDescriptor = $convert.base64Decode('CgxHaWZ0Q2FyZFNhbGUSDgoCaWQYASABKAlSAmlkEhcKB3VzZXJfaWQYAiABKAlSBnVzZXJJZBIdCgphY2NvdW50X2lkGAMgASgJUglhY2NvdW50SWQSGwoJY2FyZF90eXBlGAQgASgJUghjYXJkVHlwZRIfCgtjYXJkX251bWJlchgFIAEoCVIKY2FyZE51bWJlchIiCgxkZW5vbWluYXRpb24YBiABKAFSDGRlbm9taW5hdGlvbhIaCghjdXJyZW5jeRgHIAEoCVIIY3VycmVuY3kSJwoPcmF0ZV9wZXJjZW50YWdlGAggASgBUg5yYXRlUGVyY2VudGFnZRInCg9leHBlY3RlZF9wYXlvdXQYCSABKAFSDmV4cGVjdGVkUGF5b3V0EiMKDWFjdHVhbF9wYXlvdXQYCiABKAFSDGFjdHVhbFBheW91dBIWCgZzdGF0dXMYCyABKAlSBnN0YXR1cxIoChBwcm92aWRlcl9zYWxlX2lkGAwgASgJUg5wcm92aWRlclNhbGVJZBIjCg1wcm92aWRlcl9uYW1lGA0gASgJUgxwcm92aWRlck5hbWUSHAoJcmVmZXJlbmNlGA4gASgJUglyZWZlcmVuY2USIQoMc3VibWl0dGVkX2F0GA8gASgJUgtzdWJtaXR0ZWRBdBIfCgtyZXZpZXdlZF9hdBgQIAEoCVIKcmV2aWV3ZWRBdBIXCgdwYWlkX2F0GBEgASgJUgZwYWlkQXQSHQoKY3JlYXRlZF9hdBgSIAEoCVIJY3JlYXRlZEF0Eh0KCnVwZGF0ZWRfYXQYEyABKAlSCXVwZGF0ZWRBdBIdCgppbWFnZV91cmxzGBQgAygJUglpbWFnZVVybHMSGwoJb2NyX2JyYW5kGBUgASgJUghvY3JCcmFuZBImCg9vY3JfY2FyZF9udW1iZXIYFiABKAlSDW9jckNhcmROdW1iZXISFwoHb2NyX3BpbhgXIAEoCVIGb2NyUGluEikKEG9jcl9kZW5vbWluYXRpb24YGCABKAFSD29jckRlbm9taW5hdGlvbhIhCgxvY3JfY3VycmVuY3kYGSABKAlSC29jckN1cnJlbmN5EioKEWFkbWluX3Jldmlld2VyX2lkGBogASgJUg9hZG1pblJldmlld2VySWQSKQoQcmVqZWN0aW9uX3JlYXNvbhgbIAEoCVIPcmVqZWN0aW9uUmVhc29uEh8KC2FkbWluX25vdGVzGBwgASgJUgphZG1pbk5vdGVzEhkKCGNhcmRfcGluGB0gASgJUgdjYXJkUGluEioKEWV4aXRfcmF0ZV9wZXJjZW50GB4gASgBUg9leGl0UmF0ZVBlcmNlbnQSLgoTYmFzZV9tYXJnaW5fcGVyY2VudBgfIAEoAVIRYmFzZU1hcmdpblBlcmNlbnQSLgoTcmlza19idWZmZXJfcGVyY2VudBggIAEoAVIRcmlza0J1ZmZlclBlcmNlbnQSKwoRY29tbWlzc2lvbl9hbW91bnQYISABKAFSEGNvbW1pc3Npb25BbW91bnQSHQoKcmlza19zY29yZRgiIAEoBVIJcmlza1Njb3JlEh0KCnJpc2tfbGV2ZWwYIyABKAlSCXJpc2tMZXZlbBIdCgpyaXNrX2ZsYWdzGCQgAygJUglyaXNrRmxhZ3MSHwoLcmlza19hY3Rpb24YJSABKAlSCnJpc2tBY3Rpb24SIQoMY2FyZF9jb3VudHJ5GCYgASgJUgtjYXJkQ291bnRyeRIfCgtjYXJkX2Zvcm1hdBgnIAEoCVIKY2FyZEZvcm1hdA==');
 @$core.Deprecated('Use getSellableCardsRequestDescriptor instead')
 const GetSellableCardsRequest$json = const {
   '1': 'GetSellableCardsRequest',
@@ -440,6 +439,24 @@ const GetSellRateResponse$json = const {
 
 /// Descriptor for `GetSellRateResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getSellRateResponseDescriptor = $convert.base64Decode('ChNHZXRTZWxsUmF0ZVJlc3BvbnNlEicKBHJhdGUYASABKAsyEy5naWZ0Y2FyZHMuU2VsbFJhdGVSBHJhdGU=');
+@$core.Deprecated('Use getSellProviderRequestDescriptor instead')
+const GetSellProviderRequest$json = const {
+  '1': 'GetSellProviderRequest',
+};
+
+/// Descriptor for `GetSellProviderRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getSellProviderRequestDescriptor = $convert.base64Decode('ChZHZXRTZWxsUHJvdmlkZXJSZXF1ZXN0');
+@$core.Deprecated('Use getSellProviderResponseDescriptor instead')
+const GetSellProviderResponse$json = const {
+  '1': 'GetSellProviderResponse',
+  '2': const [
+    const {'1': 'provider', '3': 1, '4': 1, '5': 9, '10': 'provider'},
+    const {'1': 'description', '3': 2, '4': 1, '5': 9, '10': 'description'},
+  ],
+};
+
+/// Descriptor for `GetSellProviderResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getSellProviderResponseDescriptor = $convert.base64Decode('ChdHZXRTZWxsUHJvdmlkZXJSZXNwb25zZRIaCghwcm92aWRlchgBIAEoCVIIcHJvdmlkZXISIAoLZGVzY3JpcHRpb24YAiABKAlSC2Rlc2NyaXB0aW9u');
 @$core.Deprecated('Use sellGiftCardRequestDescriptor instead')
 const SellGiftCardRequest$json = const {
   '1': 'SellGiftCardRequest',
@@ -463,12 +480,11 @@ const SellGiftCardRequest$json = const {
     const {'1': 'ocr_currency', '3': 17, '4': 1, '5': 9, '10': 'ocrCurrency'},
     const {'1': 'card_country', '3': 18, '4': 1, '5': 9, '10': 'cardCountry'},
     const {'1': 'card_format', '3': 19, '4': 1, '5': 9, '10': 'cardFormat'},
-    const {'1': 'ocr_confidence', '3': 20, '4': 1, '5': 1, '10': 'ocrConfidence'},
   ],
 };
 
 /// Descriptor for `SellGiftCardRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List sellGiftCardRequestDescriptor = $convert.base64Decode('ChNTZWxsR2lmdENhcmRSZXF1ZXN0EhsKCWNhcmRfdHlwZRgBIAEoCVIIY2FyZFR5cGUSHwoLY2FyZF9udW1iZXIYAiABKAlSCmNhcmROdW1iZXISGQoIY2FyZF9waW4YAyABKAlSB2NhcmRQaW4SIgoMZGVub21pbmF0aW9uGAQgASgBUgxkZW5vbWluYXRpb24SGgoIY3VycmVuY3kYBSABKAlSCGN1cnJlbmN5EhYKBmltYWdlcxgGIAMoCVIGaW1hZ2VzEicKD2lkZW1wb3RlbmN5X2tleRgHIAEoCVIOaWRlbXBvdGVuY3lLZXkSJQoOdHJhbnNhY3Rpb25faWQYCCABKAlSDXRyYW5zYWN0aW9uSWQSLQoSdmVyaWZpY2F0aW9uX3Rva2VuGAkgASgJUhF2ZXJpZmljYXRpb25Ub2tlbhIjCg1wcm92aWRlcl9uYW1lGAogASgJUgxwcm92aWRlck5hbWUSHQoKaW1hZ2VfdXJscxgLIAMoCVIJaW1hZ2VVcmxzEh0KCmltYWdlX2tleXMYDCADKAlSCWltYWdlS2V5cxIbCglvY3JfYnJhbmQYDSABKAlSCG9jckJyYW5kEiYKD29jcl9jYXJkX251bWJlchgOIAEoCVINb2NyQ2FyZE51bWJlchIXCgdvY3JfcGluGA8gASgJUgZvY3JQaW4SKQoQb2NyX2Rlbm9taW5hdGlvbhgQIAEoAVIPb2NyRGVub21pbmF0aW9uEiEKDG9jcl9jdXJyZW5jeRgRIAEoCVILb2NyQ3VycmVuY3kSIQoMY2FyZF9jb3VudHJ5GBIgASgJUgtjYXJkQ291bnRyeRIfCgtjYXJkX2Zvcm1hdBgTIAEoCVIKY2FyZEZvcm1hdBIlCg5vY3JfY29uZmlkZW5jZRgUIAEoAVINb2NyQ29uZmlkZW5jZQ==');
+final $typed_data.Uint8List sellGiftCardRequestDescriptor = $convert.base64Decode('ChNTZWxsR2lmdENhcmRSZXF1ZXN0EhsKCWNhcmRfdHlwZRgBIAEoCVIIY2FyZFR5cGUSHwoLY2FyZF9udW1iZXIYAiABKAlSCmNhcmROdW1iZXISGQoIY2FyZF9waW4YAyABKAlSB2NhcmRQaW4SIgoMZGVub21pbmF0aW9uGAQgASgBUgxkZW5vbWluYXRpb24SGgoIY3VycmVuY3kYBSABKAlSCGN1cnJlbmN5EhYKBmltYWdlcxgGIAMoCVIGaW1hZ2VzEicKD2lkZW1wb3RlbmN5X2tleRgHIAEoCVIOaWRlbXBvdGVuY3lLZXkSJQoOdHJhbnNhY3Rpb25faWQYCCABKAlSDXRyYW5zYWN0aW9uSWQSLQoSdmVyaWZpY2F0aW9uX3Rva2VuGAkgASgJUhF2ZXJpZmljYXRpb25Ub2tlbhIjCg1wcm92aWRlcl9uYW1lGAogASgJUgxwcm92aWRlck5hbWUSHQoKaW1hZ2VfdXJscxgLIAMoCVIJaW1hZ2VVcmxzEh0KCmltYWdlX2tleXMYDCADKAlSCWltYWdlS2V5cxIbCglvY3JfYnJhbmQYDSABKAlSCG9jckJyYW5kEiYKD29jcl9jYXJkX251bWJlchgOIAEoCVINb2NyQ2FyZE51bWJlchIXCgdvY3JfcGluGA8gASgJUgZvY3JQaW4SKQoQb2NyX2Rlbm9taW5hdGlvbhgQIAEoAVIPb2NyRGVub21pbmF0aW9uEiEKDG9jcl9jdXJyZW5jeRgRIAEoCVILb2NyQ3VycmVuY3kSIQoMY2FyZF9jb3VudHJ5GBIgASgJUgtjYXJkQ291bnRyeRIfCgtjYXJkX2Zvcm1hdBgTIAEoCVIKY2FyZEZvcm1hdA==');
 @$core.Deprecated('Use sellGiftCardResponseDescriptor instead')
 const SellGiftCardResponse$json = const {
   '1': 'SellGiftCardResponse',
@@ -640,27 +656,6 @@ const AdminApproveSaleResponse$json = const {
 
 /// Descriptor for `AdminApproveSaleResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List adminApproveSaleResponseDescriptor = $convert.base64Decode('ChhBZG1pbkFwcHJvdmVTYWxlUmVzcG9uc2USKwoEc2FsZRgBIAEoCzIXLmdpZnRjYXJkcy5HaWZ0Q2FyZFNhbGVSBHNhbGUSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
-@$core.Deprecated('Use adminProcessPayoutRequestDescriptor instead')
-const AdminProcessPayoutRequest$json = const {
-  '1': 'AdminProcessPayoutRequest',
-  '2': const [
-    const {'1': 'sale_id', '3': 1, '4': 1, '5': 9, '10': 'saleId'},
-  ],
-};
-
-/// Descriptor for `AdminProcessPayoutRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List adminProcessPayoutRequestDescriptor = $convert.base64Decode('ChlBZG1pblByb2Nlc3NQYXlvdXRSZXF1ZXN0EhcKB3NhbGVfaWQYASABKAlSBnNhbGVJZA==');
-@$core.Deprecated('Use adminProcessPayoutResponseDescriptor instead')
-const AdminProcessPayoutResponse$json = const {
-  '1': 'AdminProcessPayoutResponse',
-  '2': const [
-    const {'1': 'sale', '3': 1, '4': 1, '5': 11, '6': '.giftcards.GiftCardSale', '10': 'sale'},
-    const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-  ],
-};
-
-/// Descriptor for `AdminProcessPayoutResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List adminProcessPayoutResponseDescriptor = $convert.base64Decode('ChpBZG1pblByb2Nlc3NQYXlvdXRSZXNwb25zZRIrCgRzYWxlGAEgASgLMhcuZ2lmdGNhcmRzLkdpZnRDYXJkU2FsZVIEc2FsZRIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
 @$core.Deprecated('Use adminRejectSaleRequestDescriptor instead')
 const AdminRejectSaleRequest$json = const {
   '1': 'AdminRejectSaleRequest',

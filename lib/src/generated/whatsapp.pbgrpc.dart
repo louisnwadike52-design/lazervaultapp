@@ -10,145 +10,146 @@ import 'dart:async' as $async;
 import 'dart:core' as $core;
 
 import 'package:grpc/service_api.dart' as $grpc;
-import 'whatsapp.pb.dart' as $0;
+import 'whatsapp.pb.dart' as $45;
 export 'whatsapp.pb.dart';
 
 class WhatsAppServiceClient extends $grpc.Client {
-  static final _$initiateLinking =
-      $grpc.ClientMethod<$0.InitiateLinkingRequest, $0.InitiateLinkingResponse>(
-          '/whatsapp.WhatsAppService/InitiateLinking',
-          ($0.InitiateLinkingRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) =>
-              $0.InitiateLinkingResponse.fromBuffer(value));
+  static final _$initiateLinking = $grpc.ClientMethod<
+          $45.InitiateLinkingRequest, $45.InitiateLinkingResponse>(
+      '/whatsapp.WhatsAppService/InitiateLinking',
+      ($45.InitiateLinkingRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $45.InitiateLinkingResponse.fromBuffer(value));
   static final _$verifyLinking =
-      $grpc.ClientMethod<$0.VerifyLinkingRequest, $0.VerifyLinkingResponse>(
+      $grpc.ClientMethod<$45.VerifyLinkingRequest, $45.VerifyLinkingResponse>(
           '/whatsapp.WhatsAppService/VerifyLinking',
-          ($0.VerifyLinkingRequest value) => value.writeToBuffer(),
+          ($45.VerifyLinkingRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $0.VerifyLinkingResponse.fromBuffer(value));
+              $45.VerifyLinkingResponse.fromBuffer(value));
   static final _$unlinkAccount =
-      $grpc.ClientMethod<$0.UnlinkAccountRequest, $0.UnlinkAccountResponse>(
+      $grpc.ClientMethod<$45.UnlinkAccountRequest, $45.UnlinkAccountResponse>(
           '/whatsapp.WhatsAppService/UnlinkAccount',
-          ($0.UnlinkAccountRequest value) => value.writeToBuffer(),
+          ($45.UnlinkAccountRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $0.UnlinkAccountResponse.fromBuffer(value));
+              $45.UnlinkAccountResponse.fromBuffer(value));
   static final _$getLinkStatus =
-      $grpc.ClientMethod<$0.GetLinkStatusRequest, $0.GetLinkStatusResponse>(
+      $grpc.ClientMethod<$45.GetLinkStatusRequest, $45.GetLinkStatusResponse>(
           '/whatsapp.WhatsAppService/GetLinkStatus',
-          ($0.GetLinkStatusRequest value) => value.writeToBuffer(),
+          ($45.GetLinkStatusRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $0.GetLinkStatusResponse.fromBuffer(value));
+              $45.GetLinkStatusResponse.fromBuffer(value));
   static final _$handleWebhook =
-      $grpc.ClientMethod<$0.WebhookRequest, $0.WebhookResponse>(
+      $grpc.ClientMethod<$45.WebhookRequest, $45.WebhookResponse>(
           '/whatsapp.WhatsAppService/HandleWebhook',
-          ($0.WebhookRequest value) => value.writeToBuffer(),
+          ($45.WebhookRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $0.WebhookResponse.fromBuffer(value));
+              $45.WebhookResponse.fromBuffer(value));
   static final _$verifyWebhook =
-      $grpc.ClientMethod<$0.VerifyWebhookRequest, $0.VerifyWebhookResponse>(
+      $grpc.ClientMethod<$45.VerifyWebhookRequest, $45.VerifyWebhookResponse>(
           '/whatsapp.WhatsAppService/VerifyWebhook',
-          ($0.VerifyWebhookRequest value) => value.writeToBuffer(),
+          ($45.VerifyWebhookRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $0.VerifyWebhookResponse.fromBuffer(value));
+              $45.VerifyWebhookResponse.fromBuffer(value));
   static final _$getSession =
-      $grpc.ClientMethod<$0.GetSessionRequest, $0.GetSessionResponse>(
+      $grpc.ClientMethod<$45.GetSessionRequest, $45.GetSessionResponse>(
           '/whatsapp.WhatsAppService/GetSession',
-          ($0.GetSessionRequest value) => value.writeToBuffer(),
+          ($45.GetSessionRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $0.GetSessionResponse.fromBuffer(value));
+              $45.GetSessionResponse.fromBuffer(value));
   static final _$invalidateSession = $grpc.ClientMethod<
-          $0.InvalidateSessionRequest, $0.InvalidateSessionResponse>(
+          $45.InvalidateSessionRequest, $45.InvalidateSessionResponse>(
       '/whatsapp.WhatsAppService/InvalidateSession',
-      ($0.InvalidateSessionRequest value) => value.writeToBuffer(),
+      ($45.InvalidateSessionRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.InvalidateSessionResponse.fromBuffer(value));
+          $45.InvalidateSessionResponse.fromBuffer(value));
   static final _$updateSecuritySettings = $grpc.ClientMethod<
-          $0.UpdateSecuritySettingsRequest, $0.UpdateSecuritySettingsResponse>(
+          $45.UpdateSecuritySettingsRequest,
+          $45.UpdateSecuritySettingsResponse>(
       '/whatsapp.WhatsAppService/UpdateSecuritySettings',
-      ($0.UpdateSecuritySettingsRequest value) => value.writeToBuffer(),
+      ($45.UpdateSecuritySettingsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.UpdateSecuritySettingsResponse.fromBuffer(value));
+          $45.UpdateSecuritySettingsResponse.fromBuffer(value));
   static final _$getSecuritySettings = $grpc.ClientMethod<
-          $0.GetSecuritySettingsRequest, $0.GetSecuritySettingsResponse>(
+          $45.GetSecuritySettingsRequest, $45.GetSecuritySettingsResponse>(
       '/whatsapp.WhatsAppService/GetSecuritySettings',
-      ($0.GetSecuritySettingsRequest value) => value.writeToBuffer(),
+      ($45.GetSecuritySettingsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.GetSecuritySettingsResponse.fromBuffer(value));
+          $45.GetSecuritySettingsResponse.fromBuffer(value));
   static final _$getAuditLogs =
-      $grpc.ClientMethod<$0.GetAuditLogsRequest, $0.GetAuditLogsResponse>(
+      $grpc.ClientMethod<$45.GetAuditLogsRequest, $45.GetAuditLogsResponse>(
           '/whatsapp.WhatsAppService/GetAuditLogs',
-          ($0.GetAuditLogsRequest value) => value.writeToBuffer(),
+          ($45.GetAuditLogsRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $0.GetAuditLogsResponse.fromBuffer(value));
+              $45.GetAuditLogsResponse.fromBuffer(value));
 
   WhatsAppServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
       $core.Iterable<$grpc.ClientInterceptor>? interceptors})
       : super(channel, options: options, interceptors: interceptors);
 
-  $grpc.ResponseFuture<$0.InitiateLinkingResponse> initiateLinking(
-      $0.InitiateLinkingRequest request,
+  $grpc.ResponseFuture<$45.InitiateLinkingResponse> initiateLinking(
+      $45.InitiateLinkingRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$initiateLinking, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.VerifyLinkingResponse> verifyLinking(
-      $0.VerifyLinkingRequest request,
+  $grpc.ResponseFuture<$45.VerifyLinkingResponse> verifyLinking(
+      $45.VerifyLinkingRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$verifyLinking, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.UnlinkAccountResponse> unlinkAccount(
-      $0.UnlinkAccountRequest request,
+  $grpc.ResponseFuture<$45.UnlinkAccountResponse> unlinkAccount(
+      $45.UnlinkAccountRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$unlinkAccount, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetLinkStatusResponse> getLinkStatus(
-      $0.GetLinkStatusRequest request,
+  $grpc.ResponseFuture<$45.GetLinkStatusResponse> getLinkStatus(
+      $45.GetLinkStatusRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getLinkStatus, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.WebhookResponse> handleWebhook(
-      $0.WebhookRequest request,
+  $grpc.ResponseFuture<$45.WebhookResponse> handleWebhook(
+      $45.WebhookRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$handleWebhook, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.VerifyWebhookResponse> verifyWebhook(
-      $0.VerifyWebhookRequest request,
+  $grpc.ResponseFuture<$45.VerifyWebhookResponse> verifyWebhook(
+      $45.VerifyWebhookRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$verifyWebhook, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetSessionResponse> getSession(
-      $0.GetSessionRequest request,
+  $grpc.ResponseFuture<$45.GetSessionResponse> getSession(
+      $45.GetSessionRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getSession, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.InvalidateSessionResponse> invalidateSession(
-      $0.InvalidateSessionRequest request,
+  $grpc.ResponseFuture<$45.InvalidateSessionResponse> invalidateSession(
+      $45.InvalidateSessionRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$invalidateSession, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.UpdateSecuritySettingsResponse>
-      updateSecuritySettings($0.UpdateSecuritySettingsRequest request,
+  $grpc.ResponseFuture<$45.UpdateSecuritySettingsResponse>
+      updateSecuritySettings($45.UpdateSecuritySettingsRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$updateSecuritySettings, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetSecuritySettingsResponse> getSecuritySettings(
-      $0.GetSecuritySettingsRequest request,
+  $grpc.ResponseFuture<$45.GetSecuritySettingsResponse> getSecuritySettings(
+      $45.GetSecuritySettingsRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getSecuritySettings, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetAuditLogsResponse> getAuditLogs(
-      $0.GetAuditLogsRequest request,
+  $grpc.ResponseFuture<$45.GetAuditLogsResponse> getAuditLogs(
+      $45.GetAuditLogsRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getAuditLogs, request, options: options);
   }
@@ -158,187 +159,189 @@ abstract class WhatsAppServiceBase extends $grpc.Service {
   $core.String get $name => 'whatsapp.WhatsAppService';
 
   WhatsAppServiceBase() {
-    $addMethod($grpc.ServiceMethod<$0.InitiateLinkingRequest,
-            $0.InitiateLinkingResponse>(
+    $addMethod($grpc.ServiceMethod<$45.InitiateLinkingRequest,
+            $45.InitiateLinkingResponse>(
         'InitiateLinking',
         initiateLinking_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.InitiateLinkingRequest.fromBuffer(value),
-        ($0.InitiateLinkingResponse value) => value.writeToBuffer()));
-    $addMethod(
-        $grpc.ServiceMethod<$0.VerifyLinkingRequest, $0.VerifyLinkingResponse>(
-            'VerifyLinking',
-            verifyLinking_Pre,
-            false,
-            false,
-            ($core.List<$core.int> value) =>
-                $0.VerifyLinkingRequest.fromBuffer(value),
-            ($0.VerifyLinkingResponse value) => value.writeToBuffer()));
-    $addMethod(
-        $grpc.ServiceMethod<$0.UnlinkAccountRequest, $0.UnlinkAccountResponse>(
-            'UnlinkAccount',
-            unlinkAccount_Pre,
-            false,
-            false,
-            ($core.List<$core.int> value) =>
-                $0.UnlinkAccountRequest.fromBuffer(value),
-            ($0.UnlinkAccountResponse value) => value.writeToBuffer()));
-    $addMethod(
-        $grpc.ServiceMethod<$0.GetLinkStatusRequest, $0.GetLinkStatusResponse>(
-            'GetLinkStatus',
-            getLinkStatus_Pre,
-            false,
-            false,
-            ($core.List<$core.int> value) =>
-                $0.GetLinkStatusRequest.fromBuffer(value),
-            ($0.GetLinkStatusResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.WebhookRequest, $0.WebhookResponse>(
+            $45.InitiateLinkingRequest.fromBuffer(value),
+        ($45.InitiateLinkingResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$45.VerifyLinkingRequest,
+            $45.VerifyLinkingResponse>(
+        'VerifyLinking',
+        verifyLinking_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $45.VerifyLinkingRequest.fromBuffer(value),
+        ($45.VerifyLinkingResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$45.UnlinkAccountRequest,
+            $45.UnlinkAccountResponse>(
+        'UnlinkAccount',
+        unlinkAccount_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $45.UnlinkAccountRequest.fromBuffer(value),
+        ($45.UnlinkAccountResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$45.GetLinkStatusRequest,
+            $45.GetLinkStatusResponse>(
+        'GetLinkStatus',
+        getLinkStatus_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $45.GetLinkStatusRequest.fromBuffer(value),
+        ($45.GetLinkStatusResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$45.WebhookRequest, $45.WebhookResponse>(
         'HandleWebhook',
         handleWebhook_Pre,
         false,
         false,
-        ($core.List<$core.int> value) => $0.WebhookRequest.fromBuffer(value),
-        ($0.WebhookResponse value) => value.writeToBuffer()));
+        ($core.List<$core.int> value) => $45.WebhookRequest.fromBuffer(value),
+        ($45.WebhookResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$45.VerifyWebhookRequest,
+            $45.VerifyWebhookResponse>(
+        'VerifyWebhook',
+        verifyWebhook_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $45.VerifyWebhookRequest.fromBuffer(value),
+        ($45.VerifyWebhookResponse value) => value.writeToBuffer()));
     $addMethod(
-        $grpc.ServiceMethod<$0.VerifyWebhookRequest, $0.VerifyWebhookResponse>(
-            'VerifyWebhook',
-            verifyWebhook_Pre,
+        $grpc.ServiceMethod<$45.GetSessionRequest, $45.GetSessionResponse>(
+            'GetSession',
+            getSession_Pre,
             false,
             false,
             ($core.List<$core.int> value) =>
-                $0.VerifyWebhookRequest.fromBuffer(value),
-            ($0.VerifyWebhookResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetSessionRequest, $0.GetSessionResponse>(
-        'GetSession',
-        getSession_Pre,
-        false,
-        false,
-        ($core.List<$core.int> value) => $0.GetSessionRequest.fromBuffer(value),
-        ($0.GetSessionResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.InvalidateSessionRequest,
-            $0.InvalidateSessionResponse>(
+                $45.GetSessionRequest.fromBuffer(value),
+            ($45.GetSessionResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$45.InvalidateSessionRequest,
+            $45.InvalidateSessionResponse>(
         'InvalidateSession',
         invalidateSession_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.InvalidateSessionRequest.fromBuffer(value),
-        ($0.InvalidateSessionResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.UpdateSecuritySettingsRequest,
-            $0.UpdateSecuritySettingsResponse>(
+            $45.InvalidateSessionRequest.fromBuffer(value),
+        ($45.InvalidateSessionResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$45.UpdateSecuritySettingsRequest,
+            $45.UpdateSecuritySettingsResponse>(
         'UpdateSecuritySettings',
         updateSecuritySettings_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.UpdateSecuritySettingsRequest.fromBuffer(value),
-        ($0.UpdateSecuritySettingsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetSecuritySettingsRequest,
-            $0.GetSecuritySettingsResponse>(
+            $45.UpdateSecuritySettingsRequest.fromBuffer(value),
+        ($45.UpdateSecuritySettingsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$45.GetSecuritySettingsRequest,
+            $45.GetSecuritySettingsResponse>(
         'GetSecuritySettings',
         getSecuritySettings_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.GetSecuritySettingsRequest.fromBuffer(value),
-        ($0.GetSecuritySettingsResponse value) => value.writeToBuffer()));
+            $45.GetSecuritySettingsRequest.fromBuffer(value),
+        ($45.GetSecuritySettingsResponse value) => value.writeToBuffer()));
     $addMethod(
-        $grpc.ServiceMethod<$0.GetAuditLogsRequest, $0.GetAuditLogsResponse>(
+        $grpc.ServiceMethod<$45.GetAuditLogsRequest, $45.GetAuditLogsResponse>(
             'GetAuditLogs',
             getAuditLogs_Pre,
             false,
             false,
             ($core.List<$core.int> value) =>
-                $0.GetAuditLogsRequest.fromBuffer(value),
-            ($0.GetAuditLogsResponse value) => value.writeToBuffer()));
+                $45.GetAuditLogsRequest.fromBuffer(value),
+            ($45.GetAuditLogsResponse value) => value.writeToBuffer()));
   }
 
-  $async.Future<$0.InitiateLinkingResponse> initiateLinking_Pre(
+  $async.Future<$45.InitiateLinkingResponse> initiateLinking_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.InitiateLinkingRequest> request) async {
+      $async.Future<$45.InitiateLinkingRequest> request) async {
     return initiateLinking(call, await request);
   }
 
-  $async.Future<$0.VerifyLinkingResponse> verifyLinking_Pre(
+  $async.Future<$45.VerifyLinkingResponse> verifyLinking_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.VerifyLinkingRequest> request) async {
+      $async.Future<$45.VerifyLinkingRequest> request) async {
     return verifyLinking(call, await request);
   }
 
-  $async.Future<$0.UnlinkAccountResponse> unlinkAccount_Pre(
+  $async.Future<$45.UnlinkAccountResponse> unlinkAccount_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.UnlinkAccountRequest> request) async {
+      $async.Future<$45.UnlinkAccountRequest> request) async {
     return unlinkAccount(call, await request);
   }
 
-  $async.Future<$0.GetLinkStatusResponse> getLinkStatus_Pre(
+  $async.Future<$45.GetLinkStatusResponse> getLinkStatus_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.GetLinkStatusRequest> request) async {
+      $async.Future<$45.GetLinkStatusRequest> request) async {
     return getLinkStatus(call, await request);
   }
 
-  $async.Future<$0.WebhookResponse> handleWebhook_Pre(
-      $grpc.ServiceCall call, $async.Future<$0.WebhookRequest> request) async {
+  $async.Future<$45.WebhookResponse> handleWebhook_Pre(
+      $grpc.ServiceCall call, $async.Future<$45.WebhookRequest> request) async {
     return handleWebhook(call, await request);
   }
 
-  $async.Future<$0.VerifyWebhookResponse> verifyWebhook_Pre(
+  $async.Future<$45.VerifyWebhookResponse> verifyWebhook_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.VerifyWebhookRequest> request) async {
+      $async.Future<$45.VerifyWebhookRequest> request) async {
     return verifyWebhook(call, await request);
   }
 
-  $async.Future<$0.GetSessionResponse> getSession_Pre($grpc.ServiceCall call,
-      $async.Future<$0.GetSessionRequest> request) async {
+  $async.Future<$45.GetSessionResponse> getSession_Pre($grpc.ServiceCall call,
+      $async.Future<$45.GetSessionRequest> request) async {
     return getSession(call, await request);
   }
 
-  $async.Future<$0.InvalidateSessionResponse> invalidateSession_Pre(
+  $async.Future<$45.InvalidateSessionResponse> invalidateSession_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.InvalidateSessionRequest> request) async {
+      $async.Future<$45.InvalidateSessionRequest> request) async {
     return invalidateSession(call, await request);
   }
 
-  $async.Future<$0.UpdateSecuritySettingsResponse> updateSecuritySettings_Pre(
+  $async.Future<$45.UpdateSecuritySettingsResponse> updateSecuritySettings_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.UpdateSecuritySettingsRequest> request) async {
+      $async.Future<$45.UpdateSecuritySettingsRequest> request) async {
     return updateSecuritySettings(call, await request);
   }
 
-  $async.Future<$0.GetSecuritySettingsResponse> getSecuritySettings_Pre(
+  $async.Future<$45.GetSecuritySettingsResponse> getSecuritySettings_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.GetSecuritySettingsRequest> request) async {
+      $async.Future<$45.GetSecuritySettingsRequest> request) async {
     return getSecuritySettings(call, await request);
   }
 
-  $async.Future<$0.GetAuditLogsResponse> getAuditLogs_Pre(
+  $async.Future<$45.GetAuditLogsResponse> getAuditLogs_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.GetAuditLogsRequest> request) async {
+      $async.Future<$45.GetAuditLogsRequest> request) async {
     return getAuditLogs(call, await request);
   }
 
-  $async.Future<$0.InitiateLinkingResponse> initiateLinking(
-      $grpc.ServiceCall call, $0.InitiateLinkingRequest request);
-  $async.Future<$0.VerifyLinkingResponse> verifyLinking(
-      $grpc.ServiceCall call, $0.VerifyLinkingRequest request);
-  $async.Future<$0.UnlinkAccountResponse> unlinkAccount(
-      $grpc.ServiceCall call, $0.UnlinkAccountRequest request);
-  $async.Future<$0.GetLinkStatusResponse> getLinkStatus(
-      $grpc.ServiceCall call, $0.GetLinkStatusRequest request);
-  $async.Future<$0.WebhookResponse> handleWebhook(
-      $grpc.ServiceCall call, $0.WebhookRequest request);
-  $async.Future<$0.VerifyWebhookResponse> verifyWebhook(
-      $grpc.ServiceCall call, $0.VerifyWebhookRequest request);
-  $async.Future<$0.GetSessionResponse> getSession(
-      $grpc.ServiceCall call, $0.GetSessionRequest request);
-  $async.Future<$0.InvalidateSessionResponse> invalidateSession(
-      $grpc.ServiceCall call, $0.InvalidateSessionRequest request);
-  $async.Future<$0.UpdateSecuritySettingsResponse> updateSecuritySettings(
-      $grpc.ServiceCall call, $0.UpdateSecuritySettingsRequest request);
-  $async.Future<$0.GetSecuritySettingsResponse> getSecuritySettings(
-      $grpc.ServiceCall call, $0.GetSecuritySettingsRequest request);
-  $async.Future<$0.GetAuditLogsResponse> getAuditLogs(
-      $grpc.ServiceCall call, $0.GetAuditLogsRequest request);
+  $async.Future<$45.InitiateLinkingResponse> initiateLinking(
+      $grpc.ServiceCall call, $45.InitiateLinkingRequest request);
+  $async.Future<$45.VerifyLinkingResponse> verifyLinking(
+      $grpc.ServiceCall call, $45.VerifyLinkingRequest request);
+  $async.Future<$45.UnlinkAccountResponse> unlinkAccount(
+      $grpc.ServiceCall call, $45.UnlinkAccountRequest request);
+  $async.Future<$45.GetLinkStatusResponse> getLinkStatus(
+      $grpc.ServiceCall call, $45.GetLinkStatusRequest request);
+  $async.Future<$45.WebhookResponse> handleWebhook(
+      $grpc.ServiceCall call, $45.WebhookRequest request);
+  $async.Future<$45.VerifyWebhookResponse> verifyWebhook(
+      $grpc.ServiceCall call, $45.VerifyWebhookRequest request);
+  $async.Future<$45.GetSessionResponse> getSession(
+      $grpc.ServiceCall call, $45.GetSessionRequest request);
+  $async.Future<$45.InvalidateSessionResponse> invalidateSession(
+      $grpc.ServiceCall call, $45.InvalidateSessionRequest request);
+  $async.Future<$45.UpdateSecuritySettingsResponse> updateSecuritySettings(
+      $grpc.ServiceCall call, $45.UpdateSecuritySettingsRequest request);
+  $async.Future<$45.GetSecuritySettingsResponse> getSecuritySettings(
+      $grpc.ServiceCall call, $45.GetSecuritySettingsRequest request);
+  $async.Future<$45.GetAuditLogsResponse> getAuditLogs(
+      $grpc.ServiceCall call, $45.GetAuditLogsRequest request);
 }

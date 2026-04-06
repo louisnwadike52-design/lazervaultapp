@@ -17,8 +17,11 @@ import 'package:lazervault/src/features/voice_session/widgets/voice_user_search_
 import 'package:lazervault/src/features/voice_session/widgets/voice_transfer_summary_card.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_pin_entry_dialog.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_caption_box.dart';
+import 'package:lazervault/src/features/voice_session/widgets/voice_conversation_context_bar.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_chat_history_sheet.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class VoiceCommandSheet extends StatefulWidget {
@@ -590,6 +593,13 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         ),
         // Caption overlay (always on top)
         const VoiceCaptionBox(),
+        // In-session conversation context bar (shows recent messages)
+        VoiceConversationContextBar(
+          recentMessages: context.read<VoiceSessionCubit>().recentConversationMessages
+              .map((msg) => ChatMessage.fromVoiceMessage(msg))
+              .toList(),
+          onShowFullHistory: () => _showChatHistorySheet(),
+        ),
         // Visual feedback for transfer flow
         VoiceTransferVisualFeedback(state: state),
       ],
@@ -1000,6 +1010,25 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   }
 
   Widget _buildLanguageSelectionTile(VoiceLanguage lang) {
+    // Get locale manager to check country
+    // Edge case: Handle serviceLocator errors gracefully
+    String currentCountry = 'NG';  // Default to Nigeria
+    try {
+      final localeManager = serviceLocator<LocaleManager>();
+      currentCountry = localeManager.currentCountry?.toUpperCase() ?? 'NG';
+    } catch (e) {
+      print('VoiceCommandSheet: LocaleManager not found in serviceLocator, using default NG: $e');
+      // Use default Nigeria country
+    }
+
+    final isNigeria = currentCountry == 'NG';
+    final isDomesticEnglish = lang.code == 'en' && isNigeria;
+
+    // Edge case: Validate language object has required fields
+    final displayName = lang.nativeName.isNotEmpty
+        ? lang.nativeName
+        : lang.name.isNotEmpty ? lang.name : lang.code;
+
     return GestureDetector(
       onTap: () => _onLanguageSelected(lang),
       child: Container(
@@ -1035,13 +1064,36 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    lang.nativeName,
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        displayName,
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      // Domestic English badge for en-NG
+                      if (isDomesticEnglish) ...[
+                        SizedBox(width: 6.w),
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(4.r),
+                          ),
+                          child: Text(
+                            'Domestic',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF10B981).withValues(alpha: 0.8),
+                              fontSize: 9.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                   SizedBox(height: 2.h),
                   Row(

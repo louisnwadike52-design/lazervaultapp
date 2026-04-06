@@ -179,9 +179,16 @@ class _PINEntryScreenState extends State<PINEntryScreen> {
   int _retriesRemaining = 3;
   bool _isBlocked = false;
 
+  // Session timeout - 5 minutes for PIN entry
+  Timer? _sessionTimeoutTimer;
+  static const Duration _sessionTimeout = Duration(minutes: 5);
+
   @override
   void initState() {
     super.initState();
+
+    // Start 5-minute session timeout
+    _startSessionTimeout();
 
     // Listen to PIN workflow events
     widget.workflowManager.events.listen((event) {
@@ -237,11 +244,31 @@ class _PINEntryScreenState extends State<PINEntryScreen> {
 
   @override
   void dispose() {
+    _sessionTimeoutTimer?.cancel();
     _pinController.dispose();
     for (var node in _pinFocusNodes) {
       node.dispose();
     }
     super.dispose();
+  }
+
+  void _startSessionTimeout() {
+    _sessionTimeoutTimer?.cancel();
+    _sessionTimeoutTimer = Timer(_sessionTimeout, () {
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'PIN entry session expired. Please try again.';
+          _isLoading = false;
+        });
+        // Cancel PIN and close dialog after short delay to show error
+        Future.delayed(const Duration(seconds: 2), () {
+          if (mounted) {
+            widget.onCancelled?.call();
+            Navigator.of(context).pop();
+          }
+        });
+      }
+    });
   }
 
   void _clearPIN() {

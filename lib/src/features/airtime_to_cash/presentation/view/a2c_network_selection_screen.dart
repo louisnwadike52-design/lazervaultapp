@@ -43,7 +43,11 @@ class _A2CNetworkSelectionScreenState extends State<A2CNetworkSelectionScreen> {
         child: Column(
           children: [
             _buildHeader(),
-            const A2CStepIndicator(currentStep: 0),
+            const A2CStepIndicator(
+              currentStep: 0,
+              totalSteps: 5,
+              stepLabels: ['Network', 'Details', 'Review', 'Verify', 'PIN'],
+            ),
             Expanded(
               child: rates.isNotEmpty
                   ? _buildNetworkGrid(rates)
@@ -174,7 +178,7 @@ class _A2CNetworkSelectionScreenState extends State<A2CNetworkSelectionScreen> {
     return GestureDetector(
       onTap: rate.isAvailable
           ? () {
-              Get.toNamed(AppRoutes.airtimeToCashPhoneInput, arguments: {
+              Get.toNamed(AppRoutes.airtimeToCashServiceVerification, arguments: {
                 'network': rate.network,
                 'rate': rate,
               });

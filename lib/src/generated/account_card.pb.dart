@@ -10,7 +10,7 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $1;
+import 'google/protobuf/timestamp.pb.dart' as $48;
 
 class AccountCard extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AccountCard', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts'), createEmptyInstance: create)
@@ -28,16 +28,16 @@ class AccountCard extends $pb.GeneratedMessage {
     ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cardNickname')
     ..a<$core.double>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'spendingLimit', $pb.PbFieldType.OD)
     ..a<$core.double>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'remainingLimit', $pb.PbFieldType.OD)
-    ..aOM<$1.Timestamp>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt', subBuilder: $48.Timestamp.create)
     ..a<$core.int>(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'usageCount', $pb.PbFieldType.O3)
     ..a<$core.int>(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'maxUsageCount', $pb.PbFieldType.O3)
     ..aOS(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
     ..aOS(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'billingAddress')
     ..aOS(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
     ..aOS(21, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'frozenReason')
-    ..aOM<$1.Timestamp>(22, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastUsedAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(23, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(24, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(22, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastUsedAt', subBuilder: $48.Timestamp.create)
+    ..aOM<$48.Timestamp>(23, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $48.Timestamp.create)
+    ..aOM<$48.Timestamp>(24, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $48.Timestamp.create)
     ..aOS(25, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cardNumber')
     ..aOS(26, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cvv')
     ..aOS(27, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cardPin')
@@ -63,16 +63,16 @@ class AccountCard extends $pb.GeneratedMessage {
     $core.String? cardNickname,
     $core.double? spendingLimit,
     $core.double? remainingLimit,
-    $1.Timestamp? expiresAt,
+    $48.Timestamp? expiresAt,
     $core.int? usageCount,
     $core.int? maxUsageCount,
     $core.String? currency,
     $core.String? billingAddress,
     $core.String? status,
     $core.String? frozenReason,
-    $1.Timestamp? lastUsedAt,
-    $1.Timestamp? createdAt,
-    $1.Timestamp? updatedAt,
+    $48.Timestamp? lastUsedAt,
+    $48.Timestamp? createdAt,
+    $48.Timestamp? updatedAt,
     $core.String? cardNumber,
     $core.String? cvv,
     $core.String? cardPin,
@@ -321,15 +321,15 @@ class AccountCard extends $pb.GeneratedMessage {
   void clearRemainingLimit() => clearField(14);
 
   @$pb.TagNumber(15)
-  $1.Timestamp get expiresAt => $_getN(14);
+  $48.Timestamp get expiresAt => $_getN(14);
   @$pb.TagNumber(15)
-  set expiresAt($1.Timestamp v) { setField(15, v); }
+  set expiresAt($48.Timestamp v) { setField(15, v); }
   @$pb.TagNumber(15)
   $core.bool hasExpiresAt() => $_has(14);
   @$pb.TagNumber(15)
   void clearExpiresAt() => clearField(15);
   @$pb.TagNumber(15)
-  $1.Timestamp ensureExpiresAt() => $_ensure(14);
+  $48.Timestamp ensureExpiresAt() => $_ensure(14);
 
   @$pb.TagNumber(16)
   $core.int get usageCount => $_getIZ(15);
@@ -386,37 +386,37 @@ class AccountCard extends $pb.GeneratedMessage {
   void clearFrozenReason() => clearField(21);
 
   @$pb.TagNumber(22)
-  $1.Timestamp get lastUsedAt => $_getN(21);
+  $48.Timestamp get lastUsedAt => $_getN(21);
   @$pb.TagNumber(22)
-  set lastUsedAt($1.Timestamp v) { setField(22, v); }
+  set lastUsedAt($48.Timestamp v) { setField(22, v); }
   @$pb.TagNumber(22)
   $core.bool hasLastUsedAt() => $_has(21);
   @$pb.TagNumber(22)
   void clearLastUsedAt() => clearField(22);
   @$pb.TagNumber(22)
-  $1.Timestamp ensureLastUsedAt() => $_ensure(21);
+  $48.Timestamp ensureLastUsedAt() => $_ensure(21);
 
   @$pb.TagNumber(23)
-  $1.Timestamp get createdAt => $_getN(22);
+  $48.Timestamp get createdAt => $_getN(22);
   @$pb.TagNumber(23)
-  set createdAt($1.Timestamp v) { setField(23, v); }
+  set createdAt($48.Timestamp v) { setField(23, v); }
   @$pb.TagNumber(23)
   $core.bool hasCreatedAt() => $_has(22);
   @$pb.TagNumber(23)
   void clearCreatedAt() => clearField(23);
   @$pb.TagNumber(23)
-  $1.Timestamp ensureCreatedAt() => $_ensure(22);
+  $48.Timestamp ensureCreatedAt() => $_ensure(22);
 
   @$pb.TagNumber(24)
-  $1.Timestamp get updatedAt => $_getN(23);
+  $48.Timestamp get updatedAt => $_getN(23);
   @$pb.TagNumber(24)
-  set updatedAt($1.Timestamp v) { setField(24, v); }
+  set updatedAt($48.Timestamp v) { setField(24, v); }
   @$pb.TagNumber(24)
   $core.bool hasUpdatedAt() => $_has(23);
   @$pb.TagNumber(24)
   void clearUpdatedAt() => clearField(24);
   @$pb.TagNumber(24)
-  $1.Timestamp ensureUpdatedAt() => $_ensure(23);
+  $48.Timestamp ensureUpdatedAt() => $_ensure(23);
 
   @$pb.TagNumber(25)
   $core.String get cardNumber => $_getSZ(24);
@@ -489,9 +489,9 @@ class CardTransaction extends $pb.GeneratedMessage {
     ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'declineReason')
     ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'authorizationCode')
     ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..aOM<$1.Timestamp>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionDate', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'settledAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionDate', subBuilder: $48.Timestamp.create)
+    ..aOM<$48.Timestamp>(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'settledAt', subBuilder: $48.Timestamp.create)
+    ..aOM<$48.Timestamp>(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $48.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -511,9 +511,9 @@ class CardTransaction extends $pb.GeneratedMessage {
     $core.String? declineReason,
     $core.String? authorizationCode,
     $core.String? description,
-    $1.Timestamp? transactionDate,
-    $1.Timestamp? settledAt,
-    $1.Timestamp? createdAt,
+    $48.Timestamp? transactionDate,
+    $48.Timestamp? settledAt,
+    $48.Timestamp? createdAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -717,37 +717,37 @@ class CardTransaction extends $pb.GeneratedMessage {
   void clearDescription() => clearField(14);
 
   @$pb.TagNumber(15)
-  $1.Timestamp get transactionDate => $_getN(14);
+  $48.Timestamp get transactionDate => $_getN(14);
   @$pb.TagNumber(15)
-  set transactionDate($1.Timestamp v) { setField(15, v); }
+  set transactionDate($48.Timestamp v) { setField(15, v); }
   @$pb.TagNumber(15)
   $core.bool hasTransactionDate() => $_has(14);
   @$pb.TagNumber(15)
   void clearTransactionDate() => clearField(15);
   @$pb.TagNumber(15)
-  $1.Timestamp ensureTransactionDate() => $_ensure(14);
+  $48.Timestamp ensureTransactionDate() => $_ensure(14);
 
   @$pb.TagNumber(16)
-  $1.Timestamp get settledAt => $_getN(15);
+  $48.Timestamp get settledAt => $_getN(15);
   @$pb.TagNumber(16)
-  set settledAt($1.Timestamp v) { setField(16, v); }
+  set settledAt($48.Timestamp v) { setField(16, v); }
   @$pb.TagNumber(16)
   $core.bool hasSettledAt() => $_has(15);
   @$pb.TagNumber(16)
   void clearSettledAt() => clearField(16);
   @$pb.TagNumber(16)
-  $1.Timestamp ensureSettledAt() => $_ensure(15);
+  $48.Timestamp ensureSettledAt() => $_ensure(15);
 
   @$pb.TagNumber(17)
-  $1.Timestamp get createdAt => $_getN(16);
+  $48.Timestamp get createdAt => $_getN(16);
   @$pb.TagNumber(17)
-  set createdAt($1.Timestamp v) { setField(17, v); }
+  set createdAt($48.Timestamp v) { setField(17, v); }
   @$pb.TagNumber(17)
   $core.bool hasCreatedAt() => $_has(16);
   @$pb.TagNumber(17)
   void clearCreatedAt() => clearField(17);
   @$pb.TagNumber(17)
-  $1.Timestamp ensureCreatedAt() => $_ensure(16);
+  $48.Timestamp ensureCreatedAt() => $_ensure(16);
 }
 
 class CreateVirtualCardRequest extends $pb.GeneratedMessage {

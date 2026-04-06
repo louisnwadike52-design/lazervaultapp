@@ -33,6 +33,12 @@ class VoiceFeedbackWebSocketService {
   String? _sessionId;
   String? _userId;
 
+  // Exponential backoff reconnection
+  int _reconnectAttempts = 0;
+  static const int _maxReconnectAttempts = 10;
+  static const Duration _initialReconnectDelay = Duration(seconds: 1);
+  static const Duration _maxReconnectDelay = Duration(seconds: 30);
+
   // Event callbacks
   final _stateControllers = <String, StreamController<VoiceTransactionEvent>>{};
   final _globalListeners = <void Function(VoiceTransactionEvent)>[];
@@ -79,6 +85,7 @@ class VoiceFeedbackWebSocketService {
       await readyFuture;
 
       _isConnected = true;
+      _reconnectAttempts = 0; // Reset reconnection counter on successful connection
       debugPrint('[VoiceFeedback] Connected successfully');
 
       // Subscribe to action-specific events if actionId provided
@@ -451,18 +458,49 @@ class VoiceFeedbackWebSocketService {
   }
 
   void _scheduleReconnect() {
+    if (_reconnectAttempts >= _maxReconnectAttempts) {
+      debugPrint('[VoiceFeedback] Max reconnect attempts ($_maxReconnectAttempts) reached. Giving up.');
+      // Notify callbacks about permanent failure
+      for (final callback in _onErrorCallbacks) {
+        try {
+          callback('Max reconnection attempts reached. Please check your connection.');
+        } catch (e) {
+          debugPrint('[VoiceFeedback] Error callback error: $e');
+        }
+      }
+      return;
+    }
+
     _reconnectTimer?.cancel();
-    _reconnectTimer = Timer(reconnectDelay, () async {
+
+    // Calculate exponential backoff delay: 2^n seconds, max 30 seconds
+    final delay = _calculateReconnectDelay(_reconnectAttempts);
+    debugPrint('[VoiceFeedback] Scheduling reconnect attempt ${_reconnectAttempts + 1}/$_maxReconnectAttempts in ${delay.inSeconds}s');
+
+    _reconnectTimer = Timer(delay, () async {
       if (_isIntentionallyClosed) return;
 
-      debugPrint('[VoiceFeedback] Attempting to reconnect...');
+      debugPrint('[VoiceFeedback] Attempting to reconnect (attempt ${_reconnectAttempts + 1}/$_maxReconnectAttempts)...');
+      _reconnectAttempts++;
+
       final success = await reconnect();
 
-      if (!success && !_isIntentionallyClosed) {
-        // Retry again after delay
+      if (success) {
+        // Reset counter on successful reconnection
+        _reconnectAttempts = 0;
+        debugPrint('[VoiceFeedback] Reconnection successful');
+      } else if (!_isIntentionallyClosed) {
+        // Retry again with exponential backoff
         _scheduleReconnect();
       }
     });
+  }
+
+  /// Calculate exponential backoff delay: 2^attempt seconds, clamped to max 30 seconds
+  Duration _calculateReconnectDelay(int attempt) {
+    final seconds = (1 << attempt).toDouble(); // 2^attempt
+    final clamped = seconds.clamp(1.0, _maxReconnectDelay.inSeconds.toDouble());
+    return Duration(seconds: clamped.toInt());
   }
 
   void _startPingTimer() {

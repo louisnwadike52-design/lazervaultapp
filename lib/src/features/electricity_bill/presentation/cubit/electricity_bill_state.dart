@@ -136,6 +136,21 @@ class PaymentSuccess extends ElectricityBillState {
   List<Object?> get props => [payment];
 }
 
+/// Backend returned pending/processing status — async mode is active.
+/// The token will arrive later via SMS/webhook. Flutter should poll.
+class AsyncPaymentPending extends ElectricityBillState {
+  final BillPaymentEntity payment;
+  final String message;
+
+  AsyncPaymentPending({
+    required this.payment,
+    this.message = 'Your token will be delivered via SMS once the provider confirms.',
+  });
+
+  @override
+  List<Object?> get props => [payment, message];
+}
+
 class PaymentFailed extends ElectricityBillState {
   final BillPaymentEntity payment;
   final String errorMessage;

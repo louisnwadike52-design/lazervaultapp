@@ -9,7 +9,7 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $1;
+import 'google/protobuf/timestamp.pb.dart' as $48;
 
 class InitiateLinkingRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'InitiateLinkingRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
@@ -62,7 +62,7 @@ class InitiateLinkingResponse extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'InitiateLinkingResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'whatsapp'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'otpReference')
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
-    ..aOM<$1.Timestamp>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt', subBuilder: $48.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -70,7 +70,7 @@ class InitiateLinkingResponse extends $pb.GeneratedMessage {
   factory InitiateLinkingResponse({
     $core.String? otpReference,
     $core.String? message,
-    $1.Timestamp? expiresAt,
+    $48.Timestamp? expiresAt,
   }) {
     final _result = create();
     if (otpReference != null) {
@@ -124,15 +124,15 @@ class InitiateLinkingResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(2);
 
   @$pb.TagNumber(3)
-  $1.Timestamp get expiresAt => $_getN(2);
+  $48.Timestamp get expiresAt => $_getN(2);
   @$pb.TagNumber(3)
-  set expiresAt($1.Timestamp v) { setField(3, v); }
+  set expiresAt($48.Timestamp v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasExpiresAt() => $_has(2);
   @$pb.TagNumber(3)
   void clearExpiresAt() => clearField(3);
   @$pb.TagNumber(3)
-  $1.Timestamp ensureExpiresAt() => $_ensure(2);
+  $48.Timestamp ensureExpiresAt() => $_ensure(2);
 }
 
 class VerifyLinkingRequest extends $pb.GeneratedMessage {
@@ -1583,8 +1583,8 @@ class WhatsAppSession extends $pb.GeneratedMessage {
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'whatsappUserId')
     ..aOB(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isAuthenticated')
-    ..aOM<$1.Timestamp>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastActivityAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt', subBuilder: $48.Timestamp.create)
+    ..aOM<$48.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastActivityAt', subBuilder: $48.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -1593,8 +1593,8 @@ class WhatsAppSession extends $pb.GeneratedMessage {
     $core.String? id,
     $core.String? whatsappUserId,
     $core.bool? isAuthenticated,
-    $1.Timestamp? expiresAt,
-    $1.Timestamp? lastActivityAt,
+    $48.Timestamp? expiresAt,
+    $48.Timestamp? lastActivityAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -1663,26 +1663,26 @@ class WhatsAppSession extends $pb.GeneratedMessage {
   void clearIsAuthenticated() => clearField(3);
 
   @$pb.TagNumber(4)
-  $1.Timestamp get expiresAt => $_getN(3);
+  $48.Timestamp get expiresAt => $_getN(3);
   @$pb.TagNumber(4)
-  set expiresAt($1.Timestamp v) { setField(4, v); }
+  set expiresAt($48.Timestamp v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasExpiresAt() => $_has(3);
   @$pb.TagNumber(4)
   void clearExpiresAt() => clearField(4);
   @$pb.TagNumber(4)
-  $1.Timestamp ensureExpiresAt() => $_ensure(3);
+  $48.Timestamp ensureExpiresAt() => $_ensure(3);
 
   @$pb.TagNumber(5)
-  $1.Timestamp get lastActivityAt => $_getN(4);
+  $48.Timestamp get lastActivityAt => $_getN(4);
   @$pb.TagNumber(5)
-  set lastActivityAt($1.Timestamp v) { setField(5, v); }
+  set lastActivityAt($48.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasLastActivityAt() => $_has(4);
   @$pb.TagNumber(5)
   void clearLastActivityAt() => clearField(5);
   @$pb.TagNumber(5)
-  $1.Timestamp ensureLastActivityAt() => $_ensure(4);
+  $48.Timestamp ensureLastActivityAt() => $_ensure(4);
 }
 
 class InvalidateSessionRequest extends $pb.GeneratedMessage {
@@ -2248,7 +2248,7 @@ class AuditLog extends $pb.GeneratedMessage {
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'action')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'serviceType')
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
-    ..aOM<$1.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $48.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -2258,7 +2258,7 @@ class AuditLog extends $pb.GeneratedMessage {
     $core.String? action,
     $core.String? serviceType,
     $core.String? status,
-    $1.Timestamp? createdAt,
+    $48.Timestamp? createdAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -2336,15 +2336,15 @@ class AuditLog extends $pb.GeneratedMessage {
   void clearStatus() => clearField(4);
 
   @$pb.TagNumber(5)
-  $1.Timestamp get createdAt => $_getN(4);
+  $48.Timestamp get createdAt => $_getN(4);
   @$pb.TagNumber(5)
-  set createdAt($1.Timestamp v) { setField(5, v); }
+  set createdAt($48.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasCreatedAt() => $_has(4);
   @$pb.TagNumber(5)
   void clearCreatedAt() => clearField(5);
   @$pb.TagNumber(5)
-  $1.Timestamp ensureCreatedAt() => $_ensure(4);
+  $48.Timestamp ensureCreatedAt() => $_ensure(4);
 }
 
 class WhatsAppUser extends $pb.GeneratedMessage {
@@ -2354,8 +2354,8 @@ class WhatsAppUser extends $pb.GeneratedMessage {
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumber')
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'whatsappId')
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'linkStatus')
-    ..aOM<$1.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'linkedAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastActiveAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'linkedAt', subBuilder: $48.Timestamp.create)
+    ..aOM<$48.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastActiveAt', subBuilder: $48.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -2366,8 +2366,8 @@ class WhatsAppUser extends $pb.GeneratedMessage {
     $core.String? phoneNumber,
     $core.String? whatsappId,
     $core.String? linkStatus,
-    $1.Timestamp? linkedAt,
-    $1.Timestamp? lastActiveAt,
+    $48.Timestamp? linkedAt,
+    $48.Timestamp? lastActiveAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -2460,25 +2460,25 @@ class WhatsAppUser extends $pb.GeneratedMessage {
   void clearLinkStatus() => clearField(5);
 
   @$pb.TagNumber(6)
-  $1.Timestamp get linkedAt => $_getN(5);
+  $48.Timestamp get linkedAt => $_getN(5);
   @$pb.TagNumber(6)
-  set linkedAt($1.Timestamp v) { setField(6, v); }
+  set linkedAt($48.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasLinkedAt() => $_has(5);
   @$pb.TagNumber(6)
   void clearLinkedAt() => clearField(6);
   @$pb.TagNumber(6)
-  $1.Timestamp ensureLinkedAt() => $_ensure(5);
+  $48.Timestamp ensureLinkedAt() => $_ensure(5);
 
   @$pb.TagNumber(7)
-  $1.Timestamp get lastActiveAt => $_getN(6);
+  $48.Timestamp get lastActiveAt => $_getN(6);
   @$pb.TagNumber(7)
-  set lastActiveAt($1.Timestamp v) { setField(7, v); }
+  set lastActiveAt($48.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasLastActiveAt() => $_has(6);
   @$pb.TagNumber(7)
   void clearLastActiveAt() => clearField(7);
   @$pb.TagNumber(7)
-  $1.Timestamp ensureLastActiveAt() => $_ensure(6);
+  $48.Timestamp ensureLastActiveAt() => $_ensure(6);
 }
 

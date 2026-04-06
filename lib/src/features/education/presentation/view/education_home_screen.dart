@@ -21,6 +21,25 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
     context.read<EducationCubit>().getProviders();
   }
 
+  void _handleRebuyPurchase(Map<String, dynamic> rebuyPurchase, List<EducationProviderEntity> providers) {
+    // Find the matching provider by serviceId
+    final serviceId = rebuyPurchase['serviceId'] as String?;
+    if (serviceId != null && serviceId.isNotEmpty) {
+      final matchingProvider = providers.firstWhere(
+        (p) => p.serviceId == serviceId,
+        orElse: () => providers.first,
+      );
+
+      // Navigate to purchase screen with provider and rebuy data
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Get.toNamed(AppRoutes.educationPurchase, arguments: {
+          'provider': matchingProvider,
+          'rebuyPurchase': rebuyPurchase,
+        });
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,10 +60,32 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
           ),
         ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            onPressed: () => Get.toNamed(AppRoutes.educationHistory),
+            icon: const Icon(Icons.history, color: Colors.white),
+            tooltip: 'Purchase History',
+          ),
+        ],
       ),
       body: SafeArea(
         child: BlocBuilder<EducationCubit, EducationState>(
           builder: (context, state) {
+            // Check for rebuy purchase argument
+            final args = Get.arguments as Map<String, dynamic>?;
+            final rebuyPurchase = args?['rebuyPurchase'] as Map<String, dynamic>?;
+
+            if (state is EducationProvidersLoaded && rebuyPurchase != null) {
+              // Handle rebuy: find provider and navigate to purchase screen
+              _handleRebuyPurchase(rebuyPurchase, state.providers);
+              // Show loading while navigating
+              return const Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                ),
+              );
+            }
+
             if (state is EducationLoading) {
               return const Center(
                 child: CircularProgressIndicator(

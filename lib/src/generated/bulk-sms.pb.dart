@@ -10,7 +10,7 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $1;
+import 'google/protobuf/timestamp.pb.dart' as $48;
 
 import 'bulk-sms.pbenum.dart';
 
@@ -428,9 +428,9 @@ class SmsCampaign extends $pb.GeneratedMessage {
     ..aInt64(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'costKobo')
     ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
     ..aOS(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reference')
-    ..aOM<$1.Timestamp>(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'scheduledAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $48.Timestamp.create)
+    ..aOM<$48.Timestamp>(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'scheduledAt', subBuilder: $48.Timestamp.create)
+    ..aOM<$48.Timestamp>(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completedAt', subBuilder: $48.Timestamp.create)
     ..a<$core.int>(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'creditsUsed', $pb.PbFieldType.O3)
     ..hasRequiredFields = false
   ;
@@ -452,9 +452,9 @@ class SmsCampaign extends $pb.GeneratedMessage {
     $fixnum.Int64? costKobo,
     $core.String? currency,
     $core.String? reference,
-    $1.Timestamp? createdAt,
-    $1.Timestamp? scheduledAt,
-    $1.Timestamp? completedAt,
+    $48.Timestamp? createdAt,
+    $48.Timestamp? scheduledAt,
+    $48.Timestamp? completedAt,
     $core.int? creditsUsed,
   }) {
     final _result = create();
@@ -674,37 +674,37 @@ class SmsCampaign extends $pb.GeneratedMessage {
   void clearReference() => clearField(15);
 
   @$pb.TagNumber(16)
-  $1.Timestamp get createdAt => $_getN(15);
+  $48.Timestamp get createdAt => $_getN(15);
   @$pb.TagNumber(16)
-  set createdAt($1.Timestamp v) { setField(16, v); }
+  set createdAt($48.Timestamp v) { setField(16, v); }
   @$pb.TagNumber(16)
   $core.bool hasCreatedAt() => $_has(15);
   @$pb.TagNumber(16)
   void clearCreatedAt() => clearField(16);
   @$pb.TagNumber(16)
-  $1.Timestamp ensureCreatedAt() => $_ensure(15);
+  $48.Timestamp ensureCreatedAt() => $_ensure(15);
 
   @$pb.TagNumber(17)
-  $1.Timestamp get scheduledAt => $_getN(16);
+  $48.Timestamp get scheduledAt => $_getN(16);
   @$pb.TagNumber(17)
-  set scheduledAt($1.Timestamp v) { setField(17, v); }
+  set scheduledAt($48.Timestamp v) { setField(17, v); }
   @$pb.TagNumber(17)
   $core.bool hasScheduledAt() => $_has(16);
   @$pb.TagNumber(17)
   void clearScheduledAt() => clearField(17);
   @$pb.TagNumber(17)
-  $1.Timestamp ensureScheduledAt() => $_ensure(16);
+  $48.Timestamp ensureScheduledAt() => $_ensure(16);
 
   @$pb.TagNumber(18)
-  $1.Timestamp get completedAt => $_getN(17);
+  $48.Timestamp get completedAt => $_getN(17);
   @$pb.TagNumber(18)
-  set completedAt($1.Timestamp v) { setField(18, v); }
+  set completedAt($48.Timestamp v) { setField(18, v); }
   @$pb.TagNumber(18)
   $core.bool hasCompletedAt() => $_has(17);
   @$pb.TagNumber(18)
   void clearCompletedAt() => clearField(18);
   @$pb.TagNumber(18)
-  $1.Timestamp ensureCompletedAt() => $_ensure(17);
+  $48.Timestamp ensureCompletedAt() => $_ensure(17);
 
   @$pb.TagNumber(19)
   $core.int get creditsUsed => $_getIZ(18);
@@ -724,8 +724,8 @@ class SmsDeliveryReport extends $pb.GeneratedMessage {
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientName')
     ..e<DeliveryStatus>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: DeliveryStatus.DELIVERY_STATUS_UNSPECIFIED, valueOf: DeliveryStatus.valueOf, enumValues: DeliveryStatus.values)
     ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'providerMessageId')
-    ..aOM<$1.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sentAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deliveredAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sentAt', subBuilder: $48.Timestamp.create)
+    ..aOM<$48.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deliveredAt', subBuilder: $48.Timestamp.create)
     ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failureReason')
     ..hasRequiredFields = false
   ;
@@ -738,8 +738,8 @@ class SmsDeliveryReport extends $pb.GeneratedMessage {
     $core.String? recipientName,
     DeliveryStatus? status,
     $core.String? providerMessageId,
-    $1.Timestamp? sentAt,
-    $1.Timestamp? deliveredAt,
+    $48.Timestamp? sentAt,
+    $48.Timestamp? deliveredAt,
     $core.String? failureReason,
   }) {
     final _result = create();
@@ -848,26 +848,26 @@ class SmsDeliveryReport extends $pb.GeneratedMessage {
   void clearProviderMessageId() => clearField(6);
 
   @$pb.TagNumber(7)
-  $1.Timestamp get sentAt => $_getN(6);
+  $48.Timestamp get sentAt => $_getN(6);
   @$pb.TagNumber(7)
-  set sentAt($1.Timestamp v) { setField(7, v); }
+  set sentAt($48.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasSentAt() => $_has(6);
   @$pb.TagNumber(7)
   void clearSentAt() => clearField(7);
   @$pb.TagNumber(7)
-  $1.Timestamp ensureSentAt() => $_ensure(6);
+  $48.Timestamp ensureSentAt() => $_ensure(6);
 
   @$pb.TagNumber(8)
-  $1.Timestamp get deliveredAt => $_getN(7);
+  $48.Timestamp get deliveredAt => $_getN(7);
   @$pb.TagNumber(8)
-  set deliveredAt($1.Timestamp v) { setField(8, v); }
+  set deliveredAt($48.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasDeliveredAt() => $_has(7);
   @$pb.TagNumber(8)
   void clearDeliveredAt() => clearField(8);
   @$pb.TagNumber(8)
-  $1.Timestamp ensureDeliveredAt() => $_ensure(7);
+  $48.Timestamp ensureDeliveredAt() => $_ensure(7);
 
   @$pb.TagNumber(9)
   $core.String get failureReason => $_getSZ(8);
@@ -883,7 +883,7 @@ class SmsBalance extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SmsBalance', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'bulksms'), createEmptyInstance: create)
     ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'creditsRemaining', $pb.PbFieldType.O3)
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'providerName')
-    ..aOM<$1.Timestamp>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastPurchaseAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastPurchaseAt', subBuilder: $48.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -891,7 +891,7 @@ class SmsBalance extends $pb.GeneratedMessage {
   factory SmsBalance({
     $core.int? creditsRemaining,
     $core.String? providerName,
-    $1.Timestamp? lastPurchaseAt,
+    $48.Timestamp? lastPurchaseAt,
   }) {
     final _result = create();
     if (creditsRemaining != null) {
@@ -945,15 +945,15 @@ class SmsBalance extends $pb.GeneratedMessage {
   void clearProviderName() => clearField(2);
 
   @$pb.TagNumber(3)
-  $1.Timestamp get lastPurchaseAt => $_getN(2);
+  $48.Timestamp get lastPurchaseAt => $_getN(2);
   @$pb.TagNumber(3)
-  set lastPurchaseAt($1.Timestamp v) { setField(3, v); }
+  set lastPurchaseAt($48.Timestamp v) { setField(3, v); }
   @$pb.TagNumber(3)
   $core.bool hasLastPurchaseAt() => $_has(2);
   @$pb.TagNumber(3)
   void clearLastPurchaseAt() => clearField(3);
   @$pb.TagNumber(3)
-  $1.Timestamp ensureLastPurchaseAt() => $_ensure(2);
+  $48.Timestamp ensureLastPurchaseAt() => $_ensure(2);
 }
 
 class SmsPurchase extends $pb.GeneratedMessage {
@@ -968,7 +968,7 @@ class SmsPurchase extends $pb.GeneratedMessage {
     ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
     ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reference')
     ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
-    ..aOM<$1.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $48.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -984,7 +984,7 @@ class SmsPurchase extends $pb.GeneratedMessage {
     $core.String? currency,
     $core.String? reference,
     $core.String? status,
-    $1.Timestamp? createdAt,
+    $48.Timestamp? createdAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -1134,15 +1134,15 @@ class SmsPurchase extends $pb.GeneratedMessage {
   void clearStatus() => clearField(10);
 
   @$pb.TagNumber(11)
-  $1.Timestamp get createdAt => $_getN(10);
+  $48.Timestamp get createdAt => $_getN(10);
   @$pb.TagNumber(11)
-  set createdAt($1.Timestamp v) { setField(11, v); }
+  set createdAt($48.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasCreatedAt() => $_has(10);
   @$pb.TagNumber(11)
   void clearCreatedAt() => clearField(11);
   @$pb.TagNumber(11)
-  $1.Timestamp ensureCreatedAt() => $_ensure(10);
+  $48.Timestamp ensureCreatedAt() => $_ensure(10);
 }
 
 class SenderId extends $pb.GeneratedMessage {
@@ -1152,8 +1152,8 @@ class SenderId extends $pb.GeneratedMessage {
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'senderId')
     ..e<SenderIdStatus>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: SenderIdStatus.SENDER_ID_STATUS_UNSPECIFIED, valueOf: SenderIdStatus.valueOf, enumValues: SenderIdStatus.values)
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'country')
-    ..aOM<$1.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'requestedAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'approvedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'requestedAt', subBuilder: $48.Timestamp.create)
+    ..aOM<$48.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'approvedAt', subBuilder: $48.Timestamp.create)
     ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'rejectionReason')
     ..hasRequiredFields = false
   ;
@@ -1165,8 +1165,8 @@ class SenderId extends $pb.GeneratedMessage {
     $core.String? senderId,
     SenderIdStatus? status,
     $core.String? country,
-    $1.Timestamp? requestedAt,
-    $1.Timestamp? approvedAt,
+    $48.Timestamp? requestedAt,
+    $48.Timestamp? approvedAt,
     $core.String? rejectionReason,
   }) {
     final _result = create();
@@ -1263,26 +1263,26 @@ class SenderId extends $pb.GeneratedMessage {
   void clearCountry() => clearField(5);
 
   @$pb.TagNumber(6)
-  $1.Timestamp get requestedAt => $_getN(5);
+  $48.Timestamp get requestedAt => $_getN(5);
   @$pb.TagNumber(6)
-  set requestedAt($1.Timestamp v) { setField(6, v); }
+  set requestedAt($48.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasRequestedAt() => $_has(5);
   @$pb.TagNumber(6)
   void clearRequestedAt() => clearField(6);
   @$pb.TagNumber(6)
-  $1.Timestamp ensureRequestedAt() => $_ensure(5);
+  $48.Timestamp ensureRequestedAt() => $_ensure(5);
 
   @$pb.TagNumber(7)
-  $1.Timestamp get approvedAt => $_getN(6);
+  $48.Timestamp get approvedAt => $_getN(6);
   @$pb.TagNumber(7)
-  set approvedAt($1.Timestamp v) { setField(7, v); }
+  set approvedAt($48.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasApprovedAt() => $_has(6);
   @$pb.TagNumber(7)
   void clearApprovedAt() => clearField(7);
   @$pb.TagNumber(7)
-  $1.Timestamp ensureApprovedAt() => $_ensure(6);
+  $48.Timestamp ensureApprovedAt() => $_ensure(6);
 
   @$pb.TagNumber(8)
   $core.String get rejectionReason => $_getSZ(7);
@@ -2115,7 +2115,7 @@ class ScheduleSmsRequest extends $pb.GeneratedMessage {
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'senderId')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'messageTemplate')
     ..pc<SmsRecipient>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipients', $pb.PbFieldType.PM, subBuilder: SmsRecipient.create)
-    ..aOM<$1.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'scheduledAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'scheduledAt', subBuilder: $48.Timestamp.create)
     ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'idempotencyKey')
     ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionId')
     ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verificationToken')
@@ -2128,7 +2128,7 @@ class ScheduleSmsRequest extends $pb.GeneratedMessage {
     $core.String? senderId,
     $core.String? messageTemplate,
     $core.Iterable<SmsRecipient>? recipients,
-    $1.Timestamp? scheduledAt,
+    $48.Timestamp? scheduledAt,
     $core.String? idempotencyKey,
     $core.String? transactionId,
     $core.String? verificationToken,
@@ -2212,15 +2212,15 @@ class ScheduleSmsRequest extends $pb.GeneratedMessage {
   $core.List<SmsRecipient> get recipients => $_getList(3);
 
   @$pb.TagNumber(5)
-  $1.Timestamp get scheduledAt => $_getN(4);
+  $48.Timestamp get scheduledAt => $_getN(4);
   @$pb.TagNumber(5)
-  set scheduledAt($1.Timestamp v) { setField(5, v); }
+  set scheduledAt($48.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasScheduledAt() => $_has(4);
   @$pb.TagNumber(5)
   void clearScheduledAt() => clearField(5);
   @$pb.TagNumber(5)
-  $1.Timestamp ensureScheduledAt() => $_ensure(4);
+  $48.Timestamp ensureScheduledAt() => $_ensure(4);
 
   @$pb.TagNumber(6)
   $core.String get idempotencyKey => $_getSZ(5);

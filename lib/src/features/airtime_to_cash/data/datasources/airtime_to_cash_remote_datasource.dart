@@ -19,11 +19,17 @@ abstract class AirtimeToCashRemoteDataSource {
     String sessionId,
   );
 
+  Future<ServiceVerificationResult> verifyService(String network);
+
+  Future<ProviderInfoResult> getProviderInfo();
+
   Future<AirtimeToCashConversionModel> convert({
     required String phoneNumber,
     required String network,
     required double amount,
     required String sessionToken,
+    required String sessionId,
+    required String pin,
     required String transactionId,
     required String verificationToken,
     required String idempotencyKey,
@@ -33,6 +39,8 @@ abstract class AirtimeToCashRemoteDataSource {
     int limit = 20,
     int offset = 0,
   });
+
+  Future<QuotaCheckResult> checkQuota(String network, double amount);
 }
 
 class AirtimeToCashRemoteDataSourceImpl
@@ -93,6 +101,8 @@ class AirtimeToCashRemoteDataSourceImpl
             : (response.success ? 'OTP sent successfully' : 'Failed to send OTP'),
         sessionId: response.sessionId,
         otpRequired: response.otpRequired,
+        destinationPhone: response.hasDestinationPhone() ? response.destinationPhone : '',
+        providerName: response.hasProviderName() ? response.providerName : '',
       );
     } on GrpcError catch (e) {
       throw Exception('Failed to request OTP: ${e.message}');
@@ -135,6 +145,7 @@ class AirtimeToCashRemoteDataSourceImpl
             ? response.message
             : (response.verified ? 'OTP verified' : 'Invalid OTP code'),
         sessionToken: response.sessionToken,
+        sessionId: response.sessionId, // sessionId now returned in response
       );
     } on GrpcError catch (e) {
       throw Exception('Failed to verify OTP: ${e.message}');
@@ -148,11 +159,55 @@ class AirtimeToCashRemoteDataSourceImpl
   }
 
   @override
+  Future<QuotaCheckResult> checkQuota(String network, double amount) async {
+    try {
+      final request = pb.GetAirtimeToCashRatesRequest();
+
+      final options = await grpcClient.callOptions;
+      final response = await grpcClient.utilityPaymentsClient
+          .getAirtimeToCashRates(request, options: options);
+
+      // Find the specific network rate
+      final networkRate = response.rates.firstWhere(
+        (rate) => rate.network == network,
+        orElse: () => pb.AirtimeToCashNetworkRate()
+          ..network = network
+          ..isAvailable = false
+          ..conversionRate = 0.0
+          ..minAmount = 0.0
+          ..maxAmount = 0.0
+          ..automationFee = 0.0,
+      );
+
+      final available = networkRate.isAvailable &&
+          amount >= networkRate.minAmount &&
+          amount <= networkRate.maxAmount;
+
+      return QuotaCheckResult(
+        available: available,
+        maxAmount: networkRate.maxAmount,
+        message: available
+            ? 'Conversion available at ${networkRate.conversionRate}x rate'
+            : 'Conversion not available for this network or amount',
+      );
+    } on GrpcError catch (e) {
+      throw Exception('Failed to check quota: ${e.message}');
+    } on TimeoutException {
+      throw Exception('Quota check timed out. Please try again.');
+    } catch (e) {
+      if (e is Exception) rethrow;
+      throw Exception('Failed to check quota: $e');
+    }
+  }
+
+  @override
   Future<AirtimeToCashConversionModel> convert({
     required String phoneNumber,
     required String network,
     required double amount,
     required String sessionToken,
+    required String sessionId,
+    required String pin,
     required String transactionId,
     required String verificationToken,
     required String idempotencyKey,
@@ -163,6 +218,8 @@ class AirtimeToCashRemoteDataSourceImpl
         ..network = network
         ..amount = amount
         ..sessionToken = sessionToken
+        ..sessionId = sessionId
+        ..pin = pin
         ..transactionId = transactionId
         ..verificationToken = verificationToken
         ..idempotencyKey = idempotencyKey;
@@ -216,6 +273,80 @@ class AirtimeToCashRemoteDataSourceImpl
     } catch (e) {
       if (e is Exception) rethrow;
       throw Exception('Failed to fetch airtime-to-cash history: $e');
+    }
+  }
+
+  @override
+  Future<ServiceVerificationResult> verifyService(String network) async {
+    try {
+      final request = pb.GetAirtimeToCashRatesRequest();
+
+      final options = await grpcClient.callOptions;
+      final response = await grpcClient.utilityPaymentsClient
+          .getAirtimeToCashRates(request, options: options);
+
+      // Check if the specific network is available
+      final networkRate = response.rates.firstWhere(
+        (rate) => rate.network == network,
+        orElse: () => pb.AirtimeToCashNetworkRate()
+          ..network = network
+          ..isAvailable = false,
+      );
+
+      return ServiceVerificationResult(
+        isAvailable: networkRate.isAvailable,
+        providerName: 'VTUAfrica',
+        destinationPhone: '',
+        message: networkRate.isAvailable
+            ? 'Service available for $network'
+            : 'Service not available for $network',
+        network: network,
+        requiresTransfer: true,
+      );
+    } on GrpcError catch (e) {
+      throw Exception('Failed to verify service: ${e.message}');
+    } on TimeoutException {
+      throw Exception('Service verification timed out. Please try again.');
+    } catch (e) {
+      if (e is Exception) rethrow;
+      throw Exception('Failed to verify service: $e');
+    }
+  }
+
+  @override
+  Future<ProviderInfoResult> getProviderInfo() async {
+    try {
+      // Use GetAirtimeToCashRates to get provider info
+      final request = pb.GetAirtimeToCashRatesRequest();
+
+      final options = await grpcClient.callOptions;
+      final response = await grpcClient.utilityPaymentsClient
+          .getAirtimeToCashRates(request, options: options);
+
+      // Map network rates to provider status info
+      final providers = response.rates.map((rate) => ProviderStatusInfo(
+        name: rate.network,
+        displayName: '${rate.network} Airtime',
+        isActive: rate.isAvailable,
+        isHealthy: rate.isAvailable,
+        networkCount: 1,
+        errorMessage: rate.isAvailable ? '' : 'Network unavailable',
+      )).toList();
+
+      return ProviderInfoResult(
+        providerName: 'VTUAfrica',
+        requiresOTP: true,
+        requiresTransfer: true,
+        displayName: 'Airtime to Cash',
+        providers: providers,
+      );
+    } on GrpcError catch (e) {
+      throw Exception('Failed to get provider info: ${e.message}');
+    } on TimeoutException {
+      throw Exception('Request timed out. Please check your connection and try again.');
+    } catch (e) {
+      if (e is Exception) rethrow;
+      throw Exception('Failed to get provider info: $e');
     }
   }
 }

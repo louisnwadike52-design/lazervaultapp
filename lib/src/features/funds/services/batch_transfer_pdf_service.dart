@@ -13,7 +13,6 @@ import 'package:lazervault/src/features/funds/domain/entities/batch_transfer_ent
 class BatchTransferPdfService {
   static final _dateFormat = DateFormat('yyyy-MM-dd');
   static final _displayDateFormat = DateFormat('MMM dd, yyyy');
-  static final _fullDateTimeFormat = DateFormat('MMM dd, yyyy HH:mm');
 
   // Cache for loaded fonts
   static pw.Font? _regularFont;

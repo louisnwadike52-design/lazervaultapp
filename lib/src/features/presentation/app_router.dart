@@ -31,6 +31,7 @@ import 'package:lazervault/src/features/gift_cards/domain/entities/gift_card_ent
 import 'package:lazervault/src/features/gift_cards/cubit/gift_card_cubit.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/sell_gift_card_screen.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/my_sales_screen.dart';
+import 'package:lazervault/src/features/gift_cards/presentation/view/settlement_history_screen.dart';
 import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/cb_currency_exchange_screen.dart';
 import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/currency_deposit_screen.dart';
 import 'package:lazervault/src/features/presentation/views/deposit/deposit_method_selection_screen.dart';
@@ -93,6 +94,7 @@ import 'package:lazervault/src/features/presentation/views/upload_image_scren.da
 import 'package:lazervault/src/features/portfolio/presentation/view/portfolio_details_screen.dart';
 import 'package:lazervault/src/features/portfolio/presentation/cubit/portfolio_cubit.dart';
 import '../../../core/services/injection_container.dart';
+import '../../../src/core/network/grpc_client.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/modern_onboarding_screen.dart';
 import '../../../main.dart' show AuthCheckScreen;
@@ -191,6 +193,7 @@ import 'package:lazervault/src/features/insurance/presentation/view/insurance_al
 import 'package:lazervault/src/features/airtime/presentation/cubit/airtime_cubit.dart';
 import 'package:lazervault/src/features/airtime/presentation/view/airtime_screen.dart';
 import 'package:lazervault/src/features/airtime/presentation/view/network_selection_screen.dart';
+import 'package:lazervault/src/features/airtime/presentation/view/country_selection_screen.dart';
 import 'package:lazervault/src/features/airtime/presentation/view/recipient_input_screen.dart';
 import 'package:lazervault/src/features/airtime/presentation/view/amount_selection_screen.dart';
 import 'package:lazervault/src/features/airtime/presentation/view/airtime_review_screen.dart';
@@ -203,10 +206,13 @@ import 'package:lazervault/src/features/airtime/presentation/view/airtime_transf
 import 'package:lazervault/src/features/airtime_to_cash/presentation/cubit/airtime_to_cash_cubit.dart';
 import 'package:lazervault/src/features/airtime_to_cash/presentation/view/airtime_to_cash_home_screen.dart';
 import 'package:lazervault/src/features/airtime_to_cash/presentation/view/a2c_network_selection_screen.dart';
+import 'package:lazervault/src/features/airtime_to_cash/presentation/view/a2c_service_verification_screen.dart';
+import 'package:lazervault/src/features/airtime_to_cash/presentation/view/a2c_transfer_instructions_screen.dart';
 import 'package:lazervault/src/features/airtime_to_cash/presentation/view/a2c_phone_input_screen.dart';
 import 'package:lazervault/src/features/airtime_to_cash/presentation/view/a2c_amount_input_screen.dart';
 import 'package:lazervault/src/features/airtime_to_cash/presentation/view/a2c_review_screen.dart';
 import 'package:lazervault/src/features/airtime_to_cash/presentation/view/a2c_otp_screen.dart';
+import 'package:lazervault/src/features/airtime_to_cash/presentation/view/a2c_pin_input_screen.dart';
 import 'package:lazervault/src/features/airtime_to_cash/presentation/view/a2c_processing_screen.dart';
 import 'package:lazervault/src/features/airtime_to_cash/presentation/view/a2c_result_screen.dart';
 
@@ -351,11 +357,16 @@ import 'package:lazervault/src/features/cable_tv/presentation/view/cable_tv_paym
 
 // Education imports
 import 'package:lazervault/src/features/education/presentation/cubit/education_cubit.dart';
+import 'package:lazervault/src/features/education/presentation/cubit/education_history_cubit.dart';
 import 'package:lazervault/src/features/education/presentation/view/education_home_screen.dart';
 import 'package:lazervault/src/features/education/presentation/view/education_purchase_screen.dart';
 import 'package:lazervault/src/features/education/presentation/view/education_payment_confirmation_screen.dart';
 import 'package:lazervault/src/features/education/presentation/view/education_payment_processing_screen.dart';
 import 'package:lazervault/src/features/education/presentation/view/education_pin_result_screen.dart';
+import 'package:lazervault/src/features/education/presentation/view/education_history_screen.dart';
+import 'package:lazervault/src/features/education/presentation/view/education_pin_details_screen.dart';
+import 'package:lazervault/src/features/education/data/repositories/education_repository_impl.dart';
+import 'package:lazervault/src/features/education/data/datasources/education_remote_datasource.dart';
 
 // Water Bill imports
 import 'package:lazervault/src/features/water_bill/presentation/cubit/water_bill_cubit.dart';
@@ -1365,6 +1376,14 @@ class AppRouter {
       ),
       transition: Transition.rightToLeft,
     ),
+    GetPage(
+      name: AppRoutes.settlementHistory,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<GiftCardCubit>(),
+        child: const SettlementHistoryScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
     // International transfer routes removed — now handled by /exchange/* flow
     GetPage(
       name: AppRoutes.depositMethodSelection,
@@ -1828,6 +1847,14 @@ GetPage(
       transition: Transition.rightToLeft,
     ),
     GetPage(
+      name: AppRoutes.airtimeCountrySelection,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AirtimeCubit>(),
+        child: const CountrySelectionScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
       name: AppRoutes.airtimeRecipientInput,
       page: () => BlocProvider(
         create: (_) => serviceLocator<AirtimeCubit>(),
@@ -1926,6 +1953,22 @@ GetPage(
       transition: Transition.rightToLeft,
     ),
     GetPage(
+      name: AppRoutes.airtimeToCashServiceVerification,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AirtimeToCashCubit>(),
+        child: const A2CServiceVerificationScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.airtimeToCashTransferInstructions,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AirtimeToCashCubit>(),
+        child: const A2CTransferInstructionsScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
       name: AppRoutes.airtimeToCashPhoneInput,
       page: () => BlocProvider(
         create: (_) => serviceLocator<AirtimeToCashCubit>(),
@@ -1957,6 +2000,14 @@ GetPage(
       page: () => BlocProvider(
         create: (_) => serviceLocator<AirtimeToCashCubit>(),
         child: const A2COTPScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.airtimeToCashPinInput,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AirtimeToCashCubit>(),
+        child: const A2CPinInputScreen(),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -3188,6 +3239,25 @@ GetPage(
     GetPage(
       name: AppRoutes.educationPinResult,
       page: () => const EducationPinResultScreen(),
+      transition: Transition.zoom,
+    ),
+    GetPage(
+      name: AppRoutes.educationHistory,
+      page: () => BlocProvider(
+        create: (context) => EducationHistoryCubit(
+          EducationRepositoryImpl(
+            remoteDataSource: EducationRemoteDataSourceImpl(
+              grpcClient: serviceLocator<GrpcClient>(),
+            ),
+          ),
+        )..loadHistory(),
+        child: const EducationHistoryScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.educationPinDetails,
+      page: () => const EducationPinDetailsScreen(),
       transition: Transition.zoom,
     ),
 

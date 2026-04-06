@@ -16,6 +16,7 @@ import '../../generated/electricity_bill.pbgrpc.dart';
 import '../../generated/giftcards.pbgrpc.dart';
 import '../../generated/lock_funds.pbgrpc.dart';
 import '../../generated/insurance.pbgrpc.dart';
+import '../../generated/financial-products.pbgrpc.dart';
 import '../../generated/contactless_payment.pbgrpc.dart';
 import '../../generated/split_bill.pbgrpc.dart';
 import '../../generated/utility-payments.pbgrpc.dart';
@@ -37,6 +38,7 @@ class GrpcClient {
   late GiftCardsServiceClient _giftCardClient;
   late LockFundsServiceClient _lockFundsClient;
   late InsuranceServiceClient _insuranceClient;
+  late FinancialProductsServiceClient _financialProductsClient;
   late ContactlessPaymentServiceClient _contactlessPaymentClient;
   late SplitBillServiceClient _splitBillClient;
   late UtilityPaymentsServiceClient _utilityPaymentsClient;
@@ -71,6 +73,7 @@ class GrpcClient {
     _giftCardClient = GiftCardsServiceClient(_channel);
     _lockFundsClient = LockFundsServiceClient(_channel);
     _insuranceClient = InsuranceServiceClient(_channel);
+    _financialProductsClient = FinancialProductsServiceClient(_channel);
     _contactlessPaymentClient = ContactlessPaymentServiceClient(_channel);
     _splitBillClient = SplitBillServiceClient(_channel);
     _utilityPaymentsClient = UtilityPaymentsServiceClient(_channel);
@@ -92,6 +95,7 @@ class GrpcClient {
   GiftCardsServiceClient get giftCardClient => _giftCardClient;
   LockFundsServiceClient get lockFundsClient => _lockFundsClient;
   InsuranceServiceClient get insuranceClient => _insuranceClient;
+  FinancialProductsServiceClient get financialProductsClient => _financialProductsClient;
   ContactlessPaymentServiceClient get contactlessPaymentClient => _contactlessPaymentClient;
   SplitBillServiceClient get splitBillClient => _splitBillClient;
   UtilityPaymentsServiceClient get utilityPaymentsClient => _utilityPaymentsClient;

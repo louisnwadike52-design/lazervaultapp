@@ -113,4 +113,6 @@ abstract class IGiftCardRepository {
   Future<Either<Failure, Map<String, dynamic>>> extractCardDetails({
     required List<String> imageUrls,
   });
+
+  Future<Either<Failure, List<Settlement>>> getSettlementHistory();
 }

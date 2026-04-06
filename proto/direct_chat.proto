@@ -1,5 +1,5 @@
 syntax = "proto3";
-package pb;
+package directchat;
 option go_package = "lazervaultGo/pb";
 
 import "google/protobuf/struct.proto";

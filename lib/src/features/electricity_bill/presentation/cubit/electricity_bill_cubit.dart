@@ -215,13 +215,12 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
     if (payment == null) return;
 
     if (payment.isCompleted) {
-      // Payment completed synchronously - fetch full details (includes token)
+      // Sync mode: payment completed — fetch full receipt (includes token).
       emit(PaymentInitiated(payment: payment));
       final verifyResult = await repository.verifyPayment(paymentId: payment.id);
       if (isClosed) return;
       verifyResult.fold(
         (failure) {
-          // Even if verify fails, payment succeeded - emit with initial data
           _cacheManager?.invalidatePattern('electricity_providers:');
           emit(PaymentSuccess(payment: payment));
         },
@@ -230,6 +229,10 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
           emit(PaymentSuccess(payment: fullPayment));
         },
       );
+    } else if (payment.isPending || payment.isProcessing) {
+      // Async mode: backend accepted the payment but hasn't received the token yet.
+      // Navigate to receipt screen immediately; it will poll until the token arrives.
+      emit(AsyncPaymentPending(payment: payment));
     } else {
       emit(PaymentInitiated(payment: payment));
     }
@@ -238,7 +241,7 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
   Future<void> verifyPayment({required String paymentId}) async {
     if (isClosed) return;
 
-    // C9: Capture payment from current state safely to avoid unsafe casts
+    // Capture payment from current state — covers both sync and async modes
     BillPaymentEntity? currentPayment;
     final currentState = state;
     if (currentState is PaymentInitiated) {
@@ -246,6 +249,8 @@ class ElectricityBillCubit extends Cubit<ElectricityBillState> {
     } else if (currentState is PaymentProcessing) {
       currentPayment = currentState.payment;
     } else if (currentState is PaymentVerified) {
+      currentPayment = currentState.payment;
+    } else if (currentState is AsyncPaymentPending) {
       currentPayment = currentState.payment;
     }
 

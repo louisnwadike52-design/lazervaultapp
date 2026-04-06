@@ -1,11 +1,15 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/bill_payment_entity.dart';
 import '../../services/electricity_bill_pdf_service.dart';
+import '../cubit/electricity_bill_cubit.dart';
+import '../cubit/electricity_bill_state.dart';
 import '../../../../../core/types/app_routes.dart';
 
 class PaymentReceiptScreen extends StatefulWidget {
@@ -22,6 +26,13 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
   late Animation<double> _checkScale;
   bool _isDownloading = false;
   bool _isSharing = false;
+
+  // Auto token polling
+  Timer? _pollTimer;
+  bool _isPolling = false;
+  int _pollAttempts = 0;
+  static const int _maxPollAttempts = 30; // 5 minutes (30 * 10 seconds)
+  static const Duration _pollInterval = Duration(seconds: 10);
 
   String get _currencySymbol {
     switch (payment.currency.toUpperCase()) {
@@ -70,12 +81,68 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
     Future.delayed(const Duration(milliseconds: 300), () {
       if (mounted) _checkController.forward();
     });
+
+    // Start auto token polling if payment is processing/pending and doesn't have token yet
+    if ((payment.isProcessing || payment.isPending) && !payment.hasToken) {
+      _startTokenPolling();
+    }
   }
 
   @override
   void dispose() {
     _checkController.dispose();
+    _pollTimer?.cancel();
     super.dispose();
+  }
+
+  /// Start polling for token every 10 seconds, max 30 attempts (5 minutes)
+  void _startTokenPolling() {
+    if (_pollTimer != null || _pollAttempts >= _maxPollAttempts) return;
+
+    setState(() => _isPolling = true);
+
+    _pollTimer = Timer.periodic(_pollInterval, (timer) async {
+      if (_pollAttempts >= _maxPollAttempts || !mounted) {
+        timer.cancel();
+        if (mounted) setState(() => _isPolling = false);
+        return;
+      }
+
+      _pollAttempts++;
+
+      // Fetch latest payment details
+      final cubit = context.read<ElectricityBillCubit>();
+      await cubit.getPaymentReceipt(paymentId: payment.id);
+
+      // Check if state has been updated with new payment data
+      if (mounted && cubit.state is ReceiptLoaded) {
+        final updatedPayment = (cubit.state as ReceiptLoaded).receipt;
+
+        // If token is now available or payment is completed/failed, update and stop polling
+        if (updatedPayment.hasToken || updatedPayment.isCompleted || updatedPayment.isFailed) {
+          timer.cancel();
+          if (mounted) {
+            setState(() {
+              payment = updatedPayment;
+              _isPolling = false;
+            });
+
+            // Show notification if token arrived
+            if (updatedPayment.hasToken && payment.isPrepaid) {
+              Get.snackbar(
+                'Token Received!',
+                'Your electricity token is now available',
+                backgroundColor: const Color(0xFF10B981),
+                colorText: Colors.white,
+                snackPosition: SnackPosition.BOTTOM,
+                margin: EdgeInsets.all(16.w),
+                duration: const Duration(seconds: 4),
+              );
+            }
+          }
+        }
+      }
+    });
   }
 
   Future<void> _downloadReceipt() async {
@@ -165,7 +232,13 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
                     _buildSuccessIcon(),
                     SizedBox(height: 12.h),
                     Text(
-                      'Payment Successful!',
+                      payment.isFailed
+                          ? 'Payment Failed'
+                          : (payment.isCompleted && payment.hasToken)
+                              ? 'Payment Successful!'
+                              : (payment.isPending || payment.isProcessing)
+                                  ? 'Payment Submitted'
+                                  : 'Payment Successful!',
                       style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 20.sp,
@@ -174,9 +247,7 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      payment.isPrepaid
-                          ? 'Your electricity token is ready'
-                          : 'Your payment has been processed',
+                      _getStatusMessage(),
                       style: GoogleFonts.inter(
                         color: const Color(0xFF9CA3AF),
                         fontSize: 13.sp,
@@ -184,6 +255,7 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
                       ),
                     ),
                     SizedBox(height: 16.h),
+                    if (_isPolling) _buildPollingIndicator(),
                     if (payment.hasToken) _buildTokenCard(),
                     if (payment.hasToken) SizedBox(height: 14.h),
                     _buildTransactionDetails(),
@@ -195,6 +267,62 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  String _getStatusMessage() {
+    if (payment.isFailed) {
+      return 'Payment failed. Please try again.';
+    }
+    if (payment.hasToken) {
+      return payment.isPrepaid
+          ? 'Your electricity token is below'
+          : 'Your payment has been processed';
+    }
+    if (_isPolling) {
+      return 'Checking for your token... ($_pollAttempts/$_maxPollAttempts)';
+    }
+    if (payment.isPending || payment.isProcessing) {
+      return payment.isPrepaid
+          ? 'Your token will be sent via SMS once the provider confirms. We\'ll notify you.'
+          : 'Your payment is being confirmed by the provider';
+    }
+    return 'Your payment has been processed';
+  }
+
+  Widget _buildPollingIndicator() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: const Color(0xFF4E03D0).withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 16.sp,
+            height: 16.sp,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFF4E03D0)),
+            ),
+          ),
+          SizedBox(width: 12.w),
+          Text(
+            'Fetching token... ($_pollAttempts/$_maxPollAttempts)',
+            style: GoogleFonts.inter(
+              color: const Color(0xFF4E03D0),
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
       ),
     );
   }

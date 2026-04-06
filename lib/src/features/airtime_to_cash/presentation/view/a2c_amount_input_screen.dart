@@ -131,7 +131,11 @@ class _A2CAmountInputScreenState extends State<A2CAmountInputScreen> {
           child: Column(
             children: [
               _buildHeader(),
-              const A2CStepIndicator(currentStep: 2),
+              const A2CStepIndicator(
+                currentStep: 2,
+                totalSteps: 5,
+                stepLabels: ['Network', 'Details', 'Review', 'Verify', 'PIN'],
+              ),
               Expanded(
                 child: SingleChildScrollView(
                   padding: EdgeInsets.symmetric(horizontal: 20.w),

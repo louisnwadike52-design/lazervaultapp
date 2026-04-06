@@ -75,6 +75,8 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String educationPaymentConfirmation = '/education/payment-confirmation';
   static const String educationPaymentProcessing = '/education/payment-processing';
   static const String educationPinResult = '/education/pin-result';
+  static const String educationHistory = '/education/history';
+  static const String educationPinDetails = '/education/pin-details';
 
   // Water Bill Routes
   static const String waterBillHome = '/water-bill';
@@ -176,6 +178,7 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String giftCardTransactions = '/gift-cards/transactions';
   static const String sellGiftCard = '/gift-cards/sell';
   static const String mySales = '/gift-cards/my-sales';
+  static const String settlementHistory = '/gift-cards/settlements';
 
   // Stock Exchange Routes
   static const String stockDetails = '/stocks/details';
@@ -495,10 +498,13 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   // Airtime-to-Cash Routes
   static const String airtimeToCash = '/airtime-to-cash';
   static const String airtimeToCashNetworkSelection = '/airtime-to-cash/network-selection';
+  static const String airtimeToCashServiceVerification = '/airtime-to-cash/service-verification';
+  static const String airtimeToCashTransferInstructions = '/airtime-to-cash/transfer-instructions';
   static const String airtimeToCashPhoneInput = '/airtime-to-cash/phone-input';
   static const String airtimeToCashAmountInput = '/airtime-to-cash/amount-input';
   static const String airtimeToCashReview = '/airtime-to-cash/review';
   static const String airtimeToCashOTP = '/airtime-to-cash/otp';
+  static const String airtimeToCashPinInput = '/airtime-to-cash/pin-input';
   static const String airtimeToCashProcessing = '/airtime-to-cash/processing';
   static const String airtimeToCashResult = '/airtime-to-cash/result';
   static const String airtimeToCashHistory = '/airtime-to-cash/history';

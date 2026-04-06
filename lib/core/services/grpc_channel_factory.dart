@@ -5,13 +5,14 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 ///
 /// LazerVault uses independent API gateways with dual servers (HTTP + gRPC):
 /// 1. Core Gateway - gRPC: 50070, HTTP: 7878 (Auth, Accounts, Users, Support, Referrals, Notifications)
-/// 2. Commerce Gateway - gRPC: 50071, HTTP: 8080 (Utility Payments, GiftCards, Group Accounts, TagPay, Invoices)
-/// 3. Investment Gateway - gRPC: 50072, HTTP: 9090 (Stocks, Crypto, Portfolio, Analytics)
-/// 4. Transfer Gateway - gRPC: 50076, HTTP: 8084 (Payments, Transfers)
-/// 5. Banking Gateway - gRPC: 50077, HTTP: 8082 (Banking, Virtual Accounts, Bank Verification)
-/// 6. Products Gateway - gRPC: 50078, HTTP: 8083 (AutoSave, Crowdfund, Insurance)
-/// 7. Contactless Payment Gateway - gRPC: 50075, HTTP: 8086 (NFC Payments, Payment Sessions)
-/// 8. Business Gateway - gRPC: 50079, HTTP: 8085 (Payroll, Business Services)
+/// 2. Commerce Gateway - gRPC: 50061, HTTP: 8080 (Utility Payments, GiftCards, Group Accounts, TagPay, Invoices, Electricity Bills)
+/// 3. Financial Gateway - gRPC: 50071, HTTP: 8016 (Currency Exchange, International Transfers)
+/// 4. Investment Gateway - gRPC: 50072, HTTP: 9090 (Stocks, Crypto, Portfolio, Analytics)
+/// 5. Transfer Gateway - gRPC: 50076, HTTP: 8084 (Payments, Transfers)
+/// 6. Banking Gateway - gRPC: 50077, HTTP: 8082 (Banking, Virtual Accounts, Bank Verification)
+/// 7. Products Gateway - gRPC: 50078, HTTP: 8083 (AutoSave, Crowdfund, Insurance)
+/// 8. Contactless Payment Gateway - gRPC: 50075, HTTP: 8086 (NFC Payments, Payment Sessions)
+/// 9. Business Gateway - gRPC: 50079, HTTP: 8085 (Payroll, Business Services)
 class GrpcChannelFactory {
   /// Creates Core Gateway gRPC channel (Auth, Accounts, Users, Deposits, Withdrawals, etc.)
   /// gRPC Port: 50070
@@ -39,25 +40,29 @@ class GrpcChannelFactory {
     return _createChannel(host, port, 'Investment Gateway');
   }
 
-  /// Creates Commerce Gateway gRPC channel (Utility Payments, GiftCards, Group Accounts, TagPay, Invoices)
-  /// gRPC Port: 50071
+  /// Creates Commerce Gateway gRPC channel (Utility Payments, Group Accounts, TagPay, Invoices, Electricity Bills)
+  /// gRPC Port: 50061
   static ClientChannel createCommerceChannel() {
     final host = dotenv.env['PAYMENT_GRPC_HOST'] ??
         dotenv.env['INVOICE_GRPC_HOST'] ??
-        dotenv.env['CARDS_GRPC_HOST'] ??
         '10.0.2.2';
     final port = int.parse(dotenv.env['PAYMENT_GRPC_PORT'] ??
         dotenv.env['INVOICE_GRPC_PORT'] ??
-        dotenv.env['CARDS_GRPC_PORT'] ??
-        '50071');
+        '50061');
 
     print("💳 Creating Commerce Gateway Channel → $host:$port");
     return _createChannel(host, port, 'Commerce Gateway');
   }
 
-  /// @deprecated Use [createCommerceChannel] instead.
-  /// Kept for backward compatibility.
-  static ClientChannel createFinancialChannel() => createCommerceChannel();
+  /// Creates Financial Gateway gRPC channel (Currency Exchange, International Transfers, Gift Cards, Lock Funds/PiggyVault)
+  /// gRPC Port: 50071
+  static ClientChannel createFinancialChannel() {
+    final host = dotenv.env['FINANCIAL_GRPC_HOST'] ?? '10.0.2.2';
+    final port = int.parse(dotenv.env['FINANCIAL_GRPC_PORT'] ?? '50071');
+
+    print("💱 Creating Financial Gateway Channel → $host:$port");
+    return _createChannel(host, port, 'Financial Gateway');
+  }
 
   /// Creates Transfer Gateway gRPC channel (Payments, Transfers)
   /// This is the PRIMARY channel for Send Funds/Transfers (via Core-Payment-Service).
@@ -101,13 +106,13 @@ class GrpcChannelFactory {
   }
 
   /// Creates Exchange Service gRPC channel (Currency Exchange, International Transfers)
-  /// Routes through Transfer Gateway (port 50076) where ExchangeService is registered
+  /// Routes through Financial Gateway (port 50071) where ExchangeService is registered
   static ClientChannel createExchangeChannel() {
-    final host = dotenv.env['TRANSFER_GRPC_HOST'] ?? '10.0.2.2';
-    final port = int.parse(dotenv.env['TRANSFER_GRPC_PORT'] ?? '50076');
+    final host = dotenv.env['FINANCIAL_GRPC_HOST'] ?? '10.0.2.2';
+    final port = int.parse(dotenv.env['FINANCIAL_GRPC_PORT'] ?? '50071');
 
-    print("💱 Creating Exchange Service Channel (via Transfer Gateway) → $host:$port");
-    return _createChannel(host, port, 'Exchange Service');
+    print("💱 Creating Exchange Service Channel (via Financial Gateway) → $host:$port");
+    return _createChannel(host, port, 'Financial Gateway (Exchange)');
   }
 
   /// Creates Business Gateway gRPC channel (Payroll, Business Services)
@@ -176,6 +181,7 @@ class GrpcChannelFactory {
     ClientChannel coreChannel,
     ClientChannel investmentChannel,
     ClientChannel commerceChannel, {
+    ClientChannel? financialChannel,
     ClientChannel? bankingChannel,
     ClientChannel? transferChannel,
     ClientChannel? productsChannel,
@@ -186,6 +192,9 @@ class GrpcChannelFactory {
       investmentChannel.shutdown(),
       commerceChannel.shutdown(),
     ];
+    if (financialChannel != null) {
+      futures.add(financialChannel.shutdown());
+    }
     if (bankingChannel != null) {
       futures.add(bankingChannel.shutdown());
     }

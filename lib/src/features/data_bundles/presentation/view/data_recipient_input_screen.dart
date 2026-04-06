@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../../core/types/app_routes.dart';
+import '../../../../../core/services/locale_manager.dart';
 import '../../domain/entities/data_plan_entity.dart';
 
 class DataRecipientInputScreen extends StatefulWidget {
@@ -16,6 +18,8 @@ class DataRecipientInputScreen extends StatefulWidget {
 class _DataRecipientInputScreenState extends State<DataRecipientInputScreen> {
   final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
+  CountryLocale _selectedDialCountry = CountryLocales.all.first; // Nigeria default
+  String? _validationError;
 
   @override
   void dispose() {
@@ -23,8 +27,59 @@ class _DataRecipientInputScreenState extends State<DataRecipientInputScreen> {
     super.dispose();
   }
 
+  /// Build full E.164 phone number with country dial code.
+  String _buildFullPhone() {
+    final local = _phoneController.text.trim().replaceAll(RegExp(r'[^\d]'), '');
+    final stripped = local.startsWith('0') ? local.substring(1) : local;
+    return '${_selectedDialCountry.dialCode}$stripped';
+  }
+
+  void _onPhoneChanged(String value) {
+    final phoneNumber = value.replaceAll(RegExp(r'[^\d]'), '');
+    final stripped = phoneNumber.startsWith('0') ? phoneNumber.substring(1) : phoneNumber;
+
+    // Clear error when user starts typing valid input
+    if (stripped.length >= 10 && _validationError != null) {
+      setState(() {
+        _validationError = null;
+      });
+    }
+
+    // Validate phone number
+    if (stripped.isEmpty) {
+      setState(() {
+        _validationError = 'Phone number is required';
+      });
+    } else if (stripped.length < 10) {
+      setState(() {
+        _validationError = 'Phone number must be 10 digits';
+      });
+    } else {
+      setState(() {
+        _validationError = null;
+      });
+    }
+  }
+
   void _onContinue() {
-    if (_formKey.currentState!.validate()) {
+    final localDigits = _phoneController.text.trim().replaceAll(RegExp(r'[^\d]'), '');
+    final stripped = localDigits.startsWith('0') ? localDigits.substring(1) : localDigits;
+
+    if (stripped.isEmpty) {
+      setState(() {
+        _validationError = 'Phone number is required';
+      });
+      return;
+    }
+
+    if (stripped.length < 10) {
+      setState(() {
+        _validationError = 'Phone number must be 10 digits';
+      });
+      return;
+    }
+
+    if (_validationError == null) {
       final args = Get.arguments as Map<String, dynamic>;
       final plan = args['plan'] as DataPlanEntity;
       final network = args['network'] as String;
@@ -38,7 +93,7 @@ class _DataRecipientInputScreenState extends State<DataRecipientInputScreen> {
           'network': network,
           'networkName': networkName,
           'networkColor': networkColorValue,
-          'phoneNumber': _phoneController.text.trim(),
+          'phoneNumber': _buildFullPhone(),
         },
       );
     }
@@ -138,100 +193,115 @@ class _DataRecipientInputScreenState extends State<DataRecipientInputScreen> {
               SizedBox(height: 28.h),
 
               // Phone number input form
-              Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Phone Number',
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w500,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Phone Number',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1F1F1F),
+                      borderRadius: BorderRadius.circular(14.r),
+                      border: Border.all(
+                        color: _validationError != null
+                            ? const Color(0xFFEF4444)
+                            : const Color(0xFF2D2D2D),
+                        width: 1,
                       ),
                     ),
-                    SizedBox(height: 8.h),
-                    TextFormField(
-                      controller: _phoneController,
-                      keyboardType: TextInputType.phone,
-                      maxLength: 11,
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 16.sp,
-                      ),
-                      decoration: InputDecoration(
-                        hintText: 'Enter 11-digit phone number',
-                        hintStyle: GoogleFonts.inter(
-                          color:
-                              const Color(0xFF9CA3AF).withValues(alpha: 0.6),
-                          fontSize: 16.sp,
-                        ),
-                        counterText: '',
-                        filled: true,
-                        fillColor: const Color(0xFF1F1F1F),
-                        prefixIcon: Icon(
-                          Icons.phone,
-                          color: const Color(0xFF9CA3AF),
-                          size: 20.sp,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                          borderSide: const BorderSide(
-                            color: Color(0xFF2D2D2D),
+                    child: Row(
+                      children: [
+                        // Country code prefix (display only - Nigeria)
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
+                          decoration: const BoxDecoration(
+                            border: Border(
+                              right: BorderSide(
+                                color: Color(0xFF2D2D2D),
+                                width: 1,
+                              ),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                _selectedDialCountry.flag,
+                                style: TextStyle(fontSize: 20.sp),
+                              ),
+                              SizedBox(width: 6.w),
+                              Text(
+                                _selectedDialCountry.dialCode,
+                                style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontSize: 15.sp,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                          borderSide: const BorderSide(
-                            color: Color(0xFF2D2D2D),
+                        // Phone number input
+                        Expanded(
+                          child: TextField(
+                            controller: _phoneController,
+                            keyboardType: TextInputType.phone,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(11),
+                            ],
+                            onChanged: _onPhoneChanged,
+                            style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            decoration: InputDecoration(
+                              hintText: '801 234 5678',
+                              hintStyle: GoogleFonts.inter(
+                                color: const Color(0xFF9CA3AF).withValues(alpha: 0.5),
+                                fontSize: 16.sp,
+                              ),
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 14.w,
+                                vertical: 16.h,
+                              ),
+                            ),
                           ),
                         ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                          borderSide: const BorderSide(
-                            color: Color(0xFF3B82F6),
-                            width: 2,
-                          ),
-                        ),
-                        errorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                          borderSide: const BorderSide(
-                            color: Color(0xFFEF4444),
-                            width: 1,
-                          ),
-                        ),
-                        focusedErrorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                          borderSide: const BorderSide(
-                            color: Color(0xFFEF4444),
-                            width: 2,
-                          ),
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Phone number is required';
-                        }
-                        if (value.trim().length != 11) {
-                          return 'Phone number must be 11 digits';
-                        }
-                        if (!RegExp(r'^[0-9]+$').hasMatch(value.trim())) {
-                          return 'Phone number must contain only digits';
-                        }
-                        return null;
-                      },
+                      ],
                     ),
+                  ),
+                  if (_validationError != null) ...[
                     SizedBox(height: 6.h),
-                    Text(
-                      'Enter the 11-digit Nigerian phone number',
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF9CA3AF).withValues(alpha: 0.6),
-                        fontSize: 12.sp,
+                    Padding(
+                      padding: EdgeInsets.only(left: 14.w),
+                      child: Text(
+                        _validationError!,
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFFEF4444),
+                          fontSize: 12.sp,
+                        ),
                       ),
                     ),
                   ],
-                ),
+                  SizedBox(height: 6.h),
+                  Text(
+                    'Enter the 10-digit phone number (excluding leading 0)',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF9CA3AF).withValues(alpha: 0.6),
+                      fontSize: 12.sp,
+                    ),
+                  ),
+                ],
               ),
 
               const Spacer(),

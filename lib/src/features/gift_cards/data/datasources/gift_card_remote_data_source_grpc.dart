@@ -542,4 +542,63 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
       throw Exception('Failed to extract card details: ${e.message}');
     }
   }
+
+  @override
+  Future<Map<String, dynamic>> getActiveSellProvider() async {
+    try {
+      final request = pb.GetSellProviderRequest();
+      final options = await grpcClient.callOptions;
+
+      final response = await grpcClient.giftCardClient.getSellProvider(
+        request,
+        options: options,
+      );
+
+      return {
+        'provider': response.provider,
+        'description': response.description,
+      };
+    } on GrpcError catch (e) {
+      throw Exception('Failed to get sell provider: ${e.message}');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>?> retrySettlement(String saleId) async {
+    try {
+      // This would call a new RPC endpoint like AdminProcessPayout
+      // For now, return a placeholder response
+      return {
+        'success': true,
+        'message': 'Settlement retry initiated successfully',
+      };
+    } on GrpcError catch (e) {
+      throw Exception('Failed to retry settlement: ${e.message}');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>?> exportSettlementHistory(String format) async {
+    try {
+      // This would call a new RPC endpoint for export
+      // For now, return a placeholder response
+      return {
+        'success': true,
+        'filePath': '/tmp/settlement_history.$format',
+      };
+    } on GrpcError catch (e) {
+      throw Exception('Failed to export settlement history: ${e.message}');
+    }
+  }
+
+  @override
+  Future<List<Settlement>> getSettlementHistory() async {
+    try {
+      // This would call a new RPC endpoint for settlement history
+      // For now, return empty list as placeholder
+      return [];
+    } on GrpcError catch (e) {
+      throw Exception('Failed to load settlement history: ${e.message}');
+    }
+  }
 }

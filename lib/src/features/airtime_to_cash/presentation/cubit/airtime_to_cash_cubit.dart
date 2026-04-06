@@ -85,10 +85,36 @@ class AirtimeToCashCubit extends Cubit<AirtimeToCashState> {
       );
 
       if (result.verified) {
-        _safeEmit(AirtimeToCashOTPVerified(sessionToken: result.sessionToken));
+        _safeEmit(AirtimeToCashOTPVerified(
+          sessionToken: result.sessionToken,
+          sessionId: result.sessionId,
+        ));
       } else {
         _safeEmit(AirtimeToCashError(message: result.message));
       }
+    } catch (e) {
+      _safeEmit(AirtimeToCashError(message: _friendlyErrorMessage(e)));
+    }
+  }
+
+  /// Check quota availability before conversion.
+  Future<void> checkQuota({
+    required String network,
+    required double amount,
+  }) async {
+    try {
+      _safeEmit(AirtimeToCashCheckingQuota());
+
+      final result = await repository.checkQuota(
+        network: network,
+        amount: amount,
+      );
+
+      _safeEmit(AirtimeToCashQuotaChecked(
+        available: result.available,
+        maxAmount: result.maxAmount,
+        message: result.message,
+      ));
     } catch (e) {
       _safeEmit(AirtimeToCashError(message: _friendlyErrorMessage(e)));
     }
@@ -130,6 +156,8 @@ class AirtimeToCashCubit extends Cubit<AirtimeToCashState> {
     required String network,
     required double amount,
     required String sessionToken,
+    required String sessionId, // Added for Automation API
+    required String pin, // SIM Transfer PIN (required for Automation API)
     required String transactionId,
     required String verificationToken,
     String? sourceAccountId,
@@ -162,6 +190,8 @@ class AirtimeToCashCubit extends Cubit<AirtimeToCashState> {
         network: network,
         amount: amount,
         sessionToken: sessionToken,
+        sessionId: sessionId, // Added for Automation API
+        pin: pin, // SIM Transfer PIN (required for Automation API)
         transactionId: transactionId,
         verificationToken: verificationToken,
         idempotencyKey: transactionId,
@@ -229,6 +259,44 @@ class AirtimeToCashCubit extends Cubit<AirtimeToCashState> {
   /// Reset to initial state.
   void reset() {
     _safeEmit(AirtimeToCashInitial());
+  }
+
+  /// Verify service availability for the active provider.
+  Future<void> verifyService(String network) async {
+    try {
+      _safeEmit(AirtimeToCashVerifying());
+
+      final result = await repository.verifyService(network);
+
+      _safeEmit(AirtimeToCashServiceVerified(
+        providerName: result.providerName,
+        destinationPhone: result.destinationPhone,
+        network: result.network,
+        requiresTransfer: result.requiresTransfer,
+        message: result.message,
+      ));
+    } catch (e) {
+      _safeEmit(AirtimeToCashError(message: _friendlyErrorMessage(e)));
+    }
+  }
+
+  /// Get information about the active provider.
+  Future<void> loadProviderInfo() async {
+    try {
+      final result = await repository.getProviderInfo();
+
+      // Store provider info for later use
+      _safeEmit(AirtimeToCashProviderInfoLoaded(
+        providerName: result.providerName,
+        requiresOTP: result.requiresOTP,
+        requiresTransfer: result.requiresTransfer,
+        displayName: result.displayName,
+        providers: result.providers,
+      ));
+    } catch (e) {
+      // Non-critical error, don't emit error state
+      print('Failed to load provider info: $e');
+    }
   }
 
   // Network error detection (matches pattern used in airtime_cubit, tag_pay_cubit)

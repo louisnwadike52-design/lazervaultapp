@@ -75,11 +75,11 @@ final $typed_data.Uint8List directChatHistoryMessageDescriptor = $convert.base64
 const GetDirectChatHistoryResponse$json = const {
   '1': 'GetDirectChatHistoryResponse',
   '2': const [
-    const {'1': 'messages', '3': 1, '4': 3, '5': 11, '6': '.pb.DirectChatHistoryMessage', '10': 'messages'},
+    const {'1': 'messages', '3': 1, '4': 3, '5': 11, '6': '.directchat.DirectChatHistoryMessage', '10': 'messages'},
     const {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
     const {'1': 'session_id', '3': 3, '4': 1, '5': 9, '10': 'sessionId'},
   ],
 };
 
 /// Descriptor for `GetDirectChatHistoryResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getDirectChatHistoryResponseDescriptor = $convert.base64Decode('ChxHZXREaXJlY3RDaGF0SGlzdG9yeVJlc3BvbnNlEjgKCG1lc3NhZ2VzGAEgAygLMhwucGIuRGlyZWN0Q2hhdEhpc3RvcnlNZXNzYWdlUghtZXNzYWdlcxIUCgV0b3RhbBgCIAEoBVIFdG90YWwSHQoKc2Vzc2lvbl9pZBgDIAEoCVIJc2Vzc2lvbklk');
+final $typed_data.Uint8List getDirectChatHistoryResponseDescriptor = $convert.base64Decode('ChxHZXREaXJlY3RDaGF0SGlzdG9yeVJlc3BvbnNlEkAKCG1lc3NhZ2VzGAEgAygLMiQuZGlyZWN0Y2hhdC5EaXJlY3RDaGF0SGlzdG9yeU1lc3NhZ2VSCG1lc3NhZ2VzEhQKBXRvdGFsGAIgASgFUgV0b3RhbBIdCgpzZXNzaW9uX2lkGAMgASgJUglzZXNzaW9uSWQ=');
