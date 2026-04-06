@@ -691,3 +691,183 @@ class GiftCardPurchaseArgs {
     this.userBalance = 0.0,
   });
 }
+
+/// Settlement entity for tracking gift card sale settlements
+class Settlement extends Equatable {
+  final String id;
+  final String saleId;
+  final String reference;
+  final String userId;
+  final String accountId;
+  final String cardType;
+  final double denomination;
+  final String currency;
+  final double ratePercentage;
+  final double expectedPayout;
+  final double actualPayout;
+  final String status; // pending_settlement, settled, credit_failed
+  final String settlementStatus; // pending, verified, failed
+  final String providerName;
+  final String providerSaleId;
+  final String submittedAt;
+  final String paidAt;
+  final String settledAt;
+  final String settlementVerifiedAt;
+  final int settlementConfirmations;
+  final String escalationReason;
+  final String createdAt;
+  final String updatedAt;
+
+  const Settlement({
+    required this.id,
+    required this.saleId,
+    required this.reference,
+    required this.userId,
+    required this.accountId,
+    required this.cardType,
+    required this.denomination,
+    this.currency = 'NGN',
+    this.ratePercentage = 0.0,
+    this.expectedPayout = 0.0,
+    this.actualPayout = 0.0,
+    required this.status,
+    this.settlementStatus = 'pending',
+    this.providerName = '',
+    this.providerSaleId = '',
+    this.submittedAt = '',
+    this.paidAt = '',
+    this.settledAt = '',
+    this.settlementVerifiedAt = '',
+    this.settlementConfirmations = 0,
+    this.escalationReason = '',
+    this.createdAt = '',
+    this.updatedAt = '',
+  });
+
+  bool get isPendingSettlement => status == 'pending_settlement';
+  bool get isSettled => status == 'settled';
+  bool get isCreditFailed => status == 'credit_failed';
+
+  @override
+  List<Object?> get props => [
+    id, saleId, reference, userId, accountId, cardType, denomination, currency,
+    ratePercentage, expectedPayout, actualPayout, status, settlementStatus,
+    providerName, providerSaleId, submittedAt, paidAt, settledAt,
+    settlementVerifiedAt, settlementConfirmations, escalationReason,
+    createdAt, updatedAt,
+  ];
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'saleId': saleId,
+      'reference': reference,
+      'userId': userId,
+      'accountId': accountId,
+      'cardType': cardType,
+      'denomination': denomination,
+      'currency': currency,
+      'ratePercentage': ratePercentage,
+      'expectedPayout': expectedPayout,
+      'actualPayout': actualPayout,
+      'status': status,
+      'settlementStatus': settlementStatus,
+      'providerName': providerName,
+      'providerSaleId': providerSaleId,
+      'submittedAt': submittedAt,
+      'paidAt': paidAt,
+      'settledAt': settledAt,
+      'settlementVerifiedAt': settlementVerifiedAt,
+      'settlementConfirmations': settlementConfirmations,
+      'escalationReason': escalationReason,
+      'createdAt': createdAt,
+      'updatedAt': updatedAt,
+    };
+  }
+
+  factory Settlement.fromJson(Map<String, dynamic> json) {
+    return Settlement(
+      id: json['id'] as String? ?? '',
+      saleId: json['saleId'] as String? ?? json['sale_id'] ?? '',
+      reference: json['reference'] as String? ?? '',
+      userId: json['userId'] as String? ?? json['user_id'] ?? '',
+      accountId: json['accountId'] as String? ?? json['account_id'] ?? '',
+      cardType: json['cardType'] as String? ?? json['card_type'] ?? '',
+      denomination: (json['denomination'] as num?)?.toDouble() ?? 0.0,
+      currency: json['currency'] as String? ?? 'NGN',
+      ratePercentage: (json['ratePercentage'] as num?)?.toDouble() ??
+                      (json['rate_percentage'] as num?)?.toDouble() ?? 0.0,
+      expectedPayout: (json['expectedPayout'] as num?)?.toDouble() ?? 0.0,
+      actualPayout: (json['actualPayout'] as num?)?.toDouble() ?? 0.0,
+      status: json['status'] as String? ?? 'pending_settlement',
+      settlementStatus: json['settlementStatus'] as String? ??
+                        json['settlement_status'] as String? ?? 'pending',
+      providerName: json['providerName'] as String? ?? json['provider_name'] ?? '',
+      providerSaleId: json['providerSaleId'] as String? ??
+                      json['provider_sale_id'] ?? '',
+      submittedAt: json['submittedAt'] as String? ?? json['submitted_at'] ?? '',
+      paidAt: json['paidAt'] as String? ?? json['paid_at'] ?? '',
+      settledAt: json['settledAt'] as String? ?? json['settled_at'] ?? '',
+      settlementVerifiedAt: json['settlementVerifiedAt'] as String? ??
+                          json['settlement_verified_at'] ?? '',
+      settlementConfirmations: json['settlementConfirmations'] as int? ??
+                           json['settlement_confirmations'] as int? ?? 0,
+      escalationReason: json['escalationReason'] as String? ??
+                       json['escalation_reason'] ?? '',
+      createdAt: json['createdAt'] as String? ?? json['created_at'] ?? '',
+      updatedAt: json['updatedAt'] as String? ?? json['updated_at'] ?? '',
+    );
+  }
+
+  Settlement copyWith({
+    String? id,
+    String? saleId,
+    String? reference,
+    String? userId,
+    String? accountId,
+    String? cardType,
+    double? denomination,
+    String? currency,
+    double? ratePercentage,
+    double? expectedPayout,
+    double? actualPayout,
+    String? status,
+    String? settlementStatus,
+    String? providerName,
+    String? providerSaleId,
+    String? submittedAt,
+    String? paidAt,
+    String? settledAt,
+    String? settlementVerifiedAt,
+    int? settlementConfirmations,
+    String? escalationReason,
+    String? createdAt,
+    String? updatedAt,
+  }) {
+    return Settlement(
+      id: id ?? this.id,
+      saleId: saleId ?? this.saleId,
+      reference: reference ?? this.reference,
+      userId: userId ?? this.userId,
+      accountId: accountId ?? this.accountId,
+      cardType: cardType ?? this.cardType,
+      denomination: denomination ?? this.denomination,
+      currency: currency ?? this.currency,
+      ratePercentage: ratePercentage ?? this.ratePercentage,
+      expectedPayout: expectedPayout ?? this.expectedPayout,
+      actualPayout: actualPayout ?? this.actualPayout,
+      status: status ?? this.status,
+      settlementStatus: settlementStatus ?? this.settlementStatus,
+      providerName: providerName ?? this.providerName,
+      providerSaleId: providerSaleId ?? this.providerSaleId,
+      submittedAt: submittedAt ?? this.submittedAt,
+      paidAt: paidAt ?? this.paidAt,
+      settledAt: settledAt ?? this.settledAt,
+      settlementVerifiedAt: settlementVerifiedAt ?? this.settlementVerifiedAt,
+      settlementConfirmations: settlementConfirmations ?? this.settlementConfirmations,
+      escalationReason: escalationReason ?? this.escalationReason,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+}

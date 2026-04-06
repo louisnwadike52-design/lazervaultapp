@@ -10,7 +10,7 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $1;
+import 'google/protobuf/timestamp.pb.dart' as $48;
 
 import 'kyc.pbenum.dart';
 
@@ -159,8 +159,8 @@ class KYCTierInfo extends $pb.GeneratedMessage {
     ..aInt64(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dailyTransactionLimit')
     ..aInt64(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dailyReceiveLimit')
     ..aInt64(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'maxBalance')
-    ..aOM<$1.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verifiedAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verifiedAt', subBuilder: $48.Timestamp.create)
+    ..aOM<$48.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt', subBuilder: $48.Timestamp.create)
     ..aOB(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isCurrent')
     ..aOB(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isLocked')
     ..hasRequiredFields = false
@@ -176,8 +176,8 @@ class KYCTierInfo extends $pb.GeneratedMessage {
     $fixnum.Int64? dailyTransactionLimit,
     $fixnum.Int64? dailyReceiveLimit,
     $fixnum.Int64? maxBalance,
-    $1.Timestamp? verifiedAt,
-    $1.Timestamp? expiresAt,
+    $48.Timestamp? verifiedAt,
+    $48.Timestamp? expiresAt,
     $core.bool? isCurrent,
     $core.bool? isLocked,
   }) {
@@ -308,26 +308,26 @@ class KYCTierInfo extends $pb.GeneratedMessage {
   void clearMaxBalance() => clearField(8);
 
   @$pb.TagNumber(9)
-  $1.Timestamp get verifiedAt => $_getN(8);
+  $48.Timestamp get verifiedAt => $_getN(8);
   @$pb.TagNumber(9)
-  set verifiedAt($1.Timestamp v) { setField(9, v); }
+  set verifiedAt($48.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasVerifiedAt() => $_has(8);
   @$pb.TagNumber(9)
   void clearVerifiedAt() => clearField(9);
   @$pb.TagNumber(9)
-  $1.Timestamp ensureVerifiedAt() => $_ensure(8);
+  $48.Timestamp ensureVerifiedAt() => $_ensure(8);
 
   @$pb.TagNumber(10)
-  $1.Timestamp get expiresAt => $_getN(9);
+  $48.Timestamp get expiresAt => $_getN(9);
   @$pb.TagNumber(10)
-  set expiresAt($1.Timestamp v) { setField(10, v); }
+  set expiresAt($48.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasExpiresAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearExpiresAt() => clearField(10);
   @$pb.TagNumber(10)
-  $1.Timestamp ensureExpiresAt() => $_ensure(9);
+  $48.Timestamp ensureExpiresAt() => $_ensure(9);
 
   @$pb.TagNumber(11)
   $core.bool get isCurrent => $_getBF(10);
@@ -602,7 +602,7 @@ class VerifyIDResponse extends $pb.GeneratedMessage {
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
     ..e<KYCStatus>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: KYCStatus.STATUS_UNKNOWN, valueOf: KYCStatus.valueOf, enumValues: KYCStatus.values)
     ..e<KYCTier>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentTier', $pb.PbFieldType.OE, defaultOrMaker: KYCTier.TIER_UNKNOWN, valueOf: KYCTier.valueOf, enumValues: KYCTier.values)
-    ..aOM<$1.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verifiedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verifiedAt', subBuilder: $48.Timestamp.create)
     ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reference')
     ..hasRequiredFields = false
   ;
@@ -613,7 +613,7 @@ class VerifyIDResponse extends $pb.GeneratedMessage {
     $core.String? message,
     KYCStatus? status,
     KYCTier? currentTier,
-    $1.Timestamp? verifiedAt,
+    $48.Timestamp? verifiedAt,
     $core.String? reference,
   }) {
     final _result = create();
@@ -695,15 +695,15 @@ class VerifyIDResponse extends $pb.GeneratedMessage {
   void clearCurrentTier() => clearField(4);
 
   @$pb.TagNumber(5)
-  $1.Timestamp get verifiedAt => $_getN(4);
+  $48.Timestamp get verifiedAt => $_getN(4);
   @$pb.TagNumber(5)
-  set verifiedAt($1.Timestamp v) { setField(5, v); }
+  set verifiedAt($48.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasVerifiedAt() => $_has(4);
   @$pb.TagNumber(5)
   void clearVerifiedAt() => clearField(5);
   @$pb.TagNumber(5)
-  $1.Timestamp ensureVerifiedAt() => $_ensure(4);
+  $48.Timestamp ensureVerifiedAt() => $_ensure(4);
 
   @$pb.TagNumber(6)
   $core.String get reference => $_getSZ(5);
@@ -768,7 +768,7 @@ class GetKYCStatusResponse extends $pb.GeneratedMessage {
     ..e<KYCStatus>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: KYCStatus.STATUS_UNKNOWN, valueOf: KYCStatus.valueOf, enumValues: KYCStatus.values)
     ..e<KYCTier>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentTier', $pb.PbFieldType.OE, defaultOrMaker: KYCTier.TIER_UNKNOWN, valueOf: KYCTier.valueOf, enumValues: KYCTier.values)
     ..pc<KYCTierInfo>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'tierInfo', $pb.PbFieldType.PM, subBuilder: KYCTierInfo.create)
-    ..aOM<$1.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastUpdated', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastUpdated', subBuilder: $48.Timestamp.create)
     ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'rejectionReason')
     ..hasRequiredFields = false
   ;
@@ -779,7 +779,7 @@ class GetKYCStatusResponse extends $pb.GeneratedMessage {
     KYCStatus? status,
     KYCTier? currentTier,
     $core.Iterable<KYCTierInfo>? tierInfo,
-    $1.Timestamp? lastUpdated,
+    $48.Timestamp? lastUpdated,
     $core.String? rejectionReason,
   }) {
     final _result = create();
@@ -855,15 +855,15 @@ class GetKYCStatusResponse extends $pb.GeneratedMessage {
   $core.List<KYCTierInfo> get tierInfo => $_getList(3);
 
   @$pb.TagNumber(5)
-  $1.Timestamp get lastUpdated => $_getN(4);
+  $48.Timestamp get lastUpdated => $_getN(4);
   @$pb.TagNumber(5)
-  set lastUpdated($1.Timestamp v) { setField(5, v); }
+  set lastUpdated($48.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasLastUpdated() => $_has(4);
   @$pb.TagNumber(5)
   void clearLastUpdated() => clearField(5);
   @$pb.TagNumber(5)
-  $1.Timestamp ensureLastUpdated() => $_ensure(4);
+  $48.Timestamp ensureLastUpdated() => $_ensure(4);
 
   @$pb.TagNumber(6)
   $core.String get rejectionReason => $_getSZ(5);
@@ -1287,8 +1287,8 @@ class VerificationDocument extends $pb.GeneratedMessage {
     ..e<IDType>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'documentType', $pb.PbFieldType.OE, defaultOrMaker: IDType.ID_UNKNOWN, valueOf: IDType.valueOf, enumValues: IDType.values)
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'documentUrl')
     ..e<DocumentStatus>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: DocumentStatus.DOC_STATUS_UNKNOWN, valueOf: DocumentStatus.valueOf, enumValues: DocumentStatus.values)
-    ..aOM<$1.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'uploadedAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verifiedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'uploadedAt', subBuilder: $48.Timestamp.create)
+    ..aOM<$48.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verifiedAt', subBuilder: $48.Timestamp.create)
     ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'rejectionReason')
     ..hasRequiredFields = false
   ;
@@ -1299,8 +1299,8 @@ class VerificationDocument extends $pb.GeneratedMessage {
     IDType? documentType,
     $core.String? documentUrl,
     DocumentStatus? status,
-    $1.Timestamp? uploadedAt,
-    $1.Timestamp? verifiedAt,
+    $48.Timestamp? uploadedAt,
+    $48.Timestamp? verifiedAt,
     $core.String? rejectionReason,
   }) {
     final _result = create();
@@ -1385,26 +1385,26 @@ class VerificationDocument extends $pb.GeneratedMessage {
   void clearStatus() => clearField(4);
 
   @$pb.TagNumber(5)
-  $1.Timestamp get uploadedAt => $_getN(4);
+  $48.Timestamp get uploadedAt => $_getN(4);
   @$pb.TagNumber(5)
-  set uploadedAt($1.Timestamp v) { setField(5, v); }
+  set uploadedAt($48.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasUploadedAt() => $_has(4);
   @$pb.TagNumber(5)
   void clearUploadedAt() => clearField(5);
   @$pb.TagNumber(5)
-  $1.Timestamp ensureUploadedAt() => $_ensure(4);
+  $48.Timestamp ensureUploadedAt() => $_ensure(4);
 
   @$pb.TagNumber(6)
-  $1.Timestamp get verifiedAt => $_getN(5);
+  $48.Timestamp get verifiedAt => $_getN(5);
   @$pb.TagNumber(6)
-  set verifiedAt($1.Timestamp v) { setField(6, v); }
+  set verifiedAt($48.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasVerifiedAt() => $_has(5);
   @$pb.TagNumber(6)
   void clearVerifiedAt() => clearField(6);
   @$pb.TagNumber(6)
-  $1.Timestamp ensureVerifiedAt() => $_ensure(5);
+  $48.Timestamp ensureVerifiedAt() => $_ensure(5);
 
   @$pb.TagNumber(7)
   $core.String get rejectionReason => $_getSZ(6);
@@ -2473,7 +2473,7 @@ class PendingReviewItem extends $pb.GeneratedMessage {
     ..e<KYCTier>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currentTier', $pb.PbFieldType.OE, defaultOrMaker: KYCTier.TIER_UNKNOWN, valueOf: KYCTier.valueOf, enumValues: KYCTier.values)
     ..e<KYCTier>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'targetTier', $pb.PbFieldType.OE, defaultOrMaker: KYCTier.TIER_UNKNOWN, valueOf: KYCTier.valueOf, enumValues: KYCTier.values)
     ..pc<VerificationDocument>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'documents', $pb.PbFieldType.PM, subBuilder: VerificationDocument.create)
-    ..aOM<$1.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'submittedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'submittedAt', subBuilder: $48.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -2485,7 +2485,7 @@ class PendingReviewItem extends $pb.GeneratedMessage {
     KYCTier? currentTier,
     KYCTier? targetTier,
     $core.Iterable<VerificationDocument>? documents,
-    $1.Timestamp? submittedAt,
+    $48.Timestamp? submittedAt,
   }) {
     final _result = create();
     if (userId != null) {
@@ -2581,15 +2581,15 @@ class PendingReviewItem extends $pb.GeneratedMessage {
   $core.List<VerificationDocument> get documents => $_getList(5);
 
   @$pb.TagNumber(7)
-  $1.Timestamp get submittedAt => $_getN(6);
+  $48.Timestamp get submittedAt => $_getN(6);
   @$pb.TagNumber(7)
-  set submittedAt($1.Timestamp v) { setField(7, v); }
+  set submittedAt($48.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasSubmittedAt() => $_has(6);
   @$pb.TagNumber(7)
   void clearSubmittedAt() => clearField(7);
   @$pb.TagNumber(7)
-  $1.Timestamp ensureSubmittedAt() => $_ensure(6);
+  $48.Timestamp ensureSubmittedAt() => $_ensure(6);
 }
 
 class ReviewDocumentRequest extends $pb.GeneratedMessage {

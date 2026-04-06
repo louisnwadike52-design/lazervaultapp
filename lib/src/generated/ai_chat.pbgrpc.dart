@@ -10,60 +10,60 @@ import 'dart:async' as $async;
 import 'dart:core' as $core;
 
 import 'package:grpc/service_api.dart' as $grpc;
-import 'ai_chat.pb.dart' as $0;
+import 'ai_chat.pb.dart' as $3;
 export 'ai_chat.pb.dart';
 
 class AIChatServiceClient extends $grpc.Client {
   static final _$processChat =
-      $grpc.ClientMethod<$0.ProcessChatRequest, $0.ProcessChatResponse>(
+      $grpc.ClientMethod<$3.ProcessChatRequest, $3.ProcessChatResponse>(
           '/pb.AIChatService/ProcessChat',
-          ($0.ProcessChatRequest value) => value.writeToBuffer(),
+          ($3.ProcessChatRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $0.ProcessChatResponse.fromBuffer(value));
+              $3.ProcessChatResponse.fromBuffer(value));
   static final _$indexChatHistory = $grpc.ClientMethod<
-          $0.IndexChatHistoryRequest, $0.IndexChatHistoryResponse>(
+          $3.IndexChatHistoryRequest, $3.IndexChatHistoryResponse>(
       '/pb.AIChatService/IndexChatHistory',
-      ($0.IndexChatHistoryRequest value) => value.writeToBuffer(),
+      ($3.IndexChatHistoryRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.IndexChatHistoryResponse.fromBuffer(value));
+          $3.IndexChatHistoryResponse.fromBuffer(value));
   static final _$indexTransactionFile = $grpc.ClientMethod<
-          $0.IndexTransactionFileRequest, $0.IndexTransactionFileResponse>(
+          $3.IndexTransactionFileRequest, $3.IndexTransactionFileResponse>(
       '/pb.AIChatService/IndexTransactionFile',
-      ($0.IndexTransactionFileRequest value) => value.writeToBuffer(),
+      ($3.IndexTransactionFileRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.IndexTransactionFileResponse.fromBuffer(value));
+          $3.IndexTransactionFileResponse.fromBuffer(value));
   static final _$getAIChatHistory = $grpc.ClientMethod<
-          $0.GetAIChatHistoryRequest, $0.GetAIChatHistoryResponse>(
+          $3.GetAIChatHistoryRequest, $3.GetAIChatHistoryResponse>(
       '/pb.AIChatService/GetAIChatHistory',
-      ($0.GetAIChatHistoryRequest value) => value.writeToBuffer(),
+      ($3.GetAIChatHistoryRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.GetAIChatHistoryResponse.fromBuffer(value));
+          $3.GetAIChatHistoryResponse.fromBuffer(value));
 
   AIChatServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
       $core.Iterable<$grpc.ClientInterceptor>? interceptors})
       : super(channel, options: options, interceptors: interceptors);
 
-  $grpc.ResponseFuture<$0.ProcessChatResponse> processChat(
-      $0.ProcessChatRequest request,
+  $grpc.ResponseFuture<$3.ProcessChatResponse> processChat(
+      $3.ProcessChatRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$processChat, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.IndexChatHistoryResponse> indexChatHistory(
-      $0.IndexChatHistoryRequest request,
+  $grpc.ResponseFuture<$3.IndexChatHistoryResponse> indexChatHistory(
+      $3.IndexChatHistoryRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$indexChatHistory, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.IndexTransactionFileResponse> indexTransactionFile(
-      $0.IndexTransactionFileRequest request,
+  $grpc.ResponseFuture<$3.IndexTransactionFileResponse> indexTransactionFile(
+      $3.IndexTransactionFileRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$indexTransactionFile, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetAIChatHistoryResponse> getAIChatHistory(
-      $0.GetAIChatHistoryRequest request,
+  $grpc.ResponseFuture<$3.GetAIChatHistoryResponse> getAIChatHistory(
+      $3.GetAIChatHistoryRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getAIChatHistory, request, options: options);
   }
@@ -74,72 +74,72 @@ abstract class AIChatServiceBase extends $grpc.Service {
 
   AIChatServiceBase() {
     $addMethod(
-        $grpc.ServiceMethod<$0.ProcessChatRequest, $0.ProcessChatResponse>(
+        $grpc.ServiceMethod<$3.ProcessChatRequest, $3.ProcessChatResponse>(
             'ProcessChat',
             processChat_Pre,
             false,
             false,
             ($core.List<$core.int> value) =>
-                $0.ProcessChatRequest.fromBuffer(value),
-            ($0.ProcessChatResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.IndexChatHistoryRequest,
-            $0.IndexChatHistoryResponse>(
+                $3.ProcessChatRequest.fromBuffer(value),
+            ($3.ProcessChatResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$3.IndexChatHistoryRequest,
+            $3.IndexChatHistoryResponse>(
         'IndexChatHistory',
         indexChatHistory_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.IndexChatHistoryRequest.fromBuffer(value),
-        ($0.IndexChatHistoryResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.IndexTransactionFileRequest,
-            $0.IndexTransactionFileResponse>(
+            $3.IndexChatHistoryRequest.fromBuffer(value),
+        ($3.IndexChatHistoryResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$3.IndexTransactionFileRequest,
+            $3.IndexTransactionFileResponse>(
         'IndexTransactionFile',
         indexTransactionFile_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.IndexTransactionFileRequest.fromBuffer(value),
-        ($0.IndexTransactionFileResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetAIChatHistoryRequest,
-            $0.GetAIChatHistoryResponse>(
+            $3.IndexTransactionFileRequest.fromBuffer(value),
+        ($3.IndexTransactionFileResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$3.GetAIChatHistoryRequest,
+            $3.GetAIChatHistoryResponse>(
         'GetAIChatHistory',
         getAIChatHistory_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.GetAIChatHistoryRequest.fromBuffer(value),
-        ($0.GetAIChatHistoryResponse value) => value.writeToBuffer()));
+            $3.GetAIChatHistoryRequest.fromBuffer(value),
+        ($3.GetAIChatHistoryResponse value) => value.writeToBuffer()));
   }
 
-  $async.Future<$0.ProcessChatResponse> processChat_Pre($grpc.ServiceCall call,
-      $async.Future<$0.ProcessChatRequest> request) async {
+  $async.Future<$3.ProcessChatResponse> processChat_Pre($grpc.ServiceCall call,
+      $async.Future<$3.ProcessChatRequest> request) async {
     return processChat(call, await request);
   }
 
-  $async.Future<$0.IndexChatHistoryResponse> indexChatHistory_Pre(
+  $async.Future<$3.IndexChatHistoryResponse> indexChatHistory_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.IndexChatHistoryRequest> request) async {
+      $async.Future<$3.IndexChatHistoryRequest> request) async {
     return indexChatHistory(call, await request);
   }
 
-  $async.Future<$0.IndexTransactionFileResponse> indexTransactionFile_Pre(
+  $async.Future<$3.IndexTransactionFileResponse> indexTransactionFile_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.IndexTransactionFileRequest> request) async {
+      $async.Future<$3.IndexTransactionFileRequest> request) async {
     return indexTransactionFile(call, await request);
   }
 
-  $async.Future<$0.GetAIChatHistoryResponse> getAIChatHistory_Pre(
+  $async.Future<$3.GetAIChatHistoryResponse> getAIChatHistory_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.GetAIChatHistoryRequest> request) async {
+      $async.Future<$3.GetAIChatHistoryRequest> request) async {
     return getAIChatHistory(call, await request);
   }
 
-  $async.Future<$0.ProcessChatResponse> processChat(
-      $grpc.ServiceCall call, $0.ProcessChatRequest request);
-  $async.Future<$0.IndexChatHistoryResponse> indexChatHistory(
-      $grpc.ServiceCall call, $0.IndexChatHistoryRequest request);
-  $async.Future<$0.IndexTransactionFileResponse> indexTransactionFile(
-      $grpc.ServiceCall call, $0.IndexTransactionFileRequest request);
-  $async.Future<$0.GetAIChatHistoryResponse> getAIChatHistory(
-      $grpc.ServiceCall call, $0.GetAIChatHistoryRequest request);
+  $async.Future<$3.ProcessChatResponse> processChat(
+      $grpc.ServiceCall call, $3.ProcessChatRequest request);
+  $async.Future<$3.IndexChatHistoryResponse> indexChatHistory(
+      $grpc.ServiceCall call, $3.IndexChatHistoryRequest request);
+  $async.Future<$3.IndexTransactionFileResponse> indexTransactionFile(
+      $grpc.ServiceCall call, $3.IndexTransactionFileRequest request);
+  $async.Future<$3.GetAIChatHistoryResponse> getAIChatHistory(
+      $grpc.ServiceCall call, $3.GetAIChatHistoryRequest request);
 }

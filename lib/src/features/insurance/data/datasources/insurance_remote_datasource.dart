@@ -1,4 +1,5 @@
 import '../../../../generated/insurance.pbgrpc.dart' as pb;
+import '../../../../generated/financial-products.pbgrpc.dart' as fppb;
 import '../../../../core/network/grpc_client.dart';
 import '../../domain/entities/insurance_entity.dart';
 import '../../domain/entities/insurance_payment_entity.dart';
@@ -263,6 +264,7 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
   InsuranceRemoteDataSourceImpl({required this.grpcClient});
 
   pb.InsuranceServiceClient get _client => grpcClient.insuranceClient;
+  fppb.FinancialProductsServiceClient get _fpClient => grpcClient.financialProductsClient;
 
   @override
   Future<List<Insurance>> getUserInsurances({
@@ -637,22 +639,21 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
     required String locale,
     String? transactionId,
   }) async {
-    final request = pb.PurchaseInsuranceRequest()
+    final request = fppb.PurchaseMarketplaceInsuranceRequest()
       ..quoteId = quoteId
       ..productId = productId
       ..accountId = accountId
-      ..transactionPin = transactionPin
+      ..transactionPinToken = transactionPin
       ..idempotencyKey = idempotencyKey
-      ..locale = locale;
-    if (transactionId != null && transactionId.isNotEmpty) {
-      request.transactionId = transactionId;
-    }
+      ..locale = locale
+      ..pinTransactionId = transactionId ?? idempotencyKey;
+
     request.formData.addAll(formData);
 
     final options = await grpcClient.callOptions;
-    final response = await _client.purchaseInsurance(request, options: options);
+    final response = await _fpClient.purchaseMarketplaceInsurance(request, options: options);
 
-    return _purchaseResultFromProto(response.result);
+    return _marketplacePurchaseResultFromProto(response.result);
   }
 
   @override
@@ -759,6 +760,16 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
   }
 
   InsurancePurchaseResult _purchaseResultFromProto(pb.InsurancePurchaseResult proto) {
+    return InsurancePurchaseResult(
+      policyId: proto.policyId,
+      policyNumber: proto.policyNumber,
+      reference: proto.reference,
+      status: proto.status,
+      providerReference: proto.providerReference,
+    );
+  }
+
+  InsurancePurchaseResult _marketplacePurchaseResultFromProto(fppb.MarketplaceInsurancePurchaseResult proto) {
     return InsurancePurchaseResult(
       policyId: proto.policyId,
       policyNumber: proto.policyNumber,

@@ -197,6 +197,15 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
                 );
               }
 
+              if (state is AsyncPaymentPending) {
+                // Async mode: payment accepted, token coming via SMS/webhook.
+                // Send user to receipt screen to show status + poll for token.
+                Get.offNamed(
+                  AppRoutes.electricityBillReceipt,
+                  arguments: {'payment': state.payment},
+                );
+              }
+
               if (state is PaymentFailed) {
                 print('[PaymentProcessing] PaymentFailed: ${state.errorMessage}');
                 setState(() {

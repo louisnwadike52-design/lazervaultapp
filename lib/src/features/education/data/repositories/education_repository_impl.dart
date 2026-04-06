@@ -3,6 +3,7 @@ import 'package:grpc/grpc.dart';
 import 'package:lazervault/src/core/errors/failures.dart';
 import '../../domain/entities/education_provider_entity.dart';
 import '../../domain/entities/education_purchase_entity.dart';
+import '../../domain/entities/education_history_entity.dart';
 import '../../domain/repositories/education_repository.dart';
 import '../datasources/education_remote_datasource.dart';
 
@@ -48,6 +49,33 @@ class EducationRepositoryImpl implements EducationRepository {
       return Right(result);
     } on GrpcError catch (e) {
       return Left(ServerFailure(message: e.message ?? 'Failed to purchase education pin', statusCode: e.codeName));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<EducationHistoryEntity>>> getHistory({
+    int limit = 20,
+    int offset = 0,
+  }) async {
+    try {
+      final result = await remoteDataSource.getHistory(limit: limit, offset: offset);
+      return Right(result);
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(message: e.message ?? 'Failed to get education PIN history', statusCode: e.codeName));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, EducationHistoryEntity>> getPurchaseById(String id) async {
+    try {
+      final result = await remoteDataSource.getPurchaseById(id);
+      return Right(result);
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(message: e.message ?? 'Failed to get purchase details', statusCode: e.codeName));
     } catch (e) {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }

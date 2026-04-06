@@ -107,16 +107,116 @@ class _A2CProcessingScreenState extends State<A2CProcessingScreen>
     final network = _params!['network'] as String?;
     final amount = _params!['amount'] as double?;
     final sessionToken = _params!['sessionToken'] as String?;
+    final sessionId = _params!['sessionId'] as String?; // Required for Automation API
+    final pin = _params!['pin'] as String?; // SIM Transfer PIN for Automation API
     final transactionId = _params!['transactionId'] as String?;
     final verificationToken = _params!['verificationToken'] as String?;
 
-    if (phoneNumber == null || network == null || amount == null ||
-        sessionToken == null || transactionId == null || verificationToken == null) {
+    // Validate all required fields with detailed error messages
+    if (phoneNumber == null || phoneNumber.isEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           Get.offNamed(AppRoutes.airtimeToCashResult, arguments: {
             'isSuccess': false,
-            'errorMessage': 'Invalid conversion data. Please try again.',
+            'errorMessage': 'Phone number is missing. Please try again.',
+          });
+        }
+      });
+      return;
+    }
+
+    if (network == null || network.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          Get.offNamed(AppRoutes.airtimeToCashResult, arguments: {
+            'isSuccess': false,
+            'errorMessage': 'Network provider is missing. Please try again.',
+          });
+        }
+      });
+      return;
+    }
+
+    if (amount == null || amount <= 0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          Get.offNamed(AppRoutes.airtimeToCashResult, arguments: {
+            'isSuccess': false,
+            'errorMessage': 'Invalid amount. Please try again.',
+          });
+        }
+      });
+      return;
+    }
+
+    if (sessionToken == null || sessionToken.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          Get.offNamed(AppRoutes.airtimeToCashResult, arguments: {
+            'isSuccess': false,
+            'errorMessage': 'Session token is missing. Please start over.',
+          });
+        }
+      });
+      return;
+    }
+
+    // Validate Automation API specific requirements
+    if (sessionId == null || sessionId.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          Get.offNamed(AppRoutes.airtimeToCashResult, arguments: {
+            'isSuccess': false,
+            'errorMessage': 'Session ID is missing. This is required for the Automation API. Please start over.',
+          });
+        }
+      });
+      return;
+    }
+
+    if (pin == null || pin.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          Get.offNamed(AppRoutes.airtimeToCashResult, arguments: {
+            'isSuccess': false,
+            'errorMessage': 'SIM Transfer PIN is missing. This is required for the Automation API. Please start over.',
+          });
+        }
+      });
+      return;
+    }
+
+    // Validate PIN format
+    if (pin.length != 4 || !RegExp(r'^[0-9]+$').hasMatch(pin)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          Get.offNamed(AppRoutes.airtimeToCashResult, arguments: {
+            'isSuccess': false,
+            'errorMessage': 'Invalid SIM Transfer PIN format. PIN must be 4 digits.',
+          });
+        }
+      });
+      return;
+    }
+
+    if (transactionId == null || transactionId.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          Get.offNamed(AppRoutes.airtimeToCashResult, arguments: {
+            'isSuccess': false,
+            'errorMessage': 'Transaction ID is missing. Please try again.',
+          });
+        }
+      });
+      return;
+    }
+
+    if (verificationToken == null || verificationToken.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          Get.offNamed(AppRoutes.airtimeToCashResult, arguments: {
+            'isSuccess': false,
+            'errorMessage': 'Verification token is missing. Please try again.',
           });
         }
       });
@@ -126,12 +226,14 @@ class _A2CProcessingScreenState extends State<A2CProcessingScreen>
     // Start timeout timer (120 seconds)
     _timeoutTimer = Timer(const Duration(seconds: 120), _onTimeout);
 
-    // Start the conversion process
+    // Start the conversion process with all required parameters including SIM Transfer PIN
     context.read<AirtimeToCashCubit>().processConversion(
           phoneNumber: phoneNumber,
           network: network,
           amount: amount,
           sessionToken: sessionToken,
+          sessionId: sessionId, // Required for Automation API session tracking
+          pin: pin, // SIM Transfer PIN required by Automation API
           transactionId: transactionId,
           verificationToken: verificationToken,
           sourceAccountId: _params!['sourceAccountId'] as String?,

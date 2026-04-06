@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/airtime_to_cash_conversion.dart';
 import '../../domain/entities/network_rate.dart';
+import '../../domain/repositories/airtime_to_cash_repository.dart';
 
 abstract class AirtimeToCashState extends Equatable {
   const AirtimeToCashState();
@@ -39,15 +40,19 @@ class AirtimeToCashOTPSent extends AirtimeToCashState {
   final String sessionId;
   final bool otpRequired;
   final String message;
+  final String destinationPhone; // VTU Africa: phone to transfer to
+  final String providerName; // "airtimetocash" or "vtuafrica"
 
   const AirtimeToCashOTPSent({
     required this.sessionId,
     required this.otpRequired,
     required this.message,
+    this.destinationPhone = '',
+    this.providerName = '',
   });
 
   @override
-  List<Object?> get props => [sessionId, otpRequired, message];
+  List<Object?> get props => [sessionId, otpRequired, message, destinationPhone, providerName];
 }
 
 // OTP verification states
@@ -55,11 +60,75 @@ class AirtimeToCashOTPVerifying extends AirtimeToCashState {}
 
 class AirtimeToCashOTPVerified extends AirtimeToCashState {
   final String sessionToken;
+  final String sessionId; // Added for Automation API
 
-  const AirtimeToCashOTPVerified({required this.sessionToken});
+  const AirtimeToCashOTPVerified({
+    required this.sessionToken,
+    required this.sessionId,
+  });
 
   @override
-  List<Object?> get props => [sessionToken];
+  List<Object?> get props => [sessionToken, sessionId];
+}
+
+// Quota check states
+class AirtimeToCashCheckingQuota extends AirtimeToCashState {}
+
+class AirtimeToCashQuotaChecked extends AirtimeToCashState {
+  final bool available;
+  final double maxAmount;
+  final String message;
+
+  const AirtimeToCashQuotaChecked({
+    required this.available,
+    required this.maxAmount,
+    required this.message,
+  });
+
+  @override
+  List<Object?> get props => [available, maxAmount, message];
+}
+
+// Service verification states
+class AirtimeToCashVerifying extends AirtimeToCashState {}
+
+class AirtimeToCashServiceVerified extends AirtimeToCashState {
+  final String providerName;
+  final String destinationPhone;
+  final String network;
+  final bool requiresTransfer;
+  final String message;
+
+  const AirtimeToCashServiceVerified({
+    required this.providerName,
+    required this.destinationPhone,
+    required this.network,
+    required this.requiresTransfer,
+    required this.message,
+  });
+
+  @override
+  List<Object?> get props => [providerName, destinationPhone, network, requiresTransfer, message];
+}
+
+// Provider info states
+class AirtimeToCashProviderInfoLoaded extends AirtimeToCashState {
+  final String providerName;
+  final bool requiresOTP;
+  final bool requiresTransfer;
+  final String displayName;
+  final List<ProviderStatusInfo> providers;
+
+  const AirtimeToCashProviderInfoLoaded({
+    required this.providerName,
+    required this.requiresOTP,
+    required this.requiresTransfer,
+    required this.displayName,
+    required this.providers,
+  });
+
+  @override
+  List<Object?> get props => [providerName, requiresOTP, requiresTransfer, displayName, providers];
 }
 
 // Review state

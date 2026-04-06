@@ -82,6 +82,13 @@ service GiftCardsService {
     };
   }
 
+  // Get active gift card sell provider (manual or prestmit)
+  rpc GetSellProvider(GetSellProviderRequest) returns (GetSellProviderResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/giftcards/sell/provider"
+    };
+  }
+
   // Upload a gift card image for selling
   rpc UploadSellImage(UploadSellImageRequest) returns (UploadSellImageResponse) {
     option (google.api.http) = {
@@ -521,6 +528,14 @@ message GetSellRateRequest {
 
 message GetSellRateResponse {
   SellRate rate = 1;
+}
+
+// Get sell provider request/response
+message GetSellProviderRequest {}
+
+message GetSellProviderResponse {
+  string provider = 1; // "manual" or "prestmit"
+  string description = 2;
 }
 
 // NOTE: user_id extracted from JWT token

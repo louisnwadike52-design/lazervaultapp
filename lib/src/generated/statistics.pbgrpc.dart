@@ -10,553 +10,557 @@ import 'dart:async' as $async;
 import 'dart:core' as $core;
 
 import 'package:grpc/service_api.dart' as $grpc;
-import 'statistics.pb.dart' as $0;
+import 'statistics.pb.dart' as $34;
 export 'statistics.pb.dart';
 
 class StatisticsServiceClient extends $grpc.Client {
   static final _$createExpense =
-      $grpc.ClientMethod<$0.CreateExpenseRequest, $0.CreateExpenseResponse>(
+      $grpc.ClientMethod<$34.CreateExpenseRequest, $34.CreateExpenseResponse>(
           '/pb.StatisticsService/CreateExpense',
-          ($0.CreateExpenseRequest value) => value.writeToBuffer(),
+          ($34.CreateExpenseRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $0.CreateExpenseResponse.fromBuffer(value));
+              $34.CreateExpenseResponse.fromBuffer(value));
   static final _$getExpenses =
-      $grpc.ClientMethod<$0.GetExpensesRequest, $0.GetExpensesResponse>(
+      $grpc.ClientMethod<$34.GetExpensesRequest, $34.GetExpensesResponse>(
           '/pb.StatisticsService/GetExpenses',
-          ($0.GetExpensesRequest value) => value.writeToBuffer(),
+          ($34.GetExpensesRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $0.GetExpensesResponse.fromBuffer(value));
+              $34.GetExpensesResponse.fromBuffer(value));
   static final _$getExpenseById =
-      $grpc.ClientMethod<$0.GetExpenseByIdRequest, $0.GetExpenseByIdResponse>(
+      $grpc.ClientMethod<$34.GetExpenseByIdRequest, $34.GetExpenseByIdResponse>(
           '/pb.StatisticsService/GetExpenseById',
-          ($0.GetExpenseByIdRequest value) => value.writeToBuffer(),
+          ($34.GetExpenseByIdRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $0.GetExpenseByIdResponse.fromBuffer(value));
+              $34.GetExpenseByIdResponse.fromBuffer(value));
   static final _$updateExpense =
-      $grpc.ClientMethod<$0.UpdateExpenseRequest, $0.UpdateExpenseResponse>(
+      $grpc.ClientMethod<$34.UpdateExpenseRequest, $34.UpdateExpenseResponse>(
           '/pb.StatisticsService/UpdateExpense',
-          ($0.UpdateExpenseRequest value) => value.writeToBuffer(),
+          ($34.UpdateExpenseRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $0.UpdateExpenseResponse.fromBuffer(value));
+              $34.UpdateExpenseResponse.fromBuffer(value));
   static final _$deleteExpense =
-      $grpc.ClientMethod<$0.DeleteExpenseRequest, $0.DeleteExpenseResponse>(
+      $grpc.ClientMethod<$34.DeleteExpenseRequest, $34.DeleteExpenseResponse>(
           '/pb.StatisticsService/DeleteExpense',
-          ($0.DeleteExpenseRequest value) => value.writeToBuffer(),
+          ($34.DeleteExpenseRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $0.DeleteExpenseResponse.fromBuffer(value));
+              $34.DeleteExpenseResponse.fromBuffer(value));
   static final _$createBudget =
-      $grpc.ClientMethod<$0.CreateBudgetRequest, $0.CreateBudgetResponse>(
+      $grpc.ClientMethod<$34.CreateBudgetRequest, $34.CreateBudgetResponse>(
           '/pb.StatisticsService/CreateBudget',
-          ($0.CreateBudgetRequest value) => value.writeToBuffer(),
+          ($34.CreateBudgetRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $0.CreateBudgetResponse.fromBuffer(value));
+              $34.CreateBudgetResponse.fromBuffer(value));
   static final _$getBudgets =
-      $grpc.ClientMethod<$0.GetBudgetsRequest, $0.GetBudgetsResponse>(
+      $grpc.ClientMethod<$34.GetBudgetsRequest, $34.GetBudgetsResponse>(
           '/pb.StatisticsService/GetBudgets',
-          ($0.GetBudgetsRequest value) => value.writeToBuffer(),
+          ($34.GetBudgetsRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $0.GetBudgetsResponse.fromBuffer(value));
+              $34.GetBudgetsResponse.fromBuffer(value));
   static final _$getBudgetById =
-      $grpc.ClientMethod<$0.GetBudgetByIdRequest, $0.GetBudgetByIdResponse>(
+      $grpc.ClientMethod<$34.GetBudgetByIdRequest, $34.GetBudgetByIdResponse>(
           '/pb.StatisticsService/GetBudgetById',
-          ($0.GetBudgetByIdRequest value) => value.writeToBuffer(),
+          ($34.GetBudgetByIdRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $0.GetBudgetByIdResponse.fromBuffer(value));
+              $34.GetBudgetByIdResponse.fromBuffer(value));
   static final _$updateBudget =
-      $grpc.ClientMethod<$0.UpdateBudgetRequest, $0.UpdateBudgetResponse>(
+      $grpc.ClientMethod<$34.UpdateBudgetRequest, $34.UpdateBudgetResponse>(
           '/pb.StatisticsService/UpdateBudget',
-          ($0.UpdateBudgetRequest value) => value.writeToBuffer(),
+          ($34.UpdateBudgetRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $0.UpdateBudgetResponse.fromBuffer(value));
+              $34.UpdateBudgetResponse.fromBuffer(value));
   static final _$deleteBudget =
-      $grpc.ClientMethod<$0.DeleteBudgetRequest, $0.DeleteBudgetResponse>(
+      $grpc.ClientMethod<$34.DeleteBudgetRequest, $34.DeleteBudgetResponse>(
           '/pb.StatisticsService/DeleteBudget',
-          ($0.DeleteBudgetRequest value) => value.writeToBuffer(),
+          ($34.DeleteBudgetRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $0.DeleteBudgetResponse.fromBuffer(value));
+              $34.DeleteBudgetResponse.fromBuffer(value));
   static final _$getSpendingAnalytics = $grpc.ClientMethod<
-          $0.GetSpendingAnalyticsRequest, $0.GetSpendingAnalyticsResponse>(
+          $34.GetSpendingAnalyticsRequest, $34.GetSpendingAnalyticsResponse>(
       '/pb.StatisticsService/GetSpendingAnalytics',
-      ($0.GetSpendingAnalyticsRequest value) => value.writeToBuffer(),
+      ($34.GetSpendingAnalyticsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.GetSpendingAnalyticsResponse.fromBuffer(value));
+          $34.GetSpendingAnalyticsResponse.fromBuffer(value));
   static final _$getCategoryBreakdown = $grpc.ClientMethod<
-          $0.GetCategoryBreakdownRequest, $0.GetCategoryBreakdownResponse>(
+          $34.GetCategoryBreakdownRequest, $34.GetCategoryBreakdownResponse>(
       '/pb.StatisticsService/GetCategoryBreakdown',
-      ($0.GetCategoryBreakdownRequest value) => value.writeToBuffer(),
+      ($34.GetCategoryBreakdownRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.GetCategoryBreakdownResponse.fromBuffer(value));
+          $34.GetCategoryBreakdownResponse.fromBuffer(value));
   static final _$getBudgetProgress = $grpc.ClientMethod<
-          $0.GetBudgetProgressRequest, $0.GetBudgetProgressResponse>(
+          $34.GetBudgetProgressRequest, $34.GetBudgetProgressResponse>(
       '/pb.StatisticsService/GetBudgetProgress',
-      ($0.GetBudgetProgressRequest value) => value.writeToBuffer(),
+      ($34.GetBudgetProgressRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.GetBudgetProgressResponse.fromBuffer(value));
+          $34.GetBudgetProgressResponse.fromBuffer(value));
   static final _$getSpendingTrends = $grpc.ClientMethod<
-          $0.GetSpendingTrendsRequest, $0.GetSpendingTrendsResponse>(
+          $34.GetSpendingTrendsRequest, $34.GetSpendingTrendsResponse>(
       '/pb.StatisticsService/GetSpendingTrends',
-      ($0.GetSpendingTrendsRequest value) => value.writeToBuffer(),
+      ($34.GetSpendingTrendsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.GetSpendingTrendsResponse.fromBuffer(value));
-  static final _$getBudgetAlerts =
-      $grpc.ClientMethod<$0.GetBudgetAlertsRequest, $0.GetBudgetAlertsResponse>(
-          '/pb.StatisticsService/GetBudgetAlerts',
-          ($0.GetBudgetAlertsRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) =>
-              $0.GetBudgetAlertsResponse.fromBuffer(value));
-  static final _$markAlertAsRead =
-      $grpc.ClientMethod<$0.MarkAlertAsReadRequest, $0.MarkAlertAsReadResponse>(
-          '/pb.StatisticsService/MarkAlertAsRead',
-          ($0.MarkAlertAsReadRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) =>
-              $0.MarkAlertAsReadResponse.fromBuffer(value));
+          $34.GetSpendingTrendsResponse.fromBuffer(value));
+  static final _$getBudgetAlerts = $grpc.ClientMethod<
+          $34.GetBudgetAlertsRequest, $34.GetBudgetAlertsResponse>(
+      '/pb.StatisticsService/GetBudgetAlerts',
+      ($34.GetBudgetAlertsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $34.GetBudgetAlertsResponse.fromBuffer(value));
+  static final _$markAlertAsRead = $grpc.ClientMethod<
+          $34.MarkAlertAsReadRequest, $34.MarkAlertAsReadResponse>(
+      '/pb.StatisticsService/MarkAlertAsRead',
+      ($34.MarkAlertAsReadRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $34.MarkAlertAsReadResponse.fromBuffer(value));
   static final _$getAISpendingInsights = $grpc.ClientMethod<
-          $0.GetAISpendingInsightsRequest, $0.GetAISpendingInsightsResponse>(
+          $34.GetAISpendingInsightsRequest, $34.GetAISpendingInsightsResponse>(
       '/pb.StatisticsService/GetAISpendingInsights',
-      ($0.GetAISpendingInsightsRequest value) => value.writeToBuffer(),
+      ($34.GetAISpendingInsightsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.GetAISpendingInsightsResponse.fromBuffer(value));
+          $34.GetAISpendingInsightsResponse.fromBuffer(value));
   static final _$getAIBudgetingRecommendations = $grpc.ClientMethod<
-          $0.GetAIBudgetingRecommendationsRequest,
-          $0.GetAIBudgetingRecommendationsResponse>(
+          $34.GetAIBudgetingRecommendationsRequest,
+          $34.GetAIBudgetingRecommendationsResponse>(
       '/pb.StatisticsService/GetAIBudgetingRecommendations',
-      ($0.GetAIBudgetingRecommendationsRequest value) => value.writeToBuffer(),
+      ($34.GetAIBudgetingRecommendationsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.GetAIBudgetingRecommendationsResponse.fromBuffer(value));
+          $34.GetAIBudgetingRecommendationsResponse.fromBuffer(value));
   static final _$autoCategorizeExpense = $grpc.ClientMethod<
-          $0.AutoCategorizeExpenseRequest, $0.AutoCategorizeExpenseResponse>(
+          $34.AutoCategorizeExpenseRequest, $34.AutoCategorizeExpenseResponse>(
       '/pb.StatisticsService/AutoCategorizeExpense',
-      ($0.AutoCategorizeExpenseRequest value) => value.writeToBuffer(),
+      ($34.AutoCategorizeExpenseRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.AutoCategorizeExpenseResponse.fromBuffer(value));
+          $34.AutoCategorizeExpenseResponse.fromBuffer(value));
   static final _$getAIFinancialAdvice = $grpc.ClientMethod<
-          $0.GetAIFinancialAdviceRequest, $0.GetAIFinancialAdviceResponse>(
+          $34.GetAIFinancialAdviceRequest, $34.GetAIFinancialAdviceResponse>(
       '/pb.StatisticsService/GetAIFinancialAdvice',
-      ($0.GetAIFinancialAdviceRequest value) => value.writeToBuffer(),
+      ($34.GetAIFinancialAdviceRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.GetAIFinancialAdviceResponse.fromBuffer(value));
+          $34.GetAIFinancialAdviceResponse.fromBuffer(value));
   static final _$getIncomeSources = $grpc.ClientMethod<
-          $0.GetIncomeSourcesRequest, $0.GetIncomeSourcesResponse>(
+          $34.GetIncomeSourcesRequest, $34.GetIncomeSourcesResponse>(
       '/pb.StatisticsService/GetIncomeSources',
-      ($0.GetIncomeSourcesRequest value) => value.writeToBuffer(),
+      ($34.GetIncomeSourcesRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.GetIncomeSourcesResponse.fromBuffer(value));
+          $34.GetIncomeSourcesResponse.fromBuffer(value));
   static final _$getIncomeBreakdown = $grpc.ClientMethod<
-          $0.GetIncomeBreakdownRequest, $0.GetIncomeBreakdownResponse>(
+          $34.GetIncomeBreakdownRequest, $34.GetIncomeBreakdownResponse>(
       '/pb.StatisticsService/GetIncomeBreakdown',
-      ($0.GetIncomeBreakdownRequest value) => value.writeToBuffer(),
+      ($34.GetIncomeBreakdownRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.GetIncomeBreakdownResponse.fromBuffer(value));
+          $34.GetIncomeBreakdownResponse.fromBuffer(value));
   static final _$createIncomeSource = $grpc.ClientMethod<
-          $0.CreateIncomeSourceRequest, $0.CreateIncomeSourceResponse>(
+          $34.CreateIncomeSourceRequest, $34.CreateIncomeSourceResponse>(
       '/pb.StatisticsService/CreateIncomeSource',
-      ($0.CreateIncomeSourceRequest value) => value.writeToBuffer(),
+      ($34.CreateIncomeSourceRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.CreateIncomeSourceResponse.fromBuffer(value));
+          $34.CreateIncomeSourceResponse.fromBuffer(value));
   static final _$getInvestmentPortfolio = $grpc.ClientMethod<
-          $0.GetInvestmentPortfolioRequest, $0.GetInvestmentPortfolioResponse>(
+          $34.GetInvestmentPortfolioRequest,
+          $34.GetInvestmentPortfolioResponse>(
       '/pb.StatisticsService/GetInvestmentPortfolio',
-      ($0.GetInvestmentPortfolioRequest value) => value.writeToBuffer(),
+      ($34.GetInvestmentPortfolioRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.GetInvestmentPortfolioResponse.fromBuffer(value));
+          $34.GetInvestmentPortfolioResponse.fromBuffer(value));
   static final _$createInvestment = $grpc.ClientMethod<
-          $0.CreateInvestmentRequest, $0.CreateInvestmentResponse>(
+          $34.CreateInvestmentRequest, $34.CreateInvestmentResponse>(
       '/pb.StatisticsService/CreateInvestment',
-      ($0.CreateInvestmentRequest value) => value.writeToBuffer(),
+      ($34.CreateInvestmentRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.CreateInvestmentResponse.fromBuffer(value));
+          $34.CreateInvestmentResponse.fromBuffer(value));
   static final _$getFinancialGoals = $grpc.ClientMethod<
-          $0.GetFinancialGoalsRequest, $0.GetFinancialGoalsResponse>(
+          $34.GetFinancialGoalsRequest, $34.GetFinancialGoalsResponse>(
       '/pb.StatisticsService/GetFinancialGoals',
-      ($0.GetFinancialGoalsRequest value) => value.writeToBuffer(),
+      ($34.GetFinancialGoalsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.GetFinancialGoalsResponse.fromBuffer(value));
+          $34.GetFinancialGoalsResponse.fromBuffer(value));
   static final _$createFinancialGoal = $grpc.ClientMethod<
-          $0.CreateFinancialGoalRequest, $0.CreateFinancialGoalResponse>(
+          $34.CreateFinancialGoalRequest, $34.CreateFinancialGoalResponse>(
       '/pb.StatisticsService/CreateFinancialGoal',
-      ($0.CreateFinancialGoalRequest value) => value.writeToBuffer(),
+      ($34.CreateFinancialGoalRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.CreateFinancialGoalResponse.fromBuffer(value));
+          $34.CreateFinancialGoalResponse.fromBuffer(value));
   static final _$updateFinancialGoalProgress = $grpc.ClientMethod<
-          $0.UpdateFinancialGoalProgressRequest,
-          $0.UpdateFinancialGoalProgressResponse>(
+          $34.UpdateFinancialGoalProgressRequest,
+          $34.UpdateFinancialGoalProgressResponse>(
       '/pb.StatisticsService/UpdateFinancialGoalProgress',
-      ($0.UpdateFinancialGoalProgressRequest value) => value.writeToBuffer(),
+      ($34.UpdateFinancialGoalProgressRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.UpdateFinancialGoalProgressResponse.fromBuffer(value));
+          $34.UpdateFinancialGoalProgressResponse.fromBuffer(value));
   static final _$getSavingsGoal =
-      $grpc.ClientMethod<$0.GetSavingsGoalRequest, $0.GetSavingsGoalResponse>(
+      $grpc.ClientMethod<$34.GetSavingsGoalRequest, $34.GetSavingsGoalResponse>(
           '/pb.StatisticsService/GetSavingsGoal',
-          ($0.GetSavingsGoalRequest value) => value.writeToBuffer(),
+          ($34.GetSavingsGoalRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $0.GetSavingsGoalResponse.fromBuffer(value));
+              $34.GetSavingsGoalResponse.fromBuffer(value));
   static final _$createOrUpdateSavingsGoal = $grpc.ClientMethod<
-          $0.CreateOrUpdateSavingsGoalRequest,
-          $0.CreateOrUpdateSavingsGoalResponse>(
+          $34.CreateOrUpdateSavingsGoalRequest,
+          $34.CreateOrUpdateSavingsGoalResponse>(
       '/pb.StatisticsService/CreateOrUpdateSavingsGoal',
-      ($0.CreateOrUpdateSavingsGoalRequest value) => value.writeToBuffer(),
+      ($34.CreateOrUpdateSavingsGoalRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.CreateOrUpdateSavingsGoalResponse.fromBuffer(value));
+          $34.CreateOrUpdateSavingsGoalResponse.fromBuffer(value));
   static final _$getUpcomingBills = $grpc.ClientMethod<
-          $0.GetUpcomingBillsRequest, $0.GetUpcomingBillsResponse>(
+          $34.GetUpcomingBillsRequest, $34.GetUpcomingBillsResponse>(
       '/pb.StatisticsService/GetUpcomingBills',
-      ($0.GetUpcomingBillsRequest value) => value.writeToBuffer(),
+      ($34.GetUpcomingBillsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.GetUpcomingBillsResponse.fromBuffer(value));
+          $34.GetUpcomingBillsResponse.fromBuffer(value));
   static final _$createRecurringBill = $grpc.ClientMethod<
-          $0.CreateRecurringBillRequest, $0.CreateRecurringBillResponse>(
+          $34.CreateRecurringBillRequest, $34.CreateRecurringBillResponse>(
       '/pb.StatisticsService/CreateRecurringBill',
-      ($0.CreateRecurringBillRequest value) => value.writeToBuffer(),
+      ($34.CreateRecurringBillRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.CreateRecurringBillResponse.fromBuffer(value));
+          $34.CreateRecurringBillResponse.fromBuffer(value));
   static final _$getTrackedIncome = $grpc.ClientMethod<
-          $0.GetTrackedIncomeRequest, $0.GetTrackedIncomeResponse>(
+          $34.GetTrackedIncomeRequest, $34.GetTrackedIncomeResponse>(
       '/pb.StatisticsService/GetTrackedIncome',
-      ($0.GetTrackedIncomeRequest value) => value.writeToBuffer(),
+      ($34.GetTrackedIncomeRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.GetTrackedIncomeResponse.fromBuffer(value));
+          $34.GetTrackedIncomeResponse.fromBuffer(value));
   static final _$getTrackedExpenditure = $grpc.ClientMethod<
-          $0.GetTrackedExpenditureRequest, $0.GetTrackedExpenditureResponse>(
+          $34.GetTrackedExpenditureRequest, $34.GetTrackedExpenditureResponse>(
       '/pb.StatisticsService/GetTrackedExpenditure',
-      ($0.GetTrackedExpenditureRequest value) => value.writeToBuffer(),
+      ($34.GetTrackedExpenditureRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.GetTrackedExpenditureResponse.fromBuffer(value));
+          $34.GetTrackedExpenditureResponse.fromBuffer(value));
   static final _$getTrackedIncomeBreakdown = $grpc.ClientMethod<
-          $0.GetTrackedIncomeBreakdownRequest,
-          $0.GetTrackedIncomeBreakdownResponse>(
+          $34.GetTrackedIncomeBreakdownRequest,
+          $34.GetTrackedIncomeBreakdownResponse>(
       '/pb.StatisticsService/GetTrackedIncomeBreakdown',
-      ($0.GetTrackedIncomeBreakdownRequest value) => value.writeToBuffer(),
+      ($34.GetTrackedIncomeBreakdownRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.GetTrackedIncomeBreakdownResponse.fromBuffer(value));
+          $34.GetTrackedIncomeBreakdownResponse.fromBuffer(value));
   static final _$getTrackedExpenditureBreakdown = $grpc.ClientMethod<
-          $0.GetTrackedExpenditureBreakdownRequest,
-          $0.GetTrackedExpenditureBreakdownResponse>(
+          $34.GetTrackedExpenditureBreakdownRequest,
+          $34.GetTrackedExpenditureBreakdownResponse>(
       '/pb.StatisticsService/GetTrackedExpenditureBreakdown',
-      ($0.GetTrackedExpenditureBreakdownRequest value) => value.writeToBuffer(),
+      ($34.GetTrackedExpenditureBreakdownRequest value) =>
+          value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.GetTrackedExpenditureBreakdownResponse.fromBuffer(value));
+          $34.GetTrackedExpenditureBreakdownResponse.fromBuffer(value));
   static final _$getTrackedIncomeTransactions = $grpc.ClientMethod<
-          $0.GetTrackedIncomeTransactionsRequest,
-          $0.GetTrackedIncomeTransactionsResponse>(
+          $34.GetTrackedIncomeTransactionsRequest,
+          $34.GetTrackedIncomeTransactionsResponse>(
       '/pb.StatisticsService/GetTrackedIncomeTransactions',
-      ($0.GetTrackedIncomeTransactionsRequest value) => value.writeToBuffer(),
+      ($34.GetTrackedIncomeTransactionsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.GetTrackedIncomeTransactionsResponse.fromBuffer(value));
+          $34.GetTrackedIncomeTransactionsResponse.fromBuffer(value));
   static final _$getTrackedExpenditureTransactions = $grpc.ClientMethod<
-          $0.GetTrackedExpenditureTransactionsRequest,
-          $0.GetTrackedExpenditureTransactionsResponse>(
+          $34.GetTrackedExpenditureTransactionsRequest,
+          $34.GetTrackedExpenditureTransactionsResponse>(
       '/pb.StatisticsService/GetTrackedExpenditureTransactions',
-      ($0.GetTrackedExpenditureTransactionsRequest value) =>
+      ($34.GetTrackedExpenditureTransactionsRequest value) =>
           value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.GetTrackedExpenditureTransactionsResponse.fromBuffer(value));
+          $34.GetTrackedExpenditureTransactionsResponse.fromBuffer(value));
   static final _$getComprehensiveFinancialSummary = $grpc.ClientMethod<
-          $0.GetComprehensiveFinancialSummaryRequest,
-          $0.GetComprehensiveFinancialSummaryResponse>(
+          $34.GetComprehensiveFinancialSummaryRequest,
+          $34.GetComprehensiveFinancialSummaryResponse>(
       '/pb.StatisticsService/GetComprehensiveFinancialSummary',
-      ($0.GetComprehensiveFinancialSummaryRequest value) =>
+      ($34.GetComprehensiveFinancialSummaryRequest value) =>
           value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.GetComprehensiveFinancialSummaryResponse.fromBuffer(value));
+          $34.GetComprehensiveFinancialSummaryResponse.fromBuffer(value));
   static final _$validateCategoryBudget = $grpc.ClientMethod<
-          $0.ValidateCategoryBudgetRequest, $0.ValidateCategoryBudgetResponse>(
+          $34.ValidateCategoryBudgetRequest,
+          $34.ValidateCategoryBudgetResponse>(
       '/pb.StatisticsService/ValidateCategoryBudget',
-      ($0.ValidateCategoryBudgetRequest value) => value.writeToBuffer(),
+      ($34.ValidateCategoryBudgetRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.ValidateCategoryBudgetResponse.fromBuffer(value));
+          $34.ValidateCategoryBudgetResponse.fromBuffer(value));
   static final _$getServiceCategories = $grpc.ClientMethod<
-          $0.GetServiceCategoriesRequest, $0.GetServiceCategoriesResponse>(
+          $34.GetServiceCategoriesRequest, $34.GetServiceCategoriesResponse>(
       '/pb.StatisticsService/GetServiceCategories',
-      ($0.GetServiceCategoriesRequest value) => value.writeToBuffer(),
+      ($34.GetServiceCategoriesRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.GetServiceCategoriesResponse.fromBuffer(value));
+          $34.GetServiceCategoriesResponse.fromBuffer(value));
   static final _$createCustomCategory = $grpc.ClientMethod<
-          $0.CreateCustomCategoryRequest, $0.CreateCustomCategoryResponse>(
+          $34.CreateCustomCategoryRequest, $34.CreateCustomCategoryResponse>(
       '/pb.StatisticsService/CreateCustomCategory',
-      ($0.CreateCustomCategoryRequest value) => value.writeToBuffer(),
+      ($34.CreateCustomCategoryRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.CreateCustomCategoryResponse.fromBuffer(value));
+          $34.CreateCustomCategoryResponse.fromBuffer(value));
   static final _$deleteCustomCategory = $grpc.ClientMethod<
-          $0.DeleteCustomCategoryRequest, $0.DeleteCustomCategoryResponse>(
+          $34.DeleteCustomCategoryRequest, $34.DeleteCustomCategoryResponse>(
       '/pb.StatisticsService/DeleteCustomCategory',
-      ($0.DeleteCustomCategoryRequest value) => value.writeToBuffer(),
+      ($34.DeleteCustomCategoryRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.DeleteCustomCategoryResponse.fromBuffer(value));
+          $34.DeleteCustomCategoryResponse.fromBuffer(value));
 
   StatisticsServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
       $core.Iterable<$grpc.ClientInterceptor>? interceptors})
       : super(channel, options: options, interceptors: interceptors);
 
-  $grpc.ResponseFuture<$0.CreateExpenseResponse> createExpense(
-      $0.CreateExpenseRequest request,
+  $grpc.ResponseFuture<$34.CreateExpenseResponse> createExpense(
+      $34.CreateExpenseRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$createExpense, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetExpensesResponse> getExpenses(
-      $0.GetExpensesRequest request,
+  $grpc.ResponseFuture<$34.GetExpensesResponse> getExpenses(
+      $34.GetExpensesRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getExpenses, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetExpenseByIdResponse> getExpenseById(
-      $0.GetExpenseByIdRequest request,
+  $grpc.ResponseFuture<$34.GetExpenseByIdResponse> getExpenseById(
+      $34.GetExpenseByIdRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getExpenseById, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.UpdateExpenseResponse> updateExpense(
-      $0.UpdateExpenseRequest request,
+  $grpc.ResponseFuture<$34.UpdateExpenseResponse> updateExpense(
+      $34.UpdateExpenseRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$updateExpense, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.DeleteExpenseResponse> deleteExpense(
-      $0.DeleteExpenseRequest request,
+  $grpc.ResponseFuture<$34.DeleteExpenseResponse> deleteExpense(
+      $34.DeleteExpenseRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$deleteExpense, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.CreateBudgetResponse> createBudget(
-      $0.CreateBudgetRequest request,
+  $grpc.ResponseFuture<$34.CreateBudgetResponse> createBudget(
+      $34.CreateBudgetRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$createBudget, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetBudgetsResponse> getBudgets(
-      $0.GetBudgetsRequest request,
+  $grpc.ResponseFuture<$34.GetBudgetsResponse> getBudgets(
+      $34.GetBudgetsRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getBudgets, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetBudgetByIdResponse> getBudgetById(
-      $0.GetBudgetByIdRequest request,
+  $grpc.ResponseFuture<$34.GetBudgetByIdResponse> getBudgetById(
+      $34.GetBudgetByIdRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getBudgetById, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.UpdateBudgetResponse> updateBudget(
-      $0.UpdateBudgetRequest request,
+  $grpc.ResponseFuture<$34.UpdateBudgetResponse> updateBudget(
+      $34.UpdateBudgetRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$updateBudget, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.DeleteBudgetResponse> deleteBudget(
-      $0.DeleteBudgetRequest request,
+  $grpc.ResponseFuture<$34.DeleteBudgetResponse> deleteBudget(
+      $34.DeleteBudgetRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$deleteBudget, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetSpendingAnalyticsResponse> getSpendingAnalytics(
-      $0.GetSpendingAnalyticsRequest request,
+  $grpc.ResponseFuture<$34.GetSpendingAnalyticsResponse> getSpendingAnalytics(
+      $34.GetSpendingAnalyticsRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getSpendingAnalytics, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetCategoryBreakdownResponse> getCategoryBreakdown(
-      $0.GetCategoryBreakdownRequest request,
+  $grpc.ResponseFuture<$34.GetCategoryBreakdownResponse> getCategoryBreakdown(
+      $34.GetCategoryBreakdownRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getCategoryBreakdown, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetBudgetProgressResponse> getBudgetProgress(
-      $0.GetBudgetProgressRequest request,
+  $grpc.ResponseFuture<$34.GetBudgetProgressResponse> getBudgetProgress(
+      $34.GetBudgetProgressRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getBudgetProgress, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetSpendingTrendsResponse> getSpendingTrends(
-      $0.GetSpendingTrendsRequest request,
+  $grpc.ResponseFuture<$34.GetSpendingTrendsResponse> getSpendingTrends(
+      $34.GetSpendingTrendsRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getSpendingTrends, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetBudgetAlertsResponse> getBudgetAlerts(
-      $0.GetBudgetAlertsRequest request,
+  $grpc.ResponseFuture<$34.GetBudgetAlertsResponse> getBudgetAlerts(
+      $34.GetBudgetAlertsRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getBudgetAlerts, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.MarkAlertAsReadResponse> markAlertAsRead(
-      $0.MarkAlertAsReadRequest request,
+  $grpc.ResponseFuture<$34.MarkAlertAsReadResponse> markAlertAsRead(
+      $34.MarkAlertAsReadRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$markAlertAsRead, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetAISpendingInsightsResponse> getAISpendingInsights(
-      $0.GetAISpendingInsightsRequest request,
+  $grpc.ResponseFuture<$34.GetAISpendingInsightsResponse> getAISpendingInsights(
+      $34.GetAISpendingInsightsRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getAISpendingInsights, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetAIBudgetingRecommendationsResponse>
+  $grpc.ResponseFuture<$34.GetAIBudgetingRecommendationsResponse>
       getAIBudgetingRecommendations(
-          $0.GetAIBudgetingRecommendationsRequest request,
+          $34.GetAIBudgetingRecommendationsRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getAIBudgetingRecommendations, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$0.AutoCategorizeExpenseResponse> autoCategorizeExpense(
-      $0.AutoCategorizeExpenseRequest request,
+  $grpc.ResponseFuture<$34.AutoCategorizeExpenseResponse> autoCategorizeExpense(
+      $34.AutoCategorizeExpenseRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$autoCategorizeExpense, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetAIFinancialAdviceResponse> getAIFinancialAdvice(
-      $0.GetAIFinancialAdviceRequest request,
+  $grpc.ResponseFuture<$34.GetAIFinancialAdviceResponse> getAIFinancialAdvice(
+      $34.GetAIFinancialAdviceRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getAIFinancialAdvice, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetIncomeSourcesResponse> getIncomeSources(
-      $0.GetIncomeSourcesRequest request,
+  $grpc.ResponseFuture<$34.GetIncomeSourcesResponse> getIncomeSources(
+      $34.GetIncomeSourcesRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getIncomeSources, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetIncomeBreakdownResponse> getIncomeBreakdown(
-      $0.GetIncomeBreakdownRequest request,
+  $grpc.ResponseFuture<$34.GetIncomeBreakdownResponse> getIncomeBreakdown(
+      $34.GetIncomeBreakdownRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getIncomeBreakdown, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.CreateIncomeSourceResponse> createIncomeSource(
-      $0.CreateIncomeSourceRequest request,
+  $grpc.ResponseFuture<$34.CreateIncomeSourceResponse> createIncomeSource(
+      $34.CreateIncomeSourceRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$createIncomeSource, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetInvestmentPortfolioResponse>
-      getInvestmentPortfolio($0.GetInvestmentPortfolioRequest request,
+  $grpc.ResponseFuture<$34.GetInvestmentPortfolioResponse>
+      getInvestmentPortfolio($34.GetInvestmentPortfolioRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getInvestmentPortfolio, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$0.CreateInvestmentResponse> createInvestment(
-      $0.CreateInvestmentRequest request,
+  $grpc.ResponseFuture<$34.CreateInvestmentResponse> createInvestment(
+      $34.CreateInvestmentRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$createInvestment, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetFinancialGoalsResponse> getFinancialGoals(
-      $0.GetFinancialGoalsRequest request,
+  $grpc.ResponseFuture<$34.GetFinancialGoalsResponse> getFinancialGoals(
+      $34.GetFinancialGoalsRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getFinancialGoals, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.CreateFinancialGoalResponse> createFinancialGoal(
-      $0.CreateFinancialGoalRequest request,
+  $grpc.ResponseFuture<$34.CreateFinancialGoalResponse> createFinancialGoal(
+      $34.CreateFinancialGoalRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$createFinancialGoal, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.UpdateFinancialGoalProgressResponse>
-      updateFinancialGoalProgress($0.UpdateFinancialGoalProgressRequest request,
+  $grpc.ResponseFuture<$34.UpdateFinancialGoalProgressResponse>
+      updateFinancialGoalProgress(
+          $34.UpdateFinancialGoalProgressRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$updateFinancialGoalProgress, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetSavingsGoalResponse> getSavingsGoal(
-      $0.GetSavingsGoalRequest request,
+  $grpc.ResponseFuture<$34.GetSavingsGoalResponse> getSavingsGoal(
+      $34.GetSavingsGoalRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getSavingsGoal, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.CreateOrUpdateSavingsGoalResponse>
-      createOrUpdateSavingsGoal($0.CreateOrUpdateSavingsGoalRequest request,
+  $grpc.ResponseFuture<$34.CreateOrUpdateSavingsGoalResponse>
+      createOrUpdateSavingsGoal($34.CreateOrUpdateSavingsGoalRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$createOrUpdateSavingsGoal, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetUpcomingBillsResponse> getUpcomingBills(
-      $0.GetUpcomingBillsRequest request,
+  $grpc.ResponseFuture<$34.GetUpcomingBillsResponse> getUpcomingBills(
+      $34.GetUpcomingBillsRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getUpcomingBills, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.CreateRecurringBillResponse> createRecurringBill(
-      $0.CreateRecurringBillRequest request,
+  $grpc.ResponseFuture<$34.CreateRecurringBillResponse> createRecurringBill(
+      $34.CreateRecurringBillRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$createRecurringBill, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetTrackedIncomeResponse> getTrackedIncome(
-      $0.GetTrackedIncomeRequest request,
+  $grpc.ResponseFuture<$34.GetTrackedIncomeResponse> getTrackedIncome(
+      $34.GetTrackedIncomeRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getTrackedIncome, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetTrackedExpenditureResponse> getTrackedExpenditure(
-      $0.GetTrackedExpenditureRequest request,
+  $grpc.ResponseFuture<$34.GetTrackedExpenditureResponse> getTrackedExpenditure(
+      $34.GetTrackedExpenditureRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getTrackedExpenditure, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetTrackedIncomeBreakdownResponse>
-      getTrackedIncomeBreakdown($0.GetTrackedIncomeBreakdownRequest request,
+  $grpc.ResponseFuture<$34.GetTrackedIncomeBreakdownResponse>
+      getTrackedIncomeBreakdown($34.GetTrackedIncomeBreakdownRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getTrackedIncomeBreakdown, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetTrackedExpenditureBreakdownResponse>
+  $grpc.ResponseFuture<$34.GetTrackedExpenditureBreakdownResponse>
       getTrackedExpenditureBreakdown(
-          $0.GetTrackedExpenditureBreakdownRequest request,
+          $34.GetTrackedExpenditureBreakdownRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getTrackedExpenditureBreakdown, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetTrackedIncomeTransactionsResponse>
+  $grpc.ResponseFuture<$34.GetTrackedIncomeTransactionsResponse>
       getTrackedIncomeTransactions(
-          $0.GetTrackedIncomeTransactionsRequest request,
+          $34.GetTrackedIncomeTransactionsRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getTrackedIncomeTransactions, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetTrackedExpenditureTransactionsResponse>
+  $grpc.ResponseFuture<$34.GetTrackedExpenditureTransactionsResponse>
       getTrackedExpenditureTransactions(
-          $0.GetTrackedExpenditureTransactionsRequest request,
+          $34.GetTrackedExpenditureTransactionsRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getTrackedExpenditureTransactions, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetComprehensiveFinancialSummaryResponse>
+  $grpc.ResponseFuture<$34.GetComprehensiveFinancialSummaryResponse>
       getComprehensiveFinancialSummary(
-          $0.GetComprehensiveFinancialSummaryRequest request,
+          $34.GetComprehensiveFinancialSummaryRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getComprehensiveFinancialSummary, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$0.ValidateCategoryBudgetResponse>
-      validateCategoryBudget($0.ValidateCategoryBudgetRequest request,
+  $grpc.ResponseFuture<$34.ValidateCategoryBudgetResponse>
+      validateCategoryBudget($34.ValidateCategoryBudgetRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$validateCategoryBudget, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetServiceCategoriesResponse> getServiceCategories(
-      $0.GetServiceCategoriesRequest request,
+  $grpc.ResponseFuture<$34.GetServiceCategoriesResponse> getServiceCategories(
+      $34.GetServiceCategoriesRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getServiceCategories, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.CreateCustomCategoryResponse> createCustomCategory(
-      $0.CreateCustomCategoryRequest request,
+  $grpc.ResponseFuture<$34.CreateCustomCategoryResponse> createCustomCategory(
+      $34.CreateCustomCategoryRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$createCustomCategory, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.DeleteCustomCategoryResponse> deleteCustomCategory(
-      $0.DeleteCustomCategoryRequest request,
+  $grpc.ResponseFuture<$34.DeleteCustomCategoryResponse> deleteCustomCategory(
+      $34.DeleteCustomCategoryRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$deleteCustomCategory, request, options: options);
   }
@@ -566,753 +570,761 @@ abstract class StatisticsServiceBase extends $grpc.Service {
   $core.String get $name => 'pb.StatisticsService';
 
   StatisticsServiceBase() {
+    $addMethod($grpc.ServiceMethod<$34.CreateExpenseRequest,
+            $34.CreateExpenseResponse>(
+        'CreateExpense',
+        createExpense_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $34.CreateExpenseRequest.fromBuffer(value),
+        ($34.CreateExpenseResponse value) => value.writeToBuffer()));
     $addMethod(
-        $grpc.ServiceMethod<$0.CreateExpenseRequest, $0.CreateExpenseResponse>(
-            'CreateExpense',
-            createExpense_Pre,
-            false,
-            false,
-            ($core.List<$core.int> value) =>
-                $0.CreateExpenseRequest.fromBuffer(value),
-            ($0.CreateExpenseResponse value) => value.writeToBuffer()));
-    $addMethod(
-        $grpc.ServiceMethod<$0.GetExpensesRequest, $0.GetExpensesResponse>(
+        $grpc.ServiceMethod<$34.GetExpensesRequest, $34.GetExpensesResponse>(
             'GetExpenses',
             getExpenses_Pre,
             false,
             false,
             ($core.List<$core.int> value) =>
-                $0.GetExpensesRequest.fromBuffer(value),
-            ($0.GetExpensesResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetExpenseByIdRequest,
-            $0.GetExpenseByIdResponse>(
+                $34.GetExpensesRequest.fromBuffer(value),
+            ($34.GetExpensesResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$34.GetExpenseByIdRequest,
+            $34.GetExpenseByIdResponse>(
         'GetExpenseById',
         getExpenseById_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.GetExpenseByIdRequest.fromBuffer(value),
-        ($0.GetExpenseByIdResponse value) => value.writeToBuffer()));
+            $34.GetExpenseByIdRequest.fromBuffer(value),
+        ($34.GetExpenseByIdResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$34.UpdateExpenseRequest,
+            $34.UpdateExpenseResponse>(
+        'UpdateExpense',
+        updateExpense_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $34.UpdateExpenseRequest.fromBuffer(value),
+        ($34.UpdateExpenseResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$34.DeleteExpenseRequest,
+            $34.DeleteExpenseResponse>(
+        'DeleteExpense',
+        deleteExpense_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $34.DeleteExpenseRequest.fromBuffer(value),
+        ($34.DeleteExpenseResponse value) => value.writeToBuffer()));
     $addMethod(
-        $grpc.ServiceMethod<$0.UpdateExpenseRequest, $0.UpdateExpenseResponse>(
-            'UpdateExpense',
-            updateExpense_Pre,
-            false,
-            false,
-            ($core.List<$core.int> value) =>
-                $0.UpdateExpenseRequest.fromBuffer(value),
-            ($0.UpdateExpenseResponse value) => value.writeToBuffer()));
-    $addMethod(
-        $grpc.ServiceMethod<$0.DeleteExpenseRequest, $0.DeleteExpenseResponse>(
-            'DeleteExpense',
-            deleteExpense_Pre,
-            false,
-            false,
-            ($core.List<$core.int> value) =>
-                $0.DeleteExpenseRequest.fromBuffer(value),
-            ($0.DeleteExpenseResponse value) => value.writeToBuffer()));
-    $addMethod(
-        $grpc.ServiceMethod<$0.CreateBudgetRequest, $0.CreateBudgetResponse>(
+        $grpc.ServiceMethod<$34.CreateBudgetRequest, $34.CreateBudgetResponse>(
             'CreateBudget',
             createBudget_Pre,
             false,
             false,
             ($core.List<$core.int> value) =>
-                $0.CreateBudgetRequest.fromBuffer(value),
-            ($0.CreateBudgetResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetBudgetsRequest, $0.GetBudgetsResponse>(
-        'GetBudgets',
-        getBudgets_Pre,
-        false,
-        false,
-        ($core.List<$core.int> value) => $0.GetBudgetsRequest.fromBuffer(value),
-        ($0.GetBudgetsResponse value) => value.writeToBuffer()));
+                $34.CreateBudgetRequest.fromBuffer(value),
+            ($34.CreateBudgetResponse value) => value.writeToBuffer()));
     $addMethod(
-        $grpc.ServiceMethod<$0.GetBudgetByIdRequest, $0.GetBudgetByIdResponse>(
-            'GetBudgetById',
-            getBudgetById_Pre,
+        $grpc.ServiceMethod<$34.GetBudgetsRequest, $34.GetBudgetsResponse>(
+            'GetBudgets',
+            getBudgets_Pre,
             false,
             false,
             ($core.List<$core.int> value) =>
-                $0.GetBudgetByIdRequest.fromBuffer(value),
-            ($0.GetBudgetByIdResponse value) => value.writeToBuffer()));
+                $34.GetBudgetsRequest.fromBuffer(value),
+            ($34.GetBudgetsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$34.GetBudgetByIdRequest,
+            $34.GetBudgetByIdResponse>(
+        'GetBudgetById',
+        getBudgetById_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $34.GetBudgetByIdRequest.fromBuffer(value),
+        ($34.GetBudgetByIdResponse value) => value.writeToBuffer()));
     $addMethod(
-        $grpc.ServiceMethod<$0.UpdateBudgetRequest, $0.UpdateBudgetResponse>(
+        $grpc.ServiceMethod<$34.UpdateBudgetRequest, $34.UpdateBudgetResponse>(
             'UpdateBudget',
             updateBudget_Pre,
             false,
             false,
             ($core.List<$core.int> value) =>
-                $0.UpdateBudgetRequest.fromBuffer(value),
-            ($0.UpdateBudgetResponse value) => value.writeToBuffer()));
+                $34.UpdateBudgetRequest.fromBuffer(value),
+            ($34.UpdateBudgetResponse value) => value.writeToBuffer()));
     $addMethod(
-        $grpc.ServiceMethod<$0.DeleteBudgetRequest, $0.DeleteBudgetResponse>(
+        $grpc.ServiceMethod<$34.DeleteBudgetRequest, $34.DeleteBudgetResponse>(
             'DeleteBudget',
             deleteBudget_Pre,
             false,
             false,
             ($core.List<$core.int> value) =>
-                $0.DeleteBudgetRequest.fromBuffer(value),
-            ($0.DeleteBudgetResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetSpendingAnalyticsRequest,
-            $0.GetSpendingAnalyticsResponse>(
+                $34.DeleteBudgetRequest.fromBuffer(value),
+            ($34.DeleteBudgetResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$34.GetSpendingAnalyticsRequest,
+            $34.GetSpendingAnalyticsResponse>(
         'GetSpendingAnalytics',
         getSpendingAnalytics_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.GetSpendingAnalyticsRequest.fromBuffer(value),
-        ($0.GetSpendingAnalyticsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetCategoryBreakdownRequest,
-            $0.GetCategoryBreakdownResponse>(
+            $34.GetSpendingAnalyticsRequest.fromBuffer(value),
+        ($34.GetSpendingAnalyticsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$34.GetCategoryBreakdownRequest,
+            $34.GetCategoryBreakdownResponse>(
         'GetCategoryBreakdown',
         getCategoryBreakdown_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.GetCategoryBreakdownRequest.fromBuffer(value),
-        ($0.GetCategoryBreakdownResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetBudgetProgressRequest,
-            $0.GetBudgetProgressResponse>(
+            $34.GetCategoryBreakdownRequest.fromBuffer(value),
+        ($34.GetCategoryBreakdownResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$34.GetBudgetProgressRequest,
+            $34.GetBudgetProgressResponse>(
         'GetBudgetProgress',
         getBudgetProgress_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.GetBudgetProgressRequest.fromBuffer(value),
-        ($0.GetBudgetProgressResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetSpendingTrendsRequest,
-            $0.GetSpendingTrendsResponse>(
+            $34.GetBudgetProgressRequest.fromBuffer(value),
+        ($34.GetBudgetProgressResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$34.GetSpendingTrendsRequest,
+            $34.GetSpendingTrendsResponse>(
         'GetSpendingTrends',
         getSpendingTrends_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.GetSpendingTrendsRequest.fromBuffer(value),
-        ($0.GetSpendingTrendsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetBudgetAlertsRequest,
-            $0.GetBudgetAlertsResponse>(
+            $34.GetSpendingTrendsRequest.fromBuffer(value),
+        ($34.GetSpendingTrendsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$34.GetBudgetAlertsRequest,
+            $34.GetBudgetAlertsResponse>(
         'GetBudgetAlerts',
         getBudgetAlerts_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.GetBudgetAlertsRequest.fromBuffer(value),
-        ($0.GetBudgetAlertsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.MarkAlertAsReadRequest,
-            $0.MarkAlertAsReadResponse>(
+            $34.GetBudgetAlertsRequest.fromBuffer(value),
+        ($34.GetBudgetAlertsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$34.MarkAlertAsReadRequest,
+            $34.MarkAlertAsReadResponse>(
         'MarkAlertAsRead',
         markAlertAsRead_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.MarkAlertAsReadRequest.fromBuffer(value),
-        ($0.MarkAlertAsReadResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetAISpendingInsightsRequest,
-            $0.GetAISpendingInsightsResponse>(
+            $34.MarkAlertAsReadRequest.fromBuffer(value),
+        ($34.MarkAlertAsReadResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$34.GetAISpendingInsightsRequest,
+            $34.GetAISpendingInsightsResponse>(
         'GetAISpendingInsights',
         getAISpendingInsights_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.GetAISpendingInsightsRequest.fromBuffer(value),
-        ($0.GetAISpendingInsightsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetAIBudgetingRecommendationsRequest,
-            $0.GetAIBudgetingRecommendationsResponse>(
+            $34.GetAISpendingInsightsRequest.fromBuffer(value),
+        ($34.GetAISpendingInsightsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$34.GetAIBudgetingRecommendationsRequest,
+            $34.GetAIBudgetingRecommendationsResponse>(
         'GetAIBudgetingRecommendations',
         getAIBudgetingRecommendations_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.GetAIBudgetingRecommendationsRequest.fromBuffer(value),
-        ($0.GetAIBudgetingRecommendationsResponse value) =>
+            $34.GetAIBudgetingRecommendationsRequest.fromBuffer(value),
+        ($34.GetAIBudgetingRecommendationsResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.AutoCategorizeExpenseRequest,
-            $0.AutoCategorizeExpenseResponse>(
+    $addMethod($grpc.ServiceMethod<$34.AutoCategorizeExpenseRequest,
+            $34.AutoCategorizeExpenseResponse>(
         'AutoCategorizeExpense',
         autoCategorizeExpense_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.AutoCategorizeExpenseRequest.fromBuffer(value),
-        ($0.AutoCategorizeExpenseResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetAIFinancialAdviceRequest,
-            $0.GetAIFinancialAdviceResponse>(
+            $34.AutoCategorizeExpenseRequest.fromBuffer(value),
+        ($34.AutoCategorizeExpenseResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$34.GetAIFinancialAdviceRequest,
+            $34.GetAIFinancialAdviceResponse>(
         'GetAIFinancialAdvice',
         getAIFinancialAdvice_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.GetAIFinancialAdviceRequest.fromBuffer(value),
-        ($0.GetAIFinancialAdviceResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetIncomeSourcesRequest,
-            $0.GetIncomeSourcesResponse>(
+            $34.GetAIFinancialAdviceRequest.fromBuffer(value),
+        ($34.GetAIFinancialAdviceResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$34.GetIncomeSourcesRequest,
+            $34.GetIncomeSourcesResponse>(
         'GetIncomeSources',
         getIncomeSources_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.GetIncomeSourcesRequest.fromBuffer(value),
-        ($0.GetIncomeSourcesResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetIncomeBreakdownRequest,
-            $0.GetIncomeBreakdownResponse>(
+            $34.GetIncomeSourcesRequest.fromBuffer(value),
+        ($34.GetIncomeSourcesResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$34.GetIncomeBreakdownRequest,
+            $34.GetIncomeBreakdownResponse>(
         'GetIncomeBreakdown',
         getIncomeBreakdown_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.GetIncomeBreakdownRequest.fromBuffer(value),
-        ($0.GetIncomeBreakdownResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.CreateIncomeSourceRequest,
-            $0.CreateIncomeSourceResponse>(
+            $34.GetIncomeBreakdownRequest.fromBuffer(value),
+        ($34.GetIncomeBreakdownResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$34.CreateIncomeSourceRequest,
+            $34.CreateIncomeSourceResponse>(
         'CreateIncomeSource',
         createIncomeSource_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.CreateIncomeSourceRequest.fromBuffer(value),
-        ($0.CreateIncomeSourceResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetInvestmentPortfolioRequest,
-            $0.GetInvestmentPortfolioResponse>(
+            $34.CreateIncomeSourceRequest.fromBuffer(value),
+        ($34.CreateIncomeSourceResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$34.GetInvestmentPortfolioRequest,
+            $34.GetInvestmentPortfolioResponse>(
         'GetInvestmentPortfolio',
         getInvestmentPortfolio_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.GetInvestmentPortfolioRequest.fromBuffer(value),
-        ($0.GetInvestmentPortfolioResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.CreateInvestmentRequest,
-            $0.CreateInvestmentResponse>(
+            $34.GetInvestmentPortfolioRequest.fromBuffer(value),
+        ($34.GetInvestmentPortfolioResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$34.CreateInvestmentRequest,
+            $34.CreateInvestmentResponse>(
         'CreateInvestment',
         createInvestment_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.CreateInvestmentRequest.fromBuffer(value),
-        ($0.CreateInvestmentResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetFinancialGoalsRequest,
-            $0.GetFinancialGoalsResponse>(
+            $34.CreateInvestmentRequest.fromBuffer(value),
+        ($34.CreateInvestmentResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$34.GetFinancialGoalsRequest,
+            $34.GetFinancialGoalsResponse>(
         'GetFinancialGoals',
         getFinancialGoals_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.GetFinancialGoalsRequest.fromBuffer(value),
-        ($0.GetFinancialGoalsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.CreateFinancialGoalRequest,
-            $0.CreateFinancialGoalResponse>(
+            $34.GetFinancialGoalsRequest.fromBuffer(value),
+        ($34.GetFinancialGoalsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$34.CreateFinancialGoalRequest,
+            $34.CreateFinancialGoalResponse>(
         'CreateFinancialGoal',
         createFinancialGoal_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.CreateFinancialGoalRequest.fromBuffer(value),
-        ($0.CreateFinancialGoalResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.UpdateFinancialGoalProgressRequest,
-            $0.UpdateFinancialGoalProgressResponse>(
+            $34.CreateFinancialGoalRequest.fromBuffer(value),
+        ($34.CreateFinancialGoalResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$34.UpdateFinancialGoalProgressRequest,
+            $34.UpdateFinancialGoalProgressResponse>(
         'UpdateFinancialGoalProgress',
         updateFinancialGoalProgress_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.UpdateFinancialGoalProgressRequest.fromBuffer(value),
-        ($0.UpdateFinancialGoalProgressResponse value) =>
+            $34.UpdateFinancialGoalProgressRequest.fromBuffer(value),
+        ($34.UpdateFinancialGoalProgressResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetSavingsGoalRequest,
-            $0.GetSavingsGoalResponse>(
+    $addMethod($grpc.ServiceMethod<$34.GetSavingsGoalRequest,
+            $34.GetSavingsGoalResponse>(
         'GetSavingsGoal',
         getSavingsGoal_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.GetSavingsGoalRequest.fromBuffer(value),
-        ($0.GetSavingsGoalResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.CreateOrUpdateSavingsGoalRequest,
-            $0.CreateOrUpdateSavingsGoalResponse>(
+            $34.GetSavingsGoalRequest.fromBuffer(value),
+        ($34.GetSavingsGoalResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$34.CreateOrUpdateSavingsGoalRequest,
+            $34.CreateOrUpdateSavingsGoalResponse>(
         'CreateOrUpdateSavingsGoal',
         createOrUpdateSavingsGoal_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.CreateOrUpdateSavingsGoalRequest.fromBuffer(value),
-        ($0.CreateOrUpdateSavingsGoalResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetUpcomingBillsRequest,
-            $0.GetUpcomingBillsResponse>(
+            $34.CreateOrUpdateSavingsGoalRequest.fromBuffer(value),
+        ($34.CreateOrUpdateSavingsGoalResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$34.GetUpcomingBillsRequest,
+            $34.GetUpcomingBillsResponse>(
         'GetUpcomingBills',
         getUpcomingBills_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.GetUpcomingBillsRequest.fromBuffer(value),
-        ($0.GetUpcomingBillsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.CreateRecurringBillRequest,
-            $0.CreateRecurringBillResponse>(
+            $34.GetUpcomingBillsRequest.fromBuffer(value),
+        ($34.GetUpcomingBillsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$34.CreateRecurringBillRequest,
+            $34.CreateRecurringBillResponse>(
         'CreateRecurringBill',
         createRecurringBill_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.CreateRecurringBillRequest.fromBuffer(value),
-        ($0.CreateRecurringBillResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetTrackedIncomeRequest,
-            $0.GetTrackedIncomeResponse>(
+            $34.CreateRecurringBillRequest.fromBuffer(value),
+        ($34.CreateRecurringBillResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$34.GetTrackedIncomeRequest,
+            $34.GetTrackedIncomeResponse>(
         'GetTrackedIncome',
         getTrackedIncome_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.GetTrackedIncomeRequest.fromBuffer(value),
-        ($0.GetTrackedIncomeResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetTrackedExpenditureRequest,
-            $0.GetTrackedExpenditureResponse>(
+            $34.GetTrackedIncomeRequest.fromBuffer(value),
+        ($34.GetTrackedIncomeResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$34.GetTrackedExpenditureRequest,
+            $34.GetTrackedExpenditureResponse>(
         'GetTrackedExpenditure',
         getTrackedExpenditure_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.GetTrackedExpenditureRequest.fromBuffer(value),
-        ($0.GetTrackedExpenditureResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetTrackedIncomeBreakdownRequest,
-            $0.GetTrackedIncomeBreakdownResponse>(
+            $34.GetTrackedExpenditureRequest.fromBuffer(value),
+        ($34.GetTrackedExpenditureResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$34.GetTrackedIncomeBreakdownRequest,
+            $34.GetTrackedIncomeBreakdownResponse>(
         'GetTrackedIncomeBreakdown',
         getTrackedIncomeBreakdown_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.GetTrackedIncomeBreakdownRequest.fromBuffer(value),
-        ($0.GetTrackedIncomeBreakdownResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetTrackedExpenditureBreakdownRequest,
-            $0.GetTrackedExpenditureBreakdownResponse>(
+            $34.GetTrackedIncomeBreakdownRequest.fromBuffer(value),
+        ($34.GetTrackedIncomeBreakdownResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$34.GetTrackedExpenditureBreakdownRequest,
+            $34.GetTrackedExpenditureBreakdownResponse>(
         'GetTrackedExpenditureBreakdown',
         getTrackedExpenditureBreakdown_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.GetTrackedExpenditureBreakdownRequest.fromBuffer(value),
-        ($0.GetTrackedExpenditureBreakdownResponse value) =>
+            $34.GetTrackedExpenditureBreakdownRequest.fromBuffer(value),
+        ($34.GetTrackedExpenditureBreakdownResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetTrackedIncomeTransactionsRequest,
-            $0.GetTrackedIncomeTransactionsResponse>(
+    $addMethod($grpc.ServiceMethod<$34.GetTrackedIncomeTransactionsRequest,
+            $34.GetTrackedIncomeTransactionsResponse>(
         'GetTrackedIncomeTransactions',
         getTrackedIncomeTransactions_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.GetTrackedIncomeTransactionsRequest.fromBuffer(value),
-        ($0.GetTrackedIncomeTransactionsResponse value) =>
+            $34.GetTrackedIncomeTransactionsRequest.fromBuffer(value),
+        ($34.GetTrackedIncomeTransactionsResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetTrackedExpenditureTransactionsRequest,
-            $0.GetTrackedExpenditureTransactionsResponse>(
+    $addMethod($grpc.ServiceMethod<$34.GetTrackedExpenditureTransactionsRequest,
+            $34.GetTrackedExpenditureTransactionsResponse>(
         'GetTrackedExpenditureTransactions',
         getTrackedExpenditureTransactions_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.GetTrackedExpenditureTransactionsRequest.fromBuffer(value),
-        ($0.GetTrackedExpenditureTransactionsResponse value) =>
+            $34.GetTrackedExpenditureTransactionsRequest.fromBuffer(value),
+        ($34.GetTrackedExpenditureTransactionsResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetComprehensiveFinancialSummaryRequest,
-            $0.GetComprehensiveFinancialSummaryResponse>(
+    $addMethod($grpc.ServiceMethod<$34.GetComprehensiveFinancialSummaryRequest,
+            $34.GetComprehensiveFinancialSummaryResponse>(
         'GetComprehensiveFinancialSummary',
         getComprehensiveFinancialSummary_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.GetComprehensiveFinancialSummaryRequest.fromBuffer(value),
-        ($0.GetComprehensiveFinancialSummaryResponse value) =>
+            $34.GetComprehensiveFinancialSummaryRequest.fromBuffer(value),
+        ($34.GetComprehensiveFinancialSummaryResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.ValidateCategoryBudgetRequest,
-            $0.ValidateCategoryBudgetResponse>(
+    $addMethod($grpc.ServiceMethod<$34.ValidateCategoryBudgetRequest,
+            $34.ValidateCategoryBudgetResponse>(
         'ValidateCategoryBudget',
         validateCategoryBudget_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.ValidateCategoryBudgetRequest.fromBuffer(value),
-        ($0.ValidateCategoryBudgetResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetServiceCategoriesRequest,
-            $0.GetServiceCategoriesResponse>(
+            $34.ValidateCategoryBudgetRequest.fromBuffer(value),
+        ($34.ValidateCategoryBudgetResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$34.GetServiceCategoriesRequest,
+            $34.GetServiceCategoriesResponse>(
         'GetServiceCategories',
         getServiceCategories_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.GetServiceCategoriesRequest.fromBuffer(value),
-        ($0.GetServiceCategoriesResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.CreateCustomCategoryRequest,
-            $0.CreateCustomCategoryResponse>(
+            $34.GetServiceCategoriesRequest.fromBuffer(value),
+        ($34.GetServiceCategoriesResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$34.CreateCustomCategoryRequest,
+            $34.CreateCustomCategoryResponse>(
         'CreateCustomCategory',
         createCustomCategory_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.CreateCustomCategoryRequest.fromBuffer(value),
-        ($0.CreateCustomCategoryResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.DeleteCustomCategoryRequest,
-            $0.DeleteCustomCategoryResponse>(
+            $34.CreateCustomCategoryRequest.fromBuffer(value),
+        ($34.CreateCustomCategoryResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$34.DeleteCustomCategoryRequest,
+            $34.DeleteCustomCategoryResponse>(
         'DeleteCustomCategory',
         deleteCustomCategory_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.DeleteCustomCategoryRequest.fromBuffer(value),
-        ($0.DeleteCustomCategoryResponse value) => value.writeToBuffer()));
+            $34.DeleteCustomCategoryRequest.fromBuffer(value),
+        ($34.DeleteCustomCategoryResponse value) => value.writeToBuffer()));
   }
 
-  $async.Future<$0.CreateExpenseResponse> createExpense_Pre(
+  $async.Future<$34.CreateExpenseResponse> createExpense_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.CreateExpenseRequest> request) async {
+      $async.Future<$34.CreateExpenseRequest> request) async {
     return createExpense(call, await request);
   }
 
-  $async.Future<$0.GetExpensesResponse> getExpenses_Pre($grpc.ServiceCall call,
-      $async.Future<$0.GetExpensesRequest> request) async {
+  $async.Future<$34.GetExpensesResponse> getExpenses_Pre($grpc.ServiceCall call,
+      $async.Future<$34.GetExpensesRequest> request) async {
     return getExpenses(call, await request);
   }
 
-  $async.Future<$0.GetExpenseByIdResponse> getExpenseById_Pre(
+  $async.Future<$34.GetExpenseByIdResponse> getExpenseById_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.GetExpenseByIdRequest> request) async {
+      $async.Future<$34.GetExpenseByIdRequest> request) async {
     return getExpenseById(call, await request);
   }
 
-  $async.Future<$0.UpdateExpenseResponse> updateExpense_Pre(
+  $async.Future<$34.UpdateExpenseResponse> updateExpense_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.UpdateExpenseRequest> request) async {
+      $async.Future<$34.UpdateExpenseRequest> request) async {
     return updateExpense(call, await request);
   }
 
-  $async.Future<$0.DeleteExpenseResponse> deleteExpense_Pre(
+  $async.Future<$34.DeleteExpenseResponse> deleteExpense_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.DeleteExpenseRequest> request) async {
+      $async.Future<$34.DeleteExpenseRequest> request) async {
     return deleteExpense(call, await request);
   }
 
-  $async.Future<$0.CreateBudgetResponse> createBudget_Pre(
+  $async.Future<$34.CreateBudgetResponse> createBudget_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.CreateBudgetRequest> request) async {
+      $async.Future<$34.CreateBudgetRequest> request) async {
     return createBudget(call, await request);
   }
 
-  $async.Future<$0.GetBudgetsResponse> getBudgets_Pre($grpc.ServiceCall call,
-      $async.Future<$0.GetBudgetsRequest> request) async {
+  $async.Future<$34.GetBudgetsResponse> getBudgets_Pre($grpc.ServiceCall call,
+      $async.Future<$34.GetBudgetsRequest> request) async {
     return getBudgets(call, await request);
   }
 
-  $async.Future<$0.GetBudgetByIdResponse> getBudgetById_Pre(
+  $async.Future<$34.GetBudgetByIdResponse> getBudgetById_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.GetBudgetByIdRequest> request) async {
+      $async.Future<$34.GetBudgetByIdRequest> request) async {
     return getBudgetById(call, await request);
   }
 
-  $async.Future<$0.UpdateBudgetResponse> updateBudget_Pre(
+  $async.Future<$34.UpdateBudgetResponse> updateBudget_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.UpdateBudgetRequest> request) async {
+      $async.Future<$34.UpdateBudgetRequest> request) async {
     return updateBudget(call, await request);
   }
 
-  $async.Future<$0.DeleteBudgetResponse> deleteBudget_Pre(
+  $async.Future<$34.DeleteBudgetResponse> deleteBudget_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.DeleteBudgetRequest> request) async {
+      $async.Future<$34.DeleteBudgetRequest> request) async {
     return deleteBudget(call, await request);
   }
 
-  $async.Future<$0.GetSpendingAnalyticsResponse> getSpendingAnalytics_Pre(
+  $async.Future<$34.GetSpendingAnalyticsResponse> getSpendingAnalytics_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.GetSpendingAnalyticsRequest> request) async {
+      $async.Future<$34.GetSpendingAnalyticsRequest> request) async {
     return getSpendingAnalytics(call, await request);
   }
 
-  $async.Future<$0.GetCategoryBreakdownResponse> getCategoryBreakdown_Pre(
+  $async.Future<$34.GetCategoryBreakdownResponse> getCategoryBreakdown_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.GetCategoryBreakdownRequest> request) async {
+      $async.Future<$34.GetCategoryBreakdownRequest> request) async {
     return getCategoryBreakdown(call, await request);
   }
 
-  $async.Future<$0.GetBudgetProgressResponse> getBudgetProgress_Pre(
+  $async.Future<$34.GetBudgetProgressResponse> getBudgetProgress_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.GetBudgetProgressRequest> request) async {
+      $async.Future<$34.GetBudgetProgressRequest> request) async {
     return getBudgetProgress(call, await request);
   }
 
-  $async.Future<$0.GetSpendingTrendsResponse> getSpendingTrends_Pre(
+  $async.Future<$34.GetSpendingTrendsResponse> getSpendingTrends_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.GetSpendingTrendsRequest> request) async {
+      $async.Future<$34.GetSpendingTrendsRequest> request) async {
     return getSpendingTrends(call, await request);
   }
 
-  $async.Future<$0.GetBudgetAlertsResponse> getBudgetAlerts_Pre(
+  $async.Future<$34.GetBudgetAlertsResponse> getBudgetAlerts_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.GetBudgetAlertsRequest> request) async {
+      $async.Future<$34.GetBudgetAlertsRequest> request) async {
     return getBudgetAlerts(call, await request);
   }
 
-  $async.Future<$0.MarkAlertAsReadResponse> markAlertAsRead_Pre(
+  $async.Future<$34.MarkAlertAsReadResponse> markAlertAsRead_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.MarkAlertAsReadRequest> request) async {
+      $async.Future<$34.MarkAlertAsReadRequest> request) async {
     return markAlertAsRead(call, await request);
   }
 
-  $async.Future<$0.GetAISpendingInsightsResponse> getAISpendingInsights_Pre(
+  $async.Future<$34.GetAISpendingInsightsResponse> getAISpendingInsights_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.GetAISpendingInsightsRequest> request) async {
+      $async.Future<$34.GetAISpendingInsightsRequest> request) async {
     return getAISpendingInsights(call, await request);
   }
 
-  $async.Future<$0.GetAIBudgetingRecommendationsResponse>
+  $async.Future<$34.GetAIBudgetingRecommendationsResponse>
       getAIBudgetingRecommendations_Pre(
           $grpc.ServiceCall call,
-          $async.Future<$0.GetAIBudgetingRecommendationsRequest>
+          $async.Future<$34.GetAIBudgetingRecommendationsRequest>
               request) async {
     return getAIBudgetingRecommendations(call, await request);
   }
 
-  $async.Future<$0.AutoCategorizeExpenseResponse> autoCategorizeExpense_Pre(
+  $async.Future<$34.AutoCategorizeExpenseResponse> autoCategorizeExpense_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.AutoCategorizeExpenseRequest> request) async {
+      $async.Future<$34.AutoCategorizeExpenseRequest> request) async {
     return autoCategorizeExpense(call, await request);
   }
 
-  $async.Future<$0.GetAIFinancialAdviceResponse> getAIFinancialAdvice_Pre(
+  $async.Future<$34.GetAIFinancialAdviceResponse> getAIFinancialAdvice_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.GetAIFinancialAdviceRequest> request) async {
+      $async.Future<$34.GetAIFinancialAdviceRequest> request) async {
     return getAIFinancialAdvice(call, await request);
   }
 
-  $async.Future<$0.GetIncomeSourcesResponse> getIncomeSources_Pre(
+  $async.Future<$34.GetIncomeSourcesResponse> getIncomeSources_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.GetIncomeSourcesRequest> request) async {
+      $async.Future<$34.GetIncomeSourcesRequest> request) async {
     return getIncomeSources(call, await request);
   }
 
-  $async.Future<$0.GetIncomeBreakdownResponse> getIncomeBreakdown_Pre(
+  $async.Future<$34.GetIncomeBreakdownResponse> getIncomeBreakdown_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.GetIncomeBreakdownRequest> request) async {
+      $async.Future<$34.GetIncomeBreakdownRequest> request) async {
     return getIncomeBreakdown(call, await request);
   }
 
-  $async.Future<$0.CreateIncomeSourceResponse> createIncomeSource_Pre(
+  $async.Future<$34.CreateIncomeSourceResponse> createIncomeSource_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.CreateIncomeSourceRequest> request) async {
+      $async.Future<$34.CreateIncomeSourceRequest> request) async {
     return createIncomeSource(call, await request);
   }
 
-  $async.Future<$0.GetInvestmentPortfolioResponse> getInvestmentPortfolio_Pre(
+  $async.Future<$34.GetInvestmentPortfolioResponse> getInvestmentPortfolio_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.GetInvestmentPortfolioRequest> request) async {
+      $async.Future<$34.GetInvestmentPortfolioRequest> request) async {
     return getInvestmentPortfolio(call, await request);
   }
 
-  $async.Future<$0.CreateInvestmentResponse> createInvestment_Pre(
+  $async.Future<$34.CreateInvestmentResponse> createInvestment_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.CreateInvestmentRequest> request) async {
+      $async.Future<$34.CreateInvestmentRequest> request) async {
     return createInvestment(call, await request);
   }
 
-  $async.Future<$0.GetFinancialGoalsResponse> getFinancialGoals_Pre(
+  $async.Future<$34.GetFinancialGoalsResponse> getFinancialGoals_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.GetFinancialGoalsRequest> request) async {
+      $async.Future<$34.GetFinancialGoalsRequest> request) async {
     return getFinancialGoals(call, await request);
   }
 
-  $async.Future<$0.CreateFinancialGoalResponse> createFinancialGoal_Pre(
+  $async.Future<$34.CreateFinancialGoalResponse> createFinancialGoal_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.CreateFinancialGoalRequest> request) async {
+      $async.Future<$34.CreateFinancialGoalRequest> request) async {
     return createFinancialGoal(call, await request);
   }
 
-  $async.Future<$0.UpdateFinancialGoalProgressResponse>
+  $async.Future<$34.UpdateFinancialGoalProgressResponse>
       updateFinancialGoalProgress_Pre($grpc.ServiceCall call,
-          $async.Future<$0.UpdateFinancialGoalProgressRequest> request) async {
+          $async.Future<$34.UpdateFinancialGoalProgressRequest> request) async {
     return updateFinancialGoalProgress(call, await request);
   }
 
-  $async.Future<$0.GetSavingsGoalResponse> getSavingsGoal_Pre(
+  $async.Future<$34.GetSavingsGoalResponse> getSavingsGoal_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.GetSavingsGoalRequest> request) async {
+      $async.Future<$34.GetSavingsGoalRequest> request) async {
     return getSavingsGoal(call, await request);
   }
 
-  $async.Future<$0.CreateOrUpdateSavingsGoalResponse>
+  $async.Future<$34.CreateOrUpdateSavingsGoalResponse>
       createOrUpdateSavingsGoal_Pre($grpc.ServiceCall call,
-          $async.Future<$0.CreateOrUpdateSavingsGoalRequest> request) async {
+          $async.Future<$34.CreateOrUpdateSavingsGoalRequest> request) async {
     return createOrUpdateSavingsGoal(call, await request);
   }
 
-  $async.Future<$0.GetUpcomingBillsResponse> getUpcomingBills_Pre(
+  $async.Future<$34.GetUpcomingBillsResponse> getUpcomingBills_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.GetUpcomingBillsRequest> request) async {
+      $async.Future<$34.GetUpcomingBillsRequest> request) async {
     return getUpcomingBills(call, await request);
   }
 
-  $async.Future<$0.CreateRecurringBillResponse> createRecurringBill_Pre(
+  $async.Future<$34.CreateRecurringBillResponse> createRecurringBill_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.CreateRecurringBillRequest> request) async {
+      $async.Future<$34.CreateRecurringBillRequest> request) async {
     return createRecurringBill(call, await request);
   }
 
-  $async.Future<$0.GetTrackedIncomeResponse> getTrackedIncome_Pre(
+  $async.Future<$34.GetTrackedIncomeResponse> getTrackedIncome_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.GetTrackedIncomeRequest> request) async {
+      $async.Future<$34.GetTrackedIncomeRequest> request) async {
     return getTrackedIncome(call, await request);
   }
 
-  $async.Future<$0.GetTrackedExpenditureResponse> getTrackedExpenditure_Pre(
+  $async.Future<$34.GetTrackedExpenditureResponse> getTrackedExpenditure_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.GetTrackedExpenditureRequest> request) async {
+      $async.Future<$34.GetTrackedExpenditureRequest> request) async {
     return getTrackedExpenditure(call, await request);
   }
 
-  $async.Future<$0.GetTrackedIncomeBreakdownResponse>
+  $async.Future<$34.GetTrackedIncomeBreakdownResponse>
       getTrackedIncomeBreakdown_Pre($grpc.ServiceCall call,
-          $async.Future<$0.GetTrackedIncomeBreakdownRequest> request) async {
+          $async.Future<$34.GetTrackedIncomeBreakdownRequest> request) async {
     return getTrackedIncomeBreakdown(call, await request);
   }
 
-  $async.Future<$0.GetTrackedExpenditureBreakdownResponse>
+  $async.Future<$34.GetTrackedExpenditureBreakdownResponse>
       getTrackedExpenditureBreakdown_Pre(
           $grpc.ServiceCall call,
-          $async.Future<$0.GetTrackedExpenditureBreakdownRequest>
+          $async.Future<$34.GetTrackedExpenditureBreakdownRequest>
               request) async {
     return getTrackedExpenditureBreakdown(call, await request);
   }
 
-  $async.Future<$0.GetTrackedIncomeTransactionsResponse>
-      getTrackedIncomeTransactions_Pre($grpc.ServiceCall call,
-          $async.Future<$0.GetTrackedIncomeTransactionsRequest> request) async {
+  $async.Future<$34.GetTrackedIncomeTransactionsResponse>
+      getTrackedIncomeTransactions_Pre(
+          $grpc.ServiceCall call,
+          $async.Future<$34.GetTrackedIncomeTransactionsRequest>
+              request) async {
     return getTrackedIncomeTransactions(call, await request);
   }
 
-  $async.Future<$0.GetTrackedExpenditureTransactionsResponse>
+  $async.Future<$34.GetTrackedExpenditureTransactionsResponse>
       getTrackedExpenditureTransactions_Pre(
           $grpc.ServiceCall call,
-          $async.Future<$0.GetTrackedExpenditureTransactionsRequest>
+          $async.Future<$34.GetTrackedExpenditureTransactionsRequest>
               request) async {
     return getTrackedExpenditureTransactions(call, await request);
   }
 
-  $async.Future<$0.GetComprehensiveFinancialSummaryResponse>
+  $async.Future<$34.GetComprehensiveFinancialSummaryResponse>
       getComprehensiveFinancialSummary_Pre(
           $grpc.ServiceCall call,
-          $async.Future<$0.GetComprehensiveFinancialSummaryRequest>
+          $async.Future<$34.GetComprehensiveFinancialSummaryRequest>
               request) async {
     return getComprehensiveFinancialSummary(call, await request);
   }
 
-  $async.Future<$0.ValidateCategoryBudgetResponse> validateCategoryBudget_Pre(
+  $async.Future<$34.ValidateCategoryBudgetResponse> validateCategoryBudget_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.ValidateCategoryBudgetRequest> request) async {
+      $async.Future<$34.ValidateCategoryBudgetRequest> request) async {
     return validateCategoryBudget(call, await request);
   }
 
-  $async.Future<$0.GetServiceCategoriesResponse> getServiceCategories_Pre(
+  $async.Future<$34.GetServiceCategoriesResponse> getServiceCategories_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.GetServiceCategoriesRequest> request) async {
+      $async.Future<$34.GetServiceCategoriesRequest> request) async {
     return getServiceCategories(call, await request);
   }
 
-  $async.Future<$0.CreateCustomCategoryResponse> createCustomCategory_Pre(
+  $async.Future<$34.CreateCustomCategoryResponse> createCustomCategory_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.CreateCustomCategoryRequest> request) async {
+      $async.Future<$34.CreateCustomCategoryRequest> request) async {
     return createCustomCategory(call, await request);
   }
 
-  $async.Future<$0.DeleteCustomCategoryResponse> deleteCustomCategory_Pre(
+  $async.Future<$34.DeleteCustomCategoryResponse> deleteCustomCategory_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.DeleteCustomCategoryRequest> request) async {
+      $async.Future<$34.DeleteCustomCategoryRequest> request) async {
     return deleteCustomCategory(call, await request);
   }
 
-  $async.Future<$0.CreateExpenseResponse> createExpense(
-      $grpc.ServiceCall call, $0.CreateExpenseRequest request);
-  $async.Future<$0.GetExpensesResponse> getExpenses(
-      $grpc.ServiceCall call, $0.GetExpensesRequest request);
-  $async.Future<$0.GetExpenseByIdResponse> getExpenseById(
-      $grpc.ServiceCall call, $0.GetExpenseByIdRequest request);
-  $async.Future<$0.UpdateExpenseResponse> updateExpense(
-      $grpc.ServiceCall call, $0.UpdateExpenseRequest request);
-  $async.Future<$0.DeleteExpenseResponse> deleteExpense(
-      $grpc.ServiceCall call, $0.DeleteExpenseRequest request);
-  $async.Future<$0.CreateBudgetResponse> createBudget(
-      $grpc.ServiceCall call, $0.CreateBudgetRequest request);
-  $async.Future<$0.GetBudgetsResponse> getBudgets(
-      $grpc.ServiceCall call, $0.GetBudgetsRequest request);
-  $async.Future<$0.GetBudgetByIdResponse> getBudgetById(
-      $grpc.ServiceCall call, $0.GetBudgetByIdRequest request);
-  $async.Future<$0.UpdateBudgetResponse> updateBudget(
-      $grpc.ServiceCall call, $0.UpdateBudgetRequest request);
-  $async.Future<$0.DeleteBudgetResponse> deleteBudget(
-      $grpc.ServiceCall call, $0.DeleteBudgetRequest request);
-  $async.Future<$0.GetSpendingAnalyticsResponse> getSpendingAnalytics(
-      $grpc.ServiceCall call, $0.GetSpendingAnalyticsRequest request);
-  $async.Future<$0.GetCategoryBreakdownResponse> getCategoryBreakdown(
-      $grpc.ServiceCall call, $0.GetCategoryBreakdownRequest request);
-  $async.Future<$0.GetBudgetProgressResponse> getBudgetProgress(
-      $grpc.ServiceCall call, $0.GetBudgetProgressRequest request);
-  $async.Future<$0.GetSpendingTrendsResponse> getSpendingTrends(
-      $grpc.ServiceCall call, $0.GetSpendingTrendsRequest request);
-  $async.Future<$0.GetBudgetAlertsResponse> getBudgetAlerts(
-      $grpc.ServiceCall call, $0.GetBudgetAlertsRequest request);
-  $async.Future<$0.MarkAlertAsReadResponse> markAlertAsRead(
-      $grpc.ServiceCall call, $0.MarkAlertAsReadRequest request);
-  $async.Future<$0.GetAISpendingInsightsResponse> getAISpendingInsights(
-      $grpc.ServiceCall call, $0.GetAISpendingInsightsRequest request);
-  $async.Future<$0.GetAIBudgetingRecommendationsResponse>
+  $async.Future<$34.CreateExpenseResponse> createExpense(
+      $grpc.ServiceCall call, $34.CreateExpenseRequest request);
+  $async.Future<$34.GetExpensesResponse> getExpenses(
+      $grpc.ServiceCall call, $34.GetExpensesRequest request);
+  $async.Future<$34.GetExpenseByIdResponse> getExpenseById(
+      $grpc.ServiceCall call, $34.GetExpenseByIdRequest request);
+  $async.Future<$34.UpdateExpenseResponse> updateExpense(
+      $grpc.ServiceCall call, $34.UpdateExpenseRequest request);
+  $async.Future<$34.DeleteExpenseResponse> deleteExpense(
+      $grpc.ServiceCall call, $34.DeleteExpenseRequest request);
+  $async.Future<$34.CreateBudgetResponse> createBudget(
+      $grpc.ServiceCall call, $34.CreateBudgetRequest request);
+  $async.Future<$34.GetBudgetsResponse> getBudgets(
+      $grpc.ServiceCall call, $34.GetBudgetsRequest request);
+  $async.Future<$34.GetBudgetByIdResponse> getBudgetById(
+      $grpc.ServiceCall call, $34.GetBudgetByIdRequest request);
+  $async.Future<$34.UpdateBudgetResponse> updateBudget(
+      $grpc.ServiceCall call, $34.UpdateBudgetRequest request);
+  $async.Future<$34.DeleteBudgetResponse> deleteBudget(
+      $grpc.ServiceCall call, $34.DeleteBudgetRequest request);
+  $async.Future<$34.GetSpendingAnalyticsResponse> getSpendingAnalytics(
+      $grpc.ServiceCall call, $34.GetSpendingAnalyticsRequest request);
+  $async.Future<$34.GetCategoryBreakdownResponse> getCategoryBreakdown(
+      $grpc.ServiceCall call, $34.GetCategoryBreakdownRequest request);
+  $async.Future<$34.GetBudgetProgressResponse> getBudgetProgress(
+      $grpc.ServiceCall call, $34.GetBudgetProgressRequest request);
+  $async.Future<$34.GetSpendingTrendsResponse> getSpendingTrends(
+      $grpc.ServiceCall call, $34.GetSpendingTrendsRequest request);
+  $async.Future<$34.GetBudgetAlertsResponse> getBudgetAlerts(
+      $grpc.ServiceCall call, $34.GetBudgetAlertsRequest request);
+  $async.Future<$34.MarkAlertAsReadResponse> markAlertAsRead(
+      $grpc.ServiceCall call, $34.MarkAlertAsReadRequest request);
+  $async.Future<$34.GetAISpendingInsightsResponse> getAISpendingInsights(
+      $grpc.ServiceCall call, $34.GetAISpendingInsightsRequest request);
+  $async.Future<$34.GetAIBudgetingRecommendationsResponse>
       getAIBudgetingRecommendations($grpc.ServiceCall call,
-          $0.GetAIBudgetingRecommendationsRequest request);
-  $async.Future<$0.AutoCategorizeExpenseResponse> autoCategorizeExpense(
-      $grpc.ServiceCall call, $0.AutoCategorizeExpenseRequest request);
-  $async.Future<$0.GetAIFinancialAdviceResponse> getAIFinancialAdvice(
-      $grpc.ServiceCall call, $0.GetAIFinancialAdviceRequest request);
-  $async.Future<$0.GetIncomeSourcesResponse> getIncomeSources(
-      $grpc.ServiceCall call, $0.GetIncomeSourcesRequest request);
-  $async.Future<$0.GetIncomeBreakdownResponse> getIncomeBreakdown(
-      $grpc.ServiceCall call, $0.GetIncomeBreakdownRequest request);
-  $async.Future<$0.CreateIncomeSourceResponse> createIncomeSource(
-      $grpc.ServiceCall call, $0.CreateIncomeSourceRequest request);
-  $async.Future<$0.GetInvestmentPortfolioResponse> getInvestmentPortfolio(
-      $grpc.ServiceCall call, $0.GetInvestmentPortfolioRequest request);
-  $async.Future<$0.CreateInvestmentResponse> createInvestment(
-      $grpc.ServiceCall call, $0.CreateInvestmentRequest request);
-  $async.Future<$0.GetFinancialGoalsResponse> getFinancialGoals(
-      $grpc.ServiceCall call, $0.GetFinancialGoalsRequest request);
-  $async.Future<$0.CreateFinancialGoalResponse> createFinancialGoal(
-      $grpc.ServiceCall call, $0.CreateFinancialGoalRequest request);
-  $async.Future<$0.UpdateFinancialGoalProgressResponse>
+          $34.GetAIBudgetingRecommendationsRequest request);
+  $async.Future<$34.AutoCategorizeExpenseResponse> autoCategorizeExpense(
+      $grpc.ServiceCall call, $34.AutoCategorizeExpenseRequest request);
+  $async.Future<$34.GetAIFinancialAdviceResponse> getAIFinancialAdvice(
+      $grpc.ServiceCall call, $34.GetAIFinancialAdviceRequest request);
+  $async.Future<$34.GetIncomeSourcesResponse> getIncomeSources(
+      $grpc.ServiceCall call, $34.GetIncomeSourcesRequest request);
+  $async.Future<$34.GetIncomeBreakdownResponse> getIncomeBreakdown(
+      $grpc.ServiceCall call, $34.GetIncomeBreakdownRequest request);
+  $async.Future<$34.CreateIncomeSourceResponse> createIncomeSource(
+      $grpc.ServiceCall call, $34.CreateIncomeSourceRequest request);
+  $async.Future<$34.GetInvestmentPortfolioResponse> getInvestmentPortfolio(
+      $grpc.ServiceCall call, $34.GetInvestmentPortfolioRequest request);
+  $async.Future<$34.CreateInvestmentResponse> createInvestment(
+      $grpc.ServiceCall call, $34.CreateInvestmentRequest request);
+  $async.Future<$34.GetFinancialGoalsResponse> getFinancialGoals(
+      $grpc.ServiceCall call, $34.GetFinancialGoalsRequest request);
+  $async.Future<$34.CreateFinancialGoalResponse> createFinancialGoal(
+      $grpc.ServiceCall call, $34.CreateFinancialGoalRequest request);
+  $async.Future<$34.UpdateFinancialGoalProgressResponse>
       updateFinancialGoalProgress($grpc.ServiceCall call,
-          $0.UpdateFinancialGoalProgressRequest request);
-  $async.Future<$0.GetSavingsGoalResponse> getSavingsGoal(
-      $grpc.ServiceCall call, $0.GetSavingsGoalRequest request);
-  $async.Future<$0.CreateOrUpdateSavingsGoalResponse> createOrUpdateSavingsGoal(
-      $grpc.ServiceCall call, $0.CreateOrUpdateSavingsGoalRequest request);
-  $async.Future<$0.GetUpcomingBillsResponse> getUpcomingBills(
-      $grpc.ServiceCall call, $0.GetUpcomingBillsRequest request);
-  $async.Future<$0.CreateRecurringBillResponse> createRecurringBill(
-      $grpc.ServiceCall call, $0.CreateRecurringBillRequest request);
-  $async.Future<$0.GetTrackedIncomeResponse> getTrackedIncome(
-      $grpc.ServiceCall call, $0.GetTrackedIncomeRequest request);
-  $async.Future<$0.GetTrackedExpenditureResponse> getTrackedExpenditure(
-      $grpc.ServiceCall call, $0.GetTrackedExpenditureRequest request);
-  $async.Future<$0.GetTrackedIncomeBreakdownResponse> getTrackedIncomeBreakdown(
-      $grpc.ServiceCall call, $0.GetTrackedIncomeBreakdownRequest request);
-  $async.Future<$0.GetTrackedExpenditureBreakdownResponse>
+          $34.UpdateFinancialGoalProgressRequest request);
+  $async.Future<$34.GetSavingsGoalResponse> getSavingsGoal(
+      $grpc.ServiceCall call, $34.GetSavingsGoalRequest request);
+  $async.Future<$34.CreateOrUpdateSavingsGoalResponse>
+      createOrUpdateSavingsGoal(
+          $grpc.ServiceCall call, $34.CreateOrUpdateSavingsGoalRequest request);
+  $async.Future<$34.GetUpcomingBillsResponse> getUpcomingBills(
+      $grpc.ServiceCall call, $34.GetUpcomingBillsRequest request);
+  $async.Future<$34.CreateRecurringBillResponse> createRecurringBill(
+      $grpc.ServiceCall call, $34.CreateRecurringBillRequest request);
+  $async.Future<$34.GetTrackedIncomeResponse> getTrackedIncome(
+      $grpc.ServiceCall call, $34.GetTrackedIncomeRequest request);
+  $async.Future<$34.GetTrackedExpenditureResponse> getTrackedExpenditure(
+      $grpc.ServiceCall call, $34.GetTrackedExpenditureRequest request);
+  $async.Future<$34.GetTrackedIncomeBreakdownResponse>
+      getTrackedIncomeBreakdown(
+          $grpc.ServiceCall call, $34.GetTrackedIncomeBreakdownRequest request);
+  $async.Future<$34.GetTrackedExpenditureBreakdownResponse>
       getTrackedExpenditureBreakdown($grpc.ServiceCall call,
-          $0.GetTrackedExpenditureBreakdownRequest request);
-  $async.Future<$0.GetTrackedIncomeTransactionsResponse>
+          $34.GetTrackedExpenditureBreakdownRequest request);
+  $async.Future<$34.GetTrackedIncomeTransactionsResponse>
       getTrackedIncomeTransactions($grpc.ServiceCall call,
-          $0.GetTrackedIncomeTransactionsRequest request);
-  $async.Future<$0.GetTrackedExpenditureTransactionsResponse>
+          $34.GetTrackedIncomeTransactionsRequest request);
+  $async.Future<$34.GetTrackedExpenditureTransactionsResponse>
       getTrackedExpenditureTransactions($grpc.ServiceCall call,
-          $0.GetTrackedExpenditureTransactionsRequest request);
-  $async.Future<$0.GetComprehensiveFinancialSummaryResponse>
+          $34.GetTrackedExpenditureTransactionsRequest request);
+  $async.Future<$34.GetComprehensiveFinancialSummaryResponse>
       getComprehensiveFinancialSummary($grpc.ServiceCall call,
-          $0.GetComprehensiveFinancialSummaryRequest request);
-  $async.Future<$0.ValidateCategoryBudgetResponse> validateCategoryBudget(
-      $grpc.ServiceCall call, $0.ValidateCategoryBudgetRequest request);
-  $async.Future<$0.GetServiceCategoriesResponse> getServiceCategories(
-      $grpc.ServiceCall call, $0.GetServiceCategoriesRequest request);
-  $async.Future<$0.CreateCustomCategoryResponse> createCustomCategory(
-      $grpc.ServiceCall call, $0.CreateCustomCategoryRequest request);
-  $async.Future<$0.DeleteCustomCategoryResponse> deleteCustomCategory(
-      $grpc.ServiceCall call, $0.DeleteCustomCategoryRequest request);
+          $34.GetComprehensiveFinancialSummaryRequest request);
+  $async.Future<$34.ValidateCategoryBudgetResponse> validateCategoryBudget(
+      $grpc.ServiceCall call, $34.ValidateCategoryBudgetRequest request);
+  $async.Future<$34.GetServiceCategoriesResponse> getServiceCategories(
+      $grpc.ServiceCall call, $34.GetServiceCategoriesRequest request);
+  $async.Future<$34.CreateCustomCategoryResponse> createCustomCategory(
+      $grpc.ServiceCall call, $34.CreateCustomCategoryRequest request);
+  $async.Future<$34.DeleteCustomCategoryResponse> deleteCustomCategory(
+      $grpc.ServiceCall call, $34.DeleteCustomCategoryRequest request);
 }

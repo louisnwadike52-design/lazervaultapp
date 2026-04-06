@@ -8,6 +8,9 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
+import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
+import 'package:get_it/get_it.dart';
 import '../../../domain/entities/insurance_product_entity.dart';
 import '../../cubit/create_policy_cubit.dart';
 import '../../cubit/create_policy_state.dart';
@@ -21,8 +24,8 @@ class InsuranceQuoteReviewScreen extends StatefulWidget {
       _InsuranceQuoteReviewScreenState();
 }
 
-class _InsuranceQuoteReviewScreenState
-    extends State<InsuranceQuoteReviewScreen> {
+class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
+    with TransactionPinMixin {
   Timer? _countdownTimer;
   Duration _remaining = Duration.zero;
 
@@ -281,6 +284,49 @@ class _InsuranceQuoteReviewScreenState
           ]),
         ),
 
+        // Continue to Payment button (only show when quote is valid)
+        if (!isExpired)
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              padding: EdgeInsets.all(20.w),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    const Color(0xFF0A0A0A).withValues(alpha: 0.9),
+                    const Color(0xFF0A0A0A),
+                  ],
+                ),
+              ),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _proceedToPayment,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF6366F1),
+                    disabledBackgroundColor: const Color(0xFF6366F1).withValues(alpha: 0.5),
+                    padding: EdgeInsets.symmetric(vertical: 18.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                  ),
+                  child: Text(
+                    'Continue to Payment',
+                    style: GoogleFonts.inter(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+
         // Expired overlay
         if (isExpired)
           Positioned.fill(
@@ -352,6 +398,44 @@ class _InsuranceQuoteReviewScreenState
       ],
     );
   }
+
+  Future<void> _proceedToPayment() async {
+    final cubit = context.read<CreatePolicyCubit>();
+    final state = cubit.state;
+
+    if (state is! InsuranceQuoteLoaded) return;
+
+    final quote = state.quote;
+    final product = state.product;
+
+    // Then show PIN modal and validate
+    final success = await validateTransactionPin(
+      context: context,
+      transactionId: quote.quoteId,
+      transactionType: 'insurance_purchase',
+      amount: quote.premium,
+      currency: quote.currency,
+      onPinValidated: (verificationToken) async {
+        // Call purchase with the verification token
+        await cubit.purchaseInsurance(
+          accountId: cubit.selectedAccountId ?? '',
+          transactionPin: verificationToken, // This is now the token, not raw PIN
+          transactionId: quote.quoteId,
+        );
+      },
+      title: 'Confirm Insurance Purchase',
+      message: 'Purchase ${product.name} from ${product.providerName}?',
+      currencySymbol: _currencySymbol(quote.currency),
+    );
+
+    if (!success && mounted) {
+      // PIN validation failed or was cancelled
+      // Stay on the quote review screen
+    }
+  }
+
+  @override
+  ITransactionPinService get transactionPinService => GetIt.I<ITransactionPinService>();
 
   Widget _buildInfoCard(String title, List<Widget> children) {
     return Container(

@@ -7885,6 +7885,8 @@ class RequestAirtimeToCashOTPResponse extends $pb.GeneratedMessage {
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sessionId')
     ..aOB(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'otpRequired')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'destinationPhone')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'providerName')
     ..hasRequiredFields = false
   ;
 
@@ -7894,6 +7896,8 @@ class RequestAirtimeToCashOTPResponse extends $pb.GeneratedMessage {
     $core.String? message,
     $core.String? sessionId,
     $core.bool? otpRequired,
+    $core.String? destinationPhone,
+    $core.String? providerName,
   }) {
     final _result = create();
     if (success != null) {
@@ -7907,6 +7911,12 @@ class RequestAirtimeToCashOTPResponse extends $pb.GeneratedMessage {
     }
     if (otpRequired != null) {
       _result.otpRequired = otpRequired;
+    }
+    if (destinationPhone != null) {
+      _result.destinationPhone = destinationPhone;
+    }
+    if (providerName != null) {
+      _result.providerName = providerName;
     }
     return _result;
   }
@@ -7966,6 +7976,24 @@ class RequestAirtimeToCashOTPResponse extends $pb.GeneratedMessage {
   $core.bool hasOtpRequired() => $_has(3);
   @$pb.TagNumber(4)
   void clearOtpRequired() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get destinationPhone => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set destinationPhone($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasDestinationPhone() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearDestinationPhone() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get providerName => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set providerName($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasProviderName() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearProviderName() => clearField(6);
 }
 
 class VerifyAirtimeToCashOTPRequest extends $pb.GeneratedMessage {
@@ -8062,6 +8090,7 @@ class VerifyAirtimeToCashOTPResponse extends $pb.GeneratedMessage {
     ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verified')
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sessionToken')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sessionId')
     ..hasRequiredFields = false
   ;
 
@@ -8070,6 +8099,7 @@ class VerifyAirtimeToCashOTPResponse extends $pb.GeneratedMessage {
     $core.bool? verified,
     $core.String? message,
     $core.String? sessionToken,
+    $core.String? sessionId,
   }) {
     final _result = create();
     if (verified != null) {
@@ -8080,6 +8110,9 @@ class VerifyAirtimeToCashOTPResponse extends $pb.GeneratedMessage {
     }
     if (sessionToken != null) {
       _result.sessionToken = sessionToken;
+    }
+    if (sessionId != null) {
+      _result.sessionId = sessionId;
     }
     return _result;
   }
@@ -8130,6 +8163,15 @@ class VerifyAirtimeToCashOTPResponse extends $pb.GeneratedMessage {
   $core.bool hasSessionToken() => $_has(2);
   @$pb.TagNumber(3)
   void clearSessionToken() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get sessionId => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set sessionId($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasSessionId() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearSessionId() => clearField(4);
 }
 
 class ConvertAirtimeToCashRequest extends $pb.GeneratedMessage {
@@ -8138,9 +8180,11 @@ class ConvertAirtimeToCashRequest extends $pb.GeneratedMessage {
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'network')
     ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sessionToken')
-    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionId')
-    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verificationToken')
-    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'idempotencyKey')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sessionId')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pin')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionId')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verificationToken')
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'idempotencyKey')
     ..hasRequiredFields = false
   ;
 
@@ -8150,6 +8194,8 @@ class ConvertAirtimeToCashRequest extends $pb.GeneratedMessage {
     $core.String? network,
     $core.double? amount,
     $core.String? sessionToken,
+    $core.String? sessionId,
+    $core.String? pin,
     $core.String? transactionId,
     $core.String? verificationToken,
     $core.String? idempotencyKey,
@@ -8166,6 +8212,12 @@ class ConvertAirtimeToCashRequest extends $pb.GeneratedMessage {
     }
     if (sessionToken != null) {
       _result.sessionToken = sessionToken;
+    }
+    if (sessionId != null) {
+      _result.sessionId = sessionId;
+    }
+    if (pin != null) {
+      _result.pin = pin;
     }
     if (transactionId != null) {
       _result.transactionId = transactionId;
@@ -8236,31 +8288,49 @@ class ConvertAirtimeToCashRequest extends $pb.GeneratedMessage {
   void clearSessionToken() => clearField(4);
 
   @$pb.TagNumber(5)
-  $core.String get transactionId => $_getSZ(4);
+  $core.String get sessionId => $_getSZ(4);
   @$pb.TagNumber(5)
-  set transactionId($core.String v) { $_setString(4, v); }
+  set sessionId($core.String v) { $_setString(4, v); }
   @$pb.TagNumber(5)
-  $core.bool hasTransactionId() => $_has(4);
+  $core.bool hasSessionId() => $_has(4);
   @$pb.TagNumber(5)
-  void clearTransactionId() => clearField(5);
+  void clearSessionId() => clearField(5);
 
   @$pb.TagNumber(6)
-  $core.String get verificationToken => $_getSZ(5);
+  $core.String get pin => $_getSZ(5);
   @$pb.TagNumber(6)
-  set verificationToken($core.String v) { $_setString(5, v); }
+  set pin($core.String v) { $_setString(5, v); }
   @$pb.TagNumber(6)
-  $core.bool hasVerificationToken() => $_has(5);
+  $core.bool hasPin() => $_has(5);
   @$pb.TagNumber(6)
-  void clearVerificationToken() => clearField(6);
+  void clearPin() => clearField(6);
 
   @$pb.TagNumber(7)
-  $core.String get idempotencyKey => $_getSZ(6);
+  $core.String get transactionId => $_getSZ(6);
   @$pb.TagNumber(7)
-  set idempotencyKey($core.String v) { $_setString(6, v); }
+  set transactionId($core.String v) { $_setString(6, v); }
   @$pb.TagNumber(7)
-  $core.bool hasIdempotencyKey() => $_has(6);
+  $core.bool hasTransactionId() => $_has(6);
   @$pb.TagNumber(7)
-  void clearIdempotencyKey() => clearField(7);
+  void clearTransactionId() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get verificationToken => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set verificationToken($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasVerificationToken() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearVerificationToken() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get idempotencyKey => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set idempotencyKey($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasIdempotencyKey() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearIdempotencyKey() => clearField(9);
 }
 
 class ConvertAirtimeToCashResponse extends $pb.GeneratedMessage {
@@ -8767,5 +8837,548 @@ class GetAirtimeToCashHistoryResponse extends $pb.GeneratedMessage {
   $core.bool hasTotalCount() => $_has(1);
   @$pb.TagNumber(2)
   void clearTotalCount() => clearField(2);
+}
+
+class VerifyAirtimeToCashServiceRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VerifyAirtimeToCashServiceRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'utilitypayments'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'network')
+    ..hasRequiredFields = false
+  ;
+
+  VerifyAirtimeToCashServiceRequest._() : super();
+  factory VerifyAirtimeToCashServiceRequest({
+    $core.String? network,
+  }) {
+    final _result = create();
+    if (network != null) {
+      _result.network = network;
+    }
+    return _result;
+  }
+  factory VerifyAirtimeToCashServiceRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory VerifyAirtimeToCashServiceRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  VerifyAirtimeToCashServiceRequest clone() => VerifyAirtimeToCashServiceRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  VerifyAirtimeToCashServiceRequest copyWith(void Function(VerifyAirtimeToCashServiceRequest) updates) => super.copyWith((message) => updates(message as VerifyAirtimeToCashServiceRequest)) as VerifyAirtimeToCashServiceRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static VerifyAirtimeToCashServiceRequest create() => VerifyAirtimeToCashServiceRequest._();
+  VerifyAirtimeToCashServiceRequest createEmptyInstance() => create();
+  static $pb.PbList<VerifyAirtimeToCashServiceRequest> createRepeated() => $pb.PbList<VerifyAirtimeToCashServiceRequest>();
+  @$core.pragma('dart2js:noInline')
+  static VerifyAirtimeToCashServiceRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<VerifyAirtimeToCashServiceRequest>(create);
+  static VerifyAirtimeToCashServiceRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get network => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set network($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasNetwork() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearNetwork() => clearField(1);
+}
+
+class VerifyAirtimeToCashServiceResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'VerifyAirtimeToCashServiceResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'utilitypayments'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isAvailable')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'providerName')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'destinationPhone')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'network')
+    ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'requiresTransfer')
+    ..hasRequiredFields = false
+  ;
+
+  VerifyAirtimeToCashServiceResponse._() : super();
+  factory VerifyAirtimeToCashServiceResponse({
+    $core.bool? isAvailable,
+    $core.String? providerName,
+    $core.String? destinationPhone,
+    $core.String? message,
+    $core.String? network,
+    $core.bool? requiresTransfer,
+  }) {
+    final _result = create();
+    if (isAvailable != null) {
+      _result.isAvailable = isAvailable;
+    }
+    if (providerName != null) {
+      _result.providerName = providerName;
+    }
+    if (destinationPhone != null) {
+      _result.destinationPhone = destinationPhone;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    if (network != null) {
+      _result.network = network;
+    }
+    if (requiresTransfer != null) {
+      _result.requiresTransfer = requiresTransfer;
+    }
+    return _result;
+  }
+  factory VerifyAirtimeToCashServiceResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory VerifyAirtimeToCashServiceResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  VerifyAirtimeToCashServiceResponse clone() => VerifyAirtimeToCashServiceResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  VerifyAirtimeToCashServiceResponse copyWith(void Function(VerifyAirtimeToCashServiceResponse) updates) => super.copyWith((message) => updates(message as VerifyAirtimeToCashServiceResponse)) as VerifyAirtimeToCashServiceResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static VerifyAirtimeToCashServiceResponse create() => VerifyAirtimeToCashServiceResponse._();
+  VerifyAirtimeToCashServiceResponse createEmptyInstance() => create();
+  static $pb.PbList<VerifyAirtimeToCashServiceResponse> createRepeated() => $pb.PbList<VerifyAirtimeToCashServiceResponse>();
+  @$core.pragma('dart2js:noInline')
+  static VerifyAirtimeToCashServiceResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<VerifyAirtimeToCashServiceResponse>(create);
+  static VerifyAirtimeToCashServiceResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get isAvailable => $_getBF(0);
+  @$pb.TagNumber(1)
+  set isAvailable($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasIsAvailable() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearIsAvailable() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get providerName => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set providerName($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasProviderName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearProviderName() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get destinationPhone => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set destinationPhone($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasDestinationPhone() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearDestinationPhone() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get message => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set message($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasMessage() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearMessage() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get network => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set network($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasNetwork() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearNetwork() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.bool get requiresTransfer => $_getBF(5);
+  @$pb.TagNumber(6)
+  set requiresTransfer($core.bool v) { $_setBool(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasRequiresTransfer() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearRequiresTransfer() => clearField(6);
+}
+
+class GetAirtimeToCashProviderInfoRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetAirtimeToCashProviderInfoRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'utilitypayments'), createEmptyInstance: create)
+    ..hasRequiredFields = false
+  ;
+
+  GetAirtimeToCashProviderInfoRequest._() : super();
+  factory GetAirtimeToCashProviderInfoRequest() => create();
+  factory GetAirtimeToCashProviderInfoRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetAirtimeToCashProviderInfoRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetAirtimeToCashProviderInfoRequest clone() => GetAirtimeToCashProviderInfoRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetAirtimeToCashProviderInfoRequest copyWith(void Function(GetAirtimeToCashProviderInfoRequest) updates) => super.copyWith((message) => updates(message as GetAirtimeToCashProviderInfoRequest)) as GetAirtimeToCashProviderInfoRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetAirtimeToCashProviderInfoRequest create() => GetAirtimeToCashProviderInfoRequest._();
+  GetAirtimeToCashProviderInfoRequest createEmptyInstance() => create();
+  static $pb.PbList<GetAirtimeToCashProviderInfoRequest> createRepeated() => $pb.PbList<GetAirtimeToCashProviderInfoRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetAirtimeToCashProviderInfoRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetAirtimeToCashProviderInfoRequest>(create);
+  static GetAirtimeToCashProviderInfoRequest? _defaultInstance;
+}
+
+class GetAirtimeToCashProviderInfoResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetAirtimeToCashProviderInfoResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'utilitypayments'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'providerName')
+    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'requiresOtp')
+    ..aOB(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'requiresTransfer')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'displayName')
+    ..pc<ProviderStatus>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'providers', $pb.PbFieldType.PM, subBuilder: ProviderStatus.create)
+    ..hasRequiredFields = false
+  ;
+
+  GetAirtimeToCashProviderInfoResponse._() : super();
+  factory GetAirtimeToCashProviderInfoResponse({
+    $core.String? providerName,
+    $core.bool? requiresOtp,
+    $core.bool? requiresTransfer,
+    $core.String? displayName,
+    $core.Iterable<ProviderStatus>? providers,
+  }) {
+    final _result = create();
+    if (providerName != null) {
+      _result.providerName = providerName;
+    }
+    if (requiresOtp != null) {
+      _result.requiresOtp = requiresOtp;
+    }
+    if (requiresTransfer != null) {
+      _result.requiresTransfer = requiresTransfer;
+    }
+    if (displayName != null) {
+      _result.displayName = displayName;
+    }
+    if (providers != null) {
+      _result.providers.addAll(providers);
+    }
+    return _result;
+  }
+  factory GetAirtimeToCashProviderInfoResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetAirtimeToCashProviderInfoResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetAirtimeToCashProviderInfoResponse clone() => GetAirtimeToCashProviderInfoResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetAirtimeToCashProviderInfoResponse copyWith(void Function(GetAirtimeToCashProviderInfoResponse) updates) => super.copyWith((message) => updates(message as GetAirtimeToCashProviderInfoResponse)) as GetAirtimeToCashProviderInfoResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetAirtimeToCashProviderInfoResponse create() => GetAirtimeToCashProviderInfoResponse._();
+  GetAirtimeToCashProviderInfoResponse createEmptyInstance() => create();
+  static $pb.PbList<GetAirtimeToCashProviderInfoResponse> createRepeated() => $pb.PbList<GetAirtimeToCashProviderInfoResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetAirtimeToCashProviderInfoResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetAirtimeToCashProviderInfoResponse>(create);
+  static GetAirtimeToCashProviderInfoResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get providerName => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set providerName($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasProviderName() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearProviderName() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.bool get requiresOtp => $_getBF(1);
+  @$pb.TagNumber(2)
+  set requiresOtp($core.bool v) { $_setBool(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasRequiresOtp() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearRequiresOtp() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.bool get requiresTransfer => $_getBF(2);
+  @$pb.TagNumber(3)
+  set requiresTransfer($core.bool v) { $_setBool(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasRequiresTransfer() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearRequiresTransfer() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get displayName => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set displayName($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasDisplayName() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearDisplayName() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.List<ProviderStatus> get providers => $_getList(4);
+}
+
+class ProviderStatus extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ProviderStatus', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'utilitypayments'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'displayName')
+    ..aOB(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isActive')
+    ..aOB(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isHealthy')
+    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'networkCount', $pb.PbFieldType.O3)
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorMessage')
+    ..hasRequiredFields = false
+  ;
+
+  ProviderStatus._() : super();
+  factory ProviderStatus({
+    $core.String? name,
+    $core.String? displayName,
+    $core.bool? isActive,
+    $core.bool? isHealthy,
+    $core.int? networkCount,
+    $core.String? errorMessage,
+  }) {
+    final _result = create();
+    if (name != null) {
+      _result.name = name;
+    }
+    if (displayName != null) {
+      _result.displayName = displayName;
+    }
+    if (isActive != null) {
+      _result.isActive = isActive;
+    }
+    if (isHealthy != null) {
+      _result.isHealthy = isHealthy;
+    }
+    if (networkCount != null) {
+      _result.networkCount = networkCount;
+    }
+    if (errorMessage != null) {
+      _result.errorMessage = errorMessage;
+    }
+    return _result;
+  }
+  factory ProviderStatus.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ProviderStatus.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ProviderStatus clone() => ProviderStatus()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ProviderStatus copyWith(void Function(ProviderStatus) updates) => super.copyWith((message) => updates(message as ProviderStatus)) as ProviderStatus; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static ProviderStatus create() => ProviderStatus._();
+  ProviderStatus createEmptyInstance() => create();
+  static $pb.PbList<ProviderStatus> createRepeated() => $pb.PbList<ProviderStatus>();
+  @$core.pragma('dart2js:noInline')
+  static ProviderStatus getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ProviderStatus>(create);
+  static ProviderStatus? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get name => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set name($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasName() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearName() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get displayName => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set displayName($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasDisplayName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearDisplayName() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.bool get isActive => $_getBF(2);
+  @$pb.TagNumber(3)
+  set isActive($core.bool v) { $_setBool(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasIsActive() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearIsActive() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.bool get isHealthy => $_getBF(3);
+  @$pb.TagNumber(4)
+  set isHealthy($core.bool v) { $_setBool(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasIsHealthy() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearIsHealthy() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get networkCount => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set networkCount($core.int v) { $_setSignedInt32(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasNetworkCount() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearNetworkCount() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get errorMessage => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set errorMessage($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasErrorMessage() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearErrorMessage() => clearField(6);
+}
+
+class CheckAirtimeToCashQuotaRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CheckAirtimeToCashQuotaRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'utilitypayments'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'network')
+    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
+  CheckAirtimeToCashQuotaRequest._() : super();
+  factory CheckAirtimeToCashQuotaRequest({
+    $core.String? network,
+    $core.double? amount,
+  }) {
+    final _result = create();
+    if (network != null) {
+      _result.network = network;
+    }
+    if (amount != null) {
+      _result.amount = amount;
+    }
+    return _result;
+  }
+  factory CheckAirtimeToCashQuotaRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CheckAirtimeToCashQuotaRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CheckAirtimeToCashQuotaRequest clone() => CheckAirtimeToCashQuotaRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CheckAirtimeToCashQuotaRequest copyWith(void Function(CheckAirtimeToCashQuotaRequest) updates) => super.copyWith((message) => updates(message as CheckAirtimeToCashQuotaRequest)) as CheckAirtimeToCashQuotaRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static CheckAirtimeToCashQuotaRequest create() => CheckAirtimeToCashQuotaRequest._();
+  CheckAirtimeToCashQuotaRequest createEmptyInstance() => create();
+  static $pb.PbList<CheckAirtimeToCashQuotaRequest> createRepeated() => $pb.PbList<CheckAirtimeToCashQuotaRequest>();
+  @$core.pragma('dart2js:noInline')
+  static CheckAirtimeToCashQuotaRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CheckAirtimeToCashQuotaRequest>(create);
+  static CheckAirtimeToCashQuotaRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get network => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set network($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasNetwork() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearNetwork() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.double get amount => $_getN(1);
+  @$pb.TagNumber(2)
+  set amount($core.double v) { $_setDouble(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasAmount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAmount() => clearField(2);
+}
+
+class CheckAirtimeToCashQuotaResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CheckAirtimeToCashQuotaResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'utilitypayments'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'available')
+    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'maxAmount', $pb.PbFieldType.OD)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  CheckAirtimeToCashQuotaResponse._() : super();
+  factory CheckAirtimeToCashQuotaResponse({
+    $core.bool? available,
+    $core.double? maxAmount,
+    $core.String? message,
+  }) {
+    final _result = create();
+    if (available != null) {
+      _result.available = available;
+    }
+    if (maxAmount != null) {
+      _result.maxAmount = maxAmount;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    return _result;
+  }
+  factory CheckAirtimeToCashQuotaResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CheckAirtimeToCashQuotaResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CheckAirtimeToCashQuotaResponse clone() => CheckAirtimeToCashQuotaResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CheckAirtimeToCashQuotaResponse copyWith(void Function(CheckAirtimeToCashQuotaResponse) updates) => super.copyWith((message) => updates(message as CheckAirtimeToCashQuotaResponse)) as CheckAirtimeToCashQuotaResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static CheckAirtimeToCashQuotaResponse create() => CheckAirtimeToCashQuotaResponse._();
+  CheckAirtimeToCashQuotaResponse createEmptyInstance() => create();
+  static $pb.PbList<CheckAirtimeToCashQuotaResponse> createRepeated() => $pb.PbList<CheckAirtimeToCashQuotaResponse>();
+  @$core.pragma('dart2js:noInline')
+  static CheckAirtimeToCashQuotaResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CheckAirtimeToCashQuotaResponse>(create);
+  static CheckAirtimeToCashQuotaResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get available => $_getBF(0);
+  @$pb.TagNumber(1)
+  set available($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAvailable() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAvailable() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.double get maxAmount => $_getN(1);
+  @$pb.TagNumber(2)
+  set maxAmount($core.double v) { $_setDouble(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMaxAmount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMaxAmount() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get message => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set message($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearMessage() => clearField(3);
 }
 

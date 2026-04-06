@@ -10,172 +10,174 @@ import 'dart:async' as $async;
 import 'dart:core' as $core;
 
 import 'package:grpc/service_api.dart' as $grpc;
-import 'kyc.pb.dart' as $0;
+import 'kyc.pb.dart' as $26;
 export 'kyc.pb.dart';
 
 class KYCServiceClient extends $grpc.Client {
   static final _$getKYCStatus =
-      $grpc.ClientMethod<$0.GetKYCStatusRequest, $0.GetKYCStatusResponse>(
+      $grpc.ClientMethod<$26.GetKYCStatusRequest, $26.GetKYCStatusResponse>(
           '/kyc.KYCService/GetKYCStatus',
-          ($0.GetKYCStatusRequest value) => value.writeToBuffer(),
+          ($26.GetKYCStatusRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $0.GetKYCStatusResponse.fromBuffer(value));
+              $26.GetKYCStatusResponse.fromBuffer(value));
   static final _$getCountryRequirements = $grpc.ClientMethod<
-          $0.GetCountryRequirementsRequest, $0.GetCountryRequirementsResponse>(
+          $26.GetCountryRequirementsRequest,
+          $26.GetCountryRequirementsResponse>(
       '/kyc.KYCService/GetCountryRequirements',
-      ($0.GetCountryRequirementsRequest value) => value.writeToBuffer(),
+      ($26.GetCountryRequirementsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.GetCountryRequirementsResponse.fromBuffer(value));
+          $26.GetCountryRequirementsResponse.fromBuffer(value));
   static final _$initiateKYC =
-      $grpc.ClientMethod<$0.InitiateKYCRequest, $0.InitiateKYCResponse>(
+      $grpc.ClientMethod<$26.InitiateKYCRequest, $26.InitiateKYCResponse>(
           '/kyc.KYCService/InitiateKYC',
-          ($0.InitiateKYCRequest value) => value.writeToBuffer(),
+          ($26.InitiateKYCRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $0.InitiateKYCResponse.fromBuffer(value));
+              $26.InitiateKYCResponse.fromBuffer(value));
   static final _$verifyID =
-      $grpc.ClientMethod<$0.VerifyIDRequest, $0.VerifyIDResponse>(
+      $grpc.ClientMethod<$26.VerifyIDRequest, $26.VerifyIDResponse>(
           '/kyc.KYCService/VerifyID',
-          ($0.VerifyIDRequest value) => value.writeToBuffer(),
+          ($26.VerifyIDRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $0.VerifyIDResponse.fromBuffer(value));
+              $26.VerifyIDResponse.fromBuffer(value));
   static final _$uploadDocument =
-      $grpc.ClientMethod<$0.UploadDocumentRequest, $0.VerifyIDResponse>(
+      $grpc.ClientMethod<$26.UploadDocumentRequest, $26.VerifyIDResponse>(
           '/kyc.KYCService/UploadDocument',
-          ($0.UploadDocumentRequest value) => value.writeToBuffer(),
+          ($26.UploadDocumentRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $0.VerifyIDResponse.fromBuffer(value));
+              $26.VerifyIDResponse.fromBuffer(value));
   static final _$getUserDocuments = $grpc.ClientMethod<
-          $0.GetUserDocumentsRequest, $0.GetUserDocumentsResponse>(
+          $26.GetUserDocumentsRequest, $26.GetUserDocumentsResponse>(
       '/kyc.KYCService/GetUserDocuments',
-      ($0.GetUserDocumentsRequest value) => value.writeToBuffer(),
+      ($26.GetUserDocumentsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.GetUserDocumentsResponse.fromBuffer(value));
+          $26.GetUserDocumentsResponse.fromBuffer(value));
   static final _$skipKYCUpgrade =
-      $grpc.ClientMethod<$0.SkipKYCRequest, $0.SkipKYCResponse>(
+      $grpc.ClientMethod<$26.SkipKYCRequest, $26.SkipKYCResponse>(
           '/kyc.KYCService/SkipKYCUpgrade',
-          ($0.SkipKYCRequest value) => value.writeToBuffer(),
+          ($26.SkipKYCRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $0.SkipKYCResponse.fromBuffer(value));
+              $26.SkipKYCResponse.fromBuffer(value));
   static final _$createVerificationSession = $grpc.ClientMethod<
-          $0.CreateVerificationSessionRequest,
-          $0.CreateVerificationSessionResponse>(
+          $26.CreateVerificationSessionRequest,
+          $26.CreateVerificationSessionResponse>(
       '/kyc.KYCService/CreateVerificationSession',
-      ($0.CreateVerificationSessionRequest value) => value.writeToBuffer(),
+      ($26.CreateVerificationSessionRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.CreateVerificationSessionResponse.fromBuffer(value));
+          $26.CreateVerificationSessionResponse.fromBuffer(value));
   static final _$confirmVerification = $grpc.ClientMethod<
-          $0.ConfirmVerificationRequest, $0.ConfirmVerificationResponse>(
+          $26.ConfirmVerificationRequest, $26.ConfirmVerificationResponse>(
       '/kyc.KYCService/ConfirmVerification',
-      ($0.ConfirmVerificationRequest value) => value.writeToBuffer(),
+      ($26.ConfirmVerificationRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.ConfirmVerificationResponse.fromBuffer(value));
+          $26.ConfirmVerificationResponse.fromBuffer(value));
   static final _$getDocumentUploadURL = $grpc.ClientMethod<
-          $0.GetDocumentUploadURLRequest, $0.GetDocumentUploadURLResponse>(
+          $26.GetDocumentUploadURLRequest, $26.GetDocumentUploadURLResponse>(
       '/kyc.KYCService/GetDocumentUploadURL',
-      ($0.GetDocumentUploadURLRequest value) => value.writeToBuffer(),
+      ($26.GetDocumentUploadURLRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.GetDocumentUploadURLResponse.fromBuffer(value));
+          $26.GetDocumentUploadURLResponse.fromBuffer(value));
   static final _$submitDocumentsForReview = $grpc.ClientMethod<
-          $0.SubmitDocumentsForReviewRequest,
-          $0.SubmitDocumentsForReviewResponse>(
+          $26.SubmitDocumentsForReviewRequest,
+          $26.SubmitDocumentsForReviewResponse>(
       '/kyc.KYCService/SubmitDocumentsForReview',
-      ($0.SubmitDocumentsForReviewRequest value) => value.writeToBuffer(),
+      ($26.SubmitDocumentsForReviewRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.SubmitDocumentsForReviewResponse.fromBuffer(value));
+          $26.SubmitDocumentsForReviewResponse.fromBuffer(value));
   static final _$getPendingReviews = $grpc.ClientMethod<
-          $0.GetPendingReviewsRequest, $0.GetPendingReviewsResponse>(
+          $26.GetPendingReviewsRequest, $26.GetPendingReviewsResponse>(
       '/kyc.KYCService/GetPendingReviews',
-      ($0.GetPendingReviewsRequest value) => value.writeToBuffer(),
+      ($26.GetPendingReviewsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.GetPendingReviewsResponse.fromBuffer(value));
+          $26.GetPendingReviewsResponse.fromBuffer(value));
   static final _$reviewDocument =
-      $grpc.ClientMethod<$0.ReviewDocumentRequest, $0.ReviewDocumentResponse>(
+      $grpc.ClientMethod<$26.ReviewDocumentRequest, $26.ReviewDocumentResponse>(
           '/kyc.KYCService/ReviewDocument',
-          ($0.ReviewDocumentRequest value) => value.writeToBuffer(),
+          ($26.ReviewDocumentRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $0.ReviewDocumentResponse.fromBuffer(value));
+              $26.ReviewDocumentResponse.fromBuffer(value));
 
   KYCServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
       $core.Iterable<$grpc.ClientInterceptor>? interceptors})
       : super(channel, options: options, interceptors: interceptors);
 
-  $grpc.ResponseFuture<$0.GetKYCStatusResponse> getKYCStatus(
-      $0.GetKYCStatusRequest request,
+  $grpc.ResponseFuture<$26.GetKYCStatusResponse> getKYCStatus(
+      $26.GetKYCStatusRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getKYCStatus, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetCountryRequirementsResponse>
-      getCountryRequirements($0.GetCountryRequirementsRequest request,
+  $grpc.ResponseFuture<$26.GetCountryRequirementsResponse>
+      getCountryRequirements($26.GetCountryRequirementsRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getCountryRequirements, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$0.InitiateKYCResponse> initiateKYC(
-      $0.InitiateKYCRequest request,
+  $grpc.ResponseFuture<$26.InitiateKYCResponse> initiateKYC(
+      $26.InitiateKYCRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$initiateKYC, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.VerifyIDResponse> verifyID($0.VerifyIDRequest request,
+  $grpc.ResponseFuture<$26.VerifyIDResponse> verifyID(
+      $26.VerifyIDRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$verifyID, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.VerifyIDResponse> uploadDocument(
-      $0.UploadDocumentRequest request,
+  $grpc.ResponseFuture<$26.VerifyIDResponse> uploadDocument(
+      $26.UploadDocumentRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$uploadDocument, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetUserDocumentsResponse> getUserDocuments(
-      $0.GetUserDocumentsRequest request,
+  $grpc.ResponseFuture<$26.GetUserDocumentsResponse> getUserDocuments(
+      $26.GetUserDocumentsRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getUserDocuments, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.SkipKYCResponse> skipKYCUpgrade(
-      $0.SkipKYCRequest request,
+  $grpc.ResponseFuture<$26.SkipKYCResponse> skipKYCUpgrade(
+      $26.SkipKYCRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$skipKYCUpgrade, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.CreateVerificationSessionResponse>
-      createVerificationSession($0.CreateVerificationSessionRequest request,
+  $grpc.ResponseFuture<$26.CreateVerificationSessionResponse>
+      createVerificationSession($26.CreateVerificationSessionRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$createVerificationSession, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$0.ConfirmVerificationResponse> confirmVerification(
-      $0.ConfirmVerificationRequest request,
+  $grpc.ResponseFuture<$26.ConfirmVerificationResponse> confirmVerification(
+      $26.ConfirmVerificationRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$confirmVerification, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetDocumentUploadURLResponse> getDocumentUploadURL(
-      $0.GetDocumentUploadURLRequest request,
+  $grpc.ResponseFuture<$26.GetDocumentUploadURLResponse> getDocumentUploadURL(
+      $26.GetDocumentUploadURLRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getDocumentUploadURL, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.SubmitDocumentsForReviewResponse>
-      submitDocumentsForReview($0.SubmitDocumentsForReviewRequest request,
+  $grpc.ResponseFuture<$26.SubmitDocumentsForReviewResponse>
+      submitDocumentsForReview($26.SubmitDocumentsForReviewRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$submitDocumentsForReview, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetPendingReviewsResponse> getPendingReviews(
-      $0.GetPendingReviewsRequest request,
+  $grpc.ResponseFuture<$26.GetPendingReviewsResponse> getPendingReviews(
+      $26.GetPendingReviewsRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getPendingReviews, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.ReviewDocumentResponse> reviewDocument(
-      $0.ReviewDocumentRequest request,
+  $grpc.ResponseFuture<$26.ReviewDocumentResponse> reviewDocument(
+      $26.ReviewDocumentRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$reviewDocument, request, options: options);
   }
@@ -186,218 +188,220 @@ abstract class KYCServiceBase extends $grpc.Service {
 
   KYCServiceBase() {
     $addMethod(
-        $grpc.ServiceMethod<$0.GetKYCStatusRequest, $0.GetKYCStatusResponse>(
+        $grpc.ServiceMethod<$26.GetKYCStatusRequest, $26.GetKYCStatusResponse>(
             'GetKYCStatus',
             getKYCStatus_Pre,
             false,
             false,
             ($core.List<$core.int> value) =>
-                $0.GetKYCStatusRequest.fromBuffer(value),
-            ($0.GetKYCStatusResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetCountryRequirementsRequest,
-            $0.GetCountryRequirementsResponse>(
+                $26.GetKYCStatusRequest.fromBuffer(value),
+            ($26.GetKYCStatusResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$26.GetCountryRequirementsRequest,
+            $26.GetCountryRequirementsResponse>(
         'GetCountryRequirements',
         getCountryRequirements_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.GetCountryRequirementsRequest.fromBuffer(value),
-        ($0.GetCountryRequirementsResponse value) => value.writeToBuffer()));
+            $26.GetCountryRequirementsRequest.fromBuffer(value),
+        ($26.GetCountryRequirementsResponse value) => value.writeToBuffer()));
     $addMethod(
-        $grpc.ServiceMethod<$0.InitiateKYCRequest, $0.InitiateKYCResponse>(
+        $grpc.ServiceMethod<$26.InitiateKYCRequest, $26.InitiateKYCResponse>(
             'InitiateKYC',
             initiateKYC_Pre,
             false,
             false,
             ($core.List<$core.int> value) =>
-                $0.InitiateKYCRequest.fromBuffer(value),
-            ($0.InitiateKYCResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.VerifyIDRequest, $0.VerifyIDResponse>(
+                $26.InitiateKYCRequest.fromBuffer(value),
+            ($26.InitiateKYCResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$26.VerifyIDRequest, $26.VerifyIDResponse>(
         'VerifyID',
         verifyID_Pre,
         false,
         false,
-        ($core.List<$core.int> value) => $0.VerifyIDRequest.fromBuffer(value),
-        ($0.VerifyIDResponse value) => value.writeToBuffer()));
+        ($core.List<$core.int> value) => $26.VerifyIDRequest.fromBuffer(value),
+        ($26.VerifyIDResponse value) => value.writeToBuffer()));
     $addMethod(
-        $grpc.ServiceMethod<$0.UploadDocumentRequest, $0.VerifyIDResponse>(
+        $grpc.ServiceMethod<$26.UploadDocumentRequest, $26.VerifyIDResponse>(
             'UploadDocument',
             uploadDocument_Pre,
             false,
             false,
             ($core.List<$core.int> value) =>
-                $0.UploadDocumentRequest.fromBuffer(value),
-            ($0.VerifyIDResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetUserDocumentsRequest,
-            $0.GetUserDocumentsResponse>(
+                $26.UploadDocumentRequest.fromBuffer(value),
+            ($26.VerifyIDResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$26.GetUserDocumentsRequest,
+            $26.GetUserDocumentsResponse>(
         'GetUserDocuments',
         getUserDocuments_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.GetUserDocumentsRequest.fromBuffer(value),
-        ($0.GetUserDocumentsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.SkipKYCRequest, $0.SkipKYCResponse>(
+            $26.GetUserDocumentsRequest.fromBuffer(value),
+        ($26.GetUserDocumentsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$26.SkipKYCRequest, $26.SkipKYCResponse>(
         'SkipKYCUpgrade',
         skipKYCUpgrade_Pre,
         false,
         false,
-        ($core.List<$core.int> value) => $0.SkipKYCRequest.fromBuffer(value),
-        ($0.SkipKYCResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.CreateVerificationSessionRequest,
-            $0.CreateVerificationSessionResponse>(
+        ($core.List<$core.int> value) => $26.SkipKYCRequest.fromBuffer(value),
+        ($26.SkipKYCResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$26.CreateVerificationSessionRequest,
+            $26.CreateVerificationSessionResponse>(
         'CreateVerificationSession',
         createVerificationSession_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.CreateVerificationSessionRequest.fromBuffer(value),
-        ($0.CreateVerificationSessionResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.ConfirmVerificationRequest,
-            $0.ConfirmVerificationResponse>(
+            $26.CreateVerificationSessionRequest.fromBuffer(value),
+        ($26.CreateVerificationSessionResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$26.ConfirmVerificationRequest,
+            $26.ConfirmVerificationResponse>(
         'ConfirmVerification',
         confirmVerification_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.ConfirmVerificationRequest.fromBuffer(value),
-        ($0.ConfirmVerificationResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetDocumentUploadURLRequest,
-            $0.GetDocumentUploadURLResponse>(
+            $26.ConfirmVerificationRequest.fromBuffer(value),
+        ($26.ConfirmVerificationResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$26.GetDocumentUploadURLRequest,
+            $26.GetDocumentUploadURLResponse>(
         'GetDocumentUploadURL',
         getDocumentUploadURL_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.GetDocumentUploadURLRequest.fromBuffer(value),
-        ($0.GetDocumentUploadURLResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.SubmitDocumentsForReviewRequest,
-            $0.SubmitDocumentsForReviewResponse>(
+            $26.GetDocumentUploadURLRequest.fromBuffer(value),
+        ($26.GetDocumentUploadURLResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$26.SubmitDocumentsForReviewRequest,
+            $26.SubmitDocumentsForReviewResponse>(
         'SubmitDocumentsForReview',
         submitDocumentsForReview_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.SubmitDocumentsForReviewRequest.fromBuffer(value),
-        ($0.SubmitDocumentsForReviewResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetPendingReviewsRequest,
-            $0.GetPendingReviewsResponse>(
+            $26.SubmitDocumentsForReviewRequest.fromBuffer(value),
+        ($26.SubmitDocumentsForReviewResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$26.GetPendingReviewsRequest,
+            $26.GetPendingReviewsResponse>(
         'GetPendingReviews',
         getPendingReviews_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.GetPendingReviewsRequest.fromBuffer(value),
-        ($0.GetPendingReviewsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.ReviewDocumentRequest,
-            $0.ReviewDocumentResponse>(
+            $26.GetPendingReviewsRequest.fromBuffer(value),
+        ($26.GetPendingReviewsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$26.ReviewDocumentRequest,
+            $26.ReviewDocumentResponse>(
         'ReviewDocument',
         reviewDocument_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.ReviewDocumentRequest.fromBuffer(value),
-        ($0.ReviewDocumentResponse value) => value.writeToBuffer()));
+            $26.ReviewDocumentRequest.fromBuffer(value),
+        ($26.ReviewDocumentResponse value) => value.writeToBuffer()));
   }
 
-  $async.Future<$0.GetKYCStatusResponse> getKYCStatus_Pre(
+  $async.Future<$26.GetKYCStatusResponse> getKYCStatus_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.GetKYCStatusRequest> request) async {
+      $async.Future<$26.GetKYCStatusRequest> request) async {
     return getKYCStatus(call, await request);
   }
 
-  $async.Future<$0.GetCountryRequirementsResponse> getCountryRequirements_Pre(
+  $async.Future<$26.GetCountryRequirementsResponse> getCountryRequirements_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.GetCountryRequirementsRequest> request) async {
+      $async.Future<$26.GetCountryRequirementsRequest> request) async {
     return getCountryRequirements(call, await request);
   }
 
-  $async.Future<$0.InitiateKYCResponse> initiateKYC_Pre($grpc.ServiceCall call,
-      $async.Future<$0.InitiateKYCRequest> request) async {
+  $async.Future<$26.InitiateKYCResponse> initiateKYC_Pre($grpc.ServiceCall call,
+      $async.Future<$26.InitiateKYCRequest> request) async {
     return initiateKYC(call, await request);
   }
 
-  $async.Future<$0.VerifyIDResponse> verifyID_Pre(
-      $grpc.ServiceCall call, $async.Future<$0.VerifyIDRequest> request) async {
+  $async.Future<$26.VerifyIDResponse> verifyID_Pre($grpc.ServiceCall call,
+      $async.Future<$26.VerifyIDRequest> request) async {
     return verifyID(call, await request);
   }
 
-  $async.Future<$0.VerifyIDResponse> uploadDocument_Pre($grpc.ServiceCall call,
-      $async.Future<$0.UploadDocumentRequest> request) async {
+  $async.Future<$26.VerifyIDResponse> uploadDocument_Pre($grpc.ServiceCall call,
+      $async.Future<$26.UploadDocumentRequest> request) async {
     return uploadDocument(call, await request);
   }
 
-  $async.Future<$0.GetUserDocumentsResponse> getUserDocuments_Pre(
+  $async.Future<$26.GetUserDocumentsResponse> getUserDocuments_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.GetUserDocumentsRequest> request) async {
+      $async.Future<$26.GetUserDocumentsRequest> request) async {
     return getUserDocuments(call, await request);
   }
 
-  $async.Future<$0.SkipKYCResponse> skipKYCUpgrade_Pre(
-      $grpc.ServiceCall call, $async.Future<$0.SkipKYCRequest> request) async {
+  $async.Future<$26.SkipKYCResponse> skipKYCUpgrade_Pre(
+      $grpc.ServiceCall call, $async.Future<$26.SkipKYCRequest> request) async {
     return skipKYCUpgrade(call, await request);
   }
 
-  $async.Future<$0.CreateVerificationSessionResponse>
+  $async.Future<$26.CreateVerificationSessionResponse>
       createVerificationSession_Pre($grpc.ServiceCall call,
-          $async.Future<$0.CreateVerificationSessionRequest> request) async {
+          $async.Future<$26.CreateVerificationSessionRequest> request) async {
     return createVerificationSession(call, await request);
   }
 
-  $async.Future<$0.ConfirmVerificationResponse> confirmVerification_Pre(
+  $async.Future<$26.ConfirmVerificationResponse> confirmVerification_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.ConfirmVerificationRequest> request) async {
+      $async.Future<$26.ConfirmVerificationRequest> request) async {
     return confirmVerification(call, await request);
   }
 
-  $async.Future<$0.GetDocumentUploadURLResponse> getDocumentUploadURL_Pre(
+  $async.Future<$26.GetDocumentUploadURLResponse> getDocumentUploadURL_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.GetDocumentUploadURLRequest> request) async {
+      $async.Future<$26.GetDocumentUploadURLRequest> request) async {
     return getDocumentUploadURL(call, await request);
   }
 
-  $async.Future<$0.SubmitDocumentsForReviewResponse>
+  $async.Future<$26.SubmitDocumentsForReviewResponse>
       submitDocumentsForReview_Pre($grpc.ServiceCall call,
-          $async.Future<$0.SubmitDocumentsForReviewRequest> request) async {
+          $async.Future<$26.SubmitDocumentsForReviewRequest> request) async {
     return submitDocumentsForReview(call, await request);
   }
 
-  $async.Future<$0.GetPendingReviewsResponse> getPendingReviews_Pre(
+  $async.Future<$26.GetPendingReviewsResponse> getPendingReviews_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.GetPendingReviewsRequest> request) async {
+      $async.Future<$26.GetPendingReviewsRequest> request) async {
     return getPendingReviews(call, await request);
   }
 
-  $async.Future<$0.ReviewDocumentResponse> reviewDocument_Pre(
+  $async.Future<$26.ReviewDocumentResponse> reviewDocument_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.ReviewDocumentRequest> request) async {
+      $async.Future<$26.ReviewDocumentRequest> request) async {
     return reviewDocument(call, await request);
   }
 
-  $async.Future<$0.GetKYCStatusResponse> getKYCStatus(
-      $grpc.ServiceCall call, $0.GetKYCStatusRequest request);
-  $async.Future<$0.GetCountryRequirementsResponse> getCountryRequirements(
-      $grpc.ServiceCall call, $0.GetCountryRequirementsRequest request);
-  $async.Future<$0.InitiateKYCResponse> initiateKYC(
-      $grpc.ServiceCall call, $0.InitiateKYCRequest request);
-  $async.Future<$0.VerifyIDResponse> verifyID(
-      $grpc.ServiceCall call, $0.VerifyIDRequest request);
-  $async.Future<$0.VerifyIDResponse> uploadDocument(
-      $grpc.ServiceCall call, $0.UploadDocumentRequest request);
-  $async.Future<$0.GetUserDocumentsResponse> getUserDocuments(
-      $grpc.ServiceCall call, $0.GetUserDocumentsRequest request);
-  $async.Future<$0.SkipKYCResponse> skipKYCUpgrade(
-      $grpc.ServiceCall call, $0.SkipKYCRequest request);
-  $async.Future<$0.CreateVerificationSessionResponse> createVerificationSession(
-      $grpc.ServiceCall call, $0.CreateVerificationSessionRequest request);
-  $async.Future<$0.ConfirmVerificationResponse> confirmVerification(
-      $grpc.ServiceCall call, $0.ConfirmVerificationRequest request);
-  $async.Future<$0.GetDocumentUploadURLResponse> getDocumentUploadURL(
-      $grpc.ServiceCall call, $0.GetDocumentUploadURLRequest request);
-  $async.Future<$0.SubmitDocumentsForReviewResponse> submitDocumentsForReview(
-      $grpc.ServiceCall call, $0.SubmitDocumentsForReviewRequest request);
-  $async.Future<$0.GetPendingReviewsResponse> getPendingReviews(
-      $grpc.ServiceCall call, $0.GetPendingReviewsRequest request);
-  $async.Future<$0.ReviewDocumentResponse> reviewDocument(
-      $grpc.ServiceCall call, $0.ReviewDocumentRequest request);
+  $async.Future<$26.GetKYCStatusResponse> getKYCStatus(
+      $grpc.ServiceCall call, $26.GetKYCStatusRequest request);
+  $async.Future<$26.GetCountryRequirementsResponse> getCountryRequirements(
+      $grpc.ServiceCall call, $26.GetCountryRequirementsRequest request);
+  $async.Future<$26.InitiateKYCResponse> initiateKYC(
+      $grpc.ServiceCall call, $26.InitiateKYCRequest request);
+  $async.Future<$26.VerifyIDResponse> verifyID(
+      $grpc.ServiceCall call, $26.VerifyIDRequest request);
+  $async.Future<$26.VerifyIDResponse> uploadDocument(
+      $grpc.ServiceCall call, $26.UploadDocumentRequest request);
+  $async.Future<$26.GetUserDocumentsResponse> getUserDocuments(
+      $grpc.ServiceCall call, $26.GetUserDocumentsRequest request);
+  $async.Future<$26.SkipKYCResponse> skipKYCUpgrade(
+      $grpc.ServiceCall call, $26.SkipKYCRequest request);
+  $async.Future<$26.CreateVerificationSessionResponse>
+      createVerificationSession(
+          $grpc.ServiceCall call, $26.CreateVerificationSessionRequest request);
+  $async.Future<$26.ConfirmVerificationResponse> confirmVerification(
+      $grpc.ServiceCall call, $26.ConfirmVerificationRequest request);
+  $async.Future<$26.GetDocumentUploadURLResponse> getDocumentUploadURL(
+      $grpc.ServiceCall call, $26.GetDocumentUploadURLRequest request);
+  $async.Future<$26.SubmitDocumentsForReviewResponse> submitDocumentsForReview(
+      $grpc.ServiceCall call, $26.SubmitDocumentsForReviewRequest request);
+  $async.Future<$26.GetPendingReviewsResponse> getPendingReviews(
+      $grpc.ServiceCall call, $26.GetPendingReviewsRequest request);
+  $async.Future<$26.ReviewDocumentResponse> reviewDocument(
+      $grpc.ServiceCall call, $26.ReviewDocumentRequest request);
 }

@@ -55,6 +55,8 @@ class AirtimeToCashRepositoryImpl implements AirtimeToCashRepository {
     required String network,
     required double amount,
     required String sessionToken,
+    required String sessionId,
+    required String pin,
     required String transactionId,
     required String verificationToken,
     required String idempotencyKey,
@@ -65,6 +67,8 @@ class AirtimeToCashRepositoryImpl implements AirtimeToCashRepository {
         network: network,
         amount: amount,
         sessionToken: sessionToken,
+        sessionId: sessionId,
+        pin: pin,
         transactionId: transactionId,
         verificationToken: verificationToken,
         idempotencyKey: idempotencyKey,
@@ -87,6 +91,36 @@ class AirtimeToCashRepositoryImpl implements AirtimeToCashRepository {
       return conversions;
     } catch (e) {
       throw Exception('Failed to fetch conversion history: $e');
+    }
+  }
+
+  @override
+  Future<ServiceVerificationResult> verifyService(String network) async {
+    try {
+      return await remoteDataSource.verifyService(network);
+    } catch (e) {
+      throw Exception('Failed to verify service: $e');
+    }
+  }
+
+  @override
+  Future<ProviderInfoResult> getProviderInfo() async {
+    try {
+      return await remoteDataSource.getProviderInfo();
+    } catch (e) {
+      throw Exception('Failed to get provider info: $e');
+    }
+  }
+
+  @override
+  Future<QuotaCheckResult> checkQuota({
+    required String network,
+    required double amount,
+  }) async {
+    try {
+      return await remoteDataSource.checkQuota(network, amount);
+    } catch (e) {
+      throw Exception('Failed to check quota: $e');
     }
   }
 }

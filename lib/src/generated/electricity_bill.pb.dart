@@ -9,7 +9,7 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $1;
+import 'google/protobuf/timestamp.pb.dart' as $48;
 
 class ElectricityProvider extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ElectricityProvider', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
@@ -24,7 +24,7 @@ class ElectricityProvider extends $pb.GeneratedMessage {
     ..a<$core.double>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'maxAmount', $pb.PbFieldType.OD)
     ..a<$core.double>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'serviceFee', $pb.PbFieldType.OD)
     ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'feeType')
-    ..aOM<$1.Timestamp>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $48.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -41,7 +41,7 @@ class ElectricityProvider extends $pb.GeneratedMessage {
     $core.double? maxAmount,
     $core.double? serviceFee,
     $core.String? feeType,
-    $1.Timestamp? createdAt,
+    $48.Timestamp? createdAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -203,15 +203,15 @@ class ElectricityProvider extends $pb.GeneratedMessage {
   void clearFeeType() => clearField(11);
 
   @$pb.TagNumber(12)
-  $1.Timestamp get createdAt => $_getN(11);
+  $48.Timestamp get createdAt => $_getN(11);
   @$pb.TagNumber(12)
-  set createdAt($1.Timestamp v) { setField(12, v); }
+  set createdAt($48.Timestamp v) { setField(12, v); }
   @$pb.TagNumber(12)
   $core.bool hasCreatedAt() => $_has(11);
   @$pb.TagNumber(12)
   void clearCreatedAt() => clearField(12);
   @$pb.TagNumber(12)
-  $1.Timestamp ensureCreatedAt() => $_ensure(11);
+  $48.Timestamp ensureCreatedAt() => $_ensure(11);
 }
 
 class BillPayment extends $pb.GeneratedMessage {
@@ -235,12 +235,12 @@ class BillPayment extends $pb.GeneratedMessage {
     ..a<$core.double>(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'units', $pb.PbFieldType.OD)
     ..aOS(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'meterType')
     ..aOS(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failureReason')
-    ..aOM<$1.Timestamp>(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(21, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $48.Timestamp.create)
+    ..aOM<$48.Timestamp>(21, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completedAt', subBuilder: $48.Timestamp.create)
     ..aOS(22, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'providerId')
-    ..aOM<$1.Timestamp>(23, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(23, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $48.Timestamp.create)
     ..aOS(24, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorMessage')
-    ..aOM<$1.Timestamp>(25, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(25, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failedAt', subBuilder: $48.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -265,12 +265,12 @@ class BillPayment extends $pb.GeneratedMessage {
     $core.double? units,
     $core.String? meterType,
     $core.String? failureReason,
-    $1.Timestamp? createdAt,
-    $1.Timestamp? completedAt,
+    $48.Timestamp? createdAt,
+    $48.Timestamp? completedAt,
     $core.String? providerId,
-    $1.Timestamp? updatedAt,
+    $48.Timestamp? updatedAt,
     $core.String? errorMessage,
-    $1.Timestamp? failedAt,
+    $48.Timestamp? failedAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -543,26 +543,26 @@ class BillPayment extends $pb.GeneratedMessage {
   void clearFailureReason() => clearField(19);
 
   @$pb.TagNumber(20)
-  $1.Timestamp get createdAt => $_getN(19);
+  $48.Timestamp get createdAt => $_getN(19);
   @$pb.TagNumber(20)
-  set createdAt($1.Timestamp v) { setField(20, v); }
+  set createdAt($48.Timestamp v) { setField(20, v); }
   @$pb.TagNumber(20)
   $core.bool hasCreatedAt() => $_has(19);
   @$pb.TagNumber(20)
   void clearCreatedAt() => clearField(20);
   @$pb.TagNumber(20)
-  $1.Timestamp ensureCreatedAt() => $_ensure(19);
+  $48.Timestamp ensureCreatedAt() => $_ensure(19);
 
   @$pb.TagNumber(21)
-  $1.Timestamp get completedAt => $_getN(20);
+  $48.Timestamp get completedAt => $_getN(20);
   @$pb.TagNumber(21)
-  set completedAt($1.Timestamp v) { setField(21, v); }
+  set completedAt($48.Timestamp v) { setField(21, v); }
   @$pb.TagNumber(21)
   $core.bool hasCompletedAt() => $_has(20);
   @$pb.TagNumber(21)
   void clearCompletedAt() => clearField(21);
   @$pb.TagNumber(21)
-  $1.Timestamp ensureCompletedAt() => $_ensure(20);
+  $48.Timestamp ensureCompletedAt() => $_ensure(20);
 
   @$pb.TagNumber(22)
   $core.String get providerId => $_getSZ(21);
@@ -574,15 +574,15 @@ class BillPayment extends $pb.GeneratedMessage {
   void clearProviderId() => clearField(22);
 
   @$pb.TagNumber(23)
-  $1.Timestamp get updatedAt => $_getN(22);
+  $48.Timestamp get updatedAt => $_getN(22);
   @$pb.TagNumber(23)
-  set updatedAt($1.Timestamp v) { setField(23, v); }
+  set updatedAt($48.Timestamp v) { setField(23, v); }
   @$pb.TagNumber(23)
   $core.bool hasUpdatedAt() => $_has(22);
   @$pb.TagNumber(23)
   void clearUpdatedAt() => clearField(23);
   @$pb.TagNumber(23)
-  $1.Timestamp ensureUpdatedAt() => $_ensure(22);
+  $48.Timestamp ensureUpdatedAt() => $_ensure(22);
 
   @$pb.TagNumber(24)
   $core.String get errorMessage => $_getSZ(23);
@@ -594,15 +594,15 @@ class BillPayment extends $pb.GeneratedMessage {
   void clearErrorMessage() => clearField(24);
 
   @$pb.TagNumber(25)
-  $1.Timestamp get failedAt => $_getN(24);
+  $48.Timestamp get failedAt => $_getN(24);
   @$pb.TagNumber(25)
-  set failedAt($1.Timestamp v) { setField(25, v); }
+  set failedAt($48.Timestamp v) { setField(25, v); }
   @$pb.TagNumber(25)
   $core.bool hasFailedAt() => $_has(24);
   @$pb.TagNumber(25)
   void clearFailedAt() => clearField(25);
   @$pb.TagNumber(25)
-  $1.Timestamp ensureFailedAt() => $_ensure(24);
+  $48.Timestamp ensureFailedAt() => $_ensure(24);
 }
 
 class BillBeneficiary extends $pb.GeneratedMessage {
@@ -616,11 +616,11 @@ class BillBeneficiary extends $pb.GeneratedMessage {
     ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nickname')
     ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'meterType')
     ..aOB(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isDefault')
-    ..aOM<$1.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastUsedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $48.Timestamp.create)
+    ..aOM<$48.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastUsedAt', subBuilder: $48.Timestamp.create)
     ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'providerId')
     ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'customerAddress')
-    ..aOM<$1.Timestamp>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $48.Timestamp.create)
     ..aOS(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneNumber')
     ..hasRequiredFields = false
   ;
@@ -636,11 +636,11 @@ class BillBeneficiary extends $pb.GeneratedMessage {
     $core.String? nickname,
     $core.String? meterType,
     $core.bool? isDefault,
-    $1.Timestamp? createdAt,
-    $1.Timestamp? lastUsedAt,
+    $48.Timestamp? createdAt,
+    $48.Timestamp? lastUsedAt,
     $core.String? providerId,
     $core.String? customerAddress,
-    $1.Timestamp? updatedAt,
+    $48.Timestamp? updatedAt,
     $core.String? phoneNumber,
   }) {
     final _result = create();
@@ -794,26 +794,26 @@ class BillBeneficiary extends $pb.GeneratedMessage {
   void clearIsDefault() => clearField(9);
 
   @$pb.TagNumber(10)
-  $1.Timestamp get createdAt => $_getN(9);
+  $48.Timestamp get createdAt => $_getN(9);
   @$pb.TagNumber(10)
-  set createdAt($1.Timestamp v) { setField(10, v); }
+  set createdAt($48.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasCreatedAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearCreatedAt() => clearField(10);
   @$pb.TagNumber(10)
-  $1.Timestamp ensureCreatedAt() => $_ensure(9);
+  $48.Timestamp ensureCreatedAt() => $_ensure(9);
 
   @$pb.TagNumber(11)
-  $1.Timestamp get lastUsedAt => $_getN(10);
+  $48.Timestamp get lastUsedAt => $_getN(10);
   @$pb.TagNumber(11)
-  set lastUsedAt($1.Timestamp v) { setField(11, v); }
+  set lastUsedAt($48.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasLastUsedAt() => $_has(10);
   @$pb.TagNumber(11)
   void clearLastUsedAt() => clearField(11);
   @$pb.TagNumber(11)
-  $1.Timestamp ensureLastUsedAt() => $_ensure(10);
+  $48.Timestamp ensureLastUsedAt() => $_ensure(10);
 
   @$pb.TagNumber(12)
   $core.String get providerId => $_getSZ(11);
@@ -834,15 +834,15 @@ class BillBeneficiary extends $pb.GeneratedMessage {
   void clearCustomerAddress() => clearField(13);
 
   @$pb.TagNumber(14)
-  $1.Timestamp get updatedAt => $_getN(13);
+  $48.Timestamp get updatedAt => $_getN(13);
   @$pb.TagNumber(14)
-  set updatedAt($1.Timestamp v) { setField(14, v); }
+  set updatedAt($48.Timestamp v) { setField(14, v); }
   @$pb.TagNumber(14)
   $core.bool hasUpdatedAt() => $_has(13);
   @$pb.TagNumber(14)
   void clearUpdatedAt() => clearField(14);
   @$pb.TagNumber(14)
-  $1.Timestamp ensureUpdatedAt() => $_ensure(13);
+  $48.Timestamp ensureUpdatedAt() => $_ensure(13);
 
   @$pb.TagNumber(15)
   $core.String get phoneNumber => $_getSZ(14);
@@ -865,11 +865,11 @@ class AutoRecharge extends $pb.GeneratedMessage {
     ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'frequency')
     ..a<$core.int>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dayOfWeek', $pb.PbFieldType.O3)
     ..a<$core.int>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dayOfMonth', $pb.PbFieldType.O3)
-    ..aOM<$1.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nextRunDate', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastRunDate', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nextRunDate', subBuilder: $48.Timestamp.create)
+    ..aOM<$48.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastRunDate', subBuilder: $48.Timestamp.create)
     ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
     ..a<$core.int>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failureCount', $pb.PbFieldType.O3)
-    ..aOM<$1.Timestamp>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $48.Timestamp.create)
     ..aOM<BillBeneficiary>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'beneficiary', subBuilder: BillBeneficiary.create)
     ..aOS(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'providerId')
     ..aOS(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'providerCode')
@@ -877,7 +877,7 @@ class AutoRecharge extends $pb.GeneratedMessage {
     ..aOS(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'customerName')
     ..aOS(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'meterType')
     ..a<$core.int>(21, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'maxRetries', $pb.PbFieldType.O3)
-    ..aOM<$1.Timestamp>(22, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(22, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $48.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -892,11 +892,11 @@ class AutoRecharge extends $pb.GeneratedMessage {
     $core.String? frequency,
     $core.int? dayOfWeek,
     $core.int? dayOfMonth,
-    $1.Timestamp? nextRunDate,
-    $1.Timestamp? lastRunDate,
+    $48.Timestamp? nextRunDate,
+    $48.Timestamp? lastRunDate,
     $core.String? status,
     $core.int? failureCount,
-    $1.Timestamp? createdAt,
+    $48.Timestamp? createdAt,
     BillBeneficiary? beneficiary,
     $core.String? providerId,
     $core.String? providerCode,
@@ -904,7 +904,7 @@ class AutoRecharge extends $pb.GeneratedMessage {
     $core.String? customerName,
     $core.String? meterType,
     $core.int? maxRetries,
-    $1.Timestamp? updatedAt,
+    $48.Timestamp? updatedAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -1078,26 +1078,26 @@ class AutoRecharge extends $pb.GeneratedMessage {
   void clearDayOfMonth() => clearField(9);
 
   @$pb.TagNumber(10)
-  $1.Timestamp get nextRunDate => $_getN(9);
+  $48.Timestamp get nextRunDate => $_getN(9);
   @$pb.TagNumber(10)
-  set nextRunDate($1.Timestamp v) { setField(10, v); }
+  set nextRunDate($48.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasNextRunDate() => $_has(9);
   @$pb.TagNumber(10)
   void clearNextRunDate() => clearField(10);
   @$pb.TagNumber(10)
-  $1.Timestamp ensureNextRunDate() => $_ensure(9);
+  $48.Timestamp ensureNextRunDate() => $_ensure(9);
 
   @$pb.TagNumber(11)
-  $1.Timestamp get lastRunDate => $_getN(10);
+  $48.Timestamp get lastRunDate => $_getN(10);
   @$pb.TagNumber(11)
-  set lastRunDate($1.Timestamp v) { setField(11, v); }
+  set lastRunDate($48.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasLastRunDate() => $_has(10);
   @$pb.TagNumber(11)
   void clearLastRunDate() => clearField(11);
   @$pb.TagNumber(11)
-  $1.Timestamp ensureLastRunDate() => $_ensure(10);
+  $48.Timestamp ensureLastRunDate() => $_ensure(10);
 
   @$pb.TagNumber(12)
   $core.String get status => $_getSZ(11);
@@ -1118,15 +1118,15 @@ class AutoRecharge extends $pb.GeneratedMessage {
   void clearFailureCount() => clearField(13);
 
   @$pb.TagNumber(14)
-  $1.Timestamp get createdAt => $_getN(13);
+  $48.Timestamp get createdAt => $_getN(13);
   @$pb.TagNumber(14)
-  set createdAt($1.Timestamp v) { setField(14, v); }
+  set createdAt($48.Timestamp v) { setField(14, v); }
   @$pb.TagNumber(14)
   $core.bool hasCreatedAt() => $_has(13);
   @$pb.TagNumber(14)
   void clearCreatedAt() => clearField(14);
   @$pb.TagNumber(14)
-  $1.Timestamp ensureCreatedAt() => $_ensure(13);
+  $48.Timestamp ensureCreatedAt() => $_ensure(13);
 
   @$pb.TagNumber(15)
   BillBeneficiary get beneficiary => $_getN(14);
@@ -1194,15 +1194,15 @@ class AutoRecharge extends $pb.GeneratedMessage {
   void clearMaxRetries() => clearField(21);
 
   @$pb.TagNumber(22)
-  $1.Timestamp get updatedAt => $_getN(21);
+  $48.Timestamp get updatedAt => $_getN(21);
   @$pb.TagNumber(22)
-  set updatedAt($1.Timestamp v) { setField(22, v); }
+  set updatedAt($48.Timestamp v) { setField(22, v); }
   @$pb.TagNumber(22)
   $core.bool hasUpdatedAt() => $_has(21);
   @$pb.TagNumber(22)
   void clearUpdatedAt() => clearField(22);
   @$pb.TagNumber(22)
-  $1.Timestamp ensureUpdatedAt() => $_ensure(21);
+  $48.Timestamp ensureUpdatedAt() => $_ensure(21);
 }
 
 class BillPaymentReminder extends $pb.GeneratedMessage {
@@ -1212,15 +1212,15 @@ class BillPaymentReminder extends $pb.GeneratedMessage {
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'beneficiaryId')
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'title')
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..aOM<$1.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reminderDate', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reminderDate', subBuilder: $48.Timestamp.create)
     ..a<$core.double>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
     ..aOB(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isRecurring')
     ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recurrenceType')
     ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
-    ..aOM<$1.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'notifiedAt', subBuilder: $1.Timestamp.create)
-    ..aOM<$1.Timestamp>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'notifiedAt', subBuilder: $48.Timestamp.create)
+    ..aOM<$48.Timestamp>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $48.Timestamp.create)
     ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOM<$1.Timestamp>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $48.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -1231,15 +1231,15 @@ class BillPaymentReminder extends $pb.GeneratedMessage {
     $core.String? beneficiaryId,
     $core.String? title,
     $core.String? description,
-    $1.Timestamp? reminderDate,
+    $48.Timestamp? reminderDate,
     $core.double? amount,
     $core.bool? isRecurring,
     $core.String? recurrenceType,
     $core.String? status,
-    $1.Timestamp? notifiedAt,
-    $1.Timestamp? createdAt,
+    $48.Timestamp? notifiedAt,
+    $48.Timestamp? createdAt,
     $core.String? currency,
-    $1.Timestamp? updatedAt,
+    $48.Timestamp? updatedAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -1353,15 +1353,15 @@ class BillPaymentReminder extends $pb.GeneratedMessage {
   void clearDescription() => clearField(5);
 
   @$pb.TagNumber(6)
-  $1.Timestamp get reminderDate => $_getN(5);
+  $48.Timestamp get reminderDate => $_getN(5);
   @$pb.TagNumber(6)
-  set reminderDate($1.Timestamp v) { setField(6, v); }
+  set reminderDate($48.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasReminderDate() => $_has(5);
   @$pb.TagNumber(6)
   void clearReminderDate() => clearField(6);
   @$pb.TagNumber(6)
-  $1.Timestamp ensureReminderDate() => $_ensure(5);
+  $48.Timestamp ensureReminderDate() => $_ensure(5);
 
   @$pb.TagNumber(7)
   $core.double get amount => $_getN(6);
@@ -1400,26 +1400,26 @@ class BillPaymentReminder extends $pb.GeneratedMessage {
   void clearStatus() => clearField(10);
 
   @$pb.TagNumber(11)
-  $1.Timestamp get notifiedAt => $_getN(10);
+  $48.Timestamp get notifiedAt => $_getN(10);
   @$pb.TagNumber(11)
-  set notifiedAt($1.Timestamp v) { setField(11, v); }
+  set notifiedAt($48.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasNotifiedAt() => $_has(10);
   @$pb.TagNumber(11)
   void clearNotifiedAt() => clearField(11);
   @$pb.TagNumber(11)
-  $1.Timestamp ensureNotifiedAt() => $_ensure(10);
+  $48.Timestamp ensureNotifiedAt() => $_ensure(10);
 
   @$pb.TagNumber(12)
-  $1.Timestamp get createdAt => $_getN(11);
+  $48.Timestamp get createdAt => $_getN(11);
   @$pb.TagNumber(12)
-  set createdAt($1.Timestamp v) { setField(12, v); }
+  set createdAt($48.Timestamp v) { setField(12, v); }
   @$pb.TagNumber(12)
   $core.bool hasCreatedAt() => $_has(11);
   @$pb.TagNumber(12)
   void clearCreatedAt() => clearField(12);
   @$pb.TagNumber(12)
-  $1.Timestamp ensureCreatedAt() => $_ensure(11);
+  $48.Timestamp ensureCreatedAt() => $_ensure(11);
 
   @$pb.TagNumber(13)
   $core.String get currency => $_getSZ(12);
@@ -1431,15 +1431,15 @@ class BillPaymentReminder extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(13);
 
   @$pb.TagNumber(14)
-  $1.Timestamp get updatedAt => $_getN(13);
+  $48.Timestamp get updatedAt => $_getN(13);
   @$pb.TagNumber(14)
-  set updatedAt($1.Timestamp v) { setField(14, v); }
+  set updatedAt($48.Timestamp v) { setField(14, v); }
   @$pb.TagNumber(14)
   $core.bool hasUpdatedAt() => $_has(13);
   @$pb.TagNumber(14)
   void clearUpdatedAt() => clearField(14);
   @$pb.TagNumber(14)
-  $1.Timestamp ensureUpdatedAt() => $_ensure(13);
+  $48.Timestamp ensureUpdatedAt() => $_ensure(13);
 }
 
 class ReceiptData extends $pb.GeneratedMessage {
@@ -4446,7 +4446,7 @@ class CreateReminderRequest extends $pb.GeneratedMessage {
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'beneficiaryId')
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'title')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..aOM<$1.Timestamp>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reminderDate', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reminderDate', subBuilder: $48.Timestamp.create)
     ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
     ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isRecurring')
     ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recurrenceType')
@@ -4459,7 +4459,7 @@ class CreateReminderRequest extends $pb.GeneratedMessage {
     $core.String? beneficiaryId,
     $core.String? title,
     $core.String? description,
-    $1.Timestamp? reminderDate,
+    $48.Timestamp? reminderDate,
     $core.double? amount,
     $core.bool? isRecurring,
     $core.String? recurrenceType,
@@ -4541,15 +4541,15 @@ class CreateReminderRequest extends $pb.GeneratedMessage {
   void clearDescription() => clearField(3);
 
   @$pb.TagNumber(4)
-  $1.Timestamp get reminderDate => $_getN(3);
+  $48.Timestamp get reminderDate => $_getN(3);
   @$pb.TagNumber(4)
-  set reminderDate($1.Timestamp v) { setField(4, v); }
+  set reminderDate($48.Timestamp v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasReminderDate() => $_has(3);
   @$pb.TagNumber(4)
   void clearReminderDate() => clearField(4);
   @$pb.TagNumber(4)
-  $1.Timestamp ensureReminderDate() => $_ensure(3);
+  $48.Timestamp ensureReminderDate() => $_ensure(3);
 
   @$pb.TagNumber(5)
   $core.double get amount => $_getN(4);
@@ -4758,7 +4758,7 @@ class UpdateReminderRequest extends $pb.GeneratedMessage {
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reminderId')
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'title')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
-    ..aOM<$1.Timestamp>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reminderDate', subBuilder: $1.Timestamp.create)
+    ..aOM<$48.Timestamp>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reminderDate', subBuilder: $48.Timestamp.create)
     ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
     ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
     ..aOB(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isRecurring')
@@ -4771,7 +4771,7 @@ class UpdateReminderRequest extends $pb.GeneratedMessage {
     $core.String? reminderId,
     $core.String? title,
     $core.String? description,
-    $1.Timestamp? reminderDate,
+    $48.Timestamp? reminderDate,
     $core.double? amount,
     $core.String? currency,
     $core.bool? isRecurring,
@@ -4853,15 +4853,15 @@ class UpdateReminderRequest extends $pb.GeneratedMessage {
   void clearDescription() => clearField(3);
 
   @$pb.TagNumber(4)
-  $1.Timestamp get reminderDate => $_getN(3);
+  $48.Timestamp get reminderDate => $_getN(3);
   @$pb.TagNumber(4)
-  set reminderDate($1.Timestamp v) { setField(4, v); }
+  set reminderDate($48.Timestamp v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasReminderDate() => $_has(3);
   @$pb.TagNumber(4)
   void clearReminderDate() => clearField(4);
   @$pb.TagNumber(4)
-  $1.Timestamp ensureReminderDate() => $_ensure(3);
+  $48.Timestamp ensureReminderDate() => $_ensure(3);
 
   @$pb.TagNumber(5)
   $core.double get amount => $_getN(4);

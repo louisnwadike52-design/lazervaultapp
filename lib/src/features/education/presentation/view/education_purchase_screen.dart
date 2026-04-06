@@ -34,6 +34,28 @@ class _EducationPurchaseScreenState extends State<EducationPurchaseScreen> {
     final args = Get.arguments as Map<String, dynamic>?;
     if (args != null && args['provider'] != null) {
       _provider = args['provider'] as EducationProviderEntity;
+
+      // Handle rebuy: pre-fill phone, billers code, and quantity
+      if (args['rebuyPurchase'] != null) {
+        final rebuyPurchase = args['rebuyPurchase'];
+        if (rebuyPurchase is Map<String, dynamic>) {
+          final phone = rebuyPurchase['phone'] as String?;
+          final billersCode = rebuyPurchase['billersCode'] as String?;
+          final quantity = rebuyPurchase['quantity'] as int?;
+
+          if (phone != null && phone.isNotEmpty) {
+            _phoneController.text = phone;
+          }
+          if (billersCode != null && billersCode.isNotEmpty) {
+            _billersCodeController.text = billersCode;
+          }
+          if (quantity != null && quantity >= _minQuantity && quantity <= _maxQuantity) {
+            setState(() {
+              _quantity = quantity;
+            });
+          }
+        }
+      }
     } else {
       WidgetsBinding.instance.addPostFrameCallback((_) => Get.back());
     }

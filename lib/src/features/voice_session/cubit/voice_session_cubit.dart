@@ -15,6 +15,7 @@ import 'package:lazervault/src/features/voice_session/cubit/voice_chat_history_c
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/core/utils/logger.dart';
 
 class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   // --- Configuration ---
@@ -66,7 +67,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   VoiceSessionCubit() : super(VoiceSessionInitial());
 
   /// Chat history cubit for tracking conversation messages
-  late final VoiceChatHistoryCubit _chatHistoryCubit = get_pkg.Get.find<VoiceChatHistoryCubit>();
+  late final VoiceChatHistoryCubit _chatHistoryCubit = serviceLocator<VoiceChatHistoryCubit>();
 
   /// Currently selected language code (e.g., "en", "yo", "ig").
   String? get selectedLanguageCode => _selectedLanguageCode;
@@ -89,6 +90,48 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   /// Whether the AI agent is currently speaking
   bool get isAgentSpeaking => _isAgentSpeaking;
 
+  /// Get recent conversation messages for the current session
+  /// Returns list of VoiceMessage (up to 10 most recent)
+  /// Edge cases handled:
+  /// - Null session ID
+  /// - Missing conversation
+  /// - Null/invalid message fields
+  /// - Empty message lists
+  List<VoiceConversationMessage> get recentConversationMessages {
+    // Edge case: No active session
+    if (_currentSessionId == null || _currentSessionId!.isEmpty) {
+      return [];
+    }
+
+    try {
+      final conversation = _chatHistoryCubit.getConversation(_currentSessionId!);
+      if (conversation == null) {
+        return [];
+      }
+
+      // Edge case: Null or empty messages list
+      final messages = conversation.messages;
+      if (messages == null || messages.isEmpty) {
+        return [];
+      }
+
+      // Edge case: Filter out invalid messages and limit to 10
+      final validMessages = messages.where((msg) {
+        // Validate message has required fields
+        return msg != null &&
+               msg.text != null &&
+               msg.text.trim().isNotEmpty &&
+               msg.timestamp != null;
+      }).take(10).toList();
+
+      return validMessages;
+    } catch (e) {
+      // Edge case: Catch any errors during message retrieval
+      print('VoiceSessionCubit: Error retrieving conversation messages: $e');
+      return [];
+    }
+  }
+
   /// Toggle microphone mute/unmute. Returns the new mute state.
   Future<bool> toggleMute() async {
     if (_room == null) return _isMuted;
@@ -110,36 +153,114 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
 
   /// Load persisted language preference and available languages for the country.
   Future<void> loadLanguagePreferences(String countryCode) async {
-    final prefs = await SharedPreferences.getInstance();
-    _selectedLanguageCode = prefs.getString(_prefKeyLanguage);
-    _selectedVoiceId = prefs.getString(_prefKeyVoice);
+    // Edge case: Handle empty or null country code
+    final effectiveCountry = (countryCode != null && countryCode.isNotEmpty)
+        ? countryCode.toUpperCase()
+        : 'NG';  // Default to Nigeria
 
-    // Fetch available languages from voice gateway API
-    _availableLanguages = await _fetchSupportedLanguages(countryCode);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _selectedLanguageCode = prefs.getString(_prefKeyLanguage);
+      _selectedVoiceId = prefs.getString(_prefKeyVoice);
 
-    // If no persisted language, or it's not available for this country, show picker
-    if (_selectedLanguageCode == null ||
-        !_availableLanguages.any((l) => l.code == _selectedLanguageCode)) {
+      // Fetch available languages from voice gateway API
+      _availableLanguages = await _fetchSupportedLanguages(effectiveCountry);
+
+      // Edge case: Handle empty available languages list
+      if (_availableLanguages.isEmpty) {
+        print('VoiceSessionCubit: No languages available from API, using hardcoded defaults');
+        _availableLanguages = VoiceLanguageDefaults.forCountry(effectiveCountry);
+      }
+
+      // If no persisted language, or it's not available for this country, auto-select default
+      final hasPersistedLanguage = _selectedLanguageCode != null &&
+          _availableLanguages.any((l) => l.code == _selectedLanguageCode);
+
+      if (!hasPersistedLanguage) {
+        // Auto-select English for Nigerian users (Domestic English with en-NG locale)
+        if (effectiveCountry == 'NG' && _availableLanguages.any((l) => l.code == 'en')) {
+          _selectedLanguageCode = 'en';
+
+          // Pre-select default voice for English
+          final english = _availableLanguages.where((l) => l.code == 'en').firstOrNull;
+          if (english != null) {
+            // Edge case: Use defaultVoiceOption with fallback to first available voice
+            final defaultVoiceOption = english.defaultVoiceOption;
+            if (defaultVoiceOption != null) {
+              _selectedVoiceId = defaultVoiceOption.id;
+            } else if (english.availableVoices.isNotEmpty) {
+              // Edge case: No default voice set, use first available voice
+              _selectedVoiceId = english.availableVoices.first.id;
+              print('VoiceSessionCubit: No default voice for English, using first available: $_selectedVoiceId');
+            }
+          }
+
+          // Persist the auto-selection
+          await prefs.setString(_prefKeyLanguage, 'en');
+          if (_selectedVoiceId != null) {
+            await prefs.setString(_prefKeyVoice, _selectedVoiceId!);
+          }
+        } else {
+          // Edge case: Not Nigeria or English not available
+          _selectedLanguageCode = null;
+        }
+      }
+    } catch (e) {
+      // Edge case: Handle SharedPreferences or network errors gracefully
+      AppLogger.error('Error loading language preferences', error: e);
+      // Fallback to defaults
+      _availableLanguages = VoiceLanguageDefaults.forCountry(effectiveCountry);
       _selectedLanguageCode = null;
+      _selectedVoiceId = null;
     }
   }
 
   /// Set the voice language for the session.
   Future<void> setLanguage(String languageCode) async {
-    _selectedLanguageCode = languageCode;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_prefKeyLanguage, languageCode);
+    // Edge case: Validate language code is not empty
+    if (languageCode.isEmpty) {
+      AppLogger.error('setLanguage: Empty language code provided');
+      return;
+    }
 
-    // If no voice preference exists or the current voice is not available for the new language,
-    // set the default voice for the new language
-    final lang = _availableLanguages.where((l) => l.code == languageCode).firstOrNull;
-    if (lang != null) {
-      final hasValidVoice = _selectedVoiceId != null &&
-          lang.availableVoices.any((v) => v.id == _selectedVoiceId);
-      if (!hasValidVoice && lang.defaultVoice.isNotEmpty) {
-        _selectedVoiceId = lang.defaultVoice;
-        await prefs.setString(_prefKeyVoice, lang.defaultVoice);
+    _selectedLanguageCode = languageCode;
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_prefKeyLanguage, languageCode);
+
+      // If no voice preference exists or the current voice is not available for the new language,
+      // set the default voice for the new language
+      final lang = _availableLanguages.where((l) => l.code == languageCode).firstOrNull;
+      if (lang != null) {
+        final hasValidVoice = _selectedVoiceId != null &&
+            lang.availableVoices.any((v) => v.id == _selectedVoiceId);
+        if (!hasValidVoice) {
+          // Edge case: Use defaultVoiceOption with fallback
+          final defaultVoiceOption = lang.defaultVoiceOption;
+          if (defaultVoiceOption != null) {
+            _selectedVoiceId = defaultVoiceOption.id;
+            await prefs.setString(_prefKeyVoice, defaultVoiceOption.id);
+          } else if (lang.availableVoices.isNotEmpty) {
+            // Edge case: No default voice set, use first available voice
+            _selectedVoiceId = lang.availableVoices.first.id;
+            if (_selectedVoiceId != null) {
+              await prefs.setString(_prefKeyVoice, _selectedVoiceId!);
+            }
+            print('VoiceSessionCubit: No default voice for $languageCode, using first available: $_selectedVoiceId');
+          } else {
+            // Edge case: No voices available for this language
+            print('VoiceSessionCubit: No voices available for language $languageCode');
+            _selectedVoiceId = null;
+          }
+        }
+      } else {
+        // Edge case: Language not found in available list
+        AppLogger.error('setLanguage: Language $languageCode not found in available languages');
       }
+    } catch (e) {
+      // Edge case: Handle SharedPreferences errors
+      AppLogger.error('Error setting language preference', error: e);
     }
   }
 
@@ -241,7 +362,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
           'Authorization': 'Bearer $accessToken',
         },
         body: jsonEncode(requestBody),
-      );
+      ).timeout(const Duration(seconds: 30));
       print('VoiceSessionCubit: Response status=${response.statusCode}');
 
       if (response.statusCode == 200) {
@@ -340,7 +461,17 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
 
     try {
       print('VoiceSessionCubit: Connecting to LiveKit room=$roomName url=$url');
-      await _room!.connect(url, token);
+      // Use extended timeouts — Android emulator ICE negotiation can exceed the default 10s
+      const connectOptions = ConnectOptions(
+        timeouts: Timeouts(
+          connection: Duration(seconds: 30),
+          debounce: Duration(milliseconds: 100),
+          publish: Duration(seconds: 20),
+          peerConnection: Duration(seconds: 30),
+          iceRestart: Duration(seconds: 20),
+        ),
+      );
+      await _room!.connect(url, token, connectOptions: connectOptions);
       print('VoiceSessionCubit: Connected to LiveKit room');
       await _room!.localParticipant?.setMicrophoneEnabled(true);
 

@@ -561,41 +561,12 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
           // Quality score indicator (when enrolled)
           if (_isEnrolled && _enrollmentQualityScore != null) ...[
             SizedBox(height: 12.h),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.04),
-                borderRadius: BorderRadius.circular(8.r),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.graphic_eq_rounded,
-                    color: Colors.white.withValues(alpha: 0.4),
-                    size: 16.sp,
-                  ),
-                  SizedBox(width: 8.w),
-                  Text(
-                    'Voice Quality: ${(_enrollmentQualityScore! * 100).toStringAsFixed(0)}%',
-                    style: GoogleFonts.inter(
-                      color: Colors.white.withValues(alpha: 0.6),
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  if (_enrollmentSamplesCount != null) ...[
-                    SizedBox(width: 12.w),
-                    Text(
-                      '${_enrollmentSamplesCount!} samples',
-                      style: GoogleFonts.inter(
-                        color: Colors.white.withValues(alpha: 0.35),
-                        fontSize: 11.sp,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
+            _buildQualityScoreIndicator(),
+            // Show warning if quality is low
+            if (_enrollmentQualityScore! < 0.7) ...[
+              SizedBox(height: 8.h),
+              _buildLowQualityWarning(),
+            ],
           ],
 
           SizedBox(height: 16.h),
@@ -1172,5 +1143,159 @@ class _VoiceSettingsScreenState extends State<VoiceSettingsScreen> {
   String _capitalize(String s) {
     if (s.isEmpty) return s;
     return s[0].toUpperCase() + s.substring(1);
+  }
+
+  /// Build color-coded quality score indicator with production-ready feedback
+  Widget _buildQualityScoreIndicator() {
+    if (_enrollmentQualityScore == null) {
+      return const SizedBox.shrink();
+    }
+
+    final quality = _enrollmentQualityScore!;
+    final percentage = (quality * 100).toInt();
+
+    // Determine color and status based on quality score
+    Color scoreColor;
+    String statusText;
+    IconData statusIcon;
+
+    if (quality >= 0.8) {
+      // Excellent quality (80-100%)
+      scoreColor = const Color(0xFF10B981); // Green
+      statusText = 'Excellent';
+      statusIcon = Icons.check_circle_rounded;
+    } else if (quality >= 0.7) {
+      // Good quality (70-79%)
+      scoreColor = const Color(0xFF3B82F6); // Blue
+      statusText = 'Good';
+      statusIcon = Icons.info_rounded;
+    } else if (quality >= 0.6) {
+      // Fair quality (60-69%)
+      scoreColor = const Color(0xFFFB923C); // Orange
+      statusText = 'Fair';
+      statusIcon = Icons.warning_rounded;
+    } else {
+      // Poor quality (< 60%)
+      scoreColor = const Color(0xFFEF4444); // Red
+      statusText = 'Poor';
+      statusIcon = Icons.error_rounded;
+    }
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        color: scoreColor.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8.r),
+        border: Border.all(
+          color: scoreColor.withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            statusIcon,
+            color: scoreColor,
+            size: 18.sp,
+          ),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Voice Quality: $percentage%',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  '$statusText quality - ${_enrollmentSamplesCount ?? 0} samples',
+                  style: GoogleFonts.inter(
+                    color: Colors.white.withValues(alpha: 0.6),
+                    fontSize: 11.sp,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Build warning message for low quality scores
+  Widget _buildLowQualityWarning() {
+    if (_enrollmentQualityScore == null || _enrollmentQualityScore! >= 0.7) {
+      return const SizedBox.shrink();
+    }
+
+    final quality = _enrollmentQualityScore!;
+    String warningMessage;
+    String actionMessage;
+
+    if (quality < 0.6) {
+      warningMessage = 'Your voice quality is below optimal. This may affect voice recognition accuracy.';
+      actionMessage = 'Please re-enroll in a quiet environment, speaking clearly.';
+    } else {
+      warningMessage = 'Your voice quality could be improved for better accuracy.';
+      actionMessage = 'Consider re-enrolling with clearer voice samples.';
+    }
+
+    return Container(
+      padding: EdgeInsets.all(12.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8.r),
+        border: Border.all(
+          color: const Color(0xFFEF4444).withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.error_outline_rounded,
+                color: const Color(0xFFEF4444),
+                size: 16.sp,
+              ),
+              SizedBox(width: 8.w),
+              Text(
+                'Quality Alert',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFFEF4444),
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            warningMessage,
+            style: GoogleFonts.inter(
+              color: Colors.white.withValues(alpha: 0.8),
+              fontSize: 11.sp,
+              height: 1.4,
+            ),
+          ),
+          SizedBox(height: 4.h),
+          Text(
+            actionMessage,
+            style: GoogleFonts.inter(
+              color: Colors.white.withValues(alpha: 0.6),
+              fontSize: 11.sp,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

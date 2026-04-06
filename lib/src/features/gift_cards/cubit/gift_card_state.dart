@@ -506,3 +506,85 @@ class OCRFailed extends GiftCardState {
   List<Object> get props => [message];
 }
 
+
+// ============================================
+// PROVIDER SELECTION STATES (PRESTMIT/MANUAL)
+// ============================================
+
+class SellProviderLoading extends GiftCardState {}
+
+class SellProviderLoaded extends GiftCardState {
+  final String provider; // "manual" or "prestmit"
+  final String description;
+
+  const SellProviderLoaded({
+    required this.provider,
+    required this.description,
+  });
+
+  @override
+  List<Object> get props => [provider, description];
+}
+
+class SellProviderError extends GiftCardState {
+  final String message;
+
+  const SellProviderError(this.message);
+
+  @override
+  List<Object> get props => [message];
+}
+
+// ============================================
+// SETTLEMENT HISTORY STATES
+// ============================================
+
+class SettlementHistoryLoading extends GiftCardState {}
+
+class SettlementHistoryLoaded extends GiftCardState {
+  final List<Settlement> settlements;
+
+  const SettlementHistoryLoaded(this.settlements);
+
+  @override
+  List<Object> get props => [settlements];
+}
+
+class SettlementHistoryEmpty extends GiftCardState {
+  const SettlementHistoryEmpty();
+}
+
+class SettlementDetailLoaded extends GiftCardState {
+  final Settlement settlement;
+
+  const SettlementDetailLoaded(this.settlement);
+
+  @override
+  List<Object> get props => [settlement];
+}
+
+class SettlementRetryInitiated extends GiftCardState {
+  final String settlementId;
+  final String message;
+
+  const SettlementRetryInitiated({
+    required this.settlementId,
+    required this.message,
+  });
+
+  @override
+  List<Object> get props => [settlementId, message];
+}
+
+class SettlementExportSuccess extends GiftCardState {
+  final String filePath;
+  final String format; // "pdf" or "csv"
+
+  const SettlementExportSuccess({
+    required this.filePath,
+    required this.format,
+  });
+
+  @override
+  List<Object> get props => [filePath, format];
+}

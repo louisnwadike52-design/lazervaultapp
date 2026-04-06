@@ -787,15 +787,15 @@ Future<void> init() async {
     instanceName: 'coreChannel',
   );
 
-  // Commerce Gateway Channel - For utility payments, giftcards, statistics
+  // Commerce Gateway Channel - For utility payments, invoices, statistics
   serviceLocator.registerLazySingleton<ClientChannel>(
     () => GrpcChannelFactory.createCommerceChannel(),
     instanceName: 'commerceChannel',
   );
 
-  // Backward compatibility alias for financialChannel → commerceChannel
+  // Financial Gateway Channel - For gift cards, lock funds (PiggyVault), exchange
   serviceLocator.registerLazySingleton<ClientChannel>(
-    () => serviceLocator<ClientChannel>(instanceName: 'commerceChannel'),
+    () => GrpcChannelFactory.createFinancialChannel(),
     instanceName: 'financialChannel',
   );
 
@@ -2555,10 +2555,10 @@ Future<void> init() async {
 
   // ================== Feature: Statistics ==================
 
-  // GrpcClient (for statistics, giftcards, etc.) - Uses Commerce Gateway (50071)
+  // GrpcClient (for statistics, giftcards, lock funds, etc.) - Uses Financial Gateway (50071)
   // Now with automatic token rotation support via GrpcCallOptionsHelper
   final grpcClient = GrpcClient(
-    channel: serviceLocator<ClientChannel>(instanceName: 'commerceChannel'),
+    channel: serviceLocator<ClientChannel>(instanceName: 'financialChannel'),
     secureStorage: serviceLocator<FlutterSecureStorage>(),
     callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
   );

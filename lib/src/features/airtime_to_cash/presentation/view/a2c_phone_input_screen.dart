@@ -281,7 +281,11 @@ class _A2CPhoneInputScreenState extends State<A2CPhoneInputScreen> {
           child: Column(
             children: [
               _buildHeader(),
-              const A2CStepIndicator(currentStep: 1),
+              const A2CStepIndicator(
+                currentStep: 1,
+                totalSteps: 5,
+                stepLabels: ['Network', 'Details', 'Review', 'Verify', 'PIN'],
+              ),
               Expanded(
                 child: SingleChildScrollView(
                   padding: EdgeInsets.symmetric(horizontal: 20.w),

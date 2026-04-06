@@ -12,6 +12,10 @@ service VoiceBiometricsService {
   // Verify a voice sample matches the enrolled user
   rpc VerifyVoice(VerifyVoiceRequest) returns (VerifyVoiceResponse);
 
+  // Stream-based voice verification for real-time checking
+  // Client streams audio chunks, server returns verification result when confident
+  rpc VerifyVoiceStream(stream VoiceAudioChunk) returns (VerifyVoiceStreamResponse);
+
   // Check if user has enrolled their voice
   rpc CheckEnrollmentStatus(CheckEnrollmentStatusRequest) returns (CheckEnrollmentStatusResponse);
 
@@ -23,6 +27,39 @@ service VoiceBiometricsService {
 
   // Get voice enrollment details
   rpc GetVoiceEnrollment(GetVoiceEnrollmentRequest) returns (GetVoiceEnrollmentResponse);
+
+  // Get custom voice cloning status for a user
+  rpc GetCustomVoiceStatus(GetCustomVoiceStatusRequest) returns (GetCustomVoiceStatusResponse);
+
+  // Enable or disable custom voice for a user
+  rpc SetCustomVoiceEnabled(SetCustomVoiceEnabledRequest) returns (SetCustomVoiceEnabledResponse);
+
+  // Re-trigger voice cloning if previous attempt failed
+  rpc RetriggerVoiceCloning(RetriggerVoiceCloningRequest) returns (RetriggerVoiceCloningResponse);
+
+  // Update voice cloning status (called by voice-agent-gateway after cloning)
+  rpc UpdateCloningStatus(UpdateCloningStatusRequest) returns (UpdateCloningStatusResponse);
+}
+
+// Stream-based verification - audio chunk for streaming
+message VoiceAudioChunk {
+  string user_id = 1;                 // User ID to verify against
+  bytes audio_data = 2;               // Audio chunk (PCM/Opus format)
+  int64 sequence_number = 3;          // Sequence number for this chunk
+  bool is_final = 4;                  // True if this is the last chunk
+  AudioFormat format = 5;
+  map<string, string> metadata = 6;
+}
+
+// Stream-based verification response
+message VerifyVoiceStreamResponse {
+  bool verified = 1;                  // True if voice matches
+  float similarity_score = 2;         // Similarity score (0-1)
+  float confidence = 3;               // Confidence in this result (0-1)
+  string message = 4;
+  VerificationStatus status = 5;
+  bool needs_more_audio = 6;          // True if server needs more audio for confidence
+  int32 chunks_processed = 7;         // Number of chunks processed so far
 }
 
 // Enroll voice request
@@ -119,6 +156,11 @@ message VoiceProfile {
   float quality_score = 6;
   int32 verification_count = 7;       // Number of successful verifications
   int64 last_verified_at = 8;
+  string custom_voice_id = 9;         // ElevenLabs (or other provider) voice ID
+  string custom_voice_provider = 10;  // e.g., "elevenlabs", "xtts"
+  string custom_voice_status = 11;    // none/pending/ready/failed/disabled
+  int64 custom_voice_created_at = 12;
+  string custom_voice_error = 13;     // Error message if cloning failed
 }
 
 // Enrollment metadata
@@ -145,4 +187,57 @@ enum VerificationStatus {
   VERIFICATION_NO_ENROLLMENT = 3;
   VERIFICATION_POOR_QUALITY = 4;
   VERIFICATION_THRESHOLD_NOT_MET = 5;
+}
+
+// Custom voice cloning status
+message GetCustomVoiceStatusRequest {
+  string user_id = 1;
+}
+
+message GetCustomVoiceStatusResponse {
+  bool has_custom_voice = 1;
+  string custom_voice_id = 2;
+  string custom_voice_provider = 3;
+  string custom_voice_status = 4;    // none/pending/ready/failed/disabled
+  int64 custom_voice_created_at = 5;
+  string custom_voice_error = 6;
+  bool enabled = 7;                  // Whether user has custom voice enabled
+}
+
+// Enable/disable custom voice
+message SetCustomVoiceEnabledRequest {
+  string user_id = 1;
+  bool enabled = 2;
+}
+
+message SetCustomVoiceEnabledResponse {
+  bool success = 1;
+  string message = 2;
+  string custom_voice_status = 3;
+}
+
+// Re-trigger voice cloning
+message RetriggerVoiceCloningRequest {
+  string user_id = 1;
+}
+
+message RetriggerVoiceCloningResponse {
+  bool success = 1;
+  string message = 2;
+  string custom_voice_status = 3;
+}
+
+// Update cloning status (called by voice-agent-gateway after provider cloning)
+message UpdateCloningStatusRequest {
+  string user_id = 1;
+  string voice_id = 2;        // Provider's voice ID (e.g., ElevenLabs voice_id)
+  string provider = 3;        // "elevenlabs" or "qwen3"
+  string status = 4;          // "pending", "ready", "failed"
+  string error = 5;           // Error message if status is "failed"
+}
+
+message UpdateCloningStatusResponse {
+  bool success = 1;
+  string message = 2;
+  string custom_voice_status = 3;
 }

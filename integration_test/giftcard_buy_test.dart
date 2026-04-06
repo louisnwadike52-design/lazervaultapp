@@ -32,18 +32,18 @@ void main() async {
   final coreChannel = ClientChannel(
     grpcHost,
     port: coreGatewayPort,
-    options: const ChannelOptions(
-      credentials: ChannelCredentials.insecure,
-      connectionTimeout: Duration(seconds: 30),
+    options: ChannelOptions(
+      credentials: const ChannelCredentials.insecure(),
+      connectionTimeout: const Duration(seconds: 30),
     ),
   );
 
   final commerceChannel = ClientChannel(
     grpcHost,
     port: commerceGatewayPort,
-    options: const ChannelOptions(
-      credentials: ChannelCredentials.insecure,
-      connectionTimeout: Duration(seconds: 30),
+    options: ChannelOptions(
+      credentials: const ChannelCredentials.insecure(),
+      connectionTimeout: const Duration(seconds: 30),
     ),
   );
 

@@ -114,6 +114,33 @@ class VoiceBiometricsClient {
     return await _stub.getVoiceEnrollment(request);
   }
 
+  /// Get custom voice cloning status for a user
+  Future<GetCustomVoiceStatusResponse> getCustomVoiceStatus({
+    required String userId,
+  }) async {
+    final request = GetCustomVoiceStatusRequest()..userId = userId;
+    return await _stub.getCustomVoiceStatus(request);
+  }
+
+  /// Enable or disable custom voice for a user
+  Future<SetCustomVoiceEnabledResponse> setCustomVoiceEnabled({
+    required String userId,
+    required bool enabled,
+  }) async {
+    final request = SetCustomVoiceEnabledRequest()
+      ..userId = userId
+      ..enabled = enabled;
+    return await _stub.setCustomVoiceEnabled(request);
+  }
+
+  /// Re-trigger voice cloning if previous attempt failed
+  Future<RetriggerVoiceCloningResponse> retriggerVoiceCloning({
+    required String userId,
+  }) async {
+    final request = RetriggerVoiceCloningRequest()..userId = userId;
+    return await _stub.retriggerVoiceCloning(request);
+  }
+
   /// Shutdown the client connection
   Future<void> shutdown() async {
     await _channel.shutdown();

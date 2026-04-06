@@ -359,4 +359,14 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
       return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
     }
   }
+
+  @override
+  Future<Either<Failure, List<Settlement>>> getSettlementHistory() async {
+    try {
+      final result = await _remoteDataSource.getSettlementHistory();
+      return Right(result);
+    } catch (e) {
+      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
+    }
+  }
 }

@@ -10,79 +10,79 @@ import 'dart:async' as $async;
 import 'dart:core' as $core;
 
 import 'package:grpc/service_api.dart' as $grpc;
-import 'direct_chat.pb.dart' as $0;
+import 'direct_chat.pb.dart' as $14;
 export 'direct_chat.pb.dart';
 
 class DirectChatServiceClient extends $grpc.Client {
   static final _$sendDirectMessage = $grpc.ClientMethod<
-          $0.SendDirectMessageRequest, $0.SendDirectMessageResponse>(
-      '/pb.DirectChatService/SendDirectMessage',
-      ($0.SendDirectMessageRequest value) => value.writeToBuffer(),
+          $14.SendDirectMessageRequest, $14.SendDirectMessageResponse>(
+      '/directchat.DirectChatService/SendDirectMessage',
+      ($14.SendDirectMessageRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.SendDirectMessageResponse.fromBuffer(value));
+          $14.SendDirectMessageResponse.fromBuffer(value));
   static final _$getDirectChatHistory = $grpc.ClientMethod<
-          $0.GetDirectChatHistoryRequest, $0.GetDirectChatHistoryResponse>(
-      '/pb.DirectChatService/GetDirectChatHistory',
-      ($0.GetDirectChatHistoryRequest value) => value.writeToBuffer(),
+          $14.GetDirectChatHistoryRequest, $14.GetDirectChatHistoryResponse>(
+      '/directchat.DirectChatService/GetDirectChatHistory',
+      ($14.GetDirectChatHistoryRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.GetDirectChatHistoryResponse.fromBuffer(value));
+          $14.GetDirectChatHistoryResponse.fromBuffer(value));
 
   DirectChatServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
       $core.Iterable<$grpc.ClientInterceptor>? interceptors})
       : super(channel, options: options, interceptors: interceptors);
 
-  $grpc.ResponseFuture<$0.SendDirectMessageResponse> sendDirectMessage(
-      $0.SendDirectMessageRequest request,
+  $grpc.ResponseFuture<$14.SendDirectMessageResponse> sendDirectMessage(
+      $14.SendDirectMessageRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$sendDirectMessage, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetDirectChatHistoryResponse> getDirectChatHistory(
-      $0.GetDirectChatHistoryRequest request,
+  $grpc.ResponseFuture<$14.GetDirectChatHistoryResponse> getDirectChatHistory(
+      $14.GetDirectChatHistoryRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getDirectChatHistory, request, options: options);
   }
 }
 
 abstract class DirectChatServiceBase extends $grpc.Service {
-  $core.String get $name => 'pb.DirectChatService';
+  $core.String get $name => 'directchat.DirectChatService';
 
   DirectChatServiceBase() {
-    $addMethod($grpc.ServiceMethod<$0.SendDirectMessageRequest,
-            $0.SendDirectMessageResponse>(
+    $addMethod($grpc.ServiceMethod<$14.SendDirectMessageRequest,
+            $14.SendDirectMessageResponse>(
         'SendDirectMessage',
         sendDirectMessage_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.SendDirectMessageRequest.fromBuffer(value),
-        ($0.SendDirectMessageResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetDirectChatHistoryRequest,
-            $0.GetDirectChatHistoryResponse>(
+            $14.SendDirectMessageRequest.fromBuffer(value),
+        ($14.SendDirectMessageResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$14.GetDirectChatHistoryRequest,
+            $14.GetDirectChatHistoryResponse>(
         'GetDirectChatHistory',
         getDirectChatHistory_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.GetDirectChatHistoryRequest.fromBuffer(value),
-        ($0.GetDirectChatHistoryResponse value) => value.writeToBuffer()));
+            $14.GetDirectChatHistoryRequest.fromBuffer(value),
+        ($14.GetDirectChatHistoryResponse value) => value.writeToBuffer()));
   }
 
-  $async.Future<$0.SendDirectMessageResponse> sendDirectMessage_Pre(
+  $async.Future<$14.SendDirectMessageResponse> sendDirectMessage_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.SendDirectMessageRequest> request) async {
+      $async.Future<$14.SendDirectMessageRequest> request) async {
     return sendDirectMessage(call, await request);
   }
 
-  $async.Future<$0.GetDirectChatHistoryResponse> getDirectChatHistory_Pre(
+  $async.Future<$14.GetDirectChatHistoryResponse> getDirectChatHistory_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.GetDirectChatHistoryRequest> request) async {
+      $async.Future<$14.GetDirectChatHistoryRequest> request) async {
     return getDirectChatHistory(call, await request);
   }
 
-  $async.Future<$0.SendDirectMessageResponse> sendDirectMessage(
-      $grpc.ServiceCall call, $0.SendDirectMessageRequest request);
-  $async.Future<$0.GetDirectChatHistoryResponse> getDirectChatHistory(
-      $grpc.ServiceCall call, $0.GetDirectChatHistoryRequest request);
+  $async.Future<$14.SendDirectMessageResponse> sendDirectMessage(
+      $grpc.ServiceCall call, $14.SendDirectMessageRequest request);
+  $async.Future<$14.GetDirectChatHistoryResponse> getDirectChatHistory(
+      $grpc.ServiceCall call, $14.GetDirectChatHistoryRequest request);
 }

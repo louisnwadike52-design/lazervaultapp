@@ -114,4 +114,10 @@ abstract class IGiftCardRemoteDataSource {
   Future<Map<String, dynamic>> extractCardDetails({
     required List<String> imageUrls,
   });
+
+  // Settlement and provider management methods (admin only)
+  Future<Map<String, dynamic>> getActiveSellProvider();
+  Future<Map<String, dynamic>?> retrySettlement(String saleId);
+  Future<Map<String, dynamic>?> exportSettlementHistory(String format);
+  Future<List<Settlement>> getSettlementHistory();
 }

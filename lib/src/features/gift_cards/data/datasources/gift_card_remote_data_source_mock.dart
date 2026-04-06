@@ -479,6 +479,44 @@ class GiftCardRemoteDataSourceMock implements IGiftCardRemoteDataSource {
     };
   }
 
+  @override
+  Future<Map<String, dynamic>> getActiveSellProvider() async {
+    await _simulateNetworkDelay();
+    _simulateRandomFailure();
+    return {
+      'provider': 'manual',
+      'description': 'Manual review mode',
+    };
+  }
+
+  @override
+  Future<Map<String, dynamic>?> retrySettlement(String saleId) async {
+    await _simulateNetworkDelay();
+    _simulateRandomFailure();
+    return {
+      'success': true,
+      'message': 'Settlement retry initiated',
+    };
+  }
+
+  @override
+  Future<Map<String, dynamic>?> exportSettlementHistory(String format) async {
+    await _simulateNetworkDelay();
+    _simulateRandomFailure();
+    return {
+      'success': true,
+      'filePath': '/tmp/settlement_history.$format',
+    };
+  }
+
+  @override
+  Future<List<Settlement>> getSettlementHistory() async {
+    await _simulateNetworkDelay();
+    _simulateRandomFailure();
+    // Return mock settlement data
+    return [];
+  }
+
   // Mock brand data
   static final List<GiftCardBrandModel> _mockBrands = [
     const GiftCardBrandModel(
