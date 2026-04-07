@@ -216,6 +216,18 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     context.read<VoiceSessionCubit>().endSession();
   }
 
+  /// End the call with a failure reason displayed on the ended screen.
+  void _endCallWithReason(String reason) {
+    if (_isClosing) return;
+    _dismissActiveDialog();
+    _resetMuteState();
+    _selectedRating = 0;
+    _isSubmittingRating = false;
+    _ratingSubmitted = false;
+    _feedbackController.clear();
+    context.read<VoiceSessionCubit>().endSession(endReason: reason);
+  }
+
   /// Start a new call from the ended screen.
   void _startNewCall() {
     if (_isClosing) return; // Prevent starting new call while closing
@@ -401,7 +413,7 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
           );
         } else if (state is VoiceSessionVerificationFailed) {
           _dismissActiveDialog();
-          // Voice biometrics verification failed - show error and close
+          // Show snackbar immediately for visibility
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
@@ -409,9 +421,9 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               duration: const Duration(seconds: 4),
             ),
           );
-          // Show ended screen after a brief delay
+          // Also surface the reason on the call-ended screen
           Future.delayed(const Duration(milliseconds: 1500), () {
-            if (mounted) _endCall();
+            if (mounted) _endCallWithReason(state.message);
           });
         } else if (state is VoiceSessionMicPermissionDenied) {
           // Handled in UI — no snackbar
@@ -684,14 +696,18 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
   /// Show chat history bottom sheet
   void _showChatHistorySheet() {
     final cubit = context.read<VoiceSessionCubit>();
+    final chatHistoryCubit = cubit.chatHistoryCubit;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => VoiceChatHistorySheet(
-        sessionId: cubit.currentSessionId ?? '',
-        currentUserCaption: cubit.currentUserCaption,
-        currentAgentCaption: cubit.currentAgentCaption,
+      builder: (context) => BlocProvider<VoiceChatHistoryCubit>.value(
+        value: chatHistoryCubit,
+        child: VoiceChatHistorySheet(
+          sessionId: cubit.currentSessionId ?? '',
+          currentUserCaption: cubit.currentUserCaption,
+          currentAgentCaption: cubit.currentAgentCaption,
+        ),
       ),
     );
   }
@@ -1608,21 +1624,31 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
 
             const Spacer(flex: 2),
 
-            // Checkmark icon
+            // Icon — red shield for failure, green check for normal end
             Container(
               width: 80.w,
               height: 80.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                color: (state.endReason != null
+                        ? const Color(0xFFEF4444)
+                        : const Color(0xFF10B981))
+                    .withValues(alpha: 0.1),
                 border: Border.all(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.25),
+                  color: (state.endReason != null
+                          ? const Color(0xFFEF4444)
+                          : const Color(0xFF10B981))
+                      .withValues(alpha: 0.25),
                   width: 1.5,
                 ),
               ),
               child: Icon(
-                Icons.check_rounded,
-                color: const Color(0xFF10B981),
+                state.endReason != null
+                    ? Icons.shield_outlined
+                    : Icons.check_rounded,
+                color: state.endReason != null
+                    ? const Color(0xFFEF4444)
+                    : const Color(0xFF10B981),
                 size: 40.sp,
               ),
             ),
@@ -1639,13 +1665,27 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
               ),
             ),
             SizedBox(height: 6.h),
-            Text(
-              'Thank you for using LazerVault Voice',
-              style: GoogleFonts.inter(
-                fontSize: 14.sp,
-                color: Colors.white.withValues(alpha: 0.45),
+            if (state.endReason != null) ...[
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 32.w),
+                child: Text(
+                  state.endReason!,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    fontSize: 14.sp,
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.85),
+                  ),
+                ),
               ),
-            ),
+            ] else ...[
+              Text(
+                'Thank you for using LazerVault Voice',
+                style: GoogleFonts.inter(
+                  fontSize: 14.sp,
+                  color: Colors.white.withValues(alpha: 0.45),
+                ),
+              ),
+            ],
 
             SizedBox(height: 32.h),
 

@@ -183,11 +183,14 @@ class VoiceSessionWebSocketFailed extends VoiceSessionState {
 }
 
 /// Session ended — show rating/thank-you screen
+/// [endReason] is set when the call ended due to a failure (e.g. voice verification).
+/// Null means a normal call end.
 class VoiceSessionEnded extends VoiceSessionState {
   final String sessionId;
-  const VoiceSessionEnded({required this.sessionId});
+  final String? endReason;
+  const VoiceSessionEnded({required this.sessionId, this.endReason});
   @override
-  List<Object?> get props => [sessionId];
+  List<Object?> get props => [sessionId, endReason];
 }
 
 /// Real-time caption states for YouTube-style transcription display
