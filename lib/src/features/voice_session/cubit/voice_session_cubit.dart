@@ -90,6 +90,9 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   /// Whether the AI agent is currently speaking
   bool get isAgentSpeaking => _isAgentSpeaking;
 
+  /// Chat history cubit for tracking conversation messages
+  VoiceChatHistoryCubit get chatHistoryCubit => _chatHistoryCubit;
+
   /// Get recent conversation messages for the current session
   /// Returns list of VoiceMessage (up to 10 most recent)
   /// Edge cases handled:
@@ -257,6 +260,19 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
       } else {
         // Edge case: Language not found in available list
         AppLogger.error('setLanguage: Language $languageCode not found in available languages');
+      }
+
+      // Send language change to backend via WebSocket if session is active
+      if (_wsChannel != null && isConnected) {
+        final localeManager = serviceLocator<LocaleManager>();
+        final currentCountry = localeManager.currentCountry;
+        final locale = currentCountry.isNotEmpty ? '$languageCode-$currentCountry' : languageCode;
+
+        await sendToVoiceAgent('language_changed', {
+          'language': languageCode,
+          'locale': locale,
+        });
+        print('VoiceSessionCubit: Sent language change to backend: $languageCode ($locale)');
       }
     } catch (e) {
       // Edge case: Handle SharedPreferences errors
@@ -869,7 +885,8 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
   }
 
   /// End the session and transition to the rating/thank-you screen.
-  Future<void> endSession() async {
+  /// [endReason] optionally describes why the call ended (e.g. voice verification failure).
+  Future<void> endSession({String? endReason}) async {
     final sessionId = _currentSessionId ?? '';
     print('VoiceSessionCubit: endSession called, sessionId=$sessionId');
     _disconnectWebSocket();
@@ -884,7 +901,7 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
     await _disposeRoomResources();
     _isMuted = false;
     if (isClosed) return;
-    emit(VoiceSessionEnded(sessionId: sessionId));
+    emit(VoiceSessionEnded(sessionId: sessionId, endReason: endReason));
   }
 
   /// Submit a session rating to the backend.
