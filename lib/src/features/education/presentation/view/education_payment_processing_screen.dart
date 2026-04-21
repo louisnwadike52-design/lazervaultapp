@@ -110,9 +110,15 @@ class _EducationPaymentProcessingScreenState
         child: BlocConsumer<EducationCubit, EducationState>(
           listener: (context, state) {
             if (state is EducationPurchaseSuccess) {
+              // Forward the save-candidate flags + phone so the PIN
+              // result screen's post-purchase hook can persist the
+              // beneficiary on completed purchases.
               Get.offNamed(AppRoutes.educationPinResult, arguments: {
                 'purchase': state.purchase,
                 'provider': _params?['provider'],
+                'phone': _params?['phone'],
+                'saveCandidate': _params?['saveCandidate'] ?? false,
+                'candidateNickname': _params?['candidateNickname'],
               });
             } else if (state is EducationPurchaseFailed) {
               Get.snackbar(
