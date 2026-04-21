@@ -4,12 +4,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
+import '../../../../../core/types/app_routes.dart';
 import '../../domain/entities/water_provider_entity.dart';
 import '../../domain/entities/customer_validation_result.dart';
 import '../../domain/entities/water_payment_entity.dart';
 import '../cubit/water_bill_cubit.dart';
 import '../cubit/water_bill_state.dart';
-import 'water_bill_payment_receipt_screen.dart';
 
 class WaterBillPaymentProcessingScreen extends StatefulWidget {
   const WaterBillPaymentProcessingScreen({super.key});
@@ -26,6 +26,12 @@ class _WaterBillPaymentProcessingScreenState extends State<WaterBillPaymentProce
   late Animation<double> _rotationAnimation;
   Timer? _pollingTimer;
   String? _currentPaymentId;
+
+  // Failure recovery state — latches on first terminal transition so
+  // a duplicate state from the cubit can't double-navigate.
+  bool _hasFailed = false;
+  bool _terminalReached = false;
+  String _failMessage = '';
 
   @override
   void initState() {
@@ -90,6 +96,21 @@ class _WaterBillPaymentProcessingScreenState extends State<WaterBillPaymentProce
 
     return PopScope(
       canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        if (_hasFailed) {
+          Get.offAllNamed(AppRoutes.waterBillHome);
+          return;
+        }
+        Get.snackbar(
+          'Payment in Progress',
+          'Please wait while your payment is being processed.',
+          backgroundColor: const Color(0xFFFB923C),
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+          duration: const Duration(seconds: 2),
+        );
+      },
       child: Scaffold(
         backgroundColor: const Color(0xFF0A0E27),
         body: Container(
@@ -106,6 +127,8 @@ class _WaterBillPaymentProcessingScreenState extends State<WaterBillPaymentProce
           ),
           child: BlocConsumer<WaterBillCubit, WaterBillState>(
             listener: (context, state) {
+              if (_terminalReached) return;
+
               if (state is PaymentInitiated || state is PaymentProcessing) {
                 final payment = state is PaymentInitiated
                     ? state.payment
@@ -115,42 +138,51 @@ class _WaterBillPaymentProcessingScreenState extends State<WaterBillPaymentProce
               }
 
               if (state is PaymentSuccess) {
+                _terminalReached = true;
                 _pollingTimer?.cancel();
 
-                Get.off(
-                  () => const WaterBillPaymentReceiptScreen(),
-                  arguments: {'payment': state.payment},
+                // Forward the full arg payload — save/auto-pay flags
+                // and rolloverPref fields — into the receipt route so
+                // `_runPostPurchaseActions` can fire on success.
+                final callerArgs = Get.arguments as Map<String, dynamic>? ?? {};
+                Get.offNamed(
+                  AppRoutes.waterBillPaymentReceipt,
+                  arguments: {
+                    ...callerArgs,
+                    'payment': state.payment,
+                  },
                 );
               }
 
               if (state is PaymentFailed) {
+                _terminalReached = true;
                 _pollingTimer?.cancel();
-
+                setState(() {
+                  _hasFailed = true;
+                  _failMessage = state.errorMessage;
+                });
                 Get.snackbar(
                   'Payment Failed',
                   state.errorMessage,
                   backgroundColor: Colors.red.withValues(alpha: 0.9),
                   colorText: Colors.white,
-                  duration: const Duration(seconds: 5),
+                  duration: const Duration(seconds: 4),
                 );
-
-                Future.delayed(const Duration(seconds: 3), () {
-                  if (mounted) {
-                    Get.back();
-                    Get.back();
-                  }
-                });
               }
 
               if (state is WaterBillError) {
+                _terminalReached = true;
                 _pollingTimer?.cancel();
-
+                setState(() {
+                  _hasFailed = true;
+                  _failMessage = state.message;
+                });
                 Get.snackbar(
                   'Error',
                   state.message,
                   backgroundColor: Colors.red.withValues(alpha: 0.9),
                   colorText: Colors.white,
-                  duration: const Duration(seconds: 5),
+                  duration: const Duration(seconds: 4),
                 );
               }
             },
@@ -218,26 +250,63 @@ class _WaterBillPaymentProcessingScreenState extends State<WaterBillPaymentProce
 
                       // Processing title
                       Text(
-                        'Processing Payment',
+                        _hasFailed ? 'Payment Failed' : 'Processing Payment',
                         style: GoogleFonts.inter(
                           fontSize: 28.sp,
                           fontWeight: FontWeight.w700,
-                          color: Colors.white,
+                          color: _hasFailed
+                              ? const Color(0xFFEF4444)
+                              : Colors.white,
                         ),
                         textAlign: TextAlign.center,
                       ),
 
                       SizedBox(height: 12.h),
 
-                      // Processing step
+                      // Processing step / failure message
                       Text(
-                        currentStep,
+                        _hasFailed
+                            ? (_failMessage.isEmpty
+                                ? 'Something went wrong. Please try again.'
+                                : _failMessage)
+                            : currentStep,
                         style: GoogleFonts.inter(
                           fontSize: 16.sp,
-                          color: Colors.white.withValues(alpha: 0.9),
+                          color: _hasFailed
+                              ? const Color(0xFFEF4444)
+                              : Colors.white.withValues(alpha: 0.9),
                         ),
                         textAlign: TextAlign.center,
                       ),
+
+                      if (_hasFailed) ...[
+                        SizedBox(height: 24.h),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 52.h,
+                          child: ElevatedButton.icon(
+                            onPressed: () =>
+                                Get.offAllNamed(AppRoutes.waterBillHome),
+                            icon: Icon(Icons.arrow_back,
+                                size: 18.sp, color: Colors.white),
+                            label: Text(
+                              'Back to Water Bill',
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 15.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF3B82F6),
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12.r),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
 
                       SizedBox(height: 32.h),
 
