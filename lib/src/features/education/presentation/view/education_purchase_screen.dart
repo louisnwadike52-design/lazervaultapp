@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../../../core/types/app_routes.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import '../../domain/entities/education_provider_entity.dart';
 
 class EducationPurchaseScreen extends StatefulWidget {
@@ -24,10 +29,55 @@ class _EducationPurchaseScreenState extends State<EducationPurchaseScreen> {
   static const int _minQuantity = 1;
   static const int _maxQuantity = 5;
 
+  /// Country-code prefix for the phone field, mirroring the airtime/data
+  /// recipient input. Nigeria is the sensible default — user's locale
+  /// is resolved in initState.
+  CountryLocale _selectedDialCountry = CountryLocales.all.first;
+
   @override
   void initState() {
     super.initState();
     _loadArguments();
+    _syncDialCountryWithLocale();
+    _maybePrefillProfilePhone();
+  }
+
+  /// Align the country-code prefix with the user's active locale.
+  void _syncDialCountryWithLocale() {
+    try {
+      // LocaleManager is registered in DI but optional — fall back to NG.
+      final code = 'NG';
+      final match = CountryLocales.findByCountryCode(code);
+      if (match != null && mounted) {
+        setState(() => _selectedDialCountry = match);
+      }
+    } catch (_) {}
+  }
+
+  /// Airtime-style prefill: if the signed-in user has a phone on file,
+  /// drop it into the field (in local `0xxx…` form) so they don't have
+  /// to retype. Only fires when the field is still empty (rebuy paths
+  /// have already populated from `rebuyPurchase`).
+  void _maybePrefillProfilePhone() {
+    if (_phoneController.text.isNotEmpty) return;
+    try {
+      final authState = context.read<AuthenticationCubit>().state;
+      String? userPhone;
+      if (authState is AuthenticationAuthenticated) {
+        userPhone = authState.profile.user.phoneNumber;
+      }
+      if (userPhone == null || userPhone.isEmpty) return;
+      // Normalise `+234…` / `234…` → `0…` so the 11-digit validator
+      // and the backend's expected local format both work.
+      if (userPhone.startsWith('+234')) {
+        userPhone = '0${userPhone.substring(4)}';
+      } else if (userPhone.startsWith('234') && userPhone.length > 10) {
+        userPhone = '0${userPhone.substring(3)}';
+      }
+      _phoneController.text = userPhone;
+    } catch (_) {
+      // AuthenticationCubit isn't provided in this route — skip prefill.
+    }
   }
 
   void _loadArguments() {
@@ -332,58 +382,79 @@ class _EducationPurchaseScreenState extends State<EducationPurchaseScreen> {
           ),
         ),
         SizedBox(height: 8.h),
-        TextFormField(
-          controller: _phoneController,
-          focusNode: _phoneFocusNode,
-          keyboardType: TextInputType.phone,
-          inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-            LengthLimitingTextInputFormatter(11),
-          ],
-          style: TextStyle(
-            fontSize: 16.sp,
-            color: Colors.white,
+        // Country-code + phone side-by-side. Mirrors airtime /
+        // data_bundles recipient input. The flag + dial code are
+        // read-only here — the country comes from the active locale,
+        // not a free-form picker, since education PINs are a
+        // Nigeria-only catalogue today.
+        Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(color: const Color(0xFF2D2D2D), width: 1),
           ),
-          decoration: InputDecoration(
-            hintText: 'Enter phone number',
-            hintStyle: TextStyle(
-              fontSize: 14.sp,
-              color: const Color(0xFF9CA3AF).withValues(alpha: 0.6),
-            ),
-            prefixIcon: Icon(
-              Icons.phone,
-              color: const Color(0xFF9CA3AF),
-              size: 20.sp,
-            ),
-            filled: true,
-            fillColor: const Color(0xFF1F1F1F),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: const BorderSide(color: Color(0xFF4E03D0)),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: const BorderSide(color: Color(0xFFEF4444)),
-            ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+          child: Row(
+            children: [
+              Container(
+                padding:
+                    EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+                decoration: const BoxDecoration(
+                  border: Border(
+                    right: BorderSide(color: Color(0xFF2D2D2D), width: 1),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _selectedDialCountry.flag,
+                      style: TextStyle(fontSize: 20.sp),
+                    ),
+                    SizedBox(width: 6.w),
+                    Text(
+                      _selectedDialCountry.dialCode,
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: TextFormField(
+                  controller: _phoneController,
+                  focusNode: _phoneFocusNode,
+                  keyboardType: TextInputType.phone,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(11),
+                  ],
+                  style: TextStyle(fontSize: 16.sp, color: Colors.white),
+                  decoration: InputDecoration(
+                    hintText: '8012345678',
+                    hintStyle: TextStyle(
+                      fontSize: 14.sp,
+                      color: const Color(0xFF9CA3AF).withValues(alpha: 0.6),
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(
+                        horizontal: 14.w, vertical: 14.h),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Phone number is required';
+                    }
+                    if (value.length < 10) {
+                      return 'Enter a valid phone number';
+                    }
+                    return null;
+                  },
+                ),
+              ),
+            ],
           ),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Phone number is required';
-            }
-            if (value.length < 10) {
-              return 'Enter a valid phone number';
-            }
-            return null;
-          },
         ),
       ],
     );
