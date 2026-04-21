@@ -256,7 +256,24 @@ class _CableTVPaymentReceiptScreenState
 
   @override
   Widget build(BuildContext context) {
-    final args = Get.arguments as Map<String, dynamic>;
+    final rawArgs = Get.arguments;
+    // Cold-start / deep-link / malformed-args guard. We never navigate
+    // here without a payment in production, but a defensive check
+    // avoids crashing the whole route tree if something goes wrong —
+    // route to the landing so the user has somewhere to go.
+    if (rawArgs is! Map<String, dynamic> ||
+        rawArgs['payment'] is! CableTVPaymentEntity) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) Get.offAllNamed(AppRoutes.cableTVHome);
+      });
+      return const Scaffold(
+        backgroundColor: Color(0xFF0A0A0A),
+        body: Center(
+          child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+        ),
+      );
+    }
+    final args = rawArgs;
     final payment = args['payment'] as CableTVPaymentEntity;
 
     return PopScope(

@@ -54,13 +54,6 @@ class _CableTVRecentTransactionsCardState
     return resp.payments.toList();
   }
 
-  /// Lets the parent screen refresh this widget on pull-to-refresh
-  /// without remounting — external callers access via a GlobalKey.
-  Future<void> refresh() async {
-    setState(() => _future = _fetch());
-    await _future;
-  }
-
   String _fmtDate(String iso) {
     if (iso.isEmpty) return '';
     try {

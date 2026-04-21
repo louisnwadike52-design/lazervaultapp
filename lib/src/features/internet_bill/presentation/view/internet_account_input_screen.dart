@@ -98,11 +98,17 @@ class _IspInputRules {
   static final _IspInputRules _spectranet = _IspInputRules(
     keyboardType: TextInputType.phone,
     formatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(11)],
-    requiresVerification: false,
+    // VTpass merchant-verify DOES work for Spectranet — the previous
+    // "no verify" flag was added to route around a backend JSON-
+    // unmarshal crash (the VTpass response for some Spectranet codes
+    // returned `content` as a scalar string instead of the struct
+    // shape). That crash is fixed upstream now, so we let the same
+    // validation the other ISPs use catch bad account numbers
+    // *before* the user sees a payment-processing failure.
+    requiresVerification: true,
     hint: '0XXXXXXXXXX',
     help: 'Enter the 11-digit Nigerian phone number tied to your '
-        'Spectranet PIN subscription. Spectranet does not support '
-        'account verification, so this step is skipped.',
+        'Spectranet PIN subscription.',
     validator: (value) {
       final v = (value ?? '').trim();
       if (v.isEmpty) return 'Phone number is required';
@@ -141,6 +147,18 @@ class _InternetAccountInputScreenState extends State<InternetAccountInputScreen>
   bool _prefilled = false;
   _IspInputRules? _rules;
 
+  /// Normalised form of the account number we last successfully
+  /// validated. Cleared/bypassed when the user edits the field, so
+  /// the Continue button can't proceed with a stale validation from
+  /// a DIFFERENT account number the user has since typed over.
+  String? _validatedFor;
+
+  @override
+  void initState() {
+    super.initState();
+    _accountController.addListener(_onAccountChanged);
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -161,8 +179,25 @@ class _InternetAccountInputScreenState extends State<InternetAccountInputScreen>
 
   @override
   void dispose() {
+    _accountController.removeListener(_onAccountChanged);
     _accountController.dispose();
     super.dispose();
+  }
+
+  /// Invalidate a prior validation the moment the user edits the
+  /// account field. Without this, a user could validate `08111111111`
+  /// successfully, retype it to `08199999999`, and the Continue
+  /// button would still fire off a payment for the (stale) validated
+  /// number. The listener is cheap — runs per keystroke, only does a
+  /// setState when the validated state actually changes.
+  void _onAccountChanged() {
+    if (_validatedFor == null) return;
+    if (_normalizeAccount(_accountController.text) == _validatedFor) return;
+    if (!mounted) return;
+    setState(() {
+      _isValidated = false;
+      _validatedFor = null;
+    });
   }
 
   void _onValidate() {
@@ -219,17 +254,37 @@ class _InternetAccountInputScreenState extends State<InternetAccountInputScreen>
     final provider = args['provider'] as InternetProviderEntity;
     final cubitState = context.read<InternetBillCubit>().state;
 
-    if (cubitState is InternetAccountValidated) {
-      Get.toNamed(
-        AppRoutes.internetPackageSelection,
-        arguments: {
-          'provider': provider,
-          'validation': cubitState.validation,
-          'accountNumber': cubitState.accountNumber,
-          if (args['preferRollover'] == true) 'preferRollover': true,
-        },
+    if (cubitState is! InternetAccountValidated) return;
+    // Guard — validation proto came back but the provider flagged the
+    // account as invalid. Block the forward nav and surface the reason
+    // so the user knows what's wrong before they're stuck on the
+    // payment screen watching a failure unfold.
+    if (!cubitState.validation.isValid) {
+      final status = cubitState.validation.status;
+      Get.snackbar(
+        'Account not verified',
+        status.isNotEmpty
+            ? status
+            : 'This account could not be verified with '
+                '${provider.name}. Double-check and try again.',
+        backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.9),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 4),
+        snackPosition: SnackPosition.TOP,
+        margin: EdgeInsets.all(16.w),
+        borderRadius: 12,
       );
+      return;
     }
+    Get.toNamed(
+      AppRoutes.internetPackageSelection,
+      arguments: {
+        'provider': provider,
+        'validation': cubitState.validation,
+        'accountNumber': cubitState.accountNumber,
+        if (args['preferRollover'] == true) 'preferRollover': true,
+      },
+    );
   }
 
   @override
@@ -261,9 +316,18 @@ class _InternetAccountInputScreenState extends State<InternetAccountInputScreen>
         child: BlocListener<InternetBillCubit, InternetBillState>(
           listener: (context, state) {
             if (state is InternetAccountValidated) {
-              setState(() => _isValidated = true);
+              // Remember which account number the cubit signed off on
+              // so the text listener can invalidate it if the user
+              // edits the field afterwards.
+              setState(() {
+                _isValidated = true;
+                _validatedFor = state.accountNumber;
+              });
             } else if (state is InternetAccountValidationFailed) {
-              setState(() => _isValidated = false);
+              setState(() {
+                _isValidated = false;
+                _validatedFor = null;
+              });
               Get.snackbar(
                 'Validation Failed',
                 state.message,
@@ -437,15 +501,26 @@ class _InternetAccountInputScreenState extends State<InternetAccountInputScreen>
                   BlocBuilder<InternetBillCubit, InternetBillState>(
                     builder: (context, state) {
                       final isValidating = state is InternetAccountValidating;
-                      if (_isValidated && state is InternetAccountValidated) {
+                      // Only treat the account as confirmed when the
+                      // provider actually validated it — a validated-
+                      // but-invalid response keeps the button on
+                      // "Re-validate" so users can't progress with a
+                      // bad account and hit a deeper payment failure.
+                      if (_isValidated &&
+                          state is InternetAccountValidated &&
+                          state.validation.isValid) {
                         return _buildButton(
                           label: 'Continue',
                           onPressed: _onContinue,
                           isLoading: false,
                         );
                       }
+                      final hasInvalid = state is InternetAccountValidated &&
+                          !state.validation.isValid;
                       return _buildButton(
-                        label: 'Validate Account',
+                        label: hasInvalid
+                            ? 'Re-validate account'
+                            : 'Validate Account',
                         onPressed: isValidating ? null : _onValidate,
                         isLoading: isValidating,
                       );
@@ -461,14 +536,26 @@ class _InternetAccountInputScreenState extends State<InternetAccountInputScreen>
   }
 
   Widget _buildValidationResultCard(InternetAccountValidated state) {
+    // Branch on isValid so the card's colour, icon, and heading all
+    // communicate the real verdict. Previously the card always read
+    // "Account Verified" even for an invalid response, with the
+    // provider's error message buried in the Status field — users
+    // skimmed the green and tapped Continue, forcing the Continue
+    // handler to catch the mismatch with a snackbar.
+    final isValid = state.validation.isValid;
+    final accent =
+        isValid ? const Color(0xFF10B981) : const Color(0xFFEF4444);
+    final statusText = state.validation.status.trim();
+    final customerName = state.validation.customerName.trim();
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4), width: 1),
+        border: Border.all(color: accent.withValues(alpha: 0.4), width: 1),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
@@ -476,31 +563,57 @@ class _InternetAccountInputScreenState extends State<InternetAccountInputScreen>
                 width: 36.w,
                 height: 36.w,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                  color: accent.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.check_circle, color: const Color(0xFF10B981), size: 20.sp),
+                child: Icon(
+                  isValid ? Icons.check_circle : Icons.error_outline,
+                  color: accent,
+                  size: 20.sp,
+                ),
               ),
               SizedBox(width: 12.w),
-              Text(
-                'Account Verified',
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF10B981),
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
+              Expanded(
+                child: Text(
+                  isValid ? 'Account Verified' : 'Account not verified',
+                  style: GoogleFonts.inter(
+                    color: accent,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
           ),
           SizedBox(height: 16.h),
-          _buildDetailRow('Customer Name', state.validation.customerName),
-          SizedBox(height: 10.h),
           _buildDetailRow('Account', state.validation.accountNumber),
-          if (state.validation.status.isNotEmpty) ...[
+          // Customer name only renders for valid responses — invalid
+          // ones have no real customer to show.
+          if (isValid && customerName.isNotEmpty) ...[
             SizedBox(height: 10.h),
-            _buildDetailRow('Status', state.validation.status),
+            _buildDetailRow('Customer Name', customerName),
           ],
-          if (state.validation.dueAmount > 0) ...[
+          if (statusText.isNotEmpty) ...[
+            SizedBox(height: 10.h),
+            _buildDetailRow(
+              isValid ? 'Status' : 'Reason',
+              statusText,
+            ),
+          ],
+          if (!isValid) ...[
+            SizedBox(height: 12.h),
+            Text(
+              'Check the account number and try again. If the '
+              'provider can\'t find this subscriber, the ISP may not '
+              'have synced the account yet.',
+              style: GoogleFonts.inter(
+                color: const Color(0xFF9CA3AF),
+                fontSize: 12.sp,
+                height: 1.4,
+              ),
+            ),
+          ],
+          if (isValid && state.validation.dueAmount > 0) ...[
             SizedBox(height: 10.h),
             _buildDetailRow(
               'Due Amount',

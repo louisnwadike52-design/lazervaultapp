@@ -190,6 +190,7 @@ class _InternetPaymentProcessingScreenState
         backgroundColor: const Color(0xFF0A0A0A),
         body: SafeArea(
           child: BlocListener<InternetBillCubit, InternetBillState>(
+            listenWhen: (_, __) => true,
             listener: (context, state) {
               if (state is InternetBillPaymentProcessing) {
                 // Cubit emitted a mid-flight state (the RPC has been
@@ -239,24 +240,83 @@ class _InternetPaymentProcessingScreenState
                 );
               }
             },
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24.w),
-              child: Column(
-                children: [
-                  const Spacer(flex: 2),
-                  _buildStepIndicators(),
-                  SizedBox(height: 40.h),
-                  if (_provider != null && _package != null)
-                    _buildPaymentSummary(_provider!, _package!, _accountNumber),
-                  const Spacer(flex: 2),
-                  if (_hasFailed) _buildFailureInfo(),
-                  if (!_hasFailed) _buildSecurityNote(),
-                  SizedBox(height: 32.h),
-                ],
-              ),
+            // Scrollable body — long failure messages used to overflow
+            // the viewport (the VTpass JSON unmarshal error dumped a
+            // full Go struct-tag preamble into the step subtitle,
+            // blowing past the screen by hundreds of pixels). Scroll
+            // lets the user read whatever ended up there; the friendly
+            // mapper below keeps the text short under normal failures.
+            child: Column(
+              children: [
+                _buildTopBar(),
+                Expanded(
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 32.h),
+                    child: Column(
+                      children: [
+                        SizedBox(height: 16.h),
+                        _buildStepIndicators(),
+                        SizedBox(height: 32.h),
+                        if (_provider != null && _package != null)
+                          _buildPaymentSummary(
+                              _provider!, _package!, _accountNumber),
+                        SizedBox(height: 24.h),
+                        if (_hasFailed) _buildFailureInfo(),
+                        if (!_hasFailed) _buildSecurityNote(),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  /// Top bar with a back button routed to the internet landing. Only
+  /// rendered tappable once the payment has hit a terminal state —
+  /// during mid-flight the icon greys out and taps are ignored so the
+  /// user can't walk away from an in-flight charge.
+  Widget _buildTopBar() {
+    final canExit = _popAllowed || _hasFailed;
+    return Padding(
+      padding: EdgeInsets.fromLTRB(8.w, 8.h, 16.w, 0),
+      child: Row(
+        children: [
+          IconButton(
+            onPressed: canExit
+                ? () => Get.offAllNamed(AppRoutes.internetBillHome)
+                : () {
+                    Get.snackbar(
+                      'Payment in Progress',
+                      'Please wait while your payment is being processed.',
+                      backgroundColor: const Color(0xFFFB923C),
+                      colorText: Colors.white,
+                      snackPosition: SnackPosition.TOP,
+                      duration: const Duration(seconds: 2),
+                    );
+                  },
+            icon: Icon(
+              Icons.arrow_back,
+              color: canExit ? Colors.white : const Color(0xFF6B7280),
+              size: 22.sp,
+            ),
+            padding: EdgeInsets.zero,
+            constraints: BoxConstraints(minWidth: 40.w, minHeight: 40.w),
+          ),
+          SizedBox(width: 8.w),
+          Text(
+            _hasFailed ? 'Payment failed' : 'Processing payment',
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -342,7 +402,16 @@ class _InternetPaymentProcessingScreenState
                       ),
                       SizedBox(height: 2.h),
                       Text(
-                        isFailed ? _failMessage : step.subtitle,
+                        // Short, user-facing summary on failed steps —
+                        // the raw backend error (which could be a huge
+                        // JSON unmarshal dump) lives in the failure
+                        // panel below, scoped and wrapped, never in
+                        // the step indicator.
+                        isFailed
+                            ? _friendlyError(_failMessage, _provider).title
+                            : step.subtitle,
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.inter(
                           color: isFailed
                               ? const Color(0xFFEF4444).withValues(alpha: 0.8)
@@ -655,10 +724,32 @@ class _InternetPaymentProcessingScreenState
         detail: 'Check your internet connection and try again.',
       );
     }
-    return (
-      title: raw.isEmpty ? 'Payment failed. Please try again.' : raw,
-      detail: null,
-    );
+    // Go unmarshal / protobuf / SDK-level failures: these dump struct
+    // tags and stack noise into the message. Users don't need any of
+    // it — clip the raw blob and show a safe generic title with the
+    // first 140 chars of the raw line as a best-effort detail so
+    // support can still diagnose, but the UI never blows up.
+    if (m.contains('cannot unmarshal') ||
+        m.contains('json:') ||
+        m.contains('go struct') ||
+        m.contains('proto:')) {
+      return (
+        title: 'Provider returned an unexpected response',
+        detail: 'We couldn\'t process the response from '
+            '${providerDisplay()}. Your wallet wasn\'t charged — '
+            'please try again, or pick a different package.',
+      );
+    }
+    if (raw.isEmpty) {
+      return (
+        title: 'Payment failed. Please try again.',
+        detail: null,
+      );
+    }
+    // Final fallback — trim the raw error to a sane length so one
+    // long upstream error string can't overflow the screen.
+    final trimmed = raw.length > 180 ? '${raw.substring(0, 180)}…' : raw;
+    return (title: trimmed, detail: null);
   }
 
   Widget _buildSecurityNote() {

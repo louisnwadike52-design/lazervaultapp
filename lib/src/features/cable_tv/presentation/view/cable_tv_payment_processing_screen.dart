@@ -36,6 +36,10 @@ class _CableTVPaymentProcessingScreenState
   bool _popAllowed = false;
   bool _hasFailed = false;
   String _failMessage = '';
+  // Latches the first terminal transition so a late-arriving duplicate
+  // state from the cubit (or a reconciler-driven success that fires
+  // after a local failure) can't double-navigate or flip the UI.
+  bool _terminalReached = false;
 
   @override
   void initState() {
@@ -130,9 +134,12 @@ class _CableTVPaymentProcessingScreenState
         body: SafeArea(
           child: BlocListener<CableTVCubit, CableTVState>(
             listener: (context, state) {
+              if (_terminalReached) return;
               if (state is CableTVPaymentSuccess) {
+                _terminalReached = true;
                 _navigateToReceipt(state.payment);
               } else if (state is CableTVPaymentFailed) {
+                _terminalReached = true;
                 setState(() {
                   _hasFailed = true;
                   _failMessage = state.message;
@@ -150,6 +157,7 @@ class _CableTVPaymentProcessingScreenState
                   borderRadius: 12,
                 );
               } else if (state is CableTVError) {
+                _terminalReached = true;
                 setState(() {
                   _hasFailed = true;
                   _failMessage = state.message;

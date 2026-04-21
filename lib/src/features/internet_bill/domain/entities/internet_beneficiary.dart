@@ -35,6 +35,29 @@ class InternetBeneficiary extends Equatable {
     this.updatedAt,
   });
 
+  /// Clone with an updated nickname. Used by the beneficiary cubit to
+  /// synthesise a local patch when the update RPC succeeds but the
+  /// backend doesn't echo the row back — we already know the only
+  /// field that changed, so we can keep the list rebuild in place
+  /// instead of fetching the whole beneficiaries endpoint again.
+  InternetBeneficiary copyWithNickname(String? nickname) {
+    return InternetBeneficiary(
+      id: id,
+      userId: userId,
+      accountNumber: accountNumber,
+      providerCode: providerCode,
+      providerName: providerName,
+      nickname: (nickname != null && nickname.isEmpty) ? null : nickname,
+      lastAmount: lastAmount,
+      lastPackageId: lastPackageId,
+      lastPlanName: lastPlanName,
+      lastTopupAt: lastTopupAt,
+      topupCount: topupCount,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+    );
+  }
+
   factory InternetBeneficiary.fromProto(pb.InternetBeneficiary proto) {
     String? tsToIso(bool has, dynamic ts) => has
         ? DateTime.fromMillisecondsSinceEpoch(
