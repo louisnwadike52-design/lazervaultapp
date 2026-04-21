@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../../core/types/app_routes.dart';
 import 'package:lazervault/core/services/account_manager.dart';
-import 'package:lazervault/src/features/card_settings/domain/entities/account_details_entity.dart';
+import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_state.dart';
+import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 import 'package:uuid/uuid.dart';
 import '../../domain/entities/education_provider_entity.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
@@ -35,6 +38,12 @@ class _EducationPaymentConfirmationScreenState
   bool _saveCandidate = false;
   String? _candidateNickname;
 
+  /// Seeded from AccountManager on mount, updated when the user picks a
+  /// different wallet from the Change sheet. On confirm we write this
+  /// back to AccountManager so the gRPC interceptor stamps the right
+  /// `x-account-id` metadata on the purchase RPC.
+  String? _selectedAccountId;
+
   @override
   ITransactionPinService get transactionPinService =>
       GetIt.I<ITransactionPinService>();
@@ -43,6 +52,12 @@ class _EducationPaymentConfirmationScreenState
   void initState() {
     super.initState();
     _loadArguments();
+    _selectedAccountId = GetIt.I<AccountManager>().activeAccountId;
+    // The global AccountCardsSummaryCubit is already seeded at app
+    // startup (post-login via AuthenticationCubit). If it happens to
+    // be in Initial state on this screen, we just render a loading
+    // placeholder rather than refiring fetch — that path requires a
+    // userId we don't hold here.
   }
 
   void _loadArguments() {
@@ -58,6 +73,12 @@ class _EducationPaymentConfirmationScreenState
 
   void _confirmPurchase() async {
     if (_isProcessing) return;
+
+    // Activate the selected account so the gRPC auth interceptor
+    // stamps `x-account-id` metadata on the purchase RPC.
+    if (_selectedAccountId != null) {
+      GetIt.I<AccountManager>().setActiveAccount(_selectedAccountId!);
+    }
 
     setState(() {
       _isProcessing = true;
@@ -401,17 +422,38 @@ class _EducationPaymentConfirmationScreenState
     return amount.toStringAsFixed(0);
   }
 
-  /// "Pay From" tile streaming the active account from AccountManager.
-  /// Tapping "Change" routes to the main account summary slide where
-  /// the user picks their default wallet/card — same place every other
-  /// bill flow points.
+  /// "Pay From" tile backed by the global AccountCardsSummaryCubit.
+  /// Mirrors the airtime/data review pattern: auto-select on first
+  /// load, "Change" opens a bottom-sheet picker of wallets with
+  /// matching currency, tap a row → local state + AccountManager
+  /// update so the subsequent purchase RPC's metadata lands on the
+  /// right account.
   Widget _buildPayFromCard() {
-    final accountManager = GetIt.I<AccountManager>();
-    return StreamBuilder<AccountDetailsEntity?>(
-      stream: accountManager.accountDetailsStream,
-      initialData: accountManager.activeAccountDetails,
-      builder: (context, snap) {
-        final account = snap.data;
+    return BlocBuilder<AccountCardsSummaryCubit, AccountCardsSummaryState>(
+      builder: (context, state) {
+        List<AccountSummaryEntity> summaries = const [];
+        bool loading = false;
+        if (state is AccountCardsSummaryLoading) loading = true;
+        if (state is AccountCardsSummaryLoaded) {
+          summaries = state.accountSummaries;
+          // Seed selection on first render when nothing's set yet.
+          if (_selectedAccountId == null && summaries.isNotEmpty) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                setState(() => _selectedAccountId = summaries.first.id);
+              }
+            });
+          }
+        }
+        if (state is AccountBalanceUpdated) {
+          summaries = state.accountSummaries;
+        }
+
+        final selected = summaries.where(
+          (a) => a.id == _selectedAccountId,
+        ).firstOrNull ??
+            (summaries.isNotEmpty ? summaries.first : null);
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -426,31 +468,18 @@ class _EducationPaymentConfirmationScreenState
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                GestureDetector(
-                  onTap: () {
-                    // Full account-change sheet requires the AccountCardsSummaryCubit
-                    // provider (used on the airtime/data review screens). Until
-                    // that's wired here, nudge the user to the wallet carousel
-                    // on home where the active account is actually selected.
-                    Get.snackbar(
-                      'Change account',
-                      'Swipe to a different wallet on the home screen, then retry.',
-                      backgroundColor:
-                          const Color(0xFF4E03D0).withValues(alpha: 0.9),
-                      colorText: Colors.white,
-                      snackPosition: SnackPosition.TOP,
-                      duration: const Duration(seconds: 3),
-                    );
-                  },
-                  child: Text(
-                    'Change',
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFF4E03D0),
-                      fontSize: 13.sp,
-                      fontWeight: FontWeight.w600,
+                if (summaries.length > 1)
+                  GestureDetector(
+                    onTap: () => _showAccountChangeSheet(summaries),
+                    child: Text(
+                      'Change',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF4E03D0),
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
             SizedBox(height: 8.h),
@@ -460,7 +489,7 @@ class _EducationPaymentConfirmationScreenState
                 color: const Color(0xFF1F1F1F),
                 borderRadius: BorderRadius.circular(12.r),
                 border: Border.all(
-                  color: account != null
+                  color: selected != null
                       ? const Color(0xFF4E03D0).withValues(alpha: 0.5)
                       : const Color(0xFF2D2D2D),
                   width: 1,
@@ -472,35 +501,45 @@ class _EducationPaymentConfirmationScreenState
                       color: const Color(0xFF4E03D0), size: 20.sp),
                   SizedBox(width: 12.w),
                   Expanded(
-                    child: account == null
+                    child: loading && selected == null
                         ? Text(
-                            'No account selected',
+                            'Loading accounts…',
                             style: GoogleFonts.inter(
                               color: const Color(0xFF9CA3AF),
                               fontSize: 14.sp,
                             ),
                           )
-                        : Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                account.accountType,
-                                style: GoogleFonts.inter(
-                                  color: Colors.white,
-                                  fontSize: 14.sp,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              SizedBox(height: 2.h),
-                              Text(
-                                'Balance: ₦${_formatAmount(account.balance)}',
+                        : selected == null
+                            ? Text(
+                                'No account available',
                                 style: GoogleFonts.inter(
                                   color: const Color(0xFF9CA3AF),
-                                  fontSize: 12.sp,
+                                  fontSize: 14.sp,
                                 ),
+                              )
+                            : Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    selected.accountType,
+                                    style: GoogleFonts.inter(
+                                      color: Colors.white,
+                                      fontSize: 14.sp,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  SizedBox(height: 2.h),
+                                  Text(
+                                    '${selected.currency} ${_formatAmount(selected.balance)}'
+                                    '${selected.accountNumberLast4.isNotEmpty ? '  ·  ••••${selected.accountNumberLast4}' : ''}',
+                                    style: GoogleFonts.inter(
+                                      color: const Color(0xFF9CA3AF),
+                                      fontSize: 12.sp,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
                   ),
                 ],
               ),
@@ -508,6 +547,130 @@ class _EducationPaymentConfirmationScreenState
           ],
         );
       },
+    );
+  }
+
+  /// Bottom sheet of wallets. Currency-filtered only if there's more
+  /// than one currency — otherwise we show them all. Tap a row →
+  /// update selection + dismiss.
+  void _showAccountChangeSheet(List<AccountSummaryEntity> all) {
+    // Prefer NGN matches first — education purchases are NGN-only on
+    // the backend — but fall back to all so the user can still see
+    // wallets even if none match (rare case).
+    final ngn = all
+        .where((a) => a.currency.toUpperCase() == 'NGN')
+        .toList();
+    final list = ngn.isNotEmpty ? ngn : all;
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetCtx) => Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24.r),
+            topRight: Radius.circular(24.r),
+          ),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40.w,
+                    height: 4.h,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2D2D2D),
+                      borderRadius: BorderRadius.circular(2.r),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                Text(
+                  'Pay From',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 17.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 12.h),
+                for (final account in list)
+                  Padding(
+                    padding: EdgeInsets.only(bottom: 8.h),
+                    child: _buildAccountRow(sheetCtx, account),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAccountRow(BuildContext sheetCtx, AccountSummaryEntity account) {
+    final selected = account.id == _selectedAccountId;
+    return GestureDetector(
+      onTap: () {
+        setState(() => _selectedAccountId = account.id);
+        Navigator.of(sheetCtx).pop();
+      },
+      child: Container(
+        padding: EdgeInsets.all(14.w),
+        decoration: BoxDecoration(
+          color: selected
+              ? const Color(0xFF4E03D0).withValues(alpha: 0.1)
+              : const Color(0xFF0A0A0A),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(
+            color: selected
+                ? const Color(0xFF4E03D0)
+                : const Color(0xFF2D2D2D),
+            width: selected ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.account_balance_wallet,
+                color: const Color(0xFF4E03D0), size: 20.sp),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    account.accountType,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    '${account.currency} ${_formatAmount(account.balance)}'
+                    '${account.accountNumberLast4.isNotEmpty ? '  ·  ••••${account.accountNumberLast4}' : ''}',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF9CA3AF),
+                      fontSize: 12.sp,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (selected)
+              Icon(Icons.check_circle,
+                  color: const Color(0xFF4E03D0), size: 20.sp),
+          ],
+        ),
+      ),
     );
   }
 
