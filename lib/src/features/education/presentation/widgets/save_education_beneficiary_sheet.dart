@@ -249,7 +249,7 @@ class _SaveEducationBeneficiarySheetState
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12.r),
-                  borderSide: const BorderSide(color: Color(0xFF3B82F6)),
+                  borderSide: const BorderSide(color: Color(0xFF4E03D0)),
                 ),
                 contentPadding:
                     EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
@@ -261,7 +261,7 @@ class _SaveEducationBeneficiarySheetState
               child: ElevatedButton(
                 onPressed: _saving ? null : _save,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3B82F6),
+                  backgroundColor: const Color(0xFF4E03D0),
                   foregroundColor: Colors.white,
                   padding: EdgeInsets.symmetric(vertical: 14.h),
                   shape: RoundedRectangleBorder(

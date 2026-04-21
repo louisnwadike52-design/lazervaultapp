@@ -106,7 +106,7 @@ class _EducationHistoryScreenState extends State<EducationHistoryScreen> {
           if (state is EducationHistoryLoading && state is! EducationHistoryLoaded) {
             return const Center(
               child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4E03D0)),
               ),
             );
           }
@@ -143,7 +143,7 @@ class _EducationHistoryScreenState extends State<EducationHistoryScreen> {
                   ElevatedButton(
                     onPressed: _loadHistory,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF3B82F6),
+                      backgroundColor: const Color(0xFF4E03D0),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.r),
                       ),
@@ -165,7 +165,7 @@ class _EducationHistoryScreenState extends State<EducationHistoryScreen> {
           if (state is EducationHistoryInitial) {
             return const Center(
               child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4E03D0)),
               ),
             );
           }
@@ -208,7 +208,7 @@ class _EducationHistoryScreenState extends State<EducationHistoryScreen> {
                 _loadHistory();
                 await Future.delayed(const Duration(seconds: 1));
               },
-              color: const Color(0xFF3B82F6),
+              color: const Color(0xFF4E03D0),
               backgroundColor: const Color(0xFF1F1F1F),
               child: ListView.builder(
                 controller: _scrollController,
@@ -220,7 +220,7 @@ class _EducationHistoryScreenState extends State<EducationHistoryScreen> {
                       child: Padding(
                         padding: EdgeInsets.all(16.0),
                         child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4E03D0)),
                         ),
                       ),
                     );
@@ -344,7 +344,7 @@ class _EducationHistoryScreenState extends State<EducationHistoryScreen> {
                   Text(
                     purchase.reference,
                     style: GoogleFonts.inter(
-                      color: const Color(0xFF3B82F6),
+                      color: const Color(0xFF4E03D0),
                       fontSize: 13.sp,
                       fontWeight: FontWeight.w500,
                     ),
@@ -381,8 +381,8 @@ class _EducationHistoryScreenState extends State<EducationHistoryScreen> {
                       style: TextStyle(fontSize: 13.sp),
                     ),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFF3B82F6),
-                      side: const BorderSide(color: Color(0xFF3B82F6)),
+                      foregroundColor: const Color(0xFF4E03D0),
+                      side: const BorderSide(color: Color(0xFF4E03D0)),
                       padding: EdgeInsets.symmetric(vertical: 12.h),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10.r),

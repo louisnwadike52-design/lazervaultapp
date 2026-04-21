@@ -333,7 +333,7 @@ class _EducationPinResultScreenState extends State<EducationPinResultScreen>
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
-          color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+          color: const Color(0xFF4E03D0).withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -350,7 +350,7 @@ class _EducationPinResultScreenState extends State<EducationPinResultScreen>
                     width: 28.w,
                     height: 28.w,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                      color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Center(
@@ -359,7 +359,7 @@ class _EducationPinResultScreenState extends State<EducationPinResultScreen>
                         style: TextStyle(
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w700,
-                          color: const Color(0xFF3B82F6),
+                          color: const Color(0xFF4E03D0),
                         ),
                       ),
                     ),
@@ -380,7 +380,7 @@ class _EducationPinResultScreenState extends State<EducationPinResultScreen>
                 child: Container(
                   padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                    color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Row(
@@ -389,7 +389,7 @@ class _EducationPinResultScreenState extends State<EducationPinResultScreen>
                       Icon(
                         Icons.copy,
                         size: 14.sp,
-                        color: const Color(0xFF3B82F6),
+                        color: const Color(0xFF4E03D0),
                       ),
                       SizedBox(width: 4.w),
                       Text(
@@ -397,7 +397,7 @@ class _EducationPinResultScreenState extends State<EducationPinResultScreen>
                         style: TextStyle(
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w500,
-                          color: const Color(0xFF3B82F6),
+                          color: const Color(0xFF4E03D0),
                         ),
                       ),
                     ],
@@ -569,9 +569,9 @@ class _EducationPinResultScreenState extends State<EducationPinResultScreen>
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF3B82F6),
+                    backgroundColor: const Color(0xFF4E03D0),
                     disabledBackgroundColor:
-                        const Color(0xFF3B82F6).withValues(alpha: 0.4),
+                        const Color(0xFF4E03D0).withValues(alpha: 0.4),
                     padding: EdgeInsets.symmetric(vertical: 16.h),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16.r),

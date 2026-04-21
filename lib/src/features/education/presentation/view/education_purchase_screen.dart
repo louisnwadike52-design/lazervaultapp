@@ -160,12 +160,12 @@ class _EducationPurchaseScreenState extends State<EducationPurchaseScreen> {
             width: 48.w,
             height: 48.w,
             decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+              color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Icon(
               Icons.school,
-              color: const Color(0xFF3B82F6),
+              color: const Color(0xFF4E03D0),
               size: 24.sp,
             ),
           ),
@@ -198,7 +198,7 @@ class _EducationPurchaseScreenState extends State<EducationPurchaseScreen> {
             style: TextStyle(
               fontSize: 16.sp,
               fontWeight: FontWeight.w700,
-              color: const Color(0xFF3B82F6),
+              color: const Color(0xFF4E03D0),
             ),
           ),
         ],
@@ -244,14 +244,14 @@ class _EducationPurchaseScreenState extends State<EducationPurchaseScreen> {
                   height: 40.w,
                   decoration: BoxDecoration(
                     color: _quantity > _minQuantity
-                        ? const Color(0xFF3B82F6).withValues(alpha: 0.15)
+                        ? const Color(0xFF4E03D0).withValues(alpha: 0.15)
                         : const Color(0xFF2D2D2D),
                     borderRadius: BorderRadius.circular(10.r),
                   ),
                   child: Icon(
                     Icons.remove,
                     color: _quantity > _minQuantity
-                        ? const Color(0xFF3B82F6)
+                        ? const Color(0xFF4E03D0)
                         : const Color(0xFF9CA3AF),
                     size: 20.sp,
                   ),
@@ -291,14 +291,14 @@ class _EducationPurchaseScreenState extends State<EducationPurchaseScreen> {
                   height: 40.w,
                   decoration: BoxDecoration(
                     color: _quantity < _maxQuantity
-                        ? const Color(0xFF3B82F6).withValues(alpha: 0.15)
+                        ? const Color(0xFF4E03D0).withValues(alpha: 0.15)
                         : const Color(0xFF2D2D2D),
                     borderRadius: BorderRadius.circular(10.r),
                   ),
                   child: Icon(
                     Icons.add,
                     color: _quantity < _maxQuantity
-                        ? const Color(0xFF3B82F6)
+                        ? const Color(0xFF4E03D0)
                         : const Color(0xFF9CA3AF),
                     size: 20.sp,
                   ),
@@ -367,7 +367,7 @@ class _EducationPurchaseScreenState extends State<EducationPurchaseScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
-              borderSide: const BorderSide(color: Color(0xFF3B82F6)),
+              borderSide: const BorderSide(color: Color(0xFF4E03D0)),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
@@ -436,7 +436,7 @@ class _EducationPurchaseScreenState extends State<EducationPurchaseScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
-              borderSide: const BorderSide(color: Color(0xFF3B82F6)),
+              borderSide: const BorderSide(color: Color(0xFF4E03D0)),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
@@ -512,7 +512,7 @@ class _EducationPurchaseScreenState extends State<EducationPurchaseScreen> {
           style: TextStyle(
             fontSize: isTotal ? 18.sp : 14.sp,
             fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
-            color: isTotal ? const Color(0xFF3B82F6) : Colors.white,
+            color: isTotal ? const Color(0xFF4E03D0) : Colors.white,
           ),
         ),
       ],
@@ -546,7 +546,7 @@ class _EducationPurchaseScreenState extends State<EducationPurchaseScreen> {
             }
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF3B82F6),
+            backgroundColor: const Color(0xFF4E03D0),
             padding: EdgeInsets.symmetric(vertical: 16.h),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16.r),

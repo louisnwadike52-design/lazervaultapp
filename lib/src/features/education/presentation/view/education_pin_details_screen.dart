@@ -196,7 +196,7 @@ class EducationPinDetailsScreen extends StatelessWidget {
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
-          color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+          color: const Color(0xFF4E03D0).withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -213,7 +213,7 @@ class EducationPinDetailsScreen extends StatelessWidget {
                     width: 28.w,
                     height: 28.w,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                      color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Center(
@@ -222,7 +222,7 @@ class EducationPinDetailsScreen extends StatelessWidget {
                         style: GoogleFonts.inter(
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w700,
-                          color: const Color(0xFF3B82F6),
+                          color: const Color(0xFF4E03D0),
                         ),
                       ),
                     ),
@@ -243,7 +243,7 @@ class EducationPinDetailsScreen extends StatelessWidget {
                 child: Container(
                   padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                    color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Row(
@@ -252,7 +252,7 @@ class EducationPinDetailsScreen extends StatelessWidget {
                       Icon(
                         Icons.copy,
                         size: 14.sp,
-                        color: const Color(0xFF3B82F6),
+                        color: const Color(0xFF4E03D0),
                       ),
                       SizedBox(width: 4.w),
                       Text(
@@ -260,7 +260,7 @@ class EducationPinDetailsScreen extends StatelessWidget {
                         style: GoogleFonts.inter(
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w500,
-                          color: const Color(0xFF3B82F6),
+                          color: const Color(0xFF4E03D0),
                         ),
                       ),
                     ],

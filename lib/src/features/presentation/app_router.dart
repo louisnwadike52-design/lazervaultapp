@@ -94,7 +94,6 @@ import 'package:lazervault/src/features/presentation/views/upload_image_scren.da
 import 'package:lazervault/src/features/portfolio/presentation/view/portfolio_details_screen.dart';
 import 'package:lazervault/src/features/portfolio/presentation/cubit/portfolio_cubit.dart';
 import '../../../core/services/injection_container.dart';
-import '../../../src/core/network/grpc_client.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/modern_onboarding_screen.dart';
 import '../../../main.dart' show AuthCheckScreen;
@@ -382,8 +381,7 @@ import 'package:lazervault/src/features/education/presentation/view/education_re
 import 'package:lazervault/src/features/education/presentation/view/create_education_reminder_screen.dart';
 import 'package:lazervault/src/features/education/presentation/cubit/education_beneficiary_cubit.dart';
 import 'package:lazervault/src/features/education/presentation/cubit/education_reminder_cubit.dart';
-import 'package:lazervault/src/features/education/data/repositories/education_repository_impl.dart';
-import 'package:lazervault/src/features/education/data/datasources/education_remote_datasource.dart';
+import 'package:lazervault/src/features/education/domain/repositories/education_repository.dart';
 
 // Water Bill imports
 import 'package:lazervault/src/features/water_bill/presentation/cubit/water_bill_cubit.dart';
@@ -3373,13 +3371,13 @@ GetPage(
     GetPage(
       name: AppRoutes.educationHistory,
       page: () => BlocProvider(
-        create: (context) => EducationHistoryCubit(
-          EducationRepositoryImpl(
-            remoteDataSource: EducationRemoteDataSourceImpl(
-              grpcClient: serviceLocator<GrpcClient>(),
-            ),
-          ),
-        )..loadHistory(),
+        // Reuse the registered EducationRepository singleton — the old
+        // hand-wiring called `serviceLocator<GrpcClient>()` without the
+        // `commerceGrpcClient` instance name, which crashed the screen
+        // on open.
+        create: (context) =>
+            EducationHistoryCubit(serviceLocator<EducationRepository>())
+              ..loadHistory(),
         child: const EducationHistoryScreen(),
       ),
       transition: Transition.rightToLeft,
@@ -3562,7 +3560,21 @@ GetPage(
     // preload cubits it doesn't use.
     GetPage(
       name: AppRoutes.internetBillSaved,
-      page: () => const InternetSavedBeneficiariesScreen(),
+      // Cubits are provided at route-level so State methods (edit
+      // nickname, delete, pull-to-refresh) can `context.read<...>()`
+      // via the State's outer BuildContext — inlining the
+      // MultiBlocProvider in the screen's build() caused "Could not
+      // find the correct Provider<InternetBeneficiaryCubit>" because
+      // State.context sits above its own build() subtree.
+      page: () => MultiBlocProvider(
+        providers: [
+          BlocProvider(
+              create: (_) => serviceLocator<InternetBeneficiaryCubit>()),
+          BlocProvider(
+              create: (_) => serviceLocator<InternetAutoRechargeCubit>()),
+        ],
+        child: const InternetSavedBeneficiariesScreen(),
+      ),
       transition: Transition.rightToLeft,
     ),
     GetPage(
