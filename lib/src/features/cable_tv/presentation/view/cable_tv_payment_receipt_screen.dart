@@ -246,6 +246,7 @@ class _CableTVPaymentReceiptScreenState
       case 'completed':
         return const Color(0xFF10B981);
       case 'pending':
+      case 'processing':
         return const Color(0xFFFB923C);
       case 'failed':
         return const Color(0xFFEF4444);
@@ -345,9 +346,11 @@ class _CableTVPaymentReceiptScreenState
                     Text(
                       payment.isCompleted
                           ? 'Payment Successful!'
-                          : payment.isPending
-                              ? 'Payment Pending'
-                              : 'Payment Failed',
+                          : payment.isProcessing
+                              ? 'Payment Processing'
+                              : payment.isPending
+                                  ? 'Payment Pending'
+                                  : 'Payment Failed',
                       style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 20.sp,
@@ -366,7 +369,7 @@ class _CableTVPaymentReceiptScreenState
                     ),
                     SizedBox(height: 20.h),
 
-                    // Pending payment banner
+                    // Pending / processing payment banner
                     if (payment.isPending) ...[
                       Container(
                         width: double.infinity,
@@ -390,7 +393,9 @@ class _CableTVPaymentReceiptScreenState
                             SizedBox(width: 10.w),
                             Expanded(
                               child: Text(
-                                'Your payment is being processed. The subscription will be activated shortly.',
+                                payment.isProcessing
+                                    ? 'Your payment is being processed in the background. The subscription will be activated shortly — no action needed.'
+                                    : 'Your payment is being processed. The subscription will be activated shortly.',
                                 style: GoogleFonts.inter(
                                   color: const Color(0xFFFB923C),
                                   fontSize: 13.sp,

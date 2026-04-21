@@ -35,7 +35,8 @@ class CableTVPaymentEntity extends Equatable {
 
   bool get isCompleted => status == 'completed';
   bool get isFailed => status == 'failed';
-  bool get isPending => status == 'pending';
+  bool get isPending => status == 'pending' || status == 'processing';
+  bool get isProcessing => status == 'processing';
 
   @override
   List<Object?> get props => [id, userId, accountId, billType, providerId, reference, amount, status, customerNumber, metadata, createdAt, newBalance, renewalDate, customerName];
