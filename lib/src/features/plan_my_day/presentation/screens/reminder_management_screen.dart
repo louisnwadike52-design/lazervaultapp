@@ -40,6 +40,7 @@ class _ReminderManagementScreenState extends State<ReminderManagementScreen> {
       title: 'Meeting prep',
       relatedEventId: 'evt123',
       minutesBefore: 15,
+      remindAt: DateTime.now().add(const Duration(hours: 1)),
       reminderType: 'relative',
       isActive: false,
       createdAt: DateTime.now().subtract(const Duration(days: 5)),

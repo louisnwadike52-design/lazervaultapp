@@ -467,39 +467,37 @@ Future<T> handleNetworkError<T>(
   throw StateError('Should not reach here');
 }
 
-/// Debounce function calls
-T Function<T>(T Function() func, Duration delay) debounce<T>(T Function() func, Duration delay) {
+/// Debounce function calls. Returns a wrapper that, when invoked, schedules
+/// `innerFunc` to run once the debounce window has elapsed without a new
+/// invocation. The return value of the most recent invocation is cached and
+/// handed back on the next call.
+T Function(T Function() innerFunc) debounce<T>(T Function() _, Duration delay) {
   Timer? timer;
   T? lastResult;
 
   return (T Function() innerFunc) {
-    if (timer != null) {
-      timer!.cancel();
-    }
-
+    timer?.cancel();
     timer = Timer(delay, () {
       lastResult = innerFunc();
     });
-
     return lastResult as T;
   };
 }
 
-/// Throttle function calls
-T Function<T>(T Function() func, Duration duration) throttle<T>(T Function() func, Duration duration) {
+/// Throttle function calls. Returns a wrapper that only invokes the inner
+/// function once per `duration`; subsequent calls inside that window return
+/// the cached last result.
+T Function(T Function() innerFunc) throttle<T>(T Function() _, Duration duration) {
   bool ready = true;
   T? lastResult;
 
   return (T Function() innerFunc) {
     if (!ready) return lastResult as T;
-
     ready = false;
     lastResult = innerFunc();
-
     Timer(duration, () {
       ready = true;
     });
-
     return lastResult as T;
   };
 }

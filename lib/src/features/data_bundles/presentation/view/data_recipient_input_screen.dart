@@ -21,82 +21,130 @@ class _DataRecipientInputScreenState extends State<DataRecipientInputScreen> {
   CountryLocale _selectedDialCountry = CountryLocales.all.first; // Nigeria default
   String? _validationError;
 
+  /// Nigerian mobile prefixes per carrier, keyed by the backend network
+  /// code passed via route args from the data-bundles home screen. Uses
+  /// the leading-0-stripped form (first 3 digits without the 0) so the
+  /// lookup works uniformly whether the user typed `0803…` or `803…`.
+  /// Kept inline here rather than in a shared file because airtime/data
+  /// are the only two flows that need it and the lists diverge slowly —
+  /// centralising would invite staleness in the other flow's mapping.
+  static const Map<String, Set<String>> _networkPrefixes = {
+    'mtn-data': {
+      '703', '704', '706', '707', '803', '806', '810', '813',
+      '814', '816', '903', '906', '913', '916',
+    },
+    'airtel-data': {
+      '701', '708', '802', '808', '812', '901', '902', '904',
+      '907', '912',
+    },
+    'glo-data': {
+      '705', '805', '807', '811', '815', '905', '915',
+    },
+    'etisalat-data': {
+      '809', '817', '818', '908', '909',
+    },
+  };
+
   @override
   void dispose() {
     _phoneController.dispose();
     super.dispose();
   }
 
+  /// Digits-only, leading-0-stripped form of the current input. Accepts
+  /// `0803…` (11 digits) and `803…` (10 digits) interchangeably, so the
+  /// validation reads one shape everywhere downstream.
+  String _normalizedPhone() {
+    final digits = _phoneController.text.trim().replaceAll(RegExp(r'[^\d]'), '');
+    return digits.startsWith('0') ? digits.substring(1) : digits;
+  }
+
   /// Build full E.164 phone number with country dial code.
   String _buildFullPhone() {
-    final local = _phoneController.text.trim().replaceAll(RegExp(r'[^\d]'), '');
-    final stripped = local.startsWith('0') ? local.substring(1) : local;
-    return '${_selectedDialCountry.dialCode}$stripped';
+    return '${_selectedDialCountry.dialCode}${_normalizedPhone()}';
+  }
+
+  /// True when [phone] belongs to the carrier identified by [network].
+  /// Mapping is conservative: a network we don't recognise (e.g. new
+  /// route code, test harness) returns true so we don't block purchases
+  /// behind an out-of-date list. Phone must be already normalised.
+  bool _prefixMatchesNetwork(String phone, String network) {
+    final allowed = _networkPrefixes[network];
+    if (allowed == null || phone.length < 3) return true;
+    return allowed.contains(phone.substring(0, 3));
+  }
+
+  /// Network code → display name for the cross-network error prompt.
+  /// Falls back to the code itself if absent, so an unseen network still
+  /// gets a coherent message.
+  String _networkDisplayFor(String network) {
+    switch (network) {
+      case 'mtn-data':
+        return 'MTN';
+      case 'airtel-data':
+        return 'Airtel';
+      case 'glo-data':
+        return 'Glo';
+      case 'etisalat-data':
+        return '9mobile';
+      default:
+        return network;
+    }
+  }
+
+  /// Central validator — returns an error string or null. Shared by
+  /// `onChanged` (soft validation) and `onContinue` (hard gate) so the
+  /// two code paths can't diverge.
+  String? _validatePhone(String normalized, String network) {
+    if (normalized.isEmpty) return 'Phone number is required';
+    if (normalized.length < 10) return 'Phone number must be 10 digits';
+    if (normalized.length > 10) {
+      // Defensive: LengthLimitingTextInputFormatter caps at 11 digits
+      // with the leading 0, so post-strip we expect exactly 10. Anything
+      // longer is malformed input (e.g. user pasted with country code).
+      return 'Phone number must be 10 digits';
+    }
+    if (!_prefixMatchesNetwork(normalized, network)) {
+      return "This number isn't on ${_networkDisplayFor(network)}. "
+          'Go back and reselect the correct network.';
+    }
+    return null;
   }
 
   void _onPhoneChanged(String value) {
-    final phoneNumber = value.replaceAll(RegExp(r'[^\d]'), '');
-    final stripped = phoneNumber.startsWith('0') ? phoneNumber.substring(1) : phoneNumber;
-
-    // Clear error when user starts typing valid input
-    if (stripped.length >= 10 && _validationError != null) {
-      setState(() {
-        _validationError = null;
-      });
-    }
-
-    // Validate phone number
-    if (stripped.isEmpty) {
-      setState(() {
-        _validationError = 'Phone number is required';
-      });
-    } else if (stripped.length < 10) {
-      setState(() {
-        _validationError = 'Phone number must be 10 digits';
-      });
-    } else {
-      setState(() {
-        _validationError = null;
-      });
+    final args = Get.arguments as Map<String, dynamic>;
+    final network = args['network'] as String;
+    final normalized = _normalizedPhone();
+    final error = _validatePhone(normalized, network);
+    if (error != _validationError) {
+      setState(() => _validationError = error);
     }
   }
 
   void _onContinue() {
-    final localDigits = _phoneController.text.trim().replaceAll(RegExp(r'[^\d]'), '');
-    final stripped = localDigits.startsWith('0') ? localDigits.substring(1) : localDigits;
-
-    if (stripped.isEmpty) {
-      setState(() {
-        _validationError = 'Phone number is required';
-      });
+    final args = Get.arguments as Map<String, dynamic>;
+    final network = args['network'] as String;
+    final normalized = _normalizedPhone();
+    final error = _validatePhone(normalized, network);
+    if (error != null) {
+      setState(() => _validationError = error);
       return;
     }
 
-    if (stripped.length < 10) {
-      setState(() {
-        _validationError = 'Phone number must be 10 digits';
-      });
-      return;
-    }
+    final plan = args['plan'] as DataPlanEntity;
+    final networkName = args['networkName'] as String;
+    final networkColorValue = args['networkColor'] as int;
 
-    if (_validationError == null) {
-      final args = Get.arguments as Map<String, dynamic>;
-      final plan = args['plan'] as DataPlanEntity;
-      final network = args['network'] as String;
-      final networkName = args['networkName'] as String;
-      final networkColorValue = args['networkColor'] as int;
-
-      Get.toNamed(
-        AppRoutes.dataBundlesPaymentConfirmation,
-        arguments: {
-          'plan': plan,
-          'network': network,
-          'networkName': networkName,
-          'networkColor': networkColorValue,
-          'phoneNumber': _buildFullPhone(),
-        },
-      );
-    }
+    Get.toNamed(
+      AppRoutes.dataBundlesPaymentConfirmation,
+      arguments: {
+        'plan': plan,
+        'network': network,
+        'networkName': networkName,
+        'networkColor': networkColorValue,
+        'phoneNumber': _buildFullPhone(),
+      },
+    );
   }
 
   @override
@@ -293,14 +341,6 @@ class _DataRecipientInputScreenState extends State<DataRecipientInputScreen> {
                       ),
                     ),
                   ],
-                  SizedBox(height: 6.h),
-                  Text(
-                    'Enter the 10-digit phone number (excluding leading 0)',
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFF9CA3AF).withValues(alpha: 0.6),
-                      fontSize: 12.sp,
-                    ),
-                  ),
                 ],
               ),
 
@@ -313,7 +353,7 @@ class _DataRecipientInputScreenState extends State<DataRecipientInputScreen> {
                 child: ElevatedButton(
                   onPressed: _onContinue,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF3B82F6),
+                    backgroundColor: const Color(0xFF4E03D0),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),
                     ),

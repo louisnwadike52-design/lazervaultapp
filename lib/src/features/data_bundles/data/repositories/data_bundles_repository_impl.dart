@@ -66,6 +66,28 @@ class DataBundlesRepositoryImpl implements DataBundlesRepository {
   }
 
   @override
+  Future<Either<Failure, List<DataPurchaseEntity>>> getPurchaseHistory({
+    int limit = 50,
+    int offset = 0,
+  }) async {
+    try {
+      final rows =
+          await remoteDataSource.getHistory(limit: limit, offset: offset);
+      return Right(rows);
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+        message: e.message ?? 'Failed to load purchase history',
+        statusCode: e.codeName,
+      ));
+    } catch (e) {
+      return Left(ServerFailure(
+        message: e.toString(),
+        statusCode: 'UNKNOWN',
+      ));
+    }
+  }
+
+  @override
   Future<Either<Failure, void>> enableAutoRenew({
     required String subscriptionId,
     required String variationId,

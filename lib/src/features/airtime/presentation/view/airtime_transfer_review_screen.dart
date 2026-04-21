@@ -223,21 +223,25 @@ class _AirtimeTransferReviewScreenState extends State<AirtimeTransferReviewScree
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(height: 20.h),
+                      SizedBox(height: 12.h),
                       _buildTransferSummaryCard(),
-                      SizedBox(height: 20.h),
+                      SizedBox(height: 12.h),
                       _buildDetailsCard(),
-                      SizedBox(height: 20.h),
+                      SizedBox(height: 12.h),
                       _buildFeeBreakdownCard(),
-                      SizedBox(height: 20.h),
+                      SizedBox(height: 12.h),
                       _buildSecurityInfo(),
-                      SizedBox(height: 24.h),
-                      _buildConfirmButton(),
-                      SizedBox(height: 40.h),
+                      SizedBox(height: 16.h),
                     ],
                   ),
                 ),
               ),
+            ),
+            // Confirm pinned below the scroll — matches the review screen
+            // for buy-for-self so the CTA is always reachable.
+            Padding(
+              padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 12.h),
+              child: _buildConfirmButton(),
             ),
           ],
         ),
@@ -422,7 +426,7 @@ class _AirtimeTransferReviewScreenState extends State<AirtimeTransferReviewScree
       child: ElevatedButton(
         onPressed: _isProcessing ? null : _processTransfer,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFFB923C),
+          backgroundColor: const Color(0xFF4E03D0),
           disabledBackgroundColor: const Color(0xFF2D2D2D),
           foregroundColor: Colors.white,
           padding: EdgeInsets.symmetric(vertical: 16.h),

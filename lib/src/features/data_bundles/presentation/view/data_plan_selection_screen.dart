@@ -23,17 +23,56 @@ class _DataPlanSelectionScreenState extends State<DataPlanSelectionScreen> {
   @override
   void initState() {
     super.initState();
-    final args = Get.arguments as Map<String, dynamic>;
-    final network = args['network'] as String;
-    context.read<DataBundlesCubit>().getDataPlans(network: network);
+    final network = _argNetwork();
+    if (network.isNotEmpty) {
+      context.read<DataBundlesCubit>().getDataPlans(network: network);
+    }
+  }
+
+  /// Defensive readers — every entry into this screen goes through
+  /// `Get.arguments`, but not every caller populates every key (the
+  /// saved-contacts bottomsheet omitted `networkColor` for months
+  /// and crashed the page on open). Default to safe empties/primary
+  /// accent so a missing arg never takes the screen down.
+  Map<String, dynamic> get _args {
+    final raw = Get.arguments;
+    return raw is Map<String, dynamic> ? raw : const {};
+  }
+
+  String _argNetwork() {
+    final v = _args['network'];
+    return v is String ? v : '';
+  }
+
+  String _argNetworkName() {
+    final v = _args['networkName'];
+    return v is String ? v : '';
+  }
+
+  /// Network brand colour fallback mirrors the home screen grid so a
+  /// contact saved without a colour still renders with the carrier's
+  /// canonical accent instead of a cold grey.
+  int _argNetworkColor() {
+    final v = _args['networkColor'];
+    if (v is int) return v;
+    switch (_argNetwork().toUpperCase()) {
+      case 'MTN-DATA':
+        return const Color(0xFFFBBF24).toARGB32();
+      case 'AIRTEL-DATA':
+        return const Color(0xFFEF4444).toARGB32();
+      case 'GLO-DATA':
+      case 'ETISALAT-DATA':
+        return const Color(0xFF10B981).toARGB32();
+      default:
+        return const Color(0xFF4E03D0).toARGB32();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final args = Get.arguments as Map<String, dynamic>;
-    final networkName = args['networkName'] as String;
-    final network = args['network'] as String;
-    final networkColorValue = args['networkColor'] as int;
+    final networkName = _argNetworkName();
+    final network = _argNetwork();
+    final networkColorValue = _argNetworkColor();
     final networkColor = Color(networkColorValue);
 
     return Scaffold(

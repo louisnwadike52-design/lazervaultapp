@@ -203,6 +203,15 @@ class OrdersLoaded extends StockState {
   List<Object?> get props => [orders];
 }
 
+class OrdersError extends StockState {
+  final String message;
+
+  const OrdersError(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}
+
 class OrderCancelling extends StockState {}
 
 class OrderCancelled extends StockState {
@@ -224,6 +233,20 @@ class WatchlistsLoaded extends StockState {
 
   @override
   List<Object?> get props => [watchlists];
+}
+
+// Singular aliases — the watchlist screen historically operated on a single
+// flattened list of stocks, which maps better to the UI (just cards by
+// ticker symbol).
+class WatchlistLoading extends StockState {}
+
+class WatchlistLoaded extends StockState {
+  final List<Stock> stocks;
+
+  const WatchlistLoaded(this.stocks);
+
+  @override
+  List<Object?> get props => [stocks];
 }
 
 class WatchlistsError extends StockState {

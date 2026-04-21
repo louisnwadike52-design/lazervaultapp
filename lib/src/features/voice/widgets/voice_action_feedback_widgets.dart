@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -381,7 +384,7 @@ class _VoicePinPromptOverlayState extends State<VoicePinPromptOverlay> {
   }
 
   void _submitPin() {
-    if (_pinController.length == 4) {
+    if (_pinController.text.length == 4) {
       // TODO: Submit PIN to backend
       Navigator.pop(context);
     }
@@ -494,7 +497,7 @@ class _VoicePinPromptOverlayState extends State<VoicePinPromptOverlay> {
                   Expanded(
                     flex: 2,
                     child: ElevatedButton(
-                      onPressed: _pinController.length == 4 ? _submitPin : null,
+                      onPressed: _pinController.text.length == 4 ? _submitPin : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.purple,
                         foregroundColor: Colors.white,
@@ -791,7 +794,7 @@ class _AudioVisualizerPainter extends CustomPainter {
     for (int i = 0; i < barCount; i++) {
       // Create wave effect based on position and level
       final wave = (i / barCount) * 3.14159 * 2;
-      final heightMod = (1 + (wave * 0.3).sin()) * 0.5 + 0.5;
+      final heightMod = (1 + math.sin(wave * 0.3)) * 0.5 + 0.5;
       final barHeight = maxBarHeight * level * heightMod;
 
       final x = i * (barWidth + 2);

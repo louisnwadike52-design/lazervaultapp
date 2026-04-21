@@ -5,8 +5,8 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../cubit/stock_cubit.dart';
 import '../../cubit/stock_state.dart';
+import '../../../../../core/utils/currency_formatter.dart';
 import '../../domain/entities/stock_entity.dart';
-import '../widgets/stock_search_bar.dart';
 import 'stock_details_screen.dart';
 import 'buy_stock_screen.dart';
 import 'sell_stock_screen.dart';
@@ -239,7 +239,9 @@ class _StocksMainScreenState extends State<StocksMainScreen>
 
         final stocks = state is StockLoaded ? state.stocks : <Stock>[];
         final portfolio = state is PortfolioLoaded ? state.portfolio : null;
-        final indices = state is MarketIndicesLoaded ? state.indices : {};
+        final indices = state is MarketIndicesLoaded
+            ? state.indices
+            : const <String, double>{};
 
         return RefreshIndicator(
           onRefresh: () async {

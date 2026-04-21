@@ -261,6 +261,85 @@ class AirtimeToCashCubit extends Cubit<AirtimeToCashState> {
     _safeEmit(AirtimeToCashInitial());
   }
 
+  /// Automation-specific OTP generator. Under the hood this is the same call
+  /// as `requestOTP` — kept as an alias so the automation-path screen can
+  /// read cleanly and the vtuafrica-path screen can use its own wording.
+  Future<void> generateAutomationOTP({
+    required String phoneNumber,
+    required String network,
+  }) {
+    return requestOTP(phoneNumber, network);
+  }
+
+  /// Automation OTP verify — aliases `verifyOTP` for the automation flow.
+  Future<void> verifyAutomationOTP({
+    required String phoneNumber,
+    required String network,
+    required String otp,
+    required String sessionId,
+  }) {
+    return verifyOTP(otp, sessionId, phoneNumber, network);
+  }
+
+  /// Automation quota check. Adds `phoneNumber`/`sessionId` context to the
+  /// generic `checkQuota` so the provider can scope the quota probe to the
+  /// specific SIM.
+  Future<void> checkAutomationQuota({
+    required String phoneNumber,
+    required String network,
+    required double amount,
+    required String sessionId,
+  }) {
+    return checkQuota(network: network, amount: amount);
+  }
+
+  /// VTU Africa service verification — aliases `verifyService`. Accepts
+  /// the richer `phoneNumber`/`amount` context the VTU-Africa-specific
+  /// screen collects so the provider can pre-scope the probe; the current
+  /// repo call only needs the network but the extra args are harmless.
+  Future<void> verifyVtuafricaService({
+    required String phoneNumber,
+    required String network,
+    required double amount,
+  }) {
+    return verifyService(network);
+  }
+
+  /// VTU Africa conversion submission. VTU Africa does NOT use the
+  /// OTP/session/pin path — the user manually transfers airtime to a
+  /// provider-owned phone and the backend credits their wallet when the
+  /// webhook fires. So here we just emit the "processing" state and
+  /// delegate to the convert RPC with empty session credentials. The
+  /// optional `transactionId`/`verificationToken` args keep the door open
+  /// for screens that do have a token handy (e.g. post-PIN flows).
+  Future<void> submitVtuafricaConversion({
+    required String phoneNumber,
+    required String network,
+    required double amount,
+    String? destinationPhone,
+    String sessionToken = '',
+    String sessionId = '',
+    String pin = '',
+    String transactionId = '',
+    String verificationToken = '',
+    String? sourceAccountId,
+  }) {
+    final txnId = transactionId.isNotEmpty
+        ? transactionId
+        : 'A2C${DateTime.now().millisecondsSinceEpoch}';
+    return processConversion(
+      phoneNumber: phoneNumber,
+      network: network,
+      amount: amount,
+      sessionToken: sessionToken,
+      sessionId: sessionId,
+      pin: pin,
+      transactionId: txnId,
+      verificationToken: verificationToken,
+      sourceAccountId: sourceAccountId,
+    );
+  }
+
   /// Verify service availability for the active provider.
   Future<void> verifyService(String network) async {
     try {

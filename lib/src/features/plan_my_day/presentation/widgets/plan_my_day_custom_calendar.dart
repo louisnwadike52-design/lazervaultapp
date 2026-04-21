@@ -749,7 +749,7 @@ class _DayCalendarView extends StatelessWidget {
                       ...hourEvents.map((event) => _buildEventItem(event)),
                     ],
                   )
-                : null,
+                : const SizedBox.shrink(),
           ),
         ],
       ),

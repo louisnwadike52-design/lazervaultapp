@@ -88,6 +88,8 @@ abstract class ElectricityBillRepository {
     int? dayOfWeek,
     int? dayOfMonth,
     int maxRetries = 3,
+    int? executionHour,
+    int? executionMinute,
   });
 
   Future<Either<Failure, List<AutoRechargeEntity>>> getAutoRecharges();
@@ -99,6 +101,8 @@ abstract class ElectricityBillRepository {
     int? dayOfWeek,
     int? dayOfMonth,
     int? maxRetries,
+    int? executionHour,
+    int? executionMinute,
   });
 
   Future<Either<Failure, void>> pauseAutoRecharge({

@@ -340,7 +340,7 @@ class _StockPortfolioScreenState extends State<StockPortfolioScreen>
               SizedBox(height: 16.h),
               _buildAnalyticsCard('Allocation', [
                 _buildAnalyticsItem('Stocks',
-                    portfolio?.stockCount ?? 0, 'stocks'),
+                    (portfolio?.stockCount ?? 0).toDouble(), 'stocks'),
                 _buildAnalyticsItem('Total Invested',
                     portfolio?.totalInvested ?? 0.0, 'NGN'),
               ]),
@@ -783,39 +783,6 @@ class _StockPortfolioScreenState extends State<StockPortfolioScreen>
   }
 }
 
-// Helper classes for Portfolio
-class StockHolding {
-  final Stock stock;
-  final int quantity;
-  final double averagePrice;
-  final double dayChangePercent;
-
-  StockHolding({
-    required this.stock,
-    required this.quantity,
-    required this.averagePrice,
-    required this.dayChangePercent,
-  });
-}
-
-class Portfolio {
-  final double totalValue;
-  final double dayChange;
-  final double dayChangePercent;
-  final double totalReturnPercent;
-  final double totalInvested;
-  final double dividendIncome;
-  final int stockCount;
-  final List<StockHolding> holdings;
-
-  Portfolio({
-    required this.totalValue,
-    required this.dayChange,
-    required this.dayChangePercent,
-    required this.totalReturnPercent,
-    required this.totalInvested,
-    required this.dividendIncome,
-    required this.stockCount,
-    required this.holdings,
-  });
-}
+// Portfolio + StockHolding live on the domain entity
+// (`stock_entity.dart`). Using the shared types here keeps the screen
+// lined up with whatever the cubit emits.

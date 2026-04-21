@@ -143,7 +143,7 @@ Date: ${dateFormat.format(widget.order.createdAt)}
   }
 
   String _getStatusText() {
-    switch (widget.order.status) {
+    switch (widget.order.orderStatus) {
       case OrderStatus.executed:
         return 'Executed';
       case OrderStatus.pending:
@@ -410,7 +410,7 @@ Date: ${dateFormat.format(widget.order.createdAt)}
                 SizedBox(width: 12.w),
                 Expanded(
                   child: Text(
-                    widget.order.status == OrderStatus.executed
+                    widget.order.orderStatus == OrderStatus.executed
                         ? 'Your order has been executed successfully'
                         : 'Your order is pending and will be executed when conditions are met',
                     style: GoogleFonts.inter(
@@ -432,7 +432,7 @@ Date: ${dateFormat.format(widget.order.createdAt)}
     Color textColor;
     String statusText;
 
-    switch (widget.order.status) {
+    switch (widget.order.orderStatus) {
       case OrderStatus.executed:
         backgroundColor = Colors.green;
         textColor = Colors.white;
@@ -570,7 +570,7 @@ Date: ${dateFormat.format(widget.order.createdAt)}
   }
 
   String _getOrderTypeLabel() {
-    switch (widget.order.type) {
+    switch (widget.order.orderType) {
       case OrderType.market:
         return 'Market Order';
       case OrderType.limit:

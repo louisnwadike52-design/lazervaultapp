@@ -3,6 +3,8 @@ syntax = "proto3";
 package utilitypayments;
 
 import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
 option go_package = "utility-payments-service/proto";
@@ -182,6 +184,69 @@ service UtilityPaymentsService {
     };
   }
 
+  // === EDUCATION BENEFICIARY OPERATIONS ===
+
+  rpc SaveEducationBeneficiary(SaveEducationBeneficiaryRequest) returns (SaveEducationBeneficiaryResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/education/beneficiaries"
+      body: "*"
+    };
+  }
+
+  rpc GetEducationBeneficiaries(GetEducationBeneficiariesRequest) returns (GetEducationBeneficiariesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/education/beneficiaries"
+    };
+  }
+
+  rpc UpdateEducationBeneficiary(UpdateEducationBeneficiaryRequest) returns (UpdateEducationBeneficiaryResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/bills/education/beneficiaries/{id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteEducationBeneficiary(DeleteEducationBeneficiaryRequest) returns (DeleteEducationBeneficiaryResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/bills/education/beneficiaries/{id}"
+    };
+  }
+
+  // === EDUCATION REMINDER OPERATIONS ===
+
+  rpc CreateEducationReminder(CreateEducationReminderRequest) returns (CreateEducationReminderResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/education/reminders"
+      body: "*"
+    };
+  }
+
+  rpc GetEducationReminders(GetEducationRemindersRequest) returns (GetEducationRemindersResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/education/reminders"
+    };
+  }
+
+  rpc UpdateEducationReminder(UpdateEducationReminderRequest) returns (UpdateEducationReminderResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/bills/education/reminders/{reminder_id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteEducationReminder(DeleteEducationReminderRequest) returns (DeleteEducationReminderResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/bills/education/reminders/{reminder_id}"
+    };
+  }
+
+  rpc MarkEducationReminderComplete(MarkEducationReminderCompleteRequest) returns (MarkEducationReminderCompleteResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/education/reminders/{reminder_id}/complete"
+      body: "*"
+    };
+  }
+
   // === SUBSCRIPTION TRACKING ===
 
   // Get active subscriptions for a user
@@ -238,30 +303,6 @@ service UtilityPaymentsService {
     };
   }
 
-  // === AIRTIME TRANSFER ===
-
-  // Transfer airtime from user's wallet to recipient's phone (with platform commission)
-  rpc TransferAirtime(TransferAirtimeRequest) returns (TransferAirtimeResponse) {
-    option (google.api.http) = {
-      post: "/api/v1/bills/transferairtime"
-      body: "*"
-    };
-  }
-
-  // Get airtime transfer commission rates
-  rpc GetAirtimeTransferRates(GetAirtimeTransferRatesRequest) returns (GetAirtimeTransferRatesResponse) {
-    option (google.api.http) = {
-      get: "/api/v1/bills/airtimetransferrates"
-    };
-  }
-
-  // Get airtime transfer history
-  rpc GetAirtimeTransferHistory(GetAirtimeTransferHistoryRequest) returns (GetAirtimeTransferHistoryResponse) {
-    option (google.api.http) = {
-      get: "/api/v1/bills/airtimetransferhistory"
-    };
-  }
-
   // === AIRTIME-TO-CASH ===
 
   rpc GetAirtimeToCashRates(GetAirtimeToCashRatesRequest) returns (GetAirtimeToCashRatesResponse) {
@@ -297,22 +338,644 @@ service UtilityPaymentsService {
     };
   }
 
+  // Verify airtime-to-cash service availability and provider info
   rpc VerifyAirtimeToCashService(VerifyAirtimeToCashServiceRequest) returns (VerifyAirtimeToCashServiceResponse) {
     option (google.api.http) = {
-      post: "/api/v1/bills/airtime-to-cash/verify"
+      get: "/api/v1/bills/airtime-to-cash/verify"
+    };
+  }
+
+  // Get airtime-to-cash provider information and status
+  rpc GetAirtimeToCashProviderInfo(GetAirtimeToCashProviderInfoRequest) returns (GetAirtimeToCashProviderInfoResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/airtime-to-cash/provider-info"
+    };
+  }
+
+  // Check airtime-to-cash quota/limits for a network
+  rpc CheckAirtimeToCashQuota(CheckAirtimeToCashQuotaRequest) returns (CheckAirtimeToCashQuotaResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/airtime-to-cash/check-quota"
       body: "*"
     };
   }
 
-  rpc GetAirtimeToCashProviderInfo(GetAirtimeToCashProviderInfoRequest) returns (GetAirtimeToCashProviderInfoResponse) {
+  // === AIRTIME BENEFICIARY OPERATIONS ===
+
+  rpc SaveAirtimeBeneficiary(SaveAirtimeBeneficiaryRequest) returns (SaveAirtimeBeneficiaryResponse) {
     option (google.api.http) = {
-      get: "/api/v1/bills/airtime-to-cash/provider"
+      post: "/api/v1/bills/airtime/beneficiaries"
+      body: "*"
     };
   }
 
-  rpc CheckAirtimeToCashQuota(CheckAirtimeToCashQuotaRequest) returns (CheckAirtimeToCashQuotaResponse) {
+  rpc GetAirtimeBeneficiaries(GetAirtimeBeneficiariesRequest) returns (GetAirtimeBeneficiariesResponse) {
     option (google.api.http) = {
-      post: "/api/v1/bills/airtime-to-cash/checkquota"
+      get: "/api/v1/bills/airtime/beneficiaries"
+    };
+  }
+
+  rpc UpdateAirtimeBeneficiary(UpdateAirtimeBeneficiaryRequest) returns (UpdateAirtimeBeneficiaryResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/bills/airtime/beneficiaries/{id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteAirtimeBeneficiary(DeleteAirtimeBeneficiaryRequest) returns (DeleteAirtimeBeneficiaryResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/bills/airtime/beneficiaries/{id}"
+    };
+  }
+
+  // === AIRTIME AUTO-RECHARGE OPERATIONS ===
+
+  rpc CreateAirtimeAutoRecharge(CreateAirtimeAutoRechargeRequest) returns (CreateAirtimeAutoRechargeResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/airtime/auto-recharge"
+      body: "*"
+    };
+  }
+
+  rpc GetAirtimeAutoRecharges(GetAirtimeAutoRechargesRequest) returns (GetAirtimeAutoRechargesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/airtime/auto-recharge"
+    };
+  }
+
+  rpc UpdateAirtimeAutoRecharge(UpdateAirtimeAutoRechargeRequest) returns (UpdateAirtimeAutoRechargeResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/bills/airtime/auto-recharge/{auto_recharge_id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteAirtimeAutoRecharge(DeleteAirtimeAutoRechargeRequest) returns (DeleteAirtimeAutoRechargeResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/bills/airtime/auto-recharge/{auto_recharge_id}"
+    };
+  }
+
+  rpc PauseAirtimeAutoRecharge(PauseAirtimeAutoRechargeRequest) returns (PauseAirtimeAutoRechargeResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/airtime/auto-recharge/{auto_recharge_id}/pause"
+      body: "*"
+    };
+  }
+
+  rpc ResumeAirtimeAutoRecharge(ResumeAirtimeAutoRechargeRequest) returns (ResumeAirtimeAutoRechargeResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/airtime/auto-recharge/{auto_recharge_id}/resume"
+      body: "*"
+    };
+  }
+
+  // === AIRTIME REMINDER OPERATIONS ===
+
+  rpc CreateAirtimeReminder(CreateAirtimeReminderRequest) returns (CreateAirtimeReminderResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/airtime/reminders"
+      body: "*"
+    };
+  }
+
+  rpc GetAirtimeReminders(GetAirtimeRemindersRequest) returns (GetAirtimeRemindersResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/airtime/reminders"
+    };
+  }
+
+  rpc UpdateAirtimeReminder(UpdateAirtimeReminderRequest) returns (UpdateAirtimeReminderResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/bills/airtime/reminders/{reminder_id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteAirtimeReminder(DeleteAirtimeReminderRequest) returns (DeleteAirtimeReminderResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/bills/airtime/reminders/{reminder_id}"
+    };
+  }
+
+  rpc MarkAirtimeReminderComplete(MarkAirtimeReminderCompleteRequest) returns (MarkAirtimeReminderCompleteResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/airtime/reminders/{reminder_id}/complete"
+      body: "*"
+    };
+  }
+
+  // === AIRTIME PAYMENT RECEIPT ===
+
+  rpc GetAirtimePaymentReceipt(GetAirtimePaymentReceiptRequest) returns (GetAirtimePaymentReceiptResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/airtime/payments/{payment_id}/receipt"
+    };
+  }
+
+  // === DATA BENEFICIARY OPERATIONS ===
+
+  rpc SaveDataBeneficiary(SaveDataBeneficiaryRequest) returns (SaveDataBeneficiaryResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/data/beneficiaries"
+      body: "*"
+    };
+  }
+
+  rpc GetDataBeneficiaries(GetDataBeneficiariesRequest) returns (GetDataBeneficiariesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/data/beneficiaries"
+    };
+  }
+
+  rpc UpdateDataBeneficiary(UpdateDataBeneficiaryRequest) returns (UpdateDataBeneficiaryResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/bills/data/beneficiaries/{id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteDataBeneficiary(DeleteDataBeneficiaryRequest) returns (DeleteDataBeneficiaryResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/bills/data/beneficiaries/{id}"
+    };
+  }
+
+  // === DATA AUTO-RECHARGE OPERATIONS ===
+
+  rpc CreateDataAutoRecharge(CreateDataAutoRechargeRequest) returns (CreateDataAutoRechargeResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/data/auto-recharge"
+      body: "*"
+    };
+  }
+
+  rpc GetDataAutoRecharges(GetDataAutoRechargesRequest) returns (GetDataAutoRechargesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/data/auto-recharge"
+    };
+  }
+
+  rpc UpdateDataAutoRecharge(UpdateDataAutoRechargeRequest) returns (UpdateDataAutoRechargeResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/bills/data/auto-recharge/{auto_recharge_id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteDataAutoRecharge(DeleteDataAutoRechargeRequest) returns (DeleteDataAutoRechargeResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/bills/data/auto-recharge/{auto_recharge_id}"
+    };
+  }
+
+  rpc PauseDataAutoRecharge(PauseDataAutoRechargeRequest) returns (PauseDataAutoRechargeResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/data/auto-recharge/{auto_recharge_id}/pause"
+      body: "*"
+    };
+  }
+
+  rpc ResumeDataAutoRecharge(ResumeDataAutoRechargeRequest) returns (ResumeDataAutoRechargeResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/data/auto-recharge/{auto_recharge_id}/resume"
+      body: "*"
+    };
+  }
+
+  // === DATA REMINDER OPERATIONS ===
+
+  rpc CreateDataReminder(CreateDataReminderRequest) returns (CreateDataReminderResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/data/reminders"
+      body: "*"
+    };
+  }
+
+  rpc GetDataReminders(GetDataRemindersRequest) returns (GetDataRemindersResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/data/reminders"
+    };
+  }
+
+  rpc UpdateDataReminder(UpdateDataReminderRequest) returns (UpdateDataReminderResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/bills/data/reminders/{reminder_id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteDataReminder(DeleteDataReminderRequest) returns (DeleteDataReminderResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/bills/data/reminders/{reminder_id}"
+    };
+  }
+
+  rpc MarkDataReminderComplete(MarkDataReminderCompleteRequest) returns (MarkDataReminderCompleteResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/data/reminders/{reminder_id}/complete"
+      body: "*"
+    };
+  }
+
+  // === CABLE TV BENEFICIARY OPERATIONS ===
+
+  rpc SaveCableTVBeneficiary(SaveCableTVBeneficiaryRequest) returns (SaveCableTVBeneficiaryResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/cable-tv/beneficiaries"
+      body: "*"
+    };
+  }
+
+  rpc GetCableTVBeneficiaries(GetCableTVBeneficiariesRequest) returns (GetCableTVBeneficiariesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/cable-tv/beneficiaries"
+    };
+  }
+
+  rpc UpdateCableTVBeneficiary(UpdateCableTVBeneficiaryRequest) returns (UpdateCableTVBeneficiaryResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/bills/cable-tv/beneficiaries/{id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteCableTVBeneficiary(DeleteCableTVBeneficiaryRequest) returns (DeleteCableTVBeneficiaryResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/bills/cable-tv/beneficiaries/{id}"
+    };
+  }
+
+  // === CABLE TV AUTO-RECHARGE OPERATIONS ===
+
+  rpc CreateCableTVAutoRecharge(CreateCableTVAutoRechargeRequest) returns (CreateCableTVAutoRechargeResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/cable-tv/auto-recharge"
+      body: "*"
+    };
+  }
+
+  rpc GetCableTVAutoRecharges(GetCableTVAutoRechargesRequest) returns (GetCableTVAutoRechargesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/cable-tv/auto-recharge"
+    };
+  }
+
+  rpc UpdateCableTVAutoRecharge(UpdateCableTVAutoRechargeRequest) returns (UpdateCableTVAutoRechargeResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/bills/cable-tv/auto-recharge/{auto_recharge_id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteCableTVAutoRecharge(DeleteCableTVAutoRechargeRequest) returns (DeleteCableTVAutoRechargeResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/bills/cable-tv/auto-recharge/{auto_recharge_id}"
+    };
+  }
+
+  rpc PauseCableTVAutoRecharge(PauseCableTVAutoRechargeRequest) returns (PauseCableTVAutoRechargeResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/cable-tv/auto-recharge/{auto_recharge_id}/pause"
+      body: "*"
+    };
+  }
+
+  rpc ResumeCableTVAutoRecharge(ResumeCableTVAutoRechargeRequest) returns (ResumeCableTVAutoRechargeResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/cable-tv/auto-recharge/{auto_recharge_id}/resume"
+      body: "*"
+    };
+  }
+
+  // === CABLE TV REMINDER OPERATIONS ===
+
+  rpc CreateCableTVReminder(CreateCableTVReminderRequest) returns (CreateCableTVReminderResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/cable-tv/reminders"
+      body: "*"
+    };
+  }
+
+  rpc GetCableTVReminders(GetCableTVRemindersRequest) returns (GetCableTVRemindersResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/cable-tv/reminders"
+    };
+  }
+
+  rpc UpdateCableTVReminder(UpdateCableTVReminderRequest) returns (UpdateCableTVReminderResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/bills/cable-tv/reminders/{reminder_id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteCableTVReminder(DeleteCableTVReminderRequest) returns (DeleteCableTVReminderResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/bills/cable-tv/reminders/{reminder_id}"
+    };
+  }
+
+  rpc MarkCableTVReminderComplete(MarkCableTVReminderCompleteRequest) returns (MarkCableTVReminderCompleteResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/cable-tv/reminders/{reminder_id}/complete"
+      body: "*"
+    };
+  }
+
+  // === WATER BILL OPERATIONS ===
+
+  // Get water bill providers
+  rpc GetWaterProviders(GetWaterProvidersRequest) returns (GetWaterProvidersResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/waterproviders"
+    };
+  }
+
+  // === WATER BENEFICIARY OPERATIONS ===
+
+  rpc SaveWaterBeneficiary(SaveWaterBeneficiaryRequest) returns (SaveWaterBeneficiaryResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/water/beneficiaries"
+      body: "*"
+    };
+  }
+
+  rpc GetWaterBeneficiaries(GetWaterBeneficiariesRequest) returns (GetWaterBeneficiariesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/water/beneficiaries"
+    };
+  }
+
+  rpc UpdateWaterBeneficiary(UpdateWaterBeneficiaryRequest) returns (UpdateWaterBeneficiaryResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/bills/water/beneficiaries/{id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteWaterBeneficiary(DeleteWaterBeneficiaryRequest) returns (DeleteWaterBeneficiaryResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/bills/water/beneficiaries/{id}"
+    };
+  }
+
+  // === WATER AUTO-RECHARGE OPERATIONS ===
+
+  rpc CreateWaterAutoRecharge(CreateWaterAutoRechargeRequest) returns (CreateWaterAutoRechargeResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/water/auto-recharge"
+      body: "*"
+    };
+  }
+
+  rpc GetWaterAutoRecharges(GetWaterAutoRechargesRequest) returns (GetWaterAutoRechargesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/water/auto-recharge"
+    };
+  }
+
+  rpc UpdateWaterAutoRecharge(UpdateWaterAutoRechargeRequest) returns (UpdateWaterAutoRechargeResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/bills/water/auto-recharge/{auto_recharge_id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteWaterAutoRecharge(DeleteWaterAutoRechargeRequest) returns (DeleteWaterAutoRechargeResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/bills/water/auto-recharge/{auto_recharge_id}"
+    };
+  }
+
+  rpc PauseWaterAutoRecharge(PauseWaterAutoRechargeRequest) returns (PauseWaterAutoRechargeResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/water/auto-recharge/{auto_recharge_id}/pause"
+      body: "*"
+    };
+  }
+
+  rpc ResumeWaterAutoRecharge(ResumeWaterAutoRechargeRequest) returns (ResumeWaterAutoRechargeResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/water/auto-recharge/{auto_recharge_id}/resume"
+      body: "*"
+    };
+  }
+
+  // === WATER REMINDER OPERATIONS ===
+
+  rpc CreateWaterReminder(CreateWaterReminderRequest) returns (CreateWaterReminderResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/water/reminders"
+      body: "*"
+    };
+  }
+
+  rpc GetWaterReminders(GetWaterRemindersRequest) returns (GetWaterRemindersResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/water/reminders"
+    };
+  }
+
+  rpc UpdateWaterReminder(UpdateWaterReminderRequest) returns (UpdateWaterReminderResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/bills/water/reminders/{reminder_id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteWaterReminder(DeleteWaterReminderRequest) returns (DeleteWaterReminderResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/bills/water/reminders/{reminder_id}"
+    };
+  }
+
+  rpc MarkWaterReminderComplete(MarkWaterReminderCompleteRequest) returns (MarkWaterReminderCompleteResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/water/reminders/{reminder_id}/complete"
+      body: "*"
+    };
+  }
+
+  // === SYSTEM CONFIGURATION ===
+
+  // Get async payment configuration (database-driven settings)
+  rpc GetAsyncPaymentConfig(GetAsyncPaymentConfigRequest) returns (GetAsyncPaymentConfigResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/config/async-payments"
+    };
+  }
+
+  // Update async payment configuration (admin only)
+  rpc UpdateAsyncPaymentConfig(UpdateAsyncPaymentConfigRequest) returns (UpdateAsyncPaymentConfigResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/config/async-payments"
+      body: "*"
+    };
+  }
+
+  // === INTERNATIONAL AIRTIME ===
+
+  // List countries available for international airtime (admin-enabled only)
+  rpc GetIntlAirtimeCountries(GetIntlAirtimeCountriesRequest) returns (GetIntlAirtimeCountriesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/intl-airtime/countries"
+    };
+  }
+
+  // List operators for a given country
+  rpc GetIntlAirtimeOperators(GetIntlAirtimeOperatorsRequest) returns (GetIntlAirtimeOperatorsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/intl-airtime/operators"
+    };
+  }
+
+  // Auto-detect the operator for a given phone number + country
+  rpc AutoDetectIntlOperator(AutoDetectIntlOperatorRequest) returns (AutoDetectIntlOperatorResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/intl-airtime/auto-detect"
+      body: "*"
+    };
+  }
+
+  // Purchase international airtime — user pays in sender_currency, recipient gets dest_currency
+  rpc BuyIntlAirtime(BuyIntlAirtimeRequest) returns (BuyIntlAirtimeResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/intl-airtime/buy"
+      body: "*"
+    };
+  }
+
+  // ==== INTERNATIONAL DATA BUNDLES ====
+  // Mirrors intl-airtime 1:1 but filters operators to data=true and
+  // returns purchasable bundle SKUs. Reloadly-backed per provider docs
+  // (same /operators and /topups endpoints as airtime; no separate
+  // data.reloadly.com host).
+
+  // List operators in a country that offer data bundles.
+  rpc GetIntlDataOperators(GetIntlDataOperatorsRequest) returns (GetIntlDataOperatorsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/intl-data/operators"
+    };
+  }
+
+  // List purchasable data bundles (fixed amounts) for a specific operator.
+  rpc GetIntlDataBundles(GetIntlDataBundlesRequest) returns (GetIntlDataBundlesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/intl-data/bundles"
+    };
+  }
+
+  // Purchase a specific data bundle — user pays in sender_currency,
+  // recipient gets a local data plan on their carrier.
+  rpc BuyIntlData(BuyIntlDataRequest) returns (BuyIntlDataResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/intl-data/buy"
+      body: "*"
+    };
+  }
+
+  // === INTERNET BENEFICIARY OPERATIONS ===
+
+  rpc SaveInternetBeneficiary(SaveInternetBeneficiaryRequest) returns (SaveInternetBeneficiaryResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/internet/beneficiaries"
+      body: "*"
+    };
+  }
+
+  rpc GetInternetBeneficiaries(GetInternetBeneficiariesRequest) returns (GetInternetBeneficiariesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/internet/beneficiaries"
+    };
+  }
+
+  rpc UpdateInternetBeneficiary(UpdateInternetBeneficiaryRequest) returns (UpdateInternetBeneficiaryResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/bills/internet/beneficiaries/{id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteInternetBeneficiary(DeleteInternetBeneficiaryRequest) returns (DeleteInternetBeneficiaryResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/bills/internet/beneficiaries/{id}"
+    };
+  }
+
+  // === INTERNET AUTO-RECHARGE OPERATIONS ===
+
+  rpc CreateInternetAutoRecharge(CreateInternetAutoRechargeRequest) returns (CreateInternetAutoRechargeResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/internet/auto-recharge"
+      body: "*"
+    };
+  }
+
+  rpc GetInternetAutoRecharges(GetInternetAutoRechargesRequest) returns (GetInternetAutoRechargesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/internet/auto-recharge"
+    };
+  }
+
+  rpc UpdateInternetAutoRecharge(UpdateInternetAutoRechargeRequest) returns (UpdateInternetAutoRechargeResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/bills/internet/auto-recharge/{auto_recharge_id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteInternetAutoRecharge(DeleteInternetAutoRechargeRequest) returns (DeleteInternetAutoRechargeResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/bills/internet/auto-recharge/{auto_recharge_id}"
+    };
+  }
+
+  rpc PauseInternetAutoRecharge(PauseInternetAutoRechargeRequest) returns (PauseInternetAutoRechargeResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/internet/auto-recharge/{auto_recharge_id}/pause"
+      body: "*"
+    };
+  }
+
+  rpc ResumeInternetAutoRecharge(ResumeInternetAutoRechargeRequest) returns (ResumeInternetAutoRechargeResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/internet/auto-recharge/{auto_recharge_id}/resume"
+      body: "*"
+    };
+  }
+
+  // === INTERNET REMINDER OPERATIONS ===
+
+  rpc CreateInternetReminder(CreateInternetReminderRequest) returns (CreateInternetReminderResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/internet/reminders"
+      body: "*"
+    };
+  }
+
+  rpc GetInternetReminders(GetInternetRemindersRequest) returns (GetInternetRemindersResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/bills/internet/reminders"
+    };
+  }
+
+  rpc UpdateInternetReminder(UpdateInternetReminderRequest) returns (UpdateInternetReminderResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/bills/internet/reminders/{reminder_id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteInternetReminder(DeleteInternetReminderRequest) returns (DeleteInternetReminderResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/bills/internet/reminders/{reminder_id}"
+    };
+  }
+
+  rpc MarkInternetReminderComplete(MarkInternetReminderCompleteRequest) returns (MarkInternetReminderCompleteResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/bills/internet/reminders/{reminder_id}/complete"
       body: "*"
     };
   }
@@ -709,6 +1372,13 @@ message DataPlan {
   double price = 3;
   string network = 4;                 // "mtn", "airtel", "glo", "9mobile"
   string availability = 5;
+  // Server-computed platform service fee (NGN) based on admin
+  // system_settings (data_service_fee_enabled / data_fee_type /
+  // data_fee_percentage / data_fee_fixed). Always ADDED to price on
+  // the confirmation screen — never subtracted. Zero when the fee
+  // toggle is off. Clients MUST display price + service_fee = total
+  // rather than showing service_fee inside the plan price.
+  double service_fee = 6;
 }
 
 message GetDataPlansRequest {
@@ -922,82 +1592,6 @@ message UpdateAutoRenewPlanResponse {
   ActiveSubscription subscription = 3;
 }
 
-// ===== AIRTIME TRANSFER =====
-
-message TransferAirtimeRequest {
-  string sender_phone = 1;
-  string recipient_phone = 2;
-  string network = 3;
-  double amount = 4;
-  string country_code = 5;
-  string operator_id = 6;
-  string transaction_id = 7;
-  string verification_token = 8;
-  string idempotency_key = 9;
-  string recipient_name = 10;
-  string transfer_note = 11;
-}
-
-message TransferAirtimeResponse {
-  BillPayment payment = 1;
-  double new_balance = 2;
-  string recipient_phone = 3;
-  string recipient_name = 4;
-  double amount_sent = 5;
-  double commission = 6;
-  double total_charged = 7;
-  string provider_reference = 8;
-  string message = 9;
-}
-
-message AirtimeTransferRate {
-  string network = 1;
-  double commission_rate = 2;
-  double flat_fee = 3;
-  double min_amount = 4;
-  double max_amount = 5;
-  bool is_available = 6;
-  string currency = 7;
-}
-
-message GetAirtimeTransferRatesRequest {
-  string country_code = 1;
-}
-
-message GetAirtimeTransferRatesResponse {
-  repeated AirtimeTransferRate rates = 1;
-}
-
-message AirtimeTransfer {
-  string id = 1;
-  string user_id = 2;
-  string account_id = 3;
-  string sender_phone = 4;
-  string recipient_phone = 5;
-  string recipient_name = 6;
-  string network = 7;
-  double amount = 8;
-  double commission = 9;
-  double total_charged = 10;
-  string status = 11;
-  string provider_reference = 12;
-  string reference = 13;
-  string transfer_note = 14;
-  string failure_reason = 15;
-  string created_at = 16;
-  string completed_at = 17;
-}
-
-message GetAirtimeTransferHistoryRequest {
-  int32 limit = 1;
-  int32 offset = 2;
-}
-
-message GetAirtimeTransferHistoryResponse {
-  repeated AirtimeTransfer transfers = 1;
-  int64 total_count = 2;
-}
-
 // ===== AIRTIME-TO-CASH =====
 
 message AirtimeToCashNetworkRate {
@@ -1025,8 +1619,8 @@ message RequestAirtimeToCashOTPResponse {
   string message = 2;
   string session_id = 3;
   bool otp_required = 4;
-  string destination_phone = 5;  // VTU Africa: phone to transfer airtime to
-  string provider_name = 6;      // "airtimetocash" or "vtuafrica"
+  string destination_phone = 5;
+  string provider_name = 6;
 }
 
 message VerifyAirtimeToCashOTPRequest {
@@ -1040,7 +1634,7 @@ message VerifyAirtimeToCashOTPResponse {
   bool verified = 1;
   string message = 2;
   string session_token = 3;
-  string session_id = 4;  // Session ID for transfer (required for Automation API)
+  string session_id = 4;
 }
 
 message ConvertAirtimeToCashRequest {
@@ -1048,8 +1642,8 @@ message ConvertAirtimeToCashRequest {
   string network = 2;
   double amount = 3;
   string session_token = 4;
-  string session_id = 5;     // Session ID from OTP verification (required for Automation API)
-  string pin = 6;           // SIM Transfer PIN (required for Automation API)
+  string session_id = 5;
+  string pin = 6;
   string transaction_id = 7;
   string verification_token = 8;
   string idempotency_key = 9;
@@ -1094,31 +1688,23 @@ message GetAirtimeToCashHistoryResponse {
   int64 total_count = 2;
 }
 
+// ===== ADDITIONAL AIRTIME-TO-CASH MESSAGES =====
+
 message VerifyAirtimeToCashServiceRequest {
-  string network = 1;  // "MTN", "AIRTEL", "GLO", "9MOBILE"
+  string network = 1;
 }
 
 message VerifyAirtimeToCashServiceResponse {
   bool is_available = 1;
-  string provider_name = 2;       // "airtimetocash" or "vtuafrica"
-  string destination_phone = 3;   // VTU Africa: phone to transfer airtime to
+  string provider_name = 2;
+  string destination_phone = 3;
   string message = 4;
   string network = 5;
-  bool requires_transfer = 6;     // VTU Africa: true, Automation: false
-}
-
-message GetAirtimeToCashProviderInfoRequest {}
-
-message GetAirtimeToCashProviderInfoResponse {
-  string provider_name = 1;  // "airtimetocash" or "vtuafrica"
-  bool requires_otp = 2;     // Automation: true, VTU Africa: false
-  bool requires_transfer = 3; // Automation: false, VTU Africa: true
-  string display_name = 4;
-  repeated ProviderStatus providers = 5;
+  bool requires_transfer = 6;
 }
 
 message ProviderStatus {
-  string name = 1;           // "airtimetocash" or "vtuafrica"
+  string name = 1;
   string display_name = 2;
   bool is_active = 3;
   bool is_healthy = 4;
@@ -1126,8 +1712,18 @@ message ProviderStatus {
   string error_message = 6;
 }
 
+message GetAirtimeToCashProviderInfoRequest {}
+
+message GetAirtimeToCashProviderInfoResponse {
+  string provider_name = 1;
+  bool requires_otp = 2;
+  bool requires_transfer = 3;
+  string display_name = 4;
+  repeated ProviderStatus providers = 5;
+}
+
 message CheckAirtimeToCashQuotaRequest {
-  string network = 1;  // "MTN", "AIRTEL", "GLO", "9MOBILE"
+  string network = 1;
   double amount = 2;
 }
 
@@ -1135,4 +1731,1600 @@ message CheckAirtimeToCashQuotaResponse {
   bool available = 1;
   double max_amount = 2;
   string message = 3;
+  double current_rate = 4;
+  double fee = 5;
+}
+
+// ===== WATER BILL PROVIDERS =====
+
+message WaterProvider {
+  string id = 1;
+  string name = 2;
+  string service_id = 3;
+  string logo_url = 4;
+  bool is_active = 5;
+  double commission_rate = 6;
+}
+
+message GetWaterProvidersRequest {
+  bool active_only = 1;
+}
+
+message GetWaterProvidersResponse {
+  repeated WaterProvider providers = 1;
+  int32 total = 2;
+}
+
+// ===== ASYNC PAYMENT CONFIGURATION =====
+
+message AsyncPaymentConfig {
+  bool electricity_enabled = 1;
+  bool airtime_enabled = 2;
+  bool data_enabled = 3;
+  bool cable_tv_enabled = 4;
+  bool internet_enabled = 5;
+  bool water_enabled = 6;
+  bool education_enabled = 7;
+  bool vtpass_async_enabled = 8;
+  bool reloadly_async_enabled = 9;
+  int32 provider_timeout_seconds = 10;
+  bool send_push_notification = 11;
+  bool send_sms_notification = 12;
+  string notification_message = 13;
+  string async_pending_message = 14;
+  string async_completed_message = 15;
+  string async_failed_message = 16;
+}
+
+message GetAsyncPaymentConfigRequest {}
+
+message GetAsyncPaymentConfigResponse {
+  AsyncPaymentConfig config = 1;
+}
+
+message UpdateAsyncPaymentConfigRequest {
+  google.protobuf.BoolValue electricity_enabled = 1;
+  google.protobuf.BoolValue airtime_enabled = 2;
+  google.protobuf.BoolValue data_enabled = 3;
+  google.protobuf.BoolValue cable_tv_enabled = 4;
+  google.protobuf.BoolValue internet_enabled = 5;
+  google.protobuf.BoolValue water_enabled = 6;
+  google.protobuf.BoolValue education_enabled = 7;
+  google.protobuf.BoolValue vtpass_async_enabled = 8;
+  google.protobuf.BoolValue reloadly_async_enabled = 9;
+  google.protobuf.Int32Value provider_timeout_seconds = 10;
+  google.protobuf.BoolValue send_push_notification = 11;
+  google.protobuf.BoolValue send_sms_notification = 12;
+  google.protobuf.StringValue notification_message = 13;
+  google.protobuf.StringValue async_pending_message = 14;
+  google.protobuf.StringValue async_completed_message = 15;
+  google.protobuf.StringValue async_failed_message = 16;
+}
+
+message UpdateAsyncPaymentConfigResponse {
+  AsyncPaymentConfig config = 1;
+  string message = 2;
+}
+
+// =====================================================================
+// AIRTIME BENEFICIARY MESSAGES
+// =====================================================================
+
+message AirtimeBeneficiary {
+  string id = 1;
+  string user_id = 2;
+  string phone_number = 3;
+  string network_code = 4;
+  string network_name = 5;
+  string nickname = 6;
+  string country_code = 7;
+  string operator_id = 8;
+  double last_amount = 9;
+  google.protobuf.Timestamp last_topup_at = 10;
+  int32 topup_count = 11;
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp updated_at = 13;
+}
+
+message SaveAirtimeBeneficiaryRequest {
+  string phone_number = 1;
+  string network_code = 2;
+  string network_name = 3;
+  string nickname = 4;
+  string country_code = 5;
+  string operator_id = 6;
+}
+
+message SaveAirtimeBeneficiaryResponse {
+  AirtimeBeneficiary beneficiary = 1;
+  string message = 2;
+}
+
+message GetAirtimeBeneficiariesRequest {
+  string network_code = 1;
+}
+
+message GetAirtimeBeneficiariesResponse {
+  repeated AirtimeBeneficiary beneficiaries = 1;
+}
+
+message UpdateAirtimeBeneficiaryRequest {
+  string id = 1;
+  string nickname = 2;
+}
+
+message UpdateAirtimeBeneficiaryResponse {
+  AirtimeBeneficiary beneficiary = 1;
+  string message = 2;
+}
+
+message DeleteAirtimeBeneficiaryRequest {
+  string id = 1;
+}
+
+message DeleteAirtimeBeneficiaryResponse {
+  string message = 1;
+}
+
+// =====================================================================
+// AIRTIME AUTO-RECHARGE MESSAGES
+// =====================================================================
+
+message AirtimeAutoRecharge {
+  string id = 1;
+  string user_id = 2;
+  string beneficiary_id = 3;
+  string phone_number = 4;
+  string network_code = 5;
+  string network_name = 6;
+  double amount = 7;
+  string currency = 8;
+  string frequency = 9;
+  int32 day_of_week = 10;
+  int32 day_of_month = 11;
+  google.protobuf.Timestamp next_run_date = 12;
+  google.protobuf.Timestamp last_run_date = 13;
+  string status = 14;
+  int32 failure_count = 15;
+  int32 max_retries = 16;
+  google.protobuf.Timestamp created_at = 17;
+  AirtimeBeneficiary beneficiary = 18;
+}
+
+message CreateAirtimeAutoRechargeRequest {
+  string beneficiary_id = 1;
+  double amount = 2;
+  string currency = 3;
+  string frequency = 4;
+  int32 day_of_week = 5;
+  int32 day_of_month = 6;
+  int32 max_retries = 7;
+  int32 execution_hour = 8;
+  int32 execution_minute = 9;
+}
+
+message CreateAirtimeAutoRechargeResponse {
+  AirtimeAutoRecharge auto_recharge = 1;
+  string message = 2;
+}
+
+message GetAirtimeAutoRechargesRequest {
+  string status = 1;
+}
+
+message GetAirtimeAutoRechargesResponse {
+  repeated AirtimeAutoRecharge auto_recharges = 1;
+}
+
+message UpdateAirtimeAutoRechargeRequest {
+  string auto_recharge_id = 1;
+  double amount = 2;
+  string frequency = 3;
+  int32 day_of_week = 4;
+  int32 day_of_month = 5;
+  int32 max_retries = 6;
+  int32 execution_hour = 7;
+  int32 execution_minute = 8;
+}
+
+message UpdateAirtimeAutoRechargeResponse {
+  AirtimeAutoRecharge auto_recharge = 1;
+  string message = 2;
+}
+
+message DeleteAirtimeAutoRechargeRequest {
+  string auto_recharge_id = 1;
+}
+
+message DeleteAirtimeAutoRechargeResponse {
+  string message = 1;
+}
+
+message PauseAirtimeAutoRechargeRequest {
+  string auto_recharge_id = 1;
+}
+
+message PauseAirtimeAutoRechargeResponse {
+  string message = 1;
+}
+
+message ResumeAirtimeAutoRechargeRequest {
+  string auto_recharge_id = 1;
+}
+
+message ResumeAirtimeAutoRechargeResponse {
+  string message = 1;
+}
+
+// =====================================================================
+// AIRTIME REMINDER MESSAGES
+// =====================================================================
+
+message AirtimeReminder {
+  string id = 1;
+  string user_id = 2;
+  string beneficiary_id = 3;
+  string title = 4;
+  string description = 5;
+  google.protobuf.Timestamp reminder_date = 6;
+  double amount = 7;
+  string currency = 8;
+  bool is_recurring = 9;
+  string recurrence_type = 10;
+  string status = 11;
+  google.protobuf.Timestamp notified_at = 12;
+  google.protobuf.Timestamp created_at = 13;
+  google.protobuf.Timestamp updated_at = 14;
+}
+
+message CreateAirtimeReminderRequest {
+  string beneficiary_id = 1;
+  string title = 2;
+  string description = 3;
+  google.protobuf.Timestamp reminder_date = 4;
+  double amount = 5;
+  bool is_recurring = 6;
+  string recurrence_type = 7;
+  string currency = 8;
+}
+
+message CreateAirtimeReminderResponse {
+  AirtimeReminder reminder = 1;
+  string message = 2;
+}
+
+message GetAirtimeRemindersRequest {
+  string status = 1;
+  bool include_past = 2;
+}
+
+message GetAirtimeRemindersResponse {
+  repeated AirtimeReminder reminders = 1;
+}
+
+message UpdateAirtimeReminderRequest {
+  string reminder_id = 1;
+  string title = 2;
+  string description = 3;
+  google.protobuf.Timestamp reminder_date = 4;
+  double amount = 5;
+  string currency = 6;
+  bool is_recurring = 7;
+  string recurrence_type = 8;
+}
+
+message UpdateAirtimeReminderResponse {
+  AirtimeReminder reminder = 1;
+  string message = 2;
+}
+
+message DeleteAirtimeReminderRequest {
+  string reminder_id = 1;
+}
+
+message DeleteAirtimeReminderResponse {
+  string message = 1;
+}
+
+message MarkAirtimeReminderCompleteRequest {
+  string reminder_id = 1;
+}
+
+message MarkAirtimeReminderCompleteResponse {
+  string message = 1;
+}
+
+// =====================================================================
+// AIRTIME PAYMENT RECEIPT MESSAGE
+// =====================================================================
+
+message GetAirtimePaymentReceiptRequest {
+  string payment_id = 1;
+}
+
+message GetAirtimePaymentReceiptResponse {
+  BillPayment payment = 1;
+  string phone_number = 2;
+  string network_name = 3;
+  string status_message = 4;
+  double service_fee = 5;
+  double total_amount = 6;
+  string refund_state = 7;
+}
+
+// =====================================================================
+// DATA BENEFICIARY MESSAGES
+// =====================================================================
+
+message DataBeneficiary {
+  string id = 1;
+  string user_id = 2;
+  string phone_number = 3;
+  string network_code = 4;
+  string network_name = 5;
+  string nickname = 6;
+  string country_code = 7;
+  string operator_id = 8;
+  double last_amount = 9;
+  string last_variation_id = 10;
+  string last_plan_name = 11;
+  google.protobuf.Timestamp last_topup_at = 12;
+  int32 topup_count = 13;
+  google.protobuf.Timestamp created_at = 14;
+  google.protobuf.Timestamp updated_at = 15;
+}
+
+message SaveDataBeneficiaryRequest {
+  string phone_number = 1;
+  string network_code = 2;
+  string network_name = 3;
+  string nickname = 4;
+  string country_code = 5;
+  string operator_id = 6;
+}
+
+message SaveDataBeneficiaryResponse {
+  DataBeneficiary beneficiary = 1;
+  string message = 2;
+}
+
+message GetDataBeneficiariesRequest {
+  string network_code = 1;
+}
+
+message GetDataBeneficiariesResponse {
+  repeated DataBeneficiary beneficiaries = 1;
+}
+
+message UpdateDataBeneficiaryRequest {
+  string id = 1;
+  string nickname = 2;
+}
+
+message UpdateDataBeneficiaryResponse {
+  DataBeneficiary beneficiary = 1;
+  string message = 2;
+}
+
+message DeleteDataBeneficiaryRequest {
+  string id = 1;
+}
+
+message DeleteDataBeneficiaryResponse {
+  string message = 1;
+}
+
+// =====================================================================
+// DATA AUTO-RECHARGE MESSAGES
+// =====================================================================
+
+message DataAutoRecharge {
+  string id = 1;
+  string user_id = 2;
+  string beneficiary_id = 3;
+  string phone_number = 4;
+  string network_code = 5;
+  string network_name = 6;
+  string variation_id = 7;
+  string plan_name = 8;
+  double amount = 9;
+  string currency = 10;
+  string frequency = 11;
+  int32 day_of_week = 12;
+  int32 day_of_month = 13;
+  int32 execution_hour = 14;
+  int32 execution_minute = 15;
+  google.protobuf.Timestamp next_run_date = 16;
+  google.protobuf.Timestamp last_run_date = 17;
+  string status = 18;
+  int32 failure_count = 19;
+  int32 max_retries = 20;
+  google.protobuf.Timestamp created_at = 21;
+  DataBeneficiary beneficiary = 22;
+}
+
+message CreateDataAutoRechargeRequest {
+  string beneficiary_id = 1;
+  string variation_id = 2;
+  string plan_name = 3;
+  double amount = 4;
+  string currency = 5;
+  string frequency = 6;
+  int32 day_of_week = 7;
+  int32 day_of_month = 8;
+  int32 max_retries = 9;
+  int32 execution_hour = 10;
+  int32 execution_minute = 11;
+}
+
+message CreateDataAutoRechargeResponse {
+  DataAutoRecharge auto_recharge = 1;
+  string message = 2;
+}
+
+message GetDataAutoRechargesRequest {
+  string status = 1;
+}
+
+message GetDataAutoRechargesResponse {
+  repeated DataAutoRecharge auto_recharges = 1;
+}
+
+message UpdateDataAutoRechargeRequest {
+  string auto_recharge_id = 1;
+  string variation_id = 2;
+  string plan_name = 3;
+  double amount = 4;
+  string frequency = 5;
+  int32 day_of_week = 6;
+  int32 day_of_month = 7;
+  int32 max_retries = 8;
+  int32 execution_hour = 9;
+  int32 execution_minute = 10;
+}
+
+message UpdateDataAutoRechargeResponse {
+  DataAutoRecharge auto_recharge = 1;
+  string message = 2;
+}
+
+message DeleteDataAutoRechargeRequest {
+  string auto_recharge_id = 1;
+}
+
+message DeleteDataAutoRechargeResponse {
+  string message = 1;
+}
+
+message PauseDataAutoRechargeRequest {
+  string auto_recharge_id = 1;
+}
+
+message PauseDataAutoRechargeResponse {
+  string message = 1;
+}
+
+message ResumeDataAutoRechargeRequest {
+  string auto_recharge_id = 1;
+}
+
+message ResumeDataAutoRechargeResponse {
+  string message = 1;
+}
+
+// =====================================================================
+// DATA REMINDER MESSAGES
+// =====================================================================
+
+message DataReminder {
+  string id = 1;
+  string user_id = 2;
+  string beneficiary_id = 3;
+  string title = 4;
+  string description = 5;
+  google.protobuf.Timestamp reminder_date = 6;
+  double amount = 7;
+  string variation_id = 8;
+  string currency = 9;
+  bool is_recurring = 10;
+  string recurrence_type = 11;
+  string status = 12;
+  google.protobuf.Timestamp notified_at = 13;
+  google.protobuf.Timestamp created_at = 14;
+  google.protobuf.Timestamp updated_at = 15;
+}
+
+message CreateDataReminderRequest {
+  string beneficiary_id = 1;
+  string title = 2;
+  string description = 3;
+  google.protobuf.Timestamp reminder_date = 4;
+  double amount = 5;
+  string variation_id = 6;
+  bool is_recurring = 7;
+  string recurrence_type = 8;
+  string currency = 9;
+}
+
+message CreateDataReminderResponse {
+  DataReminder reminder = 1;
+  string message = 2;
+}
+
+message GetDataRemindersRequest {
+  string status = 1;
+  bool include_past = 2;
+}
+
+message GetDataRemindersResponse {
+  repeated DataReminder reminders = 1;
+}
+
+message UpdateDataReminderRequest {
+  string reminder_id = 1;
+  string title = 2;
+  string description = 3;
+  google.protobuf.Timestamp reminder_date = 4;
+  double amount = 5;
+  string variation_id = 6;
+  string currency = 7;
+  bool is_recurring = 8;
+  string recurrence_type = 9;
+}
+
+message UpdateDataReminderResponse {
+  DataReminder reminder = 1;
+  string message = 2;
+}
+
+message DeleteDataReminderRequest {
+  string reminder_id = 1;
+}
+
+message DeleteDataReminderResponse {
+  string message = 1;
+}
+
+message MarkDataReminderCompleteRequest {
+  string reminder_id = 1;
+}
+
+message MarkDataReminderCompleteResponse {
+  string message = 1;
+}
+
+// =====================================================================
+// CABLE TV BENEFICIARY MESSAGES
+// =====================================================================
+
+message CableTVBeneficiary {
+  string id = 1;
+  string user_id = 2;
+  string smart_card_number = 3;
+  string provider_code = 4;
+  string provider_name = 5;
+  string nickname = 6;
+  string customer_name = 7;
+  string current_package = 8;
+  double last_amount = 9;
+  string last_variation_code = 10;
+  string last_package_name = 11;
+  google.protobuf.Timestamp last_topup_at = 12;
+  int32 topup_count = 13;
+  google.protobuf.Timestamp created_at = 14;
+  google.protobuf.Timestamp updated_at = 15;
+}
+
+message SaveCableTVBeneficiaryRequest {
+  string smart_card_number = 1;
+  string provider_code = 2;
+  string provider_name = 3;
+  string nickname = 4;
+  string customer_name = 5;
+}
+
+message SaveCableTVBeneficiaryResponse {
+  CableTVBeneficiary beneficiary = 1;
+  string message = 2;
+}
+
+message GetCableTVBeneficiariesRequest {
+  string provider_code = 1;
+}
+
+message GetCableTVBeneficiariesResponse {
+  repeated CableTVBeneficiary beneficiaries = 1;
+}
+
+message UpdateCableTVBeneficiaryRequest {
+  string id = 1;
+  string nickname = 2;
+}
+
+message UpdateCableTVBeneficiaryResponse {
+  CableTVBeneficiary beneficiary = 1;
+  string message = 2;
+}
+
+message DeleteCableTVBeneficiaryRequest {
+  string id = 1;
+}
+
+message DeleteCableTVBeneficiaryResponse {
+  string message = 1;
+}
+
+// =====================================================================
+// CABLE TV AUTO-RECHARGE MESSAGES
+// =====================================================================
+
+message CableTVAutoRecharge {
+  string id = 1;
+  string user_id = 2;
+  string beneficiary_id = 3;
+  string smart_card_number = 4;
+  string provider_code = 5;
+  string variation_code = 6;
+  string package_name = 7;
+  double amount = 8;
+  string currency = 9;
+  string subscription_type = 10;
+  string frequency = 11;
+  int32 day_of_week = 12;
+  int32 day_of_month = 13;
+  int32 execution_hour = 14;
+  int32 execution_minute = 15;
+  google.protobuf.Timestamp next_run_date = 16;
+  google.protobuf.Timestamp last_run_date = 17;
+  string status = 18;
+  int32 failure_count = 19;
+  int32 max_retries = 20;
+  google.protobuf.Timestamp created_at = 21;
+  CableTVBeneficiary beneficiary = 22;
+}
+
+message CreateCableTVAutoRechargeRequest {
+  string beneficiary_id = 1;
+  string variation_code = 2;
+  string package_name = 3;
+  double amount = 4;
+  string currency = 5;
+  string subscription_type = 6;
+  string frequency = 7;
+  int32 day_of_week = 8;
+  int32 day_of_month = 9;
+  int32 max_retries = 10;
+  int32 execution_hour = 11;
+  int32 execution_minute = 12;
+}
+
+message CreateCableTVAutoRechargeResponse {
+  CableTVAutoRecharge auto_recharge = 1;
+  string message = 2;
+}
+
+message GetCableTVAutoRechargesRequest {
+  string status = 1;
+}
+
+message GetCableTVAutoRechargesResponse {
+  repeated CableTVAutoRecharge auto_recharges = 1;
+}
+
+message UpdateCableTVAutoRechargeRequest {
+  string auto_recharge_id = 1;
+  string variation_code = 2;
+  string package_name = 3;
+  double amount = 4;
+  string frequency = 5;
+  int32 day_of_week = 6;
+  int32 day_of_month = 7;
+  int32 max_retries = 8;
+  int32 execution_hour = 9;
+  int32 execution_minute = 10;
+}
+
+message UpdateCableTVAutoRechargeResponse {
+  CableTVAutoRecharge auto_recharge = 1;
+  string message = 2;
+}
+
+message DeleteCableTVAutoRechargeRequest {
+  string auto_recharge_id = 1;
+}
+
+message DeleteCableTVAutoRechargeResponse {
+  string message = 1;
+}
+
+message PauseCableTVAutoRechargeRequest {
+  string auto_recharge_id = 1;
+}
+
+message PauseCableTVAutoRechargeResponse {
+  string message = 1;
+}
+
+message ResumeCableTVAutoRechargeRequest {
+  string auto_recharge_id = 1;
+}
+
+message ResumeCableTVAutoRechargeResponse {
+  string message = 1;
+}
+
+// =====================================================================
+// CABLE TV REMINDER MESSAGES
+// =====================================================================
+
+message CableTVReminder {
+  string id = 1;
+  string user_id = 2;
+  string beneficiary_id = 3;
+  string title = 4;
+  string description = 5;
+  google.protobuf.Timestamp reminder_date = 6;
+  double amount = 7;
+  string variation_code = 8;
+  string currency = 9;
+  bool is_recurring = 10;
+  string recurrence_type = 11;
+  string status = 12;
+  google.protobuf.Timestamp notified_at = 13;
+  google.protobuf.Timestamp created_at = 14;
+  google.protobuf.Timestamp updated_at = 15;
+}
+
+message CreateCableTVReminderRequest {
+  string beneficiary_id = 1;
+  string title = 2;
+  string description = 3;
+  google.protobuf.Timestamp reminder_date = 4;
+  double amount = 5;
+  string variation_code = 6;
+  bool is_recurring = 7;
+  string recurrence_type = 8;
+  string currency = 9;
+}
+
+message CreateCableTVReminderResponse {
+  CableTVReminder reminder = 1;
+  string message = 2;
+}
+
+message GetCableTVRemindersRequest {
+  string status = 1;
+  bool include_past = 2;
+}
+
+message GetCableTVRemindersResponse {
+  repeated CableTVReminder reminders = 1;
+}
+
+message UpdateCableTVReminderRequest {
+  string reminder_id = 1;
+  string title = 2;
+  string description = 3;
+  google.protobuf.Timestamp reminder_date = 4;
+  double amount = 5;
+  string variation_code = 6;
+  string currency = 7;
+  bool is_recurring = 8;
+  string recurrence_type = 9;
+}
+
+message UpdateCableTVReminderResponse {
+  CableTVReminder reminder = 1;
+  string message = 2;
+}
+
+message DeleteCableTVReminderRequest {
+  string reminder_id = 1;
+}
+
+message DeleteCableTVReminderResponse {
+  string message = 1;
+}
+
+message MarkCableTVReminderCompleteRequest {
+  string reminder_id = 1;
+}
+
+message MarkCableTVReminderCompleteResponse {
+  string message = 1;
+}
+
+// =====================================================================
+// WATER BENEFICIARY MESSAGES
+// =====================================================================
+
+message WaterBeneficiary {
+  string id = 1;
+  string user_id = 2;
+  string account_number = 3;
+  string provider_code = 4;
+  string provider_name = 5;
+  string nickname = 6;
+  string customer_name = 7;
+  double last_amount = 8;
+  google.protobuf.Timestamp last_topup_at = 9;
+  int32 topup_count = 10;
+  google.protobuf.Timestamp created_at = 11;
+  google.protobuf.Timestamp updated_at = 12;
+}
+
+message SaveWaterBeneficiaryRequest {
+  string account_number = 1;
+  string provider_code = 2;
+  string provider_name = 3;
+  string nickname = 4;
+  string customer_name = 5;
+}
+
+message SaveWaterBeneficiaryResponse {
+  WaterBeneficiary beneficiary = 1;
+  string message = 2;
+}
+
+message GetWaterBeneficiariesRequest {
+  string provider_code = 1;
+}
+
+message GetWaterBeneficiariesResponse {
+  repeated WaterBeneficiary beneficiaries = 1;
+}
+
+message UpdateWaterBeneficiaryRequest {
+  string id = 1;
+  string nickname = 2;
+}
+
+message UpdateWaterBeneficiaryResponse {
+  WaterBeneficiary beneficiary = 1;
+  string message = 2;
+}
+
+message DeleteWaterBeneficiaryRequest {
+  string id = 1;
+}
+
+message DeleteWaterBeneficiaryResponse {
+  string message = 1;
+}
+
+// =====================================================================
+// WATER AUTO-RECHARGE MESSAGES
+// =====================================================================
+
+message WaterAutoRecharge {
+  string id = 1;
+  string user_id = 2;
+  string beneficiary_id = 3;
+  string account_number = 4;
+  string provider_code = 5;
+  double amount = 6;
+  string currency = 7;
+  string frequency = 8;
+  int32 day_of_week = 9;
+  int32 day_of_month = 10;
+  int32 execution_hour = 11;
+  int32 execution_minute = 12;
+  google.protobuf.Timestamp next_run_date = 13;
+  google.protobuf.Timestamp last_run_date = 14;
+  string status = 15;
+  int32 failure_count = 16;
+  int32 max_retries = 17;
+  google.protobuf.Timestamp created_at = 18;
+  WaterBeneficiary beneficiary = 19;
+}
+
+message CreateWaterAutoRechargeRequest {
+  string beneficiary_id = 1;
+  double amount = 2;
+  string currency = 3;
+  string frequency = 4;
+  int32 day_of_week = 5;
+  int32 day_of_month = 6;
+  int32 max_retries = 7;
+  int32 execution_hour = 8;
+  int32 execution_minute = 9;
+}
+
+message CreateWaterAutoRechargeResponse {
+  WaterAutoRecharge auto_recharge = 1;
+  string message = 2;
+}
+
+message GetWaterAutoRechargesRequest {
+  string status = 1;
+}
+
+message GetWaterAutoRechargesResponse {
+  repeated WaterAutoRecharge auto_recharges = 1;
+}
+
+message UpdateWaterAutoRechargeRequest {
+  string auto_recharge_id = 1;
+  double amount = 2;
+  string frequency = 3;
+  int32 day_of_week = 4;
+  int32 day_of_month = 5;
+  int32 max_retries = 6;
+  int32 execution_hour = 7;
+  int32 execution_minute = 8;
+}
+
+message UpdateWaterAutoRechargeResponse {
+  WaterAutoRecharge auto_recharge = 1;
+  string message = 2;
+}
+
+message DeleteWaterAutoRechargeRequest {
+  string auto_recharge_id = 1;
+}
+
+message DeleteWaterAutoRechargeResponse {
+  string message = 1;
+}
+
+message PauseWaterAutoRechargeRequest {
+  string auto_recharge_id = 1;
+}
+
+message PauseWaterAutoRechargeResponse {
+  string message = 1;
+}
+
+message ResumeWaterAutoRechargeRequest {
+  string auto_recharge_id = 1;
+}
+
+message ResumeWaterAutoRechargeResponse {
+  string message = 1;
+}
+
+// =====================================================================
+// WATER REMINDER MESSAGES
+// =====================================================================
+
+message WaterReminder {
+  string id = 1;
+  string user_id = 2;
+  string beneficiary_id = 3;
+  string title = 4;
+  string description = 5;
+  google.protobuf.Timestamp reminder_date = 6;
+  double amount = 7;
+  string currency = 8;
+  bool is_recurring = 9;
+  string recurrence_type = 10;
+  string status = 11;
+  google.protobuf.Timestamp notified_at = 12;
+  google.protobuf.Timestamp created_at = 13;
+  google.protobuf.Timestamp updated_at = 14;
+}
+
+message CreateWaterReminderRequest {
+  string beneficiary_id = 1;
+  string title = 2;
+  string description = 3;
+  google.protobuf.Timestamp reminder_date = 4;
+  double amount = 5;
+  string currency = 6;
+  bool is_recurring = 7;
+  string recurrence_type = 8;
+}
+
+message CreateWaterReminderResponse {
+  WaterReminder reminder = 1;
+  string message = 2;
+}
+
+message GetWaterRemindersRequest {
+  string status = 1;
+  bool include_past = 2;
+}
+
+message GetWaterRemindersResponse {
+  repeated WaterReminder reminders = 1;
+}
+
+message UpdateWaterReminderRequest {
+  string reminder_id = 1;
+  string title = 2;
+  string description = 3;
+  google.protobuf.Timestamp reminder_date = 4;
+  double amount = 5;
+  string currency = 6;
+  bool is_recurring = 7;
+  string recurrence_type = 8;
+}
+
+message UpdateWaterReminderResponse {
+  WaterReminder reminder = 1;
+  string message = 2;
+}
+
+message DeleteWaterReminderRequest {
+  string reminder_id = 1;
+}
+
+message DeleteWaterReminderResponse {
+  string message = 1;
+}
+
+message MarkWaterReminderCompleteRequest {
+  string reminder_id = 1;
+}
+
+message MarkWaterReminderCompleteResponse {
+  string message = 1;
+}
+
+// =====================================================================
+// INTERNATIONAL AIRTIME MESSAGES
+// =====================================================================
+
+message IntlAirtimeCountry {
+  string id = 1;
+  string country_code = 2;
+  string country_name = 3;
+  string dial_code = 4;
+  string currency_code = 5;
+  string currency_symbol = 6;
+  string flag_emoji = 7;
+  bool is_active = 8;
+  bool reloadly_supported = 9;
+  bool vtpass_supported = 10;
+  int32 operator_count = 11;
+}
+
+message IntlAirtimeOperator {
+  string id = 1;
+  string country_code = 2;
+  string country_name = 3;
+  string operator_name = 4;
+  string reloadly_operator_id = 5;
+  string vtpass_operator_id = 6;
+  // "RANGE" or "FIXED"
+  string denomination_type = 7;
+  string sender_currency_code = 8;
+  string dest_currency_code = 9;
+  double fx_rate = 10;
+  double min_amount = 11;
+  double max_amount = 12;
+  double local_min_amount = 13;
+  double local_max_amount = 14;
+  // JSON arrays of numbers (sender currency)
+  string fixed_amounts = 15;
+  // JSON arrays of numbers (dest currency)
+  string local_fixed_amounts = 16;
+  bool supports_local_amounts = 17;
+  string logo_url = 18;
+  bool is_active = 19;
+}
+
+message GetIntlAirtimeCountriesRequest {
+  // If true, return all countries (admin); if false, only is_active=true (user)
+  bool include_inactive = 1;
+}
+
+message GetIntlAirtimeCountriesResponse {
+  repeated IntlAirtimeCountry countries = 1;
+}
+
+message GetIntlAirtimeOperatorsRequest {
+  string country_code = 1;
+}
+
+message GetIntlAirtimeOperatorsResponse {
+  repeated IntlAirtimeOperator operators = 1;
+  string country_name = 2;
+  string currency_code = 3;
+  string currency_symbol = 4;
+}
+
+message AutoDetectIntlOperatorRequest {
+  string phone_number = 1;
+  string country_code = 2;
+}
+
+message AutoDetectIntlOperatorResponse {
+  IntlAirtimeOperator operator = 1;
+  bool detected = 2;
+  string message = 3;
+}
+
+message BuyIntlAirtimeRequest {
+  string account_id = 1;
+  string idempotency_key = 2;
+  string operator_id = 3;         // IntlAirtimeOperator.id (UUID)
+  string country_code = 4;
+  string phone_number = 5;        // Recipient phone number (with country dial code)
+  double amount = 6;              // Amount in sender_currency (e.g., NGN)
+  string sender_currency = 7;     // e.g., "NGN"
+  // For FIXED operators: the exact denomination in dest currency
+  double use_local_amount = 8;    // >0 means use this dest-currency amount
+  // FX snapshot from operator info (to display on receipt)
+  double fx_rate_snapshot = 9;
+  string dest_currency = 10;
+  double dest_amount_estimate = 11;
+  string transaction_pin = 12;
+}
+
+message BuyIntlAirtimeResponse {
+  string payment_id = 1;
+  string reference = 2;
+  string status = 3;              // "completed", "processing", "failed"
+  double amount_paid = 4;
+  string sender_currency = 5;
+  double delivered_amount = 6;    // What the recipient actually got
+  string delivered_currency = 7;
+  double fx_rate_used = 8;
+  string operator_name = 9;
+  string country_name = 10;
+  string phone_number = 11;
+  string message = 12;
+  string created_at = 13;
+}
+
+// ==== INTERNATIONAL DATA BUNDLES MESSAGES ====
+// Structure mirrors IntlAirtimeOperator / BuyIntlAirtimeRequest so
+// Flutter/admin clients can reuse existing widgets with minimal changes.
+
+// IntlDataBundle represents one purchasable data plan on an operator.
+// Reloadly has no discrete bundles endpoint — bundles are fixed amounts
+// on operators with `data==true`, so this message flattens
+// FixedAmounts + descriptions into a UI-renderable shape.
+message IntlDataBundle {
+  // UUID we assign at cache time (stable across price changes)
+  string id = 1;
+  string operator_id = 2;                 // References IntlDataOperator.id
+  double amount = 3;                       // Sender-currency amount
+  double local_amount = 4;                 // Destination-currency amount
+  string description = 5;                  // "1GB 30 Days" etc.
+  string dest_currency_code = 6;
+  string sender_currency_code = 7;
+  double fx_rate = 8;
+}
+
+message IntlDataOperator {
+  string id = 1;
+  string country_code = 2;
+  string country_name = 3;
+  string operator_name = 4;
+  string reloadly_operator_id = 5;
+  string sender_currency_code = 6;
+  string dest_currency_code = 7;
+  double fx_rate = 8;
+  string logo_url = 9;
+  bool is_active = 10;
+  int32 bundle_count = 11;                 // Number of bundles available
+}
+
+message GetIntlDataOperatorsRequest {
+  string country_code = 1;
+}
+
+message GetIntlDataOperatorsResponse {
+  repeated IntlDataOperator operators = 1;
+  string country_name = 2;
+  string currency_code = 3;
+  string currency_symbol = 4;
+}
+
+message GetIntlDataBundlesRequest {
+  string operator_id = 1;
+}
+
+message GetIntlDataBundlesResponse {
+  repeated IntlDataBundle bundles = 1;
+  IntlDataOperator operator = 2;
+}
+
+message BuyIntlDataRequest {
+  string account_id = 1;
+  string idempotency_key = 2;
+  string operator_id = 3;
+  string bundle_id = 4;                    // IntlDataBundle.id
+  string country_code = 5;
+  string phone_number = 6;                 // With country dial code
+  double amount = 7;                       // Sender currency amount
+  string sender_currency = 8;
+  double dest_amount = 9;                  // What gets delivered
+  string dest_currency = 10;
+  double fx_rate_snapshot = 11;
+  string transaction_pin = 12;
+}
+
+message BuyIntlDataResponse {
+  string payment_id = 1;
+  string reference = 2;
+  string status = 3;
+  double amount_paid = 4;
+  string sender_currency = 5;
+  double delivered_amount = 6;
+  string delivered_currency = 7;
+  double fx_rate_used = 8;
+  string operator_name = 9;
+  string country_name = 10;
+  string phone_number = 11;
+  string bundle_description = 12;
+  string message = 13;
+  string created_at = 14;
+}
+
+// =====================================================================
+// EDUCATION BENEFICIARY MESSAGES
+// =====================================================================
+
+message EducationBeneficiary {
+  string id = 1;
+  string user_id = 2;
+  string candidate_number = 3;
+  string exam_type = 4;
+  string provider_code = 5;
+  string provider_name = 6;
+  string nickname = 7;
+  string candidate_name = 8;
+  double last_amount = 9;
+  google.protobuf.Timestamp last_purchase_at = 10;
+  int32 purchase_count = 11;
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp updated_at = 13;
+}
+
+message SaveEducationBeneficiaryRequest {
+  string candidate_number = 1;
+  string exam_type = 2;
+  string provider_code = 3;
+  string provider_name = 4;
+  string nickname = 5;
+  string candidate_name = 6;
+}
+
+message SaveEducationBeneficiaryResponse {
+  EducationBeneficiary beneficiary = 1;
+  string message = 2;
+}
+
+message GetEducationBeneficiariesRequest {
+  string provider_code = 1;
+}
+
+message GetEducationBeneficiariesResponse {
+  repeated EducationBeneficiary beneficiaries = 1;
+}
+
+message UpdateEducationBeneficiaryRequest {
+  string id = 1;
+  string nickname = 2;
+}
+
+message UpdateEducationBeneficiaryResponse {
+  EducationBeneficiary beneficiary = 1;
+  string message = 2;
+}
+
+message DeleteEducationBeneficiaryRequest {
+  string id = 1;
+}
+
+message DeleteEducationBeneficiaryResponse {
+  string message = 1;
+}
+
+// =====================================================================
+// EDUCATION REMINDER MESSAGES
+// =====================================================================
+
+message EducationReminder {
+  string id = 1;
+  string user_id = 2;
+  string beneficiary_id = 3;
+  string title = 4;
+  string description = 5;
+  google.protobuf.Timestamp reminder_date = 6;
+  double amount = 7;
+  string currency = 8;
+  bool is_recurring = 9;
+  string recurrence_type = 10;
+  string status = 11;
+  google.protobuf.Timestamp notified_at = 12;
+  google.protobuf.Timestamp created_at = 13;
+  google.protobuf.Timestamp updated_at = 14;
+}
+
+message CreateEducationReminderRequest {
+  string beneficiary_id = 1;
+  string title = 2;
+  string description = 3;
+  google.protobuf.Timestamp reminder_date = 4;
+  double amount = 5;
+  string currency = 6;
+  bool is_recurring = 7;
+  string recurrence_type = 8;
+}
+
+message CreateEducationReminderResponse {
+  EducationReminder reminder = 1;
+  string message = 2;
+}
+
+message GetEducationRemindersRequest {
+  string status = 1;
+  bool include_past = 2;
+}
+
+message GetEducationRemindersResponse {
+  repeated EducationReminder reminders = 1;
+}
+
+message UpdateEducationReminderRequest {
+  string reminder_id = 1;
+  string title = 2;
+  string description = 3;
+  google.protobuf.Timestamp reminder_date = 4;
+  double amount = 5;
+  string currency = 6;
+  bool is_recurring = 7;
+  string recurrence_type = 8;
+}
+
+message UpdateEducationReminderResponse {
+  EducationReminder reminder = 1;
+  string message = 2;
+}
+
+message DeleteEducationReminderRequest {
+  string reminder_id = 1;
+}
+
+message DeleteEducationReminderResponse {
+  string message = 1;
+}
+
+message MarkEducationReminderCompleteRequest {
+  string reminder_id = 1;
+}
+
+message MarkEducationReminderCompleteResponse {
+  string message = 1;
+}
+
+// =====================================================================
+// INTERNET BENEFICIARY MESSAGES
+// =====================================================================
+
+message InternetBeneficiary {
+  string id = 1;
+  string user_id = 2;
+  string account_number = 3;       // Smile email/phone, Spectranet phone, etc.
+  string provider_code = 4;        // "SMILE", "SPECTRANET", "IPNX", "SWIFT"
+  string provider_name = 5;
+  string nickname = 6;
+  double last_amount = 7;
+  string last_package_id = 8;
+  string last_plan_name = 9;
+  google.protobuf.Timestamp last_topup_at = 10;
+  int32 topup_count = 11;
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp updated_at = 13;
+}
+
+message SaveInternetBeneficiaryRequest {
+  string account_number = 1;
+  string provider_code = 2;
+  string provider_name = 3;
+  string nickname = 4;
+}
+
+message SaveInternetBeneficiaryResponse {
+  InternetBeneficiary beneficiary = 1;
+  string message = 2;
+}
+
+message GetInternetBeneficiariesRequest {
+  string provider_code = 1;
+}
+
+message GetInternetBeneficiariesResponse {
+  repeated InternetBeneficiary beneficiaries = 1;
+}
+
+message UpdateInternetBeneficiaryRequest {
+  string id = 1;
+  string nickname = 2;
+}
+
+message UpdateInternetBeneficiaryResponse {
+  InternetBeneficiary beneficiary = 1;
+  string message = 2;
+}
+
+message DeleteInternetBeneficiaryRequest {
+  string id = 1;
+}
+
+message DeleteInternetBeneficiaryResponse {
+  string message = 1;
+}
+
+// =====================================================================
+// INTERNET AUTO-RECHARGE MESSAGES
+// =====================================================================
+
+message InternetAutoRecharge {
+  string id = 1;
+  string user_id = 2;
+  string beneficiary_id = 3;
+  string account_number = 4;
+  string provider_code = 5;
+  string provider_name = 6;
+  string package_id = 7;
+  string plan_name = 8;
+  double amount = 9;
+  string currency = 10;
+  string frequency = 11;            // "weekly", "monthly"
+  int32 day_of_week = 12;           // 0=Sun .. 6=Sat
+  int32 day_of_month = 13;          // 1..28
+  int32 execution_hour = 14;        // 0..23
+  int32 execution_minute = 15;      // 0..59
+  google.protobuf.Timestamp next_run_date = 16;
+  google.protobuf.Timestamp last_run_date = 17;
+  string status = 18;               // "active", "paused", "failed"
+  int32 failure_count = 19;
+  int32 max_retries = 20;
+  google.protobuf.Timestamp created_at = 21;
+  InternetBeneficiary beneficiary = 22;
+}
+
+message CreateInternetAutoRechargeRequest {
+  string beneficiary_id = 1;
+  string package_id = 2;
+  string plan_name = 3;
+  double amount = 4;
+  string currency = 5;
+  string frequency = 6;
+  int32 day_of_week = 7;
+  int32 day_of_month = 8;
+  int32 max_retries = 9;
+  int32 execution_hour = 10;
+  int32 execution_minute = 11;
+}
+
+message CreateInternetAutoRechargeResponse {
+  InternetAutoRecharge auto_recharge = 1;
+  string message = 2;
+}
+
+message GetInternetAutoRechargesRequest {
+  string status = 1;
+}
+
+message GetInternetAutoRechargesResponse {
+  repeated InternetAutoRecharge auto_recharges = 1;
+}
+
+message UpdateInternetAutoRechargeRequest {
+  string auto_recharge_id = 1;
+  string package_id = 2;
+  string plan_name = 3;
+  double amount = 4;
+  string frequency = 5;
+  int32 day_of_week = 6;
+  int32 day_of_month = 7;
+  int32 max_retries = 8;
+  int32 execution_hour = 9;
+  int32 execution_minute = 10;
+}
+
+message UpdateInternetAutoRechargeResponse {
+  InternetAutoRecharge auto_recharge = 1;
+  string message = 2;
+}
+
+message DeleteInternetAutoRechargeRequest {
+  string auto_recharge_id = 1;
+}
+
+message DeleteInternetAutoRechargeResponse {
+  string message = 1;
+}
+
+message PauseInternetAutoRechargeRequest {
+  string auto_recharge_id = 1;
+}
+
+message PauseInternetAutoRechargeResponse {
+  string message = 1;
+}
+
+message ResumeInternetAutoRechargeRequest {
+  string auto_recharge_id = 1;
+}
+
+message ResumeInternetAutoRechargeResponse {
+  string message = 1;
+}
+
+// =====================================================================
+// INTERNET REMINDER MESSAGES
+// =====================================================================
+
+message InternetReminder {
+  string id = 1;
+  string user_id = 2;
+  string beneficiary_id = 3;
+  string title = 4;
+  string description = 5;
+  google.protobuf.Timestamp reminder_date = 6;
+  double amount = 7;
+  string package_id = 8;
+  string currency = 9;
+  bool is_recurring = 10;
+  string recurrence_type = 11;
+  string status = 12;
+  google.protobuf.Timestamp notified_at = 13;
+  google.protobuf.Timestamp created_at = 14;
+  google.protobuf.Timestamp updated_at = 15;
+}
+
+message CreateInternetReminderRequest {
+  string beneficiary_id = 1;
+  string title = 2;
+  string description = 3;
+  google.protobuf.Timestamp reminder_date = 4;
+  double amount = 5;
+  string package_id = 6;
+  string currency = 7;
+  bool is_recurring = 8;
+  string recurrence_type = 9;
+}
+
+message CreateInternetReminderResponse {
+  InternetReminder reminder = 1;
+  string message = 2;
+}
+
+message GetInternetRemindersRequest {
+  string status = 1;
+  bool include_past = 2;
+}
+
+message GetInternetRemindersResponse {
+  repeated InternetReminder reminders = 1;
+}
+
+message UpdateInternetReminderRequest {
+  string reminder_id = 1;
+  string title = 2;
+  string description = 3;
+  google.protobuf.Timestamp reminder_date = 4;
+  double amount = 5;
+  string package_id = 6;
+  string currency = 7;
+  bool is_recurring = 8;
+  string recurrence_type = 9;
+}
+
+message UpdateInternetReminderResponse {
+  InternetReminder reminder = 1;
+  string message = 2;
+}
+
+message DeleteInternetReminderRequest {
+  string reminder_id = 1;
+}
+
+message DeleteInternetReminderResponse {
+  string message = 1;
+}
+
+message MarkInternetReminderCompleteRequest {
+  string reminder_id = 1;
+}
+
+message MarkInternetReminderCompleteResponse {
+  string message = 1;
 }

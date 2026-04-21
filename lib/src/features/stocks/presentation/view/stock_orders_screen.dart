@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../cubit/stock_cubit.dart';
 import '../../cubit/stock_state.dart';
+import '../../domain/entities/stock_entity.dart';
 import '../../../../../core/utils/currency_formatter.dart';
 
 /// Bamboo-style Orders Screen
@@ -282,7 +283,7 @@ class _StockOrdersScreenState extends State<StockOrdersScreen>
                   ),
                   SizedBox(height: 4.h),
                   Text(
-                    '${order.quantity} shares @ ${CurrencySymbols.formatAmountWithCurrency(order.price, order.currency)}',
+                    '${order.quantity} shares @ ${CurrencySymbols.formatAmountWithCurrency(order.price ?? 0.0, order.currency)}',
                     style: GoogleFonts.inter(
                       color: Colors.white.withValues(alpha: 0.6),
                       fontSize: 12.sp,
@@ -406,12 +407,13 @@ class _StockOrdersScreenState extends State<StockOrdersScreen>
                     _buildDetailItem('Stock', order.symbol),
                     _buildDetailItem('Type', order.type.toUpperCase()),
                     _buildDetailItem('Quantity', '${order.quantity} shares'),
-                    _buildDetailItem('Price', CurrencySymbols.formatAmountWithCurrency(order.price, order.currency)),
+                    _buildDetailItem('Price', CurrencySymbols.formatAmountWithCurrency(order.price ?? 0.0, order.currency)),
                     _buildDetailItem('Total Value', CurrencySymbols.formatAmountWithCurrency(order.totalValue, order.currency)),
                     _buildDetailItem('Status', order.status.toUpperCase()),
                     _buildDetailItem('Created', _formatDate(order.createdAt)),
-                    if (order.status.toLowerCase() == 'completed')
-                      _buildDetailItem('Executed', _formatDate(order.executedAt)),
+                    if (order.status.toLowerCase() == 'completed' &&
+                        order.executedAt != null)
+                      _buildDetailItem('Executed', _formatDate(order.executedAt!)),
                     SizedBox(height: 24.h),
                     if (order.status.toLowerCase() == 'pending')
                       Row(
@@ -660,29 +662,4 @@ class _StockOrdersScreenState extends State<StockOrdersScreen>
   }
 }
 
-// Helper class for Orders
-class StockOrder {
-  final String id;
-  final String symbol;
-  final String type;
-  final int quantity;
-  final double price;
-  final double totalValue;
-  final String status;
-  final String currency;
-  final DateTime createdAt;
-  final DateTime executedAt;
-
-  StockOrder({
-    required this.id,
-    required this.symbol,
-    required this.type,
-    required this.quantity,
-    required this.price,
-    required this.totalValue,
-    required this.status,
-    required this.currency,
-    required this.createdAt,
-    required this.executedAt,
-  });
-}
+// StockOrder lives on the domain entity (`stock_entity.dart`).

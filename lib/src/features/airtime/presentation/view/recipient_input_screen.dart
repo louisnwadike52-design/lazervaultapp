@@ -31,7 +31,31 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
   NetworkProvider? selectedProvider;
   Country? selectedCountry;
   bool isPhoneValid = false;
-  bool _isBuyForSelf = false; // When true, phone is auto-filled and read-only
+  bool _isBuyForSelf = false;
+  /// True while a detection RPC is in flight for the current phone.
+  bool _isDetectingNetwork = false;
+  /// True after the detection RPC has resolved (success or null) for the
+  /// current phone. Lets the Continue button distinguish between
+  /// "still detecting" (spinner-state, can't proceed) and "couldn't
+  /// detect — pick a network manually" (actionable).
+  bool _detectionAttempted = false;
+  /// Monotonic id for in-flight detection. The async listener compares
+  /// this against the value at fire-time and discards stale results so a
+  /// fast typist doesn't see a late detection callback overwrite the
+  /// network they're now seeing for a different prefix.
+  int _detectionRequestId = 0;
+  /// Cached providers list for the active country, fetched lazily so the
+  /// "Couldn't detect — pick a network" bottom sheet can render without
+  /// re-fetching every time the user opens it.
+  List<NetworkProvider> _availableProviders = const [];
+  /// True when the logged-in user has a phone number on their profile.
+  /// Drives (a) whether the phone field is read-only and (b) whether we
+  /// auto-skip this screen entirely for buy-for-self flows.
+  bool _hasProfilePhone = false;
+  /// When true, the recipient screen validates the pre-filled phone in
+  /// `initState` and route-replaces with the amount selection — users
+  /// with a profile phone never have to see this page.
+  bool _autoAdvance = false;
   CountryLocale _selectedDialCountry = CountryLocales.all.first; // Nigeria default
 
   @override
@@ -39,6 +63,15 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
     super.initState();
     _loadArguments();
     _phoneController.addListener(_onPhoneChanged);
+    // Buy-for-self shortcut: if the user has a registered phone, validate
+    // it in the background and route-replace to amount selection without
+    // ever rendering the recipient form. On failure we drop the flag and
+    // fall back to the standard UI.
+    if (_autoAdvance) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _validateAndProceed();
+      });
+    }
   }
 
   void _loadArguments() {
@@ -77,14 +110,63 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
           _phoneController.text = userPhone;
           isPhoneValid = userPhone.length >= 10;
           _nameController.text = 'Self';
+          _hasProfilePhone = true;
+          _autoAdvance = true;
+        } else {
+          // No profile phone on file — keep buy-for-self intent (header
+          // copy + default 'Self' name) but leave the field editable so
+          // the user can type one, with a visible CTA to set it on their
+          // profile for next time.
+          _hasProfilePhone = false;
+          _nameController.text = 'Self';
         }
-      } else if (args['prefillPhone'] != null) {
-        _phoneController.text = args['prefillPhone'] as String;
+      } else if (args['prefillPhone'] != null ||
+          args['phoneNumber'] != null) {
+        // Saved-contact and repeat-purchase paths often hand us the phone
+        // in E.164 (`+234801XXXXXXX`) — the input field expects the
+        // local format (`0801XXXXXXX`) so detection can match against
+        // the prefix table. Strip the country dial code consistently
+        // here so a user repeating an old purchase doesn't see their
+        // network silently fail to detect.
+        final raw = (args['prefillPhone'] ?? args['phoneNumber']) as String;
+        _phoneController.text = _normalizePrefilledPhone(raw);
         isPhoneValid = _phoneController.text.length >= 10;
       }
 
       if (!_isBuyForSelf && args['prefillName'] != null) {
         _nameController.text = args['prefillName'] as String;
+      }
+
+      // Saved-contact handler also passes networkCode + networkName as
+      // strings (no full NetworkProvider). Construct a placeholder that
+      // _onPhoneChanged's "preserve on null" logic will keep so the
+      // Continue gate goes active immediately. Live detection from the
+      // prefix table will replace this with a richer object on first
+      // keystroke if the prefix matches a known provider.
+      if (selectedProvider == null &&
+          args['networkCode'] != null &&
+          args['networkName'] != null) {
+        try {
+          final code = (args['networkCode'] as String).toUpperCase();
+          final type = NetworkProviderType.values.firstWhere(
+            (t) => t.name.toUpperCase() == code ||
+                t.shortName.toUpperCase() == code,
+            orElse: () => NetworkProviderType.values.first,
+          );
+          selectedProvider = NetworkProvider(
+            id: code.toLowerCase(),
+            type: type,
+            name: args['networkName'] as String,
+            shortName: type.shortName,
+            logo: type.logo,
+            primaryColor: type.primaryColor,
+            prefixes: type.prefixes,
+            countryCode: 'NG',
+          );
+        } catch (_) {
+          // Best-effort — leave selectedProvider null and let detection
+          // resolve, or the user pick from the manual sheet.
+        }
       }
 
       if (args['isRepeatTransaction'] == true) {
@@ -129,38 +211,111 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
     super.dispose();
   }
 
-  void _onPhoneChanged() async {
-    if (!mounted) return;
-    final phoneNumber = _phoneController.text.replaceAll(RegExp(r'[^\d]'), '');
-    final stripped = phoneNumber.startsWith('0') ? phoneNumber.substring(1) : phoneNumber;
+  /// Convert an inbound prefilled phone (could be E.164 `+234XXX`,
+  /// `234XXX`, or local `0XXX`) into the local form the input expects
+  /// (`0XXX`). Strips spaces / dashes / parens too so detection sees a
+  /// clean digit prefix on the very first listener tick.
+  String _normalizePrefilledPhone(String raw) {
+    var digits = raw.replaceAll(RegExp(r'[^\d+]'), '');
+    if (digits.startsWith('+')) digits = digits.substring(1);
+    // Common NG envelope: 234XXXXXXXXXX → 0XXXXXXXXXX. We only swap when
+    // the result has the right local length so a paste of a non-NG
+    // number passes through unchanged.
+    if (digits.startsWith('234') && digits.length == 13) {
+      return '0${digits.substring(3)}';
+    }
+    return digits;
+  }
 
+  /// Phone-input reactor. Re-runs detection on every keystroke so the
+  /// Detected Network card updates as the user types, and clears state
+  /// when the input drops below the minimum prefix length (or to empty)
+  /// so users don't see a stale detected network from an earlier prefix.
+  ///
+  /// Edge cases handled:
+  ///   * empty input         → clear network + flags
+  ///   * < 4 digits          → clear network + flags (no detection yet)
+  ///   * prefix change       → re-detect, replace network if different
+  ///   * unknown prefix      → clear network, mark detectionAttempted so
+  ///                           the Continue button switches to a tappable
+  ///                           "Pick a network" prompt
+  ///   * stale callback      → discarded via _detectionRequestId guard
+  ///                           so a fast backspace doesn't get clobbered
+  ///                           by a previous prefix's late response
+  Future<void> _onPhoneChanged() async {
+    if (!mounted) return;
+    final phoneNumber =
+        _phoneController.text.replaceAll(RegExp(r'[^\d]'), '');
+    final stripped =
+        phoneNumber.startsWith('0') ? phoneNumber.substring(1) : phoneNumber;
     final newIsValid = stripped.length >= 7;
-    if (newIsValid != isPhoneValid) {
+
+    // Clear state on short / empty input. Without this, deleting back
+    // from "08036..." would leave the green Detected Network card
+    // showing MTN even though the field is now empty.
+    if (phoneNumber.length < 4) {
+      if (!mounted) return;
       setState(() {
         isPhoneValid = newIsValid;
+        if (selectedProvider != null ||
+            _detectionAttempted ||
+            _isDetectingNetwork) {
+          selectedProvider = null;
+          _detectionAttempted = false;
+          _isDetectingNetwork = false;
+        }
+      });
+      return;
+    }
+
+    // Bump the request id so any in-flight detection becomes stale.
+    final requestId = ++_detectionRequestId;
+    if (newIsValid != isPhoneValid || !_isDetectingNetwork) {
+      setState(() {
+        isPhoneValid = newIsValid;
+        _isDetectingNetwork = true;
       });
     }
 
-    if (phoneNumber.length >= 4) {
-      try {
-        final cubit = context.read<AirtimeCubit>();
-        final countryCode = selectedCountry?.code ?? 'NG';
-        final detectedProvider =
-            await cubit.detectNetworkFromPhoneNumber(phoneNumber, countryCode);
+    NetworkProvider? detected;
+    try {
+      final cubit = context.read<AirtimeCubit>();
+      final countryCode = selectedCountry?.code ?? 'NG';
+      detected = await cubit.detectNetworkFromPhoneNumber(
+          phoneNumber, countryCode);
+    } catch (_) {
+      // Detection is best-effort. A failure leaves `detected` null so the
+      // user falls into the "Pick a network" path.
+      detected = null;
+    }
 
-        if (!mounted) return;
-        if (detectedProvider != null && detectedProvider != selectedProvider) {
-          final previousProvider = selectedProvider;
-          setState(() {
-            selectedProvider = detectedProvider;
-          });
-          if (previousProvider != null && mounted) {
-            _showNetworkUpdatedDialog(previousProvider, detectedProvider);
-          }
-        }
-      } catch (_) {
-        // Network detection is best-effort; don't block user flow
-      }
+    if (!mounted) return;
+    // Drop stale callbacks — if the user typed more characters while we
+    // were awaiting, a newer request is in flight and this one's result
+    // shouldn't overwrite it.
+    if (requestId != _detectionRequestId) return;
+
+    final previousProvider = selectedProvider;
+    setState(() {
+      // Only override the existing provider when detection found one.
+      // Keeping the previous value on a null detection result lets the
+      // repeat-purchase prefill flow (and any other path that hands us
+      // a known networkProvider via args) survive a prefix-table miss.
+      // Empty / cleared input is handled in the early-return branch
+      // above, so this won't preserve a stale provider after backspace.
+      selectedProvider = detected ?? selectedProvider;
+      _isDetectingNetwork = false;
+      _detectionAttempted = true;
+    });
+    // Only show the "Network Updated" interrupt when the user had a
+    // confirmed network and we're actively replacing it with a different
+    // one — not on the initial detection (previous = null) and not when
+    // we've cleared to null because the prefix is unknown.
+    if (detected != null &&
+        previousProvider != null &&
+        detected != previousProvider &&
+        mounted) {
+      _showNetworkUpdatedDialog(previousProvider, detected);
     }
   }
 
@@ -260,7 +415,7 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
             child: Text(
               'Got it',
               style: TextStyle(
-                color: const Color(0xFF3B82F6),
+                color: const Color(0xFF4E03D0),
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -321,7 +476,13 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
         onContactSelected: (contact) {
           setState(() {
             _phoneController.text = contact['phone'] ?? '';
-            _nameController.text = contact['name'] ?? '';
+            // Buy-for-self uses 'Self' as the recipient label and keeps
+            // the name controller hidden — don't overwrite it with the
+            // contact's name even when the user picks one for the
+            // convenience of not typing the digits.
+            if (!_isBuyForSelf) {
+              _nameController.text = contact['name'] ?? '';
+            }
           });
           _onPhoneChanged();
         },
@@ -340,14 +501,30 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
               final args = Get.arguments as Map<String, dynamic>?;
               final prefillAmount = args?['prefillAmount'] as double?;
 
-              Get.toNamed(AppRoutes.airtimeAmountSelection, arguments: {
+              final payload = {
                 'phoneNumber': state.formattedNumber,
                 'recipientName': _nameController.text.trim(),
                 'networkProvider': state.detectedProvider ?? selectedProvider,
                 'country': selectedCountry,
                 if (prefillAmount != null) 'prefillAmount': prefillAmount,
-              });
+              };
+              // On auto-advance, replace this route so Back from amount
+              // selection goes past the recipient screen directly to the
+              // airtime landing (otherwise the loader shows again and
+              // re-triggers the shortcut — infinite loop).
+              if (_autoAdvance) {
+                Get.offNamed(AppRoutes.airtimeAmountSelection,
+                    arguments: payload);
+              } else {
+                Get.toNamed(AppRoutes.airtimeAmountSelection,
+                    arguments: payload);
+              }
             } else if (state is AirtimeError) {
+              if (_autoAdvance) {
+                // Fall back to the editable form so the user can correct
+                // whatever the validator rejected.
+                setState(() => _autoAdvance = false);
+              }
               _showError(state.message);
             }
           },
@@ -362,6 +539,24 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
                   });
                 }
               });
+            }
+
+            // Auto-advance loader — the BlocListener above route-replaces
+            // onto amount selection as soon as validation succeeds, so this
+            // is what the user sees for the ~100ms round trip.
+            if (_autoAdvance) {
+              return Column(
+                children: [
+                  _buildHeader(),
+                  const Expanded(
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: Color(0xFF4E03D0),
+                      ),
+                    ),
+                  ),
+                ],
+              );
             }
 
             return Column(
@@ -385,6 +580,15 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
                         if (!_isBuyForSelf) ...[
                           SizedBox(height: 20.h),
                           _buildRecipientNameInput(),
+                        ],
+                        // Quick Contacts is shown whenever the phone field
+                        // is editable. For buy-for-self with a profile
+                        // phone the field is read-only, so contact picking
+                        // would be meaningless; everywhere else (send-to-
+                        // others OR buy-for-self with no profile phone)
+                        // the user benefits from picking a contact instead
+                        // of typing.
+                        if (!_isBuyForSelf || !_hasProfilePhone) ...[
                           SizedBox(height: 24.h),
                           _buildQuickContacts(),
                         ],
@@ -584,13 +788,15 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
                   ],
                 ),
               ),
-              // Phone number input
+              // Phone number input. Locked only when buy-for-self AND the
+              // user has a phone on their profile — otherwise it stays
+              // editable so users without a profile phone can still pay.
               Expanded(
                 child: TextField(
                   controller: _phoneController,
                   focusNode: _phoneFocusNode,
-                  readOnly: _isBuyForSelf,
-                  enabled: !_isBuyForSelf,
+                  readOnly: _isBuyForSelf && _hasProfilePhone,
+                  enabled: !(_isBuyForSelf && _hasProfilePhone),
                   keyboardType: TextInputType.phone,
                   inputFormatters: [
                     FilteringTextInputFormatter.digitsOnly,
@@ -598,7 +804,9 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
                   ],
                   style: TextStyle(
                     fontSize: 16.sp,
-                    color: _isBuyForSelf ? const Color(0xFF9CA3AF) : Colors.white,
+                    color: (_isBuyForSelf && _hasProfilePhone)
+                        ? const Color(0xFF9CA3AF)
+                        : Colors.white,
                     fontWeight: FontWeight.w500,
                   ),
                   decoration: InputDecoration(
@@ -607,7 +815,7 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
                       color: const Color(0xFF9CA3AF).withValues(alpha: 0.5),
                       fontSize: 16.sp,
                     ),
-                    suffixIcon: _isBuyForSelf
+                    suffixIcon: (_isBuyForSelf && _hasProfilePhone)
                         ? Padding(
                             padding: EdgeInsets.all(12.w),
                             child: Icon(
@@ -628,7 +836,59 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
             ],
           ),
         ),
+        if (_isBuyForSelf && !_hasProfilePhone) ...[
+          SizedBox(height: 10.h),
+          _buildProfilePhoneCta(),
+        ],
       ],
+    );
+  }
+
+  /// Warning pill shown under the phone field when the user tapped
+  /// "Buy Airtime" (self-purchase intent) but has no phone on their
+  /// profile yet. Links them to the My Account screen so the next
+  /// buy-for-self tap can use the shortcut.
+  Widget _buildProfilePhoneCta() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFB923C).withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(
+          color: const Color(0xFFFB923C).withValues(alpha: 0.3),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.info_outline,
+              color: const Color(0xFFFB923C), size: 16.sp),
+          SizedBox(width: 8.w),
+          Expanded(
+            child: Text(
+              "You haven't set a phone number on your profile.",
+              style: TextStyle(
+                color: const Color(0xFF9CA3AF),
+                fontSize: 12.sp,
+              ),
+            ),
+          ),
+          GestureDetector(
+            onTap: () => Get.toNamed(AppRoutes.myAccount),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 6.w),
+              child: Text(
+                'Set it',
+                style: TextStyle(
+                  color: const Color(0xFFFB923C),
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w700,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -707,7 +967,7 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
               children: [
                 Icon(
                   Icons.contacts,
-                  color: const Color(0xFF3B82F6),
+                  color: const Color(0xFF4E03D0),
                   size: 22.sp,
                 ),
                 SizedBox(width: 12.w),
@@ -723,7 +983,7 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
                 ),
                 Icon(
                   Icons.arrow_forward_ios,
-                  color: const Color(0xFF3B82F6),
+                  color: const Color(0xFF4E03D0),
                   size: 14.sp,
                 ),
               ],
@@ -734,20 +994,176 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
     );
   }
 
+  /// Manual network override sheet — shown when auto-detection has run
+  /// and returned null. Lets users pick a network for unrecognised
+  /// prefixes (e.g. older / sub-allocated MNO ranges) so they can still
+  /// proceed instead of being stuck. Loads providers lazily and caches
+  /// them in [_availableProviders] so reopens are instant.
+  Future<void> _showNetworkPicker() async {
+    final cubit = context.read<AirtimeCubit>();
+    final countryCode = selectedCountry?.code ?? 'NG';
+
+    if (_availableProviders.isEmpty) {
+      try {
+        final providers = await cubit.repository.getNetworkProviders(countryCode);
+        if (!mounted) return;
+        setState(() => _availableProviders = providers);
+      } catch (_) {
+        // Surface the failure rather than opening an empty sheet.
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Could not load networks. Try again.'),
+              backgroundColor: const Color(0xFFEF4444),
+              behavior: SnackBarBehavior.floating,
+              margin: EdgeInsets.all(16.w),
+            ),
+          );
+        }
+        return;
+      }
+    }
+
+    if (!mounted) return;
+    final picked = await showModalBottomSheet<NetworkProvider>(
+      context: context,
+      backgroundColor: const Color(0xFF1F1F1F),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 4.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF4B5563),
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+              SizedBox(height: 16.h),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Pick a network',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      "We couldn't auto-detect this number's network. Pick the operator manually to continue.",
+                      style: TextStyle(
+                        color: const Color(0xFF9CA3AF),
+                        fontSize: 12.sp,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 12.h),
+              ..._availableProviders.map(
+                (p) => ListTile(
+                  leading: Container(
+                    width: 36.w,
+                    height: 36.w,
+                    decoration: BoxDecoration(
+                      color: p.type.color,
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: Center(
+                      child: Text(
+                        p.name.isNotEmpty ? p.name[0] : '?',
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                  title: Text(
+                    p.name,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  onTap: () => Navigator.of(ctx).pop(p),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (picked != null && mounted) {
+      setState(() {
+        selectedProvider = picked;
+        // Mark detection as attempted so the "Pick a network" label
+        // doesn't reappear after the user has chosen manually.
+        _detectionAttempted = true;
+      });
+    }
+  }
+
   Widget _buildContinueButton(AirtimeState state) {
     final isLoading = state is AirtimeLoading;
-    final canProceed = isPhoneValid && !isLoading;
+    // Require BOTH a valid phone AND a known network. Without the network
+    // gate the user could advance to amount selection with networkProvider
+    // still null, which then blew up there with a generic "missing required
+    // information" snackbar. Forcing the gate here means the failure
+    // surfaces at the screen the user can act on.
+    final hasNetwork = selectedProvider != null;
+    final canProceed = isPhoneValid && hasNetwork && !isLoading;
+
+    // Surface a different label depending on what's blocking. The
+    // "Pick a network" label is tappable — it opens the manual picker
+    // sheet so users with an unrecognised prefix (e.g. a number whose
+    // operator isn't in our local prefix table) can still proceed.
+    final String blockedLabel;
+    final VoidCallback? blockedAction;
+    if (!isPhoneValid) {
+      blockedLabel = 'Enter recipient phone';
+      blockedAction = null;
+    } else if (_isDetectingNetwork) {
+      blockedLabel = 'Detecting network…';
+      blockedAction = null;
+    } else if (!hasNetwork && _detectionAttempted) {
+      blockedLabel = 'Pick a network';
+      blockedAction = _showNetworkPicker;
+    } else if (!hasNetwork) {
+      blockedLabel = 'Detecting network…';
+      blockedAction = null;
+    } else {
+      blockedLabel = 'Continue';
+      blockedAction = null;
+    }
 
     return Container(
       padding: EdgeInsets.all(20.w),
       child: SizedBox(
         width: double.infinity,
         child: ElevatedButton(
-          onPressed: canProceed ? _validateAndProceed : null,
+          onPressed: canProceed
+              ? _validateAndProceed
+              : (blockedAction),
           style: ElevatedButton.styleFrom(
             backgroundColor: canProceed
-                ? const Color(0xFF3B82F6)
-                : const Color(0xFF1F1F1F),
+                ? const Color(0xFF4E03D0)
+                : (blockedAction != null
+                    ? const Color(0xFFFB923C).withValues(alpha: 0.18)
+                    : const Color(0xFF1F1F1F)),
             padding: EdgeInsets.symmetric(vertical: 16.h),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(14.r),
@@ -779,13 +1195,15 @@ class _RecipientInputScreenState extends State<RecipientInputScreen> {
                   ],
                 )
               : Text(
-                  'Continue',
+                  canProceed ? 'Continue' : blockedLabel,
                   style: TextStyle(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w600,
                     color: canProceed
                         ? Colors.white
-                        : const Color(0xFF9CA3AF),
+                        : (blockedAction != null
+                            ? const Color(0xFFFB923C)
+                            : const Color(0xFF9CA3AF)),
                   ),
                 ),
         ),
@@ -912,12 +1330,12 @@ class _ContactSelectionBottomSheetState
               Container(
                 padding: EdgeInsets.all(12.w),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                  color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Icon(
                   Icons.contacts,
-                  color: const Color(0xFF3B82F6),
+                  color: const Color(0xFF4E03D0),
                   size: 24.sp,
                 ),
               ),
@@ -979,7 +1397,7 @@ class _ContactSelectionBottomSheetState
         children: [
           Icon(
             Icons.search,
-            color: const Color(0xFF3B82F6),
+            color: const Color(0xFF4E03D0),
             size: 20.sp,
           ),
           SizedBox(width: 12.w),
@@ -1021,7 +1439,7 @@ class _ContactSelectionBottomSheetState
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4E03D0)),
           ),
           SizedBox(height: 16.h),
           Text(
@@ -1106,7 +1524,7 @@ class _ContactSelectionBottomSheetState
               height: 44.w,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF3B82F6), Color.fromARGB(255, 78, 3, 208)],
+                  colors: [Color(0xFF4E03D0), Color.fromARGB(255, 78, 3, 208)],
                 ),
                 borderRadius: BorderRadius.circular(22.r),
               ),
@@ -1149,7 +1567,7 @@ class _ContactSelectionBottomSheetState
             ),
             Icon(
               Icons.arrow_forward_ios,
-              color: const Color(0xFF3B82F6),
+              color: const Color(0xFF4E03D0),
               size: 14.sp,
             ),
           ],

@@ -16,6 +16,8 @@ class AutoRechargeCubit extends Cubit<AutoRechargeState> {
     int? dayOfWeek,
     int? dayOfMonth,
     int maxRetries = 3,
+    int? executionHour,
+    int? executionMinute,
   }) async {
     if (isClosed) return;
     emit(AutoRechargeCreating());
@@ -28,6 +30,8 @@ class AutoRechargeCubit extends Cubit<AutoRechargeState> {
       dayOfWeek: dayOfWeek,
       dayOfMonth: dayOfMonth,
       maxRetries: maxRetries,
+      executionHour: executionHour,
+      executionMinute: executionMinute,
     );
 
     if (isClosed) return;
@@ -58,6 +62,8 @@ class AutoRechargeCubit extends Cubit<AutoRechargeState> {
     int? dayOfWeek,
     int? dayOfMonth,
     int? maxRetries,
+    int? executionHour,
+    int? executionMinute,
   }) async {
     if (isClosed) return;
     emit(AutoRechargeUpdating());
@@ -69,6 +75,8 @@ class AutoRechargeCubit extends Cubit<AutoRechargeState> {
       dayOfWeek: dayOfWeek,
       dayOfMonth: dayOfMonth,
       maxRetries: maxRetries,
+      executionHour: executionHour,
+      executionMinute: executionMinute,
     );
 
     if (isClosed) return;

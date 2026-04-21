@@ -92,8 +92,25 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
       return;
     }
 
-    if (networkProvider == null || phoneNumber == null) {
-      _showError('Missing required information');
+    // Be explicit about which piece is missing so the user can act on it.
+    // The previous "Missing required information" snackbar told the user
+    // nothing — they'd land here from the recipient screen and have no
+    // idea why Continue was failing. Each branch now names the gap and
+    // offers a "Go Back" action so the user can correct it in one tap.
+    if (phoneNumber == null || phoneNumber!.trim().isEmpty) {
+      _showError(
+        'Phone number is missing. Go back and enter the recipient\'s phone number.',
+        actionLabel: 'Go Back',
+        onAction: () => Get.back(),
+      );
+      return;
+    }
+    if (networkProvider == null) {
+      _showError(
+        'We couldn\'t detect the network for this number. Go back and pick a network manually.',
+        actionLabel: 'Go Back',
+        onAction: () => Get.back(),
+      );
       return;
     }
 
@@ -106,7 +123,11 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
     );
   }
 
-  void _showError(String message) {
+  void _showError(
+    String message, {
+    String? actionLabel,
+    VoidCallback? onAction,
+  }) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -116,6 +137,14 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12.r),
         ),
+        duration: const Duration(seconds: 5),
+        action: (actionLabel != null && onAction != null)
+            ? SnackBarAction(
+                label: actionLabel,
+                textColor: Colors.white,
+                onPressed: onAction,
+              )
+            : null,
       ),
     );
   }
@@ -449,7 +478,7 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                 decoration: BoxDecoration(
                   color: isSelected 
-                    ? Color(0xFF3B82F6) 
+                    ? Color(0xFF4E03D0) 
                     : const Color(0xFF1F1F1F),
                   borderRadius: BorderRadius.circular(12.r),
                   boxShadow: [
@@ -549,7 +578,7 @@ class _AmountSelectionScreenState extends State<AmountSelectionScreen> {
           onPressed: _isAmountValid ? _validateAndProceed : null,
           style: ElevatedButton.styleFrom(
             backgroundColor: _isAmountValid
-              ? Color(0xFF3B82F6)
+              ? Color(0xFF4E03D0)
               : Colors.white.withValues(alpha: 0.1),
             padding: EdgeInsets.symmetric(vertical: 16.h),
             shape: RoundedRectangleBorder(

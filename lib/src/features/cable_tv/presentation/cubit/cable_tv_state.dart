@@ -97,3 +97,28 @@ class CableTVError extends CableTVState {
   @override
   List<Object?> get props => [message];
 }
+
+// ================= Payment history states =================
+class CableTVPaymentHistoryLoading extends CableTVState {}
+
+class CableTVPaymentHistoryLoaded extends CableTVState {
+  final List<CableTVPaymentEntity> payments;
+  final bool isStale;
+
+  CableTVPaymentHistoryLoaded({
+    required this.payments,
+    this.isStale = false,
+  });
+
+  @override
+  List<Object?> get props => [payments, isStale];
+}
+
+class CableTVPaymentHistoryError extends CableTVState {
+  final String message;
+
+  CableTVPaymentHistoryError({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}

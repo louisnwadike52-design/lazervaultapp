@@ -1,7 +1,6 @@
 import 'dart:async';
+import 'package:flutter/material.dart' show TimeOfDay;
 import 'package:flutter/widgets.dart';
-import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest.dart' as tz_data;
 
 /// Service for scheduling local notifications for Plan My Day reminders
 /// This is a simplified version that can be extended with flutter_local_notifications package
@@ -16,12 +15,13 @@ class PlanNotificationService {
   // Callback to show notification (to be connected to actual notification plugin)
   void Function(String title, String body)? onShowNotification;
 
-  /// Initialize the notification service
+  /// Initialize the notification service. Timezone bootstrapping is
+  /// intentionally omitted — the scheduler here uses `DateTime.difference`
+  /// against the device's local clock, which already reflects the user's
+  /// timezone. Once we integrate `flutter_local_notifications`, this is
+  /// where we'd call `tz.setLocalLocation(tz.getLocation(deviceTz))`.
   Future<void> initialize() async {
     if (_initialized) return;
-
-    // Initialize timezone database
-    tz_data.initializeTimeZones();
     _initialized = true;
   }
 

@@ -123,34 +123,52 @@ class AirtimeRemoteDataSourceImpl implements AirtimeRemoteDataSource {
     String? transferNote,
     required String currency,
   }) async {
+    // The utility-payments proto does NOT define a dedicated
+    // TransferAirtime RPC. Airtime transfers are modelled as a top-up to the
+    // recipient from the sender's wallet — i.e. the same shape as
+    // `BuyAirtime`, just annotated with transfer metadata so the receipt and
+    // history can distinguish it. The backend handler detects
+    // `airtimeType == 'transfer'` and stamps the payment accordingly.
     try {
-      final request = pb.TransferAirtimeRequest()
-        ..senderPhone = senderPhone
-        ..recipientPhone = recipientPhone
-        ..network = network
+      final request = pb.BuyAirtimeRequest()
+        ..providerId = network
+        ..phoneNumber = recipientPhone
         ..amount = amount
-        ..countryCode = countryCode
+        ..airtimeType = 'transfer'
         ..transactionId = transactionId
         ..verificationToken = verificationToken
         ..idempotencyKey = idempotencyKey
-        ..recipientName = recipientName;
+        ..countryCode = countryCode;
 
       if (operatorId != null && operatorId.isNotEmpty) {
         request.operatorId = operatorId;
       }
-      if (transferNote != null && transferNote.isNotEmpty) {
-        request.transferNote = transferNote;
-      }
 
       final options = await grpcClient.callOptions;
       final response = await grpcClient.utilityPaymentsClient
-          .transferAirtime(request, options: options);
+          .buyAirtime(request, options: options);
 
-      return AirtimeTransactionModel.fromTransferAirtimeResponse(response, currency: currency);
+      return AirtimeTransactionModel.fromTransferAirtimeResponse(
+        senderPhone: senderPhone,
+        recipientPhone: recipientPhone,
+        recipientName: recipientName,
+        response: response,
+        currency: currency,
+        transferNote: transferNote,
+      );
     } on GrpcError catch (e) {
       throw Exception('Failed to transfer airtime: ${e.message}');
     }
   }
+
+  /// The airtime "family" — expanded server-side by `bill_type_in` so
+  /// history queries don't drag electricity/water/cable rows into the
+  /// airtime tab.
+  static const _airtimeFamily = [
+    'airtime',
+    'intl_airtime',
+    'airtime_to_cash',
+  ];
 
   @override
   Future<List<AirtimeTransactionModel>> getHistory({
@@ -164,7 +182,12 @@ class AirtimeRemoteDataSourceImpl implements AirtimeRemoteDataSource {
         ..offset = offset;
 
       if (billType != null) {
+        // Single-value scope: respect the caller (used by admin tools).
         request.billType = billType;
+      } else {
+        // Default: let the backend IN-filter to the airtime family so we
+        // don't post-process rows client-side.
+        request.billTypeIn.addAll(_airtimeFamily);
       }
 
       final options = await grpcClient.callOptions;
@@ -172,7 +195,8 @@ class AirtimeRemoteDataSourceImpl implements AirtimeRemoteDataSource {
           .getBillPaymentHistory(request, options: options);
 
       return response.payments
-          .map((payment) => AirtimeTransactionModel.fromBillPaymentProto(payment, currency: 'NGN'))
+          .map((payment) => AirtimeTransactionModel.fromBillPaymentProto(
+              payment, currency: 'NGN'))
           .toList();
     } on GrpcError catch (e) {
       throw Exception('Failed to fetch airtime history: ${e.message}');

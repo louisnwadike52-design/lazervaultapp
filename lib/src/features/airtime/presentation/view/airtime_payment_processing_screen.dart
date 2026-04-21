@@ -47,7 +47,7 @@ class _AirtimePaymentProcessingScreenState
       title: 'Payment Initiated',
       subtitle: 'Your airtime request has been submitted',
       icon: Icons.receipt_long,
-      activeColor: Color(0xFF3B82F6),
+      activeColor: Color(0xFF4E03D0),
     ),
     _ProcessingStep(
       title: 'Confirming Details',
@@ -187,10 +187,32 @@ class _AirtimePaymentProcessingScreenState
 
               if (state is AirtimePaymentSuccess) {
                 _hasNavigated = true;
+                final originalArgs = Get.arguments as Map<String, dynamic>?;
                 Get.offNamed(
                   AppRoutes.airtimePaymentConfirmation,
                   arguments: {
                     'transaction': state.transaction,
+                    // Forward the keep-alive payload from the review
+                    // screen so the receipt's post-purchase actions can
+                    // fire saveAirtimeBeneficiary + createAirtimeAutoRecharge.
+                    if (originalArgs != null) ...{
+                      if (originalArgs['saveAsContact'] != null)
+                        'saveAsContact': originalArgs['saveAsContact'],
+                      if (originalArgs['nickname'] != null)
+                        'nickname': originalArgs['nickname'],
+                      if (originalArgs['existingBeneficiaryId'] != null)
+                        'existingBeneficiaryId':
+                            originalArgs['existingBeneficiaryId'],
+                      if (originalArgs['enableAutoRecharge'] != null)
+                        'enableAutoRecharge':
+                            originalArgs['enableAutoRecharge'],
+                      if (originalArgs['autoRechargePref'] != null)
+                        'autoRechargePref': originalArgs['autoRechargePref'],
+                      if (originalArgs['networkCode'] != null)
+                        'networkCode': originalArgs['networkCode'],
+                      if (originalArgs['networkName'] != null)
+                        'networkName': originalArgs['networkName'],
+                    },
                   },
                 );
               }
@@ -475,7 +497,7 @@ class _AirtimePaymentProcessingScreenState
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF3B82F6).withValues(alpha: 0.08),
+        color: const Color(0xFF4E03D0).withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Row(
@@ -484,7 +506,7 @@ class _AirtimePaymentProcessingScreenState
           Icon(
             Icons.lock_outline,
             size: 16.sp,
-            color: const Color(0xFF3B82F6),
+            color: const Color(0xFF4E03D0),
           ),
           SizedBox(width: 8.w),
           Expanded(
@@ -492,7 +514,7 @@ class _AirtimePaymentProcessingScreenState
               'Your payment is secured with end-to-end encryption',
               style: GoogleFonts.inter(
                 fontSize: 12.sp,
-                color: const Color(0xFF3B82F6),
+                color: const Color(0xFF4E03D0),
                 fontWeight: FontWeight.w500,
               ),
               textAlign: TextAlign.center,

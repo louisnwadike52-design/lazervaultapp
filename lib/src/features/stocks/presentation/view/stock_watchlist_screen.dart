@@ -160,7 +160,7 @@ class _StockWatchlistScreenState extends State<StockWatchlistScreen> {
       onTap: () => Get.to(() => StockDetailsScreen(stock: stock)),
       child: Dismissible(
         key: Key(stock.symbol),
-        direction: DismissEndToStart,
+        direction: DismissDirection.endToStart,
         onDismissed: (direction) {
           _removeFromWatchlist(stock);
         },

@@ -503,9 +503,10 @@ class StockCubit extends Cubit<StockState> {
     }
   }
 
-  Future<void> addToWatchlist(String watchlistId, String symbol) async {
+  Future<void> addToWatchlist(String symbol, [String? watchlistId]) async {
     try {
-      final result = await repository.addToWatchlist(watchlistId, symbol);
+      final wid = watchlistId ?? '';
+      final result = await repository.addToWatchlist(wid, symbol);
 
       result.fold(
         (failure) {
@@ -523,9 +524,11 @@ class StockCubit extends Cubit<StockState> {
     }
   }
 
-  Future<void> removeFromWatchlist(String watchlistId, String symbol) async {
+  Future<void> removeFromWatchlist(String symbol,
+      [String? watchlistId]) async {
     try {
-      final result = await repository.removeFromWatchlist(watchlistId, symbol);
+      final wid = watchlistId ?? '';
+      final result = await repository.removeFromWatchlist(wid, symbol);
 
       result.fold(
         (failure) {
@@ -540,6 +543,45 @@ class StockCubit extends Cubit<StockState> {
     } catch (e) {
       if (isClosed) return;
       emit(WatchlistsError('Failed to remove from watchlist: ${e.toString()}'));
+    }
+  }
+
+  /// Flat-list watchlist load used by the simple watchlist screen. Loads
+  /// every watchlist the user owns, collects the unique symbols, then
+  /// resolves each symbol into a full `Stock` via the repository so the
+  /// cards on the screen can render name/price/change percent.
+  Future<void> loadWatchlist() async {
+    try {
+      if (isClosed) return;
+      emit(WatchlistLoading());
+
+      final result = await getWatchlistsUseCase();
+
+      await result.fold(
+        (failure) async {
+          if (isClosed) return;
+          emit(WatchlistsError(failure.message));
+        },
+        (watchlists) async {
+          final seen = <String>{};
+          final symbols = <String>[];
+          for (final w in watchlists) {
+            for (final s in w.symbols) {
+              if (seen.add(s)) symbols.add(s);
+            }
+          }
+          final stocks = <Stock>[];
+          for (final sym in symbols) {
+            final stockRes = await repository.getStockDetails(sym);
+            stockRes.fold((_) {}, (s) => stocks.add(s));
+          }
+          if (isClosed) return;
+          emit(WatchlistLoaded(stocks));
+        },
+      );
+    } catch (e) {
+      if (isClosed) return;
+      emit(WatchlistsError('Failed to load watchlist: ${e.toString()}'));
     }
   }
 

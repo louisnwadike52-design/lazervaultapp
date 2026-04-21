@@ -116,7 +116,7 @@ class NetworkProvidersCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w500,
-                        color: const Color(0xFF3B82F6),
+                        color: const Color(0xFF4E03D0),
                       ),
                     ),
                   );
@@ -188,12 +188,12 @@ class NetworkProvidersCard extends StatelessWidget {
                   Container(
                     padding: EdgeInsets.all(10.w),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                      color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12.r),
                     ),
                     child: Icon(
                       Icons.cell_tower,
-                      color: const Color(0xFF3B82F6),
+                      color: const Color(0xFF4E03D0),
                       size: 22.sp,
                     ),
                   ),
@@ -312,7 +312,7 @@ class NetworkProvidersCard extends StatelessWidget {
                           ),
                           Icon(
                             Icons.arrow_forward_ios,
-                            color: const Color(0xFF3B82F6),
+                            color: const Color(0xFF4E03D0),
                             size: 14.sp,
                           ),
                         ],

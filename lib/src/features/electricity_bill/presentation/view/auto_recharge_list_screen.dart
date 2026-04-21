@@ -2,15 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
-import '../../domain/entities/auto_recharge_entity.dart';
+
 import '../../../../../core/types/app_routes.dart';
+import '../../../../../core/widgets/bill_auto_recharge_create_sheet.dart';
+import '../../../../../core/widgets/bill_auto_recharge_item.dart';
+import '../../domain/entities/auto_recharge_entity.dart';
+import '../../domain/entities/beneficiary_entity.dart';
+import '../../domain/repositories/electricity_bill_repository.dart';
 import '../cubit/auto_recharge_cubit.dart';
 import '../cubit/auto_recharge_state.dart';
 import '../cubit/electricity_bill_cubit.dart';
 import '../cubit/electricity_bill_state.dart';
 
+/// Electricity Auto-Recharge management. Mirrors `DataAutoRechargeScreen`
+/// visually: solid dark background, standard AppBar, shared
+/// `BillAutoRechargeItem` cards, and a details dialog on tap. Electricity
+/// retains the "Pay Now" action (absent in data) — it lives inside the
+/// details dialog so the list stays visually identical to data.
 class AutoRechargeListScreen extends StatefulWidget {
   const AutoRechargeListScreen({super.key});
 
@@ -19,711 +29,582 @@ class AutoRechargeListScreen extends StatefulWidget {
 }
 
 class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
+  /// Cached list from the most recent successful load. Used so refetches
+  /// after pause/resume/delete/create don't flash a full-screen loader.
+  List<AutoRechargeEntity>? _cachedList;
+  AutoRechargeEntity? _pendingPayAutoRecharge;
+  /// Re-entry guard on the FAB — blocks a second tap while the meter-
+  /// picker fetch / picker sheet / create sheet chain is already in
+  /// flight (otherwise rapid taps stack two pickers on top of each
+  /// other and we'd try to open the create sheet twice).
+  bool _creating = false;
+
   @override
   void initState() {
     super.initState();
     context.read<AutoRechargeCubit>().getAutoRecharges();
   }
 
-  void _toggleAutoRecharge(AutoRechargeEntity autoRecharge) {
-    if (autoRecharge.isActive) {
-      context.read<AutoRechargeCubit>().pauseAutoRecharge(autoRechargeId: autoRecharge.id);
-    } else if (autoRecharge.isPaused) {
-      context.read<AutoRechargeCubit>().resumeAutoRecharge(autoRechargeId: autoRecharge.id);
-    }
+  @override
+  void dispose() {
+    // Clear pending payment reference to avoid stale state
+    _pendingPayAutoRecharge = null;
+    super.dispose();
   }
-
-  void _deleteAutoRecharge(AutoRechargeEntity autoRecharge) {
-    Get.dialog(
-      AlertDialog(
-        backgroundColor: const Color(0xFF1A1A3E),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.r),
-        ),
-        title: Text(
-          'Delete Auto-Recharge',
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 20.sp,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        content: Text(
-          'Are you sure you want to delete this auto-recharge for ${autoRecharge.customerName}?',
-          style: GoogleFonts.inter(
-            color: Colors.white.withValues(alpha: 0.8),
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w400,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.inter(
-                color: Colors.white.withValues(alpha: 0.6),
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              Get.back();
-              context.read<AutoRechargeCubit>().deleteAutoRecharge(autoRechargeId: autoRecharge.id);
-            },
-            child: Text(
-              'Delete',
-              style: GoogleFonts.inter(
-                color: const Color(0xFFEF5350),
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _editAutoRecharge(AutoRechargeEntity autoRecharge) {
-    Get.toNamed(
-      AppRoutes.electricityBillEditAutoRecharge,
-      arguments: {'autoRecharge': autoRecharge},
-    );
-  }
-
-  void _payNow(AutoRechargeEntity autoRecharge) {
-    // Validate meter first, then navigate to payment on success
-    context.read<ElectricityBillCubit>().validateMeter(
-          providerCode: autoRecharge.providerCode,
-          meterNumber: autoRecharge.meterNumber,
-          meterType: autoRecharge.meterType,
-        );
-    // Store the auto recharge we're paying for
-    _pendingPayAutoRecharge = autoRecharge;
-  }
-
-  AutoRechargeEntity? _pendingPayAutoRecharge;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF1A1A3E),
-              const Color(0xFF0A0E27),
-              const Color(0xFF0F0F23),
-            ],
-          ),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF0A0A0A),
+        elevation: 0,
+        leading: IconButton(
+          onPressed: () => Get.back(),
+          icon: Icon(Icons.arrow_back_ios_new,
+              color: Colors.white, size: 20.sp),
         ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildHeader(),
-              Expanded(
-                child: MultiBlocListener(
-                  listeners: [
-                    BlocListener<ElectricityBillCubit, ElectricityBillState>(
-                      listener: (context, state) {
-                        if (state is MeterValidated && _pendingPayAutoRecharge != null) {
-                          final ar = _pendingPayAutoRecharge!;
-                          _pendingPayAutoRecharge = null;
-                          Get.toNamed(
-                            AppRoutes.electricityBillConfirmation,
-                            arguments: {
-                              'providerCode': ar.providerCode,
-                              'providerName': ar.providerName,
-                              'meterNumber': ar.meterNumber,
-                              'meterType': ar.meterType,
-                              'customerName': state.validationResult.customerName,
-                              'customerAddress': state.validationResult.customerAddress,
-                              'validationResult': state.validationResult,
-                              'amount': ar.amount,
-                            },
-                          );
-                        }
-                        if (state is MeterValidationFailed) {
-                          _pendingPayAutoRecharge = null;
-                          Get.snackbar('Error', state.message,
-                              backgroundColor: Colors.red.withValues(alpha: 0.9),
-                              colorText: Colors.white);
-                        }
-                        if (state is ElectricityBillError) {
-                          _pendingPayAutoRecharge = null;
-                          Get.snackbar('Error', state.message,
-                              backgroundColor: Colors.red.withValues(alpha: 0.9),
-                              colorText: Colors.white);
-                        }
-                      },
-                    ),
-                  ],
-                  child: BlocConsumer<AutoRechargeCubit, AutoRechargeState>(
-                  listener: (context, state) {
-                    if (state is AutoRechargeError) {
-                      Get.snackbar(
-                        'Error',
-                        state.message,
-                        backgroundColor: Colors.red.withValues(alpha: 0.9),
-                        colorText: Colors.white,
-                      );
-                    }
-
-                    if (state is AutoRechargeDeleted) {
-                      Get.snackbar(
-                        'Success',
-                        state.message,
-                        backgroundColor: Colors.green.withValues(alpha: 0.9),
-                        colorText: Colors.white,
-                      );
-                      context.read<AutoRechargeCubit>().getAutoRecharges();
-                    }
-
-                    if (state is AutoRechargePaused) {
-                      Get.snackbar(
-                        'Success',
-                        state.message,
-                        backgroundColor: Colors.green.withValues(alpha: 0.9),
-                        colorText: Colors.white,
-                      );
-                      context.read<AutoRechargeCubit>().getAutoRecharges();
-                    }
-
-                    if (state is AutoRechargeResumed) {
-                      Get.snackbar(
-                        'Success',
-                        state.message,
-                        backgroundColor: Colors.green.withValues(alpha: 0.9),
-                        colorText: Colors.white,
-                      );
-                      context.read<AutoRechargeCubit>().getAutoRecharges();
-                    }
-
-                    if (state is AutoRechargeUpdated) {
-                      Get.snackbar(
-                        'Success',
-                        state.message,
-                        backgroundColor: Colors.green.withValues(alpha: 0.9),
-                        colorText: Colors.white,
-                      );
-                      context.read<AutoRechargeCubit>().getAutoRecharges();
-                    }
-                  },
-                  builder: (context, state) {
-                    if (state is AutoRechargeLoading) {
-                      return const Center(
-                        child: CircularProgressIndicator(color: Color(0xFF4E03D0)),
-                      );
-                    }
-
-                    if (state is AutoRechargesLoaded) {
-                      if (state.autoRecharges.isEmpty) {
-                        return _buildEmptyState();
-                      }
-
-                      // Separate active and inactive
-                      final active = state.autoRecharges
-                          .where((ar) => ar.isActive || ar.isPaused)
-                          .toList();
-                      final inactive = state.autoRecharges
-                          .where((ar) => !ar.isActive && !ar.isPaused)
-                          .toList();
-
-                      return RefreshIndicator(
-                        onRefresh: () async {
-                          context.read<AutoRechargeCubit>().getAutoRecharges();
-                        },
-                        color: const Color(0xFF4E03D0),
-                        child: ListView(
-                          padding: EdgeInsets.all(20.w),
-                          children: [
-                            if (active.isNotEmpty) ...[
-                              Text(
-                                'Active Auto-Recharges',
-                                style: GoogleFonts.inter(
-                                  color: Colors.white,
-                                  fontSize: 18.sp,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                              SizedBox(height: 12.h),
-                              ...active.map((ar) => Padding(
-                                    padding: EdgeInsets.only(bottom: 12.h),
-                                    child: _buildAutoRechargeCard(ar),
-                                  )),
-                            ],
-                            if (inactive.isNotEmpty) ...[
-                              if (active.isNotEmpty) SizedBox(height: 24.h),
-                              Text(
-                                'Inactive Auto-Recharges',
-                                style: GoogleFonts.inter(
-                                  color: Colors.white.withValues(alpha: 0.6),
-                                  fontSize: 18.sp,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                              SizedBox(height: 12.h),
-                              ...inactive.map((ar) => Padding(
-                                    padding: EdgeInsets.only(bottom: 12.h),
-                                    child: _buildAutoRechargeCard(ar),
-                                  )),
-                            ],
-                          ],
-                        ),
-                      );
-                    }
-
-                    return _buildEmptyState();
-                  },
-                ),
-                ),
-              ),
-            ],
+        title: Text(
+          'Auto-Recharge',
+          style: TextStyle(
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
           ),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Get.toNamed(AppRoutes.electricityBillCreateAutoRecharge);
-        },
-        backgroundColor: const Color(0xFF4E03D0),
-        icon: Icon(Icons.add, size: 24.sp),
+        onPressed: _startCreateFlow,
+        backgroundColor: const Color(0xFF10B981),
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.add),
         label: Text(
           'New Auto-Recharge',
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 14.sp,
+          style: TextStyle(
+            fontSize: 13.sp,
             fontWeight: FontWeight.w600,
           ),
         ),
       ),
+      body: MultiBlocListener(
+        listeners: [
+          BlocListener<ElectricityBillCubit, ElectricityBillState>(
+            listener: _onElectricityState,
+          ),
+          BlocListener<AutoRechargeCubit, AutoRechargeState>(
+            listener: _onAutoRechargeState,
+          ),
+        ],
+        child: BlocBuilder<AutoRechargeCubit, AutoRechargeState>(
+          builder: (context, state) {
+            if (state is AutoRechargesLoaded) {
+              _cachedList = state.autoRecharges;
+            }
+            final list = _cachedList;
+            if (list == null) {
+              return const Center(
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation(Color(0xFF10B981)),
+                ),
+              );
+            }
+            if (list.isEmpty) return _buildEmpty();
+
+            return RefreshIndicator(
+              color: const Color(0xFF10B981),
+              backgroundColor: const Color(0xFF1F1F1F),
+              onRefresh: () async =>
+                  context.read<AutoRechargeCubit>().getAutoRecharges(),
+              child: ListView.builder(
+                padding: EdgeInsets.all(16.w),
+                physics: const AlwaysScrollableScrollPhysics(),
+                itemCount: list.length,
+                itemBuilder: (_, i) => _buildItem(list[i]),
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 
-  Widget _buildHeader() {
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: () => Get.back(),
-            child: Container(
-              width: 44.w,
-              height: 44.w,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(22.r),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  width: 1,
+  // ---------------------------------------------------------------------------
+  // List item
+  // ---------------------------------------------------------------------------
+
+  Widget _buildItem(AutoRechargeEntity ar) {
+    final localNextRun = ar.nextRunDate.toLocal();
+    return BillAutoRechargeItem(
+      title: ar.customerName.isEmpty ? ar.providerName : ar.customerName,
+      subtitle: ar.meterNumber,
+      planName:
+          ar.providerName.isEmpty ? null : '${ar.providerName} \u00B7 ${ar.meterType.name}',
+      amount: ar.amount,
+      frequency: ar.frequency.name,
+      status: ar.status.name,
+      nextRunDate: localNextRun,
+      createdAt: ar.createdAt.toLocal(),
+      executionHour: localNextRun.hour,
+      executionMinute: localNextRun.minute,
+      failureCount: ar.failureCount,
+      leadingIcon: Icon(Icons.bolt,
+          color: const Color(0xFF4E03D0), size: 20.sp),
+      onTap: () => _showDetailsDialog(ar),
+      onPause: ar.isActive
+          ? () => context
+              .read<AutoRechargeCubit>()
+              .pauseAutoRecharge(autoRechargeId: ar.id)
+          : null,
+      onResume: ar.isPaused
+          ? () => context
+              .read<AutoRechargeCubit>()
+              .resumeAutoRecharge(autoRechargeId: ar.id)
+          : null,
+      onEdit: () => _editAutoRecharge(ar),
+      onDelete: () => _confirmDelete(ar),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Empty state (mirrors data auto-recharge)
+  // ---------------------------------------------------------------------------
+
+  Widget _buildEmpty() => Center(
+        child: Padding(
+          padding: EdgeInsets.all(24.w),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.autorenew,
+                  size: 64.sp, color: const Color(0xFF4B5563)),
+              SizedBox(height: 16.h),
+              Text(
+                'No Auto-Recharges Yet',
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
                 ),
               ),
-              child: Icon(
-                Icons.arrow_back_ios_new,
-                color: Colors.white,
-                size: 18.sp,
+              SizedBox(height: 8.h),
+              Text(
+                'Set up a recurring payment from a saved meter, or tap the + button to get started.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: const Color(0xFF9CA3AF),
+                ),
+              ),
+              SizedBox(height: 24.h),
+              ElevatedButton.icon(
+                onPressed: _startCreateFlow,
+                icon: const Icon(Icons.add),
+                label: const Text('Create Auto-Recharge'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF10B981),
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+
+  // ---------------------------------------------------------------------------
+  // Details dialog (holds "Pay Now" for active electricity rows — the action
+  // that doesn't exist on data/airtime, kept off the card to match their UI).
+  // ---------------------------------------------------------------------------
+
+  void _showDetailsDialog(AutoRechargeEntity ar) {
+    final next = ar.nextRunDate.toLocal();
+    final last = ar.lastRunDate?.toLocal();
+    final statusColor = ar.isActive
+        ? const Color(0xFF10B981)
+        : ar.isPaused
+            ? const Color(0xFFFB923C)
+            : const Color(0xFFEF4444);
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        titlePadding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 8.h),
+        contentPadding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 8.h),
+        actionsPadding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 12.h),
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(
+                ar.customerName.isNotEmpty ? ar.customerName : 'Auto-Recharge',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+              decoration: BoxDecoration(
+                color: statusColor.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+              child: Text(
+                ar.status.displayName.toUpperCase(),
+                style: TextStyle(
+                  color: statusColor,
+                  fontSize: 10.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _detailRow('Provider', ar.providerName),
+              _detailRow('Meter', ar.meterNumber),
+              _detailRow('Type', ar.meterType.name),
+              _detailRow(
+                'Amount',
+                '\u20A6${ar.amount.toStringAsFixed(2)} ${ar.currency}',
+              ),
+              _detailRow('Frequency', ar.frequencyDescription),
+              _detailRow(
+                'Execution time',
+                '${next.hour.toString().padLeft(2, '0')}:${next.minute.toString().padLeft(2, '0')}',
+              ),
+              _detailRow('Next run', DateFormat('MMM dd, yyyy HH:mm').format(next)),
+              if (last != null)
+                _detailRow('Last run', DateFormat('MMM dd, yyyy HH:mm').format(last)),
+              _detailRow('Failures', '${ar.failureCount} / ${ar.maxRetries}'),
+              if (ar.isActive) ...[
+                SizedBox(height: 16.h),
+                BlocBuilder<ElectricityBillCubit, ElectricityBillState>(
+                  builder: (context, state) {
+                    final isValidating = state is MeterValidating &&
+                        _pendingPayAutoRecharge?.id == ar.id;
+                    return SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: isValidating
+                            ? null
+                            : () {
+                                Navigator.of(ctx).pop();
+                                _payNow(ar);
+                              },
+                        icon: isValidating
+                            ? SizedBox(
+                                width: 16.w,
+                                height: 16.w,
+                                child: const CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.payment),
+                        label: Text(isValidating ? 'Validating\u2026' : 'Pay Now'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF4E03D0),
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.symmetric(vertical: 12.h),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(
+              'Close',
+              style: TextStyle(
+                color: const Color(0xFF9CA3AF),
+                fontSize: 14.sp,
               ),
             ),
           ),
-          SizedBox(width: 16.w),
+        ],
+      ),
+    );
+  }
+
+  Widget _detailRow(String label, String value) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 4.h),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 110.w,
+            child: Text(
+              label,
+              style: TextStyle(
+                color: const Color(0xFF9CA3AF),
+                fontSize: 12.sp,
+              ),
+            ),
+          ),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Auto-Recharge',
-                  style: GoogleFonts.inter(
+            child: Text(
+              value,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Actions
+  // ---------------------------------------------------------------------------
+
+  /// FAB handler — picks a saved meter inline then opens the shared
+  /// auto-recharge create sheet so the user never has to leave this
+  /// screen. Mirrors data's single-step "new rollover" flow rather than
+  /// bouncing the user through the saved-meters list first.
+  Future<void> _startCreateFlow() async {
+    if (_creating) return;
+    _creating = true;
+    try {
+      await _doStartCreateFlow();
+    } finally {
+      if (mounted) _creating = false;
+    }
+  }
+
+  Future<void> _doStartCreateFlow() async {
+    final repo = GetIt.I<ElectricityBillRepository>();
+    final cubit = context.read<AutoRechargeCubit>();
+    final result = await repo.getBeneficiaries();
+    final beneficiaries = result.fold<List<BillBeneficiaryEntity>>(
+      (_) => const [],
+      (list) => list,
+    );
+    if (!mounted) return;
+    if (beneficiaries.isEmpty) {
+      // Can't create an auto-recharge without a saved meter — route to
+      // the add-beneficiary screen so the user can save one first.
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+              'Save a meter first, then set up an auto-recharge.'),
+          backgroundColor: const Color(0xFFFB923C),
+          action: SnackBarAction(
+            label: 'Add Meter',
+            textColor: Colors.white,
+            onPressed: () =>
+                Get.toNamed(AppRoutes.electricityBillAddBeneficiary),
+          ),
+        ),
+      );
+      return;
+    }
+    final picked = await _pickBeneficiary(beneficiaries);
+    if (picked == null || !mounted) return;
+    await BillAutoRechargeCreateSheet.show(
+      context,
+      subtitle: '${picked.providerName} \u00B7 ${picked.meterNumber}',
+      onSubmit: ({
+        required double amount,
+        required String frequency,
+        required int dayOfWeek,
+        required int dayOfMonth,
+        required int executionHour,
+        required int executionMinute,
+      }) async {
+        final res = await repo.createAutoRecharge(
+          beneficiaryId: picked.id,
+          amount: amount,
+          currency: 'NGN',
+          frequency: RechargeFrequencyExtension.fromString(frequency),
+          dayOfWeek: frequency == 'weekly' ? dayOfWeek : null,
+          dayOfMonth: frequency == 'monthly' ? dayOfMonth : null,
+          executionHour: executionHour,
+          executionMinute: executionMinute,
+        );
+        res.fold(
+          (failure) => throw Exception(failure.message),
+          (_) {},
+        );
+      },
+    );
+    if (!mounted) return;
+    cubit.getAutoRecharges();
+  }
+
+  /// Inline bottom-sheet picker — lists the user's saved meters so the
+  /// auto-recharge create flow can continue without leaving the screen.
+  Future<BillBeneficiaryEntity?> _pickBeneficiary(
+    List<BillBeneficiaryEntity> beneficiaries,
+  ) {
+    return showModalBottomSheet<BillBeneficiaryEntity>(
+      context: context,
+      backgroundColor: const Color(0xFF1F1F1F),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 16.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF4B5563),
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+              SizedBox(height: 12.h),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                child: Text(
+                  'Pick a saved meter',
+                  style: TextStyle(
                     color: Colors.white,
-                    fontSize: 24.sp,
+                    fontSize: 16.sp,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                Text(
-                  'Automated recurring payments',
-                  style: GoogleFonts.inter(
-                    color: Colors.white.withValues(alpha: 0.6),
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.all(40.w),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 120.w,
-              height: 120.w,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.05),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.1),
-                  width: 2,
-                ),
               ),
-              child: Icon(
-                Icons.autorenew,
-                color: Colors.white.withValues(alpha: 0.3),
-                size: 56.sp,
-              ),
-            ),
-            SizedBox(height: 24.h),
-            Text(
-              'No Auto-Recharges',
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 24.sp,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            SizedBox(height: 12.h),
-            Text(
-              'Set up automatic recurring payments\nfor your electricity bills',
-              style: GoogleFonts.inter(
-                color: Colors.white.withValues(alpha: 0.6),
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w400,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAutoRechargeCard(AutoRechargeEntity autoRecharge) {
-    final dateFormat = DateFormat('MMM dd, yyyy');
-
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: autoRecharge.isActive
-              ? const Color(0xFF4E03D0)
-              : Colors.white.withValues(alpha: 0.1),
-          width: autoRecharge.isActive ? 2 : 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 48.w,
-                height: 48.w,
-                decoration: BoxDecoration(
-                  color: _getStatusColor(autoRecharge.status).withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                child: Icon(
-                  Icons.autorenew,
-                  color: _getStatusColor(autoRecharge.status),
-                  size: 24.sp,
-                ),
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      autoRecharge.customerName,
-                      style: GoogleFonts.inter(
+              SizedBox(height: 8.h),
+              ...beneficiaries.map((b) => ListTile(
+                    leading: Icon(
+                      b.isPrepaid ? Icons.bolt : Icons.receipt_long,
+                      color: const Color(0xFF4E03D0),
+                    ),
+                    title: Text(
+                      b.displayName,
+                      style: TextStyle(
                         color: Colors.white,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    SizedBox(height: 4.h),
-                    Text(
-                      autoRecharge.providerName,
-                      style: GoogleFonts.inter(
-                        color: Colors.white.withValues(alpha: 0.6),
                         fontSize: 14.sp,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    '₦${autoRecharge.amount.toStringAsFixed(0)}',
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                    decoration: BoxDecoration(
-                      color: _getStatusColor(autoRecharge.status).withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                    child: Text(
-                      autoRecharge.status.displayName,
-                      style: GoogleFonts.inter(
-                        color: _getStatusColor(autoRecharge.status),
-                        fontSize: 10.sp,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          SizedBox(height: 16.h),
-          Row(
-            children: [
-              Expanded(
-                child: _buildInfoChip(
-                  Icons.repeat,
-                  autoRecharge.frequency.displayName,
-                ),
-              ),
-              SizedBox(width: 8.w),
-              Expanded(
-                child: _buildInfoChip(
-                  Icons.calendar_today,
-                  'Next: ${dateFormat.format(autoRecharge.nextRunDate)}',
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 8.h),
-          _buildInfoChip(
-            Icons.info_outline,
-            autoRecharge.frequencyDescription,
-          ),
-          if (autoRecharge.hasFailures) ...[
-            SizedBox(height: 12.h),
-            Container(
-              padding: EdgeInsets.all(12.w),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEF5350).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8.r),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.warning,
-                    color: const Color(0xFFEF5350),
-                    size: 16.sp,
-                  ),
-                  SizedBox(width: 8.w),
-                  Expanded(
-                    child: Text(
-                      '${autoRecharge.failureCount} failed attempt${autoRecharge.failureCount > 1 ? "s" : ""}',
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFFEF5350),
+                    subtitle: Text(
+                      '${b.providerName} \u00B7 ${b.meterNumber}',
+                      style: TextStyle(
+                        color: const Color(0xFF9CA3AF),
                         fontSize: 12.sp,
-                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-          if (autoRecharge.isActive) ...[
-            SizedBox(height: 12.h),
-            GestureDetector(
-              onTap: () => _payNow(autoRecharge),
-              child: Container(
-                width: double.infinity,
-                padding: EdgeInsets.symmetric(vertical: 12.h),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [const Color(0xFF4E03D0), const Color(0xFF6B21E0)],
-                  ),
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                child: BlocBuilder<ElectricityBillCubit, ElectricityBillState>(
-                  builder: (context, state) {
-                    final isValidating = state is MeterValidating &&
-                        _pendingPayAutoRecharge?.id == autoRecharge.id;
-                    return isValidating
-                        ? Center(child: SizedBox(width: 20.w, height: 20.w,
-                            child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)))
-                        : Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.payment, color: Colors.white, size: 18.sp),
-                              SizedBox(width: 8.w),
-                              Text('Pay Now',
-                                style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w600)),
-                            ],
-                          );
-                  },
-                ),
-              ),
-            ),
-          ],
-          SizedBox(height: 16.h),
-          Row(
-            children: [
-              if (autoRecharge.isActive || autoRecharge.isPaused)
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => _toggleAutoRecharge(autoRecharge),
-                    child: Container(
-                      padding: EdgeInsets.symmetric(vertical: 12.h),
-                      decoration: BoxDecoration(
-                        color: autoRecharge.isActive
-                            ? const Color(0xFFFFA726).withValues(alpha: 0.2)
-                            : const Color(0xFF4E03D0).withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(12.r),
-                        border: Border.all(
-                          color: autoRecharge.isActive
-                              ? const Color(0xFFFFA726)
-                              : const Color(0xFF4E03D0),
-                          width: 1,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            autoRecharge.isActive ? Icons.pause : Icons.play_arrow,
-                            color: autoRecharge.isActive
-                                ? const Color(0xFFFFA726)
-                                : const Color(0xFF4E03D0),
-                            size: 18.sp,
-                          ),
-                          SizedBox(width: 8.w),
-                          Text(
-                            autoRecharge.isActive ? 'Pause' : 'Resume',
-                            style: GoogleFonts.inter(
-                              color: autoRecharge.isActive
-                                  ? const Color(0xFFFFA726)
-                                  : const Color(0xFF4E03D0),
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              if (autoRecharge.isActive || autoRecharge.isPaused) SizedBox(width: 8.w),
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => _editAutoRecharge(autoRecharge),
-                  child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 12.h),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.05),
-                      borderRadius: BorderRadius.circular(12.r),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        width: 1,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.edit,
-                          color: Colors.white.withValues(alpha: 0.8),
-                          size: 18.sp,
-                        ),
-                        SizedBox(width: 8.w),
-                        Text(
-                          'Edit',
-                          style: GoogleFonts.inter(
-                            color: Colors.white.withValues(alpha: 0.8),
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(width: 8.w),
-              GestureDetector(
-                onTap: () => _deleteAutoRecharge(autoRecharge),
-                child: Container(
-                  width: 44.w,
-                  height: 44.w,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEF5350).withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(
-                      color: const Color(0xFFEF5350),
-                      width: 1,
-                    ),
-                  ),
-                  child: Icon(
-                    Icons.delete,
-                    color: const Color(0xFFEF5350),
-                    size: 20.sp,
-                  ),
-                ),
-              ),
+                    onTap: () => Navigator.of(ctx).pop(b),
+                  )),
             ],
           ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildInfoChip(IconData icon, String text) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(8.r),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            color: Colors.white.withValues(alpha: 0.6),
-            size: 14.sp,
+  Future<void> _editAutoRecharge(AutoRechargeEntity ar) async {
+    final repo = GetIt.I<ElectricityBillRepository>();
+    final cubit = context.read<AutoRechargeCubit>();
+    final localNextRun = ar.nextRunDate.toLocal();
+    await BillAutoRechargeCreateSheet.show(
+      context,
+      subtitle: '${ar.providerName} \u00B7 ${ar.meterNumber}',
+      title: 'Manage Auto-Recharge',
+      ctaLabel: 'Save Changes',
+      successMessage: 'Auto-recharge updated',
+      initialAmount: ar.amount,
+      initialFrequency: ar.frequency.name,
+      initialDayOfWeek: ar.dayOfWeek,
+      initialDayOfMonth: ar.dayOfMonth,
+      initialExecutionHour: localNextRun.hour,
+      initialExecutionMinute: localNextRun.minute,
+      onSubmit: ({
+        required double amount,
+        required String frequency,
+        required int dayOfWeek,
+        required int dayOfMonth,
+        required int executionHour,
+        required int executionMinute,
+      }) async {
+        final result = await repo.updateAutoRecharge(
+          autoRechargeId: ar.id,
+          amount: amount,
+          frequency: RechargeFrequencyExtension.fromString(frequency),
+          dayOfWeek: frequency == 'weekly' ? dayOfWeek : null,
+          dayOfMonth: frequency == 'monthly' ? dayOfMonth : null,
+          executionHour: executionHour,
+          executionMinute: executionMinute,
+        );
+        result.fold(
+          (failure) => throw Exception(failure.message),
+          (_) {},
+        );
+      },
+    );
+    cubit.getAutoRecharges();
+  }
+
+  void _payNow(AutoRechargeEntity ar) {
+    _pendingPayAutoRecharge = ar;
+    context.read<ElectricityBillCubit>().validateMeter(
+          providerCode: ar.providerCode,
+          meterNumber: ar.meterNumber,
+          meterType: ar.meterType,
+        );
+  }
+
+  void _confirmDelete(AutoRechargeEntity ar) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        title: Text('Delete Auto-Recharge',
+            style: TextStyle(color: Colors.white, fontSize: 17.sp)),
+        content: Text(
+          'Are you sure you want to delete this auto-recharge for ${ar.customerName}?',
+          style: TextStyle(
+            color: const Color(0xFF9CA3AF),
+            fontSize: 14.sp,
           ),
-          SizedBox(width: 6.w),
-          Flexible(
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
             child: Text(
-              text,
-              style: GoogleFonts.inter(
-                color: Colors.white.withValues(alpha: 0.6),
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w400,
+              'Cancel',
+              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 14.sp),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              context
+                  .read<AutoRechargeCubit>()
+                  .deleteAutoRecharge(autoRechargeId: ar.id);
+            },
+            child: Text(
+              'Delete',
+              style: TextStyle(
+                color: const Color(0xFFEF4444),
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -731,16 +612,69 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
     );
   }
 
-  Color _getStatusColor(AutoRechargeStatus status) {
-    switch (status) {
-      case AutoRechargeStatus.active:
-        return const Color(0xFF4CAF50);
-      case AutoRechargeStatus.paused:
-        return const Color(0xFFFFA726);
-      case AutoRechargeStatus.expired:
-        return const Color(0xFF9E9E9E);
-      case AutoRechargeStatus.cancelled:
-        return const Color(0xFFEF5350);
+  // ---------------------------------------------------------------------------
+  // State listeners
+  // ---------------------------------------------------------------------------
+
+  void _onElectricityState(BuildContext context, ElectricityBillState state) {
+    if (state is MeterValidated && _pendingPayAutoRecharge != null) {
+      final ar = _pendingPayAutoRecharge!;
+      _pendingPayAutoRecharge = null;
+      if (!mounted) return;
+      Get.toNamed(
+        AppRoutes.electricityBillConfirmation,
+        arguments: {
+          'providerCode': ar.providerCode,
+          'providerName': ar.providerName,
+          'meterNumber': ar.meterNumber,
+          'meterType': ar.meterType,
+          'customerName': state.validationResult.customerName,
+          'customerAddress': state.validationResult.customerAddress,
+          'validationResult': state.validationResult,
+          'amount': ar.amount,
+        },
+      );
+    } else if (state is MeterValidationFailed ||
+        state is ElectricityBillError) {
+      _pendingPayAutoRecharge = null;
+      if (!mounted) return;
+      final message = state is MeterValidationFailed
+          ? state.message
+          : (state as ElectricityBillError).message;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: const Color(0xFFEF4444),
+        ),
+      );
+    }
+  }
+
+  void _onAutoRechargeState(BuildContext context, AutoRechargeState state) {
+    if (state is AutoRechargeError) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(state.message),
+          backgroundColor: const Color(0xFFEF4444),
+        ),
+      );
+      return;
+    }
+    String? success;
+    if (state is AutoRechargeDeleted) success = state.message;
+    if (state is AutoRechargePaused) success = state.message;
+    if (state is AutoRechargeResumed) success = state.message;
+    if (state is AutoRechargeUpdated) success = state.message;
+    if (success != null) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(success),
+          backgroundColor: const Color(0xFF10B981),
+        ),
+      );
+      context.read<AutoRechargeCubit>().getAutoRecharges();
     }
   }
 }

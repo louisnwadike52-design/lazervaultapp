@@ -11,6 +11,7 @@ import 'package:lazervault/src/features/electricity_bill/domain/entities/bill_pa
 import 'package:lazervault/src/features/electricity_bill/domain/entities/reminder_entity.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/electricity_bill/domain/repositories/electricity_bill_repository.dart';
 import 'package:lazervault/src/features/electricity_bill/presentation/cubit/beneficiary_cubit.dart';
 import 'package:lazervault/src/features/electricity_bill/presentation/cubit/beneficiary_state.dart';
@@ -157,7 +158,10 @@ class _CreateReminderScreenState extends State<CreateReminderScreen> {
       body: BlocConsumer<ReminderCubit, ReminderState>(
         listener: (context, state) {
           if (state is ReminderCreated) {
-            Get.back();
+            // Land on the reminders list regardless of where the user
+            // entered from. RemindersScreen.initState() refetches, so the
+            // newly created reminder shows up without a manual refresh.
+            Get.offNamed(AppRoutes.electricityBillReminders);
             Get.snackbar(
               'Success',
               'Reminder created successfully',

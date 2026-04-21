@@ -248,6 +248,7 @@ message BuyCryptoRequest {
   string fiat_currency = 4;
   string transaction_pin = 5;
   string idempotency_key = 6;
+  string wallet_id = 7;  // Optional: specific wallet to use (defaults to provider's default)
 }
 
 message BuyCryptoResponse {
@@ -259,6 +260,10 @@ message BuyCryptoResponse {
   double fee = 6;
   double exchange_rate = 7;
   double net_amount = 8;
+  string wallet_id = 9;     // Wallet that was used for the trade
+  double provider_rate = 10;  // Raw rate from provider (before spread)
+  double quoted_rate = 11;   // Rate shown to user (after spread)
+  double spread_amount = 12; // Spread retained by platform (in fiat minor units)
 }
 
 message SellCryptoRequest {
@@ -268,6 +273,7 @@ message SellCryptoRequest {
   string fiat_currency = 4;
   string transaction_pin = 5;
   string idempotency_key = 6;
+  string wallet_id = 7;  // Optional: specific wallet to use (defaults to provider's default)
 }
 
 message SellCryptoResponse {
@@ -279,6 +285,10 @@ message SellCryptoResponse {
   double fee = 6;
   double exchange_rate = 7;
   double net_amount = 8;
+  string wallet_id = 9;     // Wallet that was used for the trade
+  double provider_rate = 10;  // Raw rate from provider (before spread)
+  double quoted_rate = 11;   // Rate shown to user (after spread)
+  double spread_amount = 12; // Spread retained by platform (in fiat minor units)
 }
 
 message ConvertCryptoRequest {
@@ -688,6 +698,129 @@ message GetReconciliationLogsResponse {
 }
 
 // ============================================================================
+// ADMIN — TRANSACTION MANAGEMENT
+// ============================================================================
+
+message SagaStepDetail {
+  string name = 1;
+  string status = 2;          // "completed", "failed", "pending", "compensated"
+  google.protobuf.Timestamp started_at = 3;
+  google.protobuf.Timestamp completed_at = 4;
+  string error = 5;
+}
+
+message GetTransactionDetailRequest {
+  string transaction_id = 1;
+}
+
+message GetTransactionDetailResponse {
+  string id = 1;
+  string user_id = 2;
+  string account_id = 3;
+  string type = 4;             // "buy", "sell", "swap"
+  string crypto_id = 5;
+  string crypto_symbol = 6;
+  double amount = 7;
+  double fiat_value = 8;
+  string fiat_currency = 9;
+  double fee = 10;
+  double exchange_rate = 11;
+  string status = 12;
+  string saga_id = 13;
+  string hold_id = 14;
+  string provider_order_id = 15;
+  string idempotency_key = 16;
+  repeated SagaStepDetail saga_steps = 17;
+  google.protobuf.Timestamp created_at = 18;
+  google.protobuf.Timestamp updated_at = 19;
+}
+
+message RetryTransactionRequest {
+  string transaction_id = 1;
+  string admin_user_id = 2;
+  string reason = 3;
+}
+
+message RetryTransactionResponse {
+  bool success = 1;
+  string message = 2;
+  string new_saga_id = 3;
+}
+
+message ReverseTransactionRequest {
+  string transaction_id = 1;
+  string admin_user_id = 2;
+  string reason = 3;
+}
+
+message ReverseTransactionResponse {
+  bool success = 1;
+  string message = 2;
+  string reversal_reference = 3;
+}
+
+message GetUserCryptoAuditTrailRequest {
+  string user_id = 1;
+  int32 page = 2;
+  int32 per_page = 3;
+  string type_filter = 4;     // optional: "buy", "sell", "swap"
+  string status_filter = 5;   // optional: "completed", "pending", "reversed"
+}
+
+message GetUserCryptoAuditTrailResponse {
+  repeated CryptoTransaction transactions = 1;
+  CryptoPaginationInfo pagination = 2;
+}
+
+// ============================================================================
+// ADMIN — PLATFORM CONTROLS
+// ============================================================================
+
+message SetTradingSuspensionRequest {
+  bool is_suspended = 1;
+  string admin_user_id = 2;
+  string reason = 3;
+}
+
+message SetTradingSuspensionResponse {
+  bool is_suspended = 1;
+  string message = 2;
+}
+
+message GetTradingSuspensionRequest {}
+
+message GetTradingSuspensionResponse {
+  bool is_suspended = 1;
+  string suspended_by = 2;
+  string reason = 3;
+  google.protobuf.Timestamp suspended_at = 4;
+}
+
+message SetUserCryptoFreezeRequest {
+  string user_id = 1;
+  bool is_frozen = 2;
+  string admin_user_id = 3;
+  string reason = 4;
+}
+
+message SetUserCryptoFreezeResponse {
+  bool is_frozen = 1;
+  string message = 2;
+}
+
+message GetUserCryptoFreezeRequest {
+  string user_id = 1;
+}
+
+message GetUserCryptoFreezeResponse {
+  string user_id = 1;
+  bool is_frozen = 2;
+  string frozen_by = 3;
+  string reason = 4;
+  google.protobuf.Timestamp frozen_at = 5;
+}
+
+// ============================================================================
 // PAGINATION INFO
 // ============================================================================
 
@@ -713,6 +846,191 @@ message GetSupportedAssetsRequest {
 message GetSupportedAssetsResponse {
   repeated CryptoMessage assets = 1;
   CryptoPaginationInfo pagination = 2;
+}
+
+// ============================================================================
+// SPREAD & FEE CONFIG (Admin)
+// ============================================================================
+
+message GetSpreadConfigRequest {
+  string provider = 1;       // Optional: filter by provider (default: all)
+  string crypto_symbol = 2;   // Optional: filter by crypto
+  string fiat_currency = 3;   // Optional: filter by fiat currency
+}
+
+message SpreadConfigEntry {
+  string id = 1;
+  string provider = 2;
+  string crypto_symbol = 3;
+  string fiat_currency = 4;
+  int32 buy_spread_bps = 5;     // Basis points (100 = 1%)
+  int32 sell_spread_bps = 6;
+  double min_spread_amount = 7;
+  double max_spread_amount = 8;
+  bool is_active = 9;
+  string notes = 10;
+  string created_by = 11;
+  string updated_by = 12;
+}
+
+message GetSpreadConfigResponse {
+  repeated SpreadConfigEntry configs = 1;
+}
+
+message UpdateSpreadConfigRequest {
+  string provider = 1;
+  string crypto_symbol = 2;   // Empty for global default
+  string fiat_currency = 3;   // Empty for all currencies
+  int32 buy_spread_bps = 4;
+  int32 sell_spread_bps = 5;
+  double min_spread_amount = 6;
+  double max_spread_amount = 7;
+  bool is_active = 8;
+  string notes = 9;
+  string updated_by = 10;     // Admin user ID
+}
+
+message UpdateSpreadConfigResponse {
+  SpreadConfigEntry config = 1;
+}
+
+message GetFeeConfigRequest {
+  string provider = 1;       // Optional: filter by provider
+  string crypto_symbol = 2;   // Optional: filter by crypto
+  string fiat_currency = 3;   // Optional: filter by fiat currency
+}
+
+message FeeConfigEntry {
+  string id = 1;
+  string provider = 2;
+  string crypto_symbol = 3;
+  string fiat_currency = 4;
+  double flat_fee = 5;        // Fixed fee in fiat major units
+  int32 percentage_bps = 6;   // Variable fee in basis points
+  double min_fee = 7;
+  double max_fee = 8;
+  bool is_active = 9;
+  string notes = 10;
+  string created_by = 11;
+  string updated_by = 12;
+}
+
+message GetFeeConfigResponse {
+  repeated FeeConfigEntry configs = 1;
+}
+
+message UpdateFeeConfigRequest {
+  string provider = 1;
+  string crypto_symbol = 2;   // Empty for global default
+  string fiat_currency = 3;   // Empty for all currencies
+  double flat_fee = 4;
+  int32 percentage_bps = 5;
+  double min_fee = 6;
+  double max_fee = 7;
+  bool is_active = 8;
+  string notes = 9;
+  string updated_by = 10;     // Admin user ID
+}
+
+message UpdateFeeConfigResponse {
+  FeeConfigEntry config = 1;
+}
+
+// ============================================================================
+// WALLET RECONCILIATION (Admin)
+// ============================================================================
+
+message GetWalletReconciliationsRequest {
+  string user_id = 1;         // Optional: filter by user
+  string wallet_id = 2;       // Optional: filter by wallet
+  bool requires_attention = 3; // Only return wallets needing attention
+  int32 limit = 4;
+  int32 offset = 5;
+}
+
+message WalletReconciliationEntry {
+  string id = 1;
+  string user_id = 2;
+  string wallet_id = 3;
+  string crypto_symbol = 4;
+  double local_balance = 5;
+  double provider_balance = 6;
+  double drift_amount = 7;
+  double drift_percentage = 8;
+  string drift_direction = 9;  // 'over_local' | 'under_local' | 'none'
+  bool auto_corrected = 10;
+  bool requires_attention = 11;
+  string triggered_by = 12;
+  string note = 13;
+  google.protobuf.Timestamp created_at = 14;
+}
+
+message GetWalletReconciliationsResponse {
+  repeated WalletReconciliationEntry reconciliations = 1;
+  int32 total_count = 2;
+}
+
+message TriggerWalletReconciliationRequest {
+  string wallet_id = 1;       // Optional: reconcile specific wallet
+  string user_id = 2;         // Optional: reconcile all user wallets
+  bool all_users = 3;          // Reconcile all wallets (admin only)
+  string triggered_by = 4;
+}
+
+message TriggerWalletReconciliationResponse {
+  int32 wallets_checked = 1;
+  int32 drifts_found = 2;
+  int32 auto_corrected = 3;
+  int32 flagged = 4;
+  string status = 5;
+  string message = 6;
+}
+
+// ============================================================================
+// SETTLEMENTS (Admin)
+// ============================================================================
+
+message GetSettlementsRequest {
+  string fiat_currency = 1;   // Optional: filter by currency
+  string status = 2;          // recorded | reconciled | paid_out
+  int32 page = 3;
+  int32 per_page = 4;
+}
+
+message SettlementEntry {
+  string id = 1;
+  string transaction_id = 2;
+  string user_id = 3;
+  string side = 4;            // buy | sell
+  string crypto_symbol = 5;
+  string fiat_currency = 6;
+  double user_fiat_amount = 7;
+  double provider_fiat_amount = 8;
+  double spread_amount = 9;
+  int32 spread_bps = 10;
+  double transaction_fee = 11;
+  double provider_rate = 12;
+  double quoted_rate = 13;
+  double crypto_amount = 14;
+  string provider_order_id = 15;
+  string status = 16;
+  google.protobuf.Timestamp created_at = 17;
+}
+
+message GetSettlementsResponse {
+  repeated SettlementEntry settlements = 1;
+  int32 total_count = 2;
+  double total_spread = 3;     // Sum of all spread amounts
+}
+
+message MarkSettlementsPaidRequest {
+  repeated string settlement_ids = 1;
+  string paid_by = 2;          // Admin user ID
+}
+
+message MarkSettlementsPaidResponse {
+  int32 marked_count = 1;
+  string message = 2;
 }
 
 // ============================================================================
@@ -767,4 +1085,30 @@ service CryptoService {
   rpc DeleteFeeTier(DeleteFeeTierRequest) returns (DeleteFeeTierResponse);
   rpc RunReconciliation(RunReconciliationRequest) returns (ReconciliationResult);
   rpc GetReconciliationLogs(GetReconciliationLogsRequest) returns (GetReconciliationLogsResponse);
+
+  // Admin — spread & fee config
+  rpc GetSpreadConfig(GetSpreadConfigRequest) returns (GetSpreadConfigResponse);
+  rpc UpdateSpreadConfig(UpdateSpreadConfigRequest) returns (UpdateSpreadConfigResponse);
+  rpc GetFeeConfig(GetFeeConfigRequest) returns (GetFeeConfigResponse);
+  rpc UpdateFeeConfig(UpdateFeeConfigRequest) returns (UpdateFeeConfigResponse);
+
+  // Admin — wallet reconciliation
+  rpc GetWalletReconciliations(GetWalletReconciliationsRequest) returns (GetWalletReconciliationsResponse);
+  rpc TriggerWalletReconciliation(TriggerWalletReconciliationRequest) returns (TriggerWalletReconciliationResponse);
+
+  // Admin — settlements
+  rpc GetSettlements(GetSettlementsRequest) returns (GetSettlementsResponse);
+  rpc MarkSettlementsPaid(MarkSettlementsPaidRequest) returns (MarkSettlementsPaidResponse);
+
+  // Admin — transaction management
+  rpc GetTransactionDetail(GetTransactionDetailRequest) returns (GetTransactionDetailResponse);
+  rpc RetryTransaction(RetryTransactionRequest) returns (RetryTransactionResponse);
+  rpc ReverseTransaction(ReverseTransactionRequest) returns (ReverseTransactionResponse);
+  rpc GetUserCryptoAuditTrail(GetUserCryptoAuditTrailRequest) returns (GetUserCryptoAuditTrailResponse);
+
+  // Admin — platform controls
+  rpc SetTradingSuspension(SetTradingSuspensionRequest) returns (SetTradingSuspensionResponse);
+  rpc GetTradingSuspension(GetTradingSuspensionRequest) returns (GetTradingSuspensionResponse);
+  rpc SetUserCryptoFreeze(SetUserCryptoFreezeRequest) returns (SetUserCryptoFreezeResponse);
+  rpc GetUserCryptoFreeze(GetUserCryptoFreezeRequest) returns (GetUserCryptoFreezeResponse);
 }

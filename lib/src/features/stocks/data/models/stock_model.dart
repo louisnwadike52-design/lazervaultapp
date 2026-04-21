@@ -246,24 +246,25 @@ class StockOrderModel extends StockOrder {
   const StockOrderModel({
     required super.id,
     required super.symbol,
-    required super.type,
+    required super.orderType,
     required super.side,
     required super.quantity,
     super.price,
-    required super.status,
+    required super.orderStatus,
     required super.createdAt,
     super.executedAt,
     super.executedPrice,
     super.executedQuantity,
     super.fees,
     super.notes,
+    super.currency,
   });
 
   factory StockOrderModel.fromJson(Map<String, dynamic> json) {
     return StockOrderModel(
       id: json['id'] ?? '',
       symbol: json['symbol'] ?? '',
-      type: OrderType.values.firstWhere(
+      orderType: OrderType.values.firstWhere(
         (e) => e.toString().split('.').last == json['type'],
         orElse: () => OrderType.market,
       ),
@@ -273,7 +274,7 @@ class StockOrderModel extends StockOrder {
       ),
       quantity: json['quantity'] ?? 0,
       price: json['price']?.toDouble(),
-      status: OrderStatus.values.firstWhere(
+      orderStatus: OrderStatus.values.firstWhere(
         (e) => e.toString().split('.').last == json['status'],
         orElse: () => OrderStatus.pending,
       ),
@@ -290,11 +291,11 @@ class StockOrderModel extends StockOrder {
     return {
       'id': id,
       'symbol': symbol,
-      'type': type.toString().split('.').last,
+      'type': orderType.name,
       'side': side.toString().split('.').last,
       'quantity': quantity,
       'price': price,
-      'status': status.toString().split('.').last,
+      'status': orderStatus.name,
       'createdAt': createdAt.toIso8601String(),
       'executedAt': executedAt?.toIso8601String(),
       'executedPrice': executedPrice,
