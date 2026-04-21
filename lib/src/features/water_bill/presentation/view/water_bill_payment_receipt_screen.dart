@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../../widgets/bill_receipt_qr_block.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../data/datasources/water_beneficiary_remote_datasource.dart';
 import '../../domain/entities/water_payment_entity.dart';
 import '../../services/water_bill_pdf_service.dart';
 import '../widgets/save_water_beneficiary_sheet.dart';
@@ -23,6 +25,164 @@ class _WaterBillPaymentReceiptScreenState
     extends State<WaterBillPaymentReceiptScreen> {
   bool _isDownloading = false;
   bool _isSharing = false;
+  bool _postPurchaseRan = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => _runPostPurchaseActions());
+  }
+
+  /// Save beneficiary + enable auto-pay if the confirm screen asked for
+  /// them. Runs once on first build — guarded by [_postPurchaseRan].
+  /// Strict gate on `payment.isCompleted` — never save on
+  /// pending/processing.
+  Future<void> _runPostPurchaseActions() async {
+    if (_postPurchaseRan) return;
+    _postPurchaseRan = true;
+
+    final args = Get.arguments as Map<String, dynamic>?;
+    if (args == null) return;
+    final payment = args['payment'] as WaterPaymentEntity?;
+    if (payment == null) return;
+    if (!payment.isCompleted) return;
+
+    final saveBeneficiary = (args['saveBeneficiary'] as bool?) ?? false;
+    final nickname = args['beneficiaryNickname'] as String?;
+    final autoPayEnabled = (args['autoPayEnabled'] as bool?) ?? false;
+    final rolloverAmount = args['rolloverAmount'] as double?;
+    final rolloverFrequency = args['rolloverFrequency'] as String?;
+    final rolloverDayOfWeek = args['rolloverDayOfWeek'] as int?;
+    final rolloverDayOfMonth = args['rolloverDayOfMonth'] as int?;
+    final rolloverExecutionHour = args['rolloverExecutionHour'] as int?;
+    final rolloverExecutionMinute = args['rolloverExecutionMinute'] as int?;
+
+    if (!saveBeneficiary && !autoPayEnabled) return;
+
+    final providerCode = payment.providerCode;
+    final providerName = payment.providerName;
+    final accountNumber = payment.customerNumber;
+    final ds = GetIt.I<WaterBeneficiaryRemoteDataSource>();
+
+    // --- Save beneficiary (or reuse existing) ---
+    String? beneficiaryId;
+    if (saveBeneficiary) {
+      try {
+        final saved = await ds.saveBeneficiary(
+          accountNumber: accountNumber,
+          providerCode: providerCode,
+          providerName: providerName,
+          nickname: nickname,
+          customerName: payment.customerName,
+        );
+        beneficiaryId = saved.id;
+      } catch (_) {
+        // Duplicate — fall through and look up the existing row.
+        try {
+          final list = await ds.getBeneficiaries();
+          for (final b in list) {
+            if (b.accountNumber == accountNumber &&
+                b.providerCode.toUpperCase() ==
+                    providerCode.toUpperCase()) {
+              beneficiaryId = b.id;
+              break;
+            }
+          }
+        } catch (_) {
+          _softInfo(
+            'Account save failed',
+            'We couldn\'t save this account. You can save it manually from the saved accounts screen.',
+          );
+        }
+      }
+    }
+
+    // --- Create auto-pay ---
+    if (autoPayEnabled &&
+        rolloverAmount != null &&
+        rolloverAmount > 0 &&
+        rolloverFrequency != null) {
+      // Beneficiary is required. If the user didn't save one explicitly,
+      // upsert silently so the schedule has something to attach to.
+      if (beneficiaryId == null) {
+        try {
+          final list = await ds.getBeneficiaries();
+          for (final b in list) {
+            if (b.accountNumber == accountNumber &&
+                b.providerCode.toUpperCase() == providerCode.toUpperCase()) {
+              beneficiaryId = b.id;
+              break;
+            }
+          }
+          if (beneficiaryId == null) {
+            final saved = await ds.saveBeneficiary(
+              accountNumber: accountNumber,
+              providerCode: providerCode,
+              providerName: providerName,
+              nickname: nickname,
+              customerName: payment.customerName,
+            );
+            beneficiaryId = saved.id;
+          }
+        } catch (_) {
+          _softInfo(
+            'Auto-pay couldn\'t be enabled',
+            'We couldn\'t save the account this schedule attaches to. Try again from the saved accounts screen.',
+          );
+          return;
+        }
+      }
+
+      try {
+        await ds.createAutoRecharge(
+          beneficiaryId: beneficiaryId,
+          amount: rolloverAmount,
+          currency: 'NGN',
+          frequency: rolloverFrequency,
+          dayOfWeek: rolloverDayOfWeek ?? 0,
+          dayOfMonth: rolloverDayOfMonth ?? 1,
+          executionHour: rolloverExecutionHour,
+          executionMinute: rolloverExecutionMinute,
+        );
+      } catch (_) {
+        _softInfo(
+          'Auto-pay couldn\'t be enabled',
+          'Payment succeeded, but the auto-pay schedule didn\'t save. You can retry from the saved accounts screen.',
+        );
+      }
+    }
+  }
+
+  void _softInfo(String title, String message) {
+    if (!mounted) return;
+    Get.snackbar(
+      title,
+      message,
+      backgroundColor: const Color(0xFFFB923C).withValues(alpha: 0.9),
+      colorText: Colors.white,
+      snackPosition: SnackPosition.TOP,
+      duration: const Duration(seconds: 4),
+      margin: EdgeInsets.all(16.w),
+      borderRadius: 12,
+    );
+  }
+
+  void _openCreateReminder(WaterPaymentEntity payment) {
+    final accountNumber = payment.customerNumber.trim();
+    final providerName =
+        payment.providerName.isNotEmpty ? payment.providerName : 'Water';
+    final title = accountNumber.isNotEmpty
+        ? 'Pay $providerName · $accountNumber'
+        : 'Pay $providerName';
+    Get.toNamed(
+      AppRoutes.waterBillRemindersCreate,
+      arguments: <String, dynamic>{
+        'title': title,
+        'amount': payment.amount > 0 ? payment.amount : null,
+      },
+    );
+  }
 
   String _formatAmount(double amount) {
     final format = NumberFormat('#,##0.00', 'en_NG');
@@ -53,16 +213,34 @@ class _WaterBillPaymentReceiptScreenState
 
   @override
   Widget build(BuildContext context) {
-    final args = Get.arguments as Map<String, dynamic>;
+    final rawArgs = Get.arguments;
+    if (rawArgs is! Map<String, dynamic> ||
+        rawArgs['payment'] is! WaterPaymentEntity) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) Get.offAllNamed(AppRoutes.waterBillHome);
+      });
+      return const Scaffold(
+        backgroundColor: Color(0xFF0A0A0A),
+        body: Center(
+          child: CircularProgressIndicator(color: Color(0xFF4E03D0)),
+        ),
+      );
+    }
+    final args = rawArgs;
     final payment = args['payment'] as WaterPaymentEntity;
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) Get.offAllNamed(AppRoutes.waterBillHome);
+      },
+      child: Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          onPressed: () => Get.offAllNamed(AppRoutes.billsHub),
+          onPressed: () => Get.offAllNamed(AppRoutes.waterBillHome),
           icon: Icon(Icons.arrow_back, color: Colors.white, size: 22.sp),
         ),
         title: Text(
@@ -235,6 +413,7 @@ class _WaterBillPaymentReceiptScreenState
           ],
         ),
       ),
+      ),
     );
   }
 
@@ -399,11 +578,43 @@ class _WaterBillPaymentReceiptScreenState
           top: BorderSide(color: Color(0xFF2D2D2D), width: 1),
         ),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(
-            child: OutlinedButton.icon(
-              onPressed: _isSharing ? null : () => _shareReceipt(payment),
+          if (payment.isCompleted) ...[
+            OutlinedButton.icon(
+              onPressed: () => _openCreateReminder(payment),
+              icon: Icon(
+                Icons.notifications_active_outlined,
+                size: 18.sp,
+                color: const Color(0xFFFB923C),
+              ),
+              label: Text(
+                'Set Renewal Reminder',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFFFB923C),
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(
+                  color: const Color(0xFFFB923C).withValues(alpha: 0.5),
+                  width: 1.2,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                padding: EdgeInsets.symmetric(vertical: 12.h),
+              ),
+            ),
+            SizedBox(height: 10.h),
+          ],
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _isSharing ? null : () => _shareReceipt(payment),
               icon: _isSharing
                   ? SizedBox(
                       width: 18.sp,
@@ -466,6 +677,8 @@ class _WaterBillPaymentReceiptScreenState
                 padding: EdgeInsets.symmetric(vertical: 14.h),
               ),
             ),
+          ),
+            ],
           ),
         ],
       ),
