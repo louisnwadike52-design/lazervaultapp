@@ -5,14 +5,12 @@ import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/widgets/bill_history_item.dart';
-import '../../data/datasources/education_remote_datasource.dart';
-import '../../data/repositories/education_repository_impl.dart';
 import '../../domain/entities/education_history_entity.dart';
 import '../../domain/entities/education_provider_entity.dart';
+import '../../domain/repositories/education_repository.dart';
 import '../cubit/education_cubit.dart';
 import '../cubit/education_history_cubit.dart';
 import '../cubit/education_state.dart';
-import 'package:lazervault/src/core/network/grpc_client.dart';
 
 /// Education PINs landing. Mirrors the internet / water landing pattern:
 /// quick-actions row (Saved Candidates, Reminders, History) → hero
@@ -36,13 +34,13 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
 
     // History cubit is local to this screen so we can show a "Recent
     // Purchases" strip without coupling to the full history page.
-    _historyCubit = EducationHistoryCubit(
-      EducationRepositoryImpl(
-        remoteDataSource: EducationRemoteDataSourceImpl(
-          grpcClient: GetIt.I<GrpcClient>(),
-        ),
-      ),
-    )..loadHistory(refresh: true);
+    // Reuse the already-registered repository singleton instead of
+    // hand-wiring a fresh gRPC client stack on every mount (the previous
+    // code also had a `GetIt.I<GrpcClient>()` lookup that bypassed the
+    // `commerceGrpcClient` instance name → "not registered" crash on
+    // open).
+    _historyCubit = EducationHistoryCubit(GetIt.I<EducationRepository>())
+      ..loadHistory(refresh: true);
   }
 
   @override
