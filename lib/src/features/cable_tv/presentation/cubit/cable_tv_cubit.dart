@@ -101,24 +101,15 @@ class CableTVCubit extends Cubit<CableTVState> {
     if (isClosed) return;
 
     emit(CableTVPaymentProcessing(
-      progress: 0.1,
-      currentStep: 'Validating smart card...',
+      progress: 0.15,
+      currentStep: 'Payment Initiated',
     ));
 
-    await Future.delayed(const Duration(milliseconds: 600));
-    if (isClosed) return;
-
-    emit(CableTVPaymentProcessing(
-      progress: 0.3,
-      currentStep: 'Checking account balance...',
-    ));
-
-    await Future.delayed(const Duration(milliseconds: 500));
     if (isClosed) return;
 
     emit(CableTVPaymentProcessing(
       progress: 0.5,
-      currentStep: 'Processing with provider...',
+      currentStep: 'Processing Subscription',
     ));
 
     final result = await repository.paySubscription(
@@ -134,23 +125,12 @@ class CableTVCubit extends Cubit<CableTVState> {
 
     if (isClosed) return;
 
-    emit(CableTVPaymentProcessing(
-      progress: 0.8,
-      currentStep: 'Activating subscription...',
-    ));
-
-    await Future.delayed(const Duration(milliseconds: 400));
-    if (isClosed) return;
-
     result.fold(
       (failure) => emit(CableTVPaymentFailed(message: failure.message)),
       (payment) {
-        if (payment.isCompleted) {
-          emit(CableTVPaymentSuccess(payment: payment));
-        } else if (payment.isFailed) {
+        if (payment.isFailed) {
           emit(CableTVPaymentFailed(message: 'Payment failed. Please try again.'));
         } else {
-          // Pending - treat as success for now, user can check status later
           emit(CableTVPaymentSuccess(payment: payment));
         }
       },
