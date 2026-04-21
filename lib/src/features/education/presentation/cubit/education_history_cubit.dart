@@ -1,5 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:lazervault/src/core/errors/failures.dart';
 import '../../domain/entities/education_history_entity.dart';
 import '../../domain/repositories/education_repository.dart';
 

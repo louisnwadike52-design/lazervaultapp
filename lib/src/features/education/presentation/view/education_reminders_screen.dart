@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 
 import '../../../../../core/types/app_routes.dart';
+import '../../../../../core/widgets/bill_reminder_item.dart';
 import '../../domain/entities/education_reminder.dart';
 import '../cubit/education_reminder_cubit.dart';
 import '../cubit/education_reminder_state.dart';
 
-/// Education exam-date reminders. Simple list with mark-complete + delete
-/// actions and a FAB to create a new reminder.
+/// Education exam-date reminders. Reuses the shared BillReminderItem so
+/// the row matches airtime / data / cable / internet reminder screens.
 class EducationRemindersScreen extends StatefulWidget {
   const EducationRemindersScreen({super.key});
 
@@ -59,8 +59,7 @@ class _EducationRemindersScreenState extends State<EducationRemindersScreen> {
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
         label: Text('New Reminder',
-            style: TextStyle(
-                fontSize: 13.sp, fontWeight: FontWeight.w600)),
+            style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600)),
       ),
       body: BlocConsumer<EducationReminderCubit, EducationReminderState>(
         listener: (context, state) {
@@ -145,121 +144,33 @@ class _EducationRemindersScreenState extends State<EducationRemindersScreen> {
 
   Widget _buildItem(EducationReminder r) {
     final dt = DateTime.tryParse(r.reminderDate)?.toLocal();
-    final dateLabel = dt != null
-        ? DateFormat('MMM dd, yyyy \u00B7 hh:mm a').format(dt)
-        : r.reminderDate;
     final isDone = r.status.toLowerCase() == 'completed' ||
         r.status.toLowerCase() == 'done';
-    final statusColor = isDone
-        ? const Color(0xFF10B981)
-        : (r.status.toLowerCase() == 'pending'
-            ? _accent
-            : const Color(0xFF9CA3AF));
-    return Container(
-      padding: EdgeInsets.all(14.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF141414),
-        borderRadius: BorderRadius.circular(14.r),
-        border: Border(left: BorderSide(color: _accent, width: 3)),
+    final isPastDue =
+        dt != null && !isDone && dt.isBefore(DateTime.now());
+    return BillReminderItem(
+      title: r.title,
+      description:
+          r.description?.isNotEmpty == true ? r.description : null,
+      amount: r.amount,
+      reminderDate: dt ?? DateTime.now(),
+      status: r.status,
+      isRecurring: r.isRecurring,
+      recurrenceType: r.recurrenceType,
+      isDue: isPastDue,
+      leadingIcon: Icon(
+        Icons.school_outlined,
+        color: _accent,
+        size: 22.sp,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  r.title,
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w600,
-                      decoration: isDone ? TextDecoration.lineThrough : null),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
-                decoration: BoxDecoration(
-                  color: statusColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-                child: Text(r.status.toUpperCase(),
-                    style: TextStyle(
-                        color: statusColor,
-                        fontSize: 10.sp,
-                        fontWeight: FontWeight.w700)),
-              ),
-            ],
-          ),
-          SizedBox(height: 6.h),
-          Row(
-            children: [
-              Icon(Icons.calendar_today_outlined,
-                  size: 13.sp, color: const Color(0xFF9CA3AF)),
-              SizedBox(width: 6.w),
-              Text(dateLabel,
-                  style: TextStyle(
-                      color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
-            ],
-          ),
-          if (r.description?.isNotEmpty == true) ...[
-            SizedBox(height: 6.h),
-            Text(r.description!,
-                style: TextStyle(
-                    color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
-          ],
-          if (r.amount != null && r.amount! > 0) ...[
-            SizedBox(height: 6.h),
-            Text('Amount: \u20A6${r.amount!.toStringAsFixed(2)}',
-                style: TextStyle(
-                    color: const Color(0xFF10B981),
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w600)),
-          ],
-          SizedBox(height: 10.h),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              if (!isDone)
-                _iconAction(Icons.check_circle_outline,
-                    const Color(0xFF10B981), 'Mark done', () {
-                  context
-                      .read<EducationReminderCubit>()
-                      .markReminderComplete(reminderId: r.id);
-                }),
-              SizedBox(width: 8.w),
-              _iconAction(Icons.delete_outline, const Color(0xFFEF4444),
-                  'Delete', () {
-                context
-                    .read<EducationReminderCubit>()
-                    .deleteReminder(reminderId: r.id);
-              }),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _iconAction(
-      IconData icon, Color color, String tooltip, VoidCallback onTap) {
-    return Tooltip(
-      message: tooltip,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: EdgeInsets.all(8.w),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(8.r),
-            border: Border.all(color: color.withValues(alpha: 0.3)),
-          ),
-          child: Icon(icon, color: color, size: 16.sp),
-        ),
-      ),
+      onMarkComplete: isDone
+          ? null
+          : () => context
+              .read<EducationReminderCubit>()
+              .markReminderComplete(reminderId: r.id),
+      onDelete: () => context
+          .read<EducationReminderCubit>()
+          .deleteReminder(reminderId: r.id),
     );
   }
 }
