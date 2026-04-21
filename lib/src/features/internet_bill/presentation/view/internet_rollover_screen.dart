@@ -62,15 +62,11 @@ class _InternetRolloverScreenState extends State<InternetRolloverScreen> {
           ),
         ),
         onPressed: () async {
-          final created = await Get.toNamed(
-            AppRoutes.internetBillRolloverCreate,
-          );
-          // The create screen pops with `true` on successful save.
-          // Refresh the list so the new row appears without a manual
-          // pull-to-refresh. No-op when user backed out.
-          if (created == true && context.mounted) {
-            context.read<InternetAutoRechargeCubit>().load();
-          }
+          await Get.toNamed(AppRoutes.internetBillRolloverCreate);
+          // The cubit's `create` already patches the loaded list in
+          // place via _appendOrReload, so we don't need to trigger a
+          // visible `load()` here — that would flash the list through
+          // the Loading state for a row we already have.
         },
       ),
       body:
@@ -151,12 +147,11 @@ class _InternetRolloverScreenState extends State<InternetRolloverScreen> {
               Builder(
                 builder: (ctx) => ElevatedButton.icon(
                   onPressed: () async {
-                    final created = await Get.toNamed(
-                      AppRoutes.internetBillRolloverCreate,
-                    );
-                    if (created == true && ctx.mounted) {
-                      ctx.read<InternetAutoRechargeCubit>().load();
-                    }
+                    await Get.toNamed(AppRoutes.internetBillRolloverCreate);
+                    // Empty-state path — if we're here the list was
+                    // empty. The cubit's `create` emits a Loaded state
+                    // once the row is saved, which the list's
+                    // BlocBuilder picks up automatically.
                   },
                   icon: const Icon(Icons.add),
                   label: const Text('New Rollover'),
@@ -173,8 +168,9 @@ class _InternetRolloverScreenState extends State<InternetRolloverScreen> {
 
   Widget _buildItem(BuildContext context, InternetAutoRecharge ar) {
     final isActive = ar.status.toLowerCase() == 'active';
+    final cubit = context.read<InternetAutoRechargeCubit>();
     return BillAutoRechargeItem(
-      title: ar.providerName.isEmpty ? 'Unknown ISP' : ar.providerName,
+      title: _displayProvider(ar),
       subtitle: ar.accountNumber,
       planName: ar.planName.isNotEmpty ? ar.planName : null,
       amount: ar.amount,
@@ -189,25 +185,60 @@ class _InternetRolloverScreenState extends State<InternetRolloverScreen> {
       leadingIcon: Icon(Icons.wifi,
           color: const Color(0xFF4E03D0), size: 20.sp),
       onTap: () => _showDetailsDialog(context, ar),
-      onPause: isActive
-          ? () => context.read<InternetAutoRechargeCubit>().pause(ar.id)
-          : null,
-      onResume: !isActive
-          ? () => context.read<InternetAutoRechargeCubit>().resume(ar.id)
-          : null,
-      onEdit: () {
-        Get.snackbar(
-          'Edit on confirm',
-          'Package is locked — edit the schedule by pausing this rollover and setting up a new one on your next purchase.',
-          backgroundColor:
-              const Color(0xFF4E03D0).withValues(alpha: 0.9),
-          colorText: Colors.white,
-          snackPosition: SnackPosition.TOP,
-          duration: const Duration(seconds: 3),
+      onPause: isActive ? () => cubit.pause(ar.id) : null,
+      onResume: !isActive ? () => cubit.resume(ar.id) : null,
+      // Edit routes through the same create screen in edit mode
+      // (mirrors the data/airtime rollover pattern). The create screen
+      // reads `autoRecharge` from args, pre-fills cadence/time, and
+      // calls `cubit.update()` on submit. The cubit's reactive patch
+      // means no full-page reload on return.
+      onEdit: () async {
+        final updated = await Get.toNamed(
+          AppRoutes.internetBillRolloverCreate,
+          arguments: {
+            'autoRecharge': ar,
+            if (ar.beneficiary != null) 'beneficiary': ar.beneficiary,
+          },
         );
+        // The update call already patched the loaded list in place via
+        // applyAutoRechargeUpdate, so there's nothing further to do
+        // here on success. Left behind as an explicit no-op so the
+        // contract is obvious to future readers.
+        if (updated == true) {}
       },
       onDelete: () => _confirmDelete(context, ar.id),
     );
+  }
+
+  /// Resolves the display name for a rollover row. Prefers the
+  /// populated `providerName` from the preloaded beneficiary; falls
+  /// back to a humanised form of `providerCode` (e.g. "SMILE" →
+  /// "Smile") so legacy rows or edge-case create responses never
+  /// render as "Unknown ISP".
+  String _displayProvider(InternetAutoRecharge ar) {
+    final name = ar.providerName.trim();
+    if (name.isNotEmpty && name.toLowerCase() != 'unknown') return name;
+    // Also try the beneficiary directly — when the list is patched
+    // in place from a create/update response the ar.providerName may
+    // be blank but the nested beneficiary already has the name.
+    final benName = ar.beneficiary?.providerName.trim();
+    if (benName != null && benName.isNotEmpty) return benName;
+    final code = ar.providerCode.trim().toUpperCase();
+    if (code.isEmpty) return 'Internet';
+    switch (code) {
+      case 'SMILE':
+        return 'Smile';
+      case 'SPECTRANET':
+        return 'Spectranet';
+      case 'IPNX':
+        return 'ipNX';
+      case 'SWIFT':
+        return 'Swift';
+      default:
+        // Title-case unknown codes so "MTN-FIBER" reads as "Mtn-Fiber"
+        // rather than the raw uppercase label.
+        return code[0] + code.substring(1).toLowerCase();
+    }
   }
 
   void _showDetailsDialog(BuildContext context, InternetAutoRecharge ar) {
@@ -268,7 +299,7 @@ class _InternetRolloverScreenState extends State<InternetRolloverScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _detailRow('Account', ar.accountNumber),
-              _detailRow('Provider', ar.providerName),
+              _detailRow('Provider', _displayProvider(ar)),
               _detailRow('Amount',
                   '\u20A6${ar.amount.toStringAsFixed(2)} ${ar.currency}'),
               _detailRow('Frequency', ar.frequency),

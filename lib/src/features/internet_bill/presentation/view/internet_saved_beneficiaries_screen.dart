@@ -748,20 +748,59 @@ class _InternetSavedBeneficiariesScreenState
               onPressed: loading
                   ? null
                   : () async {
+                      final trimmed = controller.text.trim();
+                      // Pop straight out when the user saves an
+                      // identical nickname — avoids a needless gRPC
+                      // round-trip and the half-second loading spinner.
+                      if (trimmed == (b.nickname ?? '').trim()) {
+                        Navigator.of(ctx).pop();
+                        return;
+                      }
                       setLocal(() => loading = true);
                       try {
                         await context
                             .read<InternetBeneficiaryCubit>()
                             .update(
                               beneficiaryId: b.id,
-                              nickname:
-                                  controller.text.trim().isEmpty
-                                      ? null
-                                      : controller.text.trim(),
+                              nickname: trimmed.isEmpty ? null : trimmed,
                             );
                         if (ctx.mounted) Navigator.of(ctx).pop();
-                      } catch (_) {
+                        // Success feedback — previously the user saw
+                        // only the modal dismiss, easy to miss; the
+                        // cubit now patches the row in place so the
+                        // user needs a confirmation that something
+                        // actually happened.
+                        Get.snackbar(
+                          'Updated',
+                          'Nickname saved',
+                          backgroundColor: const Color(0xFF10B981)
+                              .withValues(alpha: 0.9),
+                          colorText: Colors.white,
+                          snackPosition: SnackPosition.TOP,
+                          margin: EdgeInsets.all(16.w),
+                          duration: const Duration(seconds: 2),
+                        );
+                      } catch (e) {
+                        // Previously the catch silently swallowed the
+                        // error and left the dialog open with no
+                        // indication of failure — users saw nothing
+                        // and thought the save "didn't work". Now we
+                        // surface the backend error and let the user
+                        // retry or cancel.
                         setLocal(() => loading = false);
+                        final msg = e
+                            .toString()
+                            .replaceFirst(RegExp(r'^Exception:\s*'), '');
+                        Get.snackbar(
+                          'Could not save',
+                          msg.isEmpty ? 'Please try again' : msg,
+                          backgroundColor: const Color(0xFFEF4444)
+                              .withValues(alpha: 0.9),
+                          colorText: Colors.white,
+                          snackPosition: SnackPosition.TOP,
+                          margin: EdgeInsets.all(16.w),
+                          duration: const Duration(seconds: 3),
+                        );
                       }
                     },
               child: loading

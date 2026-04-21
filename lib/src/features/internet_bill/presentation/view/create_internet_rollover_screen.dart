@@ -78,6 +78,21 @@ class _CreateInternetRolloverScreenState
           minute: ar.executionMinute,
         );
         _locked = true; // editing always locks the beneficiary
+        // Seed the package slot from the existing rollover so the
+        // edit screen shows what the user is editing even before the
+        // package-list RPC resolves (and covers the legacy case where
+        // the ISP has retired the package — the user still sees the
+        // original name + amount rather than an empty slot).
+        if (ar.packageId.isNotEmpty) {
+          _package = InternetPackageEntity(
+            id: ar.packageId,
+            name: ar.planName,
+            variationCode: ar.packageId,
+            amount: ar.amount,
+            providerId: ar.providerCode.toLowerCase(),
+            validity: '',
+          );
+        }
       }
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
