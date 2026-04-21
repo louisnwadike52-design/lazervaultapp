@@ -271,85 +271,70 @@ class _CableTVPaymentConfirmationScreenState
           children: [
             Expanded(
               child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(height: 16.h),
-                    _buildDetailCard('Provider', provider.name, Icons.live_tv),
-                    SizedBox(height: 12.h),
-                    _buildDetailCard(
-                      'Smart Card Number',
-                      smartCardNumber,
-                      Icons.credit_card,
-                    ),
-                    SizedBox(height: 12.h),
-                    _buildDetailCard(
-                      'Customer Name',
-                      validation.customerName,
-                      Icons.person,
-                    ),
-                    SizedBox(height: 12.h),
-                    _buildDetailCard(
-                      'Selected Package',
-                      package.name,
-                      Icons.subscriptions,
-                    ),
-                    SizedBox(height: 12.h),
-                    if (validation.currentPackage.isNotEmpty) ...[
-                      _buildDetailCard(
-                        'Current Package',
-                        validation.currentPackage,
-                        Icons.playlist_add_check,
-                      ),
-                      SizedBox(height: 12.h),
-                    ],
-                    if (package.validity.isNotEmpty) ...[
-                      _buildDetailCard(
-                        'Validity',
-                        package.validity,
-                        Icons.schedule,
-                      ),
-                      SizedBox(height: 12.h),
-                    ],
-                    SizedBox(height: 8.h),
+                    // ── Summary card ──────────────────────────────────────
                     Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.all(20.w),
                       decoration: BoxDecoration(
                         color: const Color(0xFF1F1F1F),
                         borderRadius: BorderRadius.circular(16.r),
                         border: Border.all(
-                          color: const Color(0xFF3B82F6)
-                              .withValues(alpha: 0.4),
-                          width: 1.5,
-                        ),
+                            color: const Color(0xFF2D2D2D), width: 1),
                       ),
                       child: Column(
                         children: [
-                          Text(
-                            'Total Amount',
-                            style: GoogleFonts.inter(
-                              color: const Color(0xFF9CA3AF),
-                              fontSize: 14.sp,
-                            ),
-                          ),
-                          SizedBox(height: 8.h),
-                          Text(
-                            '₦${_currencyFormat.format(package.amount)}',
-                            style: GoogleFonts.inter(
-                              color: const Color(0xFF10B981),
-                              fontSize: 32.sp,
-                              fontWeight: FontWeight.w700,
+                          _buildRow('Provider', provider.name),
+                          _buildDivider(),
+                          _buildRow('Smart Card', smartCardNumber),
+                          _buildDivider(),
+                          _buildRow('Customer', validation.customerName),
+                          _buildDivider(),
+                          _buildRow('Package', package.name),
+                          if (validation.currentPackage.isNotEmpty) ...[
+                            _buildDivider(),
+                            _buildRow(
+                                'Current', validation.currentPackage),
+                          ],
+                          if (package.validity.isNotEmpty) ...[
+                            _buildDivider(),
+                            _buildRow('Validity', package.validity),
+                          ],
+                          _buildDivider(),
+                          // Total row — bigger, green
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 16.w, vertical: 14.h),
+                            child: Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Total',
+                                  style: GoogleFonts.inter(
+                                    color: const Color(0xFF9CA3AF),
+                                    fontSize: 13.sp,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                Text(
+                                  '₦${_currencyFormat.format(package.amount)}',
+                                  style: GoogleFonts.inter(
+                                    color: const Color(0xFF10B981),
+                                    fontSize: 18.sp,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
                     ),
-                    SizedBox(height: 16.h),
-                    _buildSaveBeneficiarySection(),
-                    SizedBox(height: 12.h),
-                    _buildAutoRenewSection(),
+                    SizedBox(height: 14.h),
+                    // ── Toggles card ──────────────────────────────────────
+                    _buildToggleCard(),
                     SizedBox(height: 24.h),
                   ],
                 ),
@@ -363,9 +348,9 @@ class _CableTVPaymentConfirmationScreenState
                 child: ElevatedButton(
                   onPressed: _isProcessing ? null : _onPay,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF3B82F6),
+                    backgroundColor: const Color(0xFF4E03D0),
                     disabledBackgroundColor:
-                        const Color(0xFF3B82F6).withValues(alpha: 0.4),
+                        const Color(0xFF4E03D0).withValues(alpha: 0.4),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.r),
                     ),
@@ -397,75 +382,99 @@ class _CableTVPaymentConfirmationScreenState
     );
   }
 
-  Widget _buildSaveBeneficiarySection() {
-    // Probe still running — don't flash the toggle in. A subtle loader
-    // makes the intent obvious while we resolve state.
-    if (_probeLoading) {
-      return _buildToggleSkeleton();
-    }
-    // Already saved — show a passive info tile instead of a toggle so
-    // the user doesn't try to save twice.
-    if (_existingBeneficiary != null) {
-      final nick = _existingBeneficiary!.nickname;
-      final label = nick != null && nick.isNotEmpty
-          ? 'Saved as "$nick"'
-          : 'Saved in your contacts';
-      return _buildInfoTile(
-        icon: Icons.bookmark,
-        title: 'Smart Card Saved',
-        subtitle: label,
-      );
-    }
-    return _buildToggleTile(
-      icon: Icons.bookmark_add_outlined,
-      title: 'Save this smart card',
-      subtitle: 'Quick repeat purchases next time',
-      value: _saveBeneficiary,
-      onChanged: _onToggleSaveBeneficiary,
+  /// Both toggles in one card separated by a divider, so probe-loading,
+  /// info and toggle states all stay vertically compact.
+  Widget _buildToggleCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: const Color(0xFF2D2D2D), width: 1),
+      ),
+      child: _probeLoading
+          ? Padding(
+              padding: EdgeInsets.all(14.w),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 16.w,
+                    height: 16.w,
+                    child: const CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor:
+                          AlwaysStoppedAnimation(Color(0xFF4E03D0)),
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Text(
+                    'Checking saved state…',
+                    style: GoogleFonts.inter(
+                        color: const Color(0xFF9CA3AF), fontSize: 13.sp),
+                  ),
+                ],
+              ),
+            )
+          : Column(
+              children: [
+                _buildToggleRow(
+                  icon: _existingBeneficiary != null
+                      ? Icons.bookmark
+                      : Icons.bookmark_add_outlined,
+                  title: _existingBeneficiary != null
+                      ? 'Smart card saved'
+                      : 'Save this smart card',
+                  subtitle: _existingBeneficiary != null
+                      ? () {
+                          final nick = _existingBeneficiary!.nickname;
+                          return (nick != null && nick.isNotEmpty)
+                              ? 'Saved as "$nick"'
+                              : 'Already in your contacts';
+                        }()
+                      : 'Quick repeat purchases next time',
+                  isLocked: _existingBeneficiary != null,
+                  value: _existingBeneficiary != null || _saveBeneficiary,
+                  onChanged: _existingBeneficiary != null
+                      ? null
+                      : _onToggleSaveBeneficiary,
+                ),
+                _buildDivider(),
+                _buildToggleRow(
+                  icon: Icons.autorenew,
+                  title: _existingAutoRenew != null
+                      ? 'Auto-renew active'
+                      : 'Enable auto-renew',
+                  subtitle: _existingAutoRenew != null
+                      ? 'On ${_existingAutoRenew!.frequency.toLowerCase()} schedule'
+                      : _autoRenewEnabled && _rolloverPref != null
+                          ? 'On ${_rolloverPref!.frequency} schedule'
+                          : 'Keep this package alive automatically',
+                  isLocked: _existingAutoRenew != null,
+                  value: _existingAutoRenew != null || _autoRenewEnabled,
+                  onChanged: _existingAutoRenew != null
+                      ? null
+                      : _onToggleAutoRenew,
+                ),
+              ],
+            ),
     );
   }
 
-  Widget _buildAutoRenewSection() {
-    if (_probeLoading) {
-      return _buildToggleSkeleton();
-    }
-    if (_existingAutoRenew != null) {
-      final freq = _existingAutoRenew!.frequency;
-      return _buildInfoTile(
-        icon: Icons.autorenew,
-        title: 'Auto-Renew Active',
-        subtitle: 'Already on ${freq.toLowerCase()} schedule',
-      );
-    }
-    final subtitle = _autoRenewEnabled && _rolloverPref != null
-        ? 'On ${_rolloverPref!.frequency} schedule'
-        : 'Keep this package alive automatically';
-    return _buildToggleTile(
-      icon: Icons.autorenew,
-      title: 'Enable auto-renew',
-      subtitle: subtitle,
-      value: _autoRenewEnabled,
-      onChanged: _onToggleAutoRenew,
-    );
-  }
-
-  Widget _buildToggleTile({
+  Widget _buildToggleRow({
     required IconData icon,
     required String title,
     required String subtitle,
+    required bool isLocked,
     required bool value,
-    required ValueChanged<bool> onChanged,
+    required ValueChanged<bool>? onChanged,
   }) {
-    return Container(
-      padding: EdgeInsets.all(14.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F).withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFF2D2D2D), width: 1),
-      ),
+    final iconColor = isLocked
+        ? const Color(0xFF10B981)
+        : const Color(0xFF4E03D0);
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
       child: Row(
         children: [
-          Icon(icon, color: const Color(0xFF3B82F6), size: 20.sp),
+          Icon(icon, color: iconColor, size: 20.sp),
           SizedBox(width: 12.w),
           Expanded(
             child: Column(
@@ -490,138 +499,57 @@ class _CableTVPaymentConfirmationScreenState
               ],
             ),
           ),
-          Switch(
-            value: value,
-            onChanged: onChanged,
-            activeThumbColor: Colors.white,
-            activeTrackColor: const Color(0xFF3B82F6),
-          ),
+          if (isLocked)
+            Icon(Icons.check_circle,
+                color: const Color(0xFF10B981), size: 18.sp)
+          else
+            Switch(
+              value: value,
+              onChanged: onChanged,
+              activeThumbColor: Colors.white,
+              activeTrackColor: const Color(0xFF4E03D0),
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
         ],
       ),
     );
   }
 
-  Widget _buildInfoTile({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-  }) {
-    return Container(
-      padding: EdgeInsets.all(14.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF10B981).withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: const Color(0xFF10B981).withValues(alpha: 0.3),
-          width: 1,
-        ),
-      ),
+  Widget _buildRow(String label, String value) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: const Color(0xFF10B981), size: 20.sp),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                SizedBox(height: 2.h),
-                Text(
-                  subtitle,
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFF9CA3AF),
-                    fontSize: 12.sp,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Icon(Icons.check_circle,
-              color: const Color(0xFF10B981), size: 18.sp),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildToggleSkeleton() {
-    return Container(
-      padding: EdgeInsets.all(14.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F).withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFF2D2D2D), width: 1),
-      ),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 18.w,
-            height: 18.w,
-            child: const CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation(Color(0xFF3B82F6)),
-            ),
-          ),
-          SizedBox(width: 12.w),
           Text(
-            'Checking saved state…',
+            label,
             style: GoogleFonts.inter(
               color: const Color(0xFF9CA3AF),
               fontSize: 13.sp,
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDetailCard(String label, String value, IconData icon) {
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F).withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFF2D2D2D), width: 1),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: const Color(0xFF3B82F6), size: 20.sp),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFF9CA3AF),
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  value,
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 15.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+          SizedBox(width: 16.w),
+          Flexible(
+            child: Text(
+              value,
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.right,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
       ),
     );
   }
+
+  Widget _buildDivider() =>
+      const Divider(color: Color(0xFF2D2D2D), height: 1, thickness: 1);
 }
 
 /// Nested stateful dialog so the `TextEditingController` lifecycle is
