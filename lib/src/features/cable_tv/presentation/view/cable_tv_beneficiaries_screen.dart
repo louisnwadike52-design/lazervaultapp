@@ -7,6 +7,7 @@ import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/widgets/bill_beneficiary_item.dart';
 import '../../domain/entities/cable_tv_auto_recharge.dart';
 import '../../domain/entities/cable_tv_beneficiary.dart';
+import '../../domain/entities/cable_tv_provider_entity.dart';
 import '../cubit/cable_tv_auto_recharge_cubit.dart';
 import '../cubit/cable_tv_auto_recharge_state.dart';
 import '../cubit/cable_tv_beneficiary_cubit.dart';
@@ -243,6 +244,158 @@ class _CableTVBeneficiariesScreenState
     );
   }
 
+  /// Details bottom sheet for a saved smart card. Surfaces every field
+  /// the user might want to audit before renewing — nickname, card
+  /// number, provider, customer name, current package, last paid
+  /// amount, last topup time, and topup count. Purely informational;
+  /// actions (renew / edit / delete) live on the primary options sheet.
+  void _showDetailsSheet(CableTVBeneficiary b) {
+    final displayName =
+        (b.nickname?.isNotEmpty == true) ? b.nickname! : b.smartCardNumber;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1F1F1F),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      isScrollControlled: true,
+      builder: (sheetCtx) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF4B5563),
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
+                ),
+              ),
+              SizedBox(height: 16.h),
+              Row(
+                children: [
+                  Container(
+                    width: 44.w,
+                    height: 44.w,
+                    decoration: BoxDecoration(
+                      color: _providerColor(b.providerCode)
+                          .withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                    child: Icon(Icons.live_tv,
+                        color: _providerColor(b.providerCode), size: 22.sp),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(displayName,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 17.sp,
+                              fontWeight: FontWeight.w700,
+                            )),
+                        SizedBox(height: 2.h),
+                        Text(b.providerName,
+                            style: TextStyle(
+                              color: const Color(0xFF9CA3AF),
+                              fontSize: 12.sp,
+                            )),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 16.h),
+              Divider(color: const Color(0xFF2D2D2D), height: 1),
+              SizedBox(height: 12.h),
+              _detailRow('Smart card', b.smartCardNumber),
+              if (b.nickname != null && b.nickname!.isNotEmpty)
+                _detailRow('Nickname', b.nickname!),
+              if (b.customerName != null && b.customerName!.isNotEmpty)
+                _detailRow('Customer', b.customerName!),
+              if (b.currentPackage != null && b.currentPackage!.isNotEmpty)
+                _detailRow('Current package', b.currentPackage!),
+              if (b.lastPackageName != null && b.lastPackageName!.isNotEmpty)
+                _detailRow('Last paid for', b.lastPackageName!),
+              if (b.lastAmount != null && b.lastAmount! > 0)
+                _detailRow(
+                  'Last amount',
+                  '₦${b.lastAmount!.toStringAsFixed(2)}',
+                ),
+              _detailRow('Times renewed', b.topupCount.toString()),
+              if (b.lastTopupAt != null && b.lastTopupAt!.isNotEmpty)
+                _detailRow('Last renewed', _formatIso(b.lastTopupAt)),
+              _detailRow('Added on', _formatIso(b.createdAt)),
+              SizedBox(height: 16.h),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () => Navigator.of(sheetCtx).pop(),
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 12.h),
+                  ),
+                  child: Text(
+                    'Close',
+                    style: TextStyle(
+                      color: const Color(0xFF9CA3AF),
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _detailRow(String label, String value) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 6.h),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 120.w,
+            child: Text(
+              label,
+              style: TextStyle(
+                color: const Color(0xFF9CA3AF),
+                fontSize: 12.sp,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatIso(String? iso) {
+    if (iso == null || iso.isEmpty) return '—';
+    final dt = DateTime.tryParse(iso);
+    if (dt == null) return iso;
+    return dt.toLocal().toString().split('.').first;
+  }
+
   void _showOptions(CableTVBeneficiary b) {
     showModalBottomSheet(
       context: context,
@@ -263,14 +416,43 @@ class _CableTVBeneficiariesScreenState
             ),
             SizedBox(height: 16.h),
             ListTile(
+              leading: Icon(Icons.info_outline,
+                  color: const Color(0xFF4E03D0)),
+              title: Text('View Details',
+                  style: TextStyle(color: Colors.white, fontSize: 15.sp)),
+              onTap: () {
+                Navigator.of(ctx).pop();
+                _showDetailsSheet(b);
+              },
+            ),
+            const Divider(color: Color(0xFF2D2D2D), height: 1),
+            ListTile(
               leading: Icon(Icons.live_tv, color: const Color(0xFF4E03D0)),
               title: Text('Renew Subscription',
                   style: TextStyle(color: Colors.white, fontSize: 15.sp)),
               onTap: () {
                 Navigator.of(ctx).pop();
+                // Build a proper CableTVProviderEntity — the input screen
+                // used to cast `args['provider']` as non-nullable which
+                // crashed when we only had a code+name. The entity reader
+                // tolerates a fallback now, and we send one anyway so the
+                // downstream package-selection / confirmation screens
+                // (which still hard-cast `provider`) don't trip on their
+                // own.
+                final provider = CableTVProviderEntity(
+                  id: b.providerCode,
+                  name: b.providerName.isNotEmpty
+                      ? b.providerName
+                      : b.providerCode,
+                  serviceId: b.providerCode.toLowerCase(),
+                  logoUrl: '',
+                  isActive: true,
+                  commissionRate: 0,
+                );
                 Get.toNamed(
                   AppRoutes.cableTVSmartCardInput,
                   arguments: {
+                    'provider': provider,
                     'smartCardNumber': b.smartCardNumber,
                     'providerCode': b.providerCode,
                     'providerName': b.providerName,
@@ -279,18 +461,46 @@ class _CableTVBeneficiariesScreenState
               },
             ),
             const Divider(color: Color(0xFF2D2D2D), height: 1),
-            ListTile(
-              leading: Icon(Icons.autorenew, color: const Color(0xFF10B981)),
-              title: Text('Set Auto-Renew',
-                  style: TextStyle(color: Colors.white, fontSize: 15.sp)),
-              onTap: () {
-                Navigator.of(ctx).pop();
-                Get.toNamed(
-                  AppRoutes.cableTVAutoRechargeCreate,
-                  arguments: {'beneficiary': b, 'locked': true},
-                );
-              },
-            ),
+            Builder(builder: (_) {
+              // If this smart card already has an auto-renew schedule,
+              // the tile flips into "update" mode — taps route to the
+              // same screen but in edit mode so the existing cadence /
+              // package / amount come back prefilled and the CTA reads
+              // "Update Auto-Renew".
+              final existing = _autoFor(b);
+              final isExisting = existing != null;
+              return ListTile(
+                leading: Icon(Icons.autorenew,
+                    color: isExisting
+                        ? const Color(0xFFFB923C)
+                        : const Color(0xFF10B981)),
+                title: Text(
+                  isExisting ? 'Update Auto-Renew' : 'Set Auto-Renew',
+                  style: TextStyle(color: Colors.white, fontSize: 15.sp),
+                ),
+                subtitle: isExisting
+                    ? Text(
+                        '${existing.frequency.toUpperCase()} '
+                        '${existing.packageName.isNotEmpty ? existing.packageName : existing.variationCode}',
+                        style: TextStyle(
+                          color: const Color(0xFF9CA3AF),
+                          fontSize: 12.sp,
+                        ),
+                      )
+                    : null,
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  Get.toNamed(
+                    AppRoutes.cableTVAutoRechargeCreate,
+                    arguments: {
+                      'beneficiary': b,
+                      if (existing != null) 'autoRecharge': existing,
+                      'locked': true,
+                    },
+                  );
+                },
+              );
+            }),
             const Divider(color: Color(0xFF2D2D2D), height: 1),
             ListTile(
               leading: Icon(Icons.edit_outlined,
