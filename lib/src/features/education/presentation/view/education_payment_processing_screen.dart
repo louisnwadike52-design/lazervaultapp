@@ -176,7 +176,7 @@ class _EducationPaymentProcessingScreenState
                         Container(
                           padding: EdgeInsets.all(16.w),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                            color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12.r),
                           ),
                           child: Row(
@@ -185,7 +185,7 @@ class _EducationPaymentProcessingScreenState
                               Icon(
                                 Icons.lock_outline,
                                 size: 16.sp,
-                                color: const Color(0xFF3B82F6),
+                                color: const Color(0xFF4E03D0),
                               ),
                               SizedBox(width: 8.w),
                               Expanded(
@@ -193,7 +193,7 @@ class _EducationPaymentProcessingScreenState
                                   'Your payment is secured with end-to-end encryption',
                                   style: TextStyle(
                                     fontSize: 12.sp,
-                                    color: const Color(0xFF3B82F6),
+                                    color: const Color(0xFF4E03D0),
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
@@ -235,7 +235,7 @@ class _EducationPaymentProcessingScreenState
                   height: 200.w,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                    color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
                   ),
                 ),
               );
@@ -248,7 +248,7 @@ class _EducationPaymentProcessingScreenState
             height: 140.w,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+              color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
             ),
           ),
 
@@ -264,13 +264,13 @@ class _EducationPaymentProcessingScreenState
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF3B82F6), Color.fromARGB(255, 78, 3, 208)],
+                      colors: [Color(0xFF4E03D0), Color.fromARGB(255, 78, 3, 208)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF3B82F6).withValues(alpha: 0.4),
+                        color: const Color(0xFF4E03D0).withValues(alpha: 0.4),
                         blurRadius: 20,
                         offset: const Offset(0, 8),
                       ),
@@ -377,7 +377,7 @@ class _EducationPaymentProcessingScreenState
             child: Container(
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF3B82F6), Color.fromARGB(255, 78, 3, 208)],
+                  colors: [Color(0xFF4E03D0), Color.fromARGB(255, 78, 3, 208)],
                 ),
                 borderRadius: BorderRadius.circular(4.r),
               ),
@@ -427,7 +427,7 @@ class _EducationPaymentProcessingScreenState
                   color: isCompleted
                       ? const Color(0xFF10B981)
                       : isActive
-                          ? const Color(0xFF3B82F6)
+                          ? const Color(0xFF4E03D0)
                           : Colors.white.withValues(alpha: 0.2),
                 ),
                 child: Icon(

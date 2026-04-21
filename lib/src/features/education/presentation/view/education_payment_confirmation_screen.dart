@@ -154,7 +154,7 @@ class _EducationPaymentConfirmationScreenState
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF3B82F6), Color.fromARGB(255, 78, 3, 208)],
+          colors: [Color(0xFF4E03D0), Color.fromARGB(255, 78, 3, 208)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -244,7 +244,7 @@ class _EducationPaymentConfirmationScreenState
             style: TextStyle(
               fontSize: isTotal ? 18.sp : 14.sp,
               fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
-              color: isTotal ? const Color(0xFF3B82F6) : Colors.white,
+              color: isTotal ? const Color(0xFF4E03D0) : Colors.white,
             ),
           ),
         ],
@@ -264,7 +264,7 @@ class _EducationPaymentConfirmationScreenState
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+        color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Row(
@@ -272,7 +272,7 @@ class _EducationPaymentConfirmationScreenState
           Icon(
             Icons.lock_outline,
             size: 16.sp,
-            color: const Color(0xFF3B82F6),
+            color: const Color(0xFF4E03D0),
           ),
           SizedBox(width: 8.w),
           Expanded(
@@ -280,7 +280,7 @@ class _EducationPaymentConfirmationScreenState
               'Your payment is secured with end-to-end encryption',
               style: TextStyle(
                 fontSize: 12.sp,
-                color: const Color(0xFF3B82F6),
+                color: const Color(0xFF4E03D0),
               ),
             ),
           ),
@@ -306,9 +306,9 @@ class _EducationPaymentConfirmationScreenState
         child: ElevatedButton(
           onPressed: _isProcessing ? null : _confirmPurchase,
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF3B82F6),
+            backgroundColor: const Color(0xFF4E03D0),
             disabledBackgroundColor:
-                const Color(0xFF3B82F6).withValues(alpha: 0.4),
+                const Color(0xFF4E03D0).withValues(alpha: 0.4),
             padding: EdgeInsets.symmetric(vertical: 16.h),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16.r),

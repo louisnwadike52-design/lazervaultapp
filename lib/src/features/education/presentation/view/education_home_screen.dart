@@ -23,7 +23,7 @@ class EducationHomeScreen extends StatefulWidget {
 }
 
 class _EducationHomeScreenState extends State<EducationHomeScreen> {
-  static const Color _primary = Color(0xFF3B82F6);
+  static const Color _primary = Color(0xFF4E03D0);
 
   late final EducationHistoryCubit _historyCubit;
 
@@ -85,13 +85,6 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
           ),
         ),
         centerTitle: true,
-        actions: [
-          IconButton(
-            onPressed: () => Get.toNamed(AppRoutes.educationHistory),
-            icon: const Icon(Icons.history, color: Colors.white),
-            tooltip: 'Purchase History',
-          ),
-        ],
       ),
       body: SafeArea(
         child: BlocBuilder<EducationCubit, EducationState>(

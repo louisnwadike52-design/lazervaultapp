@@ -28,7 +28,7 @@ class _EducationSavedCandidatesScreenState
   bool _loading = true;
   String? _error;
 
-  static const Color _primary = Color(0xFF3B82F6);
+  static const Color _primary = Color(0xFF4E03D0);
 
   Color _providerColor(String code) {
     final c = code.toUpperCase();
