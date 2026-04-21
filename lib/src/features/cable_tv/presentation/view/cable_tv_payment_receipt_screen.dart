@@ -2,13 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../../widgets/bill_receipt_qr_block.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../data/datasources/cable_tv_beneficiary_remote_datasource.dart';
 import '../../domain/entities/cable_tv_payment_entity.dart';
+import '../../domain/entities/cable_tv_provider_entity.dart';
+import '../../domain/entities/tv_package_entity.dart';
 import '../../services/cable_tv_pdf_service.dart';
+import '../widgets/cable_tv_rollover_preference_sheet.dart';
 
 class CableTVPaymentReceiptScreen extends StatefulWidget {
   const CableTVPaymentReceiptScreen({super.key});
@@ -22,6 +27,197 @@ class _CableTVPaymentReceiptScreenState
     extends State<CableTVPaymentReceiptScreen> {
   bool _isDownloading = false;
   bool _isSharing = false;
+  bool _postPurchaseRan = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => _runPostPurchaseActions());
+  }
+
+  /// Save beneficiary + enable auto-renew if the confirm screen asked
+  /// for them. Runs once on first build — guarded by [_postPurchaseRan]
+  /// so widget rebuilds don't trigger duplicate RPCs. Both calls hit
+  /// the real backend (commerce-gateway → utility-payments-service) —
+  /// no fake-success shortcuts.
+  ///
+  /// Strict gate on `payment.isCompleted`: we never save on
+  /// pending/processing. If the user closes the receipt before the
+  /// async consumer terminates the payment, they re-enable the toggles
+  /// on their next purchase. Trade-off accepted over leaving partial
+  /// data in the DB.
+  Future<void> _runPostPurchaseActions() async {
+    if (_postPurchaseRan) return;
+    _postPurchaseRan = true;
+
+    final args = Get.arguments as Map<String, dynamic>?;
+    if (args == null) return;
+    final payment = args['payment'] as CableTVPaymentEntity?;
+    if (payment == null) return;
+    if (!payment.isCompleted) return;
+
+    final provider = args['provider'] as CableTVProviderEntity?;
+    final package = args['package'] as TVPackageEntity?;
+    final smartCardNumber = args['smartCardNumber'] as String?;
+    final saveBeneficiary = (args['saveBeneficiary'] as bool?) ?? false;
+    final nickname = args['beneficiaryNickname'] as String?;
+    final autoRenewEnabled = (args['autoRenewEnabled'] as bool?) ?? false;
+    final pref = args['rolloverPref'] as CableTVRolloverPreference?;
+
+    // If neither toggle was on we have nothing to do. The receipt still
+    // renders normally.
+    if (!saveBeneficiary && !autoRenewEnabled) return;
+    if (provider == null || package == null || smartCardNumber == null) return;
+
+    final providerCode = provider.serviceId.toLowerCase();
+    final ds = GetIt.I<CableTVBeneficiaryRemoteDataSource>();
+
+    // --- Save beneficiary (or reuse existing) ---
+    String? beneficiaryId;
+    if (saveBeneficiary) {
+      try {
+        final saved = await ds.saveBeneficiary(
+          smartCardNumber: smartCardNumber,
+          providerCode: providerCode,
+          providerName: provider.name,
+          nickname: nickname,
+          customerName: payment.customerName,
+        );
+        beneficiaryId = saved.id;
+      } catch (_) {
+        // Duplicate — fall through and look up the existing row.
+        try {
+          final list = await ds.getBeneficiaries();
+          for (final b in list) {
+            if (b.smartCardNumber == smartCardNumber &&
+                b.providerCode.toLowerCase() == providerCode) {
+              beneficiaryId = b.id;
+              break;
+            }
+          }
+        } catch (_) {
+          _softInfo(
+            'Smart card save failed',
+            'We couldn\'t save this smart card. You can save it manually from the saved smart cards screen.',
+          );
+        }
+      }
+    }
+
+    // --- Create auto-renew ---
+    if (autoRenewEnabled && pref != null) {
+      if (package.amount <= 0) {
+        _softInfo(
+          'Auto-renew skipped',
+          'This package has no amount set, so we can\'t schedule a recurring charge.',
+        );
+        return;
+      }
+      // Beneficiary is required for auto-renew. If the user didn't save
+      // one explicitly, upsert silently so the schedule has something
+      // to attach to.
+      if (beneficiaryId == null) {
+        try {
+          final list = await ds.getBeneficiaries();
+          for (final b in list) {
+            if (b.smartCardNumber == smartCardNumber &&
+                b.providerCode.toLowerCase() == providerCode) {
+              beneficiaryId = b.id;
+              break;
+            }
+          }
+          if (beneficiaryId == null) {
+            final saved = await ds.saveBeneficiary(
+              smartCardNumber: smartCardNumber,
+              providerCode: providerCode,
+              providerName: provider.name,
+              nickname: nickname,
+              customerName: payment.customerName,
+            );
+            beneficiaryId = saved.id;
+          }
+        } catch (_) {
+          _softInfo(
+            'Auto-renew couldn\'t be enabled',
+            'We couldn\'t save the smart card this schedule attaches to. Try again from the saved smart cards screen.',
+          );
+          return;
+        }
+      }
+
+      try {
+        await ds.createAutoRecharge(
+          beneficiaryId: beneficiaryId,
+          variationCode: package.variationCode.isNotEmpty
+              ? package.variationCode
+              : package.id,
+          packageName: package.name,
+          amount: package.amount,
+          currency: 'NGN',
+          // VTpass accepts "change" or "renew" — default to "renew"
+          // which is the safest semantic for a recurring schedule.
+          subscriptionType: 'renew',
+          frequency: pref.frequency,
+          dayOfWeek: pref.dayOfWeek,
+          dayOfMonth: pref.dayOfMonth,
+          executionHour: pref.executionHour,
+          executionMinute: pref.executionMinute,
+        );
+      } catch (_) {
+        _softInfo(
+          'Auto-renew couldn\'t be enabled',
+          'Payment succeeded, but the auto-renew schedule didn\'t save. You can retry from the saved smart cards screen.',
+        );
+      }
+    }
+  }
+
+  /// Non-blocking info snackbar. Shown for post-purchase side-effect
+  /// failures so the user knows but isn't blocked — the payment itself
+  /// has already gone through.
+  void _softInfo(String title, String message) {
+    if (!mounted) return;
+    Get.snackbar(
+      title,
+      message,
+      backgroundColor: const Color(0xFFFB923C).withValues(alpha: 0.9),
+      colorText: Colors.white,
+      snackPosition: SnackPosition.TOP,
+      duration: const Duration(seconds: 4),
+      margin: EdgeInsets.all(16.w),
+      borderRadius: 12,
+    );
+  }
+
+  /// Opens the create-reminder screen pre-filled with this purchase's
+  /// provider, smart card and package so the user only needs to pick
+  /// the renewal date.
+  void _openCreateReminder(CableTVPaymentEntity payment) {
+    final args = Get.arguments;
+    final map = args is Map<String, dynamic> ? args : const <String, dynamic>{};
+    final provider = map['provider'] as CableTVProviderEntity?;
+    final package = map['package'] as TVPackageEntity?;
+    final providerName = provider?.name.trim().isNotEmpty == true
+        ? provider!.name.trim()
+        : (payment.providerId.isNotEmpty
+            ? payment.providerId
+            : 'Cable TV');
+    final smartCardNumber = payment.customerNumber.trim();
+    final title = smartCardNumber.isNotEmpty
+        ? 'Renew $providerName · $smartCardNumber'
+        : 'Renew $providerName';
+
+    Get.toNamed(
+      AppRoutes.cableTVReminderCreate,
+      arguments: <String, dynamic>{
+        'title': title,
+        'amount': payment.amount > 0 ? payment.amount : null,
+        if ((package?.variationCode ?? '').isNotEmpty)
+          'packageId': package!.variationCode,
+      },
+    );
+  }
 
   String _formatAmount(double amount) {
     final format = NumberFormat('#,##0.00', 'en_NG');
@@ -63,13 +259,18 @@ class _CableTVPaymentReceiptScreenState
     final args = Get.arguments as Map<String, dynamic>;
     final payment = args['payment'] as CableTVPaymentEntity;
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) Get.offAllNamed(AppRoutes.cableTVHome);
+      },
+      child: Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          onPressed: () => Get.offAllNamed(AppRoutes.billsHub),
+          onPressed: () => Get.offAllNamed(AppRoutes.cableTVHome),
           icon: Icon(
             Icons.arrow_back,
             color: Colors.white,
@@ -298,6 +499,7 @@ class _CableTVPaymentReceiptScreenState
           ],
         ),
       ),
+      ),
     );
   }
 
@@ -390,10 +592,42 @@ class _CableTVPaymentReceiptScreenState
           ),
         ),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Share Receipt
-          Expanded(
+          if (payment.isCompleted) ...[
+            OutlinedButton.icon(
+              onPressed: () => _openCreateReminder(payment),
+              icon: Icon(
+                Icons.notifications_active_outlined,
+                size: 18.sp,
+                color: const Color(0xFFFB923C),
+              ),
+              label: Text(
+                'Set Renewal Reminder',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFFFB923C),
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(
+                  color: const Color(0xFFFB923C).withValues(alpha: 0.5),
+                  width: 1.2,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                padding: EdgeInsets.symmetric(vertical: 12.h),
+              ),
+            ),
+            SizedBox(height: 10.h),
+          ],
+          Row(
+            children: [
+              // Share Receipt
+              Expanded(
             child: OutlinedButton.icon(
               onPressed: _isSharing ? null : () => _shareReceipt(payment),
               icon: _isSharing
@@ -468,6 +702,8 @@ class _CableTVPaymentReceiptScreenState
                 padding: EdgeInsets.symmetric(vertical: 14.h),
               ),
             ),
+          ),
+            ],
           ),
         ],
       ),
