@@ -5,9 +5,9 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/water_payment_entity.dart';
-import '../../../../../core/types/app_routes.dart';
 import '../cubit/water_bill_cubit.dart';
 import '../cubit/water_bill_state.dart';
+import '../widgets/water_history_actions_sheet.dart';
 
 class WaterBillHistoryScreen extends StatefulWidget {
   const WaterBillHistoryScreen({super.key});
@@ -228,14 +228,7 @@ class _WaterBillHistoryScreenState extends State<WaterBillHistoryScreen> {
   Widget _buildPaymentCard(WaterPaymentEntity payment) {
     final dateFormat = DateFormat('MMM dd, yyyy');
     return GestureDetector(
-      onTap: () {
-        if (payment.isCompleted) {
-          Get.toNamed(
-            AppRoutes.waterBillPaymentReceipt,
-            arguments: {'payment': payment},
-          );
-        }
-      },
+      onTap: () => WaterHistoryActionsSheet.show(context, payment),
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
