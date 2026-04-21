@@ -21,16 +21,66 @@ class _SmartCardInputScreenState extends State<SmartCardInputScreen> {
   bool _isValidated = false;
 
   @override
+  void initState() {
+    super.initState();
+    // Prefill the input from args when the user is renewing a saved
+    // smart card (or repeating a history row). Every read path uses
+    // `_resolveProvider()` now so a caller that only knows
+    // providerCode/providerName still gets a working provider entity.
+    final args = _args();
+    final prefill = args['smartCardNumber'];
+    if (prefill is String && prefill.trim().isNotEmpty) {
+      _smartCardController.text = prefill.trim();
+    }
+  }
+
+  @override
   void dispose() {
     _smartCardController.dispose();
     super.dispose();
   }
 
+  /// Defensive args reader. Returns an empty map when no arguments were
+  /// passed — stops the old `null cast to Map<String, dynamic>` crash
+  /// when a deep-link or background restore lands here without args.
+  Map<String, dynamic> _args() {
+    final raw = Get.arguments;
+    return raw is Map<String, dynamic> ? raw : const {};
+  }
+
+  /// Accepts either a full `CableTVProviderEntity` under `provider`, or a
+  /// `providerCode` + `providerName` pair (the shape used by saved-
+  /// beneficiaries' "Renew Subscription" and by history-row repeats).
+  /// Returns null only when neither shape is present — build/validate
+  /// paths handle that by bouncing the user back with a snackbar.
+  CableTVProviderEntity? _resolveProvider() {
+    final args = _args();
+    final p = args['provider'];
+    if (p is CableTVProviderEntity) return p;
+    final code = (args['providerCode'] ?? args['provider_code'])?.toString() ?? '';
+    final name = (args['providerName'] ?? args['provider_name'])?.toString() ?? '';
+    if (code.isEmpty) return null;
+    return CableTVProviderEntity(
+      id: code,
+      name: name.isNotEmpty ? name : code,
+      serviceId: code.toLowerCase(),
+      logoUrl: '',
+      isActive: true,
+      commissionRate: 0,
+    );
+  }
+
   void _onValidate() {
     if (_formKey.currentState!.validate()) {
-      final args = Get.arguments as Map<String, dynamic>;
-      final provider = args['provider'] as CableTVProviderEntity;
-
+      final provider = _resolveProvider();
+      if (provider == null) {
+        Get.snackbar('Provider missing',
+            'Open this screen from a saved smart card or the providers grid.',
+            backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.9),
+            colorText: Colors.white,
+            snackPosition: SnackPosition.TOP);
+        return;
+      }
       context.read<CableTVCubit>().validateSmartCard(
             providerId: provider.serviceId,
             smartCardNumber: _smartCardController.text.trim(),
@@ -39,8 +89,8 @@ class _SmartCardInputScreenState extends State<SmartCardInputScreen> {
   }
 
   void _onContinue() {
-    final args = Get.arguments as Map<String, dynamic>;
-    final provider = args['provider'] as CableTVProviderEntity;
+    final provider = _resolveProvider();
+    if (provider == null) return;
     final cubitState = context.read<CableTVCubit>().state;
 
     if (cubitState is SmartCardValidated) {
@@ -57,8 +107,54 @@ class _SmartCardInputScreenState extends State<SmartCardInputScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final args = Get.arguments as Map<String, dynamic>;
-    final provider = args['provider'] as CableTVProviderEntity;
+    final provider = _resolveProvider();
+    if (provider == null) {
+      // Defensive fallback — avoid a hard cast crash. A brief "missing
+      // provider" empty state with a back CTA is much less jarring than
+      // a `type 'Null' is not a subtype of CableTVProviderEntity` red
+      // screen when the caller's args shape is wrong.
+      return Scaffold(
+        backgroundColor: const Color(0xFF0A0A0A),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            onPressed: () => Get.back(),
+            icon: Icon(Icons.arrow_back, color: Colors.white, size: 22.sp),
+          ),
+        ),
+        body: Center(
+          child: Padding(
+            padding: EdgeInsets.all(24.w),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.tv_off,
+                    size: 48.sp, color: const Color(0xFF4B5563)),
+                SizedBox(height: 16.h),
+                Text('Provider missing',
+                    style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w700)),
+                SizedBox(height: 8.h),
+                Text(
+                  'Open this screen from a saved smart card or the providers grid.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                      color: const Color(0xFF9CA3AF), fontSize: 14.sp),
+                ),
+                SizedBox(height: 24.h),
+                ElevatedButton(
+                  onPressed: () => Get.back(),
+                  child: const Text('Go back'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
@@ -130,12 +226,12 @@ class _SmartCardInputScreenState extends State<SmartCardInputScreen> {
                         width: 48.w,
                         height: 48.w,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                          color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(12.r),
                         ),
                         child: Icon(
                           Icons.live_tv,
-                          color: const Color(0xFF3B82F6),
+                          color: const Color(0xFF4E03D0),
                           size: 24.sp,
                         ),
                       ),
@@ -220,7 +316,7 @@ class _SmartCardInputScreenState extends State<SmartCardInputScreen> {
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12.r),
                             borderSide: const BorderSide(
-                              color: Color(0xFF3B82F6),
+                              color: Color(0xFF4E03D0),
                               width: 2,
                             ),
                           ),
@@ -404,8 +500,8 @@ class _SmartCardInputScreenState extends State<SmartCardInputScreen> {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF3B82F6),
-          disabledBackgroundColor: const Color(0xFF3B82F6).withValues(alpha: 0.4),
+          backgroundColor: const Color(0xFF4E03D0),
+          disabledBackgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.4),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.r),
           ),
