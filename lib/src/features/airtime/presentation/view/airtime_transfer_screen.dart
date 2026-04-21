@@ -26,6 +26,14 @@ class _AirtimeTransferScreenState extends State<AirtimeTransferScreen> {
   NetworkProvider? _selectedProvider;
   bool _phoneValidated = false;
   String? _phoneError;
+  /// True while a detection RPC is in flight for the current phone. The
+  /// transfer screen always shows the manual grid below, so there's no
+  /// "Pick a network" fallback button — when detection returns null the
+  /// user just taps a tile.
+  bool _isDetectingNetwork = false;
+  /// Monotonic id so a fast typist's late callback can't overwrite the
+  /// network they're now seeing for a different prefix.
+  int _detectionRequestId = 0;
 
   @override
   void initState() {
@@ -62,30 +70,64 @@ class _AirtimeTransferScreenState extends State<AirtimeTransferScreen> {
       _amount >= 50 &&
       _amount <= 50000;
 
+  /// Reactive phone-input handler. Re-runs detection on every change so
+  /// the Detected Network card updates as the user types, and clears the
+  /// stale network when the input shrinks. Mirrors the recipient_input
+  /// flow used by buy-for-self.
   void _validatePhone(String phone) {
     final clean = phone.replaceAll(RegExp(r'[^\d]'), '');
-    setState(() {
-      if (clean.length < 11) {
+
+    // Clear network state on short / empty input. Without this, deleting
+    // back from a complete number would leave the green Detected Network
+    // card showing for the previous prefix.
+    if (clean.length < 4) {
+      setState(() {
         _phoneValidated = false;
         _phoneError = clean.isEmpty ? null : 'Enter 11 digits';
-      } else if (clean.length == 11 && clean.startsWith('0')) {
-        _phoneValidated = true;
-        _phoneError = null;
-        // Auto-detect network
-        _detectNetwork(clean);
-      } else {
-        _phoneValidated = false;
+        _selectedProvider = null;
+        _isDetectingNetwork = false;
+      });
+      return;
+    }
+
+    final isFullyValid = clean.length == 11 && clean.startsWith('0');
+    setState(() {
+      _phoneValidated = isFullyValid;
+      if (!isFullyValid && clean.length == 11 && !clean.startsWith('0')) {
         _phoneError = 'Nigerian numbers must be 11 digits starting with 0';
+      } else if (clean.length < 11) {
+        _phoneError = null;
+      } else {
+        _phoneError = null;
       }
     });
+
+    // Detect on every >=4-digit change so the Detected Network badge
+    // tracks live as the user types. Stale callbacks are dropped via the
+    // _detectionRequestId guard so a fast backspace doesn't get clobbered.
+    _detectNetwork(clean);
   }
 
-  void _detectNetwork(String phone) async {
-    final cubit = context.read<AirtimeCubit>();
-    final detected = await cubit.detectNetworkFromPhoneNumber(phone, 'NG');
-    if (detected != null && mounted) {
-      setState(() => _selectedProvider = detected);
+  Future<void> _detectNetwork(String phone) async {
+    final requestId = ++_detectionRequestId;
+    if (!_isDetectingNetwork) {
+      setState(() => _isDetectingNetwork = true);
     }
+
+    NetworkProvider? detected;
+    try {
+      detected = await context
+          .read<AirtimeCubit>()
+          .detectNetworkFromPhoneNumber(phone, 'NG');
+    } catch (_) {
+      detected = null;
+    }
+    if (!mounted) return;
+    if (requestId != _detectionRequestId) return; // stale
+    setState(() {
+      _selectedProvider = detected;
+      _isDetectingNetwork = false;
+    });
   }
 
   void _proceedToReview() {
@@ -131,7 +173,19 @@ class _AirtimeTransferScreenState extends State<AirtimeTransferScreen> {
                   children: [
                     SizedBox(height: 16.h),
                     _buildRecipientSection(),
-                    SizedBox(height: 20.h),
+                    SizedBox(height: 16.h),
+                    // Mirrors the buy-for-self/recipient-input layout: as
+                    // soon as the phone number resolves to a known network
+                    // (auto-detected from prefix), surface a green-check
+                    // "Detected Network" card above the manual selector so
+                    // the user can confirm at a glance instead of hunting
+                    // through the grid for the highlighted tile.
+                    if (_selectedProvider != null)
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        child: _buildDetectedNetworkCard(),
+                      ),
+                    if (_selectedProvider != null) SizedBox(height: 16.h),
                     _buildNetworkSelector(),
                     SizedBox(height: 20.h),
                     _buildAmountSection(),
@@ -276,6 +330,72 @@ class _AirtimeTransferScreenState extends State<AirtimeTransferScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  /// Detected-network confirmation card. Same shape as the equivalent
+  /// widget on `recipient_input_screen.dart` so users see identical
+  /// feedback whether they're buying for themselves, sending airtime to
+  /// a contact, or transferring airtime here.
+  Widget _buildDetectedNetworkCard() {
+    final provider = _selectedProvider!;
+    return Container(
+      key: ValueKey('detected-${provider.id}'),
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(14.r),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 36.w,
+            height: 36.w,
+            decoration: BoxDecoration(
+              color: provider.type.color,
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+            child: Center(
+              child: Text(
+                provider.name.isNotEmpty ? provider.name[0] : '?',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Detected Network',
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    color: const Color(0xFF9CA3AF),
+                  ),
+                ),
+                Text(
+                  provider.name,
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(
+            Icons.check_circle,
+            color: const Color(0xFF10B981),
+            size: 20.sp,
+          ),
+        ],
+      ),
     );
   }
 

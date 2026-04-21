@@ -191,9 +191,13 @@ import 'package:lazervault/src/features/insurance/presentation/view/insurance_al
 
 // Airtime imports
 import 'package:lazervault/src/features/airtime/presentation/cubit/airtime_cubit.dart';
+import 'package:lazervault/src/features/airtime/presentation/cubit/intl_airtime_cubit.dart';
 import 'package:lazervault/src/features/airtime/presentation/view/airtime_screen.dart';
-import 'package:lazervault/src/features/airtime/presentation/view/network_selection_screen.dart';
-import 'package:lazervault/src/features/airtime/presentation/view/country_selection_screen.dart';
+import 'package:lazervault/src/features/airtime/presentation/view/intl_country_selection_screen.dart';
+import 'package:lazervault/src/features/airtime/presentation/view/intl_airtime_purchase_screen.dart';
+import 'package:lazervault/src/features/airtime/presentation/view/intl_review_screen.dart';
+import 'package:lazervault/src/features/airtime/presentation/view/intl_receipt_screen.dart';
+import 'package:lazervault/src/features/airtime/presentation/view/airtime_purchase_screen.dart';
 import 'package:lazervault/src/features/airtime/presentation/view/recipient_input_screen.dart';
 import 'package:lazervault/src/features/airtime/presentation/view/amount_selection_screen.dart';
 import 'package:lazervault/src/features/airtime/presentation/view/airtime_review_screen.dart';
@@ -201,18 +205,19 @@ import 'package:lazervault/src/features/airtime/presentation/view/airtime_paymen
 import 'package:lazervault/src/features/airtime/presentation/view/airtime_payment_confirmation_screen.dart';
 import 'package:lazervault/src/features/airtime/presentation/view/airtime_history_screen.dart';
 import 'package:lazervault/src/features/airtime/presentation/view/airtime_details_screen.dart';
-import 'package:lazervault/src/features/airtime/presentation/view/airtime_transfer_screen.dart';
-import 'package:lazervault/src/features/airtime/presentation/view/airtime_transfer_review_screen.dart';
+import 'package:lazervault/src/features/airtime/presentation/view/airtime_beneficiaries_screen.dart';
+import 'package:lazervault/src/features/airtime/presentation/view/airtime_auto_recharge_screen.dart';
+import 'package:lazervault/src/features/airtime/presentation/view/airtime_reminders_screen.dart';
+import 'package:lazervault/src/features/airtime/presentation/view/create_airtime_reminder_screen.dart';
+import 'package:lazervault/src/features/airtime/presentation/cubit/airtime_reminder_cubit.dart';
 import 'package:lazervault/src/features/airtime_to_cash/presentation/cubit/airtime_to_cash_cubit.dart';
-import 'package:lazervault/src/features/airtime_to_cash/presentation/view/airtime_to_cash_home_screen.dart';
-import 'package:lazervault/src/features/airtime_to_cash/presentation/view/a2c_network_selection_screen.dart';
-import 'package:lazervault/src/features/airtime_to_cash/presentation/view/a2c_service_verification_screen.dart';
-import 'package:lazervault/src/features/airtime_to_cash/presentation/view/a2c_transfer_instructions_screen.dart';
-import 'package:lazervault/src/features/airtime_to_cash/presentation/view/a2c_phone_input_screen.dart';
-import 'package:lazervault/src/features/airtime_to_cash/presentation/view/a2c_amount_input_screen.dart';
+import 'package:lazervault/src/features/airtime_to_cash/presentation/view/airtime_to_cash_provider_select_screen.dart';
+import 'package:lazervault/src/features/airtime_to_cash/presentation/view/vtuafrica_airtime_to_cash_screen.dart';
+import 'package:lazervault/src/features/airtime_to_cash/presentation/view/vtuafrica_transfer_screen.dart';
+import 'package:lazervault/src/features/airtime_to_cash/presentation/view/automation_airtime_to_cash_screen.dart';
+import 'package:lazervault/src/features/airtime_to_cash/presentation/view/airtime_to_cash_success_screen.dart';
+import 'package:lazervault/src/features/airtime_to_cash/presentation/view/airtime_to_cash_pending_screen.dart';
 import 'package:lazervault/src/features/airtime_to_cash/presentation/view/a2c_review_screen.dart';
-import 'package:lazervault/src/features/airtime_to_cash/presentation/view/a2c_otp_screen.dart';
-import 'package:lazervault/src/features/airtime_to_cash/presentation/view/a2c_pin_input_screen.dart';
 import 'package:lazervault/src/features/airtime_to_cash/presentation/view/a2c_processing_screen.dart';
 import 'package:lazervault/src/features/airtime_to_cash/presentation/view/a2c_result_screen.dart';
 
@@ -338,8 +343,6 @@ import 'package:lazervault/src/features/electricity_bill/presentation/view/payme
 import 'package:lazervault/src/features/electricity_bill/presentation/view/beneficiaries_screen.dart';
 import 'package:lazervault/src/features/electricity_bill/presentation/view/add_beneficiary_screen.dart';
 import 'package:lazervault/src/features/electricity_bill/presentation/view/auto_recharge_list_screen.dart';
-import 'package:lazervault/src/features/electricity_bill/presentation/view/create_auto_recharge_screen.dart';
-import 'package:lazervault/src/features/electricity_bill/presentation/view/edit_auto_recharge_screen.dart';
 import 'package:lazervault/src/features/electricity_bill/presentation/view/reminders_screen.dart';
 import 'package:lazervault/src/features/electricity_bill/presentation/view/create_reminder_screen.dart';
 
@@ -348,7 +351,16 @@ import 'package:lazervault/src/features/bills/presentation/view/bills_hub_screen
 
 // Cable TV imports
 import 'package:lazervault/src/features/cable_tv/presentation/cubit/cable_tv_cubit.dart';
+import 'package:lazervault/src/features/cable_tv/presentation/cubit/cable_tv_beneficiary_cubit.dart';
+import 'package:lazervault/src/features/cable_tv/presentation/cubit/cable_tv_auto_recharge_cubit.dart';
+import 'package:lazervault/src/features/cable_tv/presentation/cubit/cable_tv_reminder_cubit.dart';
 import 'package:lazervault/src/features/cable_tv/presentation/view/cable_tv_home_screen.dart';
+import 'package:lazervault/src/features/cable_tv/presentation/view/cable_tv_beneficiaries_screen.dart';
+import 'package:lazervault/src/features/cable_tv/presentation/view/cable_tv_auto_recharge_screen.dart';
+import 'package:lazervault/src/features/cable_tv/presentation/view/create_cable_tv_auto_recharge_screen.dart';
+import 'package:lazervault/src/features/cable_tv/presentation/view/cable_tv_reminders_screen.dart';
+import 'package:lazervault/src/features/cable_tv/presentation/view/create_cable_tv_reminder_screen.dart';
+import 'package:lazervault/src/features/cable_tv/presentation/view/cable_tv_history_screen.dart';
 import 'package:lazervault/src/features/cable_tv/presentation/view/smart_card_input_screen.dart';
 import 'package:lazervault/src/features/cable_tv/presentation/view/package_selection_screen.dart';
 import 'package:lazervault/src/features/cable_tv/presentation/view/cable_tv_payment_confirmation_screen.dart';
@@ -365,17 +377,30 @@ import 'package:lazervault/src/features/education/presentation/view/education_pa
 import 'package:lazervault/src/features/education/presentation/view/education_pin_result_screen.dart';
 import 'package:lazervault/src/features/education/presentation/view/education_history_screen.dart';
 import 'package:lazervault/src/features/education/presentation/view/education_pin_details_screen.dart';
+import 'package:lazervault/src/features/education/presentation/view/education_saved_candidates_screen.dart';
+import 'package:lazervault/src/features/education/presentation/view/education_reminders_screen.dart';
+import 'package:lazervault/src/features/education/presentation/view/create_education_reminder_screen.dart';
+import 'package:lazervault/src/features/education/presentation/cubit/education_beneficiary_cubit.dart';
+import 'package:lazervault/src/features/education/presentation/cubit/education_reminder_cubit.dart';
 import 'package:lazervault/src/features/education/data/repositories/education_repository_impl.dart';
 import 'package:lazervault/src/features/education/data/datasources/education_remote_datasource.dart';
 
 // Water Bill imports
 import 'package:lazervault/src/features/water_bill/presentation/cubit/water_bill_cubit.dart';
-import 'package:lazervault/src/features/water_bill/presentation/view/water_bill_home_screen.dart';
-import 'package:lazervault/src/features/water_bill/presentation/view/water_bill_customer_input_screen.dart';
-import 'package:lazervault/src/features/water_bill/presentation/view/water_bill_payment_confirmation_screen.dart';
+import 'package:lazervault/src/features/water_bill/presentation/view/water_bill_home_screen_new.dart';
+import 'package:lazervault/src/features/water_bill/presentation/view/water_bill_customer_input_screen_new.dart';
+import 'package:lazervault/src/features/water_bill/presentation/view/water_bill_payment_confirmation_screen_new.dart';
 import 'package:lazervault/src/features/water_bill/presentation/view/water_bill_payment_processing_screen.dart';
 import 'package:lazervault/src/features/water_bill/presentation/view/water_bill_payment_receipt_screen.dart';
 import 'package:lazervault/src/features/water_bill/presentation/view/water_bill_history_screen.dart';
+import 'package:lazervault/src/features/water_bill/presentation/view/water_saved_accounts_screen.dart';
+import 'package:lazervault/src/features/water_bill/presentation/view/water_auto_recharge_screen.dart';
+import 'package:lazervault/src/features/water_bill/presentation/view/create_water_auto_recharge_screen.dart';
+import 'package:lazervault/src/features/water_bill/presentation/view/water_reminders_screen.dart';
+import 'package:lazervault/src/features/water_bill/presentation/view/create_water_reminder_screen.dart';
+import 'package:lazervault/src/features/water_bill/presentation/cubit/water_auto_recharge_cubit.dart';
+import 'package:lazervault/src/features/water_bill/presentation/cubit/water_beneficiary_cubit.dart';
+import 'package:lazervault/src/features/water_bill/presentation/cubit/water_reminder_cubit.dart';
 
 // Internet Bill imports
 import 'package:lazervault/src/features/internet_bill/presentation/cubit/internet_bill_cubit.dart';
@@ -385,10 +410,36 @@ import 'package:lazervault/src/features/internet_bill/presentation/view/internet
 import 'package:lazervault/src/features/internet_bill/presentation/view/internet_payment_confirmation_screen.dart';
 import 'package:lazervault/src/features/internet_bill/presentation/view/internet_payment_processing_screen.dart';
 import 'package:lazervault/src/features/internet_bill/presentation/view/internet_payment_receipt_screen.dart';
+import 'package:lazervault/src/features/internet_bill/presentation/view/internet_saved_beneficiaries_screen.dart';
+import 'package:lazervault/src/features/internet_bill/presentation/view/internet_rollover_screen.dart';
+import 'package:lazervault/src/features/internet_bill/presentation/view/create_internet_rollover_screen.dart';
+import 'package:lazervault/src/features/internet_bill/presentation/view/internet_reminders_screen.dart';
+import 'package:lazervault/src/features/internet_bill/presentation/view/create_internet_reminder_screen.dart';
+import 'package:lazervault/src/features/internet_bill/presentation/cubit/internet_reminder_cubit.dart';
+import 'package:lazervault/src/features/internet_bill/presentation/cubit/internet_beneficiary_cubit.dart';
+import 'package:lazervault/src/features/internet_bill/presentation/cubit/internet_auto_recharge_cubit.dart';
+import 'package:lazervault/src/features/internet_bill/presentation/view/internet_history_screen.dart';
 
 // Data Bundles imports
 import 'package:lazervault/src/features/data_bundles/presentation/cubit/data_bundles_cubit.dart';
 import 'package:lazervault/src/features/data_bundles/presentation/view/data_bundles_home_screen.dart';
+import 'package:lazervault/src/features/data_bundles/presentation/view/intl_data_purchase_screen.dart';
+import 'package:lazervault/src/features/data_bundles/presentation/view/intl_data_checkout_screen.dart';
+import 'package:lazervault/src/features/data_bundles/presentation/view/intl_data_processing_screen.dart';
+import 'package:lazervault/src/features/data_bundles/presentation/view/intl_data_receipt_screen.dart';
+import 'package:lazervault/src/features/data_bundles/presentation/view/intl_data_beneficiaries_screen.dart';
+import 'package:lazervault/src/features/data_bundles/presentation/view/intl_data_auto_recharge_screen.dart';
+import 'package:lazervault/src/features/data_bundles/presentation/view/intl_data_reminders_screen.dart';
+import 'package:lazervault/src/features/data_bundles/presentation/cubit/intl_data_cubit.dart';
+import 'package:lazervault/src/features/data_bundles/presentation/view/data_bundles_history_screen.dart';
+import 'package:lazervault/src/features/data_bundles/presentation/view/data_beneficiaries_screen.dart';
+import 'package:lazervault/src/features/data_bundles/presentation/view/data_auto_recharge_screen.dart';
+import 'package:lazervault/src/features/data_bundles/presentation/view/create_data_auto_recharge_screen.dart';
+import 'package:lazervault/src/features/data_bundles/presentation/view/data_reminders_screen.dart';
+import 'package:lazervault/src/features/data_bundles/presentation/view/create_data_reminder_screen.dart';
+import 'package:lazervault/src/features/data_bundles/presentation/cubit/data_beneficiary_cubit.dart';
+import 'package:lazervault/src/features/data_bundles/presentation/cubit/data_auto_recharge_cubit.dart';
+import 'package:lazervault/src/features/data_bundles/presentation/cubit/data_reminder_cubit.dart';
 import 'package:lazervault/src/features/data_bundles/presentation/view/data_plan_selection_screen.dart';
 import 'package:lazervault/src/features/data_bundles/presentation/view/data_recipient_input_screen.dart';
 import 'package:lazervault/src/features/data_bundles/presentation/view/data_payment_confirmation_screen.dart';
@@ -433,6 +484,7 @@ import 'package:lazervault/src/features/channel_management/presentation/screens/
 // KYC imports
 import 'package:lazervault/src/features/kyc/presentation/views/progressive_kyc_screen.dart';
 import 'package:lazervault/src/features/kyc/presentation/views/id_verification_screen.dart';
+import 'package:lazervault/src/features/kyc/presentation/views/bvn_verification_screen.dart';
 import 'package:lazervault/src/features/kyc/presentation/cubits/kyc_cubit.dart';
 import 'package:lazervault/src/features/kyc/domain/entities/kyc_tier_entity.dart';
 // Payroll imports (Business)
@@ -1839,18 +1891,10 @@ class AppRouter {
       transition: Transition.rightToLeft,
     ),
 GetPage(
-      name: AppRoutes.airtimeNetworkSelection,
+      name: AppRoutes.airtimePurchase,
       page: () => BlocProvider(
         create: (_) => serviceLocator<AirtimeCubit>(),
-        child: const NetworkSelectionScreen(),
-      ),
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
-      name: AppRoutes.airtimeCountrySelection,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<AirtimeCubit>(),
-        child: const CountrySelectionScreen(),
+        child: const AirtimePurchaseScreen(),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -1913,77 +1957,128 @@ GetPage(
       ),
       transition: Transition.rightToLeft,
     ),
-
-    // Airtime Transfer routes
     GetPage(
-      name: AppRoutes.airtimeTransfer,
+      name: AppRoutes.airtimeBeneficiaries,
       page: () => BlocProvider(
         create: (_) => serviceLocator<AirtimeCubit>(),
-        child: const AirtimeTransferScreen(),
+        child: const AirtimeBeneficiariesScreen(),
       ),
       transition: Transition.rightToLeft,
     ),
     GetPage(
-      name: AppRoutes.airtimeTransferReview,
+      name: AppRoutes.airtimeAutoRecharge,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AirtimeCubit>(),
+        child: const AirtimeAutoRechargeScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.airtimeReminders,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AirtimeReminderCubit>(),
+        child: const AirtimeRemindersScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.airtimeCreateReminder,
       page: () => MultiBlocProvider(
         providers: [
           BlocProvider(create: (_) => serviceLocator<AirtimeCubit>()),
-          BlocProvider(create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
+          BlocProvider(create: (_) => serviceLocator<AirtimeReminderCubit>()),
         ],
-        child: const AirtimeTransferReviewScreen(),
+        child: const CreateAirtimeReminderScreen(),
       ),
       transition: Transition.rightToLeft,
     ),
 
-    // Airtime-to-Cash routes
+    // International Airtime routes
+    GetPage(
+      name: AppRoutes.intlAirtimeCountrySelection,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<IntlAirtimeCubit>(),
+        child: const IntlCountrySelectionScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.intlAirtimePurchase,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<IntlAirtimeCubit>(),
+        child: const IntlAirtimePurchaseScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.intlAirtimeReview,
+      page: () => MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => serviceLocator<IntlAirtimeCubit>()),
+          BlocProvider(create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
+        ],
+        child: const IntlReviewScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.intlAirtimeReceipt,
+      page: () => const IntlReceiptScreen(),
+      transition: Transition.rightToLeft,
+    ),
+
+    // Airtime-to-Cash routes (Dual Provider: VTU Africa + Automation)
     GetPage(
       name: AppRoutes.airtimeToCash,
       page: () => BlocProvider(
         create: (_) => serviceLocator<AirtimeToCashCubit>(),
-        child: const A2CNetworkSelectionScreen(),
+        child: const AirtimeToCashProviderSelectScreen(),
       ),
       transition: Transition.rightToLeft,
     ),
     GetPage(
-      name: AppRoutes.airtimeToCashNetworkSelection,
+      name: AppRoutes.airtimeToCashProviderSelect,
       page: () => BlocProvider(
         create: (_) => serviceLocator<AirtimeToCashCubit>(),
-        child: const A2CNetworkSelectionScreen(),
+        child: const AirtimeToCashProviderSelectScreen(),
       ),
       transition: Transition.rightToLeft,
     ),
     GetPage(
-      name: AppRoutes.airtimeToCashServiceVerification,
+      name: AppRoutes.airtimeToCashVtuafrica,
       page: () => BlocProvider(
         create: (_) => serviceLocator<AirtimeToCashCubit>(),
-        child: const A2CServiceVerificationScreen(),
+        child: const VtuafricaAirtimeToCashScreen(),
       ),
       transition: Transition.rightToLeft,
     ),
     GetPage(
-      name: AppRoutes.airtimeToCashTransferInstructions,
+      name: AppRoutes.airtimeToCashVtuafricaTransfer,
       page: () => BlocProvider(
         create: (_) => serviceLocator<AirtimeToCashCubit>(),
-        child: const A2CTransferInstructionsScreen(),
+        child: const VtuafricaTransferScreen(),
       ),
       transition: Transition.rightToLeft,
     ),
     GetPage(
-      name: AppRoutes.airtimeToCashPhoneInput,
+      name: AppRoutes.airtimeToCashAutomation,
       page: () => BlocProvider(
         create: (_) => serviceLocator<AirtimeToCashCubit>(),
-        child: const A2CPhoneInputScreen(),
+        child: const AutomationAirtimeToCashScreen(),
       ),
       transition: Transition.rightToLeft,
     ),
     GetPage(
-      name: AppRoutes.airtimeToCashAmountInput,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<AirtimeToCashCubit>(),
-        child: const A2CAmountInputScreen(),
-      ),
+      name: AppRoutes.airtimeToCashSuccess,
+      page: () => const AirtimeToCashSuccessScreen(),
       transition: Transition.rightToLeft,
     ),
+    GetPage(
+      name: AppRoutes.airtimeToCashPending,
+      page: () => const AirtimeToCashPendingScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    // Legacy routes (for backward compatibility)
     GetPage(
       name: AppRoutes.airtimeToCashReview,
       page: () => MultiBlocProvider(
@@ -1992,22 +2087,6 @@ GetPage(
           BlocProvider(create: (_) => serviceLocator<AccountCardsSummaryCubit>()),
         ],
         child: const A2CReviewScreen(),
-      ),
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
-      name: AppRoutes.airtimeToCashOTP,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<AirtimeToCashCubit>(),
-        child: const A2COTPScreen(),
-      ),
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
-      name: AppRoutes.airtimeToCashPinInput,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<AirtimeToCashCubit>(),
-        child: const A2CPinInputScreen(),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -2637,6 +2716,7 @@ GetPage(
           providers: [
             BlocProvider(create: (_) => serviceLocator<ElectricityBillCubit>()),
             BlocProvider(create: (_) => serviceLocator<BeneficiaryCubit>()),
+            BlocProvider(create: (_) => serviceLocator<AutoRechargeCubit>()),
           ],
           child: const PaymentConfirmationScreen(),
         );
@@ -2655,7 +2735,10 @@ GetPage(
     ),
     GetPage(
       name: AppRoutes.electricityBillReceipt,
-      page: () => const bill_receipt.PaymentReceiptScreen(),
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<ElectricityBillCubit>(),
+        child: const bill_receipt.PaymentReceiptScreen(),
+      ),
       transition: Transition.zoom,
     ),
     GetPage(
@@ -2671,8 +2754,11 @@ GetPage(
     GetPage(
       name: AppRoutes.electricityBillBeneficiaries,
       page: () {
-        return BlocProvider(
-          create: (_) => serviceLocator<BeneficiaryCubit>(),
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider(create: (_) => serviceLocator<BeneficiaryCubit>()),
+            BlocProvider(create: (_) => serviceLocator<AutoRechargeCubit>()..getAutoRecharges()),
+          ],
           child: const BeneficiariesScreen(),
         );
       },
@@ -2705,30 +2791,6 @@ GetPage(
       transition: Transition.rightToLeft,
     ),
     GetPage(
-      name: AppRoutes.electricityBillCreateAutoRecharge,
-      page: () {
-        return MultiBlocProvider(
-          providers: [
-            BlocProvider(create: (_) => serviceLocator<BeneficiaryCubit>()),
-            BlocProvider(create: (_) => serviceLocator<AutoRechargeCubit>()),
-            BlocProvider(create: (_) => serviceLocator<ElectricityBillCubit>()),
-          ],
-          child: const CreateAutoRechargeScreen(),
-        );
-      },
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
-      name: AppRoutes.electricityBillEditAutoRecharge,
-      page: () {
-        return BlocProvider(
-          create: (_) => serviceLocator<AutoRechargeCubit>(),
-          child: const EditAutoRechargeScreen(),
-        );
-      },
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
       name: AppRoutes.electricityBillReminders,
       page: () {
         return BlocProvider(
@@ -2745,6 +2807,7 @@ GetPage(
           providers: [
             BlocProvider(create: (_) => serviceLocator<BeneficiaryCubit>()),
             BlocProvider(create: (_) => serviceLocator<ReminderCubit>()),
+            BlocProvider(create: (_) => serviceLocator<ElectricityBillCubit>()),
           ],
           child: const CreateReminderScreen(),
         );
@@ -3155,6 +3218,14 @@ GetPage(
       },
       transition: Transition.rightToLeft,
     ),
+    GetPage(
+      name: AppRoutes.kycBVNVerification,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<KYCCubit>(),
+        child: const BVNVerificationScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
 
     // Cable TV routes
     GetPage(
@@ -3201,6 +3272,64 @@ GetPage(
       name: AppRoutes.cableTVPaymentReceipt,
       page: () => const CableTVPaymentReceiptScreen(),
       transition: Transition.zoom,
+    ),
+    // Cable TV beneficiaries / auto-recharge / reminders / history
+    GetPage(
+      name: AppRoutes.cableTVBeneficiaries,
+      page: () => MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => serviceLocator<CableTVBeneficiaryCubit>()),
+          BlocProvider(create: (_) => serviceLocator<CableTVAutoRechargeCubit>()),
+        ],
+        child: const CableTVBeneficiariesScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.cableTVAutoRecharge,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<CableTVAutoRechargeCubit>(),
+        child: const CableTVAutoRechargeScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.cableTVAutoRechargeCreate,
+      page: () => MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => serviceLocator<CableTVBeneficiaryCubit>()),
+          BlocProvider(create: (_) => serviceLocator<CableTVAutoRechargeCubit>()),
+        ],
+        child: const CreateCableTVAutoRechargeScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.cableTVReminders,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<CableTVReminderCubit>(),
+        child: const CableTVRemindersScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.cableTVReminderCreate,
+      page: () => MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => serviceLocator<CableTVReminderCubit>()),
+          BlocProvider(create: (_) => serviceLocator<CableTVBeneficiaryCubit>()),
+        ],
+        child: const CreateCableTVReminderScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.cableTVHistory,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<CableTVCubit>(),
+        child: const CableTVHistoryScreen(),
+      ),
+      transition: Transition.rightToLeft,
     ),
 
     // Education routes
@@ -3260,13 +3389,39 @@ GetPage(
       page: () => const EducationPinDetailsScreen(),
       transition: Transition.zoom,
     ),
+    GetPage(
+      name: AppRoutes.educationSavedCandidates,
+      page: () => const EducationSavedCandidatesScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.educationReminders,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<EducationReminderCubit>(),
+        child: const EducationRemindersScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.educationRemindersCreate,
+      page: () => MultiBlocProvider(
+        providers: [
+          BlocProvider(
+              create: (_) => serviceLocator<EducationBeneficiaryCubit>()),
+          BlocProvider(
+              create: (_) => serviceLocator<EducationReminderCubit>()),
+        ],
+        child: const CreateEducationReminderScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
 
     // Water Bill routes
     GetPage(
       name: AppRoutes.waterBillHome,
       page: () => BlocProvider(
         create: (_) => serviceLocator<WaterBillCubit>(),
-        child: const WaterBillHomeScreen(),
+        child: const WaterBillHomeScreenNew(),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -3274,7 +3429,7 @@ GetPage(
       name: AppRoutes.waterBillCustomerInput,
       page: () => BlocProvider(
         create: (_) => serviceLocator<WaterBillCubit>(),
-        child: const WaterBillCustomerInputScreen(),
+        child: const WaterBillCustomerInputScreenNew(),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -3282,7 +3437,7 @@ GetPage(
       name: AppRoutes.waterBillPaymentConfirmation,
       page: () => BlocProvider(
         create: (_) => serviceLocator<WaterBillCubit>(),
-        child: const WaterBillPaymentConfirmationScreen(),
+        child: const WaterBillPaymentConfirmationScreenNew(),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -3304,6 +3459,53 @@ GetPage(
       page: () => BlocProvider(
         create: (_) => serviceLocator<WaterBillCubit>(),
         child: const WaterBillHistoryScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.waterBillSavedAccounts,
+      page: () => const WaterSavedAccountsScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.waterBillAutoRecharge,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<WaterAutoRechargeCubit>(),
+        child: const WaterAutoRechargeScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.waterBillAutoRechargeCreate,
+      page: () => MultiBlocProvider(
+        providers: [
+          BlocProvider(
+              create: (_) => serviceLocator<WaterBeneficiaryCubit>()),
+          BlocProvider(
+              create: (_) => serviceLocator<WaterAutoRechargeCubit>()),
+        ],
+        child: const CreateWaterAutoRechargeScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.waterBillReminders,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<WaterReminderCubit>(),
+        child: const WaterRemindersScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.waterBillRemindersCreate,
+      page: () => MultiBlocProvider(
+        providers: [
+          BlocProvider(
+              create: (_) => serviceLocator<WaterBeneficiaryCubit>()),
+          BlocProvider(
+              create: (_) => serviceLocator<WaterReminderCubit>()),
+        ],
+        child: const CreateWaterReminderScreen(),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -3354,11 +3556,70 @@ GetPage(
       page: () => const InternetPaymentReceiptScreen(),
       transition: Transition.zoom,
     ),
+    // Internet bill sub-pages — mirror data bundles' saved/rollover/
+    // reminders/history. Each screen is self-contained (its own
+    // BlocProvider where needed), so the landing doesn't have to
+    // preload cubits it doesn't use.
+    GetPage(
+      name: AppRoutes.internetBillSaved,
+      page: () => const InternetSavedBeneficiariesScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.internetBillRollover,
+      page: () => const InternetRolloverScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.internetBillRolloverCreate,
+      page: () => MultiBlocProvider(
+        providers: [
+          BlocProvider(
+              create: (_) => serviceLocator<InternetBeneficiaryCubit>()),
+          BlocProvider(
+              create: (_) => serviceLocator<InternetAutoRechargeCubit>()),
+          BlocProvider(create: (_) => serviceLocator<InternetBillCubit>()),
+        ],
+        child: const CreateInternetRolloverScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.internetBillReminders,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<InternetReminderCubit>(),
+        child: const InternetRemindersScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.internetBillReminderCreate,
+      page: () => MultiBlocProvider(
+        providers: [
+          BlocProvider(
+              create: (_) => serviceLocator<InternetReminderCubit>()),
+          BlocProvider(
+              create: (_) => serviceLocator<InternetBeneficiaryCubit>()),
+        ],
+        child: const CreateInternetReminderScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.internetBillHistory,
+      page: () => const InternetHistoryScreen(),
+      transition: Transition.rightToLeft,
+    ),
 
     // Data Bundles routes
     GetPage(
       name: AppRoutes.dataBundlesHome,
-      page: () => const DataBundlesHomeScreen(),
+      // Wrap in a BlocProvider so the landing's history strips can
+      // dispatch loadDataPurchaseHistory and rebuild on state changes.
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<DataBundlesCubit>(),
+        child: const DataBundlesHomeScreen(),
+      ),
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -3395,9 +3656,193 @@ GetPage(
       page: () => const DataPaymentReceiptScreen(),
       transition: Transition.zoom,
     ),
+    // International Data — consolidated single-screen flow. Backend is
+    // Reloadly-backed (GetIntlDataOperators / GetIntlDataBundles /
+    // BuyIntlData on UtilityPaymentsService). Screen progressively
+    // reveals sections as each step resolves — matches the intl_airtime
+    // consolidated pattern per UX directive.
+    GetPage(
+      name: AppRoutes.intlDataCountrySelection,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<IntlDataCubit>(),
+        child: IntlDataPurchaseScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    // Intl-data receipt — reused by both the live purchase flow and the
+    // data history bottom sheet's "View Receipt" action. Mirrors
+    // AppRoutes.intlAirtimeReceipt registration.
+    GetPage(
+      name: AppRoutes.intlDataReceipt,
+      page: () => const IntlDataReceiptScreen(),
+      transition: Transition.zoom,
+    ),
+    // Intl-data checkout — recipient phone input + review + txPin.
+    GetPage(
+      name: AppRoutes.intlDataCheckout,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<IntlDataCubit>(),
+        child: const IntlDataCheckoutScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    // Intl-data processing — fires the buy RPC and shows step animation.
+    GetPage(
+      name: AppRoutes.intlDataProcessing,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<IntlDataCubit>(),
+        child: const IntlDataProcessingScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    // Alias route — intlDataPurchase resolves to the same page as the
+    // country-selection step. Registering both names lets the history
+    // sheet's "Repeat Purchase" code match the intl_airtime convention
+    // (AppRoutes.intlAirtimePurchase) without a special-case.
+    GetPage(
+      name: AppRoutes.intlDataPurchase,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<IntlDataCubit>(),
+        child: IntlDataPurchaseScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    // Quick-action shortcuts on the data landing. All route to the
+    // Coming Soon screen until the dedicated screens are cloned from
+    // the airtime equivalents (airtime_beneficiaries_screen,
+    // airtime_auto_recharge_screen, airtime_reminders_screen). Keeping
+    // these registered now prevents "Route not defined" crashes when
+    // users tap the chips on the landing.
+    // Data-scoped Rollover / Contacts / Reminders. Each MUST be fully
+    // distinct from airtime equivalents — per product direction users
+    // should never see airtime contacts mixed into data purchases or
+    // vice-versa. Backend work required before these have real screens:
+    //   * data_beneficiaries table + CRUD RPCs (per-variation saves)
+    //   * data_rollovers table + worker (variation-locked schedule)
+    //   * data_reminders table + timer worker (bundle-expiry-aware)
+    // Until those tables land we render dedicated scoped Coming Soon
+    // screens that make the scoping boundary explicit.
+    // Data-scoped beneficiaries / rollover (auto-recharge) / reminders.
+    // Each is a real screen now backed by `DataBeneficiaryRemoteDataSource`
+    // (gRPC via commerce-gateway, port 50061). Beneficiaries and rollover
+    // share their cubits across the screen tree so badges and lists stay
+    // in sync after mutations.
+    GetPage(
+      name: AppRoutes.dataBundlesBeneficiaries,
+      page: () => MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => serviceLocator<DataBeneficiaryCubit>()),
+          BlocProvider(create: (_) => serviceLocator<DataAutoRechargeCubit>()),
+        ],
+        child: const DataBeneficiariesScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.dataBundlesRollover,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<DataAutoRechargeCubit>(),
+        child: const DataAutoRechargeScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.dataBundlesRolloverCreate,
+      page: () => MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => serviceLocator<DataBeneficiaryCubit>()),
+          BlocProvider(create: (_) => serviceLocator<DataAutoRechargeCubit>()),
+          BlocProvider(create: (_) => serviceLocator<DataBundlesCubit>()),
+        ],
+        child: const CreateDataAutoRechargeScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.dataBundlesReminders,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<DataReminderCubit>(),
+        child: const DataRemindersScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.dataBundlesReminderCreate,
+      page: () => MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => serviceLocator<DataReminderCubit>()),
+          BlocProvider(create: (_) => serviceLocator<DataBeneficiaryCubit>()),
+        ],
+        child: const CreateDataReminderScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    // Data history — real screen consuming DataBundlesCubit's
+    // loadDataPurchaseHistory / cachedPurchases SWR cache. Scope arg
+    // ('all' | 'local' | 'intl') filters the list.
+    GetPage(
+      name: AppRoutes.dataBundlesHistory,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<DataBundlesCubit>(),
+        child: const DataBundlesHistoryScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
     GetPage(
       name: AppRoutes.autoRenewManagement,
       page: () => const AutoRenewManagementScreen(),
+      transition: Transition.rightToLeft,
+    ),
+    // International data management screens — reuse data cubits with
+    // client-side country_code filtering.
+    GetPage(
+      name: AppRoutes.intlDataBeneficiaries,
+      page: () => MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => serviceLocator<DataBeneficiaryCubit>()),
+          BlocProvider(create: (_) => serviceLocator<DataAutoRechargeCubit>()),
+        ],
+        child: const IntlDataBeneficiariesScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.intlDataAutoRecharge,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<DataAutoRechargeCubit>(),
+        child: const IntlDataAutoRechargeScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.intlDataAutoRechargeCreate,
+      page: () => MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => serviceLocator<DataBeneficiaryCubit>()),
+          BlocProvider(create: (_) => serviceLocator<DataAutoRechargeCubit>()),
+          BlocProvider(create: (_) => serviceLocator<DataBundlesCubit>()),
+        ],
+        child: const CreateDataAutoRechargeScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.intlDataReminders,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<DataReminderCubit>(),
+        child: const IntlDataRemindersScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.intlDataReminderCreate,
+      page: () => MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => serviceLocator<DataReminderCubit>()),
+          BlocProvider(create: (_) => serviceLocator<DataBeneficiaryCubit>()),
+        ],
+        child: const CreateDataReminderScreen(),
+      ),
       transition: Transition.rightToLeft,
     ),
 

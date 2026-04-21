@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -11,10 +12,12 @@ import '../../../../../core/types/app_routes.dart';
 import '../cubit/electricity_bill_cubit.dart';
 import '../cubit/electricity_bill_state.dart';
 import '../cubit/beneficiary_cubit.dart';
-import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
-import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
+import '../../utils/meter_validation.dart';
+import '../../../../../core/widgets/bill_history_item.dart';
+import '../widgets/electricity_history_actions_sheet.dart';
 
 class ElectricityBillHomeScreen extends StatefulWidget {
   const ElectricityBillHomeScreen({super.key});
@@ -79,23 +82,12 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
   }
 
   void _smartValidate() {
-    final meterNumber = _meterNumberController.text.trim();
-    if (meterNumber.isEmpty) {
-      Get.snackbar(
-        'Enter Meter Number',
-        'Please enter your meter number',
-        backgroundColor: const Color(0xFFEF4444),
-        colorText: Colors.white,
-        snackPosition: SnackPosition.TOP,
-      );
-      return;
-    }
-
-    if (meterNumber.length < 11) {
+    final err = validateMeterNumber(_meterNumberController.text);
+    if (err != null) {
       Get.snackbar(
         'Invalid Meter Number',
-        'Meter number must be at least 11 digits',
-        backgroundColor: const Color(0xFFEF4444),
+        err,
+        backgroundColor: InvoiceThemeColors.errorRed,
         colorText: Colors.white,
         snackPosition: SnackPosition.TOP,
       );
@@ -103,7 +95,7 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
     }
 
     context.read<ElectricityBillCubit>().smartValidateMeter(
-          meterNumber: meterNumber,
+          meterNumber: _meterNumberController.text.trim(),
         );
   }
 
@@ -112,30 +104,19 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
       Get.snackbar(
         'Select Provider',
         'Please select your electricity distribution company',
-        backgroundColor: const Color(0xFFFB923C),
+        backgroundColor: InvoiceThemeColors.warningOrange,
         colorText: Colors.white,
         snackPosition: SnackPosition.TOP,
       );
       return;
     }
 
-    final meterNumber = _meterNumberController.text.trim();
-    if (meterNumber.isEmpty) {
-      Get.snackbar(
-        'Enter Meter Number',
-        'Please enter your meter number',
-        backgroundColor: const Color(0xFFEF4444),
-        colorText: Colors.white,
-        snackPosition: SnackPosition.TOP,
-      );
-      return;
-    }
-
-    if (meterNumber.length < 6) {
+    final err = validateMeterNumber(_meterNumberController.text);
+    if (err != null) {
       Get.snackbar(
         'Invalid Meter Number',
-        'Meter number must be at least 6 digits',
-        backgroundColor: const Color(0xFFEF4444),
+        err,
+        backgroundColor: InvoiceThemeColors.errorRed,
         colorText: Colors.white,
         snackPosition: SnackPosition.TOP,
       );
@@ -144,7 +125,7 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
 
     context.read<ElectricityBillCubit>().validateMeter(
           providerCode: _selectedProvider!.providerCode,
-          meterNumber: meterNumber,
+          meterNumber: _meterNumberController.text.trim(),
           meterType: _selectedMeterType,
         );
   }
@@ -265,7 +246,7 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
                 Get.snackbar(
                   'Validation Failed',
                   state.message,
-                  backgroundColor: const Color(0xFFEF4444),
+                  backgroundColor: InvoiceThemeColors.errorRed,
                   colorText: Colors.white,
                   snackPosition: SnackPosition.TOP,
                 );
@@ -285,7 +266,7 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
                 Get.snackbar(
                   'Meter Not Found',
                   state.message,
-                  backgroundColor: const Color(0xFFFB923C),
+                  backgroundColor: InvoiceThemeColors.warningOrange,
                   colorText: Colors.white,
                   snackPosition: SnackPosition.TOP,
                   duration: const Duration(seconds: 4),
@@ -297,7 +278,7 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
                 Get.snackbar(
                   'Error',
                   state.message,
-                  backgroundColor: const Color(0xFFEF4444),
+                  backgroundColor: InvoiceThemeColors.errorRed,
                   colorText: Colors.white,
                   snackPosition: SnackPosition.TOP,
                 );
@@ -316,7 +297,7 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
                   Expanded(
                     child: RefreshIndicator(
                       onRefresh: _onRefresh,
-                      color: const Color(0xFF3B82F6),
+                      color: InvoiceThemeColors.primaryPurple,
                       backgroundColor: const Color(0xFF1F1F1F),
                       child: SingleChildScrollView(
                         physics: const AlwaysScrollableScrollPhysics(),
@@ -381,17 +362,6 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
               ),
             ),
           ),
-          ServiceVoiceButton(
-            serviceName: 'electricity',
-          ),
-          SizedBox(width: 6.w),
-          MicroserviceChatIcon(
-            serviceName: 'Utility Payments',
-            sourceContext: 'bills',
-            icon: Icons.chat_bubble_outline,
-            iconColor: const Color(0xFF10B981),
-            iconSize: 18,
-          ),
         ],
       ),
     );
@@ -403,14 +373,17 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
+          colors: [
+            InvoiceThemeColors.primaryPurple,
+            Color.fromARGB(255, 62, 2, 166),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+            color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.3),
             blurRadius: 20.r,
             offset: const Offset(0, 8),
           ),
@@ -475,7 +448,7 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
             child: _buildQuickActionCard(
               title: 'Saved Meters',
               icon: Icons.bookmark_border,
-              color: const Color(0xFF3B82F6),
+              color: InvoiceThemeColors.primaryPurple,
               onTap: () async {
                 final result = await Get.toNamed(
                   AppRoutes.electricityBillBeneficiaries,
@@ -619,7 +592,7 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
                 padding: EdgeInsets.symmetric(vertical: 10.h),
                 decoration: BoxDecoration(
                   color: _useSmartLookup
-                      ? const Color(0xFF3B82F6)
+                      ? InvoiceThemeColors.primaryPurple
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(8.r),
                 ),
@@ -661,7 +634,7 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
                 padding: EdgeInsets.symmetric(vertical: 10.h),
                 decoration: BoxDecoration(
                   color: !_useSmartLookup
-                      ? const Color(0xFF3B82F6)
+                      ? InvoiceThemeColors.primaryPurple
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(8.r),
                 ),
@@ -724,13 +697,22 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
             child: TextField(
               controller: _meterNumberController,
               keyboardType: TextInputType.number,
+              // Digits-only + hard length cap = the user can't type past
+              // the NG standard, and paste gets stripped of letters/
+              // spaces. Pair with the inline error below for the min-len
+              // side (typed < 10 chars).
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(kMeterNumberMaxLen),
+              ],
               style: GoogleFonts.inter(
                 color: Colors.white,
                 fontSize: 16.sp,
                 fontWeight: FontWeight.w500,
               ),
               decoration: InputDecoration(
-                hintText: 'Enter meter number',
+                hintText:
+                    '$kMeterNumberMinLen–$kMeterNumberMaxLen digit meter number',
                 hintStyle: GoogleFonts.inter(
                   color: const Color(0xFF6B7280),
                   fontSize: 14.sp,
@@ -758,6 +740,20 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
               onChanged: (_) => setState(() {}),
             ),
           ),
+          // Live inline error when the user has typed something but it's
+          // still short of the min length. Empty state shows no error so
+          // we don't nag on a fresh field.
+          if (_meterNumberController.text.trim().isNotEmpty &&
+              validateMeterNumber(_meterNumberController.text) != null) ...[
+            SizedBox(height: 6.h),
+            Text(
+              validateMeterNumber(_meterNumberController.text)!,
+              style: GoogleFonts.inter(
+                color: const Color(0xFFEF4444),
+                fontSize: 11.sp,
+              ),
+            ),
+          ],
         ],
       );
   }
@@ -775,7 +771,10 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
           gradient: !isReady || isLoading
               ? null
               : const LinearGradient(
-                  colors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
+                  colors: [
+            InvoiceThemeColors.primaryPurple,
+            Color.fromARGB(255, 62, 2, 166),
+          ],
                 ),
           color: !isReady || isLoading
               ? const Color(0xFF1F1F1F)
@@ -853,7 +852,7 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
               borderRadius: BorderRadius.circular(10.r),
               border: Border.all(
                 color: _selectedProvider != null
-                    ? const Color(0xFF3B82F6).withValues(alpha: 0.4)
+                    ? InvoiceThemeColors.primaryPurple.withValues(alpha: 0.4)
                     : const Color(0xFF2D2D2D).withValues(alpha: 0.5),
                 width: 1,
               ),
@@ -997,7 +996,7 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
                             width: 28.w,
                             height: 28.w,
                             child: const CircularProgressIndicator(
-                              color: Color(0xFF3B82F6),
+                              color: InvoiceThemeColors.primaryPurple,
                               strokeWidth: 2.5,
                             ),
                           ),
@@ -1055,13 +1054,13 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
                               padding: EdgeInsets.all(12.w),
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? const Color(0xFF3B82F6)
+                                    ? InvoiceThemeColors.primaryPurple
                                         .withValues(alpha: 0.12)
                                     : const Color(0xFF0A0A0A),
                                 borderRadius: BorderRadius.circular(10.r),
                                 border: Border.all(
                                   color: isSelected
-                                      ? const Color(0xFF3B82F6)
+                                      ? InvoiceThemeColors.primaryPurple
                                       : const Color(0xFF2D2D2D),
                                   width: isSelected ? 1.5 : 1,
                                 ),
@@ -1111,7 +1110,7 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
                                   if (isSelected)
                                     Icon(
                                       Icons.check_circle,
-                                      color: const Color(0xFF3B82F6),
+                                      color: InvoiceThemeColors.primaryPurple,
                                       size: 18.sp,
                                     ),
                                 ],
@@ -1135,12 +1134,12 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
 
   Color _getProviderColor(ElectricityProviderEntity provider) {
     const colors = [
-      Color(0xFF3B82F6),
-      Color(0xFF10B981),
-      Color(0xFFFB923C),
+      InvoiceThemeColors.primaryPurple,
+      InvoiceThemeColors.successGreen,
+      InvoiceThemeColors.warningOrange,
       Color.fromARGB(255, 78, 3, 208),
-      Color(0xFFEF4444),
-      Color(0xFF06B6D4),
+      InvoiceThemeColors.errorRed,
+      Color.fromARGB(255, 124, 58, 237),
     ];
     final colorIndex = provider.providerCode.hashCode.abs() % colors.length;
     return colors[colorIndex];
@@ -1193,12 +1192,12 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
         padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 14.w),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF3B82F6).withValues(alpha: 0.12)
+              ? InvoiceThemeColors.primaryPurple.withValues(alpha: 0.12)
               : const Color(0xFF1F1F1F).withValues(alpha: 0.6),
           borderRadius: BorderRadius.circular(10.r),
           border: Border.all(
             color: isSelected
-                ? const Color(0xFF3B82F6)
+                ? InvoiceThemeColors.primaryPurple
                 : const Color(0xFF2D2D2D).withValues(alpha: 0.5),
             width: isSelected ? 1.5 : 1,
           ),
@@ -1209,7 +1208,7 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
             Icon(
               icon,
               color: isSelected
-                  ? const Color(0xFF3B82F6)
+                  ? InvoiceThemeColors.primaryPurple
                   : const Color(0xFF6B7280),
               size: 18.sp,
             ),
@@ -1241,7 +1240,10 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
           gradient: !isReady || _isValidating
               ? null
               : const LinearGradient(
-                  colors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
+                  colors: [
+            InvoiceThemeColors.primaryPurple,
+            Color.fromARGB(255, 62, 2, 166),
+          ],
                 ),
           color: !isReady || _isValidating
               ? const Color(0xFF1F1F1F)
@@ -1298,207 +1300,88 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
   }
 
   Widget _buildRecentPaymentsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Recent Payments',
-              style: GoogleFonts.inter(
-                color: Colors.white.withValues(alpha: 0.7),
-                fontSize: 15.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            GestureDetector(
-              onTap: () => Get.toNamed(AppRoutes.electricityBillHistory),
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8.r),
-                  border: Border.all(
-                    color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
-                    width: 1,
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'View All',
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF3B82F6),
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    SizedBox(width: 4.w),
-                    Icon(
-                      Icons.arrow_forward_ios,
-                      color: const Color(0xFF3B82F6),
-                      size: 14.sp,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 12.h),
-        ..._recentPayments.take(3).map((payment) => _buildPaymentCard(payment)),
-      ],
-    );
-  }
-
-  Widget _buildPaymentCard(BillPaymentEntity payment) {
-    final isSuccess = payment.status == BillPaymentStatus.completed;
-    final isPending = payment.status == BillPaymentStatus.pending ||
-                     payment.status == BillPaymentStatus.processing;
-
-    return Container(
-      margin: EdgeInsets.only(bottom: 10.h),
-      padding: EdgeInsets.all(14.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F).withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: isSuccess
-              ? const Color(0xFF10B981).withValues(alpha: 0.3)
-              : isPending
-                  ? const Color(0xFFFB923C).withValues(alpha: 0.3)
-                  : const Color(0xFF2D2D2D).withValues(alpha: 0.5),
-          width: 1,
-        ),
-      ),
+    // Split display: header row with purple View-All, then each recent
+    // payment gets its own standalone card — same visual treatment the
+    // full history screen uses — with spacing between rows.
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      payment.providerName,
-                      style: GoogleFonts.inter(
-                        color: Colors.white.withValues(alpha: 0.7),
-                        fontSize: 13.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    SizedBox(height: 2.h),
-                    Text(
-                      payment.meterNumber,
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF9CA3AF),
-                        fontSize: 11.sp,
-                      ),
-                    ),
-                  ],
+              Text(
+                'Recent Payments',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                decoration: BoxDecoration(
-                  color: isSuccess
-                      ? const Color(0xFF10B981).withValues(alpha: 0.15)
-                      : isPending
-                          ? const Color(0xFFFB923C).withValues(alpha: 0.15)
-                          : const Color(0xFFEF4444).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(6.r),
-                ),
+              GestureDetector(
+                onTap: () =>
+                    Get.toNamed(AppRoutes.electricityBillHistory),
                 child: Text(
-                  isSuccess
-                      ? 'Success'
-                      : isPending
-                          ? 'Pending'
-                          : 'Failed',
+                  'View All',
                   style: GoogleFonts.inter(
-                    color: isSuccess
-                        ? const Color(0xFF10B981)
-                        : isPending
-                            ? const Color(0xFFFB923C)
-                            : const Color(0xFFEF4444),
-                    fontSize: 10.sp,
+                    color: InvoiceThemeColors.primaryPurple,
+                    fontSize: 12.sp,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
             ],
           ),
-          SizedBox(height: 8.h),
-          Row(
-            children: [
-              Icon(
-                Icons.electric_meter,
-                color: const Color(0xFF6B7280),
-                size: 14.sp,
-              ),
-              SizedBox(width: 6.w),
-              Expanded(
-                child: Text(
-                  '${payment.amount.toStringAsFixed(2)} NGN',
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 15.sp,
-                    fontWeight: FontWeight.w700,
+          SizedBox(height: 12.h),
+          ..._recentPayments.take(3).map(
+                (payment) => Padding(
+                  padding: EdgeInsets.only(bottom: 10.h),
+                  child: Container(
+                    padding: EdgeInsets.all(12.w),
+                    decoration: BoxDecoration(
+                      color: InvoiceThemeColors.secondaryBackground,
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: _buildPaymentCard(payment),
                   ),
                 ),
               ),
-            ],
-          ),
-          if (payment.token != null && payment.token!.isNotEmpty)
-            Padding(
-              padding: EdgeInsets.only(top: 8.h),
-              child: Container(
-                padding: EdgeInsets.all(10.w),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8.r),
-                  border: Border.all(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.3),
-                    width: 1,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.vpn_key,
-                      color: const Color(0xFF10B981),
-                      size: 12.sp,
-                    ),
-                    SizedBox(width: 6.w),
-                    Expanded(
-                      child: Text(
-                        'Token: ${payment.token}',
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFF10B981),
-                          fontSize: 11.sp,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          SizedBox(height: 6.h),
-          Text(
-            _formatDate(payment.createdAt),
-            style: GoogleFonts.inter(
-              color: const Color(0xFF6B7280),
-              fontSize: 10.sp,
-            ),
-          ),
         ],
       ),
+    );
+  }
+
+  Widget _buildPaymentCard(BillPaymentEntity payment) {
+    // Compact `BillHistoryItem` row — same shared widget the internet
+    // recent-transactions strip uses, same tap-opens-actions-sheet UX.
+    const accent = InvoiceThemeColors.primaryPurple;
+    return BillHistoryItem(
+      compact: true,
+      leadingIcon: Container(
+        decoration: BoxDecoration(
+          color: accent.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(8.r),
+        ),
+        child: Center(
+          child: Icon(Icons.electric_bolt, color: accent, size: 16.sp),
+        ),
+      ),
+      title: payment.providerName,
+      subtitle: [
+        payment.meterNumber,
+        if (payment.meterType.name.isNotEmpty) payment.meterType.name,
+        _formatDate(payment.createdAt),
+      ].where((s) => s.isNotEmpty).join(' \u00B7 '),
+      amount: payment.amount,
+      currencySymbol: '\u20A6',
+      // `displayStatus` already collapses failed-but-refunded to
+      // "Refunded" so the compact strip on the landing reads the same
+      // as the receipt screen's hero — a plain "Failed" on a row where
+      // the money came back would be worse than mildly misleading.
+      status: payment.displayStatus,
+      refundSource: payment.refundSource,
+      onTap: () => ElectricityHistoryActionsSheet.show(context, payment),
     );
   }
 
@@ -1574,12 +1457,12 @@ class _SmartValidationBottomSheet extends StatelessWidget {
 
   Color _getProviderColor() {
     const colors = [
-      Color(0xFF3B82F6),
-      Color(0xFF10B981),
-      Color(0xFFFB923C),
+      InvoiceThemeColors.primaryPurple,
+      InvoiceThemeColors.successGreen,
+      InvoiceThemeColors.warningOrange,
       Color.fromARGB(255, 78, 3, 208),
-      Color(0xFFEF4444),
-      Color(0xFF06B6D4),
+      InvoiceThemeColors.errorRed,
+      Color.fromARGB(255, 124, 58, 237),
     ];
     final colorIndex = result.providerCode.hashCode.abs() % colors.length;
     return colors[colorIndex];
@@ -1712,7 +1595,10 @@ class _SmartValidationBottomSheet extends StatelessWidget {
                 padding: EdgeInsets.symmetric(vertical: 14.h),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
+                    colors: [
+            InvoiceThemeColors.primaryPurple,
+            Color.fromARGB(255, 62, 2, 166),
+          ],
                   ),
                   borderRadius: BorderRadius.circular(12.r),
                 ),

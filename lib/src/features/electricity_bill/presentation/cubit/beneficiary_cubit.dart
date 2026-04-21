@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../domain/entities/beneficiary_entity.dart';
 import '../../domain/entities/bill_payment_entity.dart';
 import '../../domain/repositories/electricity_bill_repository.dart';
 import 'beneficiary_state.dart';
@@ -149,6 +150,72 @@ class BeneficiaryCubit extends Cubit<BeneficiaryState> {
       (failure) => emit(BeneficiaryError(message: failure.message)),
       (_) => emit(BeneficiaryDeleted()),
     );
+  }
+
+  /// Patch a single beneficiary in the current `BeneficiariesLoaded` list
+  /// in place. Used after inline edits (e.g. rename sheet) so the UI
+  /// re-renders the affected row without bouncing through
+  /// `BeneficiaryLoading` — which would blank the whole screen to a
+  /// spinner for a one-word nickname change. No-op if the current state
+  /// isn't `BeneficiariesLoaded` or the id isn't in the list.
+  void applyBeneficiaryUpdate(BillBeneficiaryEntity updated) {
+    if (isClosed) return;
+    final current = state;
+    if (current is! BeneficiariesLoaded) return;
+    final idx =
+        current.beneficiaries.indexWhere((b) => b.id == updated.id);
+    if (idx < 0) return;
+    final next = List<BillBeneficiaryEntity>.of(current.beneficiaries);
+    next[idx] = updated;
+    emit(BeneficiariesLoaded(beneficiaries: next));
+  }
+
+  /// Remove a beneficiary from the current `BeneficiariesLoaded` list in
+  /// place — no refetch, no loading state. Caller is responsible for
+  /// persisting the delete (via [deleteBeneficiary] or the repo directly)
+  /// before invoking this. Keeps the screen from blanking out for a
+  /// trivial single-row removal.
+  void applyBeneficiaryDelete(String beneficiaryId) {
+    if (isClosed) return;
+    final current = state;
+    if (current is! BeneficiariesLoaded) return;
+    final next = current.beneficiaries
+        .where((b) => b.id != beneficiaryId)
+        .toList(growable: false);
+    if (next.length == current.beneficiaries.length) return;
+    emit(BeneficiariesLoaded(beneficiaries: next));
+  }
+
+  /// Promote a beneficiary to default in place: marks the target
+  /// `isDefault=true` and clears the flag on every other row. Mirrors
+  /// what the backend does server-side (there's only ever one default),
+  /// so the UI stays consistent without refetching.
+  void applySetDefault(BillBeneficiaryEntity updated) {
+    if (isClosed) return;
+    final current = state;
+    if (current is! BeneficiariesLoaded) return;
+    final next = current.beneficiaries.map((b) {
+      if (b.id == updated.id) return updated;
+      if (!b.isDefault) return b;
+      return BillBeneficiaryEntity(
+        id: b.id,
+        userId: b.userId,
+        providerId: b.providerId,
+        providerCode: b.providerCode,
+        providerName: b.providerName,
+        meterNumber: b.meterNumber,
+        customerName: b.customerName,
+        customerAddress: b.customerAddress,
+        phoneNumber: b.phoneNumber,
+        meterType: b.meterType,
+        nickname: b.nickname,
+        isDefault: false,
+        createdAt: b.createdAt,
+        updatedAt: b.updatedAt,
+        lastUsedAt: b.lastUsedAt,
+      );
+    }).toList(growable: false);
+    emit(BeneficiariesLoaded(beneficiaries: next));
   }
 
   void reset() {

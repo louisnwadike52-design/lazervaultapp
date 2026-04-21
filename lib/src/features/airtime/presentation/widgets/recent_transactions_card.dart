@@ -2,214 +2,214 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
-import '../cubit/airtime_cubit.dart';
-import '../cubit/airtime_state.dart';
+import '../../../../../core/types/app_routes.dart';
+import '../../../../../core/widgets/bill_history_item.dart';
 import '../../domain/entities/airtime_transaction.dart';
 import '../../domain/entities/network_provider.dart';
-import '../../../../../core/types/app_routes.dart';
+import '../cubit/airtime_cubit.dart';
+import '../cubit/airtime_state.dart';
+import 'airtime_history_actions_sheet.dart';
 
+/// Scope keys used to filter transactions on both the landing-page card
+/// and the history screen's pill filter.
+class AirtimeScope {
+  static const String all = 'all';
+  static const String buy = 'buy';
+  static const String intl = 'intl';
+  static const String sell = 'sell';
+
+  static bool match(AirtimeTransaction t, String scope) {
+    switch (scope) {
+      case all:
+        return true;
+      case intl:
+        return t.isInternational;
+      case sell:
+        return t.isAirtimeToCash;
+      case buy:
+      default:
+        return !t.isInternational && !t.isAirtimeToCash;
+    }
+  }
+}
+
+/// Landing-page "Recent Transactions" strip.
+///
+/// Renders the three most recent in-scope transactions using the SAME
+/// [BillHistoryItem] widget every utility uses — airtime, data bundles,
+/// electricity, internet. One source of truth for history rows, no
+/// visual drift between utilities. Landing strip shows a relative
+/// "2h ago" date; the full history list shows an absolute date.
 class RecentTransactionsCard extends StatelessWidget {
-  const RecentTransactionsCard({super.key});
+  final String scope;
+  final Color accent;
+
+  const RecentTransactionsCard({
+    super.key,
+    this.scope = AirtimeScope.buy,
+    this.accent = const Color(0xFF4E03D0),
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(20.r),        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 20,
-            offset: Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Recent Transactions',
-                style: TextStyle(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                  letterSpacing: 0.5,
-                ),
-              ),
-              GestureDetector(
-                onTap: () => Get.toNamed(AppRoutes.airtimeHistory),
-                child: Text(
-                  'View All',
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF3B82F6),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          
-          SizedBox(height: 16.h),
-          
-          BlocBuilder<AirtimeCubit, AirtimeState>(
-            buildWhen: (previous, current) {
-              return current is AirtimeTransactionHistoryLoaded ||
-                  current is AirtimeTransactionHistoryLoading ||
-                  current is AirtimeInitial ||
-                  (current is AirtimeError &&
-                      previous is AirtimeTransactionHistoryLoading);
-            },
-            builder: (context, state) {
-              if (state is AirtimeTransactionHistoryLoaded) {
-                if (state.transactions.isEmpty) {
-                  return _buildEmptyState();
-                }
-                return _buildTransactionsList(
-                    state.transactions.take(3).toList());
-              }
-              if (state is AirtimeError) {
-                return _buildErrorState(context, state.message);
-              }
-              return _buildLoadingState();
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTransactionsList(List<AirtimeTransaction> transactions) {
-    return Column(
-      children: transactions.map((transaction) {
-        return Padding(
-          padding: EdgeInsets.only(bottom: 12.h),
-          child: _buildTransactionItem(transaction),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildTransactionItem(AirtimeTransaction transaction) {
-    return GestureDetector(
-      onTap: () => Get.toNamed(
-        AppRoutes.airtimeDetails,
-        arguments: {'transaction': transaction},
-      ),
-      child: Container(
-        padding: EdgeInsets.all(16.w),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.03),
-          borderRadius: BorderRadius.circular(12.r),
-          boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
-        ),
-        child: Row(
+    return BlocBuilder<AirtimeCubit, AirtimeState>(
+      buildWhen: (previous, current) {
+        return current is AirtimeTransactionHistoryLoaded ||
+            current is AirtimeTransactionHistoryLoading ||
+            current is AirtimeInitial ||
+            (current is AirtimeError &&
+                previous is AirtimeTransactionHistoryLoading);
+      },
+      builder: (context, state) {
+        final items = state is AirtimeTransactionHistoryLoaded
+            ? state.transactions
+                .where((t) => AirtimeScope.match(t, scope))
+                .take(3)
+                .toList()
+            : const <AirtimeTransaction>[];
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Network provider icon
-            Container(
-              width: 40.w,
-              height: 40.w,
-              decoration: BoxDecoration(
-                color: transaction.networkProvider.color,
-                borderRadius: BorderRadius.circular(8.r),
-              ),
-              child: Center(
-                child: Text(
-                  transaction.networkProvider.displayName.substring(0, 1),
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-            
-            SizedBox(width: 12.w),
-            
-            // Transaction details
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            _header(context),
+            SizedBox(height: 12.h),
+            if (state is AirtimeTransactionHistoryLoading ||
+                state is AirtimeInitial)
+              _loading()
+            else if (state is AirtimeError)
+              _error(context)
+            else if (items.isEmpty)
+              _empty()
+            else
+              Column(
                 children: [
-                  Text(
-                    '${transaction.networkProvider.displayName} Airtime',
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                  
-                  SizedBox(height: 2.h),
-                  
-                  Text(
-                    transaction.displayRecipientNumber,
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: Colors.white.withValues(alpha: 0.6),
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                  
-                  SizedBox(height: 2.h),
-                  
-                  Text(
-                    DateFormat('MMM dd, yyyy • hh:mm a').format(transaction.createdAt),
-                    style: TextStyle(
-                      fontSize: 11.sp,
-                      color: Colors.white.withValues(alpha: 0.5),
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
+                  for (var i = 0; i < items.length; i++) ...[
+                    _row(context, items[i]),
+                    if (i != items.length - 1) SizedBox(height: 10.h),
+                  ],
                 ],
               ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _row(BuildContext context, AirtimeTransaction t) {
+    return BillHistoryItem(
+      leadingIcon: Container(
+        decoration: BoxDecoration(
+          color: t.networkProvider.color,
+          borderRadius: BorderRadius.circular(10.r),
+        ),
+        child: Center(
+          child: Text(
+            t.networkProvider.displayName.isNotEmpty
+                ? t.networkProvider.displayName.substring(0, 1)
+                : '?',
+            style: TextStyle(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
             ),
-            
-            // Amount and status
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  '${transaction.currencySymbol}${transaction.amount.toStringAsFixed(0)}',
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-                
-                SizedBox(height: 4.h),
-                
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-                  decoration: BoxDecoration(
-                    color: transaction.status.color.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  child: Text(
-                    transaction.status.displayName,
-                    style: TextStyle(
-                      fontSize: 10.sp,
-                      fontWeight: FontWeight.w600,
-                      color: transaction.status.color,
-                    ),
-                  ),
-                ),
-              ],
+          ),
+        ),
+      ),
+      title: t.displayTitle,
+      subtitle: t.displayRecipientNumber,
+      date: _relativeTime(t.createdAt),
+      amount: t.amount,
+      currencySymbol: t.currencySymbol,
+      status: t.status.name,
+      refundSource: _refundSourceFor(t),
+      onTap: () => AirtimeHistoryActionsSheet.show(context, t),
+    );
+  }
+
+  String? _refundSourceFor(AirtimeTransaction t) {
+    final meta = t.metadata;
+    if (meta == null) return null;
+    final v = meta['refund_source'] ?? meta['refundSource'];
+    if (v is String && v.isNotEmpty) return v;
+    return null;
+  }
+
+  Widget _header(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          'Recent Transactions',
+          style: GoogleFonts.inter(
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+        ),
+        GestureDetector(
+          onTap: () => Get.toNamed(
+            AppRoutes.airtimeHistory,
+            arguments: {'scope': scope},
+          ),
+          child: Text(
+            'View All',
+            style: GoogleFonts.inter(
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w600,
+              color: accent,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _loading() {
+    return Column(
+      children: List.generate(3, (i) {
+        return Padding(
+          padding: EdgeInsets.only(bottom: i == 2 ? 0 : 10.h),
+          child: Container(
+            height: 64.h,
+            decoration: BoxDecoration(
+              color: const Color(0xFF1F1F1F),
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(color: const Color(0xFF2D2D2D)),
+            ),
+          ),
+        );
+      }),
+    );
+  }
+
+  Widget _empty() {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 24.h),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.history,
+                size: 44.sp, color: Colors.white.withValues(alpha: 0.3)),
+            SizedBox(height: 10.h),
+            Text(
+              'No transactions yet',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                fontSize: 14.sp,
+                color: Colors.white.withValues(alpha: 0.6),
+              ),
+            ),
+            SizedBox(height: 6.h),
+            Text(
+              _emptySubtitle(),
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                fontSize: 12.sp,
+                color: Colors.white.withValues(alpha: 0.4),
+              ),
             ),
           ],
         ),
@@ -217,60 +217,19 @@ class RecentTransactionsCard extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyState() {
-    return Container(
-      padding: EdgeInsets.all(24.w),
+  Widget _error(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 14.h),
       child: Column(
         children: [
-          Icon(
-            Icons.history,
-            size: 48.sp,
-            color: Colors.white.withValues(alpha: 0.3),
-          ),
-          SizedBox(height: 12.h),
-          Text(
-            'No transactions yet',
-            style: TextStyle(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w500,
-              color: Colors.white.withValues(alpha: 0.6),
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'Your airtime purchases will appear here',
-            style: TextStyle(
-              fontSize: 12.sp,
-              color: Colors.white.withValues(alpha: 0.4),
-              fontWeight: FontWeight.w400,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildErrorState(BuildContext context, String message) {
-    return Container(
-      padding: EdgeInsets.all(24.w),
-      child: Column(
-        children: [
-          Icon(
-            Icons.error_outline,
-            size: 40.sp,
-            color: const Color(0xFFEF4444).withValues(alpha: 0.6),
-          ),
-          SizedBox(height: 12.h),
           Text(
             'Failed to load transactions',
-            style: TextStyle(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w500,
-              color: Colors.white.withValues(alpha: 0.6),
+            style: GoogleFonts.inter(
+              color: const Color(0xFF9CA3AF),
+              fontSize: 13.sp,
             ),
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: 6.h),
           GestureDetector(
             onTap: () {
               final userId =
@@ -279,9 +238,9 @@ class RecentTransactionsCard extends StatelessWidget {
             },
             child: Text(
               'Tap to retry',
-              style: TextStyle(
+              style: GoogleFonts.inter(
+                color: accent,
                 fontSize: 12.sp,
-                color: const Color(0xFF3B82F6),
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -291,29 +250,27 @@ class RecentTransactionsCard extends StatelessWidget {
     );
   }
 
-  Widget _buildLoadingState() {
-    return Column(
-      children: List.generate(3, (index) {
-        return Padding(
-          padding: EdgeInsets.only(bottom: 12.h),
-          child: Container(
-            height: 72.h,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.03),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Center(
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  Colors.white.withValues(alpha: 0.3),
-                ),
-              ),
-            ),
-          ),
-        );
-      }),
-    );
+  String _emptySubtitle() {
+    switch (scope) {
+      case AirtimeScope.intl:
+        return 'Your international airtime purchases will appear here';
+      case AirtimeScope.sell:
+        return 'Airtime-to-cash conversions will appear here';
+      case AirtimeScope.buy:
+      default:
+        return 'Your airtime purchases will appear here';
+    }
   }
+}
 
-} 
+/// "1h ago" / "2d ago" / `MMM dd` helper for the landing-strip date line.
+/// Matches the equivalent helper on the data-bundle landing so every
+/// utility's recent-items strip reads the same.
+String _relativeTime(DateTime dt) {
+  final diff = DateTime.now().difference(dt);
+  if (diff.isNegative || diff.inSeconds < 60) return 'just now';
+  if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+  if (diff.inHours < 24) return '${diff.inHours}h ago';
+  if (diff.inDays < 7) return '${diff.inDays}d ago';
+  return DateFormat('MMM dd').format(dt);
+}

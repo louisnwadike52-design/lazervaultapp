@@ -4,10 +4,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../../core/types/app_routes.dart';
+import '../../../widgets/bill_receipt_qr_block.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../domain/entities/water_payment_entity.dart';
 import '../../services/water_bill_pdf_service.dart';
+import '../widgets/save_water_beneficiary_sheet.dart';
 
 class WaterBillPaymentReceiptScreen extends StatefulWidget {
   const WaterBillPaymentReceiptScreen({super.key});
@@ -197,6 +199,33 @@ class _WaterBillPaymentReceiptScreenState
                         ],
                       ),
                     ),
+                    if (payment.isCompleted) ...[
+                      SizedBox(height: 16.h),
+                      _buildSaveContactCta(payment),
+                    ],
+                    SizedBox(height: 20.h),
+                    BillReceiptQrBlock(
+                      type: 'water',
+                      reference: payment.transactionReference?.isNotEmpty == true
+                          ? payment.transactionReference!
+                          : (payment.receiptNumber ?? payment.id),
+                      amount: payment.amount,
+                      currency: payment.currency,
+                      status: payment.status.name,
+                      timestamp: payment.createdAt,
+                      showDivider: false,
+                      extraPayload: {
+                        if (payment.customerNumber.isNotEmpty)
+                          'account': payment.customerNumber,
+                        if (payment.providerName.isNotEmpty)
+                          'provider': payment.providerName,
+                        if (payment.customerName.isNotEmpty)
+                          'customer': payment.customerName,
+                        if (payment.receiptNumber != null &&
+                            payment.receiptNumber!.isNotEmpty)
+                          'receipt_no': payment.receiptNumber!,
+                      },
+                    ),
                     SizedBox(height: 32.h),
                   ],
                 ),
@@ -278,6 +307,87 @@ class _WaterBillPaymentReceiptScreenState
 
   Widget _buildDivider() {
     return const Divider(color: Color(0xFF2D2D2D), height: 1);
+  }
+
+  /// Save-contact CTA shown only on completed payments. Opens the
+  /// shared save sheet so the user can add this water account to their
+  /// saved list for one-tap repeat payments. No-op on cancel (sheet
+  /// returns null); shows a snackbar on success so the user has
+  /// confirmation without navigating away from the receipt.
+  Widget _buildSaveContactCta(WaterPaymentEntity payment) {
+    return Container(
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF4E03D0).withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: const Color(0xFF4E03D0).withValues(alpha: 0.35),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.bookmark_add_outlined,
+              color: const Color(0xFF4E03D0), size: 22.sp),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Save this account',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  'One-tap future payments & auto-pay',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 12.sp,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(width: 8.w),
+          TextButton(
+            onPressed: () async {
+              final saved = await SaveWaterBeneficiarySheet.show(
+                context,
+                accountNumber: payment.customerNumber,
+                providerCode: payment.providerCode,
+                providerName: payment.providerName,
+                customerName: payment.customerName,
+              );
+              if (saved == true && mounted) {
+                Get.snackbar(
+                  'Saved',
+                  'Account added to your saved list',
+                  backgroundColor:
+                      const Color(0xFF10B981).withValues(alpha: 0.9),
+                  colorText: Colors.white,
+                  snackPosition: SnackPosition.TOP,
+                  duration: const Duration(seconds: 2),
+                  margin: EdgeInsets.all(16.w),
+                  borderRadius: 12,
+                );
+              }
+            },
+            child: Text(
+              'Save',
+              style: GoogleFonts.inter(
+                color: const Color(0xFF4E03D0),
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildActions(BuildContext context, WaterPaymentEntity payment) {

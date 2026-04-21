@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../../../core/types/app_routes.dart';
+import '../../../widgets/bill_receipt_qr_block.dart';
 import '../../domain/entities/education_pin_entity.dart';
 import '../../domain/entities/education_provider_entity.dart';
 import '../../domain/entities/education_purchase_entity.dart';
@@ -190,6 +191,25 @@ class _EducationPinResultScreenState extends State<EducationPinResultScreen>
                       // Message from server
                       if (_purchase.message.isNotEmpty)
                         _buildMessageCard(),
+
+                      SizedBox(height: 24.h),
+                      BillReceiptQrBlock(
+                        type: 'education',
+                        reference: _purchase.reference,
+                        amount: _purchase.amount,
+                        currency: 'NGN',
+                        status: _purchase.status,
+                        timestamp: DateTime.tryParse(_purchase.createdAt) ??
+                            DateTime.now(),
+                        showDivider: false,
+                        extraPayload: {
+                          if (_purchase.billType.isNotEmpty)
+                            'bill_type': _purchase.billType,
+                          if (_provider?.name.isNotEmpty == true)
+                            'provider': _provider!.name,
+                          'pin_count': _purchase.pins.length.toString(),
+                        },
+                      ),
                     ],
                   ),
                 ),

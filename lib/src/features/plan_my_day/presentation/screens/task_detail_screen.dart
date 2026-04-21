@@ -85,19 +85,19 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
               }
             },
             itemBuilder: (context) => [
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'edit',
                 child: ListTile(
-                  leading: Icon(Icons.edit, color: Color(0xFF3B82F6)),
-                  title: Text('Edit', style: TextStyle(color: Colors.white)),
+                  leading: const Icon(Icons.edit, color: Color(0xFF4E03D0)),
+                  title: const Text('Edit', style: TextStyle(color: Colors.white)),
                   contentPadding: EdgeInsets.symmetric(horizontal: 12.w),
                 ),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'delete',
                 child: ListTile(
-                  leading: Icon(Icons.delete, color: Color(0xFFEF4444)),
-                  title: Text('Delete', style: TextStyle(color: Colors.white)),
+                  leading: const Icon(Icons.delete, color: Color(0xFFEF4444)),
+                  title: const Text('Delete', style: TextStyle(color: Colors.white)),
                   contentPadding: EdgeInsets.symmetric(horizontal: 12.w),
                 ),
               ),

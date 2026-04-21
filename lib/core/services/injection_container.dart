@@ -412,16 +412,27 @@ import 'package:lazervault/src/features/electricity_bill/presentation/cubit/remi
 
 // Cable TV Imports
 import 'package:lazervault/src/features/cable_tv/data/datasources/cable_tv_remote_datasource.dart';
+import 'package:lazervault/src/features/cable_tv/data/datasources/cable_tv_beneficiary_remote_datasource.dart';
 import 'package:lazervault/src/features/cable_tv/data/repositories/cable_tv_repository_impl.dart';
 import 'package:lazervault/src/features/cable_tv/domain/repositories/cable_tv_repository.dart';
 import 'package:lazervault/src/features/cable_tv/presentation/cubit/cable_tv_cubit.dart';
+import 'package:lazervault/src/features/cable_tv/presentation/cubit/cable_tv_beneficiary_cubit.dart';
+import 'package:lazervault/src/features/cable_tv/presentation/cubit/cable_tv_auto_recharge_cubit.dart';
+import 'package:lazervault/src/features/cable_tv/presentation/cubit/cable_tv_reminder_cubit.dart';
+import 'package:lazervault/src/features/water_bill/data/datasources/water_beneficiary_remote_datasource.dart';
+import 'package:lazervault/src/features/water_bill/presentation/cubit/water_beneficiary_cubit.dart';
+import 'package:lazervault/src/features/water_bill/presentation/cubit/water_auto_recharge_cubit.dart';
+import 'package:lazervault/src/features/water_bill/presentation/cubit/water_reminder_cubit.dart';
 // End Cable TV Imports
 
 // Education Imports
 import 'package:lazervault/src/features/education/data/datasources/education_remote_datasource.dart';
+import 'package:lazervault/src/features/education/data/datasources/education_beneficiary_remote_datasource.dart';
 import 'package:lazervault/src/features/education/data/repositories/education_repository_impl.dart';
 import 'package:lazervault/src/features/education/domain/repositories/education_repository.dart';
 import 'package:lazervault/src/features/education/presentation/cubit/education_cubit.dart';
+import 'package:lazervault/src/features/education/presentation/cubit/education_beneficiary_cubit.dart';
+import 'package:lazervault/src/features/education/presentation/cubit/education_reminder_cubit.dart';
 // End Education Imports
 
 // Water Bill Imports
@@ -436,14 +447,24 @@ import 'package:lazervault/src/features/internet_bill/data/datasources/internet_
 import 'package:lazervault/src/features/internet_bill/data/repositories/internet_bill_repository_impl.dart';
 import 'package:lazervault/src/features/internet_bill/domain/repositories/internet_bill_repository.dart';
 import 'package:lazervault/src/features/internet_bill/presentation/cubit/internet_bill_cubit.dart';
+import 'package:lazervault/src/features/internet_bill/data/datasources/internet_beneficiary_remote_datasource.dart';
+import 'package:lazervault/src/features/internet_bill/presentation/cubit/internet_beneficiary_cubit.dart';
+import 'package:lazervault/src/features/internet_bill/presentation/cubit/internet_auto_recharge_cubit.dart';
+import 'package:lazervault/src/features/internet_bill/presentation/cubit/internet_reminder_cubit.dart';
 // End Internet Bill Imports
 
 // Data Bundles Imports
 import 'package:lazervault/src/features/data_bundles/data/datasources/data_bundles_remote_datasource.dart';
+import 'package:lazervault/src/features/data_bundles/data/datasources/data_beneficiary_remote_datasource.dart';
+import 'package:lazervault/src/features/data_bundles/presentation/cubit/data_beneficiary_cubit.dart';
+import 'package:lazervault/src/features/data_bundles/presentation/cubit/data_auto_recharge_cubit.dart';
+import 'package:lazervault/src/features/data_bundles/presentation/cubit/data_reminder_cubit.dart';
 import 'package:lazervault/src/features/data_bundles/data/repositories/data_bundles_repository_impl.dart';
 import 'package:lazervault/src/features/data_bundles/domain/repositories/data_bundles_repository.dart';
 import 'package:lazervault/src/features/data_bundles/presentation/cubit/auto_renew_cubit.dart';
 import 'package:lazervault/src/features/data_bundles/presentation/cubit/data_bundles_cubit.dart';
+import 'package:lazervault/src/features/data_bundles/presentation/cubit/intl_data_cubit.dart';
+import 'package:lazervault/src/features/data_bundles/data/datasources/intl_data_remote_datasource.dart';
 // End Data Bundles Imports
 
 // Subscription Tracker Imports
@@ -458,10 +479,14 @@ import 'package:lazervault/src/features/subscriptions/presentation/cubit/subscri
 
 // Airtime Imports
 import 'package:lazervault/src/features/airtime/data/datasources/airtime_local_datasource.dart';
+import 'package:lazervault/src/features/airtime/data/datasources/airtime_beneficiary_remote_datasource.dart';
 import 'package:lazervault/src/features/airtime/data/datasources/airtime_remote_datasource.dart';
 import 'package:lazervault/src/features/airtime/data/repositories/airtime_repository_impl.dart';
 import 'package:lazervault/src/features/airtime/domain/repositories/airtime_repository.dart';
 import 'package:lazervault/src/features/airtime/presentation/cubit/airtime_cubit.dart';
+import 'package:lazervault/src/features/airtime/presentation/cubit/airtime_reminder_cubit.dart';
+import 'package:lazervault/src/features/airtime/data/datasources/intl_airtime_remote_datasource.dart';
+import 'package:lazervault/src/features/airtime/presentation/cubit/intl_airtime_cubit.dart';
 import 'package:lazervault/src/features/airtime_to_cash/data/datasources/airtime_to_cash_remote_datasource.dart';
 import 'package:lazervault/src/features/airtime_to_cash/data/repositories/airtime_to_cash_repository_impl.dart';
 import 'package:lazervault/src/features/airtime_to_cash/domain/repositories/airtime_to_cash_repository.dart';
@@ -887,10 +912,10 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<ContactSyncServiceClient>(
     () => ContactSyncServiceClient(serviceLocator<ClientChannel>()),
   );
-  // Group Account Service - Uses Commerce Gateway (50071) which routes to group-accounts-service (50066)
+  // Group Account Service - Uses Financial Gateway (50071) which routes to group-accounts-service (50066)
   serviceLocator.registerLazySingleton<GroupAccountServiceClient>(
     () => GroupAccountServiceClient(
-      serviceLocator<ClientChannel>(instanceName: 'commerceChannel'),
+      serviceLocator<ClientChannel>(instanceName: 'financialChannel'),
     ),
   );
   serviceLocator.registerLazySingleton<AutoSaveServiceClient>(
@@ -1529,7 +1554,7 @@ Future<void> init() async {
     () {
       try {
         return GiftCardRemoteDataSourceGrpc(
-          grpcClient: serviceLocator<GrpcClient>(),
+          grpcClient: serviceLocator<GrpcClient>(instanceName: 'financialGrpcClient'),
         );
       } catch (e) {
         print('⚠️ GrpcClient not available for gift cards, using enhanced mock');
@@ -1770,7 +1795,7 @@ Future<void> init() async {
   // Repositories - Using gRPC implementation for backend integration
   serviceLocator.registerLazySingleton<PortfolioRepository>(
     () => PortfolioRepositoryGrpcImpl(
-      grpcClient: serviceLocator<GrpcClient>(),
+      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
       callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
     ),
   );
@@ -1834,7 +1859,7 @@ Future<void> init() async {
   // User search is decoupled from TagPay - uses AuthServiceClient via core-gateway
   serviceLocator.registerLazySingleton<TagPayRepository>(
     () => TagPayRepositoryGrpcImpl(
-      grpcClient: serviceLocator<GrpcClient>(),
+      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
       authServiceClient: serviceLocator<auth_proto.AuthServiceClient>(),
       callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
     ),
@@ -1846,11 +1871,26 @@ Future<void> init() async {
     mutationQueue: serviceLocator<MutationQueue>(),
   ));
 
+  // ================== Financial Gateway GrpcClient (50071) ==================
+  // Serves: Invoice, GroupAccount, SplitBill, QRPay, IDPay, Portfolio, LockFunds
+  // This distributes load across two gateways — commerce handles bill payments
+  // and TagPay (high-volume), financial handles social finance (invoices, splits, etc.)
+  final financialGrpcClient = GrpcClient(
+    channel: serviceLocator<ClientChannel>(instanceName: 'financialChannel'),
+    secureStorage: serviceLocator<FlutterSecureStorage>(),
+    callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+  );
+  await financialGrpcClient.initialize();
+  serviceLocator.registerLazySingleton<GrpcClient>(
+    () => financialGrpcClient,
+    instanceName: 'financialGrpcClient',
+  );
+
   // ================== Feature: Split Bills ==================
 
   serviceLocator.registerLazySingleton<SplitBillRepository>(
     () => SplitBillRepositoryGrpcImpl(
-      grpcClient: serviceLocator<GrpcClient>(),
+      grpcClient: serviceLocator<GrpcClient>(instanceName: 'financialGrpcClient'),
     ),
   );
 
@@ -1869,7 +1909,7 @@ Future<void> init() async {
   // Data Sources
   serviceLocator.registerLazySingleton<QRPaymentRemoteDataSource>(
     () => QRPaymentRemoteDataSourceImpl(
-      grpcClient: serviceLocator<GrpcClient>(),
+      grpcClient: serviceLocator<GrpcClient>(instanceName: 'financialGrpcClient'),
     ),
   );
 
@@ -1886,12 +1926,11 @@ Future<void> init() async {
   ));
 
   // ================== Feature: IDPay ==================
-  // Uses commerce-gateway channel (same as QR Pay)
 
   // Data Sources
   serviceLocator.registerLazySingleton<IDPayRemoteDataSource>(
     () => IDPayRemoteDataSourceImpl(
-      grpcClient: serviceLocator<GrpcClient>(),
+      grpcClient: serviceLocator<GrpcClient>(instanceName: 'financialGrpcClient'),
     ),
   );
 
@@ -1939,7 +1978,13 @@ Future<void> init() async {
 
   serviceLocator.registerLazySingleton<AirtimeRemoteDataSource>(
     () => AirtimeRemoteDataSourceImpl(
-      grpcClient: serviceLocator<GrpcClient>(),
+      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+    ),
+  );
+
+  serviceLocator.registerLazySingleton<AirtimeBeneficiaryRemoteDataSource>(
+    () => AirtimeBeneficiaryRemoteDataSourceImpl(
+      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
     ),
   );
 
@@ -1948,6 +1993,8 @@ Future<void> init() async {
     () => AirtimeRepositoryImpl(
       localDataSource: serviceLocator<AirtimeLocalDataSource>(),
       remoteDataSource: serviceLocator<AirtimeRemoteDataSource>(),
+      beneficiaryDataSource:
+          serviceLocator<AirtimeBeneficiaryRemoteDataSource>(),
     ),
   );
 
@@ -1959,12 +2006,28 @@ Future<void> init() async {
     accountManager: serviceLocator<AccountManager>(),
   ));
 
+  serviceLocator.registerFactory(() => AirtimeReminderCubit(
+    repository: serviceLocator<AirtimeRepository>(),
+  ));
+
+  // ================== Feature: International Airtime ==================
+
+  serviceLocator.registerLazySingleton<IntlAirtimeRemoteDatasource>(
+    () => IntlAirtimeRemoteDatasourceImpl(
+      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+    ),
+  );
+
+  serviceLocator.registerFactory(() => IntlAirtimeCubit(
+    datasource: serviceLocator<IntlAirtimeRemoteDatasource>(),
+  ));
+
   // ================== Feature: Airtime to Cash ==================
 
   // Data Sources
   serviceLocator.registerLazySingleton<AirtimeToCashRemoteDataSource>(
     () => AirtimeToCashRemoteDataSourceImpl(
-      grpcClient: serviceLocator<GrpcClient>(),
+      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
     ),
   );
 
@@ -1987,7 +2050,7 @@ Future<void> init() async {
   // Data Sources
   serviceLocator.registerLazySingleton<ElectricityBillRemoteDataSource>(
     () => ElectricityBillRemoteDataSourceImpl(
-      grpcClient: serviceLocator<GrpcClient>(),
+      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
     ),
   );
 
@@ -2021,7 +2084,7 @@ Future<void> init() async {
   // Data Sources
   serviceLocator.registerLazySingleton<CableTVRemoteDataSource>(
     () => CableTVRemoteDataSourceImpl(
-      grpcClient: serviceLocator<GrpcClient>(),
+      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
     ),
   );
 
@@ -2037,12 +2100,44 @@ Future<void> init() async {
     repository: serviceLocator<CableTVRepository>(),
   ));
 
+  // Cable TV Beneficiaries / Auto-Recharge / Reminders
+  serviceLocator.registerLazySingleton<CableTVBeneficiaryRemoteDataSource>(
+    () => CableTVBeneficiaryRemoteDataSourceImpl(
+      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+    ),
+  );
+  serviceLocator.registerFactory(() => CableTVBeneficiaryCubit(
+        datasource: serviceLocator<CableTVBeneficiaryRemoteDataSource>(),
+  ));
+  serviceLocator.registerFactory(() => CableTVAutoRechargeCubit(
+        datasource: serviceLocator<CableTVBeneficiaryRemoteDataSource>(),
+  ));
+  serviceLocator.registerFactory(() => CableTVReminderCubit(
+        datasource: serviceLocator<CableTVBeneficiaryRemoteDataSource>(),
+  ));
+
+  // Water Bill Beneficiaries / Auto-Recharge / Reminders
+  serviceLocator.registerLazySingleton<WaterBeneficiaryRemoteDataSource>(
+    () => WaterBeneficiaryRemoteDataSourceImpl(
+      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+    ),
+  );
+  serviceLocator.registerFactory(() => WaterBeneficiaryCubit(
+        datasource: serviceLocator<WaterBeneficiaryRemoteDataSource>(),
+  ));
+  serviceLocator.registerFactory(() => WaterAutoRechargeCubit(
+        datasource: serviceLocator<WaterBeneficiaryRemoteDataSource>(),
+  ));
+  serviceLocator.registerFactory(() => WaterReminderCubit(
+        datasource: serviceLocator<WaterBeneficiaryRemoteDataSource>(),
+  ));
+
   // ================== Feature: Education PINs ==================
 
   // Data Sources
   serviceLocator.registerLazySingleton<EducationRemoteDataSource>(
     () => EducationRemoteDataSourceImpl(
-      grpcClient: serviceLocator<GrpcClient>(),
+      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
     ),
   );
 
@@ -2058,12 +2153,28 @@ Future<void> init() async {
     repository: serviceLocator<EducationRepository>(),
   ));
 
+  // Education beneficiaries + reminders — separate gRPC surface sharing
+  // the commerce channel. Datasource is a lazy singleton so the two
+  // cubits below share one client instance.
+  serviceLocator.registerLazySingleton<EducationBeneficiaryRemoteDataSource>(
+    () => EducationBeneficiaryRemoteDataSourceImpl(
+      grpcClient:
+          serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+    ),
+  );
+  serviceLocator.registerFactory(() => EducationBeneficiaryCubit(
+        datasource: serviceLocator<EducationBeneficiaryRemoteDataSource>(),
+      ));
+  serviceLocator.registerFactory(() => EducationReminderCubit(
+        datasource: serviceLocator<EducationBeneficiaryRemoteDataSource>(),
+      ));
+
   // ================== Feature: Water Bill ==================
 
   // Data Sources
   serviceLocator.registerLazySingleton<WaterBillRemoteDataSource>(
     () => WaterBillRemoteDataSourceImpl(
-      grpcClient: serviceLocator<GrpcClient>(),
+      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
     ),
   );
 
@@ -2084,7 +2195,7 @@ Future<void> init() async {
   // Data Sources
   serviceLocator.registerLazySingleton<InternetBillRemoteDataSource>(
     () => InternetBillRemoteDataSourceImpl(
-      grpcClient: serviceLocator<GrpcClient>(),
+      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
     ),
   );
 
@@ -2100,12 +2211,32 @@ Future<void> init() async {
     repository: serviceLocator<InternetBillRepository>(),
   ));
 
+  // Internet-scoped beneficiaries + rollover (auto-recharge). Mirrors the
+  // data-bundle DI shape — single shared datasource feeds two focused
+  // cubits so each screen has a narrow state surface. Internet reminders
+  // aren't wired yet (no UI).
+  serviceLocator.registerLazySingleton<InternetBeneficiaryRemoteDataSource>(
+    () => InternetBeneficiaryRemoteDataSourceImpl(
+      grpcClient:
+          serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+    ),
+  );
+  serviceLocator.registerFactory(() => InternetBeneficiaryCubit(
+        datasource: serviceLocator<InternetBeneficiaryRemoteDataSource>(),
+      ));
+  serviceLocator.registerFactory(() => InternetAutoRechargeCubit(
+        datasource: serviceLocator<InternetBeneficiaryRemoteDataSource>(),
+      ));
+  serviceLocator.registerFactory(() => InternetReminderCubit(
+        datasource: serviceLocator<InternetBeneficiaryRemoteDataSource>(),
+      ));
+
   // ================== Feature: Data Bundles ==================
 
   // Data Sources
   serviceLocator.registerLazySingleton<DataBundlesRemoteDataSource>(
     () => DataBundlesRemoteDataSourceImpl(
-      grpcClient: serviceLocator<GrpcClient>(),
+      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
     ),
   );
 
@@ -2124,12 +2255,44 @@ Future<void> init() async {
     repository: serviceLocator<DataBundlesRepository>(),
   ));
 
+  // Data-scoped beneficiaries / rollover (auto-recharge) / reminders.
+  // Mirrors the airtime feature DI shape — single shared datasource feeds
+  // three focused cubits so each screen has a narrow state surface.
+  serviceLocator.registerLazySingleton<DataBeneficiaryRemoteDataSource>(
+    () => DataBeneficiaryRemoteDataSourceImpl(
+      grpcClient:
+          serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+    ),
+  );
+  serviceLocator.registerFactory(() => DataBeneficiaryCubit(
+        datasource: serviceLocator<DataBeneficiaryRemoteDataSource>(),
+      ));
+  serviceLocator.registerFactory(() => DataAutoRechargeCubit(
+        datasource: serviceLocator<DataBeneficiaryRemoteDataSource>(),
+      ));
+  serviceLocator.registerFactory(() => DataReminderCubit(
+        datasource: serviceLocator<DataBeneficiaryRemoteDataSource>(),
+      ));
+
+  // Intl data — Reloadly-backed consolidated flow. Uses the same
+  // commerce gRPC client as local data; backend routes at
+  // /api/v1/bills/intl-data/{operators,bundles,buy}.
+  serviceLocator.registerLazySingleton<IntlDataRemoteDataSource>(
+    () => IntlDataRemoteDataSourceImpl(
+      grpcClient:
+          serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
+    ),
+  );
+  serviceLocator.registerFactory(() => IntlDataCubit(
+        remote: serviceLocator<IntlDataRemoteDataSource>(),
+      ));
+
   // ================== Feature: Subscription Tracker ==================
 
   // Data Sources
   serviceLocator.registerLazySingleton<SubscriptionRemoteDataSource>(
     () => SubscriptionRemoteDataSourceImpl(
-      grpcClient: serviceLocator<GrpcClient>(),
+      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
     ),
   );
 
@@ -2293,10 +2456,10 @@ Future<void> init() async {
     () => PayInvoiceLocalDataSourceImpl(),
   );
 
-  // Repositories - Using gRPC implementation for backend integration
+  // Repositories - Using gRPC implementation for backend integration (Financial Gateway)
   serviceLocator.registerLazySingleton<PayInvoiceRepository>(
     () => PayInvoiceRepositoryGrpcImpl(
-      grpcClient: serviceLocator<GrpcClient>(),
+      grpcClient: serviceLocator<GrpcClient>(instanceName: 'financialGrpcClient'),
       currentUserId: '', // User ID is extracted from auth token in grpcClient.callOptions
       invoiceRepository: serviceLocator<InvoiceRepository>(),
     ),
@@ -2312,7 +2475,7 @@ Future<void> init() async {
   // Data Sources - Using Remote (gRPC) implementation
   serviceLocator.registerLazySingleton<AiScanRemoteDataSource>(
     () => AiScanRemoteDataSourceImpl(
-      grpcClient: serviceLocator<GrpcClient>(),
+      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
       httpClient: serviceLocator<http.Client>(),
       secureStorage: serviceLocator<SecureStorageService>(),
       chatGatewayBaseUrl: dotenv.env['CHAT_GATEWAY_BASE_URL'] ?? 'http://10.0.2.2:3011',
@@ -2323,7 +2486,7 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<AiScanRepository>(
     () => AiScanRepositoryImpl(
       remoteDataSource: serviceLocator<AiScanRemoteDataSource>(),
-      grpcClient: serviceLocator<GrpcClient>(),
+      grpcClient: serviceLocator<GrpcClient>(instanceName: 'commerceGrpcClient'),
       secureStorage: serviceLocator<SecureStorageService>(),
     ),
   );
@@ -2555,15 +2718,21 @@ Future<void> init() async {
 
   // ================== Feature: Statistics ==================
 
-  // GrpcClient (for statistics, giftcards, lock funds, etc.) - Uses Financial Gateway (50071)
-  // Now with automatic token rotation support via GrpcCallOptionsHelper
-  final grpcClient = GrpcClient(
-    channel: serviceLocator<ClientChannel>(instanceName: 'financialChannel'),
+  // Default GrpcClient — uses Commerce Gateway (50061) which serves:
+  // UtilityPayments, ElectricityBill, TagPay, Invoices, GiftCards, QRPay, IDPay,
+  // GroupAccounts, SplitBill, and all bill-payment features.
+  // Previously pointed to Financial Gateway (50071) which only served exchange/lock-funds
+  // and was never started by start_all_local_no_docker.sh, causing silent connection errors.
+  final commerceGrpcClient = GrpcClient(
+    channel: serviceLocator<ClientChannel>(instanceName: 'commerceChannel'),
     secureStorage: serviceLocator<FlutterSecureStorage>(),
     callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
   );
-  await grpcClient.initialize();  // Properly await initialization
-  serviceLocator.registerLazySingleton<GrpcClient>(() => grpcClient);
+  await commerceGrpcClient.initialize();
+  serviceLocator.registerLazySingleton<GrpcClient>(
+    () => commerceGrpcClient,
+    instanceName: 'commerceGrpcClient',
+  );
 
   // Repositories
   serviceLocator.registerLazySingleton<FinancialAnalyticsRepository>(
@@ -2677,7 +2846,7 @@ Future<void> init() async {
 
   // Repositories
   serviceLocator.registerLazySingleton<LockFundsRepository>(
-    () => LockFundsRepositoryImpl(grpcClient: serviceLocator<GrpcClient>()),
+    () => LockFundsRepositoryImpl(grpcClient: serviceLocator<GrpcClient>(instanceName: 'financialGrpcClient')),
   );
 
   // Blocs/Cubits

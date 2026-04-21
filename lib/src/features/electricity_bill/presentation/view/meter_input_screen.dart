@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -8,6 +9,7 @@ import '../../domain/entities/bill_payment_entity.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../cubit/electricity_bill_cubit.dart';
 import '../cubit/electricity_bill_state.dart';
+import '../../utils/meter_validation.dart';
 
 class MeterInputScreen extends StatefulWidget {
   const MeterInputScreen({super.key});
@@ -44,12 +46,11 @@ class _MeterInputScreenState extends State<MeterInputScreen> {
   void _validateMeter() {
     final provider = _provider;
     if (provider == null) return;
-    final meterNumber = _meterNumberController.text.trim();
-
-    if (meterNumber.isEmpty) {
+    final err = validateMeterNumber(_meterNumberController.text);
+    if (err != null) {
       Get.snackbar(
-        'Error',
-        'Please enter your meter number',
+        'Invalid Meter Number',
+        err,
         backgroundColor: Colors.red.withValues(alpha: 0.9),
         colorText: Colors.white,
       );
@@ -58,7 +59,7 @@ class _MeterInputScreenState extends State<MeterInputScreen> {
 
     context.read<ElectricityBillCubit>().validateMeter(
           providerCode: provider.providerCode,
-          meterNumber: meterNumber,
+          meterNumber: _meterNumberController.text.trim(),
           meterType: _selectedMeterType,
         );
   }
@@ -378,13 +379,19 @@ class _MeterInputScreenState extends State<MeterInputScreen> {
           child: TextField(
             controller: _meterNumberController,
             keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(kMeterNumberMaxLen),
+            ],
+            onChanged: (_) => setState(() {}),
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 18.sp,
               fontWeight: FontWeight.w600,
             ),
             decoration: InputDecoration(
-              hintText: 'Enter meter number',
+              hintText:
+                  '$kMeterNumberMinLen–$kMeterNumberMaxLen digit meter number',
               hintStyle: GoogleFonts.inter(
                 color: Colors.white.withValues(alpha: 0.4),
                 fontSize: 18.sp,
@@ -398,6 +405,18 @@ class _MeterInputScreenState extends State<MeterInputScreen> {
             ),
           ),
         ),
+        // Live inline error when the user is still short of the min len.
+        if (_meterNumberController.text.trim().isNotEmpty &&
+            validateMeterNumber(_meterNumberController.text) != null) ...[
+          SizedBox(height: 8.h),
+          Text(
+            validateMeterNumber(_meterNumberController.text)!,
+            style: GoogleFonts.inter(
+              color: const Color(0xFFEF4444),
+              fontSize: 12.sp,
+            ),
+          ),
+        ],
       ],
     );
   }

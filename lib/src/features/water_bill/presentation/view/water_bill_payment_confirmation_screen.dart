@@ -43,10 +43,25 @@ class _WaterBillPaymentConfirmationScreenState extends State<WaterBillPaymentCon
       return;
     }
 
-    if (amount < 1000) {
+    // Validate against the provider's VTpass-sourced bounds when they
+    // were populated by the backend. Absent bounds (zero) skip the
+    // check so old seed rows keep working.
+    if (provider.minAmount > 0 && amount < provider.minAmount) {
       Get.snackbar(
         'Minimum Amount',
-        'Minimum payment amount is ₦1,000',
+        'Minimum payment for ${provider.providerName} is '
+        '\u20A6${provider.minAmount.toStringAsFixed(0)}',
+        backgroundColor: Colors.orange.withValues(alpha: 0.9),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
+      return;
+    }
+    if (provider.maxAmount > 0 && amount > provider.maxAmount) {
+      Get.snackbar(
+        'Maximum Amount',
+        'Maximum payment for ${provider.providerName} is '
+        '\u20A6${provider.maxAmount.toStringAsFixed(0)}',
         backgroundColor: Colors.orange.withValues(alpha: 0.9),
         colorText: Colors.white,
         duration: const Duration(seconds: 3),
@@ -267,7 +282,11 @@ class _WaterBillPaymentConfirmationScreenState extends State<WaterBillPaymentCon
                           ),
                           SizedBox(height: 12.h),
                           Text(
-                            'Minimum amount: ₦1,000.00',
+                            provider.hasAmountLimits
+                                ? 'Allowed range: \u20A6${provider.minAmount.toStringAsFixed(0)} - \u20A6${provider.maxAmount.toStringAsFixed(0)}'
+                                : (provider.minAmount > 0
+                                    ? 'Minimum amount: \u20A6${provider.minAmount.toStringAsFixed(0)}'
+                                    : 'Enter the amount to pay'),
                             style: GoogleFonts.inter(
                               color: Colors.white.withValues(alpha: 0.4),
                               fontSize: 12.sp,

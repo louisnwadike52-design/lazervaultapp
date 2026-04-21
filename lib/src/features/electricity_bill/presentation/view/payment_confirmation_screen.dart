@@ -8,6 +8,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:uuid/uuid.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
+import '../../domain/entities/auto_recharge_entity.dart';
 import '../../domain/entities/beneficiary_entity.dart';
 import '../../domain/entities/provider_entity.dart';
 import '../../domain/entities/bill_payment_entity.dart';
@@ -20,6 +22,7 @@ import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
 import '../cubit/beneficiary_cubit.dart';
 import '../cubit/beneficiary_state.dart';
+import '../widgets/electricity_rollover_preference_sheet.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 
 class PaymentConfirmationScreen extends StatefulWidget {
@@ -44,13 +47,32 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
   bool _isProcessing = false;
   int? _selectedQuickAmount;
   bool _saveBeneficiary = false;
+  /// Whether the logged-in user's profile carries a phone number. Drives
+  /// the "Set it in Settings" CTA under the token-SMS phone field — same
+  /// pattern as the airtime recipient screen.
+  bool _hasProfilePhone = false;
   CountryLocale _selectedCountry = CountryLocales.all.first; // Nigeria default
 
   // Beneficiary-aware fields
   BillBeneficiaryEntity? _beneficiary;
   bool _isFromBeneficiary = false;
-  bool _isNicknameEditable = false;
+  // True when this screen was opened by the "Repeat Payment" action on
+  // the electricity history bottom sheet. Back-nav behaviour differs:
+  // repeat flows pop back to the history list, normal flows fall through
+  // to the meter-input step that produced the validation result.
+  bool _isRepeatPayment = false;
   String? _originalNickname;
+
+  // Probe state — fetched once on mount so we can hide toggles the user
+  // has already configured (saved beneficiary / active auto-recharge).
+  // Mirrors the internet bill confirmation UX.
+  bool _probeLoading = true;
+  BillBeneficiaryEntity? _existingBeneficiary;
+  AutoRechargeEntity? _existingAutoRecharge;
+
+  // Auto-recharge toggle state for this confirm flow.
+  bool _autoRechargeEnabled = false;
+  ElectricityRolloverPreference? _autoRechargePref;
 
   // Parsed from Get.arguments in initState
   ElectricityProviderEntity? _provider;
@@ -94,6 +116,26 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
         _originalNickname = _beneficiary!.nickname;
         _nicknameController.text = _beneficiary!.nickname;
       }
+
+      // Repeat-payment path: remember the flag so the back-nav flips
+      // to the history screen (instead of the meter-input step) when
+      // the user taps the AppBar back arrow. Also pre-fill the amount
+      // + match any quick-amount chip so the user can one-tap re-send.
+      _isRepeatPayment = args['isRepeat'] == true;
+      final repeatAmount = args['amount'];
+      if (repeatAmount is num && repeatAmount > 0) {
+        _amountController.text = repeatAmount.toStringAsFixed(0);
+      }
+      // Repeat flows have phone + meter already validated — jump to
+      // the Payment Details step so the user doesn't have to click
+      // through Contact Details just to re-confirm a known-good row.
+      if (_isRepeatPayment) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          _pageController.jumpToPage(1);
+          setState(() => _currentStep = 1);
+        });
+      }
     } else {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Get.back();
@@ -118,22 +160,149 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
     // Pre-load beneficiaries for duplicate check when saving
     context.read<BeneficiaryCubit>().getBeneficiaries();
 
-    // Pre-fill phone number: from beneficiary args if present, else from user profile
+    // Pre-fill phone number: from beneficiary args if present, else from
+    // user profile. Track `_hasProfilePhone` separately so the CTA under
+    // the field correctly reflects the profile state even when the
+    // current value came from a saved beneficiary.
     final argsPhone = args is Map<String, dynamic> ? args['phoneNumber'] as String? : null;
     String rawPhone = '';
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is AuthenticationSuccess) {
+      final profilePhone = authState.profile.user.phoneNumber ?? '';
+      _hasProfilePhone = profilePhone.isNotEmpty;
+      if (argsPhone == null || argsPhone.isEmpty) {
+        rawPhone = profilePhone;
+      }
+    }
     if (argsPhone != null && argsPhone.isNotEmpty) {
       rawPhone = argsPhone;
-    } else {
-      final authState = context.read<AuthenticationCubit>().state;
-      if (authState is AuthenticationSuccess) {
-        rawPhone = authState.profile.user.phoneNumber ?? '';
-      }
     }
     if (rawPhone.isNotEmpty) {
       // Detect country code from phone and strip it for the local number field
       final stripped = _stripDialCode(rawPhone);
       _phoneController.text = stripped;
     }
+
+    // Probe existing beneficiary / auto-recharge after first frame so the
+    // InheritedWidgets are wired. Non-blocking — toggles render as
+    // placeholders while the probe is in flight.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _probeExistingState());
+  }
+
+  /// Look up whether this meter already has a saved beneficiary and an
+  /// active auto-recharge. Uses the repository directly rather than the
+  /// cubits so state for other screens isn't perturbed. Failures are
+  /// swallowed — worst case we show the toggles and trust server-side
+  /// duplicate protection.
+  Future<void> _probeExistingState() async {
+    if (!_argsValid || _meterNumber == null || _provider == null) {
+      if (mounted) setState(() => _probeLoading = false);
+      return;
+    }
+
+    final meter = _meterNumber!;
+    final providerCode = _provider!.providerCode;
+
+    try {
+      final repo = GetIt.I<ElectricityBillRepository>();
+
+      // If we navigated here from an existing beneficiary, reuse it
+      // instead of re-fetching — also lets us skip showing the
+      // "save as beneficiary" toggle entirely.
+      BillBeneficiaryEntity? matchBen = _beneficiary;
+
+      if (matchBen == null) {
+        final bensRes = await repo.getBeneficiaries();
+        matchBen = bensRes.fold<BillBeneficiaryEntity?>(
+          (_) => null,
+          (list) {
+            for (final b in list) {
+              if (b.meterNumber == meter &&
+                  (b.providerCode == providerCode ||
+                      b.providerId == _provider!.id)) {
+                return b;
+              }
+            }
+            return null;
+          },
+        );
+      }
+
+      AutoRechargeEntity? matchAuto;
+      if (matchBen != null) {
+        final autoRes = await repo.getAutoRecharges();
+        matchAuto = autoRes.fold<AutoRechargeEntity?>(
+          (_) => null,
+          (list) {
+            for (final ar in list) {
+              if (ar.beneficiaryId == matchBen!.id && ar.isActive) {
+                return ar;
+              }
+            }
+            return null;
+          },
+        );
+      }
+
+      if (!mounted) return;
+      setState(() {
+        _existingBeneficiary = matchBen;
+        _existingAutoRecharge = matchAuto;
+        _probeLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _probeLoading = false);
+    }
+  }
+
+  Future<void> _onToggleAutoRecharge(bool newValue) async {
+    if (!newValue) {
+      setState(() {
+        _autoRechargeEnabled = false;
+        _autoRechargePref = null;
+      });
+      return;
+    }
+    final pref = await ElectricityRolloverPreferenceSheet.show(context);
+    if (pref == null) return;
+    setState(() {
+      _autoRechargeEnabled = true;
+      _autoRechargePref = pref;
+    });
+  }
+
+  /// Save-as-beneficiary toggle handler. When turning ON, prompt for a
+  /// nickname via a dialog; if the user cancels we leave the toggle off
+  /// so a blank nickname never gets submitted. When turning OFF, clear
+  /// the nickname controller so re-toggling prompts fresh.
+  Future<void> _onToggleSaveBeneficiary(bool newValue) async {
+    if (!newValue) {
+      setState(() {
+        _saveBeneficiary = false;
+        _nicknameController.text = '';
+      });
+      return;
+    }
+    final nickname = await _promptForNickname();
+    if (nickname == null || nickname.trim().isEmpty) return;
+    setState(() {
+      _saveBeneficiary = true;
+      _nicknameController.text = nickname.trim();
+    });
+  }
+
+  /// Dialog collecting a nickname for the meter. Delegates the body to
+  /// [_NicknameDialog] — a private `StatefulWidget` so the controller's
+  /// lifecycle is tied to the dialog's own element tree. Disposing the
+  /// controller inline here used to race the dialog's close animation
+  /// and trip `dependents.isEmpty is not true` on Cancel.
+  Future<String?> _promptForNickname() {
+    return showDialog<String>(
+      context: context,
+      builder: (_) =>
+          _NicknameDialog(initial: _nicknameController.text.trim()),
+    );
   }
 
   void _preSelectAccount(AccountCardsSummaryLoaded state) {
@@ -207,9 +376,21 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
         curve: Curves.easeInOut,
       );
       setState(() => _currentStep--);
-    } else {
-      Get.back();
+      return;
     }
+    // Step-0 back from a repeat-payment entry: the caller (history
+    // actions sheet) pushed this screen directly, so there's no
+    // meter-input screen underneath. Pop straight back to history for
+    // a clean UX — a plain Get.back() would also work but we make the
+    // intent explicit and skip any transient screens in between.
+    if (_isRepeatPayment) {
+      Get.offAllNamed(
+        AppRoutes.electricityBillHistory,
+      );
+      return;
+    }
+    // Normal purchase flow: just pop one level (back to meter input).
+    Get.back();
   }
 
   bool _validateStep1() {
@@ -461,7 +642,10 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
       }
     }
 
-    // Navigate to processing screen — remove confirmation from stack
+    // Navigate to processing screen — remove confirmation from stack.
+    // Post-pay side-effects (auto-recharge creation, beneficiary id
+    // lookup) are threaded through so the receipt screen can fire them
+    // once the payment itself is confirmed as completed.
     Get.offNamed(
       AppRoutes.electricityBillProcessing,
       arguments: {
@@ -476,6 +660,10 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
         'phoneNumber': phoneNumber,
         'transactionId': transactionId,
         'verificationToken': verificationToken,
+        // Keep-alive flags — receipt screen consumes these on success.
+        'autoRechargeEnabled': _autoRechargeEnabled,
+        'autoRechargePref': _autoRechargePref,
+        'existingBeneficiaryId': _existingBeneficiary?.id ?? _beneficiary?.id,
       },
     );
   }
@@ -484,7 +672,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
   Widget build(BuildContext context) {
     if (!_argsValid) {
       return const Scaffold(
-        backgroundColor: Color(0xFF0A0A0A),
+        backgroundColor: InvoiceThemeColors.primaryBackground,
         body: SizedBox.shrink(),
       );
     }
@@ -500,7 +688,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
         }
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFF0A0A0A),
+        backgroundColor: InvoiceThemeColors.primaryBackground,
         body: SafeArea(
           child: Column(
             children: [
@@ -600,7 +788,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
           valueColor: AlwaysStoppedAnimation<Color>(
             _currentStep == _totalSteps - 1
                 ? const Color(0xFF10B981)
-                : const Color(0xFF3B82F6),
+                : const Color(0xFF4E03D0),
           ),
         ),
       ),
@@ -621,7 +809,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
           margin: EdgeInsets.symmetric(horizontal: 4.w),
           decoration: BoxDecoration(
             color: isActive
-                ? const Color(0xFF3B82F6)
+                ? const Color(0xFF4E03D0)
                 : isCompleted
                     ? const Color(0xFF10B981)
                     : const Color(0xFF2D2D2D),
@@ -692,13 +880,13 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
           Container(
             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
             decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+              color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(6.r),
             ),
             child: Text(
               meterType == MeterType.prepaid ? 'Prepaid' : 'Postpaid',
               style: GoogleFonts.inter(
-                color: const Color(0xFF3B82F6),
+                color: const Color(0xFF4E03D0),
                 fontSize: 11.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -719,8 +907,6 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
         children: [
           SizedBox(height: 8.h),
           _buildPhoneInput(),
-          SizedBox(height: 20.h),
-          _buildSaveBeneficiaryToggle(),
           SizedBox(height: 32.h),
         ],
       ),
@@ -737,13 +923,227 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
         children: [
           SizedBox(height: 8.h),
           _buildQuickAmounts(provider),
-          SizedBox(height: 20.h),
+          SizedBox(height: 12.h),
           _buildAmountInput(provider),
-          SizedBox(height: 20.h),
+          SizedBox(height: 12.h),
           _buildFeeBreakdown(),
-          SizedBox(height: 20.h),
+          SizedBox(height: 12.h),
           _buildAccountCard(),
-          SizedBox(height: 32.h),
+          SizedBox(height: 12.h),
+          _buildKeepAliveTiles(),
+          SizedBox(height: 24.h),
+        ],
+      ),
+    );
+  }
+
+  // ===== Keep-alive tiles (save beneficiary + auto-recharge) =====
+
+  /// Renders a pair of tiles:
+  ///  - Save-as-beneficiary: toggle when no existing match, info tile
+  ///    ("Already saved") otherwise.
+  ///  - Auto-recharge: toggle (opens the rollover preference sheet) when
+  ///    no active schedule exists, info tile ("Auto-recharge active")
+  ///    otherwise.
+  ///
+  /// Step-1 already has the legacy "save beneficiary + nickname" UI; we
+  /// keep that for users coming directly from manual meter entry, but
+  /// hide it when an existing beneficiary is detected so they don't save
+  /// twice. The step-2 tiles are the always-visible summary.
+  Widget _buildKeepAliveTiles() {
+    if (_probeLoading) {
+      return Container(
+        padding: EdgeInsets.all(14.w),
+        decoration: BoxDecoration(
+          color: InvoiceThemeColors.secondaryBackground.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: InvoiceThemeColors.borderColor, width: 1),
+        ),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 18.sp,
+              height: 18.sp,
+              child: const CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  InvoiceThemeColors.primaryPurple,
+                ),
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Text(
+              'Checking saved beneficiaries...',
+              style: GoogleFonts.inter(
+                color: InvoiceThemeColors.textGray400,
+                fontSize: 13.sp,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final saveRow = (_existingBeneficiary == null && !_isFromBeneficiary)
+        ? _buildToggleRow(
+            icon: Icons.bookmark_outline,
+            title: 'Save as beneficiary',
+            subtitle: _saveBeneficiary &&
+                    _nicknameController.text.trim().isNotEmpty
+                ? 'Nickname: ${_nicknameController.text.trim()}'
+                : 'Quick-buy this meter next time',
+            value: _saveBeneficiary,
+            onChanged: _onToggleSaveBeneficiary,
+          )
+        : (_existingBeneficiary != null
+            ? _buildInfoRow(
+                icon: Icons.bookmark,
+                title: 'Meter already saved',
+                subtitle:
+                    'Saved as "${_existingBeneficiary!.displayName}"',
+              )
+            : null);
+
+    final autoRow = (_existingAutoRecharge == null)
+        ? _buildToggleRow(
+            icon: Icons.autorenew,
+            title: 'Enable auto-recharge',
+            subtitle: _autoRechargeEnabled && _autoRechargePref != null
+                ? _formatAutoRechargeSummary(_autoRechargePref!)
+                : 'Keep this meter topped up on a schedule',
+            value: _autoRechargeEnabled,
+            onChanged: _onToggleAutoRecharge,
+          )
+        : _buildInfoRow(
+            icon: Icons.autorenew,
+            title: 'Auto-recharge active',
+            subtitle:
+                '${_existingAutoRecharge!.frequency.displayName} \u00B7 \u20A6${_existingAutoRecharge!.amount.toStringAsFixed(0)}',
+          );
+
+    final rows = <Widget>[
+      if (saveRow != null) saveRow,
+      if (saveRow != null) Divider(height: 1, color: InvoiceThemeColors.borderColor),
+      autoRow,
+    ];
+
+    return Container(
+      decoration: BoxDecoration(
+        color: InvoiceThemeColors.secondaryBackground.withValues(alpha: 0.7),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: InvoiceThemeColors.borderColor, width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: rows,
+      ),
+    );
+  }
+
+  String _formatAutoRechargeSummary(ElectricityRolloverPreference pref) {
+    final freq = pref.frequency[0].toUpperCase() + pref.frequency.substring(1);
+    final time =
+        '${pref.executionHour.toString().padLeft(2, '0')}:${pref.executionMinute.toString().padLeft(2, '0')}';
+    switch (pref.frequency) {
+      case 'weekly':
+        const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        final idx = (pref.dayOfWeek - 1).clamp(0, 6);
+        return '$freq \u00B7 ${days[idx]} at $time';
+      case 'monthly':
+        return '$freq \u00B7 Day ${pref.dayOfMonth} at $time';
+      default:
+        return '$freq \u00B7 $time';
+    }
+  }
+
+  Widget _buildToggleRow({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+      child: Row(
+        children: [
+          Icon(icon, color: InvoiceThemeColors.primaryPurple, size: 20.sp),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: GoogleFonts.inter(
+                    color: InvoiceThemeColors.textWhite,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  subtitle,
+                  style: GoogleFonts.inter(
+                    color: InvoiceThemeColors.textGray400,
+                    fontSize: 11.sp,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          Transform.scale(
+            scale: 0.85,
+            child: Switch(
+              value: value,
+              onChanged: onChanged,
+              activeThumbColor: InvoiceThemeColors.primaryPurple,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+  }) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+      child: Row(
+        children: [
+          Icon(icon, color: InvoiceThemeColors.successGreen, size: 20.sp),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: GoogleFonts.inter(
+                    color: InvoiceThemeColors.successGreen,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  subtitle,
+                  style: GoogleFonts.inter(
+                    color: InvoiceThemeColors.textGray400,
+                    fontSize: 11.sp,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -764,7 +1164,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
             child: const Center(
               child: CircularProgressIndicator(
                 valueColor:
-                    AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                    AlwaysStoppedAnimation<Color>(Color(0xFF4E03D0)),
                 strokeWidth: 2,
               ),
             ),
@@ -796,9 +1196,9 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
                   child: Container(
                     padding: EdgeInsets.all(16.w),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                      color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
                       border: Border.all(
-                        color: const Color(0xFF3B82F6),
+                        color: const Color(0xFF4E03D0),
                         width: 1.5,
                       ),
                       borderRadius: BorderRadius.circular(12.r),
@@ -809,13 +1209,13 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
                           width: 40.w,
                           height: 40.w,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF3B82F6)
+                            color: const Color(0xFF4E03D0)
                                 .withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(20.r),
                           ),
                           child: Icon(
                             Icons.account_balance_wallet,
-                            color: const Color(0xFF3B82F6),
+                            color: const Color(0xFF4E03D0),
                             size: 20.sp,
                           ),
                         ),
@@ -854,7 +1254,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
                           child: Text(
                             'Change',
                             style: GoogleFonts.inter(
-                              color: const Color(0xFF3B82F6),
+                              color: const Color(0xFF4E03D0),
                               fontSize: 12.sp,
                               fontWeight: FontWeight.w600,
                             ),
@@ -926,11 +1326,11 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
                   padding: EdgeInsets.all(14.w),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? const Color(0xFF3B82F6).withValues(alpha: 0.1)
+                        ? const Color(0xFF4E03D0).withValues(alpha: 0.1)
                         : const Color(0xFF2D2D2D),
                     border: Border.all(
                       color: isSelected
-                          ? const Color(0xFF3B82F6)
+                          ? const Color(0xFF4E03D0)
                           : const Color(0xFF374151),
                       width: isSelected ? 2 : 1,
                     ),
@@ -942,13 +1342,13 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
                         width: 36.w,
                         height: 36.w,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF3B82F6)
+                          color: const Color(0xFF4E03D0)
                               .withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(18.r),
                         ),
                         child: Icon(
                           Icons.account_balance_wallet,
-                          color: const Color(0xFF3B82F6),
+                          color: const Color(0xFF4E03D0),
                           size: 18.sp,
                         ),
                       ),
@@ -978,7 +1378,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
                       if (isSelected)
                         Icon(
                           Icons.check_circle,
-                          color: const Color(0xFF3B82F6),
+                          color: const Color(0xFF4E03D0),
                           size: 22.sp,
                         ),
                     ],
@@ -1010,7 +1410,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
               child: OutlinedButton(
                 onPressed: _goBack,
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Color(0xFF3B82F6)),
+                  side: const BorderSide(color: Color(0xFF4E03D0)),
                   padding: EdgeInsets.symmetric(vertical: 14.h),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),
@@ -1019,7 +1419,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
                 child: Text(
                   'Back',
                   style: GoogleFonts.inter(
-                    color: const Color(0xFF3B82F6),
+                    color: const Color(0xFF4E03D0),
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
                   ),
@@ -1037,13 +1437,9 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
                       ? _processPayment
                       : _goNext),
               style: ElevatedButton.styleFrom(
-                backgroundColor: _currentStep == _totalSteps - 1
-                    ? const Color(0xFF10B981)
-                    : const Color(0xFF3B82F6),
-                disabledBackgroundColor: (_currentStep == _totalSteps - 1
-                        ? const Color(0xFF10B981)
-                        : const Color(0xFF3B82F6))
-                    .withValues(alpha: 0.5),
+                backgroundColor: const Color(0xFF4E03D0),
+                disabledBackgroundColor:
+                    const Color(0xFF4E03D0).withValues(alpha: 0.5),
                 padding: EdgeInsets.symmetric(vertical: 14.h),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),
@@ -1131,13 +1527,13 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
                   color: !isInRange
                       ? const Color(0xFF1F1F1F).withValues(alpha: 0.5)
                       : isSelected
-                          ? const Color(0xFF3B82F6).withValues(alpha: 0.15)
+                          ? const Color(0xFF4E03D0).withValues(alpha: 0.15)
                           : const Color(0xFF1F1F1F),
                   border: Border.all(
                     color: !isInRange
                         ? const Color(0xFF2D2D2D).withValues(alpha: 0.5)
                         : isSelected
-                            ? const Color(0xFF3B82F6)
+                            ? const Color(0xFF4E03D0)
                             : const Color(0xFF2D2D2D),
                     width: isSelected ? 1.5 : 1,
                   ),
@@ -1149,7 +1545,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
                     color: !isInRange
                         ? const Color(0xFF6B7280)
                         : isSelected
-                            ? const Color(0xFF3B82F6)
+                            ? const Color(0xFF4E03D0)
                             : Colors.white,
                     fontSize: 14.sp,
                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
@@ -1225,7 +1621,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
               prefix: Text(
                 '\u20A6 ',
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF3B82F6),
+                  color: const Color(0xFF4E03D0),
                   fontSize: 24.sp,
                   fontWeight: FontWeight.w700,
                 ),
@@ -1330,12 +1726,17 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
     return '${_selectedCountry.dialCode}$stripped';
   }
 
-  /// Validates the local phone number (without country code).
-  /// Must be 6-14 digits.
+  /// Validates the local phone number. Accepts both the 11-digit
+  /// leading-zero form (`0XXXXXXXXXX`) and the 10-digit bare form
+  /// (`XXXXXXXXXX`) for Nigeria; for other countries, 7–14 digits.
   bool _isValidPhone(String phone) {
     final local = _normalizePhone(phone);
     final stripped = local.startsWith('0') ? local.substring(1) : local;
-    return RegExp(r'^\d{6,14}$').hasMatch(stripped);
+    // NG: exactly 10 digits after stripping leading 0.
+    if (_selectedCountry.dialCode == '+234') {
+      return RegExp(r'^\d{10}$').hasMatch(stripped);
+    }
+    return RegExp(r'^\d{7,14}$').hasMatch(stripped);
   }
 
   void _showCountryCodePicker() {
@@ -1434,11 +1835,11 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
                                 padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
                                 decoration: BoxDecoration(
                                   color: isSelected
-                                      ? const Color(0xFF3B82F6).withValues(alpha: 0.1)
+                                      ? const Color(0xFF4E03D0).withValues(alpha: 0.1)
                                       : const Color(0xFF0A0A0A),
                                   borderRadius: BorderRadius.circular(12.r),
                                   border: isSelected
-                                      ? Border.all(color: const Color(0xFF3B82F6), width: 1.5)
+                                      ? Border.all(color: const Color(0xFF4E03D0), width: 1.5)
                                       : null,
                                 ),
                                 child: Row(
@@ -1465,7 +1866,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
                                     ),
                                     if (isSelected) ...[
                                       SizedBox(width: 8.w),
-                                      Icon(Icons.check_circle, color: const Color(0xFF3B82F6), size: 20.sp),
+                                      Icon(Icons.check_circle, color: const Color(0xFF4E03D0), size: 20.sp),
                                     ],
                                   ],
                                 ),
@@ -1564,6 +1965,11 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
                   keyboardType: TextInputType.phone,
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp(r'[\d]')),
+                    // Cap the local-part at 11 digits — matches
+                    // `0XXXXXXXXXX` (NG w/leading 0). The country-code
+                    // prefix lives in a separate widget, so 11 is
+                    // strictly the local number here.
+                    LengthLimitingTextInputFormatter(11),
                   ],
                   style: GoogleFonts.inter(
                     color: Colors.white,
@@ -1584,136 +1990,177 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
             ],
           ),
         ),
-      ],
-    );
-  }
-
-  Widget _buildSaveBeneficiaryToggle() {
-    if (_isFromBeneficiary) {
-      return _buildBeneficiaryNicknameField();
-    }
-
-    return Column(
-      children: [
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1F1F1F),
-            borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(color: const Color(0xFF2D2D2D)),
-          ),
-          child: Row(
-            children: [
-              Icon(
-                Icons.bookmark_border,
-                color: _saveBeneficiary
-                    ? const Color(0xFF3B82F6)
-                    : const Color(0xFF6B7280),
-                size: 22.sp,
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: Text(
-                  'Save as Beneficiary',
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              Switch.adaptive(
-                value: _saveBeneficiary,
-                onChanged: (v) => setState(() => _saveBeneficiary = v),
-                activeTrackColor: const Color(0xFF3B82F6),
-              ),
-            ],
-          ),
-        ),
-        if (_saveBeneficiary) ...[
+        if (!_hasProfilePhone) ...[
           SizedBox(height: 10.h),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(color: const Color(0xFF2D2D2D)),
-            ),
-            child: TextField(
-              controller: _nicknameController,
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w500,
-              ),
-              decoration: InputDecoration(
-                hintText: 'Nickname (required)',
-                hintStyle: GoogleFonts.inter(
-                  color: const Color(0xFF4B5563),
-                  fontSize: 14.sp,
-                ),
-                border: InputBorder.none,
-                icon: Icon(
-                  Icons.label_outline,
-                  color: const Color(0xFF6B7280),
-                  size: 20.sp,
-                ),
-              ),
-            ),
-          ),
+          _buildProfilePhoneCta(),
         ],
       ],
     );
   }
 
-  Widget _buildBeneficiaryNicknameField() {
+  /// Warning pill shown under the phone field when the logged-in user
+  /// has no phone on their profile. Matches the airtime recipient
+  /// screen's CTA so next time the field auto-prefills.
+  Widget _buildProfilePhoneCta() {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
       decoration: BoxDecoration(
-        color: _isNicknameEditable
-            ? const Color(0xFF1F1F1F)
-            : const Color(0xFF1F1F1F).withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(12.r),
+        color: const Color(0xFFFB923C).withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(10.r),
         border: Border.all(
-          color: _isNicknameEditable
-              ? const Color(0xFF3B82F6)
-              : const Color(0xFF2D2D2D),
+          color: const Color(0xFFFB923C).withValues(alpha: 0.3),
         ),
       ),
-      child: TextField(
-        controller: _nicknameController,
-        enabled: _isNicknameEditable,
-        style: GoogleFonts.inter(
-          color: _isNicknameEditable ? Colors.white : const Color(0xFF9CA3AF),
-          fontSize: 14.sp,
-          fontWeight: FontWeight.w500,
-        ),
-        decoration: InputDecoration(
-          labelText: 'Beneficiary Nickname',
-          labelStyle: GoogleFonts.inter(
-            color: const Color(0xFF6B7280),
-            fontSize: 12.sp,
-          ),
-          border: InputBorder.none,
-          icon: Icon(
-            Icons.label_outline,
-            color: const Color(0xFF6B7280),
-            size: 20.sp,
-          ),
-          suffixIcon: IconButton(
-            onPressed: () {
-              setState(() => _isNicknameEditable = !_isNicknameEditable);
-            },
-            icon: Icon(
-              _isNicknameEditable ? Icons.check : Icons.edit,
-              color: _isNicknameEditable
-                  ? const Color(0xFF10B981)
-                  : const Color(0xFF6B7280),
-              size: 20.sp,
+      child: Row(
+        children: [
+          Icon(Icons.info_outline,
+              color: const Color(0xFFFB923C), size: 16.sp),
+          SizedBox(width: 8.w),
+          Expanded(
+            child: Text(
+              "You haven't set a phone number on your profile.",
+              style: GoogleFonts.inter(
+                color: const Color(0xFF9CA3AF),
+                fontSize: 12.sp,
+              ),
             ),
           ),
-        ),
+          GestureDetector(
+            onTap: () => Get.toNamed(AppRoutes.myAccount),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 6.w),
+              child: Text(
+                'Set it',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFFFB923C),
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w700,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
+    );
+  }
+
+}
+
+/// Nickname dialog body — owns its own `TextEditingController` so the
+/// controller is disposed through the widget tree's normal teardown
+/// rather than synchronously after `Navigator.pop()`. The old inline
+/// implementation disposed the controller while the dialog's fade-out
+/// animation was still in flight, triggering
+/// `dependents.isEmpty is not true` in debug builds.
+class _NicknameDialog extends StatefulWidget {
+  final String initial;
+  const _NicknameDialog({required this.initial});
+
+  @override
+  State<_NicknameDialog> createState() => _NicknameDialogState();
+}
+
+class _NicknameDialogState extends State<_NicknameDialog> {
+  late final TextEditingController _controller;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initial);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final v = _controller.text.trim();
+    if (v.isEmpty) {
+      setState(() => _error = 'Nickname is required');
+      return;
+    }
+    Navigator.of(context).pop(v);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: InvoiceThemeColors.secondaryBackground,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+      title: Text('Save this meter',
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w700,
+          )),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Give this meter a nickname so you can find it fast next time.',
+            style: GoogleFonts.inter(
+              color: InvoiceThemeColors.textGray400,
+              fontSize: 13.sp,
+            ),
+          ),
+          SizedBox(height: 14.h),
+          TextField(
+            controller: _controller,
+            autofocus: true,
+            textInputAction: TextInputAction.done,
+            onSubmitted: (_) => _submit(),
+            style: GoogleFonts.inter(color: Colors.white, fontSize: 15.sp),
+            decoration: InputDecoration(
+              hintText: 'e.g. Home, Office',
+              hintStyle: GoogleFonts.inter(
+                  color: const Color(0xFF4B5563), fontSize: 14.sp),
+              errorText: _error,
+              filled: true,
+              fillColor: InvoiceThemeColors.inputBackground,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.r),
+                borderSide:
+                    const BorderSide(color: InvoiceThemeColors.borderColor),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.r),
+                borderSide:
+                    const BorderSide(color: InvoiceThemeColors.borderColor),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.r),
+                borderSide: const BorderSide(
+                    color: InvoiceThemeColors.primaryPurple),
+              ),
+            ),
+            onChanged: (_) {
+              if (_error != null) setState(() => _error = null);
+            },
+          ),
+        ],
+      ),
+      actionsPadding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 8.h),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(null),
+          child: Text('Cancel',
+              style: GoogleFonts.inter(
+                  color: InvoiceThemeColors.textGray400, fontSize: 14.sp)),
+        ),
+        TextButton(
+          onPressed: _submit,
+          child: Text('Save',
+              style: GoogleFonts.inter(
+                  color: InvoiceThemeColors.primaryPurple,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w700)),
+        ),
+      ],
     );
   }
 }

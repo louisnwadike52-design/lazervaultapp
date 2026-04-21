@@ -171,7 +171,13 @@ class GrpcChannelFactory {
           permitWithoutCalls: true, // Allow pings even when idle
         ),
         connectionTimeout: const Duration(seconds: 10), // Connection establishment timeout
-        idleTimeout: const Duration(minutes: 5), // Close idle connections after 5 minutes
+        // Long idleTimeout: the channel is registered as a GetIt singleton,
+        // so once it transitions to SHUTDOWN it cannot recover and every
+        // subsequent RPC fails with "Connection shutting down" until the
+        // app is restarted. The keepalive PING/TIMEOUT pair already detects
+        // dead connections; idleTimeout was redundant and actively harmful.
+        // We keep a 24h cap as a defensive ceiling rather than disabling it.
+        idleTimeout: const Duration(hours: 24),
       ),
     );
   }

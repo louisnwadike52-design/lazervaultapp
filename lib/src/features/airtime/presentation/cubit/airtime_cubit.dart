@@ -394,6 +394,205 @@ class AirtimeCubit extends Cubit<AirtimeState> {
     emit(AirtimeInitial());
   }
 
+  // ===================== Beneficiaries =====================
+  Future<void> loadBeneficiaries({String? networkCode}) async {
+    if (isClosed) return;
+    emit(AirtimeBeneficiariesLoading());
+    try {
+      final list = await repository.getAirtimeBeneficiaries(
+        networkCode: networkCode,
+      );
+      if (isClosed) return;
+      emit(AirtimeBeneficiariesLoaded(beneficiaries: list));
+    } catch (e) {
+      if (isClosed) return;
+      emit(AirtimeBeneficiariesError(message: _friendlyErrorMessage(e)));
+    }
+  }
+
+  Future<void> saveBeneficiary({
+    required String phoneNumber,
+    required String networkCode,
+    required String networkName,
+    String? nickname,
+    String countryCode = 'NG',
+    String? operatorId,
+  }) async {
+    try {
+      final saved = await repository.saveAirtimeBeneficiary(
+        phoneNumber: phoneNumber,
+        networkCode: networkCode,
+        networkName: networkName,
+        nickname: nickname,
+        countryCode: countryCode,
+        operatorId: operatorId,
+      );
+      if (isClosed) return;
+      emit(AirtimeBeneficiarySaved(beneficiary: saved));
+      await loadBeneficiaries();
+    } catch (e) {
+      if (isClosed) return;
+      emit(AirtimeBeneficiariesError(message: _friendlyErrorMessage(e)));
+      rethrow;
+    }
+  }
+
+  Future<void> updateBeneficiary({
+    required String beneficiaryId,
+    String? nickname,
+  }) async {
+    try {
+      final updated = await repository.updateAirtimeBeneficiary(
+        beneficiaryId: beneficiaryId,
+        nickname: nickname,
+      );
+      if (isClosed) return;
+      if (updated != null) {
+        emit(AirtimeBeneficiaryUpdated(beneficiary: updated));
+      }
+      await loadBeneficiaries();
+    } catch (e) {
+      if (isClosed) return;
+      emit(AirtimeBeneficiariesError(message: _friendlyErrorMessage(e)));
+      rethrow;
+    }
+  }
+
+  Future<void> deleteBeneficiary(String beneficiaryId) async {
+    try {
+      await repository.deleteAirtimeBeneficiary(beneficiaryId);
+      if (isClosed) return;
+      emit(AirtimeBeneficiaryDeleted(id: beneficiaryId));
+      await loadBeneficiaries();
+    } catch (e) {
+      if (isClosed) return;
+      emit(AirtimeBeneficiariesError(message: _friendlyErrorMessage(e)));
+      rethrow;
+    }
+  }
+
+  // ===================== Auto-recharges =====================
+  Future<void> loadAutoRecharges({String? status}) async {
+    if (isClosed) return;
+    emit(AirtimeAutoRechargesLoading());
+    try {
+      final list =
+          await repository.getAirtimeAutoRecharges(status: status);
+      if (isClosed) return;
+      emit(AirtimeAutoRechargesLoaded(autoRecharges: list));
+    } catch (e) {
+      if (isClosed) return;
+      emit(AirtimeAutoRechargesError(message: _friendlyErrorMessage(e)));
+    }
+  }
+
+  Future<void> createAutoRecharge({
+    required String beneficiaryId,
+    required double amount,
+    required String currency,
+    required String frequency,
+    int dayOfWeek = 0,
+    int dayOfMonth = 1,
+    int maxRetries = 3,
+    int? executionHour,
+    int? executionMinute,
+  }) async {
+    try {
+      final created = await repository.createAirtimeAutoRecharge(
+        beneficiaryId: beneficiaryId,
+        amount: amount,
+        currency: currency,
+        frequency: frequency,
+        dayOfWeek: dayOfWeek,
+        dayOfMonth: dayOfMonth,
+        maxRetries: maxRetries,
+        executionHour: executionHour,
+        executionMinute: executionMinute,
+      );
+      if (isClosed) return;
+      emit(AirtimeAutoRechargeCreated(autoRecharge: created));
+      await loadAutoRecharges();
+    } catch (e) {
+      if (isClosed) return;
+      emit(AirtimeAutoRechargesError(message: _friendlyErrorMessage(e)));
+      rethrow;
+    }
+  }
+
+  Future<void> updateAutoRecharge({
+    required String autoRechargeId,
+    double? amount,
+    String? frequency,
+    int? dayOfWeek,
+    int? dayOfMonth,
+    int? maxRetries,
+    int? executionHour,
+    int? executionMinute,
+  }) async {
+    try {
+      final updated = await repository.updateAirtimeAutoRecharge(
+        autoRechargeId: autoRechargeId,
+        amount: amount,
+        frequency: frequency,
+        dayOfWeek: dayOfWeek,
+        dayOfMonth: dayOfMonth,
+        maxRetries: maxRetries,
+        executionHour: executionHour,
+        executionMinute: executionMinute,
+      );
+      if (isClosed) return;
+      // Emit the targeted update — the screen listens for this and patches
+      // the affected row in place. Avoid the full loadAutoRecharges()
+      // re-fetch that previously caused a shimmer flash on every edit.
+      emit(AirtimeAutoRechargeUpdated(autoRecharge: updated));
+    } catch (e) {
+      if (isClosed) return;
+      emit(AirtimeAutoRechargesError(message: _friendlyErrorMessage(e)));
+      rethrow;
+    }
+  }
+
+  Future<void> pauseAutoRecharge(String autoRechargeId) async {
+    try {
+      await repository.pauseAirtimeAutoRecharge(autoRechargeId);
+      if (isClosed) return;
+      // Reactive: emit a targeted status change so the screen patches
+      // the affected row in place. No full re-fetch / shimmer flash.
+      emit(AirtimeAutoRechargeStatusChanged(
+          id: autoRechargeId, status: 'paused'));
+    } catch (e) {
+      if (isClosed) return;
+      emit(AirtimeAutoRechargesError(message: _friendlyErrorMessage(e)));
+    }
+  }
+
+  Future<void> resumeAutoRecharge(String autoRechargeId) async {
+    try {
+      await repository.resumeAirtimeAutoRecharge(autoRechargeId);
+      if (isClosed) return;
+      emit(AirtimeAutoRechargeStatusChanged(
+          id: autoRechargeId, status: 'active'));
+    } catch (e) {
+      if (isClosed) return;
+      emit(AirtimeAutoRechargesError(message: _friendlyErrorMessage(e)));
+    }
+  }
+
+  Future<void> deleteAutoRecharge(String autoRechargeId) async {
+    try {
+      await repository.deleteAirtimeAutoRecharge(autoRechargeId);
+      if (isClosed) return;
+      // Single delete event — the screen filters the affected id out of
+      // its local list. Skipping the full reload prevents the shimmer
+      // flash + scroll-position reset that the previous re-fetch caused.
+      emit(AirtimeAutoRechargeDeleted(id: autoRechargeId));
+    } catch (e) {
+      if (isClosed) return;
+      emit(AirtimeAutoRechargesError(message: _friendlyErrorMessage(e)));
+      rethrow;
+    }
+  }
+
   // Backward compatibility - load countries (still used by local data for country info)
   Future<void> loadCountries() async {
     try {

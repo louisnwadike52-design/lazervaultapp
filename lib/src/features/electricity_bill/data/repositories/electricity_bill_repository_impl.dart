@@ -236,6 +236,8 @@ class ElectricityBillRepositoryImpl implements ElectricityBillRepository {
     int? dayOfWeek,
     int? dayOfMonth,
     int maxRetries = 3,
+    int? executionHour,
+    int? executionMinute,
   }) async {
     try {
       final result = await remoteDataSource.createAutoRecharge(
@@ -246,6 +248,8 @@ class ElectricityBillRepositoryImpl implements ElectricityBillRepository {
         dayOfWeek: dayOfWeek,
         dayOfMonth: dayOfMonth,
         maxRetries: maxRetries,
+        executionHour: executionHour,
+        executionMinute: executionMinute,
       );
       return Right(result);
     } on GrpcError catch (e) {
@@ -275,6 +279,8 @@ class ElectricityBillRepositoryImpl implements ElectricityBillRepository {
     int? dayOfWeek,
     int? dayOfMonth,
     int? maxRetries,
+    int? executionHour,
+    int? executionMinute,
   }) async {
     try {
       final result = await remoteDataSource.updateAutoRecharge(
@@ -284,6 +290,8 @@ class ElectricityBillRepositoryImpl implements ElectricityBillRepository {
         dayOfWeek: dayOfWeek,
         dayOfMonth: dayOfMonth,
         maxRetries: maxRetries,
+        executionHour: executionHour,
+        executionMinute: executionMinute,
       );
       return Right(result);
     } on GrpcError catch (e) {

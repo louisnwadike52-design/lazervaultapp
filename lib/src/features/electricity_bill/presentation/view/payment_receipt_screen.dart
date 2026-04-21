@@ -4,13 +4,19 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import '../../domain/entities/auto_recharge_entity.dart';
 import '../../domain/entities/bill_payment_entity.dart';
+import '../../domain/repositories/electricity_bill_repository.dart';
 import '../../services/electricity_bill_pdf_service.dart';
 import '../cubit/electricity_bill_cubit.dart';
 import '../cubit/electricity_bill_state.dart';
+import '../widgets/electricity_rollover_preference_sheet.dart';
+import '../../../account_cards_summary/services/balance_websocket_service.dart';
 import '../../../../../core/types/app_routes.dart';
+import '../../../widgets/bill_receipt_qr_block.dart';
 
 class PaymentReceiptScreen extends StatefulWidget {
   const PaymentReceiptScreen({super.key});
@@ -21,18 +27,20 @@ class PaymentReceiptScreen extends StatefulWidget {
 
 class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
     with SingleTickerProviderStateMixin {
-  late final BillPaymentEntity payment;
+  late BillPaymentEntity payment;
   late AnimationController _checkController;
   late Animation<double> _checkScale;
   bool _isDownloading = false;
   bool _isSharing = false;
+  bool _fromHistory = false;
 
-  // Auto token polling
-  Timer? _pollTimer;
-  bool _isPolling = false;
-  int _pollAttempts = 0;
-  static const int _maxPollAttempts = 30; // 5 minutes (30 * 10 seconds)
-  static const Duration _pollInterval = Duration(seconds: 10);
+  // Live updates via BalanceWebSocket. No polling timers.
+  StreamSubscription<BalanceUpdateEvent>? _balanceSub;
+
+  // Guards post-purchase side-effects (auto-recharge creation) to once
+  // per screen mount — widget rebuilds + completion-via-websocket must
+  // not re-fire the RPC.
+  bool _autoRechargePostPayRan = false;
 
   String get _currencySymbol {
     switch (payment.currency.toUpperCase()) {
@@ -55,7 +63,7 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
     final args = Get.arguments as Map<String, dynamic>?;
     if (args == null || args['payment'] == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        Get.offAllNamed(AppRoutes.billsHub);
+        Get.offAllNamed(AppRoutes.electricityBillHome);
       });
       payment = BillPaymentEntity.empty();
       _checkController = AnimationController(
@@ -68,6 +76,7 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
       return;
     }
     payment = args['payment'] as BillPaymentEntity;
+    _fromHistory = (args['fromHistory'] as bool?) ?? false;
 
     _checkController = AnimationController(
       duration: const Duration(milliseconds: 600),
@@ -78,71 +87,204 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
       CurvedAnimation(parent: _checkController, curve: Curves.elasticOut),
     );
 
-    Future.delayed(const Duration(milliseconds: 300), () {
-      if (mounted) _checkController.forward();
+    _checkController.forward();
+
+    // Subscribe to live balance/transaction updates. When an event arrives
+    // whose reference or transactionId matches this payment, refetch the
+    // row from the server so status + token fields re-render.
+    try {
+      final wsService = GetIt.I<BalanceWebSocketService>();
+      _balanceSub = wsService.balanceUpdates.listen(_handleBalanceEvent);
+    } catch (e) {
+      // Service not registered / unavailable — continue without live updates.
+      // Pull-to-refresh remains available.
+      print('[PaymentReceipt] BalanceWebSocketService unavailable: $e');
+    }
+
+    // Fetch the freshest payment row on load so the screen always reflects
+    // server-side state (status, token arrival, etc.).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<ElectricityBillCubit>().getPaymentReceipt(
+            paymentId: payment.id,
+          );
     });
 
-    // Start auto token polling if payment is processing/pending and doesn't have token yet
-    if ((payment.isProcessing || payment.isPending) && !payment.hasToken) {
-      _startTokenPolling();
+    // If the payment already arrived completed (sync path), fire the
+    // post-pay keep-alive side-effects immediately. For async/pending
+    // payments we defer until a websocket-triggered refetch lands it in
+    // a terminal completed state.
+    if (payment.isCompleted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _runPostPurchaseActions();
+      });
     }
+  }
+
+  /// Filter matching balance events to this payment and refetch.
+  void _handleBalanceEvent(BalanceUpdateEvent event) {
+    if (!mounted) return;
+    final matchesRef =
+        event.reference != null && event.reference == payment.referenceNumber;
+    final matchesTx =
+        event.transactionId != null && event.transactionId == payment.id;
+    if (!matchesRef && !matchesTx) return;
+
+    // Refetch the row — the cubit will emit ReceiptLoaded which we handle
+    // in the BlocListener to update local state.
+    context.read<ElectricityBillCubit>().getPaymentReceipt(
+          paymentId: payment.id,
+        );
+  }
+
+  /// Create the auto-recharge row now that the payment itself has
+  /// settled. Runs exactly once per screen mount. Mirrors the internet
+  /// receipt post-pay hook — we trust the confirm screen to have already
+  /// triggered the "save beneficiary" path via BeneficiaryCubit, so this
+  /// hook only needs to handle auto-recharge creation.
+  ///
+  /// Beneficiary-id resolution order:
+  ///   1. `existingBeneficiaryId` arg (passed through from confirm).
+  ///   2. Re-fetch the beneficiary list and match on meter + provider.
+  /// If neither yields an id we abort with a soft notice — we never
+  /// create a rollover pointing at a missing beneficiary.
+  Future<void> _runPostPurchaseActions() async {
+    if (_autoRechargePostPayRan) return;
+    _autoRechargePostPayRan = true;
+
+    final args = Get.arguments;
+    if (args is! Map<String, dynamic>) return;
+
+    final enabled = (args['autoRechargeEnabled'] as bool?) ?? false;
+    final pref = args['autoRechargePref'] as ElectricityRolloverPreference?;
+    if (!enabled || pref == null) return;
+    if (!payment.isCompleted) return;
+    if (payment.amount <= 0) return;
+
+    final repo = GetIt.I<ElectricityBillRepository>();
+
+    // --- Resolve beneficiary id ---
+    String? beneficiaryId = args['existingBeneficiaryId'] as String?;
+    if (beneficiaryId == null || beneficiaryId.isEmpty) {
+      try {
+        final bensRes = await repo.getBeneficiaries();
+        beneficiaryId = bensRes.fold<String?>(
+          (_) => null,
+          (list) {
+            for (final b in list) {
+              if (b.meterNumber == payment.meterNumber &&
+                  (b.providerCode == payment.providerCode ||
+                      b.providerId == payment.providerId)) {
+                return b.id;
+              }
+            }
+            return null;
+          },
+        );
+      } catch (_) {
+        beneficiaryId = null;
+      }
+    }
+
+    if (beneficiaryId == null || beneficiaryId.isEmpty) {
+      _softInfo(
+        'Auto-recharge couldn\'t be enabled',
+        'We couldn\'t find a saved beneficiary for this meter. Turn on '
+            '"Save as beneficiary" on your next purchase to enable auto-recharge.',
+      );
+      return;
+    }
+
+    // --- Create the auto-recharge row ---
+    final freq = RechargeFrequencyExtension.fromString(pref.frequency);
+    try {
+      final result = await repo.createAutoRecharge(
+        beneficiaryId: beneficiaryId,
+        amount: payment.amount,
+        currency: payment.currency.isNotEmpty ? payment.currency : 'NGN',
+        frequency: freq,
+        dayOfWeek: freq == RechargeFrequency.weekly ? pref.dayOfWeek : null,
+        dayOfMonth: freq == RechargeFrequency.monthly ? pref.dayOfMonth : null,
+        maxRetries: 3,
+        executionHour: pref.executionHour,
+        executionMinute: pref.executionMinute,
+      );
+      result.fold(
+        (failure) => _softInfo(
+          'Auto-recharge couldn\'t be enabled',
+          'Payment succeeded, but the schedule didn\'t save: ${failure.message}',
+        ),
+        (_) => _softInfo(
+          'Auto-recharge enabled',
+          'We\'ll top up this meter on your chosen schedule.',
+          isSuccess: true,
+        ),
+      );
+    } catch (e) {
+      _softInfo(
+        'Auto-recharge couldn\'t be enabled',
+        'Payment succeeded, but the schedule didn\'t save. You can retry from the auto-recharge screen.',
+      );
+    }
+  }
+
+  /// Non-blocking info snackbar. The payment has already settled by the
+  /// time this fires, so we never want to block the user.
+  void _softInfo(String title, String message, {bool isSuccess = false}) {
+    if (!mounted) return;
+    Get.snackbar(
+      title,
+      message,
+      backgroundColor: (isSuccess
+              ? const Color(0xFF10B981)
+              : const Color(0xFFFB923C))
+          .withValues(alpha: 0.9),
+      colorText: Colors.white,
+      snackPosition: SnackPosition.TOP,
+      duration: const Duration(seconds: 4),
+      margin: EdgeInsets.all(16.w),
+      borderRadius: 12,
+    );
   }
 
   @override
   void dispose() {
     _checkController.dispose();
-    _pollTimer?.cancel();
+    _balanceSub?.cancel();
+    _balanceSub = null;
     super.dispose();
   }
 
-  /// Start polling for token every 10 seconds, max 30 attempts (5 minutes)
-  void _startTokenPolling() {
-    if (_pollTimer != null || _pollAttempts >= _maxPollAttempts) return;
-
-    setState(() => _isPolling = true);
-
-    _pollTimer = Timer.periodic(_pollInterval, (timer) async {
-      if (_pollAttempts >= _maxPollAttempts || !mounted) {
-        timer.cancel();
-        if (mounted) setState(() => _isPolling = false);
-        return;
-      }
-
-      _pollAttempts++;
-
-      // Fetch latest payment details
-      final cubit = context.read<ElectricityBillCubit>();
-      await cubit.getPaymentReceipt(paymentId: payment.id);
-
-      // Check if state has been updated with new payment data
-      if (mounted && cubit.state is ReceiptLoaded) {
-        final updatedPayment = (cubit.state as ReceiptLoaded).receipt;
-
-        // If token is now available or payment is completed/failed, update and stop polling
-        if (updatedPayment.hasToken || updatedPayment.isCompleted || updatedPayment.isFailed) {
-          timer.cancel();
-          if (mounted) {
-            setState(() {
-              payment = updatedPayment;
-              _isPolling = false;
-            });
-
-            // Show notification if token arrived
-            if (updatedPayment.hasToken && payment.isPrepaid) {
-              Get.snackbar(
-                'Token Received!',
-                'Your electricity token is now available',
-                backgroundColor: const Color(0xFF10B981),
-                colorText: Colors.white,
-                snackPosition: SnackPosition.BOTTOM,
-                margin: EdgeInsets.all(16.w),
-                duration: const Duration(seconds: 4),
-              );
-            }
-          }
-        }
+  /// Pull-to-refresh handler: refetch the payment and await the resulting
+  /// state change.
+  Future<void> _onRefresh() async {
+    if (!mounted) return;
+    final cubit = context.read<ElectricityBillCubit>();
+    final completer = Completer<void>();
+    late final StreamSubscription sub;
+    sub = cubit.stream.listen((state) {
+      if (state is ReceiptLoaded || state is ElectricityBillError) {
+        if (!completer.isCompleted) completer.complete();
+        sub.cancel();
       }
     });
+    cubit.getPaymentReceipt(paymentId: payment.id);
+    // Guard against states we never see (e.g. screen unmounts) with a
+    // bounded wait — refresh indicator must eventually stop.
+    await completer.future.timeout(
+      const Duration(seconds: 10),
+      onTimeout: () {
+        sub.cancel();
+      },
+    );
+  }
+
+  void _handleBack() {
+    if (_fromHistory) {
+      Get.back();
+    } else {
+      Get.offAllNamed(AppRoutes.electricityBillHome);
+    }
   }
 
   Future<void> _downloadReceipt() async {
@@ -171,7 +313,7 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
         margin: EdgeInsets.all(16.w),
       );
     } finally {
-      setState(() => _isDownloading = false);
+      if (mounted) setState(() => _isDownloading = false);
     }
   }
 
@@ -191,54 +333,82 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
         margin: EdgeInsets.all(16.w),
       );
     } finally {
-      setState(() => _isSharing = false);
+      if (mounted) setState(() => _isSharing = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          onPressed: () => Get.offAllNamed(AppRoutes.billsHub),
-          icon: Icon(
-            Icons.arrow_back,
-            color: Colors.white,
-            size: 24.sp,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _handleBack();
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFF0A0A0A),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            onPressed: _handleBack,
+            icon: Icon(
+              Icons.arrow_back,
+              color: Colors.white,
+              size: 24.sp,
+            ),
           ),
-        ),
-        title: Text(
-          'Payment Receipt',
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w600,
+          title: Text(
+            'Payment Receipt',
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600,
+            ),
           ),
+          centerTitle: true,
         ),
-        centerTitle: true,
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
+        body: SafeArea(
+          child: BlocListener<ElectricityBillCubit, ElectricityBillState>(
+            listenWhen: (prev, curr) => curr is ReceiptLoaded,
+            listener: (context, state) {
+              if (state is ReceiptLoaded) {
+                final hadToken = payment.hasToken;
+                setState(() {
+                  payment = state.receipt;
+                });
+                if (!hadToken && payment.hasToken && payment.isPrepaid) {
+                  Get.snackbar(
+                    'Token Received!',
+                    'Your electricity token is now available',
+                    backgroundColor: const Color(0xFF10B981),
+                    colorText: Colors.white,
+                    snackPosition: SnackPosition.BOTTOM,
+                    margin: EdgeInsets.all(16.w),
+                    duration: const Duration(seconds: 4),
+                  );
+                }
+                // Fire post-pay side-effects once the payment has landed
+                // in a terminal completed state (guarded internally).
+                if (payment.isCompleted) {
+                  _runPostPurchaseActions();
+                }
+              }
+            },
+            child: RefreshIndicator(
+              onRefresh: _onRefresh,
+              color: const Color(0xFF4E03D0),
+              backgroundColor: const Color(0xFF1F1F1F),
               child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding:
+                    EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     _buildSuccessIcon(),
                     SizedBox(height: 12.h),
                     Text(
-                      payment.isFailed
-                          ? 'Payment Failed'
-                          : (payment.isCompleted && payment.hasToken)
-                              ? 'Payment Successful!'
-                              : (payment.isPending || payment.isProcessing)
-                                  ? 'Payment Submitted'
-                                  : 'Payment Successful!',
+                      _resolveHeroTitle(),
                       style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 20.sp,
@@ -248,6 +418,7 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
                     SizedBox(height: 4.h),
                     Text(
                       _getStatusMessage(),
+                      textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
                         color: const Color(0xFF9CA3AF),
                         fontSize: 13.sp,
@@ -255,23 +426,64 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
                       ),
                     ),
                     SizedBox(height: 16.h),
-                    if (_isPolling) _buildPollingIndicator(),
                     if (payment.hasToken) _buildTokenCard(),
                     if (payment.hasToken) SizedBox(height: 14.h),
                     _buildTransactionDetails(),
+                    SizedBox(height: 20.h),
+                    BillReceiptQrBlock(
+                      type: 'electricity',
+                      reference: payment.referenceNumber,
+                      amount: payment.amount,
+                      currency: 'NGN',
+                      status: payment.status.name,
+                      timestamp: payment.createdAt,
+                      showDivider: false,
+                      extraPayload: {
+                        if (payment.meterNumber.isNotEmpty)
+                          'meter': payment.meterNumber,
+                        if (payment.providerName.isNotEmpty)
+                          'provider': payment.providerName,
+                        if (payment.token != null &&
+                            payment.token!.isNotEmpty)
+                          'token': payment.token!,
+                      },
+                    ),
                     SizedBox(height: 20.h),
                     _buildActions(),
                   ],
                 ),
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 
+  String _resolveHeroTitle() {
+    // Check refund-via-source BEFORE `isFailed` so rows where status is
+    // still `failed` but the backend already returned the money show a
+    // "Payment Refunded" hero instead of a red "Payment Failed".
+    if (payment.isRefundedViaSource) return 'Payment Refunded';
+    if (payment.isFailed) return 'Payment Failed';
+    if (payment.isRefundPending) return 'Refund In Progress';
+    if (payment.isRefunded) return 'Payment Refunded';
+    if (payment.isReversed) return 'Payment Reversed';
+    if (payment.isRefundFailed) return 'Refund Failed';
+    if (payment.isCompleted && payment.hasToken) return 'Payment Successful!';
+    if (payment.isCompleted) return 'Payment Successful!';
+    // pending / processing / awaitingWebhook
+    return 'Payment Submitted';
+  }
+
   String _getStatusMessage() {
+    // If the money came back despite a `failed` status, lead with the
+    // reassuring refund copy rather than a "try again" prompt.
+    if (payment.isRefundedViaSource) {
+      return payment.refundSource == 'auto_released'
+          ? 'Charge auto-released. Your balance has been restored.'
+          : 'Your payment was refunded. Your balance has been restored.';
+    }
     if (payment.isFailed) {
       return 'Payment failed. Please try again.';
     }
@@ -280,54 +492,44 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
           ? 'Your electricity token is below'
           : 'Your payment has been processed';
     }
-    if (_isPolling) {
-      return 'Checking for your token... ($_pollAttempts/$_maxPollAttempts)';
-    }
     if (payment.isPending || payment.isProcessing) {
       return payment.isPrepaid
-          ? 'Your token will be sent via SMS once the provider confirms. We\'ll notify you.'
-          : 'Your payment is being confirmed by the provider';
+          ? 'Waiting for confirmation. Your token will be sent via SMS once the provider confirms.'
+          : 'Waiting for confirmation from the provider.';
     }
     return 'Your payment has been processed';
   }
 
-  Widget _buildPollingIndicator() {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-      decoration: BoxDecoration(
-        color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: const Color(0xFF4E03D0).withValues(alpha: 0.3),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(
-            width: 16.sp,
-            height: 16.sp,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFF4E03D0)),
-            ),
-          ),
-          SizedBox(width: 12.w),
-          Text(
-            'Fetching token... ($_pollAttempts/$_maxPollAttempts)',
-            style: GoogleFonts.inter(
-              color: const Color(0xFF4E03D0),
-              fontSize: 13.sp,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildSuccessIcon() {
+    // Status-aware hero icon so failed / pending / refunded receipts
+    // aren't misrepresented with a green checkmark.
+    IconData icon;
+    Color color;
+    if (payment.isCompleted) {
+      icon = Icons.check_circle;
+      color = const Color(0xFF10B981);
+    } else if (payment.isRefundedViaSource) {
+      // Backend returned the money but left `status=failed`; treat as
+      // a soft refund, not a hard failure.
+      icon = Icons.undo;
+      color = const Color(0xFF6B7280);
+    } else if (payment.isFailed) {
+      icon = Icons.cancel;
+      color = const Color(0xFFEF4444);
+    } else if (payment.isRefunded || payment.isReversed) {
+      icon = Icons.undo;
+      color = const Color(0xFF6B7280);
+    } else if (payment.isRefundPending) {
+      icon = Icons.history;
+      color = const Color(0xFFFB923C);
+    } else if (payment.isRefundFailed) {
+      icon = Icons.error_outline;
+      color = const Color(0xFFEF4444);
+    } else {
+      // pending / processing / awaiting_webhook -> in-flight spinner-style
+      icon = Icons.hourglass_top;
+      color = const Color(0xFFFB923C);
+    }
     return AnimatedBuilder(
       animation: _checkScale,
       builder: (context, child) {
@@ -337,14 +539,10 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
             width: 64.w,
             height: 64.w,
             decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withValues(alpha: 0.1),
+              color: color.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              Icons.check_circle,
-              color: const Color(0xFF10B981),
-              size: 40.sp,
-            ),
+            child: Icon(icon, color: color, size: 40.sp),
           ),
         );
       },
@@ -610,7 +808,7 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
             ),
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.white,
-              side: const BorderSide(color: Color(0xFF3B82F6)),
+              side: const BorderSide(color: Color(0xFF4E03D0)),
               padding: EdgeInsets.symmetric(vertical: 12.h),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10.r),
@@ -641,7 +839,7 @@ class _PaymentReceiptScreenState extends State<PaymentReceiptScreen>
             ),
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.white,
-              side: const BorderSide(color: Color(0xFF3B82F6)),
+              side: const BorderSide(color: Color(0xFF4E03D0)),
               padding: EdgeInsets.symmetric(vertical: 12.h),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10.r),

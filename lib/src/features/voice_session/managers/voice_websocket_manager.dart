@@ -41,6 +41,7 @@ class VoiceWebSocketManager {
   final Set<String> _processedMessageIds = {};
   final List<Map<String, dynamic>> _messageQueue = [];
   String? _lastMessageId;
+  int _messageIdCounter = 0;
 
   static const int _maxProcessedIds = 1000; // Prevent unbounded growth
 
@@ -256,7 +257,10 @@ class VoiceWebSocketManager {
   }
 
   String _generateMessageId() {
-    return '${sessionId}_${DateTime.now().millisecondsSinceEpoch}_${_lastMessageId++}';
+    final id =
+        '${sessionId}_${DateTime.now().millisecondsSinceEpoch}_${_messageIdCounter++}';
+    _lastMessageId = id;
+    return id;
   }
 
   /// Clean up resources

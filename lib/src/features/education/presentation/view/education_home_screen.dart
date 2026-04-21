@@ -2,11 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import '../../../../../core/types/app_routes.dart';
+import '../../../../../core/widgets/bill_history_item.dart';
+import '../../data/datasources/education_remote_datasource.dart';
+import '../../data/repositories/education_repository_impl.dart';
+import '../../domain/entities/education_history_entity.dart';
 import '../../domain/entities/education_provider_entity.dart';
 import '../cubit/education_cubit.dart';
+import '../cubit/education_history_cubit.dart';
 import '../cubit/education_state.dart';
+import 'package:lazervault/src/core/network/grpc_client.dart';
 
+/// Education PINs landing. Mirrors the internet / water landing pattern:
+/// quick-actions row (Saved Candidates, Reminders, History) → hero
+/// gradient card → provider list → recent purchases strip.
 class EducationHomeScreen extends StatefulWidget {
   const EducationHomeScreen({super.key});
 
@@ -15,29 +25,46 @@ class EducationHomeScreen extends StatefulWidget {
 }
 
 class _EducationHomeScreenState extends State<EducationHomeScreen> {
+  static const Color _primary = Color(0xFF3B82F6);
+
+  late final EducationHistoryCubit _historyCubit;
+
   @override
   void initState() {
     super.initState();
     context.read<EducationCubit>().getProviders();
+
+    // History cubit is local to this screen so we can show a "Recent
+    // Purchases" strip without coupling to the full history page.
+    _historyCubit = EducationHistoryCubit(
+      EducationRepositoryImpl(
+        remoteDataSource: EducationRemoteDataSourceImpl(
+          grpcClient: GetIt.I<GrpcClient>(),
+        ),
+      ),
+    )..loadHistory(refresh: true);
   }
 
-  void _handleRebuyPurchase(Map<String, dynamic> rebuyPurchase, List<EducationProviderEntity> providers) {
-    // Find the matching provider by serviceId
-    final serviceId = rebuyPurchase['serviceId'] as String?;
-    if (serviceId != null && serviceId.isNotEmpty) {
-      final matchingProvider = providers.firstWhere(
-        (p) => p.serviceId == serviceId,
-        orElse: () => providers.first,
-      );
+  @override
+  void dispose() {
+    _historyCubit.close();
+    super.dispose();
+  }
 
-      // Navigate to purchase screen with provider and rebuy data
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Get.toNamed(AppRoutes.educationPurchase, arguments: {
-          'provider': matchingProvider,
-          'rebuyPurchase': rebuyPurchase,
-        });
+  void _handleRebuyPurchase(
+      Map<String, dynamic> rebuyPurchase, List<EducationProviderEntity> providers) {
+    final serviceId = rebuyPurchase['serviceId'] as String?;
+    if (serviceId == null || serviceId.isEmpty) return;
+    final matchingProvider = providers.firstWhere(
+      (p) => p.serviceId == serviceId,
+      orElse: () => providers.first,
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Get.toNamed(AppRoutes.educationPurchase, arguments: {
+        'provider': matchingProvider,
+        'rebuyPurchase': rebuyPurchase,
       });
-    }
+    });
   }
 
   @override
@@ -71,17 +98,16 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
       body: SafeArea(
         child: BlocBuilder<EducationCubit, EducationState>(
           builder: (context, state) {
-            // Check for rebuy purchase argument
             final args = Get.arguments as Map<String, dynamic>?;
-            final rebuyPurchase = args?['rebuyPurchase'] as Map<String, dynamic>?;
+            final rebuyPurchase =
+                args?['rebuyPurchase'] as Map<String, dynamic>?;
 
             if (state is EducationProvidersLoaded && rebuyPurchase != null) {
-              // Handle rebuy: find provider and navigate to purchase screen
               _handleRebuyPurchase(rebuyPurchase, state.providers);
-              // Show loading while navigating
               return const Center(
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(_primary),
                 ),
               );
             }
@@ -89,7 +115,7 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
             if (state is EducationLoading) {
               return const Center(
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                  valueColor: AlwaysStoppedAnimation<Color>(_primary),
                 ),
               );
             }
@@ -102,7 +128,7 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
               if (state.providers.isEmpty) {
                 return _buildEmptyState();
               }
-              return _buildProviderList(state.providers);
+              return _buildContent(state.providers);
             }
 
             return const SizedBox.shrink();
@@ -112,54 +138,109 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
     );
   }
 
-  Widget _buildErrorState(String message) {
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 24.w),
+  Widget _buildContent(List<EducationProviderEntity> providers) {
+    return RefreshIndicator(
+      color: _primary,
+      backgroundColor: const Color(0xFF1F1F1F),
+      onRefresh: () async {
+        await context.read<EducationCubit>().getProviders();
+        await _historyCubit.loadHistory(refresh: true);
+      },
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 64.sp,
-              color: const Color(0xFFEF4444),
-            ),
-            SizedBox(height: 16.h),
+            // Quick actions (matches internet / water pattern)
+            _buildQuickActions(),
+            SizedBox(height: 20.h),
+
+            // Hero card
+            _buildHeroCard(),
+            SizedBox(height: 24.h),
+
             Text(
-              'Failed to load providers',
+              'Select Provider',
               style: TextStyle(
-                fontSize: 18.sp,
+                fontSize: 16.sp,
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
               ),
             ),
-            SizedBox(height: 8.h),
-            Text(
-              message,
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: const Color(0xFF9CA3AF),
-              ),
-              textAlign: TextAlign.center,
-            ),
+            SizedBox(height: 16.h),
+
+            ...providers.map((provider) => _buildProviderCard(provider)),
+
             SizedBox(height: 24.h),
-            ElevatedButton(
-              onPressed: () => context.read<EducationCubit>().getProviders(),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
-                padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 14.h),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                elevation: 0,
-              ),
-              child: Text(
-                'Retry',
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
+
+            // Recent purchases strip
+            _buildRecentPurchases(),
+
+            SizedBox(height: 20.h),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickActions() {
+    return Row(
+      children: [
+        Expanded(
+          child: _quickCard(
+            title: 'Saved\nCandidates',
+            icon: Icons.bookmark_border,
+            onTap: () => Get.toNamed(AppRoutes.educationSavedCandidates),
+          ),
+        ),
+        SizedBox(width: 10.w),
+        Expanded(
+          child: _quickCard(
+            title: 'Reminders',
+            icon: Icons.notifications_outlined,
+            onTap: () => Get.toNamed(AppRoutes.educationReminders),
+          ),
+        ),
+        SizedBox(width: 10.w),
+        Expanded(
+          child: _quickCard(
+            title: 'History',
+            icon: Icons.history,
+            onTap: () => Get.toNamed(AppRoutes.educationHistory),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _quickCard({
+    required String title,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 14.h, horizontal: 8.w),
+        decoration: BoxDecoration(
+          color: _primary.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(14.r),
+          border:
+              Border.all(color: _primary.withValues(alpha: 0.25), width: 1),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: _primary, size: 22.sp),
+            SizedBox(height: 6.h),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 11.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+                height: 1.3,
               ),
             ),
           ],
@@ -168,138 +249,52 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
     );
   }
 
-  Widget _buildEmptyState() {
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 24.w),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.school_outlined,
-              size: 64.sp,
-              color: const Color(0xFF9CA3AF),
-            ),
-            SizedBox(height: 16.h),
-            Text(
-              'No Education PIN Providers Available',
-              style: TextStyle(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              'Check back later for available providers',
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: const Color(0xFF9CA3AF),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 24.h),
-            ElevatedButton(
-              onPressed: () => context.read<EducationCubit>().getProviders(),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
-                padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 14.h),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                elevation: 0,
-              ),
-              child: Text(
-                'Retry',
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ],
+  Widget _buildHeroCard() {
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [_primary, Color.fromARGB(255, 78, 3, 208)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
+        borderRadius: BorderRadius.circular(16.r),
       ),
-    );
-  }
-
-  Widget _buildProviderList(List<EducationProviderEntity> providers) {
-    return SingleChildScrollView(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          // Header section
           Container(
-            padding: EdgeInsets.all(20.w),
+            width: 48.w,
+            height: 48.w,
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF3B82F6), Color.fromARGB(255, 78, 3, 208)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(16.r),
+              color: Colors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(12.r),
             ),
-            child: Row(
+            child: Icon(Icons.school, color: Colors.white, size: 24.sp),
+          ),
+          SizedBox(width: 16.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 48.w,
-                  height: 48.w,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                  child: Icon(
-                    Icons.school,
+                Text(
+                  'Buy Education PINs',
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w700,
                     color: Colors.white,
-                    size: 24.sp,
                   ),
                 ),
-                SizedBox(width: 16.w),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Buy Education PINs',
-                        style: TextStyle(
-                          fontSize: 18.sp,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      ),
-                      SizedBox(height: 4.h),
-                      Text(
-                        'Purchase WAEC, JAMB, and other exam PINs instantly',
-                        style: TextStyle(
-                          fontSize: 13.sp,
-                          color: Colors.white.withValues(alpha: 0.8),
-                        ),
-                      ),
-                    ],
+                SizedBox(height: 4.h),
+                Text(
+                  'Purchase WAEC, JAMB, and other exam PINs instantly',
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    color: Colors.white.withValues(alpha: 0.8),
                   ),
                 ),
               ],
             ),
           ),
-
-          SizedBox(height: 24.h),
-
-          Text(
-            'Select Provider',
-            style: TextStyle(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-
-          SizedBox(height: 16.h),
-
-          // Provider cards
-          ...providers.map((provider) => _buildProviderCard(provider)),
         ],
       ),
     );
@@ -318,14 +313,10 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
         decoration: BoxDecoration(
           color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(
-            color: const Color(0xFF2D2D2D),
-            width: 1,
-          ),
+          border: Border.all(color: const Color(0xFF2D2D2D), width: 1),
         ),
         child: Row(
           children: [
-            // Provider icon
             Container(
               width: 56.w,
               height: 56.w,
@@ -333,14 +324,9 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
                 color: _getProviderColor(provider.name).withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12.r),
               ),
-              child: Center(
-                child: _getProviderIcon(provider.name),
-              ),
+              child: Center(child: _getProviderIcon(provider.name)),
             ),
-
             SizedBox(width: 16.w),
-
-            // Provider details
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -366,10 +352,7 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
                 ],
               ),
             ),
-
             SizedBox(width: 12.w),
-
-            // Price and arrow
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
@@ -378,7 +361,7 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
                   style: TextStyle(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF3B82F6),
+                    color: _primary,
                   ),
                 ),
                 SizedBox(height: 4.h),
@@ -391,9 +374,7 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
                 ),
               ],
             ),
-
             SizedBox(width: 8.w),
-
             Icon(
               Icons.chevron_right,
               color: const Color(0xFF9CA3AF),
@@ -405,36 +386,202 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
     );
   }
 
+  Widget _buildRecentPurchases() {
+    return BlocBuilder<EducationHistoryCubit, EducationHistoryState>(
+      bloc: _historyCubit,
+      builder: (context, state) {
+        if (state is EducationHistoryLoading ||
+            state is EducationHistoryInitial) {
+          return const SizedBox.shrink();
+        }
+        if (state is EducationHistoryError) {
+          return const SizedBox.shrink();
+        }
+        if (state is EducationHistoryLoaded) {
+          final recent = state.history.take(3).toList();
+          if (recent.isEmpty) return const SizedBox.shrink();
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    'Recent Purchases',
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const Spacer(),
+                  GestureDetector(
+                    onTap: () => Get.toNamed(AppRoutes.educationHistory),
+                    child: Text(
+                      'View All',
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: _primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 12.h),
+              ...recent.map(_buildRecentRow),
+            ],
+          );
+        }
+        return const SizedBox.shrink();
+      },
+    );
+  }
+
+  Widget _buildRecentRow(EducationHistoryEntity h) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 10.h),
+      child: BillHistoryItem(
+        leadingIcon: Container(
+          decoration: BoxDecoration(
+            color: _primary.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(10.r),
+          ),
+          child: Icon(Icons.school, color: _primary, size: 18.sp),
+        ),
+        title: h.providerName.isEmpty ? 'Education PIN' : h.providerName,
+        subtitle:
+            '${h.quantity} ${h.quantity == 1 ? 'PIN' : 'PINs'} \u00B7 ${h.billersCode}',
+        date: h.createdAt,
+        amount: h.amount,
+        status: h.status,
+        onTap: () => Get.toNamed(
+          AppRoutes.educationPinDetails,
+          arguments: {'purchaseId': h.id},
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorState(String message) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 24.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline,
+                size: 64.sp, color: const Color(0xFFEF4444)),
+            SizedBox(height: 16.h),
+            Text(
+              'Failed to load providers',
+              style: TextStyle(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              message,
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: const Color(0xFF9CA3AF),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 24.h),
+            ElevatedButton(
+              onPressed: () => context.read<EducationCubit>().getProviders(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _primary,
+                padding:
+                    EdgeInsets.symmetric(horizontal: 32.w, vertical: 14.h),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r)),
+                elevation: 0,
+              ),
+              child: Text(
+                'Retry',
+                style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 24.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.school_outlined,
+                size: 64.sp, color: const Color(0xFF9CA3AF)),
+            SizedBox(height: 16.h),
+            Text(
+              'No Education PIN Providers Available',
+              style: TextStyle(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              'Check back later for available providers',
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: const Color(0xFF9CA3AF),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 24.h),
+            ElevatedButton(
+              onPressed: () => context.read<EducationCubit>().getProviders(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _primary,
+                padding:
+                    EdgeInsets.symmetric(horizontal: 32.w, vertical: 14.h),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r)),
+                elevation: 0,
+              ),
+              child: Text(
+                'Retry',
+                style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Color _getProviderColor(String name) {
-    final nameLower = name.toLowerCase();
-    if (nameLower.contains('waec')) {
-      return const Color(0xFF10B981);
-    } else if (nameLower.contains('jamb')) {
-      return const Color(0xFF3B82F6);
-    }
+    final n = name.toLowerCase();
+    if (n.contains('waec')) return const Color(0xFF10B981);
+    if (n.contains('jamb')) return _primary;
     return const Color(0xFFFB923C);
   }
 
   Widget _getProviderIcon(String name) {
-    final nameLower = name.toLowerCase();
-    if (nameLower.contains('waec')) {
-      return Icon(
-        Icons.assignment,
-        color: const Color(0xFF10B981),
-        size: 28.sp,
-      );
-    } else if (nameLower.contains('jamb')) {
-      return Icon(
-        Icons.menu_book,
-        color: const Color(0xFF3B82F6),
-        size: 28.sp,
-      );
+    final n = name.toLowerCase();
+    if (n.contains('waec')) {
+      return Icon(Icons.assignment, color: const Color(0xFF10B981), size: 28.sp);
+    } else if (n.contains('jamb')) {
+      return Icon(Icons.menu_book, color: _primary, size: 28.sp);
     }
-    return Icon(
-      Icons.school,
-      color: const Color(0xFFFB923C),
-      size: 28.sp,
-    );
+    return Icon(Icons.school, color: const Color(0xFFFB923C), size: 28.sp);
   }
 
   String _formatAmount(double amount) {
@@ -443,9 +590,7 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
       final result = StringBuffer();
       final str = intAmount.toString();
       for (var i = 0; i < str.length; i++) {
-        if (i > 0 && (str.length - i) % 3 == 0) {
-          result.write(',');
-        }
+        if (i > 0 && (str.length - i) % 3 == 0) result.write(',');
         result.write(str[i]);
       }
       return result.toString();

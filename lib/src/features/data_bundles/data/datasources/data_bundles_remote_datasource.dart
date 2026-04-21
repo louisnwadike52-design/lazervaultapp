@@ -16,6 +16,15 @@ abstract class DataBundlesRemoteDataSource {
     String countryCode = 'NG',
   });
 
+  /// Paginated purchase history filtered to the data family (domestic
+  /// `data` + international `intl_data`). Hits the unified
+  /// `GetBillPaymentHistory` endpoint because the backend doesn't expose
+  /// a dedicated data-history RPC.
+  Future<List<DataPurchaseModel>> getHistory({
+    int limit = 50,
+    int offset = 0,
+  });
+
   // Auto-renewal (non-expiring data)
   Future<pb.EnableAutoRenewResponse> enableAutoRenew({
     required String subscriptionId,
@@ -83,6 +92,29 @@ class DataBundlesRemoteDataSourceImpl implements DataBundlesRemoteDataSource {
     );
 
     return DataPurchaseModel.fromResponse(response);
+  }
+
+  /// Mirrors the airtime datasource's history shape — fetch all bill
+  /// types and keep only the data family client-side (the backend
+  /// filter accepts a single value and we need both `data` and
+  /// `intl_data`).
+  static const _dataFamily = {'data', 'intl_data'};
+
+  @override
+  Future<List<DataPurchaseModel>> getHistory({
+    int limit = 50,
+    int offset = 0,
+  }) async {
+    final request = pb.GetBillPaymentHistoryRequest()
+      ..limit = limit
+      ..offset = offset;
+    final options = await grpcClient.callOptions;
+    final response = await grpcClient.utilityPaymentsClient
+        .getBillPaymentHistory(request, options: options);
+    return response.payments
+        .where((p) => _dataFamily.contains(p.billType.toLowerCase()))
+        .map((p) => DataPurchaseModel.fromBillPaymentProto(p))
+        .toList();
   }
 
   @override

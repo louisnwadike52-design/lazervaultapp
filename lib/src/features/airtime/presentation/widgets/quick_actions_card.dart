@@ -36,6 +36,11 @@ class QuickActionsCard extends StatelessWidget {
           
           SizedBox(height: 16.h),
           
+          // Invoice purple for both CTAs — matches the invoice theme the
+          // International & Sell tabs use so the whole airtime landing
+          // reads as one palette. Slightly lighter secondary shade on the
+          // Send tile keeps them visually distinct without reintroducing a
+          // second hue.
           Row(
             children: [
               Expanded(
@@ -43,8 +48,8 @@ class QuickActionsCard extends StatelessWidget {
                   icon: Icons.phone_android,
                   title: 'Buy Airtime',
                   subtitle: 'Top up your phone',
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF3B82F6), Color.fromARGB(255, 78, 3, 208)],
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF4E03D0), Color(0xFF3B0A99)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -59,8 +64,8 @@ class QuickActionsCard extends StatelessWidget {
                   icon: Icons.send,
                   title: 'Send Airtime',
                   subtitle: 'Gift to others',
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF10B981), Color(0xFF059669)],
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF6D28D9), Color(0xFF4E03D0)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),

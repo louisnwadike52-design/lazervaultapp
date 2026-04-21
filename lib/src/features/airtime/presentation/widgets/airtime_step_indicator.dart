@@ -26,7 +26,7 @@ class AirtimeStepIndicator extends StatelessWidget {
               child: Container(
                 height: 2,
                 color: isCompleted
-                    ? const Color(0xFF3B82F6)
+                    ? const Color(0xFF4E03D0)
                     : const Color(0xFF2D2D2D),
               ),
             );
@@ -45,13 +45,13 @@ class AirtimeStepIndicator extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: isCompleted
-                      ? const Color(0xFF3B82F6)
+                      ? const Color(0xFF4E03D0)
                       : isActive
-                          ? const Color(0xFF3B82F6)
+                          ? const Color(0xFF4E03D0)
                           : const Color(0xFF2D2D2D),
                   border: isActive
                       ? Border.all(
-                          color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+                          color: const Color(0xFF4E03D0).withValues(alpha: 0.3),
                           width: 3,
                         )
                       : null,

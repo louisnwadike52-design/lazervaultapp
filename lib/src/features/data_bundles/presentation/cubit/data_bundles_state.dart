@@ -59,3 +59,28 @@ class DataBundlesPaymentFailed extends DataBundlesState {
   @override
   List<Object?> get props => [message];
 }
+
+// ================= Purchase history states =================
+class DataPurchaseHistoryLoading extends DataBundlesState {}
+
+class DataPurchaseHistoryLoaded extends DataBundlesState {
+  final List<DataPurchaseEntity> purchases;
+  final bool isStale;
+
+  DataPurchaseHistoryLoaded({
+    required this.purchases,
+    this.isStale = false,
+  });
+
+  @override
+  List<Object?> get props => [purchases, isStale];
+}
+
+class DataPurchaseHistoryError extends DataBundlesState {
+  final String message;
+
+  DataPurchaseHistoryError({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}

@@ -58,11 +58,13 @@ const BillPayment$json = const {
     const {'1': 'updated_at', '3': 23, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
     const {'1': 'error_message', '3': 24, '4': 1, '5': 9, '10': 'errorMessage'},
     const {'1': 'failed_at', '3': 25, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'failedAt'},
+    const {'1': 'phone_number', '3': 26, '4': 1, '5': 9, '10': 'phoneNumber'},
+    const {'1': 'refund_source', '3': 27, '4': 1, '5': 9, '10': 'refundSource'},
   ],
 };
 
 /// Descriptor for `BillPayment`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List billPaymentDescriptor = $convert.base64Decode('CgtCaWxsUGF5bWVudBIOCgJpZBgBIAEoCVICaWQSFwoHdXNlcl9pZBgCIAEoCVIGdXNlcklkEiMKDXByb3ZpZGVyX2NvZGUYAyABKAlSDHByb3ZpZGVyQ29kZRIjCg1wcm92aWRlcl9uYW1lGAQgASgJUgxwcm92aWRlck5hbWUSIQoMbWV0ZXJfbnVtYmVyGAUgASgJUgttZXRlck51bWJlchIjCg1jdXN0b21lcl9uYW1lGAYgASgJUgxjdXN0b21lck5hbWUSKQoQY3VzdG9tZXJfYWRkcmVzcxgHIAEoCVIPY3VzdG9tZXJBZGRyZXNzEhYKBmFtb3VudBgIIAEoAVIGYW1vdW50Eh8KC3NlcnZpY2VfZmVlGAkgASgBUgpzZXJ2aWNlRmVlEiEKDHRvdGFsX2Ftb3VudBgKIAEoAVILdG90YWxBbW91bnQSGgoIY3VycmVuY3kYCyABKAlSCGN1cnJlbmN5EhYKBnN0YXR1cxgMIAEoCVIGc3RhdHVzEicKD3BheW1lbnRfZ2F0ZXdheRgNIAEoCVIOcGF5bWVudEdhdGV3YXkSKwoRZ2F0ZXdheV9yZWZlcmVuY2UYDiABKAlSEGdhdGV3YXlSZWZlcmVuY2USKQoQcmVmZXJlbmNlX251bWJlchgPIAEoCVIPcmVmZXJlbmNlTnVtYmVyEhQKBXRva2VuGBAgASgJUgV0b2tlbhIUCgV1bml0cxgRIAEoAVIFdW5pdHMSHQoKbWV0ZXJfdHlwZRgSIAEoCVIJbWV0ZXJUeXBlEiUKDmZhaWx1cmVfcmVhc29uGBMgASgJUg1mYWlsdXJlUmVhc29uEjkKCmNyZWF0ZWRfYXQYFCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgljcmVhdGVkQXQSPQoMY29tcGxldGVkX2F0GBUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFILY29tcGxldGVkQXQSHwoLcHJvdmlkZXJfaWQYFiABKAlSCnByb3ZpZGVySWQSOQoKdXBkYXRlZF9hdBgXIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCXVwZGF0ZWRBdBIjCg1lcnJvcl9tZXNzYWdlGBggASgJUgxlcnJvck1lc3NhZ2USNwoJZmFpbGVkX2F0GBkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIIZmFpbGVkQXQ=');
+final $typed_data.Uint8List billPaymentDescriptor = $convert.base64Decode('CgtCaWxsUGF5bWVudBIOCgJpZBgBIAEoCVICaWQSFwoHdXNlcl9pZBgCIAEoCVIGdXNlcklkEiMKDXByb3ZpZGVyX2NvZGUYAyABKAlSDHByb3ZpZGVyQ29kZRIjCg1wcm92aWRlcl9uYW1lGAQgASgJUgxwcm92aWRlck5hbWUSIQoMbWV0ZXJfbnVtYmVyGAUgASgJUgttZXRlck51bWJlchIjCg1jdXN0b21lcl9uYW1lGAYgASgJUgxjdXN0b21lck5hbWUSKQoQY3VzdG9tZXJfYWRkcmVzcxgHIAEoCVIPY3VzdG9tZXJBZGRyZXNzEhYKBmFtb3VudBgIIAEoAVIGYW1vdW50Eh8KC3NlcnZpY2VfZmVlGAkgASgBUgpzZXJ2aWNlRmVlEiEKDHRvdGFsX2Ftb3VudBgKIAEoAVILdG90YWxBbW91bnQSGgoIY3VycmVuY3kYCyABKAlSCGN1cnJlbmN5EhYKBnN0YXR1cxgMIAEoCVIGc3RhdHVzEicKD3BheW1lbnRfZ2F0ZXdheRgNIAEoCVIOcGF5bWVudEdhdGV3YXkSKwoRZ2F0ZXdheV9yZWZlcmVuY2UYDiABKAlSEGdhdGV3YXlSZWZlcmVuY2USKQoQcmVmZXJlbmNlX251bWJlchgPIAEoCVIPcmVmZXJlbmNlTnVtYmVyEhQKBXRva2VuGBAgASgJUgV0b2tlbhIUCgV1bml0cxgRIAEoAVIFdW5pdHMSHQoKbWV0ZXJfdHlwZRgSIAEoCVIJbWV0ZXJUeXBlEiUKDmZhaWx1cmVfcmVhc29uGBMgASgJUg1mYWlsdXJlUmVhc29uEjkKCmNyZWF0ZWRfYXQYFCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgljcmVhdGVkQXQSPQoMY29tcGxldGVkX2F0GBUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFILY29tcGxldGVkQXQSHwoLcHJvdmlkZXJfaWQYFiABKAlSCnByb3ZpZGVySWQSOQoKdXBkYXRlZF9hdBgXIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCXVwZGF0ZWRBdBIjCg1lcnJvcl9tZXNzYWdlGBggASgJUgxlcnJvck1lc3NhZ2USNwoJZmFpbGVkX2F0GBkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIIZmFpbGVkQXQSIQoMcGhvbmVfbnVtYmVyGBogASgJUgtwaG9uZU51bWJlchIjCg1yZWZ1bmRfc291cmNlGBsgASgJUgxyZWZ1bmRTb3VyY2U=');
 @$core.Deprecated('Use billBeneficiaryDescriptor instead')
 const BillBeneficiary$json = const {
   '1': 'BillBeneficiary',
@@ -493,11 +495,13 @@ const CreateAutoRechargeRequest$json = const {
     const {'1': 'day_of_week', '3': 5, '4': 1, '5': 5, '10': 'dayOfWeek'},
     const {'1': 'day_of_month', '3': 6, '4': 1, '5': 5, '10': 'dayOfMonth'},
     const {'1': 'max_retries', '3': 7, '4': 1, '5': 5, '10': 'maxRetries'},
+    const {'1': 'execution_hour', '3': 8, '4': 1, '5': 5, '10': 'executionHour'},
+    const {'1': 'execution_minute', '3': 9, '4': 1, '5': 5, '10': 'executionMinute'},
   ],
 };
 
 /// Descriptor for `CreateAutoRechargeRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List createAutoRechargeRequestDescriptor = $convert.base64Decode('ChlDcmVhdGVBdXRvUmVjaGFyZ2VSZXF1ZXN0EiUKDmJlbmVmaWNpYXJ5X2lkGAEgASgJUg1iZW5lZmljaWFyeUlkEhYKBmFtb3VudBgCIAEoAVIGYW1vdW50EhoKCGN1cnJlbmN5GAMgASgJUghjdXJyZW5jeRIcCglmcmVxdWVuY3kYBCABKAlSCWZyZXF1ZW5jeRIeCgtkYXlfb2Zfd2VlaxgFIAEoBVIJZGF5T2ZXZWVrEiAKDGRheV9vZl9tb250aBgGIAEoBVIKZGF5T2ZNb250aBIfCgttYXhfcmV0cmllcxgHIAEoBVIKbWF4UmV0cmllcw==');
+final $typed_data.Uint8List createAutoRechargeRequestDescriptor = $convert.base64Decode('ChlDcmVhdGVBdXRvUmVjaGFyZ2VSZXF1ZXN0EiUKDmJlbmVmaWNpYXJ5X2lkGAEgASgJUg1iZW5lZmljaWFyeUlkEhYKBmFtb3VudBgCIAEoAVIGYW1vdW50EhoKCGN1cnJlbmN5GAMgASgJUghjdXJyZW5jeRIcCglmcmVxdWVuY3kYBCABKAlSCWZyZXF1ZW5jeRIeCgtkYXlfb2Zfd2VlaxgFIAEoBVIJZGF5T2ZXZWVrEiAKDGRheV9vZl9tb250aBgGIAEoBVIKZGF5T2ZNb250aBIfCgttYXhfcmV0cmllcxgHIAEoBVIKbWF4UmV0cmllcxIlCg5leGVjdXRpb25faG91chgIIAEoBVINZXhlY3V0aW9uSG91chIpChBleGVjdXRpb25fbWludXRlGAkgASgFUg9leGVjdXRpb25NaW51dGU=');
 @$core.Deprecated('Use createAutoRechargeResponseDescriptor instead')
 const CreateAutoRechargeResponse$json = const {
   '1': 'CreateAutoRechargeResponse',
@@ -539,11 +543,13 @@ const UpdateAutoRechargeRequest$json = const {
     const {'1': 'day_of_week', '3': 4, '4': 1, '5': 5, '10': 'dayOfWeek'},
     const {'1': 'day_of_month', '3': 5, '4': 1, '5': 5, '10': 'dayOfMonth'},
     const {'1': 'max_retries', '3': 6, '4': 1, '5': 5, '10': 'maxRetries'},
+    const {'1': 'execution_hour', '3': 7, '4': 1, '5': 5, '10': 'executionHour'},
+    const {'1': 'execution_minute', '3': 8, '4': 1, '5': 5, '10': 'executionMinute'},
   ],
 };
 
 /// Descriptor for `UpdateAutoRechargeRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateAutoRechargeRequestDescriptor = $convert.base64Decode('ChlVcGRhdGVBdXRvUmVjaGFyZ2VSZXF1ZXN0EigKEGF1dG9fcmVjaGFyZ2VfaWQYASABKAlSDmF1dG9SZWNoYXJnZUlkEhYKBmFtb3VudBgCIAEoAVIGYW1vdW50EhwKCWZyZXF1ZW5jeRgDIAEoCVIJZnJlcXVlbmN5Eh4KC2RheV9vZl93ZWVrGAQgASgFUglkYXlPZldlZWsSIAoMZGF5X29mX21vbnRoGAUgASgFUgpkYXlPZk1vbnRoEh8KC21heF9yZXRyaWVzGAYgASgFUgptYXhSZXRyaWVz');
+final $typed_data.Uint8List updateAutoRechargeRequestDescriptor = $convert.base64Decode('ChlVcGRhdGVBdXRvUmVjaGFyZ2VSZXF1ZXN0EigKEGF1dG9fcmVjaGFyZ2VfaWQYASABKAlSDmF1dG9SZWNoYXJnZUlkEhYKBmFtb3VudBgCIAEoAVIGYW1vdW50EhwKCWZyZXF1ZW5jeRgDIAEoCVIJZnJlcXVlbmN5Eh4KC2RheV9vZl93ZWVrGAQgASgFUglkYXlPZldlZWsSIAoMZGF5X29mX21vbnRoGAUgASgFUgpkYXlPZk1vbnRoEh8KC21heF9yZXRyaWVzGAYgASgFUgptYXhSZXRyaWVzEiUKDmV4ZWN1dGlvbl9ob3VyGAcgASgFUg1leGVjdXRpb25Ib3VyEikKEGV4ZWN1dGlvbl9taW51dGUYCCABKAVSD2V4ZWN1dGlvbk1pbnV0ZQ==');
 @$core.Deprecated('Use updateAutoRechargeResponseDescriptor instead')
 const UpdateAutoRechargeResponse$json = const {
   '1': 'UpdateAutoRechargeResponse',

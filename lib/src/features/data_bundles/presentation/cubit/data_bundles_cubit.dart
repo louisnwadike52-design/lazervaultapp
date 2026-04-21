@@ -1,11 +1,40 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../domain/entities/data_purchase_entity.dart';
 import '../../domain/repositories/data_bundles_repository.dart';
 import 'data_bundles_state.dart';
 
 class DataBundlesCubit extends Cubit<DataBundlesState> {
   final DataBundlesRepository repository;
 
+  /// Last data-purchase history page. The history screen reads this while a
+  /// fresh fetch is still in flight so the list doesn't flash empty.
+  List<DataPurchaseEntity>? cachedPurchases;
+
   DataBundlesCubit({required this.repository}) : super(DataBundlesInitial());
+
+  /// Load the recent data-bundle purchases from the unified bill-payment
+  /// history endpoint (filtered client-side to `data` + `intl_data`).
+  /// Seeds the landing "Recent Purchases" strip and any full-history
+  /// view that consumes [DataPurchaseHistoryLoaded].
+  Future<void> loadDataPurchaseHistory({int limit = 50, int offset = 0}) async {
+    if (isClosed) return;
+    emit(DataPurchaseHistoryLoading());
+    final result = await repository.getPurchaseHistory(
+      limit: limit,
+      offset: offset,
+    );
+    if (isClosed) return;
+    result.fold(
+      (failure) => emit(DataPurchaseHistoryError(message: failure.message)),
+      (purchases) {
+        cachedPurchases = purchases;
+        emit(DataPurchaseHistoryLoaded(
+          purchases: purchases,
+          isStale: false,
+        ));
+      },
+    );
+  }
 
   Future<void> getDataPlans({required String network}) async {
     if (isClosed) return;

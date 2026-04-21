@@ -28,6 +28,7 @@ class BillPaymentModel extends BillPaymentEntity {
     required super.updatedAt,
     super.completedAt,
     super.failedAt,
+    super.refundSource,
   });
 
   factory BillPaymentModel.fromProto(pb.BillPayment proto) {
@@ -56,6 +57,12 @@ class BillPaymentModel extends BillPaymentEntity {
       updatedAt: proto.updatedAt.toDateTime(),
       completedAt: proto.hasCompletedAt() ? proto.completedAt.toDateTime() : null,
       failedAt: proto.hasFailedAt() ? proto.failedAt.toDateTime() : null,
+      // proto3 scalars are non-nullable; normalise the default "" back
+      // to `null` so the entity's refund-aware getters read correctly.
+      refundSource:
+          proto.hasRefundSource() && proto.refundSource.isNotEmpty
+              ? proto.refundSource
+              : null,
     );
   }
 
@@ -108,6 +115,10 @@ class BillPaymentModel extends BillPaymentEntity {
 
     if (failedAt != null) {
       proto.failedAt = $timestamp.Timestamp.fromDateTime(failedAt!);
+    }
+
+    if (refundSource != null && refundSource!.isNotEmpty) {
+      proto.refundSource = refundSource!;
     }
 
     return proto;

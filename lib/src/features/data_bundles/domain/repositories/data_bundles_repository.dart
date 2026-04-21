@@ -18,6 +18,12 @@ abstract class DataBundlesRepository {
     required String idempotencyKey,
   });
 
+  /// Recent data purchases (domestic + international).
+  Future<Either<Failure, List<DataPurchaseEntity>>> getPurchaseHistory({
+    int limit = 50,
+    int offset = 0,
+  });
+
   // Auto-renewal (non-expiring data)
   Future<Either<Failure, void>> enableAutoRenew({
     required String subscriptionId,

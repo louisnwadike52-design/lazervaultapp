@@ -51,7 +51,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
           if (state is PlanMyDayLoading) {
             return const Center(
               child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4E03D0)),
               ),
             );
           }
@@ -93,7 +93,8 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
           color: category.color != null
-              ? Color(int.parse(category.color!.replaceAll('#', '0xFF')).withOpacity(0.3)
+              ? Color(int.parse(category.color!.replaceAll('#', '0xFF')))
+                  .withValues(alpha: 0.3)
               : Colors.grey[800]!,
         ),
       ),
@@ -106,7 +107,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
             decoration: BoxDecoration(
               color: category.color != null
                   ? Color(int.parse(category.color!.replaceAll('#', '0xFF')))
-                  : const Color(0xFF3B82F6),
+                  : const Color(0xFF4E03D0),
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: category.icon != null
@@ -149,7 +150,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
           // Actions
           if (onEdit != null)
             IconButton(
-              icon: const Icon(Icons.edit_outlined, color: Color(0xFF3B82F6), size: 20),
+              icon: const Icon(Icons.edit_outlined, color: Color(0xFF4E03D0), size: 20),
               onPressed: onEdit,
             ),
           if (onDelete != null)
@@ -189,7 +190,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
           ElevatedButton(
             onPressed: () => context.read<PlanMyDayCubit>().loadCategories(),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF3B82F6),
+              backgroundColor: const Color(0xFF4E03D0),
             ),
             child: const Text('Retry'),
           ),
@@ -228,9 +229,9 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
           ElevatedButton.icon(
             onPressed: () => _showCreateCategoryDialog(),
             icon: const Icon(Icons.add),
-            label: 'Create Category',
+            label: const Text('Create Category'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF3B82F6),
+              backgroundColor: const Color(0xFF4E03D0),
             ),
           ),
         ],
@@ -241,7 +242,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
   void _showCreateCategoryDialog() {
     final nameController = TextEditingController();
     String selectedIcon = 'label';
-    String selectedColor = '#3B82F6';
+    String selectedColor = '#4E03D0';
     String selectedType = 'both';
 
     showDialog(
@@ -274,7 +275,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8.r),
-                      borderSide: const BorderSide(color: Color(0xFF3B82F6)),
+                      borderSide: const BorderSide(color: Color(0xFF4E03D0)),
                     ),
                   ),
                 ),
@@ -304,7 +305,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                 onPressed: () => Navigator.pop(context),
                 child: const Text(
                   'Cancel',
-                  style: TextStyle(color: Color(0xFF3B82F6)),
+                  style: TextStyle(color: Color(0xFF4E03D0)),
                 ),
               ),
               ElevatedButton(
@@ -331,7 +332,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3B82F6),
+                  backgroundColor: const Color(0xFF4E03D0),
                 ),
                 child: const Text('Create', style: TextStyle(color: Colors.white)),
               ),
@@ -345,7 +346,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
   void _showEditCategoryDialog(Category category) {
     final nameController = TextEditingController(text: category.name);
     String selectedIcon = category.icon ?? 'label';
-    String selectedColor = category.color ?? '#3B82F6';
+    String selectedColor = category.color ?? '#4E03D0';
     String selectedType = category.type;
 
     showDialog(
@@ -375,8 +376,8 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                         borderSide: BorderSide(color: Colors.grey[800]!),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius(8.r),
-                        borderSide: const BorderSide(color: Color(0xFF3B82F6)),
+                        borderRadius: BorderRadius.circular(8.r),
+                        borderSide: const BorderSide(color: Color(0xFF4E03D0)),
                       ),
                     ),
                   ),
@@ -406,7 +407,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                 onPressed: () => Navigator.pop(context),
                 child: const Text(
                   'Cancel',
-                  style: TextStyle(color: Color(0xFF3B82F6)),
+                  style: TextStyle(color: Color(0xFF4E03D0)),
                 ),
               ),
               ElevatedButton(
@@ -433,7 +434,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3B82F6),
+                  backgroundColor: const Color(0xFF4E03D0),
                 ),
                 child: const Text('Save', style: TextStyle(color: Colors.white)),
               ),
@@ -462,7 +463,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
             onPressed: () => Navigator.pop(context),
             child: const Text(
               'Cancel',
-              style: TextStyle(color: Color(0xFF3B82F6)),
+              style: TextStyle(color: Color(0xFF4E03D0)),
             ),
           ),
           ElevatedButton(
@@ -527,12 +528,12 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? const Color(0xFF3B82F6).withOpacity(0.2)
+                      ? const Color(0xFF4E03D0).withValues(alpha: 0.2)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(8.r),
                   border: Border.all(
                     color: isSelected
-                        ? const Color(0xFF3B82F6)
+                        ? const Color(0xFF4E03D0)
                         : Colors.grey[700]!,
                   ),
                 ),
@@ -550,7 +551,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
 
   Widget _buildColorSelector(String selectedColor, Function(String) onSelected) {
     final colors = [
-      '#3B82F6', // Blue
+      '#4E03D0', // Blue
       '#10B981', // Green
       '#F59E0B', // Orange
       '#EF4444', // Red
@@ -632,7 +633,7 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
             value: type.$1,
             groupValue: selectedType,
             onChanged: (value) => onSelected(value!),
-            activeColor: const Color(0xFF3B82F6),
+            activeColor: const Color(0xFF4E03D0),
             contentPadding: EdgeInsets.zero,
           );
         }).toList(),

@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../data/models/crypto_wallet_model.dart';
 import '../domain/entities/crypto_entity.dart';
 import '../domain/entities/global_market_data.dart';
 import '../domain/entities/price_point.dart';
@@ -22,6 +23,7 @@ class CryptosLoaded extends CryptoState {
   final List<CryptoWatchlist> watchlists;
   final List<CryptoHolding> holdings;
   final List<CryptoTransaction> transactions;
+  final List<CryptoWalletModel> wallets;
   final GlobalMarketData? globalMarketData;
   final String? searchQuery;
   final bool isSearching;
@@ -34,6 +36,7 @@ class CryptosLoaded extends CryptoState {
     this.watchlists = const [],
     this.holdings = const [],
     this.transactions = const [],
+    this.wallets = const [],
     this.globalMarketData,
     this.searchQuery,
     this.isSearching = false,
@@ -48,6 +51,7 @@ class CryptosLoaded extends CryptoState {
         watchlists,
         holdings,
         transactions,
+        wallets,
         globalMarketData,
         searchQuery,
         isSearching,
@@ -63,6 +67,7 @@ class CryptosLoaded extends CryptoState {
     List<CryptoWatchlist>? watchlists,
     List<CryptoHolding>? holdings,
     List<CryptoTransaction>? transactions,
+    List<CryptoWalletModel>? wallets,
     GlobalMarketData? globalMarketData,
     String? searchQuery,
     bool clearSearchQuery = false,
@@ -76,6 +81,7 @@ class CryptosLoaded extends CryptoState {
       watchlists: watchlists ?? this.watchlists,
       holdings: holdings ?? this.holdings,
       transactions: transactions ?? this.transactions,
+      wallets: wallets ?? this.wallets,
       globalMarketData: globalMarketData ?? this.globalMarketData,
       searchQuery: clearSearchQuery ? null : (searchQuery ?? this.searchQuery),
       isSearching: isSearching ?? this.isSearching,

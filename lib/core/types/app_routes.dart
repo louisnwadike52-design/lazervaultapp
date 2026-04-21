@@ -48,8 +48,6 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String electricityBillBeneficiaries = '/electricity-bill/beneficiaries';
   static const String electricityBillAddBeneficiary = '/electricity-bill/beneficiaries/add';
   static const String electricityBillAutoRecharge = '/electricity-bill/auto-recharge';
-  static const String electricityBillCreateAutoRecharge = '/electricity-bill/auto-recharge/create';
-  static const String electricityBillEditAutoRecharge = '/electricity-bill/auto-recharge/edit';
   static const String electricityBillReminders = '/electricity-bill/reminders';
   static const String electricityBillCreateReminder = '/electricity-bill/reminders/create';
 
@@ -60,6 +58,12 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String cableTVPaymentConfirmation = '/cable-tv/payment-confirmation';
   static const String cableTVPaymentProcessing = '/cable-tv/payment-processing';
   static const String cableTVPaymentReceipt = '/cable-tv/payment-receipt';
+  static const String cableTVBeneficiaries = '/cable-tv/beneficiaries';
+  static const String cableTVAutoRecharge = '/cable-tv/auto-recharge';
+  static const String cableTVAutoRechargeCreate = '/cable-tv/auto-recharge/create';
+  static const String cableTVReminders = '/cable-tv/reminders';
+  static const String cableTVReminderCreate = '/cable-tv/reminders/create';
+  static const String cableTVHistory = '/cable-tv/history';
 
   // Internet Bill Routes
   static const String internetBillHome = '/internet-bill';
@@ -68,6 +72,17 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String internetPaymentConfirmation = '/internet-bill/payment-confirmation';
   static const String internetPaymentProcessing = '/internet-bill/payment-processing';
   static const String internetPaymentReceipt = '/internet-bill/payment-receipt';
+  // Quick-access sub-pages — mirror the data bundles sub-page set
+  // so the internet landing has the same Saved / Rollover / Reminders
+  // / History entry points.
+  static const String internetBillSaved = '/internet-bill/saved';
+  static const String internetBillRollover = '/internet-bill/rollover';
+  static const String internetBillRolloverCreate =
+      '/internet-bill/rollover/create';
+  static const String internetBillReminders = '/internet-bill/reminders';
+  static const String internetBillReminderCreate =
+      '/internet-bill/reminders/create';
+  static const String internetBillHistory = '/internet-bill/history';
 
   // Education PIN Routes
   static const String educationHome = '/education';
@@ -77,14 +92,24 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String educationPinResult = '/education/pin-result';
   static const String educationHistory = '/education/history';
   static const String educationPinDetails = '/education/pin-details';
+  static const String educationSavedCandidates = '/education/saved-candidates';
+  static const String educationReminders = '/education/reminders';
+  static const String educationRemindersCreate = '/education/reminders/create';
 
-  // Water Bill Routes
+  // Water Bill Routes (Refactored)
   static const String waterBillHome = '/water-bill';
   static const String waterBillCustomerInput = '/water-bill/customer-input';
   static const String waterBillPaymentConfirmation = '/water-bill/payment-confirmation';
   static const String waterBillPaymentProcessing = '/water-bill/payment-processing';
   static const String waterBillPaymentReceipt = '/water-bill/payment-receipt';
   static const String waterBillHistory = '/water-bill/history';
+  static const String waterBillSavedAccounts = '/water-bill/saved-accounts';
+  static const String waterBillAutoRecharge = '/water-bill/auto-recharge';
+  static const String waterBillAutoRechargeCreate =
+      '/water-bill/auto-recharge/create';
+  static const String waterBillReminders = '/water-bill/reminders';
+  static const String waterBillRemindersCreate =
+      '/water-bill/reminders/create';
 
   // Data Bundles Routes
   static const String dataBundlesHome = '/data-bundles';
@@ -94,6 +119,39 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String dataBundlesPaymentProcessing = '/data-bundles/payment-processing';
   static const String dataBundlesPaymentReceipt = '/data-bundles/payment-receipt';
   static const String autoRenewManagement = '/data-bundles/auto-renew';
+  // International data (Reloadly-backed) — mirrors intl_airtime structure.
+  // Reuses Reloadly's /operators?dataOnly=true and /topups endpoints per
+  // provider docs (same audience as airtime; no separate API).
+  static const String intlDataCountrySelection = '/data-bundles/intl/country-selection';
+  static const String intlDataOperatorSelection = '/data-bundles/intl/operator-selection';
+  static const String intlDataBundleSelection = '/data-bundles/intl/bundle-selection';
+  static const String intlDataReview = '/data-bundles/intl/review';
+  static const String intlDataReceipt = '/data-bundles/intl/receipt';
+  // Alias for the consolidated single-screen purchase flow so code
+  // mirroring the intl_airtime convention (AppRoutes.intlAirtimePurchase
+  // is a single entry point) keeps its `Get.toNamed(intlDataPurchase)`
+  // call sites readable. Resolves to the same screen as
+  // intlDataCountrySelection in app_router.dart.
+  static const String intlDataPurchase = '/data-bundles/intl/purchase';
+  static const String intlDataCheckout = '/data-bundles/intl/checkout';
+  static const String intlDataProcessing = '/data-bundles/intl/processing';
+  // Shared data utilities: beneficiaries, rollover (auto-recharge for
+  // data), reminders, and the all-flows history view with a `scope` arg
+  // ('local'|'intl') mirroring airtimeHistory.
+  static const String dataBundlesBeneficiaries = '/data-bundles/beneficiaries';
+  static const String dataBundlesRollover = '/data-bundles/rollover';
+  static const String dataBundlesRolloverCreate = '/data-bundles/rollover/create';
+  static const String dataBundlesReminders = '/data-bundles/reminders';
+  static const String dataBundlesReminderCreate = '/data-bundles/reminders/create';
+  static const String dataBundlesHistory = '/data-bundles/history';
+  // International data management screens — filter the shared
+  // data_beneficiaries / data_auto_recharges / data_reminders tables
+  // by country_code != 'NG'.
+  static const String intlDataBeneficiaries = '/data-bundles/intl/beneficiaries';
+  static const String intlDataAutoRecharge = '/data-bundles/intl/auto-recharge';
+  static const String intlDataAutoRechargeCreate = '/data-bundles/intl/auto-recharge/create';
+  static const String intlDataReminders = '/data-bundles/intl/reminders';
+  static const String intlDataReminderCreate = '/data-bundles/intl/reminders/create';
 
   // Subscription Tracker Routes
   static const String subscriptionDashboard = '/subscriptions/dashboard';
@@ -254,8 +312,13 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
 
   // Airtime Routes
   static const String airtime = '/airtime';
-  static const String airtimeCountrySelection = '/airtime/country-selection';
-  static const String airtimeNetworkSelection = '/airtime/network-selection';
+
+  // International Airtime Routes
+  static const String intlAirtimeCountrySelection = '/airtime/intl/country-selection';
+  static const String intlAirtimePurchase = '/airtime/intl/purchase';
+  static const String intlAirtimeReview = '/airtime/intl/review';
+  static const String intlAirtimeReceipt = '/airtime/intl/receipt';
+  static const String airtimePurchase = '/airtime/purchase';
   static const String airtimeRecipientInput = '/airtime/recipient-input';
   static const String airtimeAmountSelection = '/airtime/amount-selection';
   static const String airtimeReview = '/airtime/review';
@@ -263,9 +326,12 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String airtimePaymentConfirmation = '/airtime/payment-confirmation';
   static const String airtimeHistory = '/airtime/history';
   static const String airtimeDetails = '/airtime/details';
+  static const String airtimeBeneficiaries = '/airtime/beneficiaries';
+  static const String airtimeAutoRecharge = '/airtime/auto-recharge';
+  static const String airtimeReminders = '/airtime/reminders';
+  static const String airtimeCreateReminder = '/airtime/reminders/create';
   static const String airtimeTransfer = '/airtime/transfer';
-  static const String airtimeTransferReview = '/airtime/transfer-review';
-
+  static const String airtimeTransferReview = '/airtime/transfer/review';
   // AutoSave Routes
   static const String autoSave = '/auto-save';
   static const String autoSaveDashboard = '/auto-save';
@@ -435,6 +501,7 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   // KYC Routes
   static const String kycProgressive = '/kyc/progressive';
   static const String kycVerifyId = '/kyc/verify-id';
+  static const String kycBVNVerification = '/kyc/bvn-verification';
   static const String kycStatus = '/kyc/status';
   static const String kycDocuments = '/kyc/documents';
   static const String kycSkip = '/kyc/skip';
@@ -495,19 +562,26 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   static const String channelActivation = '/settings/channels/activate';
   static const String channelPinSetup = '/settings/channels/pin-setup';
 
-  // Airtime-to-Cash Routes
+  // Airtime-to-Cash Routes (Dual Provider: VTU Africa + Automation)
   static const String airtimeToCash = '/airtime-to-cash';
-  static const String airtimeToCashNetworkSelection = '/airtime-to-cash/network-selection';
-  static const String airtimeToCashServiceVerification = '/airtime-to-cash/service-verification';
-  static const String airtimeToCashTransferInstructions = '/airtime-to-cash/transfer-instructions';
-  static const String airtimeToCashPhoneInput = '/airtime-to-cash/phone-input';
-  static const String airtimeToCashAmountInput = '/airtime-to-cash/amount-input';
+  static const String airtimeToCashProviderSelect = '/airtime-to-cash/select';
+  static const String airtimeToCashVtuafrica = '/airtime-to-cash/vtuafrica';
+  static const String airtimeToCashVtuafricaTransfer = '/airtime-to-cash/vtuafrica/transfer';
+  static const String airtimeToCashAutomation = '/airtime-to-cash/automation';
+  static const String airtimeToCashSuccess = '/airtime-to-cash/success';
+  static const String airtimeToCashPending = '/airtime-to-cash/pending';
+  static const String airtimeToCashHistory = '/airtime-to-cash/history';
+
+  // Legacy Routes (for backward compatibility)
   static const String airtimeToCashReview = '/airtime-to-cash/review';
-  static const String airtimeToCashOTP = '/airtime-to-cash/otp';
-  static const String airtimeToCashPinInput = '/airtime-to-cash/pin-input';
   static const String airtimeToCashProcessing = '/airtime-to-cash/processing';
   static const String airtimeToCashResult = '/airtime-to-cash/result';
-  static const String airtimeToCashHistory = '/airtime-to-cash/history';
+  static const String airtimeToCashNetworkSelection = '/airtime-to-cash/network-selection';
+  static const String airtimeToCashOTP = '/airtime-to-cash/otp';
+  static const String airtimeToCashPhoneInput = '/airtime-to-cash/phone-input';
+  static const String airtimeToCashPinInput = '/airtime-to-cash/pin-input';
+  static const String airtimeToCashServiceVerification = '/airtime-to-cash/service-verification';
+  static const String airtimeToCashTransferInstructions = '/airtime-to-cash/transfer-instructions';
 
   // Debug Routes (Remove before production)
   static const String debugSettings = '/debug/settings';

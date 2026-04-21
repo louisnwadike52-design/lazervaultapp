@@ -298,7 +298,7 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
           ElevatedButton(
             onPressed: () => Get.back(),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF3B82F6),
+              backgroundColor: const Color(0xFF4E03D0),
               padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.r),
@@ -326,7 +326,7 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
           CircularProgressIndicator(
             strokeWidth: 3,
             valueColor:
-                const AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                const AlwaysStoppedAnimation<Color>(Color(0xFF4E03D0)),
           ),
           SizedBox(height: 24.h),
           Text(
@@ -385,7 +385,7 @@ class _NetworkSelectionScreenState extends State<NetworkSelectionScreen> {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF3B82F6),
+                    backgroundColor: const Color(0xFF4E03D0),
                     padding:
                         EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                     shape: RoundedRectangleBorder(

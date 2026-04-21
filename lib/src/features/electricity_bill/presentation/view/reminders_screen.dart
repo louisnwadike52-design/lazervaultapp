@@ -17,6 +17,11 @@ class RemindersScreen extends StatefulWidget {
 }
 
 class _RemindersScreenState extends State<RemindersScreen> {
+  /// Cached list from the most recent successful load. Refetches after
+  /// create/complete/delete render the cached list instead of flashing a
+  /// full-screen spinner.
+  List<PaymentReminderEntity>? _cachedList;
+
   @override
   void initState() {
     super.initState();
@@ -41,6 +46,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
   }
 
   void _deleteReminder(PaymentReminderEntity reminder) {
+    if (!mounted) return;
     Get.dialog(
       AlertDialog(
         backgroundColor: const Color(0xFF1A1A3E),
@@ -78,7 +84,9 @@ class _RemindersScreenState extends State<RemindersScreen> {
           TextButton(
             onPressed: () {
               Get.back();
-              context.read<ReminderCubit>().deleteReminder(reminderId: reminder.id);
+              if (mounted) {
+                context.read<ReminderCubit>().deleteReminder(reminderId: reminder.id);
+              }
             },
             child: Text(
               'Delete',
@@ -118,6 +126,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                 child: BlocConsumer<ReminderCubit, ReminderState>(
                   listener: (context, state) {
                     if (state is ReminderError) {
+                      if (!mounted) return;
                       Get.snackbar(
                         'Error',
                         state.message,
@@ -127,6 +136,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                     }
 
                     if (state is ReminderDeleted) {
+                      if (!mounted) return;
                       Get.snackbar(
                         'Success',
                         state.message,
@@ -137,6 +147,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                     }
 
                     if (state is ReminderCompleted) {
+                      if (!mounted) return;
                       Get.snackbar(
                         'Success',
                         state.message,
@@ -145,29 +156,44 @@ class _RemindersScreenState extends State<RemindersScreen> {
                       );
                       context.read<ReminderCubit>().getReminders();
                     }
+
+                    // New reminders created from the dedicated create screen
+                    // (which uses the SAME ReminderCubit instance via the
+                    // DI graph) broadcast ReminderCreated. Re-fetching here
+                    // means the list refreshes reactively as soon as the
+                    // user returns — no manual pull-to-refresh needed.
+                    if (state is ReminderCreated) {
+                      if (mounted) {
+                        context.read<ReminderCubit>().getReminders();
+                      }
+                    }
+                    if (state is ReminderUpdated) {
+                      if (mounted) {
+                        context.read<ReminderCubit>().getReminders();
+                      }
+                    }
                   },
                   builder: (context, state) {
-                    if (state is ReminderLoading) {
+                    if (state is RemindersLoaded) {
+                      _cachedList = state.reminders;
+                    }
+                    final list = _cachedList;
+                    if (list == null) {
                       return const Center(
                         child: CircularProgressIndicator(color: Color(0xFF4E03D0)),
                       );
                     }
-
-                    if (state is RemindersLoaded) {
-                      if (state.reminders.isEmpty) {
-                        return _buildEmptyState();
-                      }
-
+                    if (list.isEmpty) {
+                      return _buildEmptyState();
+                    }
+                    {
                       // Separate upcoming and past reminders
-                      final active = state.reminders
-                          .where((r) => r.isActive && !r.isDue)
-                          .toList();
-                      final due = state.reminders
-                          .where((r) => r.isActive && r.isDue)
-                          .toList();
-                      final completed = state.reminders
-                          .where((r) => r.isCompleted)
-                          .toList();
+                      final active =
+                          list.where((r) => r.isActive && !r.isDue).toList();
+                      final due =
+                          list.where((r) => r.isActive && r.isDue).toList();
+                      final completed =
+                          list.where((r) => r.isCompleted).toList();
 
                       return RefreshIndicator(
                         onRefresh: () async {
@@ -207,8 +233,6 @@ class _RemindersScreenState extends State<RemindersScreen> {
                         ),
                       );
                     }
-
-                    return _buildEmptyState();
                   },
                 ),
               ),
@@ -217,8 +241,17 @@ class _RemindersScreenState extends State<RemindersScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Get.toNamed(AppRoutes.electricityBillCreateReminder);
+        onPressed: () async {
+          final cubit = context.read<ReminderCubit>();
+          await Get.toNamed(AppRoutes.electricityBillCreateReminder);
+          // Defensive refresh on pop — the BlocListener above already
+          // reacts to ReminderCreated when the create screen shares this
+          // cubit, but re-fetching here covers the case where the user
+          // pops without creating (stale list after a previous delete/
+          // complete race) and the case where the create screen uses a
+          // different cubit instance.
+          if (!mounted) return;
+          cubit.getReminders();
         },
         backgroundColor: const Color(0xFF4E03D0),
         icon: Icon(Icons.add, size: 24.sp),

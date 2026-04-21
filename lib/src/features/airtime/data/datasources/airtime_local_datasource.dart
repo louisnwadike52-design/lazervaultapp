@@ -628,7 +628,9 @@ class AirtimeLocalDataSourceImpl implements AirtimeLocalDataSource {
       'shortName': 'MTN',
       'type': 'mtn',
       'countryCode': 'NG',
-      'prefixes': ['0803', '0806', '0813', '0816', '0903', '0906', '0913', '0916'],
+      // Per NCC allocation tables: MTN owns 0803 0806 0810 0813 0814 0816
+      // 0903 0906 0913 0916 plus the 0704 prefix from the Visafone takeover.
+      'prefixes': ['0803', '0806', '0810', '0813', '0814', '0816', '0903', '0906', '0913', '0916', '0704'],
       'logo': 'assets/images/mtn_logo.png',
       'primaryColor': '#FFCC00',
       'isActive': true,
@@ -643,7 +645,9 @@ class AirtimeLocalDataSourceImpl implements AirtimeLocalDataSource {
       'shortName': 'Airtel',
       'type': 'airtel',
       'countryCode': 'NG',
-      'prefixes': ['0802', '0808', '0812', '0901', '0904', '0907', '0912'],
+      // Per NCC: Airtel owns 0801 0802 0808 0812 plus 0901 0902 0904 0907 0912.
+      // Adding 0801 and 0902 fixes "stuck at detecting" for those prefixes.
+      'prefixes': ['0801', '0802', '0808', '0812', '0901', '0902', '0904', '0907', '0912'],
       'logo': 'assets/images/airtel_logo.png',
       'primaryColor': '#FF0000',
       'isActive': true,
@@ -657,7 +661,8 @@ class AirtimeLocalDataSourceImpl implements AirtimeLocalDataSource {
       'name': 'Globacom Nigeria',
       'type': 'glo',
       'countryCode': 'NG',
-      'prefixes': ['0805', '0807', '0815', '0905', '0915'],
+      // Per NCC: Glo owns 0805 0807 0811 0815 plus 0905 0915.
+      'prefixes': ['0805', '0807', '0811', '0815', '0905', '0915'],
       'logoUrl': null,
       'primaryColor': '#00FF00',
       'isActive': true,

@@ -208,6 +208,7 @@ class Portfolio extends Equatable {
   final DateTime lastUpdated;
   final double availableCash;
   final double totalInvested;
+  final double dividendIncome;
 
   const Portfolio({
     required this.id,
@@ -221,7 +222,12 @@ class Portfolio extends Equatable {
     required this.lastUpdated,
     required this.availableCash,
     required this.totalInvested,
+    this.dividendIncome = 0.0,
   });
+
+  /// Number of distinct stocks currently held — surfaced by the analytics
+  /// card on the portfolio screen.
+  int get stockCount => holdings.length;
 
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -328,6 +334,43 @@ class StockHolding extends Equatable {
     logoUrl: json['logoUrl'] as String,
   );
 
+  /// Alias for `shares` — older UIs call this field `quantity`.
+  int get quantity => shares;
+
+  /// Alias for `averageCost` — older UIs call this `averagePrice`.
+  double get averagePrice => averageCost;
+
+  /// Convenience accessor that returns a lightweight `Stock` wrapper so
+  /// screens that expect `holding.stock.symbol` / `.name` / `.currentPrice`
+  /// keep working without a separate lookup.
+  Stock get stock => Stock(
+        symbol: symbol,
+        name: name,
+        currentPrice: currentPrice,
+        previousClose: currentPrice - dayChange,
+        change: dayChange,
+        changePercent: dayChangePercent,
+        dayHigh: currentPrice,
+        dayLow: currentPrice,
+        volume: 0,
+        marketCap: 0,
+        peRatio: 0,
+        dividendYield: 0,
+        sector: '',
+        industry: '',
+        logoUrl: logoUrl,
+        priceHistory: const [],
+        lastUpdated: DateTime.now(),
+        weekHigh52: currentPrice,
+        weekLow52: currentPrice,
+        avgVolume: 0,
+        beta: 0,
+        eps: 0,
+        description: '',
+        exchange: '',
+        currency: 'NGN',
+      );
+
   @override
   List<Object?> get props => [
         symbol,
@@ -348,49 +391,67 @@ class StockHolding extends Equatable {
 class StockOrder extends Equatable {
   final String id;
   final String symbol;
-  final OrderType type;
+  final OrderType orderType;
   final OrderSide side;
   final int quantity;
   final double? price;
-  final OrderStatus status;
+  final OrderStatus orderStatus;
   final DateTime createdAt;
   final DateTime? executedAt;
   final double? executedPrice;
   final int? executedQuantity;
   final double? fees;
   final String? notes;
+  final String currency;
 
   const StockOrder({
     required this.id,
     required this.symbol,
-    required this.type,
+    required this.orderType,
     required this.side,
     required this.quantity,
     this.price,
-    required this.status,
+    required this.orderStatus,
     required this.createdAt,
     this.executedAt,
     this.executedPrice,
     this.executedQuantity,
     this.fees,
     this.notes,
+    this.currency = 'NGN',
   });
+
+  /// String-form side, used by views that want a simple "buy"/"sell" label.
+  String get type => side.name;
+
+  /// String-form status. The enum values are the canonical set — we just
+  /// expose the name so consumers can compare with `.toLowerCase()`.
+  String get status => orderStatus.name;
+
+  /// Total value of the order (price * quantity). Falls back to the
+  /// executed price/quantity pair when the order has already been filled.
+  double get totalValue {
+    final effectivePrice = executedPrice ?? price ?? 0.0;
+    final effectiveQty = executedQuantity ?? quantity;
+    return effectivePrice * effectiveQty;
+  }
 
   @override
   List<Object?> get props => [
         id,
         symbol,
-        type,
+        orderType,
         side,
         quantity,
         price,
-        status,
+        orderStatus,
         createdAt,
         executedAt,
         executedPrice,
         executedQuantity,
         fees,
         notes,
+        currency,
       ];
 }
 

@@ -1,19 +1,34 @@
 import '../../domain/airtime_fee_config.dart';
+import '../../domain/entities/airtime_auto_recharge.dart';
+import '../../domain/entities/airtime_beneficiary.dart';
+import '../../domain/entities/airtime_reminder.dart';
 import '../../domain/entities/airtime_transaction.dart';
 import '../../domain/entities/country.dart';
 import '../../domain/entities/network_provider.dart';
 import '../../domain/repositories/airtime_repository.dart';
+import '../datasources/airtime_beneficiary_remote_datasource.dart';
 import '../datasources/airtime_local_datasource.dart';
 import '../datasources/airtime_remote_datasource.dart';
 
 class AirtimeRepositoryImpl implements AirtimeRepository {
   final AirtimeLocalDataSource localDataSource;
   final AirtimeRemoteDataSource? remoteDataSource;
+  final AirtimeBeneficiaryRemoteDataSource? beneficiaryDataSource;
 
   AirtimeRepositoryImpl({
     required this.localDataSource,
     this.remoteDataSource,
+    this.beneficiaryDataSource,
   });
+
+  AirtimeBeneficiaryRemoteDataSource get _bds {
+    final ds = beneficiaryDataSource;
+    if (ds == null) {
+      throw Exception(
+          'Airtime beneficiary datasource not available. Please check your connection.');
+    }
+    return ds;
+  }
 
   @override
   Future<List<Country>> getCountries() async {
@@ -168,12 +183,19 @@ class AirtimeRepositoryImpl implements AirtimeRepository {
 
   @override
   Future<List<AirtimeTransaction>> getTransactionHistory(String userId) async {
-    // Try remote first
+    // Try remote first. We deliberately DO NOT pass `billType` so the
+    // unified `GetBillPaymentHistory` endpoint returns rows from all
+    // three airtime families — domestic (`airtime`), international
+    // (`intl_airtime`), and airtime-to-cash (`airtime_to_cash`). The
+    // datasource then filters client-side to those three so electricity
+    // / water / cable rows from the same endpoint don't pollute the
+    // airtime history screen. The backend doesn't support an IN-filter
+    // on bill_type (single-value match only), so this is the minimum
+    // number of round trips.
     if (remoteDataSource != null) {
       try {
         final transactions = await remoteDataSource!.getHistory(
-          billType: 'airtime',
-          limit: 50,
+          limit: 100,
         );
         if (transactions.isNotEmpty) return transactions;
       } catch (e) {
@@ -377,5 +399,181 @@ class AirtimeRepositoryImpl implements AirtimeRepository {
         }
     }
     return phoneNumber;
+  }
+
+  // ===================== Beneficiaries =====================
+  @override
+  Future<List<AirtimeBeneficiary>> getAirtimeBeneficiaries(
+      {String? networkCode}) {
+    return _bds.getBeneficiaries(networkCode: networkCode);
+  }
+
+  @override
+  Future<AirtimeBeneficiary> saveAirtimeBeneficiary({
+    required String phoneNumber,
+    required String networkCode,
+    required String networkName,
+    String? nickname,
+    String countryCode = 'NG',
+    String? operatorId,
+  }) {
+    return _bds.saveBeneficiary(
+      phoneNumber: phoneNumber,
+      networkCode: networkCode,
+      networkName: networkName,
+      nickname: nickname,
+      countryCode: countryCode,
+      operatorId: operatorId,
+    );
+  }
+
+  @override
+  Future<AirtimeBeneficiary?> updateAirtimeBeneficiary({
+    required String beneficiaryId,
+    String? nickname,
+  }) {
+    return _bds.updateBeneficiary(
+      beneficiaryId: beneficiaryId,
+      nickname: nickname,
+    );
+  }
+
+  @override
+  Future<void> deleteAirtimeBeneficiary(String beneficiaryId) {
+    return _bds.deleteBeneficiary(beneficiaryId);
+  }
+
+  // ===================== Auto-recharges =====================
+  @override
+  Future<List<AirtimeAutoRecharge>> getAirtimeAutoRecharges({String? status}) {
+    return _bds.getAutoRecharges(status: status);
+  }
+
+  @override
+  Future<AirtimeAutoRecharge> createAirtimeAutoRecharge({
+    required String beneficiaryId,
+    required double amount,
+    required String currency,
+    required String frequency,
+    int dayOfWeek = 0,
+    int dayOfMonth = 1,
+    int maxRetries = 3,
+    int? executionHour,
+    int? executionMinute,
+  }) {
+    return _bds.createAutoRecharge(
+      beneficiaryId: beneficiaryId,
+      amount: amount,
+      currency: currency,
+      frequency: frequency,
+      dayOfWeek: dayOfWeek,
+      dayOfMonth: dayOfMonth,
+      maxRetries: maxRetries,
+      executionHour: executionHour,
+      executionMinute: executionMinute,
+    );
+  }
+
+  @override
+  Future<AirtimeAutoRecharge> updateAirtimeAutoRecharge({
+    required String autoRechargeId,
+    double? amount,
+    String? frequency,
+    int? dayOfWeek,
+    int? dayOfMonth,
+    int? maxRetries,
+    int? executionHour,
+    int? executionMinute,
+  }) {
+    return _bds.updateAutoRecharge(
+      autoRechargeId: autoRechargeId,
+      amount: amount,
+      frequency: frequency,
+      dayOfWeek: dayOfWeek,
+      dayOfMonth: dayOfMonth,
+      maxRetries: maxRetries,
+      executionHour: executionHour,
+      executionMinute: executionMinute,
+    );
+  }
+
+  @override
+  Future<void> pauseAirtimeAutoRecharge(String autoRechargeId) {
+    return _bds.pauseAutoRecharge(autoRechargeId);
+  }
+
+  @override
+  Future<void> resumeAirtimeAutoRecharge(String autoRechargeId) {
+    return _bds.resumeAutoRecharge(autoRechargeId);
+  }
+
+  @override
+  Future<void> deleteAirtimeAutoRecharge(String autoRechargeId) {
+    return _bds.deleteAutoRecharge(autoRechargeId);
+  }
+
+  // ===================== Reminders =====================
+  @override
+  Future<List<AirtimeReminder>> getAirtimeReminders({
+    String? status,
+    bool includePast = false,
+  }) {
+    return _bds.getReminders(status: status, includePast: includePast);
+  }
+
+  @override
+  Future<AirtimeReminder> createAirtimeReminder({
+    required String beneficiaryId,
+    required String title,
+    String? description,
+    required String reminderDate,
+    double? amount,
+    String? currency,
+    bool isRecurring = false,
+    String? recurrenceType,
+  }) {
+    return _bds.createReminder(
+      beneficiaryId: beneficiaryId,
+      title: title,
+      description: description,
+      reminderDate: reminderDate,
+      amount: amount,
+      currency: currency,
+      isRecurring: isRecurring,
+      recurrenceType: recurrenceType,
+    );
+  }
+
+  @override
+  Future<void> updateAirtimeReminder({
+    required String reminderId,
+    String? title,
+    String? description,
+    String? reminderDate,
+    double? amount,
+    String? currency,
+    bool? isRecurring,
+    String? recurrenceType,
+  }) {
+    return _bds.updateReminder(
+      reminderId: reminderId,
+      title: title,
+      description: description,
+      reminderDate: reminderDate,
+      amount: amount,
+      currency: currency,
+      isRecurring: isRecurring,
+      recurrenceType: recurrenceType,
+    );
+  }
+
+  @override
+  Future<void> markReminderComplete(String reminderId) {
+    return _bds.markReminderComplete(reminderId);
+  }
+
+  @override
+  Future<void> deleteAirtimeReminder(String reminderId) {
+    return _bds.deleteReminder(reminderId);
   }
 }

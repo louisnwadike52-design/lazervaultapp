@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../../core/types/app_routes.dart';
+import '../../../widgets/bill_receipt_qr_block.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../domain/entities/cable_tv_payment_entity.dart';
@@ -264,6 +265,27 @@ class _CableTVPaymentReceiptScreenState
                           ],
                         ],
                       ),
+                    ),
+                    SizedBox(height: 20.h),
+                    BillReceiptQrBlock(
+                      type: 'cable_tv',
+                      reference: payment.reference,
+                      amount: payment.amount,
+                      currency: 'NGN',
+                      status: payment.status,
+                      timestamp: DateTime.tryParse(payment.createdAt) ??
+                          DateTime.now(),
+                      showDivider: false,
+                      extraPayload: {
+                        if (payment.customerNumber.isNotEmpty)
+                          'smart_card': payment.customerNumber,
+                        if (payment.providerId.isNotEmpty)
+                          'provider_id': payment.providerId,
+                        if (payment.billType.isNotEmpty)
+                          'bill_type': payment.billType,
+                        if (payment.customerName.isNotEmpty)
+                          'customer': payment.customerName,
+                      },
                     ),
                     SizedBox(height: 32.h),
                   ],

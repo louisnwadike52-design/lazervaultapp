@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Material Icon: send (arrow) -->
+<!-- Material Icon: send (arrow). Sized 48dp and tint-free so
+     ShortcutManager.setDynamicShortcuts can rasterise it reliably
+     across API levels (the root `android:tint` attribute caused
+     quick_action_setshortcutitems_failure on some devices). -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="24dp"
-    android:height="24dp"
+    android:width="48dp"
+    android:height="48dp"
     android:viewportWidth="24"
-    android:viewportHeight="24"
-    android:tint="#3B82F6">
+    android:viewportHeight="24">
     <path
-        android:fillColor="#FFFFFF"
+        android:fillColor="#3B82F6"
         android:pathData="M2.01,21L23,12 2.01,3 2,10l15,2 -15,2z" />
 </vector>

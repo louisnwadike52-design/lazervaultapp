@@ -7,6 +7,8 @@ class WaterProviderModel extends WaterProviderEntity {
     super.logoUrl,
     super.supportedStates,
     super.isActive,
+    super.minAmount,
+    super.maxAmount,
   });
 
   factory WaterProviderModel.fromJson(Map<String, dynamic> json) {
@@ -18,6 +20,8 @@ class WaterProviderModel extends WaterProviderEntity {
           ? List<String>.from(json['supported_states'] as List)
           : [],
       isActive: json['is_active'] as bool? ?? true,
+      minAmount: (json['min_amount'] as num?)?.toDouble() ?? 0,
+      maxAmount: (json['max_amount'] as num?)?.toDouble() ?? 0,
     );
   }
 
@@ -28,6 +32,8 @@ class WaterProviderModel extends WaterProviderEntity {
       'logo_url': logoUrl,
       'supported_states': supportedStates,
       'is_active': isActive,
+      'min_amount': minAmount,
+      'max_amount': maxAmount,
     };
   }
 
@@ -37,6 +43,8 @@ class WaterProviderModel extends WaterProviderEntity {
     String? logoUrl,
     List<String>? supportedStates,
     bool? isActive,
+    double? minAmount,
+    double? maxAmount,
   }) {
     return WaterProviderModel(
       providerCode: providerCode ?? this.providerCode,
@@ -44,6 +52,8 @@ class WaterProviderModel extends WaterProviderEntity {
       logoUrl: logoUrl ?? this.logoUrl,
       supportedStates: supportedStates ?? this.supportedStates,
       isActive: isActive ?? this.isActive,
+      minAmount: minAmount ?? this.minAmount,
+      maxAmount: maxAmount ?? this.maxAmount,
     );
   }
 }

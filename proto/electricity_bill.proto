@@ -247,6 +247,12 @@ message BillPayment {
   google.protobuf.Timestamp updated_at = 23;
   string error_message = 24;
   google.protobuf.Timestamp failed_at = 25;
+  string phone_number = 26;
+  // Non-empty when the user's money was returned even though status is
+  // still `failed`. Values mirror bill_payments.refund_source (e.g.
+  // `auto_released`, `vtpass_failed`, `reloadly_refunded_upstream`,
+  // `admin_manual`, `pre_charge_release`). Empty = no refund recorded.
+  string refund_source = 27;
 }
 
 message BillBeneficiary {
@@ -505,6 +511,8 @@ message CreateAutoRechargeRequest {
   int32 day_of_week = 5;
   int32 day_of_month = 6;
   int32 max_retries = 7;
+  int32 execution_hour = 8;
+  int32 execution_minute = 9;
 }
 
 message CreateAutoRechargeResponse {
@@ -527,6 +535,8 @@ message UpdateAutoRechargeRequest {
   int32 day_of_week = 4;
   int32 day_of_month = 5;
   int32 max_retries = 6;
+  int32 execution_hour = 7;
+  int32 execution_minute = 8;
 }
 
 message UpdateAutoRechargeResponse {

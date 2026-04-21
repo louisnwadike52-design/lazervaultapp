@@ -77,6 +77,8 @@ abstract class ElectricityBillRemoteDataSource {
     int? dayOfWeek,
     int? dayOfMonth,
     int maxRetries = 3,
+    int? executionHour,
+    int? executionMinute,
   });
 
   Future<List<AutoRechargeModel>> getAutoRecharges();
@@ -87,6 +89,8 @@ abstract class ElectricityBillRemoteDataSource {
     int? dayOfWeek,
     int? dayOfMonth,
     int? maxRetries,
+    int? executionHour,
+    int? executionMinute,
   });
   Future<void> pauseAutoRecharge({required String autoRechargeId});
   Future<void> resumeAutoRecharge({required String autoRechargeId});
@@ -425,6 +429,8 @@ class ElectricityBillRemoteDataSourceImpl implements ElectricityBillRemoteDataSo
     int? dayOfWeek,
     int? dayOfMonth,
     int maxRetries = 3,
+    int? executionHour,
+    int? executionMinute,
   }) async {
     final request = pb.CreateAutoRechargeRequest()
       ..beneficiaryId = beneficiaryId
@@ -438,6 +444,12 @@ class ElectricityBillRemoteDataSourceImpl implements ElectricityBillRemoteDataSo
     }
     if (dayOfMonth != null) {
       request.dayOfMonth = dayOfMonth;
+    }
+    if (executionHour != null) {
+      request.executionHour = executionHour;
+    }
+    if (executionMinute != null) {
+      request.executionMinute = executionMinute;
     }
 
     final options = await grpcClient.callOptions;
@@ -471,6 +483,8 @@ class ElectricityBillRemoteDataSourceImpl implements ElectricityBillRemoteDataSo
     int? dayOfWeek,
     int? dayOfMonth,
     int? maxRetries,
+    int? executionHour,
+    int? executionMinute,
   }) async {
     final request = pb.UpdateAutoRechargeRequest()
       ..autoRechargeId = autoRechargeId;
@@ -489,6 +503,12 @@ class ElectricityBillRemoteDataSourceImpl implements ElectricityBillRemoteDataSo
     }
     if (maxRetries != null) {
       request.maxRetries = maxRetries;
+    }
+    if (executionHour != null) {
+      request.executionHour = executionHour;
+    }
+    if (executionMinute != null) {
+      request.executionMinute = executionMinute;
     }
 
     final options = await grpcClient.callOptions;

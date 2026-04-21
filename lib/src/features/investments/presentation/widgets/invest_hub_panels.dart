@@ -217,14 +217,14 @@ class InvestHubPanels {
                               ),
                             ),
                             Text(
-                              '$side · ${o.quantity} @ ${o.type.name}',
+                              '$side · ${o.quantity} @ ${o.orderType.name}',
                               style: InvestTradingUi.labelMuted(),
                             ),
                           ],
                         ),
                       ),
                       Text(
-                        o.status.name,
+                        o.orderStatus.name,
                         style: GoogleFonts.inter(
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w600,

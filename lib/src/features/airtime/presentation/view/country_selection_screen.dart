@@ -198,7 +198,7 @@ class _CountrySelectionScreenState extends State<CountrySelectionScreen> {
           ElevatedButton(
             onPressed: () => context.read<AirtimeCubit>().loadCountries(),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
+              backgroundColor: const Color(0xFF4E03D0),
               foregroundColor: Colors.white,
             ),
             child: const Text('Retry'),

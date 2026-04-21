@@ -55,6 +55,11 @@ class WaterBillRemoteDataSourceImpl implements WaterBillRemoteDataSource {
               providerName: provider.name,
               logoUrl: provider.logoUrl,
               isActive: provider.isActive,
+              // Forward VTpass-sourced amount bounds so the confirmation
+              // screen can validate against the real disco range instead
+              // of a hardcoded floor.
+              minAmount: provider.minAmount,
+              maxAmount: provider.maxAmount,
             ))
         .toList();
   }

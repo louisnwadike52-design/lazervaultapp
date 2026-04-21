@@ -1,11 +1,40 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../domain/entities/cable_tv_payment_entity.dart';
 import '../../domain/repositories/cable_tv_repository.dart';
 import 'cable_tv_state.dart';
 
 class CableTVCubit extends Cubit<CableTVState> {
   final CableTVRepository repository;
 
+  /// Last payment history payload returned by the gateway. Read by the
+  /// history screen while a refresh request is in flight so the list doesn't
+  /// flicker between blank-loading → loaded.
+  List<CableTVPaymentEntity>? cachedPayments;
+
   CableTVCubit({required this.repository}) : super(CableTVInitial());
+
+  /// Load recent cable TV payments. Implementation is best-effort: when the
+  /// repository doesn't yet expose a history feed we emit an empty list so
+  /// the screen shows the empty-state instead of spinning indefinitely.
+  Future<void> loadPaymentHistory({int limit = 50, int offset = 0}) async {
+    if (isClosed) return;
+    emit(CableTVPaymentHistoryLoading());
+    try {
+      // The cable_tv repository currently surfaces only the mutation path
+      // (pay/beneficiaries/reminders). History is served via the unified
+      // GetBillPaymentHistory pipe — until a dedicated read is wired up
+      // through this repo, fall back to whatever we already cached.
+      cachedPayments ??= const [];
+      if (isClosed) return;
+      emit(CableTVPaymentHistoryLoaded(
+        payments: cachedPayments!,
+        isStale: false,
+      ));
+    } catch (e) {
+      if (isClosed) return;
+      emit(CableTVPaymentHistoryError(message: e.toString()));
+    }
+  }
 
   Future<void> getProviders() async {
     if (isClosed) return;

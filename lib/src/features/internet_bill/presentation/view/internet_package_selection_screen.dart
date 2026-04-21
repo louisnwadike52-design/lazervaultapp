@@ -35,6 +35,7 @@ class _InternetPackageSelectionScreenState extends State<InternetPackageSelectio
     final provider = args['provider'] as InternetProviderEntity;
     final validation = args['validation'] as InternetAccountValidationEntity;
     final accountNumber = args['accountNumber'] as String;
+    final preferRollover = args['preferRollover'] == true;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
@@ -168,6 +169,7 @@ class _InternetPackageSelectionScreenState extends State<InternetPackageSelectio
                             provider,
                             validation,
                             accountNumber,
+                            preferRollover,
                           );
                         },
                       );
@@ -189,6 +191,7 @@ class _InternetPackageSelectionScreenState extends State<InternetPackageSelectio
     InternetProviderEntity provider,
     InternetAccountValidationEntity validation,
     String accountNumber,
+    bool preferRollover,
   ) {
     return GestureDetector(
       onTap: () {
@@ -197,6 +200,7 @@ class _InternetPackageSelectionScreenState extends State<InternetPackageSelectio
           arguments: {
             'provider': provider,
             'package': package,
+            if (preferRollover) 'preferRollover': true,
             'validation': validation,
             'accountNumber': accountNumber,
           },

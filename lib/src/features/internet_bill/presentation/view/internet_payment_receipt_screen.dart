@@ -2,12 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../../core/types/app_routes.dart';
+import '../../../widgets/bill_receipt_qr_block.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../data/datasources/internet_beneficiary_remote_datasource.dart';
+import '../../domain/entities/internet_package_entity.dart';
 import '../../domain/entities/internet_payment_entity.dart';
+import '../../domain/entities/internet_provider_entity.dart';
 import '../../services/internet_bill_pdf_service.dart';
+import '../widgets/internet_rollover_preference_sheet.dart';
 
 class InternetPaymentReceiptScreen extends StatefulWidget {
   const InternetPaymentReceiptScreen({super.key});
@@ -21,6 +27,180 @@ class _InternetPaymentReceiptScreenState
     extends State<InternetPaymentReceiptScreen> {
   bool _isDownloading = false;
   bool _isSharing = false;
+  bool _postPurchaseRan = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _runPostPurchaseActions());
+  }
+
+  /// Save beneficiary + enable rollover if the confirm screen asked for
+  /// them. Runs once on first build — guarded by [_postPurchaseRan] so
+  /// widget rebuilds don't trigger duplicate RPCs. Both calls hit the
+  /// real backend (commerce-gateway → utility-payments-service) — no
+  /// fake-success shortcuts.
+  ///
+  /// Policy (2026-04-18): strict gate on `isCompleted`. We never save
+  /// on pending/processing — that would leave stale beneficiaries /
+  /// rollover schedules if the payment later fails. If the user closes
+  /// the receipt before the async consumer terminates the payment, they
+  /// re-enable the toggles on their next purchase. Trade-off accepted
+  /// over leaving partial data in the DB.
+  Future<void> _runPostPurchaseActions() async {
+    if (_postPurchaseRan) return;
+    _postPurchaseRan = true;
+
+    final args = Get.arguments as Map<String, dynamic>?;
+    if (args == null) return;
+    final payment = args['payment'] as InternetPaymentEntity?;
+    if (payment == null) return;
+    if (!payment.isCompleted) return;
+
+    final provider = args['provider'] as InternetProviderEntity?;
+    final package = args['package'] as InternetPackageEntity?;
+    final accountNumber = args['accountNumber'] as String?;
+    final saveBeneficiary = (args['saveBeneficiary'] as bool?) ?? false;
+    final nickname = args['beneficiaryNickname'] as String?;
+    final autoRenewEnabled = (args['autoRenewEnabled'] as bool?) ?? false;
+    final pref = args['rolloverPref'] as InternetRolloverPreference?;
+
+    if (provider == null || package == null || accountNumber == null) return;
+    if (!saveBeneficiary && !autoRenewEnabled) return;
+
+    final providerCode = _providerCodeFor(provider.serviceId);
+    final ds = GetIt.I<InternetBeneficiaryRemoteDataSource>();
+
+    // --- Save beneficiary (or reuse existing) ---
+    String? beneficiaryId;
+    if (saveBeneficiary) {
+      try {
+        final saved = await ds.saveBeneficiary(
+          accountNumber: accountNumber,
+          providerCode: providerCode,
+          providerName: provider.name,
+          nickname: nickname,
+        );
+        beneficiaryId = saved.id;
+      } catch (_) {
+        // Duplicate — fall through and look up the existing row.
+        try {
+          final list = await ds.getBeneficiaries(providerCode: providerCode);
+          for (final b in list) {
+            if (b.accountNumber == accountNumber &&
+                b.providerCode == providerCode) {
+              beneficiaryId = b.id;
+              break;
+            }
+          }
+        } catch (_) {
+          _softInfo(
+            'Beneficiary save failed',
+            'We couldn\'t save this contact. You can save it manually from the beneficiaries screen.',
+          );
+        }
+      }
+    }
+
+    // --- Create rollover (auto-recharge) ---
+    // Outer gate already ensures the payment is completed.
+    if (autoRenewEnabled && pref != null) {
+      // Refuse zero-amount rollover up-front; backend would reject it
+      // anyway (`amount must be greater than 0`).
+      if (package.amount <= 0) {
+        _softInfo(
+          'Rollover skipped',
+          'This plan has no amount set, so we can\'t schedule a recurring charge.',
+        );
+        return;
+      }
+      // Beneficiary is required for rollover. If the user didn't save
+      // one explicitly, upsert silently so the auto-recharge has
+      // something to attach to.
+      if (beneficiaryId == null) {
+        try {
+          final list = await ds.getBeneficiaries(providerCode: providerCode);
+          for (final b in list) {
+            if (b.accountNumber == accountNumber &&
+                b.providerCode == providerCode) {
+              beneficiaryId = b.id;
+              break;
+            }
+          }
+          if (beneficiaryId == null) {
+            final saved = await ds.saveBeneficiary(
+              accountNumber: accountNumber,
+              providerCode: providerCode,
+              providerName: provider.name,
+              nickname: nickname,
+            );
+            beneficiaryId = saved.id;
+          }
+        } catch (_) {
+          _softInfo(
+            'Rollover couldn\'t be enabled',
+            'We couldn\'t save the beneficiary this rollover attaches to. Try again from the beneficiaries screen.',
+          );
+          return;
+        }
+      }
+
+      try {
+        await ds.createAutoRecharge(
+          beneficiaryId: beneficiaryId,
+          packageId: package.id,
+          planName: package.name,
+          amount: package.amount,
+          currency: 'NGN',
+          frequency: pref.frequency,
+          dayOfWeek: pref.dayOfWeek,
+          dayOfMonth: pref.dayOfMonth,
+          executionHour: pref.executionHour,
+          executionMinute: pref.executionMinute,
+        );
+      } catch (_) {
+        _softInfo(
+          'Rollover couldn\'t be enabled',
+          'Payment succeeded, but the rollover schedule didn\'t save. You can retry from the beneficiaries screen.',
+        );
+      }
+    }
+  }
+
+  /// Non-blocking info snackbar. Shown for post-purchase side-effect
+  /// failures so the user knows but isn't blocked — the payment itself
+  /// has already gone through.
+  void _softInfo(String title, String message) {
+    if (!mounted) return;
+    Get.snackbar(
+      title,
+      message,
+      backgroundColor: const Color(0xFFFB923C).withValues(alpha: 0.9),
+      colorText: Colors.white,
+      snackPosition: SnackPosition.TOP,
+      duration: const Duration(seconds: 4),
+      margin: EdgeInsets.all(16.w),
+      borderRadius: 12,
+    );
+  }
+
+  String _providerCodeFor(String serviceId) {
+    switch (serviceId.toLowerCase()) {
+      case 'smile-direct':
+      case 'smile':
+        return 'SMILE';
+      case 'spectranet':
+        return 'SPECTRANET';
+      case 'ipnx':
+      case 'ipnx1515':
+        return 'IPNX';
+      case 'swift4g':
+      case 'swift':
+        return 'SWIFT';
+      default:
+        return serviceId.toUpperCase();
+    }
+  }
 
   String _formatAmount(double amount) {
     final format = NumberFormat('#,##0.00', 'en_NG');
@@ -62,13 +242,18 @@ class _InternetPaymentReceiptScreenState
     final args = Get.arguments as Map<String, dynamic>;
     final payment = args['payment'] as InternetPaymentEntity;
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) Get.offAllNamed(AppRoutes.internetBillHome);
+      },
+      child: Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          onPressed: () => Get.offAllNamed(AppRoutes.billsHub),
+          onPressed: () => Get.offAllNamed(AppRoutes.internetBillHome),
           icon: Icon(
             Icons.arrow_back,
             color: Colors.white,
@@ -260,6 +445,26 @@ class _InternetPaymentReceiptScreenState
                         ],
                       ),
                     ),
+                    SizedBox(height: 20.h),
+                    BillReceiptQrBlock(
+                      type: 'internet',
+                      reference: payment.reference,
+                      amount: payment.amount,
+                      currency: 'NGN',
+                      status: payment.status,
+                      timestamp:
+                          DateTime.tryParse(payment.createdAt) ??
+                              DateTime.now(),
+                      showDivider: false,
+                      extraPayload: {
+                        if (payment.customerNumber.isNotEmpty)
+                          'account': payment.customerNumber,
+                        if (payment.providerId.isNotEmpty)
+                          'provider_id': payment.providerId,
+                        if (payment.billType.isNotEmpty)
+                          'bill_type': payment.billType,
+                      },
+                    ),
                     SizedBox(height: 32.h),
                   ],
                 ),
@@ -270,6 +475,7 @@ class _InternetPaymentReceiptScreenState
             _buildActions(context, payment),
           ],
         ),
+      ),
       ),
     );
   }
@@ -303,7 +509,7 @@ class _InternetPaymentReceiptScreenState
                         'Copied',
                         'Reference copied to clipboard',
                         backgroundColor:
-                            const Color(0xFF3B82F6).withValues(alpha: 0.9),
+                            const Color(0xFF4E03D0).withValues(alpha: 0.9),
                         colorText: Colors.white,
                         snackPosition: SnackPosition.TOP,
                         duration: const Duration(seconds: 2),
@@ -363,8 +569,40 @@ class _InternetPaymentReceiptScreenState
           ),
         ),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (payment.isCompleted) ...[
+            OutlinedButton.icon(
+              onPressed: () => _openCreateReminder(payment),
+              icon: Icon(
+                Icons.notifications_active_outlined,
+                size: 18.sp,
+                color: const Color(0xFF4E03D0),
+              ),
+              label: Text(
+                'Set Renewal Reminder',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF4E03D0),
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(
+                  color: const Color(0xFF4E03D0).withValues(alpha: 0.5),
+                  width: 1.2,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                padding: EdgeInsets.symmetric(vertical: 12.h),
+              ),
+            ),
+            SizedBox(height: 10.h),
+          ],
+          Row(
+            children: [
           // Share Receipt
           Expanded(
             child: OutlinedButton.icon(
@@ -432,9 +670,9 @@ class _InternetPaymentReceiptScreenState
                 ),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
+                backgroundColor: const Color(0xFF4E03D0),
                 disabledBackgroundColor:
-                    const Color(0xFF3B82F6).withValues(alpha: 0.4),
+                    const Color(0xFF4E03D0).withValues(alpha: 0.4),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),
                 ),
@@ -442,8 +680,40 @@ class _InternetPaymentReceiptScreenState
               ),
             ),
           ),
+            ],
+          ),
         ],
       ),
+    );
+  }
+
+  /// Opens the create-reminder screen pre-filled with this purchase's
+  /// provider, account and package so the user only needs to pick the
+  /// renewal date. Null-safe — if Get.arguments is missing provider or
+  /// package we still navigate with sensible fallbacks rather than
+  /// crash on a cold-start receipt route.
+  void _openCreateReminder(InternetPaymentEntity payment) {
+    final args = Get.arguments;
+    final map = args is Map<String, dynamic> ? args : const <String, dynamic>{};
+    final provider = map['provider'] as InternetProviderEntity?;
+    final package = map['package'] as InternetPackageEntity?;
+    final providerName = provider?.name.trim().isNotEmpty == true
+        ? provider!.name.trim()
+        : (payment.providerId.isNotEmpty
+            ? payment.providerId
+            : 'Internet');
+    final accountNumber = payment.customerNumber.trim();
+    final title = accountNumber.isNotEmpty
+        ? 'Renew $providerName \u00B7 $accountNumber'
+        : 'Renew $providerName';
+
+    Get.toNamed(
+      AppRoutes.internetBillReminderCreate,
+      arguments: <String, dynamic>{
+        'title': title,
+        'amount': payment.amount > 0 ? payment.amount : null,
+        if ((package?.id ?? '').isNotEmpty) 'packageId': package!.id,
+      },
     );
   }
 

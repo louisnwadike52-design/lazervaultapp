@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -38,21 +39,44 @@ class _AddBeneficiaryScreenState extends State<AddBeneficiaryScreen> {
   // Providers list cached from ProvidersLoaded state
   List<ElectricityProviderEntity> _providers = [];
 
+  // Phone country selector — initialised from the active locale so the
+  // dial-code prefix matches the user's market by default. The picker
+  // sheet lets the user override before saving (e.g. saving a beneficiary
+  // for a relative in a different country).
+  late CountryLocale _selectedCountry;
+
   @override
   void initState() {
     super.initState();
     context.read<ElectricityBillCubit>().getProviders(country: serviceLocator<LocaleManager>().currentCountry);
+    _selectedCountry = CountryLocales.findByCountryCode(
+            serviceLocator<LocaleManager>().currentCountry) ??
+        CountryLocales.all.first;
     _prefillPhone();
   }
 
+  /// Prefill from the user's profile phone. If it carries a known dial
+  /// code (e.g. "+234..."), peel it off so the input only holds the
+  /// local part — and switch [_selectedCountry] to match.
   void _prefillPhone() {
     final authState = context.read<AuthenticationCubit>().state;
-    if (authState is AuthenticationSuccess) {
-      final phone = authState.profile.user.phoneNumber ?? '';
-      if (phone.isNotEmpty) {
-        _phoneController.text = phone;
+    if (authState is! AuthenticationSuccess) return;
+    final raw = authState.profile.user.phoneNumber ?? '';
+    if (raw.isEmpty) return;
+    final cleaned = _normalizePhone(raw);
+    // Try the longest dial code first so "+1" doesn't shadow "+1XXX".
+    final sorted = List<CountryLocale>.from(CountryLocales.all)
+      ..sort((a, b) => b.dialCode.length.compareTo(a.dialCode.length));
+    for (final c in sorted) {
+      if (cleaned.startsWith(c.dialCode)) {
+        _selectedCountry = c;
+        _phoneController.text = cleaned.substring(c.dialCode.length);
+        return;
       }
     }
+    // No recognised dial code — keep the active-locale country and put
+    // the raw value in the field so the user can correct it.
+    _phoneController.text = cleaned;
   }
 
   @override
@@ -129,6 +153,17 @@ class _AddBeneficiaryScreenState extends State<AddBeneficiaryScreen> {
       return;
     }
 
+    final phoneError = _validatePhone(_phoneController.text);
+    if (phoneError != null) {
+      Get.snackbar(
+        'Invalid Phone Number',
+        phoneError,
+        backgroundColor: Colors.red.withValues(alpha: 0.9),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
     context.read<BeneficiaryCubit>().addBeneficiary(
           providerId: _selectedProvider!.id,
           providerCode: _selectedProvider!.providerCode,
@@ -139,9 +174,9 @@ class _AddBeneficiaryScreenState extends State<AddBeneficiaryScreen> {
           meterType: _selectedMeterType,
           nickname: nickname,
           isDefault: _setAsDefault,
-          phoneNumber: _phoneController.text.trim().isNotEmpty
-              ? _phoneController.text.trim()
-              : null,
+          // Send the full E.164 form (`+234XXXXXXXXXX`) so the backend
+          // can use it as-is for SMS delivery without re-parsing.
+          phoneNumber: _buildFullPhone(),
         );
   }
 
@@ -245,9 +280,7 @@ class _AddBeneficiaryScreenState extends State<AddBeneficiaryScreen> {
                     meterNumber: _meterNumberController.text.trim(),
                     customerName: _validationResult?.customerName ?? '',
                     customerAddress: _validationResult?.customerAddress,
-                    phoneNumber: _phoneController.text.trim().isNotEmpty
-                        ? _phoneController.text.trim()
-                        : null,
+                    phoneNumber: _buildFullPhone(),
                     meterType: _selectedMeterType,
                     nickname: _nicknameController.text.trim(),
                     isDefault: _setAsDefault,
@@ -1293,11 +1326,14 @@ class _AddBeneficiaryScreenState extends State<AddBeneficiaryScreen> {
   }
 
   Widget _buildPhoneInput() {
+    const accent = Color(0xFF4E03D0);
+    final phoneError = _validatePhone(_phoneController.text);
+    final hint = _selectedCountry.dialCode == '+234' ? '8012345678' : 'Phone number';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Phone Number (Optional)',
+          'Phone Number',
           style: GoogleFonts.inter(
             color: Colors.white,
             fontSize: 16.sp,
@@ -1306,7 +1342,7 @@ class _AddBeneficiaryScreenState extends State<AddBeneficiaryScreen> {
         ),
         SizedBox(height: 4.h),
         Text(
-          'Used to prefill phone on payment page',
+          'For prepaid token delivery via SMS',
           style: GoogleFonts.inter(
             color: Colors.white.withValues(alpha: 0.4),
             fontSize: 12.sp,
@@ -1315,39 +1351,286 @@ class _AddBeneficiaryScreenState extends State<AddBeneficiaryScreen> {
         ),
         SizedBox(height: 12.h),
         Container(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12.r),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
+              color: phoneError != null
+                  ? const Color(0xFFEF4444)
+                  : accent.withValues(alpha: 0.35),
               width: 1,
             ),
           ),
-          child: TextField(
-            controller: _phoneController,
-            keyboardType: TextInputType.phone,
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w500,
-            ),
-            decoration: InputDecoration(
-              hintText: 'Phone number for token delivery',
-              hintStyle: GoogleFonts.inter(
-                color: Colors.white.withValues(alpha: 0.3),
-                fontSize: 16.sp,
+          child: Row(
+            children: [
+              // Country dial-code selector
+              GestureDetector(
+                onTap: _showCountryCodePicker,
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      right: BorderSide(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        width: 1,
+                      ),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(_selectedCountry.flag, style: TextStyle(fontSize: 20.sp)),
+                      SizedBox(width: 6.w),
+                      Text(
+                        _selectedCountry.dialCode,
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(width: 4.w),
+                      Icon(
+                        Icons.keyboard_arrow_down,
+                        color: const Color(0xFF6B7280),
+                        size: 18.sp,
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              border: InputBorder.none,
-              prefixIcon: Icon(
-                Icons.phone,
-                color: Colors.white.withValues(alpha: 0.4),
-                size: 20.sp,
+              // Local-part input — formatters keep it digits-only and
+              // capped at the longest local length we accept (11 = NG
+              // with leading 0). The country code is rendered separately.
+              Expanded(
+                child: TextField(
+                  controller: _phoneController,
+                  keyboardType: TextInputType.phone,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+                    LengthLimitingTextInputFormatter(11),
+                  ],
+                  onChanged: (_) => setState(() {}),
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: hint,
+                    hintStyle: GoogleFonts.inter(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      fontSize: 16.sp,
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 16.h),
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
         ),
+        if (phoneError != null) ...[
+          SizedBox(height: 6.h),
+          Text(
+            phoneError,
+            style: GoogleFonts.inter(
+              color: const Color(0xFFEF4444),
+              fontSize: 12.sp,
+            ),
+          ),
+        ],
       ],
+    );
+  }
+
+  /// Strip whitespace, dashes, parens from the raw input.
+  String _normalizePhone(String phone) =>
+      phone.replaceAll(RegExp(r'[\s\-()]'), '');
+
+  /// Validate the local-part length against the active country. Empty
+  /// fails — the field is required so the prepaid token can be SMSed.
+  /// Nigeria gets a strict exact-10-digit rule (after stripping a
+  /// leading 0); everywhere else accepts 7–14 digits, which is the
+  /// E.164 envelope minus country code.
+  String? _validatePhone(String raw) {
+    final cleaned = _normalizePhone(raw.trim());
+    if (cleaned.isEmpty) return 'Phone number is required for token delivery';
+    var local = cleaned;
+    // Tolerate users typing the dial code or leading zero into the
+    // local-part field — we strip both before length-checking.
+    if (local.startsWith(_selectedCountry.dialCode)) {
+      local = local.substring(_selectedCountry.dialCode.length);
+    }
+    if (local.startsWith('0')) local = local.substring(1);
+    if (!RegExp(r'^\d+$').hasMatch(local)) {
+      return 'Enter digits only';
+    }
+    if (_selectedCountry.dialCode == '+234') {
+      if (local.length != 10) {
+        return 'Nigerian numbers must be 10 digits (after the 0)';
+      }
+      return null;
+    }
+    if (local.length < 7 || local.length > 14) {
+      return 'Enter a valid 7–14 digit number';
+    }
+    return null;
+  }
+
+  /// Build the full E.164 phone (`+234XXXXXXXXXX`) from the selected
+  /// country and the local-part field. Caller must check
+  /// [_validatePhone] first — this assumes the input is well-formed.
+  String _buildFullPhone() {
+    var local = _normalizePhone(_phoneController.text.trim());
+    if (local.startsWith(_selectedCountry.dialCode)) {
+      local = local.substring(_selectedCountry.dialCode.length);
+    }
+    if (local.startsWith('0')) local = local.substring(1);
+    return '${_selectedCountry.dialCode}$local';
+  }
+
+  /// Country code picker — mirrors the direct-purchase flow's bottom
+  /// sheet so users see the same UX whether they're paying directly or
+  /// saving a beneficiary first.
+  void _showCountryCodePicker() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        String searchQuery = '';
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            final filtered = searchQuery.isEmpty
+                ? CountryLocales.all
+                : CountryLocales.search(searchQuery);
+            return DraggableScrollableSheet(
+              initialChildSize: 0.7,
+              maxChildSize: 0.9,
+              minChildSize: 0.4,
+              builder: (ctx, scrollController) {
+                return Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1F1F1F),
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        margin: EdgeInsets.only(top: 12.h, bottom: 8.h),
+                        width: 40.w,
+                        height: 4.h,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2D2D2D),
+                          borderRadius: BorderRadius.circular(2.r),
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Select Country Code',
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 18.sp,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () => Navigator.pop(ctx),
+                              child: Icon(Icons.close, color: const Color(0xFF9CA3AF), size: 24.sp),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+                        child: TextField(
+                          onChanged: (v) => setSheetState(() => searchQuery = v),
+                          style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
+                          decoration: InputDecoration(
+                            hintText: 'Search country...',
+                            hintStyle: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 14.sp),
+                            prefixIcon: Icon(Icons.search, color: const Color(0xFF6B7280), size: 20.sp),
+                            filled: true,
+                            fillColor: const Color(0xFF0A0A0A),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12.r),
+                              borderSide: BorderSide.none,
+                            ),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: ListView.builder(
+                          controller: scrollController,
+                          padding: EdgeInsets.symmetric(horizontal: 20.w),
+                          itemCount: filtered.length,
+                          itemBuilder: (ctx, i) {
+                            final country = filtered[i];
+                            final isSelected = country.countryCode == _selectedCountry.countryCode;
+                            return GestureDetector(
+                              onTap: () {
+                                setState(() => _selectedCountry = country);
+                                Navigator.pop(ctx);
+                              },
+                              child: Container(
+                                margin: EdgeInsets.only(bottom: 8.h),
+                                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? const Color(0xFF4E03D0).withValues(alpha: 0.1)
+                                      : const Color(0xFF0A0A0A),
+                                  borderRadius: BorderRadius.circular(12.r),
+                                  border: isSelected
+                                      ? Border.all(color: const Color(0xFF4E03D0), width: 1.5)
+                                      : null,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Text(country.flag, style: TextStyle(fontSize: 24.sp)),
+                                    SizedBox(width: 12.w),
+                                    Expanded(
+                                      child: Text(
+                                        country.countryName,
+                                        style: GoogleFonts.inter(
+                                          color: Colors.white,
+                                          fontSize: 15.sp,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                    Text(
+                                      country.dialCode,
+                                      style: GoogleFonts.inter(
+                                        color: const Color(0xFF9CA3AF),
+                                        fontSize: 14.sp,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    if (isSelected) ...[
+                                      SizedBox(width: 8.w),
+                                      Icon(Icons.check_circle, color: const Color(0xFF4E03D0), size: 20.sp),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
     );
   }
 

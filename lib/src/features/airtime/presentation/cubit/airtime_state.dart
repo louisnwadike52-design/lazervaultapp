@@ -1,7 +1,16 @@
 import 'package:equatable/equatable.dart';
+import '../../domain/entities/airtime_auto_recharge.dart';
+import '../../domain/entities/airtime_beneficiary.dart';
+import '../../domain/entities/airtime_reminder.dart';
 import '../../domain/entities/airtime_transaction.dart';
 import '../../domain/entities/country.dart';
 import '../../domain/entities/network_provider.dart';
+
+// Re-exports so screens and the dedicated reminder cubit can import the
+// sealed state space and the entity types in one shot.
+export '../../domain/entities/airtime_auto_recharge.dart';
+export '../../domain/entities/airtime_beneficiary.dart';
+export '../../domain/entities/airtime_reminder.dart';
 
 abstract class AirtimeState extends Equatable {
   const AirtimeState();
@@ -236,4 +245,114 @@ class AirtimeError extends AirtimeState {
 
   @override
   List<Object?> get props => [message, errorCode];
-} 
+}
+
+// ===================== Beneficiary states =====================
+class AirtimeBeneficiariesLoading extends AirtimeState {}
+
+class AirtimeBeneficiariesLoaded extends AirtimeState {
+  final List<AirtimeBeneficiary> beneficiaries;
+
+  const AirtimeBeneficiariesLoaded({required this.beneficiaries});
+
+  @override
+  List<Object?> get props => [beneficiaries];
+}
+
+class AirtimeBeneficiariesError extends AirtimeState {
+  final String message;
+
+  const AirtimeBeneficiariesError({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}
+
+class AirtimeBeneficiarySaved extends AirtimeState {
+  final AirtimeBeneficiary beneficiary;
+
+  const AirtimeBeneficiarySaved({required this.beneficiary});
+
+  @override
+  List<Object?> get props => [beneficiary];
+}
+
+class AirtimeBeneficiaryUpdated extends AirtimeState {
+  final AirtimeBeneficiary beneficiary;
+
+  const AirtimeBeneficiaryUpdated({required this.beneficiary});
+
+  @override
+  List<Object?> get props => [beneficiary];
+}
+
+class AirtimeBeneficiaryDeleted extends AirtimeState {
+  final String id;
+
+  const AirtimeBeneficiaryDeleted({required this.id});
+
+  @override
+  List<Object?> get props => [id];
+}
+
+// ===================== Auto-recharge states =====================
+class AirtimeAutoRechargesLoading extends AirtimeState {}
+
+class AirtimeAutoRechargesLoaded extends AirtimeState {
+  final List<AirtimeAutoRecharge> autoRecharges;
+
+  const AirtimeAutoRechargesLoaded({required this.autoRecharges});
+
+  @override
+  List<Object?> get props => [autoRecharges];
+}
+
+class AirtimeAutoRechargesError extends AirtimeState {
+  final String message;
+
+  const AirtimeAutoRechargesError({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}
+
+class AirtimeAutoRechargeCreated extends AirtimeState {
+  final AirtimeAutoRecharge autoRecharge;
+
+  const AirtimeAutoRechargeCreated({required this.autoRecharge});
+
+  @override
+  List<Object?> get props => [autoRecharge];
+}
+
+class AirtimeAutoRechargeUpdated extends AirtimeState {
+  final AirtimeAutoRecharge autoRecharge;
+
+  const AirtimeAutoRechargeUpdated({required this.autoRecharge});
+
+  @override
+  List<Object?> get props => [autoRecharge];
+}
+
+/// A pause / resume flipped the status on a single auto-recharge.
+/// Carries the id + new status so the screen can patch the affected
+/// row in place without a full list re-fetch.
+class AirtimeAutoRechargeStatusChanged extends AirtimeState {
+  final String id;
+  final String status; // 'paused' or 'active'
+  const AirtimeAutoRechargeStatusChanged({
+    required this.id,
+    required this.status,
+  });
+  @override
+  List<Object?> get props => [id, status];
+}
+
+class AirtimeAutoRechargeDeleted extends AirtimeState {
+  final String id;
+
+  const AirtimeAutoRechargeDeleted({required this.id});
+
+  @override
+  List<Object?> get props => [id];
+}

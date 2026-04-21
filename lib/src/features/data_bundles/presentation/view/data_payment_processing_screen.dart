@@ -197,6 +197,11 @@ class _DataPaymentProcessingScreenState
                     'autoRenewEnabled': autoRenew,
                     'network': args['network'] ?? '',
                     'plan': args['plan'],
+                    // New: forward the rollover preference + beneficiary
+                    // save flag so the receipt can wire them post-payment.
+                    'rolloverPreference': args['rolloverPreference'],
+                    'saveBeneficiary': args['saveBeneficiary'] ?? false,
+                    'phoneNumber': args['phoneNumber'] ?? '',
                   },
                 );
               }

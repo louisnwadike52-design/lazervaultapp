@@ -527,6 +527,11 @@ class VoiceTransactionState extends Equatable {
   bool get isActive => !isIdle && !isTerminal && !isError;
   bool get canRetry => context?.canRetry ?? false;
   bool get hasAudio => audioLevel > 0.01;
+
+  /// True while the session is actively capturing or playing audio — used
+  /// by the feedback widgets to switch between listening and idle visuals.
+  bool get isAudioActive =>
+      isListening || isProcessing || isVerifying || hasAudio;
 }
 
 // ==============================================================================
@@ -734,7 +739,7 @@ class VoiceTransactionCubit extends Cubit<VoiceTransactionState> {
       if (timeout.inSeconds > 0) {
         _timeoutTimer = Timer(timeout, () {
           if (state.isActive) {
-            add(VoiceTransactionTimeout(operation: 'session'));
+            onEvent(VoiceTransactionTimeout(operation: 'session'));
           }
         });
       }
@@ -925,7 +930,7 @@ class VoiceTransactionCubit extends Cubit<VoiceTransactionState> {
     // Auto-retry if recoverable and retries available
     if (event.recoverable && (currentContext?.canRetry ?? false)) {
       await Future.delayed(const Duration(seconds: 2));
-      add(const VoiceTransactionRetrying());
+      onEvent(const VoiceTransactionRetrying());
     }
   }
 
@@ -946,7 +951,7 @@ class VoiceTransactionCubit extends Cubit<VoiceTransactionState> {
 
     // If we have retries left, transition to retrying
     if (currentContext?.canRetry ?? false) {
-      add(const VoiceTransactionRetrying());
+      onEvent(const VoiceTransactionRetrying());
     } else {
       emit(state.copyWith(
         currentState: VoiceActionState.timeout,
@@ -1013,12 +1018,12 @@ class VoiceTransactionCubit extends Cubit<VoiceTransactionState> {
   }
 
   void cancelTransaction() {
-    add(const VoiceTransactionCancelled());
+    onEvent(const VoiceTransactionCancelled());
   }
 
   void retry() {
     if (state.canRetry) {
-      add(const VoiceTransactionRetrying());
+      onEvent(const VoiceTransactionRetrying());
     }
   }
 

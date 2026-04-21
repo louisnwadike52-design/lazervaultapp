@@ -41,12 +41,18 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
   String? _transactionId;
   String? _verificationToken;
 
+  // Keep-alive flags forwarded from the confirm screen. Receipt screen
+  // consumes these to fire the post-pay auto-recharge RPC once the
+  // payment is confirmed complete. Stored as a plain map so we don't
+  // need to import the rollover type here.
+  final Map<String, dynamic> _keepAliveArgs = <String, dynamic>{};
+
   static const _steps = [
     _ProcessingStep(
       title: 'Payment Initiated',
       subtitle: 'Your payment request has been submitted',
       icon: Icons.receipt_long,
-      activeColor: Color(0xFF3B82F6),
+      activeColor: Color(0xFF4E03D0),
     ),
     _ProcessingStep(
       title: 'Confirming Details',
@@ -93,6 +99,17 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
       _phoneNumber = args['phoneNumber'] as String?;
       _transactionId = args['transactionId'] as String;
       _verificationToken = args['verificationToken'] as String;
+      // Capture optional keep-alive flags — missing keys are fine, the
+      // receipt screen treats absent values as "do nothing".
+      if (args['autoRechargeEnabled'] != null) {
+        _keepAliveArgs['autoRechargeEnabled'] = args['autoRechargeEnabled'];
+      }
+      if (args['autoRechargePref'] != null) {
+        _keepAliveArgs['autoRechargePref'] = args['autoRechargePref'];
+      }
+      if (args['existingBeneficiaryId'] != null) {
+        _keepAliveArgs['existingBeneficiaryId'] = args['existingBeneficiaryId'];
+      }
       _argsValid = true;
     } else {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -112,8 +129,9 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
     )..repeat(reverse: true);
 
     if (_argsValid) {
-      _advanceSteps();
-      // Initiate payment on this screen's own cubit
+      // Initiate payment on this screen's own cubit. Step indicators are
+      // driven by cubit state transitions (see BlocListener below) — no
+      // hardcoded timers gating business logic.
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         print('[PaymentProcessing] Initiating payment: provider=$_providerCode, meter=$_meterNumber, amount=$_amount, txId=$_transactionId');
@@ -132,20 +150,6 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
     } else {
       print('[PaymentProcessing] Args invalid! args=$args');
     }
-  }
-
-  void _advanceSteps() {
-    // Step 0 -> 1 after 1.5s
-    Future.delayed(const Duration(milliseconds: 1500), () {
-      if (!mounted || _hasFailed) return;
-      setState(() => _currentStep = 1);
-    });
-
-    // Step 1 -> 2 after 3s
-    Future.delayed(const Duration(milliseconds: 3000), () {
-      if (!mounted || _hasFailed) return;
-      setState(() => _currentStep = 2);
-    });
   }
 
   @override
@@ -182,27 +186,45 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
         body: SafeArea(
           child: BlocListener<ElectricityBillCubit, ElectricityBillState>(
             listener: (context, state) {
+              // Step progression is purely state-driven:
+              //   PaymentInitiating -> step 0 (submitted)
+              //   PaymentInitiated  -> step 1 (details confirmed on server)
+              //   AsyncPaymentPending / PaymentSuccess -> step 2 (processing)
+              //     then we navigate off-screen to the receipt.
               if (state is PaymentInitiating) {
                 print('[PaymentProcessing] State: PaymentInitiating');
+                if (!_hasFailed && _currentStep != 0) {
+                  setState(() => _currentStep = 0);
+                }
               }
 
               if (state is PaymentInitiated) {
                 print('[PaymentProcessing] State: PaymentInitiated (id=${state.payment.id})');
+                if (!_hasFailed && _currentStep < 1) {
+                  setState(() => _currentStep = 1);
+                }
               }
 
               if (state is PaymentSuccess) {
                 Get.offNamed(
                   AppRoutes.electricityBillReceipt,
-                  arguments: {'payment': state.payment},
+                  arguments: {
+                    'payment': state.payment,
+                    ..._keepAliveArgs,
+                  },
                 );
               }
 
               if (state is AsyncPaymentPending) {
                 // Async mode: payment accepted, token coming via SMS/webhook.
-                // Send user to receipt screen to show status + poll for token.
+                // Send user to receipt screen to show status + receive
+                // live updates via BalanceWebSocket.
                 Get.offNamed(
                   AppRoutes.electricityBillReceipt,
-                  arguments: {'payment': state.payment},
+                  arguments: {
+                    'payment': state.payment,
+                    ..._keepAliveArgs,
+                  },
                 );
               }
 
@@ -212,13 +234,10 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
                   _hasFailed = true;
                   _failMessage = state.errorMessage;
                 });
-
-                Future.delayed(const Duration(seconds: 3), () {
-                  if (mounted) {
-                    Get.back();
-                    Get.back();
-                  }
-                });
+                // Navigate back immediately on the state transition; the
+                // confirm screen surfaces the error. No sleep.
+                Get.back();
+                Get.back();
               }
 
               if (state is ElectricityBillError) {
@@ -227,13 +246,8 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
                   _hasFailed = true;
                   _failMessage = state.message;
                 });
-
-                Future.delayed(const Duration(seconds: 3), () {
-                  if (mounted) {
-                    Get.back();
-                    Get.back();
-                  }
-                });
+                Get.back();
+                Get.back();
               }
             },
             child: Padding(
@@ -507,7 +521,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF3B82F6).withValues(alpha: 0.08),
+        color: const Color(0xFF4E03D0).withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Row(
@@ -516,7 +530,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
           Icon(
             Icons.lock_outline,
             size: 16.sp,
-            color: const Color(0xFF3B82F6),
+            color: const Color(0xFF4E03D0),
           ),
           SizedBox(width: 8.w),
           Expanded(
@@ -524,7 +538,7 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
               'Your payment is secured with end-to-end encryption',
               style: GoogleFonts.inter(
                 fontSize: 12.sp,
-                color: const Color(0xFF3B82F6),
+                color: const Color(0xFF4E03D0),
                 fontWeight: FontWeight.w500,
               ),
               textAlign: TextAlign.center,

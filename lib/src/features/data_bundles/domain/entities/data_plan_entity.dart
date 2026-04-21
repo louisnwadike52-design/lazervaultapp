@@ -15,6 +15,16 @@ class DataPlanEntity extends Equatable {
     required this.availability,
   });
 
+  /// Price formatted for display — Naira by default since all data plans
+  /// are currently NG-scoped. Two decimals when there are sub-naira values,
+  /// whole naira otherwise.
+  String get displayPrice {
+    if (price == price.truncateToDouble()) {
+      return '\u20A6${price.toStringAsFixed(0)}';
+    }
+    return '\u20A6${price.toStringAsFixed(2)}';
+  }
+
   @override
   List<Object?> get props => [variationId, name, price, network, availability];
 }
