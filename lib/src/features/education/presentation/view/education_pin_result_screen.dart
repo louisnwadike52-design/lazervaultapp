@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../../widgets/bill_receipt_qr_block.dart';
+import '../../data/datasources/education_beneficiary_remote_datasource.dart';
 import '../../domain/entities/education_pin_entity.dart';
 import '../../domain/entities/education_provider_entity.dart';
 import '../../domain/entities/education_purchase_entity.dart';
@@ -27,12 +29,64 @@ class _EducationPinResultScreenState extends State<EducationPinResultScreen>
   EducationProviderEntity? _provider;
   bool _isDownloading = false;
   bool _isSharing = false;
+  bool _postPurchaseRan = false;
 
   @override
   void initState() {
     super.initState();
     _loadArguments();
     _setupAnimations();
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => _runPostPurchaseActions());
+  }
+
+  /// Save candidate on a completed purchase if the confirmation screen
+  /// asked for it. Guard + strict status gate match the cable_tv /
+  /// internet / water pattern.
+  Future<void> _runPostPurchaseActions() async {
+    if (_postPurchaseRan) return;
+    _postPurchaseRan = true;
+    if (!_purchase.isCompleted) return;
+
+    final args = Get.arguments as Map<String, dynamic>?;
+    if (args == null) return;
+    final saveCandidate = (args['saveCandidate'] as bool?) ?? false;
+    if (!saveCandidate) return;
+
+    final phone = (args['phone'] as String?)?.trim() ?? _purchase.customerNumber;
+    if (phone.isEmpty) return;
+    final nickname = args['candidateNickname'] as String?;
+    final provider = _provider;
+    final providerCode = provider?.serviceId.toUpperCase() ??
+        _purchase.providerId.toUpperCase();
+    final providerName = provider?.name ?? _purchase.billType;
+    final examType = provider?.serviceId ?? _purchase.billType;
+
+    try {
+      final ds = GetIt.I<EducationBeneficiaryRemoteDataSource>();
+      await ds.saveBeneficiary(
+        candidateNumber: phone,
+        examType: examType,
+        providerCode: providerCode,
+        providerName: providerName,
+        nickname: nickname,
+      );
+    } catch (_) {
+      // Duplicate or transient failure — soft fail, don't block the
+      // receipt. The user can save manually from the saved candidates
+      // screen later.
+      if (!mounted) return;
+      Get.snackbar(
+        'Candidate save failed',
+        'We couldn\'t save this candidate. You can save it manually from the saved candidates screen.',
+        backgroundColor: const Color(0xFFFB923C).withValues(alpha: 0.9),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 4),
+        margin: EdgeInsets.all(16.w),
+        borderRadius: 12,
+      );
+    }
   }
 
   void _loadArguments() {
