@@ -103,10 +103,12 @@ class ExchangeRate {
     return '1 $fromCurrency = ${rate.toStringAsFixed(6)} $toCurrency';
   }
 
-  /// Whether this rate has expired based on its validity window.
-  bool get isExpired {
-    return DateTime.now().difference(timestamp).inSeconds > rateValidSeconds;
-  }
+  /// Deprecated — kept for source compatibility only. The backend no longer
+  /// enforces rate staleness; the transfer rate is locked at the moment of
+  /// the capture call, not at the moment of the quote. Always returns false
+  /// so remaining callers fall through to the happy path.
+  @Deprecated('Rate staleness is no longer enforced; always returns false')
+  bool get isExpired => false;
 }
 
 class SupportedCurrencyInfo {

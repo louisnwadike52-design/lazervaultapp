@@ -220,7 +220,7 @@ class _CableTVPaymentProcessingScreenState
                     child: Column(
                       children: [
                         _buildSummaryRow(
-                            'Provider', provider?.name ?? '—'),
+                            'Provider', provider?.name ?? 'Not set'),
                         const Divider(
                             color: Color(0xFF2D2D2D), height: 24),
                         _buildSummaryRow(
@@ -229,7 +229,7 @@ class _CableTVPaymentProcessingScreenState
                             color: Color(0xFF2D2D2D), height: 24),
                         _buildSummaryRow(
                           'Package',
-                          package?.name ?? '—',
+                          package?.name ?? 'Not set',
                         ),
                         const Divider(
                             color: Color(0xFF2D2D2D), height: 24),
@@ -237,7 +237,7 @@ class _CableTVPaymentProcessingScreenState
                           'Amount',
                           package != null
                               ? '₦${fmt.format(package.amount)}'
-                              : '—',
+                              : 'Not set',
                           valueColor: const Color(0xFF10B981),
                           isBold: true,
                         ),

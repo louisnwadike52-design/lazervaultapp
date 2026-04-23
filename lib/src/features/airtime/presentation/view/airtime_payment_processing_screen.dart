@@ -222,19 +222,12 @@ class _AirtimePaymentProcessingScreenState
                   _hasFailed = true;
                   _failMessage = state.message;
                 });
-
-                Future.delayed(const Duration(seconds: 3), () {
-                  if (mounted && !_hasNavigated) {
-                    _hasNavigated = true;
-                    Get.offNamed(
-                      AppRoutes.airtimePaymentConfirmation,
-                      arguments: {
-                        'transaction': state.transaction,
-                        'errorMessage': state.message,
-                      },
-                    );
-                  }
-                });
+                // No auto-navigation. The failure card (_buildFailureInfo +
+                // _buildFailureActions below) gives the user explicit
+                // Try Again / Back to Airtime CTAs. The old 3-second
+                // timer robbed the user of the chance to read the
+                // error before being bumped back to the confirmation
+                // screen.
               }
             },
             child: Padding(
@@ -461,35 +454,85 @@ class _AirtimePaymentProcessingScreenState
   }
 
   Widget _buildFailureInfo() {
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFFEF4444).withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: const Color(0xFFEF4444).withValues(alpha: 0.3),
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.error_outline,
-            color: const Color(0xFFEF4444),
-            size: 20.sp,
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Text(
-              'Payment failed. Redirecting...',
-              style: GoogleFonts.inter(
-                color: const Color(0xFFEF4444),
-                fontSize: 13.sp,
-                fontWeight: FontWeight.w500,
-              ),
+    return Column(
+      children: [
+        Container(
+          padding: EdgeInsets.all(16.w),
+          decoration: BoxDecoration(
+            color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(
+              color: const Color(0xFFEF4444).withValues(alpha: 0.3),
             ),
           ),
-        ],
-      ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.error_outline,
+                color: const Color(0xFFEF4444),
+                size: 20.sp,
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Text(
+                  _failMessage,
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFFEF4444),
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: 16.h),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => Get.back(),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Color(0xFF4E03D0)),
+                  padding: EdgeInsets.symmetric(vertical: 14.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+                child: Text(
+                  'Try Again',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF4E03D0),
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () => Get.offAllNamed(AppRoutes.airtime),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF4E03D0),
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: 14.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+                child: Text(
+                  'Back to Airtime',
+                  style: GoogleFonts.inter(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 

@@ -24,6 +24,8 @@ class _CableTVHistoryScreenState extends State<CableTVHistoryScreen> {
   static const Color _textSecondary = Color(0xFF9CA3AF);
 
   String _scope = 'all';
+  String? _filterSmartCardNumber;
+  String? _filterNickname;
 
   @override
   void initState() {
@@ -31,6 +33,8 @@ class _CableTVHistoryScreenState extends State<CableTVHistoryScreen> {
     final args = Get.arguments as Map<String, dynamic>?;
     final s = args?['scope'] as String?;
     if (s == 'subscriptions') _scope = s!;
+    _filterSmartCardNumber = args?['smartCardNumber'] as String?;
+    _filterNickname = args?['nickname'] as String?;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -80,7 +84,14 @@ class _CableTVHistoryScreenState extends State<CableTVHistoryScreen> {
                     return _buildError(errorMsg);
                   }
 
-                  final filtered = source ?? const [];
+                  var filtered = source ?? const <CableTVPaymentEntity>[];
+
+                  if (_filterSmartCardNumber != null) {
+                    final target = _filterSmartCardNumber!.trim();
+                    filtered = filtered
+                        .where((p) => p.customerNumber.trim() == target)
+                        .toList();
+                  }
 
                   if (filtered.isEmpty && isFresh) {
                     return _buildEmpty();
@@ -112,6 +123,10 @@ class _CableTVHistoryScreenState extends State<CableTVHistoryScreen> {
   }
 
   Widget _buildHeader() {
+    final isFiltered = _filterSmartCardNumber != null;
+    final label = isFiltered
+        ? (_filterNickname ?? _filterSmartCardNumber!)
+        : 'Cable TV History';
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
       child: Row(
@@ -130,14 +145,50 @@ class _CableTVHistoryScreenState extends State<CableTVHistoryScreen> {
             ),
           ),
           SizedBox(width: 16.w),
-          Text(
-            'Cable TV History',
-            style: TextStyle(
-              fontSize: 20.sp,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 20.sp,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (isFiltered) ...[
+                  SizedBox(height: 2.h),
+                  Text(
+                    _filterSmartCardNumber!,
+                    style: TextStyle(
+                        fontSize: 12.sp, color: const Color(0xFF9CA3AF)),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ],
             ),
           ),
+          if (isFiltered)
+            GestureDetector(
+              onTap: () => setState(() {
+                _filterSmartCardNumber = null;
+                _filterNickname = null;
+              }),
+              child: Container(
+                width: 36.w,
+                height: 36.w,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                child: Icon(Icons.close, color: const Color(0xFF9CA3AF),
+                    size: 16.sp),
+              ),
+            ),
         ],
       ),
     );
@@ -211,6 +262,13 @@ class _CableTVHistoryScreenState extends State<CableTVHistoryScreen> {
       );
 
   Widget _buildEmpty() {
+    final isFiltered = _filterSmartCardNumber != null;
+    final title = isFiltered
+        ? 'No purchases for this card'
+        : 'No cable TV payments yet';
+    final subtitle = isFiltered
+        ? 'No transactions found for smart card ${_filterSmartCardNumber!}.'
+        : 'Pay your first cable TV subscription and it will show up here.';
     return Center(
       child: Padding(
         padding: EdgeInsets.all(32.w),
@@ -220,7 +278,7 @@ class _CableTVHistoryScreenState extends State<CableTVHistoryScreen> {
             Icon(Icons.history, color: _textSecondary, size: 56.sp),
             SizedBox(height: 16.h),
             Text(
-              'No cable TV payments yet',
+              title,
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 15.sp,
@@ -229,7 +287,7 @@ class _CableTVHistoryScreenState extends State<CableTVHistoryScreen> {
             ),
             SizedBox(height: 6.h),
             Text(
-              'Pay your first cable TV subscription and it will show up here.',
+              subtitle,
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: _textSecondary,

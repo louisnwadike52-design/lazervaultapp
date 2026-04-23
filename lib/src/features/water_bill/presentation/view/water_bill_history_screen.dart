@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import '../../../../../core/widgets/bill_history_item.dart';
 import '../../domain/entities/water_payment_entity.dart';
 import '../cubit/water_bill_cubit.dart';
 import '../cubit/water_bill_state.dart';
@@ -17,10 +18,42 @@ class WaterBillHistoryScreen extends StatefulWidget {
 }
 
 class _WaterBillHistoryScreenState extends State<WaterBillHistoryScreen> {
+  // Optional filter args passed from the Saved Accounts "View Payments"
+  // action. When set, the list is narrowed client-side to payments whose
+  // customer_number (and provider_code, if provided) match. Without
+  // these the screen behaves exactly as before: full history.
+  String? _filterAccountNumber;
+  String? _filterProviderCode;
+
   @override
   void initState() {
     super.initState();
+    final raw = Get.arguments;
+    if (raw is Map<String, dynamic>) {
+      final acc = raw['accountNumber'];
+      final code = raw['providerCode'];
+      _filterAccountNumber = acc is String && acc.isNotEmpty ? acc : null;
+      _filterProviderCode = code is String && code.isNotEmpty ? code : null;
+    }
     context.read<WaterBillCubit>().getPaymentHistory();
+  }
+
+  // Narrow the full history list to rows matching the filter args (if any).
+  // Keeps the filter client-side so the same cubit/repository feeds both
+  // the landing strip's "View All" and the saved-account "View Payments".
+  List<WaterPaymentEntity> _applyFilter(List<WaterPaymentEntity> rows) {
+    if (_filterAccountNumber == null) return rows;
+    final target = _filterAccountNumber!.trim();
+    return rows.where((p) {
+      if (p.customerNumber.trim() != target) return false;
+      if (_filterProviderCode != null && _filterProviderCode!.isNotEmpty) {
+        if (p.providerCode.toUpperCase() !=
+            _filterProviderCode!.toUpperCase()) {
+          return false;
+        }
+      }
+      return true;
+    }).toList();
   }
 
   @override
@@ -64,7 +97,8 @@ class _WaterBillHistoryScreenState extends State<WaterBillHistoryScreen> {
                     }
 
                     if (state is PaymentHistoryLoaded) {
-                      if (state.payments.isEmpty) {
+                      final filtered = _applyFilter(state.payments);
+                      if (filtered.isEmpty) {
                         return _buildEmptyState();
                       }
 
@@ -75,11 +109,11 @@ class _WaterBillHistoryScreenState extends State<WaterBillHistoryScreen> {
                         color: const Color(0xFF3B82F6),
                         child: ListView.separated(
                           padding: EdgeInsets.all(20.w),
-                          itemCount: state.payments.length,
+                          itemCount: filtered.length,
                           separatorBuilder: (context, index) =>
                               SizedBox(height: 12.h),
                           itemBuilder: (context, index) {
-                            final payment = state.payments[index];
+                            final payment = filtered[index];
                             return _buildPaymentCard(payment);
                           },
                         ),
@@ -226,170 +260,47 @@ class _WaterBillHistoryScreenState extends State<WaterBillHistoryScreen> {
   }
 
   Widget _buildPaymentCard(WaterPaymentEntity payment) {
-    final dateFormat = DateFormat('MMM dd, yyyy');
-    return GestureDetector(
-      onTap: () => WaterHistoryActionsSheet.show(context, payment),
-      child: Container(
-        padding: EdgeInsets.all(16.w),
+    // Unified with airtime / data / electricity via the shared
+    // BillHistoryItem widget so every bill type renders with the same
+    // per-row card, separators, and interactive affordances. Previously
+    // water had its own bespoke layout that looked like one big shared
+    // container — user feedback flagged the visual drift.
+    return BillHistoryItem(
+      leadingIcon: Container(
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.1),
-            width: 1,
-          ),
+          color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(10.r),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 48.w,
-                  height: 48.w,
-                  decoration: BoxDecoration(
-                    color: _getStatusColor(payment.status)
-                        .withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                  child: Icon(
-                    _getStatusIcon(payment.status),
-                    color: _getStatusColor(payment.status),
-                    size: 24.sp,
-                  ),
-                ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        payment.providerName,
-                        style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      SizedBox(height: 4.h),
-                      Text(
-                        payment.customerName,
-                        style: GoogleFonts.inter(
-                          color: Colors.white.withValues(alpha: 0.6),
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      '\u20A6${NumberFormat('#,##0.00', 'en_NG').format(payment.amount)}',
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    SizedBox(height: 4.h),
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 8.w, vertical: 4.h),
-                      decoration: BoxDecoration(
-                        color: _getStatusColor(payment.status)
-                            .withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                      child: Text(
-                        _formatStatus(payment.status),
-                        style: GoogleFonts.inter(
-                          color: _getStatusColor(payment.status),
-                          fontSize: 10.sp,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            SizedBox(height: 16.h),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInfoChip(
-                    Icons.numbers,
-                    payment.customerNumber,
-                  ),
-                ),
-                SizedBox(width: 8.w),
-                Expanded(
-                  child: _buildInfoChip(
-                    Icons.calendar_today,
-                    dateFormat.format(payment.createdAt),
-                  ),
-                ),
-              ],
-            ),
-          ],
+        child: Icon(
+          _getStatusIcon(payment.status),
+          color: const Color(0xFF3B82F6),
+          size: 22.sp,
         ),
       ),
+      title: payment.providerName.isNotEmpty
+          ? payment.providerName
+          : 'Water Bill',
+      subtitle: payment.customerNumber.isNotEmpty
+          ? payment.customerNumber
+          : (payment.customerName.isNotEmpty
+              ? payment.customerName
+              : 'Account'),
+      reference: payment.transactionReference,
+      date: DateFormat('MMM dd, yyyy • hh:mm a')
+          .format(payment.createdAt),
+      amount: payment.amount,
+      // BillHistoryItem takes a String status (same chip contract
+      // airtime/data pass). Use the enum's name — the widget lowercases
+      // and maps to its own chip colour palette internally.
+      status: payment.status.name,
+      onTap: () => WaterHistoryActionsSheet.show(context, payment),
     );
   }
 
-  Widget _buildInfoChip(IconData icon, String text) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(8.r),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            color: Colors.white.withValues(alpha: 0.6),
-            size: 14.sp,
-          ),
-          SizedBox(width: 6.w),
-          Flexible(
-            child: Text(
-              text,
-              style: GoogleFonts.inter(
-                color: Colors.white.withValues(alpha: 0.6),
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w400,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatStatus(WaterPaymentStatus status) {
-    return status.name[0].toUpperCase() + status.name.substring(1);
-  }
-
-  Color _getStatusColor(WaterPaymentStatus status) {
-    switch (status) {
-      case WaterPaymentStatus.completed:
-        return const Color(0xFF4CAF50);
-      case WaterPaymentStatus.processing:
-        return const Color(0xFFFFA726);
-      case WaterPaymentStatus.pending:
-        return const Color(0xFF42A5F5);
-      case WaterPaymentStatus.failed:
-      case WaterPaymentStatus.refunded:
-        return const Color(0xFFEF5350);
-    }
-  }
+  // _buildInfoChip, _formatStatus, _getStatusColor all became dead once
+  // the row migrated to the shared BillHistoryItem widget — the widget
+  // owns status chip colour + label formatting. Deleted to keep the
+  // file focused on what's still used.
 
   IconData _getStatusIcon(WaterPaymentStatus status) {
     switch (status) {

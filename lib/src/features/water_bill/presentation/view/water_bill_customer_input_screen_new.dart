@@ -31,8 +31,19 @@ class _WaterBillCustomerInputScreenNewState extends State<WaterBillCustomerInput
   @override
   void initState() {
     super.initState();
-    final args = Get.arguments as Map<String, dynamic>;
-    _provider = args['provider'] as WaterProviderEntity;
+    // Defensive arg parsing. Without a provider we can't render the
+    // screen meaningfully — bounce back to the landing so the user
+    // picks one rather than crashing on the force-cast.
+    final raw = Get.arguments;
+    final args = raw is Map<String, dynamic> ? raw : const <String, dynamic>{};
+    final provider = args['provider'];
+    if (provider is! WaterProviderEntity) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) Get.offAllNamed(AppRoutes.waterBillHome);
+      });
+      return;
+    }
+    _provider = provider;
     _preselectedAmount = args['preselectedAmount'] as double?;
 
     if (_preselectedAmount != null) {

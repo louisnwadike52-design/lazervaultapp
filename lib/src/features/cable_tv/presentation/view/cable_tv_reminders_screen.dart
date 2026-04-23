@@ -318,10 +318,15 @@ class _CableTVRemindersScreenState extends State<CableTVRemindersScreen> {
   Widget _reminderCard(CableTVReminder r, {bool isDue = false}) {
     final date = _parseDate(r.reminderDate);
 
+    // Show variation code as plan name when set, otherwise fall back to amount.
+    final planLabel = r.variationCode != null && r.variationCode!.isNotEmpty
+        ? r.variationCode
+        : null;
     return BillReminderItem(
       title: r.title,
       description: r.description,
-      amount: r.amount,
+      planName: planLabel,
+      amount: planLabel == null ? r.amount : null,
       reminderDate: date ?? DateTime.now(),
       status: r.status,
       isRecurring: r.isRecurring,

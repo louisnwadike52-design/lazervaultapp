@@ -824,7 +824,11 @@ Future<void> init() async {
     instanceName: 'financialChannel',
   );
 
-  // Exchange Service Channel - For currency exchange, international transfers (port 50081)
+  // Exchange Service Channel - routes through Financial Gateway (gRPC 50071).
+  // financial-gateway/main.go owns `pb.RegisterExchangeServiceServer`;
+  // exchange-service itself sits at 50081 and is reached transitively
+  // via the gateway. Override through EXCHANGE_GRPC_PORT /
+  // EXCHANGE_GRPC_HOST in the project-root .env.
   serviceLocator.registerLazySingleton<ClientChannel>(
     () => GrpcChannelFactory.createExchangeChannel(),
     instanceName: 'exchangeChannel',
@@ -1156,7 +1160,8 @@ Future<void> init() async {
 
   // ================== Feature: Currency Exchange ==================
 
-  // Register Exchange Service Client - routes to Exchange Service (port 50081)
+  // Register Exchange Service Client — routes through Financial Gateway
+  // (50071) which proxies to exchange-service (50081) via gRPC.
   serviceLocator.registerLazySingleton<ExchangeServiceClient>(
     () => ExchangeServiceClient(serviceLocator<ClientChannel>(instanceName: 'exchangeChannel')),
   );

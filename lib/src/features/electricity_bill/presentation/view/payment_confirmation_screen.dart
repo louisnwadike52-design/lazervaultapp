@@ -984,8 +984,17 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
       );
     }
 
-    final saveRow = (_existingBeneficiary == null && !_isFromBeneficiary)
-        ? _buildToggleRow(
+    // Meter is "already saved" if the probe found a match OR the user got
+    // here via the pay-again-from-beneficiary flow (in which case _beneficiary
+    // is the source of truth even if _existingBeneficiary failed to hydrate).
+    final savedBeneficiary = _existingBeneficiary ?? (_isFromBeneficiary ? _beneficiary : null);
+    final Widget saveRow = savedBeneficiary != null
+        ? _buildInfoRow(
+            icon: Icons.bookmark,
+            title: 'Meter already saved',
+            subtitle: 'Saved as "${savedBeneficiary.displayName}"',
+          )
+        : _buildToggleRow(
             icon: Icons.bookmark_outline,
             title: 'Save as beneficiary',
             subtitle: _saveBeneficiary &&
@@ -994,15 +1003,7 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
                 : 'Quick-buy this meter next time',
             value: _saveBeneficiary,
             onChanged: _onToggleSaveBeneficiary,
-          )
-        : (_existingBeneficiary != null
-            ? _buildInfoRow(
-                icon: Icons.bookmark,
-                title: 'Meter already saved',
-                subtitle:
-                    'Saved as "${_existingBeneficiary!.displayName}"',
-              )
-            : null);
+          );
 
     final autoRow = (_existingAutoRecharge == null)
         ? _buildToggleRow(
@@ -1022,8 +1023,8 @@ class _PaymentConfirmationScreenState extends State<PaymentConfirmationScreen>
           );
 
     final rows = <Widget>[
-      if (saveRow != null) saveRow,
-      if (saveRow != null) Divider(height: 1, color: InvoiceThemeColors.borderColor),
+      saveRow,
+      Divider(height: 1, color: InvoiceThemeColors.borderColor),
       autoRow,
     ];
 

@@ -390,7 +390,7 @@ class _CableTVBeneficiariesScreenState
   }
 
   String _formatIso(String? iso) {
-    if (iso == null || iso.isEmpty) return '—';
+    if (iso == null || iso.isEmpty) return 'Never';
     final dt = DateTime.tryParse(iso);
     if (dt == null) return iso;
     return dt.toLocal().toString().split('.').first;
@@ -423,6 +423,27 @@ class _CableTVBeneficiariesScreenState
               onTap: () {
                 Navigator.of(ctx).pop();
                 _showDetailsSheet(b);
+              },
+            ),
+            const Divider(color: Color(0xFF2D2D2D), height: 1),
+            ListTile(
+              leading: Icon(Icons.history, color: const Color(0xFF4E03D0)),
+              title: Text('View Purchases',
+                  style: TextStyle(color: Colors.white, fontSize: 15.sp)),
+              subtitle: Text(
+                b.smartCardNumber,
+                style: TextStyle(
+                    color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+              ),
+              onTap: () {
+                Navigator.of(ctx).pop();
+                Get.toNamed(
+                  AppRoutes.cableTVHistory,
+                  arguments: {
+                    'smartCardNumber': b.smartCardNumber,
+                    'nickname': b.nickname ?? b.smartCardNumber,
+                  },
+                );
               },
             ),
             const Divider(color: Color(0xFF2D2D2D), height: 1),

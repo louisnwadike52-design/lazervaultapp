@@ -1,5 +1,9 @@
 import 'dart:async';
 
+// Pulls in TransactionTypeModeMatch so recentTransactions.where can call
+// `tx.type.matchesMode(...)` to filter the Recent list to the active tab.
+import '../../domain/entities/transaction_entity.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -16,12 +20,12 @@ import 'package:lazervault/src/generated/accounts.pb.dart' as accounts_pb;
 import 'package:lazervault/src/generated/accounts.pbgrpc.dart' as accounts_grpc;
 import '../cubit/exchange_cubit.dart';
 import '../cubit/exchange_state.dart';
+import '../theme/exchange_theme.dart';
 import '../widgets/currency_pair_selector.dart';
 import '../widgets/exchange_mode_toggle.dart';
 import '../widgets/exchange_transaction_tile.dart';
 import '../widgets/fee_breakdown_widget.dart';
 import '../widgets/quick_amount_buttons.dart';
-import '../widgets/rate_countdown_widget.dart';
 import '../../domain/repositories/i_exchange_repository.dart';
 
 class ExchangeHomeScreen extends StatefulWidget {
@@ -40,7 +44,10 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
   final _amountController = TextEditingController();
   final _amountFocusNode = FocusNode();
   ExchangeMode _mode = ExchangeMode.convert;
-  bool _isRateExpired = false;
+  // _isRefreshingRate tracks ONLY the in-flight GET /rates call so we can
+  // debounce the "refresh" icon; it never gates the primary action anymore.
+  // Rate staleness was removed — the backend fetches a fresh Flutterwave rate
+  // at capture time, so the UI no longer expires rates on the client.
   bool _isRefreshingRate = false;
   bool _isPrimaryActionInProgress = false;
   Timer? _amountDebounce;
@@ -95,24 +102,14 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
 
   Future<void> _fetchRate() async {
     if (_isRefreshingRate) return;
-    setState(() {
-      _isRefreshingRate = true;
-      _isRateExpired = false;
-    });
+    setState(() => _isRefreshingRate = true);
     try {
       final amount = double.tryParse(_amountController.text) ?? 0;
       await context
           .read<ExchangeCubit>()
           .fetchRateForHome(forAmount: amount > 0 ? amount : null);
     } finally {
-      if (mounted) {
-        final cubit = context.read<ExchangeCubit>();
-        setState(() {
-          _isRefreshingRate = false;
-          _isRateExpired =
-              cubit.currentRate == null || cubit.currentRate!.isExpired;
-        });
-      }
+      if (mounted) setState(() => _isRefreshingRate = false);
     }
   }
 
@@ -177,9 +174,20 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
         return;
       }
 
-      if (cubit.currentRate == null || cubit.currentRate!.isExpired) {
-        setState(() => _isRateExpired = true);
-        return;
+      // We no longer gate on a client-side rate TTL. If the cubit has no
+      // rate yet, fetch one synchronously (best effort) before continuing.
+      if (cubit.currentRate == null) {
+        await _fetchRate();
+        if (cubit.currentRate == null) {
+          Get.snackbar(
+            'Rate unavailable',
+            'Could not fetch an exchange rate. Please try again.',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: ExchangeTheme.cardBackground,
+            colorText: Colors.white,
+          );
+          return;
+        }
       }
 
       cubit.setAmount(amount);
@@ -380,7 +388,7 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
               else
                 const Icon(
                   Icons.currency_exchange,
-                  color: Color(0xFF3B82F6),
+                  color: Color(0xFF7C3AED),
                   size: 40,
                 ),
               const SizedBox(height: 12),
@@ -445,7 +453,7 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
                 child: ElevatedButton(
                   onPressed: () => Navigator.of(ctx).pop(true),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF3B82F6),
+                    backgroundColor: const Color(0xFF7C3AED),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -585,18 +593,13 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
       ),
       body: BlocConsumer<ExchangeCubit, ExchangeState>(
         listener: (context, state) {
-          if (state is ExchangeRateExpired) {
-            setState(() => _isRateExpired = true);
-          } else if (state is ExchangeHomeWithRate &&
-              state.rate != null &&
-              !state.rate!.isExpired) {
-            setState(() => _isRateExpired = false);
-          }
+          // Rate staleness is enforced server-side now. ExchangeRateExpired
+          // events (if any older code paths still emit them) are ignored.
         },
         builder: (context, state) {
           if (state is ExchangeLoading) {
             return const Center(
-                child: CircularProgressIndicator(color: Color(0xFF3B82F6)));
+                child: CircularProgressIndicator(color: Color(0xFF7C3AED)));
           }
 
           if (state is ExchangeError) {
@@ -631,7 +634,7 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
             ElevatedButton(
               onPressed: _refresh,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
+                backgroundColor: const Color(0xFF7C3AED),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
               ),
@@ -648,11 +651,11 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
     final amount = double.tryParse(_amountController.text) ?? 0;
     final rate = state.rate;
     final convertedAmount = rate != null ? rate.calculateToAmount(amount) : 0.0;
-    final canProceed = amount > 0 && rate != null && !_isRateExpired;
+    final canProceed = amount > 0 && rate != null;
 
     return RefreshIndicator(
       onRefresh: _refresh,
-      color: const Color(0xFF3B82F6),
+      color: const Color(0xFF7C3AED),
       backgroundColor: const Color(0xFF1F1F1F),
       child: Column(
         children: [
@@ -710,34 +713,20 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
                     ),
                   const SizedBox(height: 16),
 
-                  // Rate countdown — always in tree, keyed by rate identity
-                  // so Flutter creates a fresh widget (with full countdown)
-                  // when a new rate arrives.
+                  // Indicative rate chip — no countdown, no expiry. The final
+                  // rate is captured server-side at transaction time.
                   if (rate != null)
-                    Center(
-                      child: RateCountdownWidget(
-                        key: ValueKey(
-                            'rate_${rate.rateId}_${rate.timestamp.millisecondsSinceEpoch}'),
-                        rate: rate,
-                        isRefreshing: _isRefreshingRate,
-                        onExpired: () {
-                          if (!_isRefreshingRate) {
-                            setState(() => _isRateExpired = true);
-                          }
-                        },
-                        onRefresh: _fetchRate,
-                      ),
-                    ),
+                    _buildIndicativeRateChip(rate),
                   if (rate == null && amount > 0)
                     Center(
                       child: TextButton.icon(
                         onPressed: _fetchRate,
                         icon: const Icon(Icons.refresh,
-                            color: Color(0xFF3B82F6), size: 16),
+                            color: ExchangeTheme.primary, size: 16),
                         label: const Text(
                           'Get exchange rate',
-                          style:
-                              TextStyle(color: Color(0xFF3B82F6), fontSize: 13),
+                          style: TextStyle(
+                              color: ExchangeTheme.primary, fontSize: 13),
                         ),
                       ),
                     ),
@@ -752,29 +741,44 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
                     ),
                   const SizedBox(height: 24),
 
-                  // Recent exchanges section
-                  _buildSectionHeader(
-                    'Recent Exchanges',
-                    state.recentTransactions.isNotEmpty
-                        ? () {
-                            Get.toNamed(AppRoutes.exchangeHistory);
-                          }
-                        : null,
-                  ),
-                  const SizedBox(height: 12),
-                  if (state.recentTransactions.isEmpty)
-                    _buildEmptyTransactions()
-                  else
-                    ...state.recentTransactions.map((tx) => Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: ExchangeTransactionTile(
-                            transaction: tx,
-                            onTap: () => Get.toNamed(
-                              AppRoutes.exchangeDetail,
-                              arguments: tx,
-                            ),
-                          ),
-                        )),
+                  // Fee-paid history preview — last 3 completed exchanges
+                  // of the active tab. Conversion tab shows only same-
+                  // user wallet conversions; Send Abroad tab shows only
+                  // cross-border Flutterwave transfers. Legacy
+                  // TransactionType.exchange rows (pre-dating the split)
+                  // surface on both tabs so nothing disappears.
+                  () {
+                    final isConversion = _mode == ExchangeMode.convert;
+                    final visibleRecent = state.recentTransactions
+                        .where((tx) => tx.type.matchesMode(isConversion: isConversion))
+                        .take(3)
+                        .toList();
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildSectionHeader(
+                          'Recent ${isConversion ? 'Conversions' : 'International Transfers'}',
+                          visibleRecent.isNotEmpty
+                              ? () => Get.toNamed(AppRoutes.exchangeHistory)
+                              : null,
+                        ),
+                        const SizedBox(height: 12),
+                        if (visibleRecent.isEmpty)
+                          _buildEmptyTransactions()
+                        else
+                          ...visibleRecent.map((tx) => Padding(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: ExchangeTransactionTile(
+                                  transaction: tx,
+                                  onTap: () => Get.toNamed(
+                                    AppRoutes.exchangeDetail,
+                                    arguments: tx,
+                                  ),
+                                ),
+                              )),
+                      ],
+                    );
+                  }(),
                   // Bottom padding for scroll
                   const SizedBox(height: 80),
                 ],
@@ -789,28 +793,16 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _isRefreshingRate
-                      ? null
-                      : _isRateExpired
-                          ? _fetchRate
-                          : canProceed
-                              ? _onPrimaryAction
-                              : null,
+                  onPressed: canProceed ? _onPrimaryAction : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF3B82F6),
-                    disabledBackgroundColor: const Color(0xFF2D2D2D),
+                    backgroundColor: ExchangeTheme.primary,
+                    disabledBackgroundColor: ExchangeTheme.surfaceElevated,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
                   ),
                   child: Text(
-                    _isRefreshingRate
-                        ? 'Refreshing Rate...'
-                        : _isRateExpired
-                            ? 'Refresh Rate to Continue'
-                            : _mode == ExchangeMode.convert
-                                ? 'Convert Now'
-                                : 'Continue',
+                    _mode == ExchangeMode.convert ? 'Convert Now' : 'Continue',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,
@@ -822,6 +814,62 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildIndicativeRateChip(ExchangeRate rate) {
+    // Replaces the old countdown. Shows "1 NGN ≈ 0.00064 USD · Final rate
+    // confirmed at transfer" and a manual refresh icon. No TTL.
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: ExchangeTheme.cardBackground,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: ExchangeTheme.divider),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.info_outline,
+                color: ExchangeTheme.primary, size: 14),
+            const SizedBox(width: 6),
+            Text(
+              '1 ${rate.fromCurrency} ≈ ${rate.rate.toStringAsFixed(rate.rate < 1 ? 6 : 4)} ${rate.toCurrency}',
+              style: const TextStyle(
+                color: ExchangeTheme.textPrimary,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(width: 10),
+            const Text(
+              'Final rate locked at transfer',
+              style: TextStyle(
+                  color: ExchangeTheme.textSecondary, fontSize: 11),
+            ),
+            const SizedBox(width: 6),
+            InkWell(
+              onTap: _isRefreshingRate ? null : _fetchRate,
+              borderRadius: BorderRadius.circular(12),
+              child: Padding(
+                padding: const EdgeInsets.all(4),
+                child: _isRefreshingRate
+                    ? const SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 1.5,
+                          color: ExchangeTheme.primary,
+                        ),
+                      )
+                    : const Icon(Icons.refresh,
+                        size: 14, color: ExchangeTheme.primary),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -841,7 +889,7 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isEditable
-              ? const Color(0xFF3B82F6).withValues(alpha: 0.5)
+              ? const Color(0xFF7C3AED).withValues(alpha: 0.5)
               : const Color(0xFF2D2D2D),
         ),
       ),
@@ -924,7 +972,7 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
             child: const Text(
               'View All',
               style: TextStyle(
-                color: Color(0xFF3B82F6),
+                color: Color(0xFF7C3AED),
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),
@@ -1102,7 +1150,7 @@ class _CurrencyPickerSheetState extends State<_CurrencyPickerSheet> {
                     ),
                     trailing: isSelected
                         ? const Icon(Icons.check_circle,
-                            color: Color(0xFF3B82F6), size: 20)
+                            color: Color(0xFF7C3AED), size: 20)
                         : isExcluded
                             ? const Text('Selected',
                                 style: TextStyle(

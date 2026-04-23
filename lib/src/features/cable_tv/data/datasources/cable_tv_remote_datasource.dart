@@ -22,6 +22,10 @@ abstract class CableTVRemoteDataSource {
     required String verificationToken,
     required String idempotencyKey,
   });
+  Future<List<CableTVPaymentModel>> getPaymentHistory({
+    int limit = 50,
+    int offset = 0,
+  });
 }
 
 class CableTVRemoteDataSourceImpl implements CableTVRemoteDataSource {
@@ -112,5 +116,24 @@ class CableTVRemoteDataSourceImpl implements CableTVRemoteDataSource {
       renewalDate: response.renewalDate,
       customerName: response.customerName,
     );
+  }
+
+  @override
+  Future<List<CableTVPaymentModel>> getPaymentHistory({
+    int limit = 50,
+    int offset = 0,
+  }) async {
+    final request = pb.GetBillPaymentHistoryRequest()
+      ..billType = 'cable_tv'
+      ..limit = limit
+      ..offset = offset;
+
+    final options = await grpcClient.callOptions;
+    final response = await grpcClient.utilityPaymentsClient
+        .getBillPaymentHistory(request, options: options);
+
+    return response.payments
+        .map((p) => CableTVPaymentModel.fromBillPaymentProto(p))
+        .toList();
   }
 }

@@ -126,10 +126,10 @@ class _InternetBillHomeScreenState extends State<InternetBillHomeScreen> {
                           itemCount: providers.length,
                           gridDelegate:
                               SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 4,
-                            crossAxisSpacing: 8.w,
-                            mainAxisSpacing: 8.h,
-                            childAspectRatio: 0.85,
+                            crossAxisCount: 3,
+                            crossAxisSpacing: 12.w,
+                            mainAxisSpacing: 12.h,
+                            childAspectRatio: 1.0,
                           ),
                           itemBuilder: (context, index) =>
                               _buildIspCard(providers[index]),
@@ -206,30 +206,30 @@ class _InternetBillHomeScreenState extends State<InternetBillHomeScreen> {
         );
       },
       child: Container(
-        padding: EdgeInsets.all(8.w),
+        padding: EdgeInsets.all(14.w),
         decoration: BoxDecoration(
           color: _card,
-          borderRadius: BorderRadius.circular(12.r),
+          borderRadius: BorderRadius.circular(14.r),
           border: Border.all(color: _border, width: 1),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 32.w,
-              height: 32.w,
+              width: 48.w,
+              height: 48.w,
               decoration: BoxDecoration(
                 color: accent.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(8.r),
+                borderRadius: BorderRadius.circular(12.r),
               ),
-              child: Icon(icon, color: accent, size: 16.sp),
+              child: Icon(icon, color: accent, size: 24.sp),
             ),
-            SizedBox(height: 6.h),
+            SizedBox(height: 10.h),
             Text(
               provider.name.toUpperCase(),
               style: GoogleFonts.inter(
                 color: Colors.white,
-                fontSize: 10.sp,
+                fontSize: 12.sp,
                 fontWeight: FontWeight.w700,
               ),
               textAlign: TextAlign.center,

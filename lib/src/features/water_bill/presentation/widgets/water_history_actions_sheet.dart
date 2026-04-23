@@ -100,27 +100,40 @@ class WaterHistoryActionsSheet {
           onTap: () {
             Get.back();
             final provider = _synthProvider(providerCode, providerName);
-            final validation = CustomerValidationResult(
-              customerNumber: accountNumber,
-              customerName: p.customerName.isNotEmpty
-                  ? p.customerName
-                  : accountNumber,
-              isValid: true,
-            );
-            // Fast-path: land the user directly on the confirmation
-            // screen with everything pre-filled. The confirm screen
-            // probes for existing beneficiary / auto-pay and hides
-            // matching toggles.
-            Get.toNamed(
-              AppRoutes.waterBillPaymentConfirmation,
-              arguments: <String, dynamic>{
-                'provider': provider,
-                'validationResult': validation,
-                'customerNumber': accountNumber,
-                'amount': p.amount > 0 ? p.amount : null,
-                'isRepeat': true,
-              },
-            );
+            // Fast-path: when we have both an account and a non-zero
+            // amount, land directly on the confirmation screen. The
+            // confirm screen probes for existing beneficiary / auto-
+            // pay and hides matching toggles. For records missing an
+            // amount we route to the customer-input screen instead so
+            // the user can enter one — the confirmation build's
+            // `args['amount'] as double` would otherwise crash.
+            if (p.amount > 0) {
+              final validation = CustomerValidationResult(
+                customerNumber: accountNumber,
+                customerName: p.customerName.isNotEmpty
+                    ? p.customerName
+                    : accountNumber,
+                isValid: true,
+              );
+              Get.toNamed(
+                AppRoutes.waterBillPaymentConfirmation,
+                arguments: <String, dynamic>{
+                  'provider': provider,
+                  'validationResult': validation,
+                  'customerNumber': accountNumber,
+                  'amount': p.amount,
+                  'isRepeat': true,
+                },
+              );
+            } else {
+              Get.toNamed(
+                AppRoutes.waterBillCustomerInput,
+                arguments: <String, dynamic>{
+                  'provider': provider,
+                  'preselectedAccountNumber': accountNumber,
+                },
+              );
+            }
           },
         ),
         if (isCompleted)

@@ -3297,6 +3297,7 @@ GetPage(
         providers: [
           BlocProvider(create: (_) => serviceLocator<CableTVBeneficiaryCubit>()),
           BlocProvider(create: (_) => serviceLocator<CableTVAutoRechargeCubit>()),
+          BlocProvider(create: (_) => serviceLocator<CableTVCubit>()),
         ],
         child: const CreateCableTVAutoRechargeScreen(),
       ),
@@ -3316,6 +3317,7 @@ GetPage(
         providers: [
           BlocProvider(create: (_) => serviceLocator<CableTVReminderCubit>()),
           BlocProvider(create: (_) => serviceLocator<CableTVBeneficiaryCubit>()),
+          BlocProvider(create: (_) => serviceLocator<CableTVCubit>()),
         ],
         child: const CreateCableTVReminderScreen(),
       ),

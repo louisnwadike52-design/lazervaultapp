@@ -340,9 +340,17 @@ class ExchangeRepositoryImpl implements IExchangeRepository {
       referenceNumber: protoTransaction.reference.isNotEmpty
           ? protoTransaction.reference
           : protoTransaction.transactionId,
+      // Map proto exchange_type to the specific Flutter TransactionType
+      // so the home-screen recent-exchanges list can filter by active
+      // tab. CONVERSION → exchangeConversion, INTERNATIONAL →
+      // exchangeInternational. Unknown values fall back to the legacy
+      // `exchange` umbrella which surfaces on both tabs (never
+      // disappears from UI unexpectedly).
       type: protoTransaction.exchangeType == ExchangeType.CONVERSION
-          ? TransactionType.exchange
-          : TransactionType.send,
+          ? TransactionType.exchangeConversion
+          : protoTransaction.exchangeType == ExchangeType.INTERNATIONAL
+              ? TransactionType.exchangeInternational
+              : TransactionType.exchange,
       failureReason: protoTransaction.failureReason,
     );
   }

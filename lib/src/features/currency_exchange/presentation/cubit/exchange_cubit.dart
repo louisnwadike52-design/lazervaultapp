@@ -187,18 +187,12 @@ class ExchangeCubit extends Cubit<ExchangeState> {
     );
   }
 
-  /// Check if the current rate is still valid. If expired, emit expired state.
-  bool checkRateValidity() {
-    if (_currentRate == null || _currentRate!.isExpired) {
-      emit(ExchangeRateExpired(
-        fromCurrency: _fromCurrency,
-        toCurrency: _toCurrency,
-        amount: _amount,
-      ));
-      return false;
-    }
-    return true;
-  }
+  /// Deprecated — the backend captures the fresh Flutterwave rate at the
+  /// moment of the transfer, so the client no longer needs to validate rate
+  /// staleness. Kept to avoid breaking callers; always returns true when a
+  /// rate exists.
+  @Deprecated('Rate staleness is enforced server-side; this is a no-op')
+  bool checkRateValidity() => _currentRate != null;
 
   /// Execute a wallet-to-wallet currency conversion.
   Future<void> convertCurrency({

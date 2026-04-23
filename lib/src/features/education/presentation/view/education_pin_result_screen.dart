@@ -196,13 +196,21 @@ class _EducationPinResultScreenState extends State<EducationPinResultScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      // Both AppBar back and the OS/Android back button route to the
+      // utilities landing page — receipt is a terminal screen, there's
+      // no meaningful "previous" step to restore.
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) Get.offAllNamed(AppRoutes.billsHub);
+      },
+      child: Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          onPressed: () => Get.offAllNamed(AppRoutes.educationHome),
+          onPressed: () => Get.offAllNamed(AppRoutes.billsHub),
           icon: const Icon(Icons.arrow_back, color: Colors.white),
         ),
         title: Text(
@@ -274,6 +282,7 @@ class _EducationPinResultScreenState extends State<EducationPinResultScreen>
             _buildBottomActions(),
           ],
         ),
+      ),
       ),
     );
   }
@@ -593,113 +602,67 @@ class _EducationPinResultScreenState extends State<EducationPinResultScreen>
           ),
         ),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Share and Download row
-          Row(
-            children: [
-              // Share all PINs button
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: _isSharing ? null : _shareAllPins,
-                  icon: _isSharing
-                      ? SizedBox(
-                          width: 18.sp,
-                          height: 18.sp,
-                          child: const CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                      : Icon(Icons.share, size: 18.sp),
-                  label: Text(
-                    'Share PINs',
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4E03D0),
-                    disabledBackgroundColor:
-                        const Color(0xFF4E03D0).withValues(alpha: 0.4),
-                    padding: EdgeInsets.symmetric(vertical: 16.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16.r),
-                    ),
-                    elevation: 0,
-                  ),
-                ),
-              ),
-
-              SizedBox(width: 12.w),
-
-              // Download PDF button
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: _isDownloading ? null : _downloadReceipt,
-                  icon: _isDownloading
-                      ? SizedBox(
-                          width: 18.sp,
-                          height: 18.sp,
-                          child: const CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                      : Icon(Icons.download, size: 18.sp),
-                  label: Text(
-                    'Download PDF',
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF10B981),
-                    disabledBackgroundColor:
-                        const Color(0xFF10B981).withValues(alpha: 0.4),
-                    padding: EdgeInsets.symmetric(vertical: 16.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16.r),
-                    ),
-                    elevation: 0,
-                  ),
-                ),
-              ),
-            ],
+          _iconAction(
+            onTap: _isSharing ? null : _shareAllPins,
+            icon: Icons.share,
+            color: const Color(0xFF4E03D0),
+            loading: _isSharing,
+            tooltip: 'Share PINs',
           ),
-
-          SizedBox(height: 12.h),
-
-          // Back to Home button
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton(
-              onPressed: () => Get.offAllNamed(AppRoutes.educationHome),
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Color(0xFF2D2D2D)),
-                padding: EdgeInsets.symmetric(vertical: 16.h),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16.r),
-                ),
-              ),
-              child: Text(
-                'Back to Home',
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white.withValues(alpha: 0.8),
-                ),
-              ),
-            ),
+          SizedBox(width: 16.w),
+          _iconAction(
+            onTap: _isDownloading ? null : _downloadReceipt,
+            icon: Icons.download,
+            color: const Color(0xFF10B981),
+            loading: _isDownloading,
+            tooltip: 'Download PDF',
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _iconAction({
+    required VoidCallback? onTap,
+    required IconData icon,
+    required Color color,
+    required bool loading,
+    required String tooltip,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(28.r),
+          child: Container(
+            width: 56.w,
+            height: 56.w,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: onTap == null ? 0.3 : 0.15),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: color.withValues(alpha: onTap == null ? 0.3 : 0.6),
+                width: 1.5,
+              ),
+            ),
+            alignment: Alignment.center,
+            child: loading
+                ? SizedBox(
+                    width: 22.sp,
+                    height: 22.sp,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(color),
+                    ),
+                  )
+                : Icon(icon, color: color, size: 24.sp),
+          ),
+        ),
       ),
     );
   }

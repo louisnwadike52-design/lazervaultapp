@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:get_it/get_it.dart';
 
 import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/widgets/bill_beneficiary_item.dart';
@@ -39,8 +38,13 @@ class _InternetSavedBeneficiariesScreenState
   @override
   void initState() {
     super.initState();
-    // Routed without BlocProviders — provision both cubits here so the
-    // screen can be opened cold and still load its state.
+    // Cubits are wired at the route level (see app_router.dart). Kick
+    // off the initial loads so the screen opens with content ready.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<InternetBeneficiaryCubit>().load();
+      context.read<InternetAutoRechargeCubit>().load();
+    });
   }
 
   InternetAutoRecharge? _autoFor(InternetBeneficiary b) {
@@ -70,78 +74,65 @@ class _InternetSavedBeneficiariesScreenState
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider<InternetBeneficiaryCubit>(
-          create: (_) => GetIt.I<InternetBeneficiaryCubit>()..load(),
-        ),
-        BlocProvider<InternetAutoRechargeCubit>(
-          create: (_) => GetIt.I<InternetAutoRechargeCubit>()..load(),
-        ),
-      ],
-      child: Scaffold(
+    return Scaffold(
+      backgroundColor: const Color(0xFF0A0A0A),
+      appBar: AppBar(
         backgroundColor: const Color(0xFF0A0A0A),
-        appBar: AppBar(
-          backgroundColor: const Color(0xFF0A0A0A),
-          elevation: 0,
-          leading: IconButton(
-            onPressed: () => Get.back(),
-            icon: Icon(Icons.arrow_back_ios_new,
-                color: Colors.white, size: 20.sp),
+        elevation: 0,
+        leading: IconButton(
+          onPressed: () => Get.back(),
+          icon: Icon(Icons.arrow_back_ios_new,
+              color: Colors.white, size: 20.sp),
+        ),
+        title: Text('Saved ISP Accounts',
+            style: TextStyle(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.white)),
+        actions: [
+          IconButton(
+            tooltip: 'Rollover',
+            onPressed: () => Get.toNamed(AppRoutes.internetBillRollover),
+            icon: Icon(Icons.autorenew,
+                color: const Color(0xFF4E03D0), size: 22.sp),
           ),
-          title: Text('Saved ISP Accounts',
-              style: TextStyle(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white)),
-          actions: [
-            Builder(
-              builder: (ctx) => IconButton(
-                tooltip: 'Rollover',
-                onPressed: () =>
-                    Get.toNamed(AppRoutes.internetBillRollover),
-                icon: Icon(Icons.autorenew,
-                    color: const Color(0xFF4E03D0), size: 22.sp),
-              ),
-            ),
-          ],
-        ),
-        body: MultiBlocListener(
-          listeners: [
-            BlocListener<InternetBeneficiaryCubit, InternetBeneficiaryState>(
-              listener: (context, state) {
-                if (!mounted) return;
-                if (state is InternetBeneficiariesLoading) {
-                  setState(() {
-                    _loading = true;
-                    _error = null;
-                  });
-                } else if (state is InternetBeneficiariesLoaded) {
-                  setState(() {
-                    _beneficiaries = state.beneficiaries;
-                    _loading = false;
-                    _error = null;
-                  });
-                } else if (state is InternetBeneficiaryError) {
-                  setState(() {
-                    _loading = false;
-                    _error = state.message;
-                  });
-                }
-              },
-            ),
-            BlocListener<InternetAutoRechargeCubit,
-                InternetAutoRechargeState>(
-              listener: (context, state) {
-                if (!mounted) return;
-                if (state is InternetAutoRechargesLoaded) {
-                  setState(() => _autoRecharges = state.autoRecharges);
-                }
-              },
-            ),
-          ],
-          child: _buildBody(),
-        ),
+        ],
+      ),
+      body: MultiBlocListener(
+        listeners: [
+          BlocListener<InternetBeneficiaryCubit, InternetBeneficiaryState>(
+            listener: (context, state) {
+              if (!mounted) return;
+              if (state is InternetBeneficiariesLoading) {
+                setState(() {
+                  _loading = true;
+                  _error = null;
+                });
+              } else if (state is InternetBeneficiariesLoaded) {
+                setState(() {
+                  _beneficiaries = state.beneficiaries;
+                  _loading = false;
+                  _error = null;
+                });
+              } else if (state is InternetBeneficiaryError) {
+                setState(() {
+                  _loading = false;
+                  _error = state.message;
+                });
+              }
+            },
+          ),
+          BlocListener<InternetAutoRechargeCubit,
+              InternetAutoRechargeState>(
+            listener: (context, state) {
+              if (!mounted) return;
+              if (state is InternetAutoRechargesLoaded) {
+                setState(() => _autoRecharges = state.autoRecharges);
+              }
+            },
+          ),
+        ],
+        child: _buildBody(),
       ),
     );
   }
@@ -312,7 +303,99 @@ class _InternetSavedBeneficiariesScreenState
     );
   }
 
+  /// Quick bottomsheet picker for the rare case where a beneficiary
+  /// has >1 rollover schedules and the user taps "Update Rollover" —
+  /// we can't auto-pick which one to edit, and the existing list page
+  /// is overkill for a single decision. Returns the chosen schedule,
+  /// or null if the user dismisses.
+  Future<InternetAutoRecharge?> _pickRolloverToEdit(
+      List<InternetAutoRecharge> autos) {
+    return showModalBottomSheet<InternetAutoRecharge>(
+      context: context,
+      backgroundColor: const Color(0xFF1F1F1F),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r))),
+      builder: (sheetCtx) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 20.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF4B5563),
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
+                ),
+              ),
+              SizedBox(height: 12.h),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                child: Text(
+                  'Which rollover do you want to update?',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              SizedBox(height: 12.h),
+              ...autos.map((ar) {
+                final isActive = ar.status.toLowerCase() == 'active';
+                final color = isActive
+                    ? const Color(0xFF10B981)
+                    : (ar.status.toLowerCase() == 'paused'
+                        ? const Color(0xFFFB923C)
+                        : const Color(0xFFEF4444));
+                final title = ar.planName.isNotEmpty ? ar.planName : ar.packageId;
+                return ListTile(
+                  leading: Icon(Icons.autorenew, color: color, size: 22.sp),
+                  title: Text(title,
+                      style: TextStyle(
+                          color: Colors.white, fontSize: 14.sp)),
+                  subtitle: Text(
+                    '${ar.frequency[0].toUpperCase()}${ar.frequency.substring(1)} · ₦${ar.amount.toStringAsFixed(0)}',
+                    style: TextStyle(
+                        color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+                  ),
+                  trailing: Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: Text(
+                      ar.status.toUpperCase(),
+                      style: TextStyle(
+                        color: color,
+                        fontSize: 10.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  onTap: () => Navigator.of(sheetCtx).pop(ar),
+                );
+              }),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _showOptions(InternetBeneficiary b) {
+    // Label + destination flip when a rollover already exists so the
+    // user isn't led into a create flow that would conflict with their
+    // existing schedule. With one existing, we jump into the rollover
+    // list so they can edit/pause/delete; with none, straight to create.
+    final existingAutos = _autosFor(b);
+    final hasRollover = existingAutos.isNotEmpty;
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
@@ -370,10 +453,68 @@ class _InternetSavedBeneficiariesScreenState
             ListTile(
               leading:
                   const Icon(Icons.autorenew, color: Color(0xFF10B981)),
-              title: Text('Set Rollover',
-                  style: TextStyle(color: Colors.white, fontSize: 15.sp)),
+              title: Text(
+                hasRollover ? 'Update Rollover' : 'Set Rollover',
+                style:
+                    TextStyle(color: Colors.white, fontSize: 15.sp),
+              ),
+              subtitle: hasRollover
+                  ? Text(
+                      existingAutos.length == 1
+                          ? '1 active schedule — tap to manage'
+                          : '${existingAutos.length} schedules — tap to manage',
+                      style: TextStyle(
+                        color: const Color(0xFF9CA3AF),
+                        fontSize: 11.sp,
+                      ),
+                    )
+                  : null,
               onTap: () async {
                 Navigator.of(ctx).pop();
+                if (hasRollover) {
+                  // Jump straight into the rollover edit screen with
+                  // the existing schedule pre-filled (cadence, time,
+                  // package, beneficiary locked). CreateInternetRolloverScreen
+                  // detects `autoRecharge` in Get.arguments and switches
+                  // itself into edit mode — see initState there.
+                  //
+                  // If multiple schedules exist for the same contact
+                  // (rare — user can create more than one), show a
+                  // quick picker instead of guessing which one to edit.
+                  final target = existingAutos.length == 1
+                      ? existingAutos.first
+                      : await _pickRolloverToEdit(existingAutos);
+                  if (target == null || !mounted) return;
+                  final updated = await Get.toNamed(
+                    AppRoutes.internetBillRolloverCreate,
+                    arguments: <String, dynamic>{
+                      'autoRecharge': target,
+                      'beneficiary': b,
+                      'locked': true,
+                    },
+                  );
+                  // The cubit already patches the list reactively on a
+                  // successful update; still issue an explicit reload
+                  // so the "Roll" badge count + status on this screen
+                  // reflects any pause/resume side-effects regardless
+                  // of how the user navigated back.
+                  if (mounted) {
+                    context.read<InternetAutoRechargeCubit>().load();
+                  }
+                  if (updated == true && mounted) {
+                    Get.snackbar(
+                      'Rollover updated',
+                      'Your schedule was updated',
+                      backgroundColor: const Color(0xFF10B981)
+                          .withValues(alpha: 0.9),
+                      colorText: Colors.white,
+                      snackPosition: SnackPosition.TOP,
+                      margin: EdgeInsets.all(16.w),
+                      duration: const Duration(seconds: 2),
+                    );
+                  }
+                  return;
+                }
                 // Dedicated create screen: beneficiary locked, user
                 // picks package + cadence. Refresh the
                 // auto-recharge list when the save succeeds so the

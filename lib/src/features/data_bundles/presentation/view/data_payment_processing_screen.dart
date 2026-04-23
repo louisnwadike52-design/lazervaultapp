@@ -211,24 +211,8 @@ class _DataPaymentProcessingScreenState
                   _hasFailed = true;
                   _failMessage = state.message;
                 });
-
-                Future.delayed(const Duration(seconds: 3), () {
-                  if (mounted && !_hasNavigated) {
-                    _hasNavigated = true;
-                    Get.until((route) =>
-                        route.settings.name == AppRoutes.dataBundlesPaymentConfirmation ||
-                        route.settings.name == AppRoutes.dataBundlesHome ||
-                        route.isFirst);
-                    Get.snackbar(
-                      'Payment Failed',
-                      state.message,
-                      backgroundColor: const Color(0xFFEF4444),
-                      colorText: Colors.white,
-                      snackPosition: SnackPosition.TOP,
-                      duration: const Duration(seconds: 4),
-                    );
-                  }
-                });
+                // No auto-navigation — the failure card below gives the
+                // user explicit Try Again / Back to Data CTAs.
               }
 
               if (state is DataBundlesError) {
@@ -236,16 +220,7 @@ class _DataPaymentProcessingScreenState
                   _hasFailed = true;
                   _failMessage = state.message;
                 });
-
-                Future.delayed(const Duration(seconds: 3), () {
-                  if (mounted && !_hasNavigated) {
-                    _hasNavigated = true;
-                    Get.until((route) =>
-                        route.settings.name == AppRoutes.dataBundlesPaymentConfirmation ||
-                        route.settings.name == AppRoutes.dataBundlesHome ||
-                        route.isFirst);
-                  }
-                });
+                // Same — let the user drive the next step.
               }
             },
             child: Padding(
@@ -474,35 +449,83 @@ class _DataPaymentProcessingScreenState
   }
 
   Widget _buildFailureInfo() {
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFFEF4444).withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: const Color(0xFFEF4444).withValues(alpha: 0.3),
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.error_outline,
-            color: const Color(0xFFEF4444),
-            size: 20.sp,
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Text(
-              'Payment failed. Redirecting back...',
-              style: GoogleFonts.inter(
-                color: const Color(0xFFEF4444),
-                fontSize: 13.sp,
-                fontWeight: FontWeight.w500,
-              ),
+    return Column(
+      children: [
+        Container(
+          padding: EdgeInsets.all(16.w),
+          decoration: BoxDecoration(
+            color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(
+              color: const Color(0xFFEF4444).withValues(alpha: 0.3),
             ),
           ),
-        ],
-      ),
+          child: Row(
+            children: [
+              Icon(Icons.error_outline,
+                  color: const Color(0xFFEF4444), size: 20.sp),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Text(
+                  _failMessage,
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFFEF4444),
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: 16.h),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => Get.back(),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Color(0xFF3B82F6)),
+                  padding: EdgeInsets.symmetric(vertical: 14.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+                child: Text(
+                  'Try Again',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF3B82F6),
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () =>
+                    Get.offAllNamed(AppRoutes.dataBundlesHome),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF3B82F6),
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: 14.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+                child: Text(
+                  'Back to Data',
+                  style: GoogleFonts.inter(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 

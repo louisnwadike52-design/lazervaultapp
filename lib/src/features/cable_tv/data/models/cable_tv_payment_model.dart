@@ -42,4 +42,23 @@ class CableTVPaymentModel extends CableTVPaymentEntity {
       customerName: customerName,
     );
   }
+
+  factory CableTVPaymentModel.fromBillPaymentProto(pb.BillPayment payment) {
+    return CableTVPaymentModel(
+      id: payment.id,
+      userId: payment.userId,
+      accountId: payment.accountId,
+      billType: payment.billType,
+      providerId: payment.providerId,
+      reference: payment.reference,
+      amount: payment.amount,
+      status: payment.status,
+      customerNumber: payment.customerNumber,
+      metadata: payment.metadata,
+      createdAt: payment.createdAt,
+      newBalance: 0.0,
+      renewalDate: '',
+      customerName: '',
+    );
+  }
 }

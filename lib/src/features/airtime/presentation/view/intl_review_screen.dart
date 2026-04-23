@@ -264,56 +264,102 @@ class _IntlReviewScreenState extends State<IntlReviewScreen>
         centerTitle: true,
       );
 
-  Widget _buildSummaryCard() => Container(
-        padding: EdgeInsets.all(20.w),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.circular(16.r),
-        ),
-        child: Column(
-          children: [
-            // Recipient gets — headline in target country currency.
+  Widget _buildSummaryCard() {
+    // The "You Pay" line must always reflect the SELECTED ACCOUNT's currency
+    // — that is the ground truth of what the wallet gets debited in. The
+    // `_senderCurrency` passed from the previous screen came from the
+    // provider operator's SenderCurrencyCode, which in some sandbox configs
+    // (GBP) does NOT match the user's wallet currency (NGN). Showing "2 GBP"
+    // for a South Africa top-up bought from an NGN account was the bug. We
+    // resolve via the accounts cubit — if it hasn't loaded yet we fall back
+    // to whatever came through the args, but 99% of the time `_senderCurrency`
+    // is already replaced by the selected account's currency below.
+    final accountsState = context.watch<AccountCardsSummaryCubit>().state;
+    String displayedSenderCurrency = _senderCurrency;
+    if (accountsState is AccountCardsSummaryLoaded &&
+        _selectedAccountId != null) {
+      final match = accountsState.accountSummaries.firstWhere(
+        (a) => a.id.toString() == _selectedAccountId,
+        orElse: () => accountsState.accountSummaries.first,
+      );
+      displayedSenderCurrency = match.currency.toUpperCase();
+    }
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(16.r),
+      ),
+      child: Column(
+        children: [
+          // Recipient gets — headline in target country currency.
+          _summaryRow(
+            label: 'Recipient Gets',
+            value: _destAmount > 0
+                ? '${_country.currencyCode} ${_destAmount.toStringAsFixed(2)}'
+                : 'Calculated by provider',
+            valueColor: const Color(0xFF10B981),
+            valueSize: 22.sp,
+            valueBold: true,
+          ),
+          SizedBox(height: 12.h),
+          // You pay — in the selected account's currency (source of truth
+          // for the actual debit). Never the operator's sender currency.
+          _summaryRow(
+            label: 'You Pay',
+            value:
+                '$displayedSenderCurrency ${_amount.toStringAsFixed(2)}',
+            valueColor: Colors.white,
+            valueSize: 18.sp,
+            valueBold: true,
+          ),
+          if (_fxRate > 0 &&
+              _country.currencyCode.toUpperCase() !=
+                  displayedSenderCurrency.toUpperCase()) ...[
+            SizedBox(height: 8.h),
             _summaryRow(
-              label: 'Recipient Gets',
-              value: _destAmount > 0
-                  ? '${_country.currencyCode} ${_destAmount.toStringAsFixed(2)}'
-                  : 'Calculated by provider',
-              valueColor: const Color(0xFF10B981),
-              valueSize: 22.sp,
-              valueBold: true,
+              label: 'Exchange Rate',
+              value:
+                  '1 ${_country.currencyCode} ≈ ${_fxRate.toStringAsFixed(4)} $displayedSenderCurrency',
+              valueColor: const Color(0xFF4E03D0),
+              valueSize: 12.sp,
             ),
-            SizedBox(height: 12.h),
-            // You pay — in the user's active-locale currency.
-            _summaryRow(
-              label: 'You Pay',
-              value: '$_senderCurrency ${_amount.toStringAsFixed(2)}',
-              valueColor: Colors.white,
-              valueSize: 18.sp,
-              valueBold: true,
+          ],
+          Divider(color: const Color(0xFF2D2D2D), height: 24.h),
+          // Route: explicit FROM (user's wallet + home locale) → TO (dest
+          // country). The old screen only showed the recipient side; users
+          // couldn't tell at a glance which of their accounts was being
+          // charged or which country the airtime was heading to.
+          _summaryRow(
+            label: 'From',
+            value: displayedSenderCurrency,
+            trailing: Text(
+              '🏦  Your $displayedSenderCurrency wallet',
+              style: TextStyle(
+                  color: const Color(0xFF9CA3AF), fontSize: 12.sp),
             ),
-            if (_fxRate > 0 &&
-                _country.currencyCode.toUpperCase() !=
-                    _senderCurrency.toUpperCase()) ...[
-              SizedBox(height: 8.h),
-              _summaryRow(
-                label: 'Exchange Rate',
-                value:
-                    '1 ${_country.currencyCode} ≈ ${_fxRate.toStringAsFixed(4)} $_senderCurrency',
-                valueColor: const Color(0xFF4E03D0),
-                valueSize: 12.sp,
-              ),
-            ],
-            Divider(color: const Color(0xFF2D2D2D), height: 24.h),
-            // Recipient info
-            _summaryRow(
-              label: 'Recipient',
-              value: _phoneNumber,
-              trailing: Text(
-                '${_country.flagEmoji}  ${_country.countryName}',
-                style: TextStyle(
-                    color: const Color(0xFF9CA3AF), fontSize: 12.sp),
-              ),
+          ),
+          SizedBox(height: 10.h),
+          _summaryRow(
+            label: 'To',
+            value: _country.countryName,
+            trailing: Text(
+              '${_country.flagEmoji}  ${_country.currencyCode}',
+              style: TextStyle(
+                  color: const Color(0xFF9CA3AF), fontSize: 12.sp),
             ),
+          ),
+          SizedBox(height: 10.h),
+          // Recipient info
+          _summaryRow(
+            label: 'Recipient',
+            value: _phoneNumber,
+            trailing: Text(
+              '${_country.flagEmoji}  ${_country.countryName}',
+              style: TextStyle(
+                  color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+            ),
+          ),
             SizedBox(height: 10.h),
             // Operator
             _summaryRow(
@@ -330,7 +376,8 @@ class _IntlReviewScreenState extends State<IntlReviewScreen>
             ),
           ],
         ),
-      );
+    );
+  }
 
   Widget _summaryRow({
     required String label,

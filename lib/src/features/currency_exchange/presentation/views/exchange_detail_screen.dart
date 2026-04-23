@@ -30,16 +30,16 @@ class ExchangeDetailScreen extends StatelessWidget {
               const Text('Transaction data unavailable', style: TextStyle(color: Colors.white)),
               const SizedBox(height: 24),
               ElevatedButton(
-                onPressed: () => Get.offAllNamed(AppRoutes.dashboard),
-                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF3B82F6)),
-                child: const Text('Go to Dashboard', style: TextStyle(color: Colors.white)),
+                onPressed: () => Get.offAllNamed(AppRoutes.exchangeHome),
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF7C3AED)),
+                child: const Text('Back to Exchange', style: TextStyle(color: Colors.white)),
               ),
             ],
           ),
         ),
       );
     }
-    final isConversion = tx.type == TransactionType.exchange;
+    final isConversion = tx.type.isConversionLike;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
@@ -94,7 +94,7 @@ class ExchangeDetailScreen extends StatelessWidget {
                               ),
                               const Padding(
                                 padding: EdgeInsets.symmetric(horizontal: 20),
-                                child: Icon(Icons.arrow_forward, color: Color(0xFF3B82F6), size: 24),
+                                child: Icon(Icons.arrow_forward, color: Color(0xFF7C3AED), size: 24),
                               ),
                               Column(
                                 children: [
@@ -249,7 +249,7 @@ class ExchangeDetailScreen extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: () => _repeatTransaction(context, tx),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF3B82F6),
+                        backgroundColor: const Color(0xFF7C3AED),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
@@ -348,14 +348,14 @@ class ExchangeDetailScreen extends StatelessWidget {
               width: 12,
               height: 12,
               decoration: BoxDecoration(
-                color: isActive ? const Color(0xFF3B82F6) : const Color(0xFF2D2D2D),
+                color: isActive ? const Color(0xFF7C3AED) : const Color(0xFF2D2D2D),
                 borderRadius: BorderRadius.circular(6),
               ),
             ),
             Container(
               width: 2,
               height: 24,
-              color: isActive ? const Color(0xFF3B82F6).withValues(alpha: 0.3) : const Color(0xFF2D2D2D),
+              color: isActive ? const Color(0xFF7C3AED).withValues(alpha: 0.3) : const Color(0xFF2D2D2D),
             ),
           ],
         ),

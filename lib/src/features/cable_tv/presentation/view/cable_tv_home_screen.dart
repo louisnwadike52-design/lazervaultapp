@@ -28,7 +28,7 @@ class _CableTVHomeScreenState extends State<CableTVHomeScreen> {
   static const _card = Color(0xFF1F1F1F);
   static const _border = Color(0xFF2D2D2D);
   static const _textSecondary = Color(0xFF9CA3AF);
-  static const _accent = Color(0xFF3B82F6);
+  static const _accent = Color(0xFF4E03D0);
 
   @override
   void initState() {
@@ -47,7 +47,7 @@ class _CableTVHomeScreenState extends State<CableTVHomeScreen> {
 
   Color _accentFor(String name) {
     final lower = name.toLowerCase();
-    if (lower.contains('dstv')) return const Color(0xFF3B82F6);
+    if (lower.contains('dstv')) return const Color(0xFF4E03D0);
     if (lower.contains('gotv')) return const Color(0xFF10B981);
     if (lower.contains('startimes')) return const Color(0xFFFB923C);
     if (lower.contains('showmax')) return const Color(0xFFEF4444);
@@ -263,7 +263,7 @@ class _QuickActionCard extends StatelessWidget {
 
   static const _card = Color(0xFF1F1F1F);
   static const _border = Color(0xFF2D2D2D);
-  static const _accent = Color(0xFF3B82F6);
+  static const _accent = Color(0xFF4E03D0);
 
   @override
   Widget build(BuildContext context) {
