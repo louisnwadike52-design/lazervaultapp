@@ -121,6 +121,11 @@ class _EducationPaymentProcessingScreenState
                 'candidateNickname': _params?['candidateNickname'],
               });
             } else if (state is EducationPurchaseFailed) {
+              // No auto-navigation here — the builder renders an explicit
+              // failure card with "Back to Education" / "Try Again" CTAs so
+              // the user controls when they leave. The snackbar is kept as
+              // a top-of-screen tap-target for the error text; its duration
+              // is cosmetic, not a gate on navigation.
               Get.snackbar(
                 'Purchase Failed',
                 state.message,
@@ -129,12 +134,6 @@ class _EducationPaymentProcessingScreenState
                 snackPosition: SnackPosition.TOP,
                 duration: const Duration(seconds: 4),
               );
-              // Navigate back to confirmation screen
-              Future.delayed(const Duration(seconds: 2), () {
-                if (mounted) {
-                  Get.back();
-                }
-              });
             }
           },
           builder: (context, state) {
@@ -210,6 +209,16 @@ class _EducationPaymentProcessingScreenState
 
                       SizedBox(height: 32.h),
 
+                      // Failure CTAs — shown only when the cubit lands in
+                      // EducationPurchaseFailed. Replaces the old 2-second
+                      // auto-pop which gave the user no chance to read the
+                      // error. Two explicit options: retry the same flow
+                      // (pop back to confirmation) or bail to the education
+                      // landing (AppRoutes.educationHome), clearing the
+                      // purchase stack entirely.
+                      if (state is EducationPurchaseFailed)
+                        _buildFailureActions(state),
+
                       // Transaction details
                       if (_params != null) _buildTransactionDetails(),
 
@@ -222,6 +231,85 @@ class _EducationPaymentProcessingScreenState
           },
         ),
       ),
+    );
+  }
+
+  Widget _buildFailureActions(EducationPurchaseFailed state) {
+    return Column(
+      children: [
+        Container(
+          padding: EdgeInsets.all(16.w),
+          decoration: BoxDecoration(
+            color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(
+              color: const Color(0xFFEF4444).withValues(alpha: 0.3),
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.error_outline,
+                  color: const Color(0xFFEF4444), size: 20.sp),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: Text(
+                  state.message,
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    color: const Color(0xFFEF4444),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: 16.h),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => Get.back(),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Color(0xFF4E03D0)),
+                  padding: EdgeInsets.symmetric(vertical: 14.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+                child: Text(
+                  'Try Again',
+                  style: TextStyle(
+                    color: const Color(0xFF4E03D0),
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () => Get.offAllNamed(AppRoutes.educationHome),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF4E03D0),
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: 14.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+                child: Text(
+                  'Back to Education',
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 

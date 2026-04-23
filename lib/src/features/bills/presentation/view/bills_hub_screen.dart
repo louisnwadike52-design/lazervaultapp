@@ -57,7 +57,15 @@ class BillsHubScreen extends StatelessWidget {
       ),
     ];
 
-    return Scaffold(
+    return PopScope(
+      // OS/Android back button routes to the dashboard, matching the
+      // AppBar back button. Without this the system back would pop the
+      // last pushed route which, after deep entries, is the wrong target.
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) Get.offAllNamed(AppRoutes.dashboard);
+      },
+      child: Scaffold(
       backgroundColor: InvoiceThemeColors.primaryBackground,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -143,6 +151,7 @@ class BillsHubScreen extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }

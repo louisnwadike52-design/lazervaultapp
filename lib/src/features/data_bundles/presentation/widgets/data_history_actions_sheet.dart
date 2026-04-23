@@ -132,13 +132,32 @@ class DataHistoryActionsSheet {
           onTap: () {
             Get.back();
             if (isIntl) {
+              // Repeat intl-data goes STRAIGHT to checkout with the
+              // previously-purchased bundle rebuilt from the transaction's
+              // metadata (country, operator, dest amount, FX). The
+              // checkout screen knows how to hydrate its entities from
+              // these raw fields — see IntlDataCheckoutScreen.initState
+              // for the construction logic. This avoids making the user
+              // re-pick country→operator→bundle just to repay the same
+              // combo they already confirmed once. Back from checkout
+              // pops to history (correct — there's no selection stack
+              // to walk through).
+              final meta = p.metadataMap;
               Get.toNamed(
-                AppRoutes.intlDataPurchase,
+                AppRoutes.intlDataCheckout,
                 arguments: {
                   'isRepeat': true,
                   'phoneNumber': p.phoneNumber,
                   'amount': p.amount,
                   'countryCode': countryCode,
+                  'destAmount': p.destAmount ?? 0,
+                  'destCurrency': p.destCurrency,
+                  'fxRate': (meta['fx_rate_used'] ?? meta['fx_rate']) is num
+                      ? (meta['fx_rate_used'] ?? meta['fx_rate']) as num
+                      : 0,
+                  'operatorId': (meta['reloadly_operator_id'] ?? meta['operator_id'] ?? '').toString(),
+                  'operatorName': (meta['operator_name'] ?? '').toString(),
+                  'bundleDescription': (meta['bundle_description'] ?? meta['plan_name'] ?? '').toString(),
                 },
               );
             } else if (networkCode.isNotEmpty) {

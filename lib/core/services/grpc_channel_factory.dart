@@ -6,7 +6,9 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 /// LazerVault uses independent API gateways with dual servers (HTTP + gRPC):
 /// 1. Core Gateway - gRPC: 50070, HTTP: 7878 (Auth, Accounts, Users, Support, Referrals, Notifications)
 /// 2. Commerce Gateway - gRPC: 50061, HTTP: 8080 (Utility Payments, GiftCards, Group Accounts, TagPay, Invoices, Electricity Bills)
-/// 3. Financial Gateway - gRPC: 50071, HTTP: 8016 (Currency Exchange, International Transfers)
+/// 3. Financial Gateway - gRPC: 50071, HTTP: 8016 (Invoices, Group Accounts, Split Bill, QR Pay, ID Pay, GiftCards,
+///    Currency Exchange + International Transfers). Exchange was relocated here to isolate it from the
+///    high-volume C2C path served by Transfer Gateway.
 /// 4. Investment Gateway - gRPC: 50072, HTTP: 9090 (Stocks, Crypto, Portfolio, Analytics)
 /// 5. Transfer Gateway - gRPC: 50076, HTTP: 8084 (Payments, Transfers)
 /// 6. Banking Gateway - gRPC: 50077, HTTP: 8082 (Banking, Virtual Accounts, Bank Verification)
@@ -105,11 +107,33 @@ class GrpcChannelFactory {
     return _createChannel(host, port, 'Contactless Payment Gateway');
   }
 
-  /// Creates Exchange Service gRPC channel (Currency Exchange, International Transfers)
-  /// Routes through Financial Gateway (port 50071) where ExchangeService is registered
+  /// Creates Exchange Service gRPC channel (Currency Exchange, International
+  /// Transfers).
+  ///
+  /// Routes through **Financial Gateway** (gRPC 50071, HTTP 8016). That
+  /// gateway now owns Exchange registration exclusively — it was moved
+  /// off transfer-gateway so the high-volume C2C transfer RPCs can't
+  /// starve FX requests for keepalive slots or goroutines under load.
+  ///
+  /// The proto used is the microservice's canonical `package exchange;`
+  /// (imported via `github.com/lazervault/exchange-service/proto`), so
+  /// the wire contract is `/exchange.ExchangeService/*` — matching the
+  /// generated `exchange.pbgrpc.dart` stub.
+  ///
+  /// Override order:
+  ///   1. `EXCHANGE_GRPC_PORT` / `EXCHANGE_GRPC_HOST` — dedicated vars,
+  ///      preferred when the operator needs to pin exchange to a custom
+  ///      endpoint.
+  ///   2. `FINANCIAL_GRPC_PORT` / `FINANCIAL_GRPC_HOST` — fallback that
+  ///      matches the gateway's main config.
+  ///   3. Hard-coded defaults (10.0.2.2:50071).
   static ClientChannel createExchangeChannel() {
-    final host = dotenv.env['FINANCIAL_GRPC_HOST'] ?? '10.0.2.2';
-    final port = int.parse(dotenv.env['FINANCIAL_GRPC_PORT'] ?? '50071');
+    final host = dotenv.env['EXCHANGE_GRPC_HOST'] ??
+        dotenv.env['FINANCIAL_GRPC_HOST'] ??
+        '10.0.2.2';
+    final port = int.parse(dotenv.env['EXCHANGE_GRPC_PORT'] ??
+        dotenv.env['FINANCIAL_GRPC_PORT'] ??
+        '50071');
 
     print("💱 Creating Exchange Service Channel (via Financial Gateway) → $host:$port");
     return _createChannel(host, port, 'Financial Gateway (Exchange)');

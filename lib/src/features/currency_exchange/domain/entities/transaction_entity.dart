@@ -172,5 +172,41 @@ enum TransactionStatus {
 enum TransactionType {
   send,
   receive,
+  // exchange is the legacy umbrella value — kept for backward compat with
+  // persisted transactions that didn't carry the mode distinction. New
+  // rows should use one of the two specific values below.
   exchange,
-} 
+  // exchangeConversion — wallet-to-wallet conversion (same user). Recent
+  // list on the "Convert" tab filters for this.
+  exchangeConversion,
+  // exchangeInternational — cross-border / send-abroad via Flutterwave.
+  // Recent list on the "Send Abroad" tab filters for this.
+  exchangeInternational,
+}
+
+// matchesMode: used by the Recent Exchanges list on the home screen to
+// show only transactions that belong to the currently-active tab. Legacy
+// `exchange` rows surface on both tabs (we can't infer which mode they
+// came from), so they never disappear unexpectedly from UI.
+extension TransactionTypeModeMatch on TransactionType {
+  bool matchesMode({required bool isConversion}) {
+    if (this == TransactionType.exchange) return true; // legacy: show on both
+    if (isConversion) return this == TransactionType.exchangeConversion;
+    return this == TransactionType.exchangeInternational;
+  }
+
+  // isConversionLike: true for the conversion-flow rows (new
+  // exchangeConversion + legacy exchange umbrella). Used by receipt /
+  // history / detail screens that need to show convert-specific UI.
+  // Kept here so every screen agrees on the classification.
+  bool get isConversionLike =>
+      this == TransactionType.exchangeConversion ||
+      this == TransactionType.exchange;
+
+  // isInternationalLike: true for send-abroad rows. The legacy `send`
+  // value maps here because pre-split international transfers were
+  // stored as TransactionType.send.
+  bool get isInternationalLike =>
+      this == TransactionType.exchangeInternational ||
+      this == TransactionType.send;
+}

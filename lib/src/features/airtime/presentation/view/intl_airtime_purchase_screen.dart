@@ -880,22 +880,34 @@ class _IntlAirtimePurchaseScreenState extends State<IntlAirtimePurchaseScreen> {
   }
 
   /// Quick-pick denominations in the **target** country currency.
-  /// Scaled to reasonable amounts for airtime top-ups (e.g. 100/200/500/1000 KES).
-  /// Always returns 4 non-zero picks — falls back to 100/200/500/1000 of the
-  /// dest currency when the operator data has no usable min/fxRate (e.g.
-  /// some Reloadly Kenya operators), so the UI never shows "Pay 0 KES".
+  /// Derived strictly from the operator's min/max as returned by the provider
+  /// API — no hardcoded fallback. Quick picks are CLAMPED between localMin
+  /// and localMax so the user cannot tap a value the operator would reject.
+  /// Returns empty when the operator didn't expose usable bounds — the UI
+  /// renders the amount input alone and leaves validation to the provider.
   List<double> _quickDestAmounts() {
     final op = _selectedOperator;
     if (op == null) return const [];
-    final hasLocal = op.localMinAmount > 0 || op.localMaxAmount > 0;
-    final double rawMin = hasLocal
+    final bool hasLocal = op.localMinAmount > 0 || op.localMaxAmount > 0;
+    // Derive destination-currency bounds. Fallback path is sender/fx — we
+    // only attempt that when fxRate is real (> 0); otherwise we have no
+    // basis for suggestions and return empty.
+    final double minDest = hasLocal
         ? op.localMinAmount.toDouble()
         : (op.fxRate > 0 ? op.minAmount / op.fxRate : 0);
-    // Choose quick picks sized against the min. Keeps UX sane across currencies
-    // with very different nominal scales (KES vs USD vs INR). Round the base
-    // up to a whole number — fractional bases produce ugly pill labels.
-    final double base = rawMin > 0 ? rawMin.ceilToDouble() : 100.0;
-    return <double>[base, base * 2, base * 5, base * 10];
+    final double maxDest = hasLocal
+        ? op.localMaxAmount.toDouble()
+        : (op.fxRate > 0 ? op.maxAmount / op.fxRate : 0);
+    if (minDest <= 0) return const [];
+
+    // Build candidate multipliers from min. 2x / 5x / 10x covers a sensible
+    // spread for airtime top-up (small → medium → top-up-for-the-month).
+    // Filter so every pick sits inside [minDest, maxDest] when maxDest is
+    // known — the provider rejects above-max, the UI must not offer it.
+    final double base = minDest.ceilToDouble();
+    final candidates = <double>[base, base * 2, base * 5, base * 10];
+    if (maxDest <= 0) return candidates;
+    return candidates.where((a) => a >= minDest && a <= maxDest).toList();
   }
 
   Widget _buildQuickAmounts() {
@@ -943,32 +955,27 @@ class _IntlAirtimePurchaseScreenState extends State<IntlAirtimePurchaseScreen> {
     final op = _selectedOperator!;
     // `parsedFixedAmounts` = sender-currency denominations returned by provider.
     // `parsedLocalFixedAmounts` = matching target-currency face values.
-    var senderList = op.parsedFixedAmounts;
-    var destList = op.parsedLocalFixedAmounts;
+    // If the provider returned empty lists for a FIXED operator we render an
+    // explicit error instead of guessing — fabricated denominations would
+    // fail at the provider and confuse the user. Reloadly's catalog IS the
+    // source of truth for fixed operators.
+    final senderList = op.parsedFixedAmounts;
+    final destList = op.parsedLocalFixedAmounts;
 
-    // Client-side fallback: if backend returned empty arrays for a FIXED operator,
-    // generate sensible denominations from min/max bounds.
-    // This matches the backend fallback in intl_airtime_operator_sync.go.
     if (senderList.isEmpty && destList.isEmpty) {
-      final hasLocal = op.localMinAmount > 0 || op.localMaxAmount > 0;
-      final minDest = hasLocal ? op.localMinAmount : (op.fxRate > 0 ? op.minAmount / op.fxRate : op.minAmount);
-      final maxDest = hasLocal ? op.localMaxAmount : (op.fxRate > 0 ? op.maxAmount / op.fxRate : op.maxAmount);
-
-      // Generate common airtime denominations between min and max
-      final double base = minDest > 0 ? minDest : 100.0;
-      final double max = maxDest > 0 ? maxDest : 10000.0;
-      final commonAmounts = [100.0, 200.0, 500.0, 1000.0, 2000.0, 5000.0];
-
-      destList = <double>[];
-      for (final amt in commonAmounts) {
-        if (amt >= base && amt <= max) {
-          destList.add(amt);
-        }
-      }
-      // If no common amounts fit, use min as fallback
-      if (destList.isEmpty && base <= max) {
-        destList.add(base);
-      }
+      return Container(
+        padding: EdgeInsets.all(14.w),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: const Color(0xFFEF4444), width: 1),
+        ),
+        child: Text(
+          'No denominations currently available for this operator. '
+          'Try a different operator or contact support.',
+          style: TextStyle(color: const Color(0xFFEF4444), fontSize: 13.sp),
+        ),
+      );
     }
 
     // Drive the grid off whichever list is populated. Prefer destList (target)

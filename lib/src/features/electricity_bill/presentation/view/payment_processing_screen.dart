@@ -234,10 +234,8 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
                   _hasFailed = true;
                   _failMessage = state.errorMessage;
                 });
-                // Navigate back immediately on the state transition; the
-                // confirm screen surfaces the error. No sleep.
-                Get.back();
-                Get.back();
+                // Let the user see the failure card + decide next step
+                // (Try Again pops back; Back to Electricity offAllNamed).
               }
 
               if (state is ElectricityBillError) {
@@ -246,8 +244,6 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
                   _hasFailed = true;
                   _failMessage = state.message;
                 });
-                Get.back();
-                Get.back();
               }
             },
             child: Padding(
@@ -485,35 +481,90 @@ class _PaymentProcessingScreenState extends State<PaymentProcessingScreen>
   }
 
   Widget _buildFailureInfo() {
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFFEF4444).withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: const Color(0xFFEF4444).withValues(alpha: 0.3),
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.error_outline,
-            color: const Color(0xFFEF4444),
-            size: 20.sp,
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Text(
-              'Payment failed. Redirecting back...',
-              style: GoogleFonts.inter(
-                color: const Color(0xFFEF4444),
-                fontSize: 13.sp,
-                fontWeight: FontWeight.w500,
-              ),
+    return Column(
+      children: [
+        Container(
+          padding: EdgeInsets.all(16.w),
+          decoration: BoxDecoration(
+            color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(
+              color: const Color(0xFFEF4444).withValues(alpha: 0.3),
             ),
           ),
-        ],
-      ),
+          child: Row(
+            children: [
+              Icon(Icons.error_outline,
+                  color: const Color(0xFFEF4444), size: 20.sp),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Text(
+                  _failMessage,
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFFEF4444),
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: 16.h),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () {
+                  // Pop twice mirrors the old auto-navigation target
+                  // (back past this screen + the confirmation to the
+                  // meter-input step) so Try Again lands on the
+                  // meaningful retry point.
+                  Get.back();
+                  Get.back();
+                },
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Color(0xFF4E03D0)),
+                  padding: EdgeInsets.symmetric(vertical: 14.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+                child: Text(
+                  'Try Again',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF4E03D0),
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () =>
+                    Get.offAllNamed(AppRoutes.electricityBillHome),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF4E03D0),
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: 14.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+                child: Text(
+                  'Back to Electricity',
+                  style: GoogleFonts.inter(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 

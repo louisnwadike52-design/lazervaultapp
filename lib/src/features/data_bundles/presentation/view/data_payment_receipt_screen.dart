@@ -277,8 +277,21 @@ class _DataPaymentReceiptScreenState extends State<DataPaymentReceiptScreen> {
   Widget build(BuildContext context) {
     final args = Get.arguments as Map<String, dynamic>;
     final purchase = _purchase ?? args['purchase'] as DataPurchaseEntity;
-    final networkName = args['networkName'] as String? ?? '';
-    final planName = args['planName'] as String? ?? purchase.dataPlan;
+    // Prefer the explicit arg (fresh purchase flow sends it), then the
+    // metadata stored server-side at purchase time (migration 2026-04:
+    // backend now writes metadata.plan_name), then the variation code
+    // as a last-resort. This makes the receipt render the full plan
+    // label "MTN 10MB - 1 Day N100" even when the history row re-opens
+    // the receipt days later with just the purchase entity in hand.
+    final meta = purchase.metadataMap;
+    final networkName = (args['networkName'] as String?)?.trim().isNotEmpty == true
+        ? args['networkName'] as String
+        : (meta['network_name']?.toString() ?? '');
+    final planName = (args['planName'] as String?)?.trim().isNotEmpty == true
+        ? args['planName'] as String
+        : (meta['plan_name']?.toString().trim().isNotEmpty == true
+            ? meta['plan_name'].toString()
+            : purchase.dataPlan);
     final autoRenewEnabled = args['autoRenewEnabled'] as bool? ?? false;
     final timestamp = _parsedTimestamp(purchase);
 

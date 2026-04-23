@@ -134,6 +134,15 @@ class _IntlDataCheckoutScreenState extends State<IntlDataCheckoutScreen>
   late final IntlDataOperator _operator;
   late final IntlDataBundle _bundle;
 
+  /// True when we got here via a "repeat purchase" from history/beneficiary.
+  /// Controls back-navigation: a repeat jumps STRAIGHT here from the history
+  /// screen, so on back we return to history. A direct purchase flow came
+  /// through country → operator → bundle selection, so back must pop through
+  /// that stack. The framework already handles the stack correctly — we only
+  /// flag this to pre-fill the phone field and lock it (phone is already
+  /// known from the previous purchase).
+  bool _isRepeat = false;
+
   /// User's active locale currency (e.g. NGN). Mirrors intl airtime pattern.
   String get _activeCurrency => _localeManager.currentCurrency;
 
@@ -152,9 +161,104 @@ class _IntlDataCheckoutScreenState extends State<IntlDataCheckoutScreen>
   void initState() {
     super.initState();
     final args = Get.arguments as Map<String, dynamic>? ?? {};
-    _country = args['country'] as IntlDataCountry;
-    _operator = args['operator'] as IntlDataOperator;
-    _bundle = args['bundle'] as IntlDataBundle;
+
+    // Two calling conventions:
+    //
+    //  1. Direct purchase: caller passes full `country` / `operator` /
+    //     `bundle` entities (picked by the selection screens).
+    //  2. Repeat purchase: caller passes `isRepeat: true` plus the raw
+    //     fields salvaged from a historical transaction's metadata
+    //     (country_code, operator_name, reloadly_operator_id, dest_amount,
+    //     dest_currency, fx_rate_used, phone_number). We reconstruct
+    //     minimal entities from those fields so the rest of the screen
+    //     renders identically. This skips country→operator→bundle
+    //     selection for users who already purchased this exact bundle.
+    _isRepeat = args['isRepeat'] == true;
+
+    if (args['country'] is IntlDataCountry &&
+        args['operator'] is IntlDataOperator &&
+        args['bundle'] is IntlDataBundle) {
+      _country = args['country'] as IntlDataCountry;
+      _operator = args['operator'] as IntlDataOperator;
+      _bundle = args['bundle'] as IntlDataBundle;
+    } else if (_isRepeat) {
+      final countryCode = (args['countryCode'] as String?)?.toUpperCase() ?? '';
+      final resolvedCountry = IntlDataCountry.byCode(countryCode);
+      if (resolvedCountry == null) {
+        // Unrecoverable — we don't know how to validate the phone without
+        // country rules. Bail to the full picker flow with the phone
+        // pre-filled so the user can re-select the country.
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Get.offNamed(AppRoutes.intlDataPurchase, arguments: {
+            'isRepeat': true,
+            'phoneNumber': args['phoneNumber'],
+          });
+        });
+        _country = const IntlDataCountry('NG', 'Nigeria', '+234', '',
+            nsnMin: 10, nsnMax: 10, leadingZeroAllowed: true);
+        _operator = const IntlDataOperator(
+          id: '',
+          countryCode: '',
+          countryName: '',
+          operatorName: '',
+          senderCurrencyCode: '',
+          destCurrencyCode: '',
+          fxRate: 0,
+        );
+        _bundle = const IntlDataBundle(
+          id: '',
+          operatorId: '',
+          amount: 0,
+          localAmount: 0,
+          description: '',
+          destCurrencyCode: '',
+          senderCurrencyCode: '',
+        );
+        return;
+      }
+      _country = resolvedCountry;
+      final destCcy = (args['destCurrency'] as String?) ?? '';
+      final fx = (args['fxRate'] as num?)?.toDouble() ?? 0;
+      _operator = IntlDataOperator(
+        id: (args['operatorId'] as String?) ?? '',
+        countryCode: _country.code,
+        countryName: _country.name,
+        operatorName: (args['operatorName'] as String?) ?? 'Operator',
+        senderCurrencyCode: _activeCurrency,
+        destCurrencyCode: destCcy,
+        fxRate: fx,
+      );
+      final destAmt = (args['destAmount'] as num?)?.toDouble() ?? 0;
+      final senderAmt = (args['amount'] as num?)?.toDouble() ?? (destAmt * fx);
+      _bundle = IntlDataBundle(
+        id: '${_operator.id}-$destAmt',
+        operatorId: _operator.id,
+        amount: senderAmt,
+        localAmount: destAmt,
+        description: (args['bundleDescription'] as String?) ??
+            '${destAmt.toStringAsFixed(0)} $destCcy bundle',
+        destCurrencyCode: destCcy,
+        senderCurrencyCode: _activeCurrency,
+        fxRate: fx,
+      );
+      // Pre-fill phone so the user only needs to tap Confirm & Pay.
+      final phone = (args['phoneNumber'] as String?) ?? '';
+      if (phone.isNotEmpty) {
+        _phoneController.text = phone;
+      }
+    } else {
+      // Shouldn't happen — route guards ensure one of the two conventions
+      // is satisfied. Seed empty so the screen doesn't crash on bad args.
+      _country = IntlDataCountry.all.first;
+      _operator = const IntlDataOperator(
+        id: '', countryCode: '', countryName: '', operatorName: '',
+        senderCurrencyCode: '', destCurrencyCode: '', fxRate: 0,
+      );
+      _bundle = const IntlDataBundle(
+        id: '', operatorId: '', amount: 0, localAmount: 0,
+        description: '', destCurrencyCode: '', senderCurrencyCode: '',
+      );
+    }
   }
 
   @override

@@ -70,6 +70,9 @@ class _SmartCardInputScreenState extends State<SmartCardInputScreen> {
     );
   }
 
+  bool _isShowmax(CableTVProviderEntity? p) =>
+      p != null && p.serviceId.toLowerCase() == 'showmax';
+
   void _onValidate() {
     if (_formKey.currentState!.validate()) {
       final provider = _resolveProvider();
@@ -79,6 +82,20 @@ class _SmartCardInputScreenState extends State<SmartCardInputScreen> {
             backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.9),
             colorText: Colors.white,
             snackPosition: SnackPosition.TOP);
+        return;
+      }
+      // ShowMax has no smartcard — VTpass has no /merchant-verify for it
+      // (returns 030 BILLER NOT REACHEABLE). Skip validation and go
+      // straight to package selection; the phone/email entered is the
+      // billersCode passed to /pay.
+      if (_isShowmax(provider)) {
+        Get.toNamed(
+          AppRoutes.cableTVPackageSelection,
+          arguments: {
+            'provider': provider,
+            'smartCardNumber': _smartCardController.text.trim(),
+          },
+        );
         return;
       }
       context.read<CableTVCubit>().validateSmartCard(
@@ -170,7 +187,7 @@ class _SmartCardInputScreenState extends State<SmartCardInputScreen> {
           ),
         ),
         title: Text(
-          'Smart Card Details',
+          _isShowmax(provider) ? 'Subscription Details' : 'Smart Card Details',
           style: GoogleFonts.inter(
             color: Colors.white,
             fontSize: 20.sp,
@@ -250,7 +267,9 @@ class _SmartCardInputScreenState extends State<SmartCardInputScreen> {
                             ),
                             SizedBox(height: 4.h),
                             Text(
-                              'Enter your smart card number below',
+                              _isShowmax(provider)
+                                  ? 'Enter the phone number on your ShowMax account'
+                                  : 'Enter your smart card number below',
                               style: GoogleFonts.inter(
                                 color: const Color(0xFF9CA3AF),
                                 fontSize: 12.sp,
@@ -271,7 +290,9 @@ class _SmartCardInputScreenState extends State<SmartCardInputScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Smart Card Number',
+                        _isShowmax(provider)
+                            ? 'Phone Number'
+                            : 'Smart Card Number',
                         style: GoogleFonts.inter(
                           color: Colors.white,
                           fontSize: 14.sp,
@@ -281,14 +302,16 @@ class _SmartCardInputScreenState extends State<SmartCardInputScreen> {
                       SizedBox(height: 8.h),
                       TextFormField(
                         controller: _smartCardController,
-                        keyboardType: TextInputType.number,
-                        maxLength: 12,
+                        keyboardType: TextInputType.phone,
+                        maxLength: _isShowmax(provider) ? 14 : 12,
                         style: GoogleFonts.inter(
                           color: Colors.white,
                           fontSize: 16.sp,
                         ),
                         decoration: InputDecoration(
-                          hintText: 'Enter 10-digit smart card number',
+                          hintText: _isShowmax(provider)
+                              ? 'e.g. 08012345678'
+                              : 'Enter 10-digit smart card number',
                           hintStyle: GoogleFonts.inter(
                             color: const Color(0xFF9CA3AF).withValues(alpha: 0.6),
                             fontSize: 16.sp,
@@ -343,10 +366,19 @@ class _SmartCardInputScreenState extends State<SmartCardInputScreen> {
                           }
                         },
                         validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Smart card number is required';
+                          final trimmed = value?.trim() ?? '';
+                          if (trimmed.isEmpty) {
+                            return _isShowmax(provider)
+                                ? 'Phone number is required'
+                                : 'Smart card number is required';
                           }
-                          if (value.trim().length < 10) {
+                          if (_isShowmax(provider)) {
+                            if (trimmed.length < 10) {
+                              return 'Enter a valid phone number';
+                            }
+                            return null;
+                          }
+                          if (trimmed.length < 10) {
                             return 'Smart card number must be at least 10 digits';
                           }
                           return null;
@@ -354,7 +386,9 @@ class _SmartCardInputScreenState extends State<SmartCardInputScreen> {
                       ),
                       SizedBox(height: 6.h),
                       Text(
-                        'Enter the 10-digit number from your decoder',
+                        _isShowmax(provider)
+                            ? 'The phone number registered on your ShowMax subscription'
+                            : 'Enter the 10-digit number from your decoder',
                         style: GoogleFonts.inter(
                           color: const Color(0xFF9CA3AF).withValues(alpha: 0.6),
                           fontSize: 12.sp,
@@ -391,7 +425,9 @@ class _SmartCardInputScreenState extends State<SmartCardInputScreen> {
                     }
 
                     return _buildButton(
-                      label: 'Validate Smart Card',
+                      label: _isShowmax(provider)
+                          ? 'Continue'
+                          : 'Validate Smart Card',
                       onPressed: isValidating ? null : _onValidate,
                       isLoading: isValidating,
                     );

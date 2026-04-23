@@ -30,8 +30,8 @@ class _DataRecipientInputScreenState extends State<DataRecipientInputScreen> {
   /// centralising would invite staleness in the other flow's mapping.
   static const Map<String, Set<String>> _networkPrefixes = {
     'mtn-data': {
-      '703', '704', '706', '707', '803', '806', '810', '813',
-      '814', '816', '903', '906', '913', '916',
+      '703', '704', '706', '707', '801', '803', '806', '810',
+      '813', '814', '816', '903', '906', '913', '916',
     },
     'airtel-data': {
       '701', '708', '802', '808', '812', '901', '902', '904',
@@ -43,6 +43,15 @@ class _DataRecipientInputScreenState extends State<DataRecipientInputScreen> {
     'etisalat-data': {
       '809', '817', '818', '908', '909',
     },
+  };
+
+  /// All valid NG mobile prefixes across every operator we support. If the
+  /// typed prefix isn't in ANY of these it's definitively not a Nigerian
+  /// mobile (or a new prefix we haven't catalogued yet) — in the second
+  /// case the provider's validator will reject it with a clearer message
+  /// than a generic "wrong network" bounce, so we let it through.
+  static final Set<String> _allKnownNigerianPrefixes = {
+    for (final prefixes in _networkPrefixes.values) ...prefixes,
   };
 
   @override
@@ -65,13 +74,27 @@ class _DataRecipientInputScreenState extends State<DataRecipientInputScreen> {
   }
 
   /// True when [phone] belongs to the carrier identified by [network].
-  /// Mapping is conservative: a network we don't recognise (e.g. new
-  /// route code, test harness) returns true so we don't block purchases
-  /// behind an out-of-date list. Phone must be already normalised.
+  /// Conservative on two axes so the client never blocks a legitimate
+  /// purchase behind a stale whitelist:
+  ///
+  ///   1. Unknown network key — caller passed something we don't
+  ///      recognise (new route code, test harness). Pass-through.
+  ///   2. Unknown prefix — the typed prefix isn't in ANY of the known
+  ///      Nigerian mobile lists. Could be a new prefix the NCC assigned
+  ///      after we last updated `_networkPrefixes`, or a sandbox test
+  ///      number. Pass-through so the provider (Reloadly/VTpass/
+  ///      Flutterwave) can reject it with their own, more accurate
+  ///      message. Catching "wrong network" locally only matters when
+  ///      we're *sure* it's the wrong network.
+  ///
+  /// Phone must be already normalised (leading 0 stripped).
   bool _prefixMatchesNetwork(String phone, String network) {
     final allowed = _networkPrefixes[network];
     if (allowed == null || phone.length < 3) return true;
-    return allowed.contains(phone.substring(0, 3));
+    final prefix = phone.substring(0, 3);
+    if (allowed.contains(prefix)) return true;
+    if (!_allKnownNigerianPrefixes.contains(prefix)) return true;
+    return false;
   }
 
   /// Network code → display name for the cross-network error prompt.

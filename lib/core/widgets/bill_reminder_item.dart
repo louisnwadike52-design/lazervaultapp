@@ -12,6 +12,7 @@ class BillReminderItem extends StatelessWidget {
     required this.title,
     this.description,
     this.amount,
+    this.planName,
     required this.reminderDate,
     required this.status,
     this.isRecurring = false,
@@ -76,6 +77,10 @@ class BillReminderItem extends StatelessWidget {
 
   /// Label for the pay-now button (e.g. "Top up now", "Buy Data Now").
   final String payNowLabel;
+
+  /// When non-null, renders a plan/package chip instead of the amount chip.
+  /// Takes precedence over [amount] in the info-chip row.
+  final String? planName;
 
   /// When non-null, renders a small "Contact: ..." chip so the user
   /// sees which saved beneficiary this reminder is wired to. Empty
@@ -240,7 +245,12 @@ class BillReminderItem extends StatelessWidget {
             Row(
               children: [
                 Expanded(child: _infoChip(Icons.repeat, _recurrenceLabel)),
-                if (amount != null && amount! > 0) ...[
+                if (planName != null && planName!.isNotEmpty) ...[
+                  SizedBox(width: 8.w),
+                  Expanded(
+                    child: _infoChip(Icons.live_tv, planName!),
+                  ),
+                ] else if (amount != null && amount! > 0) ...[
                   SizedBox(width: 8.w),
                   Expanded(
                     child: _infoChip(Icons.attach_money,

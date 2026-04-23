@@ -100,12 +100,12 @@ class _ExchangeProcessingScreenState extends State<ExchangeProcessingScreen>
                           width: 100,
                           height: 100,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                            color: const Color(0xFF7C3AED).withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(50),
                           ),
                           child: const Icon(
                             Icons.swap_horiz,
-                            color: Color(0xFF3B82F6),
+                            color: Color(0xFF7C3AED),
                             size: 48,
                           ),
                         ),
@@ -134,7 +134,7 @@ class _ExchangeProcessingScreenState extends State<ExchangeProcessingScreen>
                   ),
                   const SizedBox(height: 24),
                   const CircularProgressIndicator(
-                    color: Color(0xFF3B82F6),
+                    color: Color(0xFF7C3AED),
                     strokeWidth: 2,
                   ),
                   const SizedBox(height: 16),

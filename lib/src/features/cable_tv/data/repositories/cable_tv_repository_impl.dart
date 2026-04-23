@@ -84,4 +84,22 @@ class CableTVRepositoryImpl implements CableTVRepository {
       return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
     }
   }
+
+  @override
+  Future<Either<Failure, List<CableTVPaymentEntity>>> getPaymentHistory({
+    int limit = 50,
+    int offset = 0,
+  }) async {
+    try {
+      final result = await remoteDataSource.getPaymentHistory(
+        limit: limit,
+        offset: offset,
+      );
+      return Right(result);
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(message: e.message ?? 'Failed to get cable TV payment history', statusCode: e.codeName));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString(), statusCode: 'UNKNOWN'));
+    }
+  }
 }

@@ -8,5 +8,11 @@
 	<true/>
 	<key>com.apple.security.network.server</key>
 	<true/>
+	<!-- Outbound TCP for Flutter debug / integration_test runs that drive
+	     the real backend (gRPC / HTTP to localhost:50070, :50081, :8016,
+	     :8096, etc.). Without this entitlement the sandbox rejects
+	     connect(2) with errno=1. -->
+	<key>com.apple.security.network.client</key>
+	<true/>
 </dict>
 </plist>

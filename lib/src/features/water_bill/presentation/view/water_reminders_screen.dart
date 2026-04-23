@@ -2,15 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../../core/types/app_routes.dart';
+import '../../../../../core/widgets/bill_reminder_item.dart';
 import '../../domain/entities/water_reminder.dart';
 import '../cubit/water_reminder_cubit.dart';
 import '../cubit/water_reminder_state.dart';
 
-/// Water bill reminders. Simple list with mark-complete + delete actions
-/// and a bottom-right FAB to create a new reminder.
+/// Water bill reminders list screen.
+///
+/// Reuses the shared [BillReminderItem] widget (same as cable TV, data,
+/// electricity) so the UI and actions (Mark Complete / Edit / Delete /
+/// Pay Now) are visually identical across bill types. Groups rows by
+/// Due / Upcoming / Completed.
 class WaterRemindersScreen extends StatefulWidget {
   const WaterRemindersScreen({super.key});
 
@@ -19,7 +24,9 @@ class WaterRemindersScreen extends StatefulWidget {
 }
 
 class _WaterRemindersScreenState extends State<WaterRemindersScreen> {
-  static const Color _accent = Color(0xFFFB923C);
+  static const Color _bg = Color(0xFF0A0A0A);
+  static const Color _primary = Color(0xFF4E03D0);
+  static const Color _accentOrange = Color(0xFFFB923C);
 
   @override
   void initState() {
@@ -27,240 +34,315 @@ class _WaterRemindersScreenState extends State<WaterRemindersScreen> {
     context.read<WaterReminderCubit>().getReminders(includePast: true);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF0A0A0A),
-        elevation: 0,
-        leading: IconButton(
-          onPressed: () => Get.back(),
-          icon: Icon(Icons.arrow_back_ios_new,
-              color: Colors.white, size: 20.sp),
-        ),
-        title: Text('Water Reminders',
-            style: TextStyle(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.white)),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          final cubit = context.read<WaterReminderCubit>();
-          Get.toNamed(AppRoutes.waterBillRemindersCreate)?.then((res) {
-            if (res == true && mounted) {
-              cubit.getReminders(includePast: true);
-            }
-          });
-        },
-        backgroundColor: _accent,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add),
-        label: Text('New Reminder',
-            style: TextStyle(
-                fontSize: 13.sp, fontWeight: FontWeight.w600)),
-      ),
-      body: BlocConsumer<WaterReminderCubit, WaterReminderState>(
-        listener: (context, state) {
-          if (state is WaterReminderError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: const Color(0xFFEF4444),
-              ),
-            );
-          } else if (state is WaterReminderDeleted ||
-              state is WaterReminderCompleted) {
-            context
-                .read<WaterReminderCubit>()
-                .getReminders(includePast: true);
-          }
-        },
-        builder: (context, state) {
-          if (state is WaterReminderLoading ||
-              state is WaterReminderInitial) {
-            return const Center(
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation(_accent),
-              ),
-            );
-          }
-          if (state is WaterReminderError) {
-            return Center(
-              child: Text(state.message,
-                  style: TextStyle(
-                      color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
-            );
-          }
-          final list = state is WaterRemindersLoaded
-              ? state.reminders
-              : const <WaterReminder>[];
-          if (list.isEmpty) return _buildEmpty();
-          return RefreshIndicator(
-            color: _accent,
-            backgroundColor: const Color(0xFF1F1F1F),
-            onRefresh: () => context
-                .read<WaterReminderCubit>()
-                .getReminders(includePast: true),
-            child: ListView.separated(
-              padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 100.h),
-              physics: const AlwaysScrollableScrollPhysics(),
-              itemCount: list.length,
-              itemBuilder: (_, i) => _buildItem(list[i]),
-              separatorBuilder: (_, __) => SizedBox(height: 10.h),
-            ),
-          );
-        },
-      ),
-    );
+  DateTime? _parseDate(String iso) =>
+      iso.isEmpty ? null : DateTime.tryParse(iso)?.toLocal();
+
+  bool _isDue(WaterReminder r) {
+    final d = _parseDate(r.reminderDate);
+    return d != null && d.isBefore(DateTime.now()) && r.status == 'pending';
   }
 
-  Widget _buildEmpty() => Center(
-        child: Padding(
-          padding: EdgeInsets.all(24.w),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.notifications_none,
-                  size: 64.sp, color: const Color(0xFF4B5563)),
-              SizedBox(height: 16.h),
-              Text('No Reminders Yet',
-                  style: TextStyle(
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white)),
-              SizedBox(height: 8.h),
-              Text(
-                  'Tap + to set a reminder for your next water bill so you never miss a due date.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      fontSize: 14.sp, color: const Color(0xFF9CA3AF))),
-            ],
-          ),
-        ),
-      );
+  bool _isActive(WaterReminder r) =>
+      r.status == 'pending' || r.status == 'notified';
 
-  Widget _buildItem(WaterReminder r) {
-    final dt = DateTime.tryParse(r.reminderDate)?.toLocal();
-    final dateLabel = dt != null
-        ? DateFormat('MMM dd, yyyy \u00B7 hh:mm a').format(dt)
-        : r.reminderDate;
-    final isDone = r.status.toLowerCase() == 'completed' ||
-        r.status.toLowerCase() == 'done';
-    final statusColor = isDone
-        ? const Color(0xFF10B981)
-        : (r.status.toLowerCase() == 'pending'
-            ? _accent
-            : const Color(0xFF9CA3AF));
-    return Container(
-      padding: EdgeInsets.all(14.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF141414),
-        borderRadius: BorderRadius.circular(14.r),
-        border: Border(
-          left: BorderSide(color: _accent, width: 3),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  r.title,
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w600,
-                      decoration: isDone ? TextDecoration.lineThrough : null),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
-                decoration: BoxDecoration(
-                  color: statusColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-                child: Text(r.status.toUpperCase(),
-                    style: TextStyle(
-                        color: statusColor,
-                        fontSize: 10.sp,
-                        fontWeight: FontWeight.w700)),
-              ),
-            ],
-          ),
-          SizedBox(height: 6.h),
-          Row(
-            children: [
-              Icon(Icons.calendar_today_outlined,
-                  size: 13.sp, color: const Color(0xFF9CA3AF)),
-              SizedBox(width: 6.w),
-              Text(dateLabel,
-                  style: TextStyle(
-                      color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
-            ],
-          ),
-          if (r.description?.isNotEmpty == true) ...[
-            SizedBox(height: 6.h),
-            Text(r.description!,
-                style: TextStyle(
-                    color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
-          ],
-          if (r.amount != null && r.amount! > 0) ...[
-            SizedBox(height: 6.h),
-            Text('Amount: \u20A6${r.amount!.toStringAsFixed(2)}',
-                style: TextStyle(
-                    color: const Color(0xFF10B981),
-                    fontSize: 12.sp,
+  bool _isCompleted(WaterReminder r) =>
+      r.status == 'completed' || r.status == 'cancelled';
+
+  void _markComplete(WaterReminder r) =>
+      context.read<WaterReminderCubit>().markReminderComplete(reminderId: r.id);
+
+  void _delete(WaterReminder r) {
+    Get.dialog(
+      AlertDialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.r)),
+        title: Text('Delete Reminder',
+            style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 20.sp,
+                fontWeight: FontWeight.w700)),
+        content: Text('Are you sure you want to delete this reminder?',
+            style: GoogleFonts.inter(
+                color: Colors.white.withValues(alpha: 0.8),
+                fontSize: 14.sp)),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text('Cancel',
+                style: GoogleFonts.inter(
+                    color: Colors.white.withValues(alpha: 0.6),
+                    fontSize: 14.sp,
                     fontWeight: FontWeight.w600)),
-          ],
-          SizedBox(height: 10.h),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              if (!isDone)
-                _iconAction(Icons.check_circle_outline,
-                    const Color(0xFF10B981), 'Mark done', () {
-                  context
-                      .read<WaterReminderCubit>()
-                      .markReminderComplete(reminderId: r.id);
-                }),
-              SizedBox(width: 8.w),
-              _iconAction(Icons.delete_outline, const Color(0xFFEF4444),
-                  'Delete', () {
-                context
-                    .read<WaterReminderCubit>()
-                    .deleteReminder(reminderId: r.id);
-              }),
-            ],
+          ),
+          TextButton(
+            onPressed: () {
+              Get.back();
+              context
+                  .read<WaterReminderCubit>()
+                  .deleteReminder(reminderId: r.id);
+            },
+            child: Text('Delete',
+                style: GoogleFonts.inter(
+                    color: const Color(0xFFEF4444),
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w700)),
           ),
         ],
       ),
     );
   }
 
-  Widget _iconAction(
-      IconData icon, Color color, String tooltip, VoidCallback onTap) {
-    return Tooltip(
-      message: tooltip,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: EdgeInsets.all(8.w),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(8.r),
-            border: Border.all(color: color.withValues(alpha: 0.3)),
+  void _edit(WaterReminder r) {
+    final cubit = context.read<WaterReminderCubit>();
+    Get.toNamed(
+      AppRoutes.waterBillRemindersCreate,
+      arguments: {'reminder': r},
+    )?.then((res) {
+      if (res == true && mounted) {
+        cubit.getReminders(includePast: true);
+      }
+    });
+  }
+
+  void _payNow(WaterReminder _) {
+    // Route back to the water bill landing so the user can pick a provider
+    // and repeat the payment. A future iteration could deep-link into the
+    // customer-input screen with the reminder's account pre-filled.
+    Get.toNamed(AppRoutes.waterBillHome);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: _bg,
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          final cubit = context.read<WaterReminderCubit>();
+          Get.toNamed(AppRoutes.waterBillRemindersCreate)?.then((res) {
+            if (res == true && mounted) cubit.getReminders(includePast: true);
+          });
+        },
+        backgroundColor: _primary,
+        icon: Icon(Icons.add, size: 22.sp),
+        label: Text(
+          'New Reminder',
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w600,
           ),
-          child: Icon(icon, color: color, size: 16.sp),
         ),
       ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildHeader(),
+            Expanded(
+              child: BlocConsumer<WaterReminderCubit, WaterReminderState>(
+                listener: (context, state) {
+                  if (state is WaterReminderError) {
+                    Get.snackbar('Error', state.message,
+                        backgroundColor: Colors.red.withValues(alpha: 0.9),
+                        colorText: Colors.white);
+                  } else if (state is WaterReminderDeleted ||
+                      state is WaterReminderCompleted) {
+                    context
+                        .read<WaterReminderCubit>()
+                        .getReminders(includePast: true);
+                  }
+                },
+                builder: (context, state) {
+                  if (state is WaterReminderLoading ||
+                      state is WaterReminderInitial) {
+                    return const Center(
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation(_primary),
+                      ),
+                    );
+                  }
+                  if (state is WaterRemindersLoaded) {
+                    if (state.reminders.isEmpty) return _buildEmpty();
+                    final due = state.reminders.where(_isDue).toList();
+                    final active = state.reminders
+                        .where((r) => _isActive(r) && !_isDue(r))
+                        .toList();
+                    final completed =
+                        state.reminders.where(_isCompleted).toList();
+                    return RefreshIndicator(
+                      color: _primary,
+                      backgroundColor: const Color(0xFF1F1F1F),
+                      onRefresh: () => context
+                          .read<WaterReminderCubit>()
+                          .getReminders(includePast: true),
+                      child: ListView(
+                        padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 100.h),
+                        children: [
+                          if (due.isNotEmpty) ...[
+                            _sectionHeader('Due', _accentOrange),
+                            SizedBox(height: 12.h),
+                            ...due.map((r) => Padding(
+                                  padding: EdgeInsets.only(bottom: 12.h),
+                                  child: _reminderCard(r, isDue: true),
+                                )),
+                            SizedBox(height: 24.h),
+                          ],
+                          if (active.isNotEmpty) ...[
+                            _sectionHeader('Upcoming', _primary),
+                            SizedBox(height: 12.h),
+                            ...active.map((r) => Padding(
+                                  padding: EdgeInsets.only(bottom: 12.h),
+                                  child: _reminderCard(r),
+                                )),
+                          ],
+                          if (completed.isNotEmpty) ...[
+                            if (active.isNotEmpty || due.isNotEmpty)
+                              SizedBox(height: 24.h),
+                            _sectionHeader('Completed', Colors.grey),
+                            SizedBox(height: 12.h),
+                            ...completed.map((r) => Padding(
+                                  padding: EdgeInsets.only(bottom: 12.h),
+                                  child: _reminderCard(r),
+                                )),
+                          ],
+                        ],
+                      ),
+                    );
+                  }
+                  return _buildEmpty();
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() => Padding(
+        padding: EdgeInsets.all(20.w),
+        child: Row(
+          children: [
+            GestureDetector(
+              onTap: () => Get.back(),
+              child: Container(
+                width: 44.w,
+                height: 44.w,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(22.r),
+                  border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.15)),
+                ),
+                child: Icon(Icons.arrow_back_ios_new,
+                    color: Colors.white, size: 18.sp),
+              ),
+            ),
+            SizedBox(width: 16.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Water Reminders',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 22.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  Text(
+                    'Never miss a water bill',
+                    style: GoogleFonts.inter(
+                      color: Colors.white.withValues(alpha: 0.6),
+                      fontSize: 13.sp,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+
+  Widget _sectionHeader(String t, Color c) => Row(
+        children: [
+          Container(
+            width: 4.w,
+            height: 20.h,
+            decoration: BoxDecoration(
+                color: c, borderRadius: BorderRadius.circular(2.r)),
+          ),
+          SizedBox(width: 12.w),
+          Text(
+            t,
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      );
+
+  Widget _buildEmpty() => Center(
+        child: Padding(
+          padding: EdgeInsets.all(40.w),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 120.w,
+                height: 120.w,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.05),
+                  border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.1), width: 2),
+                ),
+                child: Icon(Icons.notifications_none,
+                    color: Colors.white.withValues(alpha: 0.3), size: 56.sp),
+              ),
+              SizedBox(height: 24.h),
+              Text(
+                'No Reminders',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 22.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              SizedBox(height: 12.h),
+              Text(
+                'Tap "New Reminder" to schedule a notification before your water bill is due.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  color: Colors.white.withValues(alpha: 0.6),
+                  fontSize: 14.sp,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+
+  Widget _reminderCard(WaterReminder r, {bool isDue = false}) {
+    final date = _parseDate(r.reminderDate);
+    return BillReminderItem(
+      title: r.title,
+      description: r.description,
+      amount: r.amount,
+      reminderDate: date ?? DateTime.now(),
+      status: r.status,
+      isRecurring: r.isRecurring,
+      recurrenceType: r.recurrenceType,
+      isDue: isDue,
+      payNowLabel: 'Pay Now',
+      onPayNow: isDue && !_isCompleted(r) ? () => _payNow(r) : null,
+      onMarkComplete: !_isCompleted(r) ? () => _markComplete(r) : null,
+      onEdit: !_isCompleted(r) ? () => _edit(r) : null,
+      onDelete: () => _delete(r),
     );
   }
 }

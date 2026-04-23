@@ -302,6 +302,7 @@ class _AirtimePurchaseScreenState extends State<AirtimePurchaseScreen> {
     if (phone.length < 4) return null;
     final p = phone.substring(0, 4);
     const mtn = [
+      '0801', // historic MTN block; still active + VTpass sandbox uses it
       '0803', '0806', '0810', '0813', '0814', '0816',
       '0903', '0906', '0913', '0916',
       '0703', '0706', '0704'

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
-import 'package:lazervault/core/types/app_routes.dart';
+
 import '../../domain/entities/transaction_entity.dart';
 import '../cubit/exchange_cubit.dart';
 import '../cubit/exchange_state.dart';
+import '../widgets/exchange_history_actions_sheet.dart';
 import '../widgets/exchange_transaction_tile.dart';
 
 class ExchangeHistoryScreen extends StatefulWidget {
@@ -58,13 +59,14 @@ class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen>
     List<CurrencyTransaction> all,
     bool isConversionsTab,
   ) {
-    // First filter by type (tab)
+    // First filter by type (tab). Uses the isConversionLike /
+    // isInternationalLike helpers so both the new specific values
+    // (exchangeConversion / exchangeInternational) AND the legacy
+    // umbrella values (exchange / send) flow to the right tab.
     final byType = all.where((tx) {
-      if (isConversionsTab) {
-        return tx.type == TransactionType.exchange;
-      } else {
-        return tx.type == TransactionType.send;
-      }
+      return isConversionsTab
+          ? tx.type.isConversionLike
+          : tx.type.isInternationalLike;
     }).toList();
 
     // Then filter by status
@@ -102,7 +104,7 @@ class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen>
         centerTitle: true,
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: const Color(0xFF3B82F6),
+          indicatorColor: const Color(0xFF7C3AED),
           indicatorWeight: 3,
           labelColor: Colors.white,
           unselectedLabelColor: const Color(0xFF9CA3AF),
@@ -134,13 +136,13 @@ class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen>
                       fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                     ),
                     backgroundColor: const Color(0xFF1F1F1F),
-                    selectedColor: const Color(0xFF3B82F6),
+                    selectedColor: const Color(0xFF7C3AED),
                     checkmarkColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                       side: BorderSide(
                         color: isSelected
-                            ? const Color(0xFF3B82F6)
+                            ? const Color(0xFF7C3AED)
                             : const Color(0xFF2D2D2D),
                       ),
                     ),
@@ -158,7 +160,7 @@ class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen>
               builder: (context, state) {
                 if (state is ExchangeLoading) {
                   return const Center(
-                    child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+                    child: CircularProgressIndicator(color: Color(0xFF7C3AED)),
                   );
                 }
 
@@ -200,7 +202,7 @@ class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen>
     }
     return RefreshIndicator(
       onRefresh: _refresh,
-      color: const Color(0xFF3B82F6),
+      color: const Color(0xFF7C3AED),
       backgroundColor: const Color(0xFF1F1F1F),
       child: ListView.separated(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -211,10 +213,9 @@ class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen>
           final tx = transactions[index];
           return ExchangeTransactionTile(
             transaction: tx,
-            onTap: () => Get.toNamed(
-              AppRoutes.exchangeDetail,
-              arguments: tx,
-            ),
+            // Tap now opens the actions bottom sheet (View Receipt, Repeat,
+            // Share, Report). The receipt itself is one tap further.
+            onTap: () => ExchangeHistoryActionsSheet.show(context, tx),
           );
         },
       ),
@@ -229,7 +230,7 @@ class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen>
 
     return RefreshIndicator(
       onRefresh: _refresh,
-      color: const Color(0xFF3B82F6),
+      color: const Color(0xFF7C3AED),
       backgroundColor: const Color(0xFF1F1F1F),
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -281,7 +282,7 @@ class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen>
             ElevatedButton(
               onPressed: _refresh,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
+                backgroundColor: const Color(0xFF7C3AED),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),

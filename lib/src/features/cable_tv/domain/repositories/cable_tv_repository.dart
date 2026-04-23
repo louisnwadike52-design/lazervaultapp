@@ -25,4 +25,9 @@ abstract class CableTVRepository {
     required String verificationToken,
     required String idempotencyKey,
   });
+
+  Future<Either<Failure, List<CableTVPaymentEntity>>> getPaymentHistory({
+    int limit = 50,
+    int offset = 0,
+  });
 }

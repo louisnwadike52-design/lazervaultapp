@@ -224,9 +224,20 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
         : ar.isPaused
             ? const Color(0xFFFB923C)
             : const Color(0xFFEF4444);
+
+    // `showDialog` runs its builder in a fresh Navigator-route context that
+    // sits OUTSIDE this screen's BlocProvider tree. Without re-exposing the
+    // cubit, the BlocBuilder below throws
+    // "Could not find the correct Provider<ElectricityBillCubit> above...".
+    // Grabbing the cubit here (still inside the screen tree) and handing it
+    // to BlocProvider.value inside the dialog gives the dialog its own
+    // access without re-instantiating the cubit.
+    final cubit = context.read<ElectricityBillCubit>();
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
+      builder: (ctx) => BlocProvider.value(
+        value: cubit,
+        child: AlertDialog(
         backgroundColor: const Color(0xFF1F1F1F),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.r),
@@ -335,6 +346,7 @@ class _AutoRechargeListScreenState extends State<AutoRechargeListScreen> {
             ),
           ),
         ],
+        ),
       ),
     );
   }

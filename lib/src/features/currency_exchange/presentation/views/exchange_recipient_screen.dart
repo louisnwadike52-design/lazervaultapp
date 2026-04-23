@@ -11,7 +11,9 @@ import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_m
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import '../cubit/exchange_cubit.dart';
 import '../cubit/exchange_state.dart';
-import '../widgets/rate_countdown_widget.dart';
+import '../theme/exchange_theme.dart';
+import '../utils/exchange_validators.dart';
+import '../../data/flutterwave_country_rules.dart';
 import '../../domain/repositories/i_exchange_repository.dart';
 
 // ---------------------------------------------------------------------------
@@ -254,7 +256,8 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
   String? _purposeError;
 
   // Rate / submission
-  bool _isRateExpired = false;
+  // ignore: unused_field
+  bool _isRateExpired = false; // deprecated — staleness is server-enforced
   bool _isSubmitting = false;
   String? _purposeOfPayment;
 
@@ -585,10 +588,9 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
     await context.read<ExchangeCubit>().fetchRate();
     if (!mounted) return;
     final cubit = context.read<ExchangeCubit>();
-    final rate = cubit.currentRate;
     setState(() {
-      _rate = rate;
-      _isRateExpired = rate == null || rate.isExpired;
+      _rate = cubit.currentRate;
+      _isRateExpired = false; // rate staleness is enforced server-side now
     });
   }
 
@@ -706,19 +708,19 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                                   horizontal: 14, vertical: 8),
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? const Color(0xFF3B82F6)
+                                    ? const Color(0xFF7C3AED)
                                         .withValues(alpha: 0.2)
                                     : const Color(0xFF2D2D2D),
                                 borderRadius: BorderRadius.circular(20),
                                 border: isSelected
-                                    ? Border.all(color: const Color(0xFF3B82F6))
+                                    ? Border.all(color: const Color(0xFF7C3AED))
                                     : null,
                               ),
                               child: Text(
                                 _bankChipLabel(bank['name']!),
                                 style: TextStyle(
                                   color: isSelected
-                                      ? const Color(0xFF3B82F6)
+                                      ? const Color(0xFF7C3AED)
                                       : Colors.white,
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500,
@@ -769,7 +771,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                                 ),
                                 trailing: isSelected
                                     ? const Icon(Icons.check_circle,
-                                        color: Color(0xFF3B82F6), size: 20)
+                                        color: Color(0xFF7C3AED), size: 20)
                                     : null,
                                 onTap: () {
                                   _onBankSelected(bank['name']!, bank['code']!);
@@ -802,7 +804,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
       height: 36,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF3B82F6), Color.fromARGB(255, 78, 3, 208)],
+          colors: [Color(0xFF7C3AED), Color.fromARGB(255, 78, 3, 208)],
         ),
         borderRadius: BorderRadius.circular(8),
       ),
@@ -864,9 +866,9 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                 _rate = state.rate;
                 _isRateExpired = false;
               });
-            } else if (state is ExchangeRateExpired) {
-              setState(() => _isRateExpired = true);
             }
+            // ExchangeRateExpired is deprecated — execution rate is now
+            // captured server-side. Any "expired" state is ignored.
           },
         ),
       ],
@@ -943,7 +945,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
       width: isActive ? 24 : 8,
       height: 8,
       decoration: BoxDecoration(
-        color: isActive ? const Color(0xFF3B82F6) : const Color(0xFF2D2D2D),
+        color: isActive ? const Color(0xFF7C3AED) : const Color(0xFF2D2D2D),
         borderRadius: BorderRadius.circular(4),
       ),
     );
@@ -1068,7 +1070,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
       margin: const EdgeInsets.only(top: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+        color: const Color(0xFF7C3AED).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: const Row(
@@ -1078,13 +1080,13 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
             height: 16,
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              color: Color(0xFF3B82F6),
+              color: Color(0xFF7C3AED),
             ),
           ),
           SizedBox(width: 10),
           Text(
             'Verifying account...',
-            style: TextStyle(color: Color(0xFF3B82F6), fontSize: 13),
+            style: TextStyle(color: Color(0xFF7C3AED), fontSize: 13),
           ),
         ],
       ),
@@ -1117,7 +1119,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                   child: const Text(
                     'Retry',
                     style: TextStyle(
-                      color: Color(0xFF3B82F6),
+                      color: Color(0xFF7C3AED),
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
@@ -1174,11 +1176,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
           hint: 'XX-XX-XX',
           keyboardType: TextInputType.number,
           inputFormatters: [_SortCodeFormatter()],
-          validator: (v) {
-            final digits = (v ?? '').replaceAll('-', '');
-            if (digits.length != 6) return 'Sort code must be 6 digits';
-            return null;
-          },
+          validator: ExchangeValidators.sortCode,
         ),
         const SizedBox(height: 16),
         _buildField(
@@ -1190,12 +1188,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
             FilteringTextInputFormatter.digitsOnly,
             LengthLimitingTextInputFormatter(8),
           ],
-          validator: (v) {
-            if ((v ?? '').trim().length != 8) {
-              return 'Account number must be 8 digits';
-            }
-            return null;
-          },
+          validator: _ruleDrivenAccountValidator,
         ),
       ],
     );
@@ -1211,36 +1204,27 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
         _buildField(
           controller: _routingController,
           label: 'Routing Number (ABA)',
-          hint: 'Enter 9-digit routing number',
+          hint: '9-digit ABA routing number',
           keyboardType: TextInputType.number,
           inputFormatters: [
             FilteringTextInputFormatter.digitsOnly,
             LengthLimitingTextInputFormatter(9),
           ],
-          validator: (v) {
-            if ((v ?? '').trim().length != 9) {
-              return 'Routing number must be 9 digits';
-            }
-            return null;
-          },
+          // Runs the ABA checksum on top of the length check — rejects a
+          // well-formed-but-invalid routing number like 111111111.
+          validator: ExchangeValidators.routingNumber,
         ),
         const SizedBox(height: 16),
         _buildField(
           controller: _accountController,
           label: 'Account Number',
-          hint: 'Enter account number',
+          hint: '4-17 digit US account number',
           keyboardType: TextInputType.number,
           inputFormatters: [
             FilteringTextInputFormatter.digitsOnly,
             LengthLimitingTextInputFormatter(17),
           ],
-          validator: (v) {
-            final len = (v ?? '').trim().length;
-            if (len < 4 || len > 17) {
-              return 'Account number must be 4-17 digits';
-            }
-            return null;
-          },
+          validator: _ruleDrivenAccountValidator,
         ),
       ],
     );
@@ -1257,17 +1241,8 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
           hint: 'e.g. DE89 3704 0044 0532 0130 00',
           textCapitalization: TextCapitalization.characters,
           inputFormatters: [_IbanFormatter()],
-          validator: (v) {
-            final cleaned = (v ?? '').replaceAll(' ', '');
-            if (cleaned.isEmpty) return 'IBAN is required';
-            if (cleaned.length < 15 || cleaned.length > 34) {
-              return 'IBAN must be 15-34 characters';
-            }
-            if (!RegExp(r'^[A-Z]{2}').hasMatch(cleaned)) {
-              return 'IBAN must start with a 2-letter country code';
-            }
-            return null;
-          },
+          // Full mod-97 check, not just length+prefix.
+          validator: ExchangeValidators.iban,
         ),
       ],
     );
@@ -1398,22 +1373,21 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
     }
   }
 
-  String? Function(String?) get _accountNumberValidator {
-    return (String? v) {
-      final val = (v ?? '').trim();
-      if (val.isEmpty) return 'Account number is required';
-      switch (_countryConfig.countryCode) {
-        case 'NG':
-          if (val.length != 10) return 'Must be 10 digits';
-        case 'GH':
-          if (val.length != 13) return 'Must be 13 digits';
-        case 'KE':
-          if (val.length != 13) return 'Must be 13 digits';
-        case 'ZA':
-          if (val.length < 9 || val.length > 11) return 'Must be 9-11 digits';
-      }
-      return null;
-    };
+  String? Function(String?) get _accountNumberValidator =>
+      _ruleDrivenAccountValidator;
+
+  /// Rule-driven account-number validator used by every bank-field builder
+  /// (african / UK / US / EU / generic). Falls back to a lenient "non-empty"
+  /// check for currencies that don't yet have a `FlutterwaveCountryRules`
+  /// entry so we never block users on a currency we forgot to register.
+  String? _ruleDrivenAccountValidator(String? v) {
+    final rule = FlutterwaveCountryRules.forCurrency(_toCurrency);
+    if (rule != null) {
+      return ExchangeValidators.accountNumber(v, rule);
+    }
+    final val = (v ?? '').trim();
+    if (val.isEmpty) return 'Account number is required';
+    return null;
   }
 
   // ----- Step 1 button -----
@@ -1426,7 +1400,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
           return ElevatedButton(
             onPressed: isLoading ? null : _verifyAccount,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF3B82F6),
+              backgroundColor: const Color(0xFF7C3AED),
               disabledBackgroundColor: const Color(0xFF2D2D2D),
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
@@ -1451,7 +1425,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
         _goToStep2();
       },
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF3B82F6),
+        backgroundColor: const Color(0xFF7C3AED),
         padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
@@ -1484,17 +1458,31 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Verified account card OR name field
+                    // Verified account card OR name field.
+                    //
+                    // For currencies where `omitBeneficiaryName` is true (NG),
+                    // Flutterwave resolves the name server-side from bank +
+                    // account, so entering it manually would conflict with
+                    // the canonical source — render the verified card only.
                     if (_verifiedAccountName != null && !_isManualNameEntry)
                       _buildVerifiedCard()
-                    else
+                    else if (!(FlutterwaveCountryRules.forCurrency(_toCurrency)
+                            ?.omitBeneficiaryName ??
+                        false))
                       _buildField(
                         controller: _nameController,
                         label: 'Recipient Full Name',
                         hint: 'Enter recipient\'s full name',
-                        validator: (v) => (v ?? '').trim().isEmpty
-                            ? 'Name is required'
-                            : null,
+                        validator: (v) {
+                          final rule = FlutterwaveCountryRules.forCurrency(
+                              _toCurrency);
+                          if (rule != null) {
+                            return ExchangeValidators.beneficiaryName(v, rule);
+                          }
+                          return (v ?? '').trim().isEmpty
+                              ? 'Name is required'
+                              : null;
+                        },
                       ),
                     const SizedBox(height: 16),
 
@@ -1512,14 +1500,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                               RegExp(r'[A-Za-z0-9]')),
                           LengthLimitingTextInputFormatter(11),
                         ],
-                        validator: (v) {
-                          final val = (v ?? '').trim();
-                          if (val.isEmpty) return 'SWIFT/BIC code is required';
-                          if (val.length != 8 && val.length != 11) {
-                            return 'SWIFT code must be 8 or 11 characters';
-                          }
-                          return null;
-                        },
+                        validator: ExchangeValidators.swiftBic,
                       ),
                       const SizedBox(height: 16),
                     ],
@@ -1565,14 +1546,40 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                     _buildSummaryCard(convertedAmount),
                     const SizedBox(height: 12),
 
-                    // Rate countdown or unavailable notice
+                    // Indicative rate chip — no countdown. Final rate is
+                    // captured server-side at the moment of transfer.
                     if (_rate != null)
                       Center(
-                        child: RateCountdownWidget(
-                          rate: _rate!,
-                          onExpired: () =>
-                              setState(() => _isRateExpired = true),
-                          onRefresh: _refreshRate,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: ExchangeTheme.cardBackground,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: ExchangeTheme.divider),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.info_outline,
+                                  color: ExchangeTheme.primary, size: 14),
+                              const SizedBox(width: 6),
+                              Text(
+                                _rate!.formatForDisplay(),
+                                style: const TextStyle(
+                                    color: ExchangeTheme.textPrimary,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600),
+                              ),
+                              const SizedBox(width: 8),
+                              const Text(
+                                'Final rate confirmed at transfer',
+                                style: TextStyle(
+                                    color: ExchangeTheme.textSecondary,
+                                    fontSize: 11),
+                              ),
+                            ],
+                          ),
                         ),
                       )
                     else
@@ -1582,20 +1589,19 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                           padding: const EdgeInsets.symmetric(
                               horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color:
-                                const Color(0xFFEF4444).withValues(alpha: 0.15),
+                            color: ExchangeTheme.warning.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(Icons.refresh,
-                                  size: 14, color: Color(0xFFEF4444)),
+                                  size: 14, color: ExchangeTheme.warning),
                               SizedBox(width: 4),
                               Text(
-                                'Rate unavailable - Tap to refresh',
+                                'Rate unavailable - Tap to retry',
                                 style: TextStyle(
-                                  color: Color(0xFFEF4444),
+                                  color: ExchangeTheme.warning,
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -1639,26 +1645,22 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _isSubmitting || (_rate == null && !_isRateExpired)
-                    ? null
-                    : _isRateExpired || _rate == null
-                        ? _refreshRate
-                        : _onConfirmAndSend,
+                onPressed: _isSubmitting || _rate == null
+                    ? (_rate == null ? _refreshRate : null)
+                    : _onConfirmAndSend,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3B82F6),
-                  disabledBackgroundColor: const Color(0xFF2D2D2D),
+                  backgroundColor: ExchangeTheme.primary,
+                  disabledBackgroundColor: ExchangeTheme.surfaceElevated,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
                 ),
                 child: Text(
                   _rate == null
-                      ? 'Rate Unavailable'
-                      : _isRateExpired
-                          ? 'Refresh Rate to Continue'
-                          : _isSubmitting
-                              ? 'Processing...'
-                              : 'Confirm & Send',
+                      ? 'Get Rate & Retry'
+                      : _isSubmitting
+                          ? 'Processing...'
+                          : 'Confirm & Send',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
@@ -1800,7 +1802,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 8),
                 child: Icon(Icons.arrow_forward,
-                    color: Color(0xFF3B82F6), size: 24),
+                    color: Color(0xFF7C3AED), size: 24),
               ),
               Flexible(
                 child: _buildAmountDisplay(
@@ -1928,7 +1930,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF3B82F6)),
+              borderSide: const BorderSide(color: Color(0xFF7C3AED)),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),

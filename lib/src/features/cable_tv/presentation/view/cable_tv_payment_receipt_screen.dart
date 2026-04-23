@@ -9,6 +9,7 @@ import '../../../widgets/bill_receipt_qr_block.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../data/datasources/cable_tv_beneficiary_remote_datasource.dart';
+import '../../data/datasources/cable_tv_remote_datasource.dart';
 import '../../domain/entities/cable_tv_payment_entity.dart';
 import '../../domain/entities/cable_tv_provider_entity.dart';
 import '../../domain/entities/tv_package_entity.dart';
@@ -29,11 +30,85 @@ class _CableTVPaymentReceiptScreenState
   bool _isSharing = false;
   bool _postPurchaseRan = false;
 
+  /// Latest payment snapshot, refreshed via pull-to-refresh. Overrides
+  /// the initial [Get.arguments] payload in the build so the user can see
+  /// async status updates (processing → completed/failed) without having
+  /// to navigate away.
+  CableTVPaymentEntity? _latestPayment;
+  bool _isRefreshing = false;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance
         .addPostFrameCallback((_) => _runPostPurchaseActions());
+  }
+
+  /// Re-fetches the payment history and finds the row matching the current
+  /// reference/id. Preserves [newBalance]/[renewalDate]/[customerName] from
+  /// the original pay response since the history endpoint doesn't surface
+  /// those fields.
+  Future<void> _refreshPayment(CableTVPaymentEntity current) async {
+    if (_isRefreshing) return;
+    _isRefreshing = true;
+    try {
+      final remote = GetIt.I<CableTVRemoteDataSource>();
+      final history = await remote.getPaymentHistory(limit: 50);
+      final match = history.where((p) =>
+          (current.reference.isNotEmpty && p.reference == current.reference) ||
+          (current.id.isNotEmpty && p.id == current.id));
+      if (match.isEmpty) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('No newer status yet. Try again in a moment.'),
+            backgroundColor: const Color(0xFFFB923C),
+            behavior: SnackBarBehavior.floating,
+            margin: EdgeInsets.all(12.w),
+          ),
+        );
+        return;
+      }
+      final fresh = match.first;
+      if (!mounted) return;
+      setState(() {
+        _latestPayment = CableTVPaymentEntity(
+          id: fresh.id,
+          userId: fresh.userId,
+          accountId: fresh.accountId,
+          billType: fresh.billType,
+          providerId: fresh.providerId,
+          reference: fresh.reference,
+          amount: fresh.amount,
+          status: fresh.status,
+          customerNumber: fresh.customerNumber,
+          metadata: fresh.metadata,
+          createdAt: fresh.createdAt,
+          // Preserve fields not returned by the history endpoint.
+          newBalance: current.newBalance,
+          renewalDate: current.renewalDate,
+          customerName: current.customerName,
+        );
+      });
+      // If the refreshed status flipped to non-failed, run post-purchase
+      // actions once (save beneficiary / enable auto-renew) so an async
+      // flow that terminated on a later status still honours the toggles.
+      if (!_postPurchaseRan && !_latestPayment!.isFailed) {
+        _runPostPurchaseActions();
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Refresh failed: $e'),
+          backgroundColor: const Color(0xFFEF4444),
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.all(12.w),
+        ),
+      );
+    } finally {
+      _isRefreshing = false;
+    }
   }
 
   /// Save beneficiary + enable auto-renew if the confirm screen asked
@@ -55,7 +130,11 @@ class _CableTVPaymentReceiptScreenState
     if (args == null) return;
     final payment = args['payment'] as CableTVPaymentEntity?;
     if (payment == null) return;
-    if (!payment.isCompleted) return;
+    // Skip only for definitively failed payments. Completed + processing +
+    // pending all get the beneficiary saved — the user explicitly asked for
+    // it and saving is idempotent. Auto-renew creation follows the same
+    // rule: we don't schedule a recurring charge on a failed payment.
+    if (payment.isFailed) return;
 
     final provider = args['provider'] as CableTVProviderEntity?;
     final package = args['package'] as TVPackageEntity?;
@@ -275,7 +354,10 @@ class _CableTVPaymentReceiptScreenState
       );
     }
     final args = rawArgs;
-    final payment = args['payment'] as CableTVPaymentEntity;
+    final argsPayment = args['payment'] as CableTVPaymentEntity;
+    // Prefer the refreshed snapshot (pull-to-refresh) so async status
+    // updates are reflected without a full navigation reset.
+    final payment = _latestPayment ?? argsPayment;
 
     return PopScope(
       canPop: false,
@@ -309,7 +391,12 @@ class _CableTVPaymentReceiptScreenState
         child: Column(
           children: [
             Expanded(
-              child: SingleChildScrollView(
+              child: RefreshIndicator(
+                onRefresh: () => _refreshPayment(payment),
+                color: const Color(0xFF4E03D0),
+                backgroundColor: const Color(0xFF1F1F1F),
+                child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
                 child: Column(
                   children: [
@@ -394,7 +481,7 @@ class _CableTVPaymentReceiptScreenState
                             Expanded(
                               child: Text(
                                 payment.isProcessing
-                                    ? 'Your payment is being processed in the background. The subscription will be activated shortly — no action needed.'
+                                    ? 'Your payment is being processed in the background. The subscription will be activated shortly. No action needed.'
                                     : 'Your payment is being processed. The subscription will be activated shortly.',
                                 style: GoogleFonts.inter(
                                   color: const Color(0xFFFB923C),
@@ -513,6 +600,7 @@ class _CableTVPaymentReceiptScreenState
                     SizedBox(height: 32.h),
                   ],
                 ),
+              ),
               ),
             ),
 

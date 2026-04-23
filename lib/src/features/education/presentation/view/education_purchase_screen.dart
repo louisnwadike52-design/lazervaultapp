@@ -476,16 +476,22 @@ class _EducationPurchaseScreenState extends State<EducationPurchaseScreen> {
         TextFormField(
           controller: _billersCodeController,
           focusNode: _billersCodeFocusNode,
-          keyboardType: TextInputType.text,
+          // JAMB Profile Code is the 10-digit candidate code printed on
+          // the JAMB registration slip. VTpass's /merchant-verify +
+          // /pay endpoints (https://www.vtpass.com/documentation/jamb-pin-vending/)
+          // treat it as `billersCode` and require exactly 10 numeric
+          // digits — anything else returns 011 INVALID ARGUMENTS.
+          keyboardType: TextInputType.number,
           inputFormatters: [
-            LengthLimitingTextInputFormatter(20),
+            FilteringTextInputFormatter.digitsOnly,
+            LengthLimitingTextInputFormatter(10),
           ],
           style: TextStyle(
             fontSize: 16.sp,
             color: Colors.white,
           ),
           decoration: InputDecoration(
-            hintText: 'Enter JAMB profile code',
+            hintText: '10-digit JAMB profile code',
             hintStyle: TextStyle(
               fontSize: 14.sp,
               color: const Color(0xFF9CA3AF).withValues(alpha: 0.6),
@@ -516,15 +522,23 @@ class _EducationPurchaseScreenState extends State<EducationPurchaseScreen> {
             contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
           ),
           validator: (value) {
-            if (_isJamb && (value == null || value.isEmpty)) {
+            if (!_isJamb) return null;
+            final raw = (value ?? '').trim();
+            if (raw.isEmpty) {
               return 'JAMB profile code is required';
+            }
+            if (raw.length != 10) {
+              return 'Profile code must be exactly 10 digits';
+            }
+            if (!RegExp(r'^\d{10}$').hasMatch(raw)) {
+              return 'Profile code must contain only digits';
             }
             return null;
           },
         ),
         SizedBox(height: 4.h),
         Text(
-          'Your JAMB profile code from your registration slip',
+          '10 digits from your JAMB registration slip',
           style: TextStyle(
             fontSize: 12.sp,
             color: const Color(0xFF9CA3AF),

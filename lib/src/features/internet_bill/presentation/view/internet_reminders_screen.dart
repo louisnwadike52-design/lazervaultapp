@@ -91,15 +91,14 @@ class _InternetRemindersScreenState extends State<InternetRemindersScreen> {
   }
 
   void _edit(InternetReminder r) {
-    final cubit = context.read<InternetReminderCubit>();
+    // The edit screen calls InternetReminderCubit.updateReminder which
+    // now patches the cached list in place — no getReminders() reload
+    // needed on return. Left as a no-op `.then` so failure paths surface
+    // in logs rather than silently swallow the return value.
     Get.toNamed(
       AppRoutes.internetBillReminderCreate,
       arguments: {'reminder': r},
-    )?.then((res) {
-      if (res == true && mounted) {
-        cubit.getReminders(includePast: true);
-      }
-    });
+    );
   }
 
   void _payNow(InternetReminder r) {
@@ -115,12 +114,11 @@ class _InternetRemindersScreenState extends State<InternetRemindersScreen> {
       backgroundColor: const Color(0xFF0A0A0A),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          final cubit = context.read<InternetReminderCubit>();
-          Get.toNamed(AppRoutes.internetBillReminderCreate)?.then((res) {
-            if (res == true && mounted) {
-              cubit.getReminders(includePast: true);
-            }
-          });
+          // The create screen calls InternetReminderCubit.createReminder
+          // which now prepends the new row into the cached list and
+          // emits a fresh Loaded state — no getReminders() reload
+          // needed on return.
+          Get.toNamed(AppRoutes.internetBillReminderCreate);
         },
         backgroundColor: _accent,
         icon: Icon(Icons.add, size: 22.sp),
@@ -137,26 +135,52 @@ class _InternetRemindersScreenState extends State<InternetRemindersScreen> {
             Expanded(
               child:
                   BlocConsumer<InternetReminderCubit, InternetReminderState>(
+                // Transient mutation messages (Completed / Updated /
+                // Deleted / Created / Error) drive the snackbar only —
+                // the cubit follows each with a fresh Loaded carrying
+                // the patched list, which the builder picks up.
+                listenWhen: (_, s) =>
+                    s is InternetReminderCompleted ||
+                    s is InternetReminderDeleted ||
+                    s is InternetReminderUpdated ||
+                    s is InternetReminderCreated ||
+                    s is InternetReminderError,
                 listener: (context, state) {
                   if (state is InternetReminderError) {
                     Get.snackbar('Error', state.message,
                         backgroundColor:
                             Colors.red.withValues(alpha: 0.9),
                         colorText: Colors.white);
-                  } else if (state is InternetReminderDeleted ||
-                      state is InternetReminderCompleted) {
-                    final msg = (state is InternetReminderDeleted)
-                        ? state.message
-                        : (state as InternetReminderCompleted).message;
-                    Get.snackbar('Success', msg,
+                  } else if (state is InternetReminderDeleted) {
+                    Get.snackbar('Success', state.message,
                         backgroundColor:
                             const Color(0xFF10B981).withValues(alpha: 0.9),
                         colorText: Colors.white);
-                    context
-                        .read<InternetReminderCubit>()
-                        .getReminders(includePast: true);
+                  } else if (state is InternetReminderCompleted) {
+                    Get.snackbar('Success', state.message,
+                        backgroundColor:
+                            const Color(0xFF10B981).withValues(alpha: 0.9),
+                        colorText: Colors.white);
+                  } else if (state is InternetReminderUpdated) {
+                    Get.snackbar('Updated', state.message,
+                        backgroundColor:
+                            const Color(0xFF10B981).withValues(alpha: 0.9),
+                        colorText: Colors.white);
+                  } else if (state is InternetReminderCreated) {
+                    Get.snackbar('Scheduled', 'Reminder created',
+                        backgroundColor:
+                            const Color(0xFF10B981).withValues(alpha: 0.9),
+                        colorText: Colors.white);
                   }
                 },
+                // Only rebuild the list on the states that carry one —
+                // transient message states keep the current list
+                // visible instead of falling through to _buildEmpty.
+                buildWhen: (_, s) =>
+                    s is InternetReminderLoading ||
+                    s is InternetReminderInitial ||
+                    s is InternetRemindersLoaded ||
+                    s is InternetReminderError,
                 builder: (context, state) {
                   if (state is InternetReminderLoading ||
                       state is InternetReminderInitial) {

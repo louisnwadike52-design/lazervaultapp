@@ -6,6 +6,7 @@ import 'package:get_it/get_it.dart';
 
 import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/widgets/bill_beneficiary_item.dart';
+import '../../../../../core/widgets/bill_history_actions_sheet.dart';
 import '../../domain/entities/water_auto_recharge.dart';
 import '../../domain/entities/water_beneficiary.dart';
 import '../../domain/entities/water_provider_entity.dart';
@@ -350,125 +351,93 @@ class _WaterSavedAccountsScreenState extends State<WaterSavedAccountsScreen> {
   }
 
   void _showOptions(WaterBeneficiary b) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: const Color(0xFF1F1F1F),
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r))),
-      builder: (ctx) => Container(
-        padding: EdgeInsets.symmetric(vertical: 20.h),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40.w,
-              height: 4.h,
-              decoration: BoxDecoration(
-                  color: const Color(0xFF4B5563),
-                  borderRadius: BorderRadius.circular(2.r)),
-            ),
-            SizedBox(height: 16.h),
-            ListTile(
-              leading: const Icon(Icons.info_outline, color: _primary),
-              title: Text('View Details',
-                  style: TextStyle(color: Colors.white, fontSize: 15.sp)),
-              onTap: () {
-                Navigator.of(ctx).pop();
-                _showDetailsDialog(b, _autosFor(b));
-              },
-            ),
-            const Divider(color: Color(0xFF2D2D2D), height: 1),
-            ListTile(
-              leading:
-                  const Icon(Icons.history, color: Color(0xFF9CA3AF)),
-              title: Text('View Payments',
-                  style: TextStyle(color: Colors.white, fontSize: 15.sp)),
-              onTap: () {
-                Navigator.of(ctx).pop();
-                Get.toNamed(
-                  AppRoutes.waterBillHistory,
-                  arguments: {
-                    'accountNumber': b.accountNumber,
-                    'providerCode': b.providerCode,
-                  },
-                );
-              },
-            ),
-            const Divider(color: Color(0xFF2D2D2D), height: 1),
-            ListTile(
-              leading: const Icon(Icons.water_drop, color: _primary),
-              title: Text('Pay Bill',
-                  style: TextStyle(color: Colors.white, fontSize: 15.sp)),
-              onTap: () {
-                Navigator.of(ctx).pop();
-                _startRepeatPurchase(b);
-              },
-            ),
-            const Divider(color: Color(0xFF2D2D2D), height: 1),
-            Builder(builder: (_) {
-              final autos = _autosFor(b);
-              final hasAuto = autos.isNotEmpty;
-              return ListTile(
-                leading:
-                    const Icon(Icons.autorenew, color: Color(0xFF10B981)),
-                title: Text(hasAuto ? 'Edit Auto-Pay' : 'Set Auto-Pay',
-                    style: TextStyle(color: Colors.white, fontSize: 15.sp)),
-                subtitle: hasAuto
-                    ? Text(
-                        autos.length == 1
-                            ? 'Active schedule for this account'
-                            : '${autos.length} schedules \u00B7 tap to pick one',
-                        style: TextStyle(
-                            color: const Color(0xFF9CA3AF),
-                            fontSize: 12.sp),
-                      )
-                    : null,
-                onTap: () {
-                  Navigator.of(ctx).pop();
-                  _openAutoRechargeEditor(b, autos);
-                },
-              );
-            }),
-            const Divider(color: Color(0xFF2D2D2D), height: 1),
-            ListTile(
-              leading: const Icon(Icons.notifications_outlined,
-                  color: Color(0xFFFB923C)),
-              title: Text('Set Reminder',
-                  style: TextStyle(color: Colors.white, fontSize: 15.sp)),
-              onTap: () {
-                Navigator.of(ctx).pop();
-                Get.toNamed(
-                  AppRoutes.waterBillRemindersCreate,
-                  arguments: {'beneficiary': b},
-                );
-              },
-            ),
-            const Divider(color: Color(0xFF2D2D2D), height: 1),
-            ListTile(
-              leading:
-                  const Icon(Icons.edit_outlined, color: Color(0xFF9CA3AF)),
-              title: Text('Edit Nickname',
-                  style: TextStyle(color: Colors.white, fontSize: 15.sp)),
-              onTap: () {
-                Navigator.of(ctx).pop();
-                _editNickname(b);
-              },
-            ),
-            const Divider(color: Color(0xFF2D2D2D), height: 1),
-            ListTile(
-              leading: const Icon(Icons.delete_outline,
-                  color: Color(0xFFEF4444)),
-              title: Text('Delete Account',
-                  style: TextStyle(
-                      color: const Color(0xFFEF4444), fontSize: 15.sp)),
-              onTap: () {
-                Navigator.of(ctx).pop();
-                _confirmDelete(b);
-              },
-            ),
-          ],
+    // Shared item-options sheet — same visual as data / cable TV
+    // saved-contacts sheets. Single source: BillHistoryActionsSheet.
+    final autos = _autosFor(b);
+    final hasAuto = autos.isNotEmpty;
+    BillHistoryActionsSheet.show(
+      context,
+      title: b.nickname?.isNotEmpty == true ? b.nickname! : b.accountNumber,
+      subtitle: '${b.providerName} · ${b.accountNumber}',
+      actions: [
+        BillHistoryAction(
+          icon: Icons.info_outline,
+          color: _primary,
+          label: 'View Details',
+          onTap: () {
+            Get.back();
+            _showDetailsDialog(b, _autosFor(b));
+          },
         ),
-      ),
+        BillHistoryAction(
+          icon: Icons.history,
+          color: const Color(0xFF9CA3AF),
+          label: 'View Payments',
+          onTap: () {
+            Get.back();
+            Get.toNamed(
+              AppRoutes.waterBillHistory,
+              arguments: {
+                'accountNumber': b.accountNumber,
+                'providerCode': b.providerCode,
+              },
+            );
+          },
+        ),
+        BillHistoryAction(
+          icon: Icons.water_drop,
+          color: _primary,
+          label: 'Pay Bill',
+          onTap: () {
+            Get.back();
+            _startRepeatPurchase(b);
+          },
+        ),
+        BillHistoryAction(
+          icon: Icons.autorenew,
+          color: const Color(0xFF10B981),
+          label: hasAuto ? 'Edit Auto-Pay' : 'Set Auto-Pay',
+          subtitle: hasAuto
+              ? (autos.length == 1
+                  ? 'Active schedule for this account'
+                  : '${autos.length} schedules · tap to pick one')
+              : null,
+          onTap: () {
+            Get.back();
+            _openAutoRechargeEditor(b, autos);
+          },
+        ),
+        BillHistoryAction(
+          icon: Icons.notifications_outlined,
+          color: const Color(0xFFFB923C),
+          label: 'Set Reminder',
+          onTap: () {
+            Get.back();
+            Get.toNamed(
+              AppRoutes.waterBillRemindersCreate,
+              arguments: {'beneficiary': b},
+            );
+          },
+        ),
+        BillHistoryAction(
+          icon: Icons.edit_outlined,
+          color: const Color(0xFF9CA3AF),
+          label: 'Edit Nickname',
+          onTap: () {
+            Get.back();
+            _editNickname(b);
+          },
+        ),
+        BillHistoryAction(
+          icon: Icons.delete_outline,
+          color: const Color(0xFFEF4444),
+          label: 'Delete Account',
+          onTap: () {
+            Get.back();
+            _confirmDelete(b);
+          },
+        ),
+      ],
     );
   }
 
