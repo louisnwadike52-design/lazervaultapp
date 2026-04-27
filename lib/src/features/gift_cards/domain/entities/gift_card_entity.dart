@@ -544,7 +544,14 @@ class GiftCardSale extends Equatable {
   bool get isApproved => status == 'approved';
   bool get isRejected => status == 'rejected';
   bool get isPaid => status == 'paid';
-  bool get isCancelled => status == 'cancelled';
+  // Canonical sell terminal-failure name is `failed` (post migration 013).
+  // The legacy `cancelled` value is treated as a synonym so older rows
+  // emitted before the rename still surface correctly.
+  bool get isFailed => status == 'failed' || status == 'cancelled';
+  // Deprecated: use isFailed.
+  bool get isCancelled => isFailed;
+  // Manual_review replaced the legacy `escalated` post migration 013.
+  bool get isManualReview => status == 'manual_review' || status == 'escalated';
 
   @override
   List<Object?> get props => [
@@ -746,7 +753,12 @@ class Settlement extends Equatable {
 
   bool get isPendingSettlement => status == 'pending_settlement';
   bool get isSettled => status == 'settled';
-  bool get isCreditFailed => status == 'credit_failed';
+  // settlement_status `refund_failed` (was `credit_failed` pre migration
+  // 013). Both names treated as the same recoverable settlement state.
+  bool get isRefundFailed =>
+      settlementStatus == 'refund_failed' || settlementStatus == 'credit_failed';
+  // Deprecated: use isRefundFailed.
+  bool get isCreditFailed => isRefundFailed;
 
   @override
   List<Object?> get props => [
