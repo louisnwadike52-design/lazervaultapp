@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -158,7 +159,7 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
                 borderRadius: BorderRadius.circular(22.r),
               ),
               child: Icon(Icons.receipt_long_rounded,
-                  color: const Color(0xFF3B82F6), size: 18.sp),
+                  color: InvoiceThemeColors.primaryPurple, size: 18.sp),
             ),
           ),
         ],
@@ -176,7 +177,7 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
       child: TabBar(
         controller: _tabController,
         indicator: BoxDecoration(
-          color: const Color(0xFF3B82F6),
+          color: InvoiceThemeColors.primaryPurple,
           borderRadius: BorderRadius.circular(10.r),
         ),
         labelColor: Colors.white,
@@ -234,7 +235,7 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
 
     return RefreshIndicator(
       onRefresh: _onRefresh,
-      color: const Color(0xFF3B82F6),
+      color: InvoiceThemeColors.primaryPurple,
       backgroundColor: const Color(0xFF1F1F1F),
       child: ListView.builder(
         padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 24.h),
@@ -248,115 +249,184 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
   }
 
   Widget _buildGiftCardItem(GiftCard card) {
+    final inFlight = _isInFlight(card);
     return GestureDetector(
       onTap: () => Get.toNamed(AppRoutes.giftCardDetails, arguments: card),
       child: Container(
-        margin: EdgeInsets.only(bottom: 12.h),
-        padding: EdgeInsets.all(16.w),
+        // Tighter vertical rhythm so more cards fit without scrolling.
+        margin: EdgeInsets.only(bottom: 8.h),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
         decoration: BoxDecoration(
           color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.circular(14.r),
+          borderRadius: BorderRadius.circular(12.r),
           border: Border.all(color: const Color(0xFF2D2D2D)),
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 52.w,
-              height: 52.w,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12.r),
-                child: CachedNetworkImage(
-                  imageUrl: card.logoUrl,
-                  fit: BoxFit.contain,
-                  placeholder: (context, url) => Icon(
-                    Icons.image_rounded,
-                    color: Colors.grey.shade400,
-                    size: 22.sp,
-                  ),
-                  errorWidget: (context, url, error) => Icon(
-                    Icons.card_giftcard_rounded,
-                    color: Colors.grey.shade400,
-                    size: 22.sp,
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(width: 14.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    card.brandName,
-                    style: GoogleFonts.inter(
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    '${card.currency} ${card.originalAmount.toStringAsFixed(2)}',
-                    style: GoogleFonts.inter(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF3B82F6),
-                    ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    'Expires: ${_formatDate(card.expiryDate)}',
-                    style: GoogleFonts.inter(
-                      fontSize: 12.sp,
-                      color: const Color(0xFF9CA3AF),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+            Row(
               children: [
                 Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                  width: 44.w,
+                  height: 44.w,
                   decoration: BoxDecoration(
-                    color: _getDisplayStatusColor(card).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8.r),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10.r),
                   ),
-                  child: Text(
-                    _getDisplayStatus(card).toUpperCase(),
-                    style: GoogleFonts.inter(
-                      fontSize: 10.sp,
-                      fontWeight: FontWeight.w600,
-                      color: _getDisplayStatusColor(card),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10.r),
+                    child: CachedNetworkImage(
+                      imageUrl: card.logoUrl,
+                      fit: BoxFit.contain,
+                      placeholder: (context, url) => Icon(
+                        Icons.image_rounded,
+                        color: Colors.grey.shade400,
+                        size: 18.sp,
+                      ),
+                      errorWidget: (context, url, error) => Icon(
+                        Icons.card_giftcard_rounded,
+                        color: Colors.grey.shade400,
+                        size: 18.sp,
+                      ),
                     ),
                   ),
                 ),
-                SizedBox(height: 8.h),
-                Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  color: const Color(0xFF9CA3AF),
-                  size: 14.sp,
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              card.brandName,
+                              style: GoogleFonts.inter(
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Text(
+                            '${card.currency} ${card.originalAmount.toStringAsFixed(0)}',
+                            style: GoogleFonts.inter(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w700,
+                              color: InvoiceThemeColors.primaryPurple,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 2.h),
+                      Row(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                            decoration: BoxDecoration(
+                              color: _getDisplayStatusColor(card).withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(4.r),
+                            ),
+                            child: Text(
+                              _getDisplayStatus(card).toUpperCase(),
+                              style: GoogleFonts.inter(
+                                fontSize: 9.sp,
+                                fontWeight: FontWeight.w700,
+                                color: _getDisplayStatusColor(card),
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 8.w),
+                          Expanded(
+                            child: Text(
+                              'Expires ${_formatDate(card.expiryDate)}',
+                              style: GoogleFonts.inter(
+                                fontSize: 11.sp,
+                                color: const Color(0xFF9CA3AF),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            color: const Color(0xFF6B7280),
+                            size: 12.sp,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
+            // Settlement-state progress strip — surfaces the lifecycle stage
+            // (pending → processing → available) for in-flight cards. Mirrors
+            // the staged-progress idiom used in the bill payment processing
+            // screen and the exchange detail UI.
+            if (inFlight) ...[
+              SizedBox(height: 8.h),
+              _buildLifecycleStrip(card),
+            ],
           ],
         ),
       ),
     );
   }
 
+  // True if the card is still moving through the buy lifecycle and a status
+  // refresh might surface a new state. Pending / processing trigger the
+  // stage indicator; terminal states (available, redeemed, expired, failed)
+  // skip it.
+  bool _isInFlight(GiftCard card) {
+    final s = _getDisplayStatus(card).toLowerCase();
+    return s == 'pending' || s == 'processing';
+  }
+
+  Widget _buildLifecycleStrip(GiftCard card) {
+    final s = _getDisplayStatus(card).toLowerCase();
+    // Stage index: 0 = pending (awaiting provider), 1 = processing
+    // (provider executing), 2 = available (terminal — not shown here).
+    final stage = s == 'processing' ? 1 : 0;
+    Widget dot(int i) {
+      final reached = i <= stage;
+      return Expanded(
+        child: Container(
+          height: 3,
+          margin: EdgeInsets.only(right: i == 1 ? 0 : 4.w),
+          decoration: BoxDecoration(
+            color: reached
+                ? InvoiceThemeColors.primaryPurple
+                : const Color(0xFF2D2D2D),
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+      );
+    }
+
+    return Row(
+      children: [
+        dot(0),
+        dot(1),
+        SizedBox(width: 8.w),
+        Text(
+          stage == 1 ? 'Processing' : 'Awaiting provider',
+          style: GoogleFonts.inter(
+            fontSize: 10.sp,
+            color: const Color(0xFF9CA3AF),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildLoadingView() {
     return const Center(
       child: CircularProgressIndicator(
-        color: Color(0xFF3B82F6),
+        color: InvoiceThemeColors.primaryPurple,
         strokeWidth: 2.5,
       ),
     );
@@ -477,7 +547,7 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
               ElevatedButton(
                 onPressed: () => Get.toNamed(AppRoutes.giftCards),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3B82F6),
+                  backgroundColor: InvoiceThemeColors.primaryPurple,
                   padding:
                       EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
                   shape: RoundedRectangleBorder(
@@ -515,11 +585,18 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
       case 'pending':
         return const Color(0xFFFB923C);
       case 'transferred':
-        return const Color(0xFF3B82F6);
+        return InvoiceThemeColors.primaryPurple;
       case 'expired':
         return const Color(0xFFEF4444);
-      case 'cancelled':
+      case 'failed':
+      case 'cancelled': // legacy alias pre giftcards-service migration 013
         return const Color(0xFFEF4444);
+      case 'refunded':
+      case 'reversed': // legacy alias pre giftcards-service migration 013
+        return const Color(0xFFEF4444);
+      case 'refund_pending':
+      case 'pending_verification': // legacy alias pre giftcards-service migration 013
+        return const Color(0xFFFB923C);
       default:
         return const Color(0xFF9CA3AF);
     }

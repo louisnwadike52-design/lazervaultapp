@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -74,9 +75,9 @@ class _MySalesScreenState extends State<MySalesScreen>
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
-          labelColor: const Color(0xFF3B82F6),
+          labelColor: InvoiceThemeColors.primaryPurple,
           unselectedLabelColor: const Color(0xFF9CA3AF),
-          indicatorColor: const Color(0xFF3B82F6),
+          indicatorColor: InvoiceThemeColors.primaryPurple,
           indicatorSize: TabBarIndicatorSize.label,
           labelStyle: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600),
           unselectedLabelStyle: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w500),
@@ -87,7 +88,7 @@ class _MySalesScreenState extends State<MySalesScreen>
         builder: (context, state) {
           if (state is GiftCardLoading) {
             return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+              child: CircularProgressIndicator(color: InvoiceThemeColors.primaryPurple),
             );
           }
 
@@ -112,7 +113,7 @@ class _MySalesScreenState extends State<MySalesScreen>
   Widget _buildSalesList(List<GiftCardSale> sales) {
     return RefreshIndicator(
       onRefresh: _onRefresh,
-      color: const Color(0xFF3B82F6),
+      color: InvoiceThemeColors.primaryPurple,
       backgroundColor: const Color(0xFF1F1F1F),
       child: ListView.builder(
         padding: EdgeInsets.all(16.w),
@@ -329,7 +330,7 @@ class _MySalesScreenState extends State<MySalesScreen>
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
-                          color: Color(0xFF3B82F6),
+                          color: InvoiceThemeColors.primaryPurple,
                           strokeWidth: 2,
                         ),
                       ),
@@ -341,7 +342,7 @@ class _MySalesScreenState extends State<MySalesScreen>
                     child: ElevatedButton(
                       onPressed: () => Get.back(),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF3B82F6),
+                        backgroundColor: InvoiceThemeColors.primaryPurple,
                         padding: EdgeInsets.symmetric(vertical: 14.h),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12.r),
@@ -414,8 +415,8 @@ class _MySalesScreenState extends State<MySalesScreen>
         label = 'In Review';
         break;
       case 'reviewing':
-        bgColor = const Color(0xFF3B82F6).withValues(alpha: 0.15);
-        textColor = const Color(0xFF3B82F6);
+        bgColor = InvoiceThemeColors.primaryPurple.withValues(alpha: 0.15);
+        textColor = InvoiceThemeColors.primaryPurple;
         label = 'Reviewing';
         break;
       case 'approved':
@@ -433,10 +434,22 @@ class _MySalesScreenState extends State<MySalesScreen>
         textColor = const Color(0xFF10B981);
         label = 'Paid';
         break;
-      case 'cancelled':
-        bgColor = const Color(0xFF6B7280).withValues(alpha: 0.15);
-        textColor = const Color(0xFF6B7280);
-        label = 'Cancelled';
+      case 'settled':
+        bgColor = const Color(0xFF10B981).withValues(alpha: 0.15);
+        textColor = const Color(0xFF10B981);
+        label = 'Settled';
+        break;
+      case 'failed':
+      case 'cancelled': // legacy alias pre giftcards-service migration 013
+        bgColor = const Color(0xFFEF4444).withValues(alpha: 0.15);
+        textColor = const Color(0xFFEF4444);
+        label = 'Failed';
+        break;
+      case 'manual_review':
+      case 'escalated': // legacy alias pre giftcards-service migration 013
+        bgColor = const Color(0xFFFB923C).withValues(alpha: 0.15);
+        textColor = const Color(0xFFFB923C);
+        label = 'Manual review';
         break;
       default:
         bgColor = const Color(0xFF6B7280).withValues(alpha: 0.15);
