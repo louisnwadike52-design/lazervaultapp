@@ -74,6 +74,11 @@ abstract class IGiftCardRepository {
     String? currency,
   });
 
+  /// Returns the active sell-provider's available payout methods.
+  /// Sourced from Prestmit's rate-calculator-data.sellGiftcardPayoutMethods,
+  /// pre-filtered to available==true. Drives the sell-flow payout picker.
+  Future<Either<Failure, List<PayoutMethodEntity>>> getPayoutMethods();
+
   Future<Either<Failure, GiftCardSale>> sellGiftCard({
     required String cardType,
     required String cardNumber,
@@ -81,6 +86,16 @@ abstract class IGiftCardRepository {
     required double denomination,
     required String transactionId,
     required String verificationToken,
+    /// Doc-aligned Prestmit `payoutMethod` (e.g. "NAIRA").
+    String? payoutMethod,
+    /// Doc-aligned Prestmit `form`: "Physical" | "Ecode".
+    String? form,
+    /// Doc-aligned Prestmit `giftcard_id` (subcategory). Falls back to cardType.
+    String? subcategoryId,
+    /// Explicit Ecode value (replaces card_number when both are set).
+    String? cardCode,
+    /// Required to be true; backend rejects with FailedPrecondition otherwise.
+    bool disclaimerAccepted = false,
     String? currency,
     List<String>? images,
     String? idempotencyKey,

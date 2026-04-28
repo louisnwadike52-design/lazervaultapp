@@ -373,6 +373,28 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
   }
 
   @override
+  Future<List<PayoutMethodEntity>> getPayoutMethods() async {
+    try {
+      final options = await grpcClient.callOptions;
+      final response = await grpcClient.giftCardClient.getPayoutMethods(
+        pb.GetPayoutMethodsRequest(),
+        options: options,
+      );
+      return response.methods
+          .map((m) => PayoutMethodEntity(
+                name: m.name,
+                currency: m.currency,
+                available: m.available,
+              ))
+          .toList();
+    } on GrpcError catch (e) {
+      throw Exception('Failed to fetch payout methods: ${e.message}');
+    } catch (e) {
+      throw Exception('Unexpected error fetching payout methods: $e');
+    }
+  }
+
+  @override
   Future<GiftCardSaleModel> sellGiftCard({
     required String cardType,
     required String cardNumber,
@@ -380,6 +402,11 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
     required double denomination,
     required String transactionId,
     required String verificationToken,
+    String? payoutMethod,
+    String? form,
+    String? subcategoryId,
+    String? cardCode,
+    bool disclaimerAccepted = false,
     String? currency,
     List<String>? images,
     String? idempotencyKey,
@@ -402,16 +429,24 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
         denomination: denomination,
         transactionId: transactionId,
         verificationToken: verificationToken,
-        currency: currency ?? 'USD',
+        // currency here is the card's face-value currency (e.g. USD).
+        // Payout currency is selected via payoutMethod (e.g. NAIRA).
+        currency: currency ?? '',
         idempotencyKey: idempotencyKey ?? '',
         providerName: providerName ?? '',
         cardCountry: cardCountry ?? '',
-        cardFormat: cardFormat ?? 'ecode',
+        cardFormat: cardFormat ?? '',
         ocrBrand: ocrBrand ?? '',
         ocrCardNumber: ocrCardNumber ?? '',
         ocrPin: ocrPin ?? '',
         ocrDenomination: ocrDenomination ?? 0,
         ocrCurrency: ocrCurrency ?? '',
+        // Doc-aligned Prestmit fields per documentation.prestmit.io.
+        subcategoryId: subcategoryId ?? '',
+        form: form ?? '',
+        payoutMethod: payoutMethod ?? '',
+        cardCode: cardCode ?? '',
+        disclaimerAccepted: disclaimerAccepted,
       );
 
       if (images != null && images.isNotEmpty) {

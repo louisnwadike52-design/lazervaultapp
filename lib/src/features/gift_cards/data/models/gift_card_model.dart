@@ -225,6 +225,9 @@ class SellableCardModel extends SellableCard {
     super.minDenomination,
     super.maxDenomination,
     super.providerName,
+    super.form,
+    super.subcategoryId,
+    super.country,
   });
 
   factory SellableCardModel.fromProto(pb.SellableCard proto) {
@@ -238,6 +241,10 @@ class SellableCardModel extends SellableCard {
       minDenomination: proto.minDenomination,
       maxDenomination: proto.maxDenomination,
       providerName: proto.providerName,
+      // Doc-aligned Prestmit fields per documentation.prestmit.io.
+      form: proto.form,
+      subcategoryId: proto.subcategoryId,
+      country: proto.country,
     );
   }
 }

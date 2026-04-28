@@ -75,6 +75,10 @@ abstract class IGiftCardRemoteDataSource {
     String? currency,
   });
 
+  /// Returns the active sell-provider's payout methods, available-only,
+  /// for the Flutter sell-flow payout picker.
+  Future<List<PayoutMethodEntity>> getPayoutMethods();
+
   Future<GiftCardSaleModel> sellGiftCard({
     required String cardType,
     required String cardNumber,
@@ -82,6 +86,11 @@ abstract class IGiftCardRemoteDataSource {
     required double denomination,
     required String transactionId,
     required String verificationToken,
+    String? payoutMethod,
+    String? form,
+    String? subcategoryId,
+    String? cardCode,
+    bool disclaimerAccepted = false,
     String? currency,
     List<String>? images,
     String? idempotencyKey,

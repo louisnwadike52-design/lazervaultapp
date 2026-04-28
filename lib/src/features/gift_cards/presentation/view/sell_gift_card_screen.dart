@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -54,6 +55,18 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
   String _selectedCategory = '';
   String? _cardNumberError;
   String? _cardPinError;
+
+  // Step 2 (NEW: payout-method picker). Backed by a live cubit fetch
+  // from the active provider's GetPayoutMethods. The selected method is
+  // sent verbatim as `payoutMethod` to /giftcard-trade/sell/create.
+  String _selectedPayoutMethod = '';
+
+  // Step 3 (Confirm): the legal/UX safety net. We can't validate the
+  // card with the issuer (no public API exists), so explicit user
+  // acceptance is the only sign-off the operator gets that the user
+  // understood the terms before submitting. Backend rejects with
+  // FailedPrecondition when this is false.
+  bool _disclaimerAccepted = false;
 
   static const _sellCategories = [
     {'slug': '', 'label': 'All'},
@@ -121,10 +134,10 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
         ),
         centerTitle: true,
         actions: [
-          if (_currentStep < 3)
+          if (_currentStep < 4)
             IconButton(
               onPressed: () => Get.toNamed(AppRoutes.mySales),
-              icon: Icon(Icons.history, color: const Color(0xFF3B82F6), size: 22.sp),
+              icon: Icon(Icons.history, color: InvoiceThemeColors.primaryPurple, size: 22.sp),
             ),
         ],
       ),
@@ -133,7 +146,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
         builder: (context, state) {
           if (state is SellableCardsLoading && _currentStep == 0) {
             return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+              child: CircularProgressIndicator(color: InvoiceThemeColors.primaryPurple),
             );
           }
           if (state is SellProcessing) {
@@ -153,8 +166,10 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
       case 1:
         return 'Card Details';
       case 2:
-        return 'Confirm Sale';
+        return 'Payout Method';
       case 3:
+        return 'Confirm Sale';
+      case 4:
         return 'Submitted';
       default:
         return 'Sell Gift Card';
@@ -162,7 +177,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
   }
 
   void _onBack() {
-    if (_currentStep > 0 && _currentStep < 3) {
+    if (_currentStep > 0 && _currentStep < 4) {
       setState(() {
         if (_currentStep == 1) {
           _selectedCard = null;
@@ -184,9 +199,14 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
           _localImageFiles.clear();
           context.read<GiftCardCubit>().loadSellableCards(countryCode: _selectedCountry);
         }
+        if (_currentStep == 3) {
+          // Reset disclaimer when leaving the confirm step so the user
+          // re-acknowledges if they edit anything upstream.
+          _disclaimerAccepted = false;
+        }
         _currentStep--;
       });
-    } else if (_currentStep == 3) {
+    } else if (_currentStep == 4) {
       Get.offAllNamed(AppRoutes.giftCards);
     } else {
       Get.back();
@@ -243,8 +263,34 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
     } else if (state is SellSubmitted) {
       setState(() {
         _submittedSale = state.sale;
-        _currentStep = 3;
+        _currentStep = 4;
       });
+    } else if (state is PayoutMethodsLoaded) {
+      // Pre-select sensibly: server-provided default → first available.
+      final preferred = state.defaultMethodName;
+      String pick = '';
+      if (preferred.isNotEmpty &&
+          state.methods.any((m) => m.name == preferred)) {
+        pick = preferred;
+      } else if (state.methods.isNotEmpty) {
+        pick = state.methods.first.name;
+      }
+      if (pick.isNotEmpty && _selectedPayoutMethod.isEmpty) {
+        setState(() => _selectedPayoutMethod = pick);
+      }
+    } else if (state is PayoutMethodsError) {
+      Get.snackbar('Payout methods', state.message,
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+    } else if (state is SellDisclaimerNotAccepted) {
+      Get.snackbar('Confirm acceptance',
+        'Please tick the acknowledgement before submitting.',
+        backgroundColor: const Color(0xFFFB923C),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
     } else if (state is SellQueued) {
       Get.snackbar('Queued', state.message,
         backgroundColor: const Color(0xFFFB923C),
@@ -268,8 +314,10 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
       case 1:
         return _buildStep1CardDetailsAndImages();
       case 2:
-        return _buildStep3Confirm();
+        return _buildStep2PayoutMethod(state);
       case 3:
+        return _buildStep3Confirm();
+      case 4:
         return _buildStep4Success();
       default:
         return const SizedBox();
@@ -291,7 +339,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
       return _buildErrorState(state.message);
     }
     return const Center(
-      child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+      child: CircularProgressIndicator(color: InvoiceThemeColors.primaryPurple),
     );
   }
 
@@ -315,11 +363,11 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
               padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? const Color(0xFF3B82F6).withValues(alpha: 0.2)
+                    ? InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2)
                     : const Color(0xFF1F1F1F),
                 borderRadius: BorderRadius.circular(10.r),
                 border: Border.all(
-                  color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFF2D2D2D),
+                  color: isSelected ? InvoiceThemeColors.primaryPurple : const Color(0xFF2D2D2D),
                 ),
               ),
               child: Row(
@@ -330,7 +378,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
                   Text(
                     country['code']!,
                     style: GoogleFonts.inter(
-                      color: isSelected ? const Color(0xFF3B82F6) : Colors.white,
+                      color: isSelected ? InvoiceThemeColors.primaryPurple : Colors.white,
                       fontSize: 13.sp,
                       fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                     ),
@@ -363,14 +411,14 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
               padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? const Color(0xFF3B82F6).withValues(alpha: 0.2)
+                    ? InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2)
                     : const Color(0xFF1F1F1F),
                 borderRadius: BorderRadius.circular(20.r),
               ),
               child: Text(
                 cat['label']!,
                 style: GoogleFonts.inter(
-                  color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFF9CA3AF),
+                  color: isSelected ? InvoiceThemeColors.primaryPurple : const Color(0xFF9CA3AF),
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                   fontSize: 13.sp,
                 ),
@@ -416,7 +464,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
       onRefresh: () async {
         context.read<GiftCardCubit>().loadSellableCards(countryCode: _selectedCountry);
       },
-      color: const Color(0xFF3B82F6),
+      color: InvoiceThemeColors.primaryPurple,
       backgroundColor: const Color(0xFF1F1F1F),
       child: GridView.builder(
         padding: EdgeInsets.all(16.w),
@@ -497,7 +545,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
                     style: GoogleFonts.inter(
                       fontSize: 12.sp,
                       fontWeight: FontWeight.w500,
-                      color: const Color(0xFF3B82F6),
+                      color: InvoiceThemeColors.primaryPurple,
                     ),
                   ),
                 ],
@@ -573,14 +621,14 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
                   child: Container(
                     padding: EdgeInsets.symmetric(vertical: 12.h),
                     decoration: BoxDecoration(
-                      color: _selectedFormat == 'ecode' ? const Color(0xFF3B82F6).withValues(alpha: 0.2) : const Color(0xFF1F1F1F),
+                      color: _selectedFormat == 'ecode' ? InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2) : const Color(0xFF1F1F1F),
                       borderRadius: BorderRadius.circular(12.r),
-                      border: Border.all(color: _selectedFormat == 'ecode' ? const Color(0xFF3B82F6) : const Color(0xFF2D2D2D)),
+                      border: Border.all(color: _selectedFormat == 'ecode' ? InvoiceThemeColors.primaryPurple : const Color(0xFF2D2D2D)),
                     ),
                     child: Column(children: [
-                      Icon(Icons.qr_code_rounded, color: _selectedFormat == 'ecode' ? const Color(0xFF3B82F6) : const Color(0xFF9CA3AF), size: 22.sp),
+                      Icon(Icons.qr_code_rounded, color: _selectedFormat == 'ecode' ? InvoiceThemeColors.primaryPurple : const Color(0xFF9CA3AF), size: 22.sp),
                       SizedBox(height: 4.h),
-                      Text('E-Code', style: GoogleFonts.inter(color: _selectedFormat == 'ecode' ? const Color(0xFF3B82F6) : Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w600)),
+                      Text('E-Code', style: GoogleFonts.inter(color: _selectedFormat == 'ecode' ? InvoiceThemeColors.primaryPurple : Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w600)),
                     ]),
                   ),
                 ),
@@ -700,7 +748,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
           // Hint about AI auto-fill
           Row(
             children: [
-              Icon(Icons.auto_awesome, size: 14.sp, color: const Color(0xFF3B82F6).withValues(alpha: 0.7)),
+              Icon(Icons.auto_awesome, size: 14.sp, color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.7)),
               SizedBox(width: 6.w),
               Expanded(
                 child: Text(
@@ -722,8 +770,8 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
                 icon: Icon(Icons.auto_awesome, size: 18.sp),
                 label: Text('Auto-fill with AI Scan', style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600)),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF3B82F6),
-                  side: const BorderSide(color: Color(0xFF3B82F6)),
+                  foregroundColor: InvoiceThemeColors.primaryPurple,
+                  side: const BorderSide(color: InvoiceThemeColors.primaryPurple),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
                 ),
               ),
@@ -737,7 +785,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
             child: ElevatedButton(
               onPressed: _canGetRate() ? _onGetRate : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
+                backgroundColor: InvoiceThemeColors.primaryPurple,
                 disabledBackgroundColor: const Color(0xFF2D2D2D),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
                 elevation: 0,
@@ -827,7 +875,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
             : isUploading
                 ? const Center(
                     child: CircularProgressIndicator(
-                      color: Color(0xFF3B82F6),
+                      color: InvoiceThemeColors.primaryPurple,
                       strokeWidth: 2,
                     ),
                   )
@@ -865,7 +913,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: const Icon(Icons.camera_alt, color: Color(0xFF3B82F6)),
+                leading: const Icon(Icons.camera_alt, color: InvoiceThemeColors.primaryPurple),
                 title: Text('Take Photo',
                     style: GoogleFonts.inter(color: Colors.white)),
                 onTap: () {
@@ -874,7 +922,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.photo_library, color: Color(0xFF3B82F6)),
+                leading: const Icon(Icons.photo_library, color: InvoiceThemeColors.primaryPurple),
                 title: Text('Choose from Gallery',
                     style: GoogleFonts.inter(color: Colors.white)),
                 onTap: () {
@@ -950,7 +998,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Row(
           children: [
-            Icon(Icons.auto_awesome, color: const Color(0xFF3B82F6), size: 22.sp),
+            Icon(Icons.auto_awesome, color: InvoiceThemeColors.primaryPurple, size: 22.sp),
             SizedBox(width: 10.w),
             Expanded(
               child: Text('AI Auto-fill',
@@ -973,7 +1021,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
               _onScanCard();
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF3B82F6),
+              backgroundColor: InvoiceThemeColors.primaryPurple,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
             ),
             child: Text('Scan Now', style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w600)),
@@ -1007,13 +1055,13 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
           Container(
             padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
             decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+              color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(4.r),
             ),
             child: Text(
               'AI',
               style: GoogleFonts.inter(
-                color: const Color(0xFF3B82F6),
+                color: InvoiceThemeColors.primaryPurple,
                 fontSize: 10.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -1066,11 +1114,197 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
   void _onGetRate() {
     if (!_validateCardFields()) return;
 
+    // Kick off the rate fetch in parallel with the payout-method fetch
+    // — both feed the eventual confirm step. The user lands on the new
+    // payout-method picker (step 2); the rate result lands by the time
+    // they advance to confirm (step 3).
     context.read<GiftCardCubit>().getSellRate(
       cardType: _selectedCard!.cardType,
       denomination: _selectedDenomination!,
     );
+    context.read<GiftCardCubit>().loadPayoutMethods();
     setState(() => _currentStep = 2);
+  }
+
+  // ============================================
+  // STEP 2: Payout Method
+  // ============================================
+
+  Widget _buildStep2PayoutMethod(GiftCardState state) {
+    final isLoading = state is PayoutMethodsLoading;
+    final List<PayoutMethodEntity> methods =
+        state is PayoutMethodsLoaded ? state.methods : const [];
+    final hasError = state is PayoutMethodsError;
+
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(16.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'How would you like to be paid?',
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            'Pick the wallet currency your payout lands in. Methods are sourced live from the gift-card processor — only options you can actually receive are shown.',
+            style: GoogleFonts.inter(
+              color: const Color(0xFF9CA3AF),
+              fontSize: 12.sp,
+              height: 1.4,
+            ),
+          ),
+          SizedBox(height: 20.h),
+          if (isLoading)
+            Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 32.h),
+                child: const CircularProgressIndicator(
+                  color: InvoiceThemeColors.primaryPurple,
+                ),
+              ),
+            )
+          else if (hasError)
+            Container(
+              padding: EdgeInsets.all(14.w),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEF4444).withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10.r),
+                border: Border.all(color: const Color(0xFFEF4444)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.error_outline, color: Color(0xFFEF4444)),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: Text(
+                      state.message,
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 12.sp,
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () =>
+                        context.read<GiftCardCubit>().loadPayoutMethods(),
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            )
+          else if (methods.isEmpty)
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 24.h),
+              child: Text(
+                'No payout methods available right now. Please try again in a moment.',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF9CA3AF),
+                  fontSize: 13.sp,
+                ),
+              ),
+            )
+          else
+            Column(
+              children: methods.map((m) {
+                final selected = m.name == _selectedPayoutMethod;
+                return GestureDetector(
+                  onTap: () => setState(() => _selectedPayoutMethod = m.name),
+                  child: Container(
+                    margin: EdgeInsets.only(bottom: 10.h),
+                    padding: EdgeInsets.all(14.w),
+                    decoration: BoxDecoration(
+                      color: selected
+                          ? InvoiceThemeColors.primaryPurple
+                              .withValues(alpha: 0.15)
+                          : const Color(0xFF1F1F1F),
+                      borderRadius: BorderRadius.circular(12.r),
+                      border: Border.all(
+                        color: selected
+                            ? InvoiceThemeColors.primaryPurple
+                            : const Color(0xFF2D2D2D),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.account_balance_wallet_rounded,
+                          color: selected
+                              ? InvoiceThemeColors.primaryPurple
+                              : const Color(0xFF9CA3AF),
+                          size: 22.sp,
+                        ),
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                m.name,
+                                style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              if (m.currency.isNotEmpty)
+                                Padding(
+                                  padding: EdgeInsets.only(top: 2.h),
+                                  child: Text(
+                                    'Pays out in ${m.currency}',
+                                    style: GoogleFonts.inter(
+                                      color: const Color(0xFF9CA3AF),
+                                      fontSize: 11.sp,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        if (selected)
+                          const Icon(
+                            Icons.check_circle_rounded,
+                            color: InvoiceThemeColors.primaryPurple,
+                          ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          SizedBox(height: 24.h),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _selectedPayoutMethod.isEmpty
+                  ? null
+                  : () => setState(() => _currentStep = 3),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: InvoiceThemeColors.primaryPurple,
+                disabledBackgroundColor:
+                    InvoiceThemeColors.primaryPurple.withValues(alpha: 0.4),
+                padding: EdgeInsets.symmetric(vertical: 14.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+              ),
+              child: Text(
+                'Continue',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   // ============================================
@@ -1120,7 +1354,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
                 child: Column(
                   children: [
                     const CircularProgressIndicator(
-                      color: Color(0xFF3B82F6),
+                      color: InvoiceThemeColors.primaryPurple,
                       strokeWidth: 2,
                     ),
                     SizedBox(height: 12.h),
@@ -1161,12 +1395,65 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
             ),
             SizedBox(height: 24.h),
           ],
+          // Legal disclaimer + acceptance gate. Mirrors the dark-theme
+          // pattern from sell_crypto_screen.dart's _buildLegalDisclaimer.
+          // Card validity can't be confirmed via any public API on the
+          // issuer side (Apple/Amazon/Steam don't expose balance/PIN
+          // lookups), so explicit user acceptance is the only sign-off
+          // operators get that the user understood the terms before
+          // submitting. Submit is disabled until the checkbox is ticked.
+          _buildSellLegalDisclaimer(),
+          SizedBox(height: 12.h),
+          GestureDetector(
+            onTap: () => setState(() => _disclaimerAccepted = !_disclaimerAccepted),
+            behavior: HitTestBehavior.opaque,
+            child: Container(
+              padding: EdgeInsets.all(12.w),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1F1F1F),
+                borderRadius: BorderRadius.circular(10.r),
+                border: Border.all(
+                  color: _disclaimerAccepted
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFF2D2D2D),
+                ),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    _disclaimerAccepted
+                        ? Icons.check_box_rounded
+                        : Icons.check_box_outline_blank_rounded,
+                    color: _disclaimerAccepted
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFF9CA3AF),
+                    size: 22.sp,
+                  ),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: Text(
+                      'I confirm this gift card is valid, unused, and unexpired. I have read the responsibility notice above.',
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 12.sp,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(height: 18.h),
           // Submit button
           SizedBox(
             width: double.infinity,
             height: 52.h,
             child: ElevatedButton(
-              onPressed: _currentRate != null ? _onSubmitSell : null,
+              onPressed: (_currentRate != null && _disclaimerAccepted)
+                  ? _onSubmitSell
+                  : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF10B981),
                 disabledBackgroundColor: const Color(0xFF2D2D2D),
@@ -1180,7 +1467,9 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
                     ? 'Sell for ${_formatCurrency(_currentRate!.payoutAmount)}'
                     : 'Sell Gift Card',
                 style: GoogleFonts.inter(
-                  color: _currentRate != null ? Colors.white : const Color(0xFF6B7280),
+                  color: (_currentRate != null && _disclaimerAccepted)
+                      ? Colors.white
+                      : const Color(0xFF6B7280),
                   fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
                 ),
@@ -1188,6 +1477,49 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
             ),
           ),
           SizedBox(height: 16.h),
+        ],
+      ),
+    );
+  }
+
+  /// Legal/responsibility notice for the sell flow. Card validity
+  /// can't be checked against the issuer (Apple/Amazon/Steam don't
+  /// expose balance/PIN lookups via public APIs — that's a deliberate
+  /// fraud-prevention design). The disclaimer is therefore the
+  /// operator's only audit-trail-worthy sign-off that the user
+  /// understood the terms before submitting. Style mirrors the crypto
+  /// sell screen's _buildLegalDisclaimer (orange-gradient warning card).
+  Widget _buildSellLegalDisclaimer() {
+    return Container(
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.orange.withValues(alpha: 0.12),
+            Colors.orange.withValues(alpha: 0.05),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: Colors.orange.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.warning_amber_rounded,
+              color: Colors.orange, size: 20.sp),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Text(
+              'By submitting this card you confirm it is valid, unused, and unexpired. LazerVault is not liable for cards rejected by the gift-card processor due to incorrect, used, or expired details. Cards are reviewed and may take 5 minutes – 24 hours to verify. Once approved your wallet is credited automatically; if rejected you will be notified with the reason.',
+              style: GoogleFonts.inter(
+                fontSize: 12.sp,
+                color: Colors.white.withValues(alpha: 0.85),
+                height: 1.4,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -1243,7 +1575,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
             ),
             SizedBox(height: 24.h),
             Text(
-              'Submitted for Review',
+              'Submitted for review',
               style: GoogleFonts.inter(
                 color: Colors.white,
                 fontSize: 20.sp,
@@ -1252,11 +1584,12 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
             ),
             SizedBox(height: 8.h),
             Text(
-              'Your gift card has been submitted. You\'ll be notified once it\'s reviewed.',
+              "Status: PENDING. Most gaming cards verify in 5 – 10 minutes; e-commerce cards can take up to 24 hours. We'll notify you the moment the status changes.",
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
                 color: const Color(0xFF9CA3AF),
-                fontSize: 14.sp,
+                fontSize: 13.sp,
+                height: 1.4,
               ),
             ),
             if (_submittedSale != null) ...[
@@ -1270,7 +1603,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
                 child: Text(
                   'Ref: ${_submittedSale!.reference}',
                   style: GoogleFonts.inter(
-                    color: const Color(0xFF3B82F6),
+                    color: InvoiceThemeColors.primaryPurple,
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w500,
                   ),
@@ -1287,7 +1620,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF3B82F6), Color(0xFF6366F1)],
+                      colors: [InvoiceThemeColors.primaryPurple, Color(0xFF6366F1)],
                       begin: Alignment.centerLeft,
                       end: Alignment.centerRight,
                     ),
@@ -1342,7 +1675,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.3)),
+        border: Border.all(color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -1380,13 +1713,13 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
           Container(
             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
             decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+              color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(6.r),
             ),
             child: Text(
               'Step ${_currentStep + 1}/4',
               style: GoogleFonts.inter(
-                color: const Color(0xFF3B82F6),
+                color: InvoiceThemeColors.primaryPurple,
                 fontSize: 11.sp,
                 fontWeight: FontWeight.w600,
               ),
@@ -1411,12 +1744,12 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
             padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
             decoration: BoxDecoration(
               color: isSelected
-                  ? const Color(0xFF3B82F6).withValues(alpha: 0.2)
+                  ? InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2)
                   : const Color(0xFF1F1F1F),
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(
                 color: isSelected
-                    ? const Color(0xFF3B82F6)
+                    ? InvoiceThemeColors.primaryPurple
                     : isOcrMatch
                         ? const Color(0xFF10B981).withValues(alpha: 0.5)
                         : const Color(0xFF2D2D2D),
@@ -1428,7 +1761,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
                 Text(
                   '${_selectedCard!.currencies.isNotEmpty ? _selectedCard!.currencies.first : "USD"} ${denom.toStringAsFixed(0)}',
                   style: GoogleFonts.inter(
-                    color: isSelected ? const Color(0xFF3B82F6) : Colors.white,
+                    color: isSelected ? InvoiceThemeColors.primaryPurple : Colors.white,
                     fontSize: 14.sp,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                   ),
@@ -1546,7 +1879,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
               borderSide: BorderSide(
-                color: hasError ? const Color(0xFFEF4444) : const Color(0xFF3B82F6),
+                color: hasError ? const Color(0xFFEF4444) : InvoiceThemeColors.primaryPurple,
               ),
             ),
             contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
@@ -1575,7 +1908,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
               value: state.progress,
               strokeWidth: 4,
               backgroundColor: const Color(0xFF2D2D2D),
-              color: const Color(0xFF3B82F6),
+              color: InvoiceThemeColors.primaryPurple,
             ),
           ),
           SizedBox(height: 24.h),
@@ -1654,7 +1987,13 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
           );
           setState(() {
             _currentRate = null;
+            // Step numbering changed — send the user back to the
+            // payout-method step (step 2) since the rate fetch is
+            // re-issued from there. The user re-confirms their pick
+            // and a fresh rate is requested by _onGetRate-equivalent
+            // logic on advance to confirm.
             _currentStep = 2;
+            _disclaimerAccepted = false;
           });
           return;
         }
@@ -1676,6 +2015,11 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
       currency: 'NGN',
       title: 'Confirm Sale',
       message: 'Confirm gift card sale for NGN ${payoutAmount.toStringAsFixed(2)}',
+      // Gift card sell: cubit.sellGiftCard runs *after* the modal closes
+      // (line below), and either submits to Prestmit or queues for manual
+      // review. The modal has nothing to wait on, so it should stop at
+      // "PIN verified" rather than animating a fake "processing" phase.
+      showProcessingPhase: false,
       onPinValidated: (token) async {
         verificationToken = token;
       },
@@ -1683,6 +2027,16 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
 
     if (!success || verificationToken == null) return;
     if (!mounted) return;
+
+    // Doc-aligned `form` value (Title-case "Physical"|"Ecode") sent to
+    // Prestmit. Use the selected card's authoritative form when present,
+    // else fall back to the user's _selectedFormat toggle.
+    final form = (_selectedCard?.form.isNotEmpty ?? false)
+        ? _selectedCard!.form
+        : (_selectedFormat == 'physical' ? 'Physical' : 'Ecode');
+
+    // Subcategory id is the Prestmit numeric id used as `giftcard_id`.
+    final subcategoryId = _selectedCard?.subcategoryId ?? '';
 
     // Execute sell AFTER modal is dismissed
     await context.read<GiftCardCubit>().sellGiftCard(
@@ -1692,6 +2046,16 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
       denomination: _selectedDenomination!,
       transactionId: transactionId,
       verificationToken: verificationToken!,
+      // Doc-aligned Prestmit fields:
+      payoutMethod: _selectedPayoutMethod.isNotEmpty
+          ? _selectedPayoutMethod
+          : null,
+      form: form,
+      subcategoryId: subcategoryId.isNotEmpty ? subcategoryId : null,
+      cardCode: _selectedFormat == 'ecode'
+          ? _cardNumberController.text.trim()
+          : null,
+      disclaimerAccepted: _disclaimerAccepted,
       images: _uploadedImageUrls.isNotEmpty ? _uploadedImageUrls : null,
       providerName: _selectedCard!.providerName.isNotEmpty ? _selectedCard!.providerName : null,
       cardCountry: _selectedCountry,
