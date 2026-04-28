@@ -451,6 +451,21 @@ class SellableCard extends Equatable {
   /// Used to ensure provider consistency between listing and sell.
   final String providerName;
 
+  /// Prestmit's `form` value: "Physical" or "Ecode". Drives the
+  /// sell-flow UI: Physical → image upload step (attachments[]),
+  /// Ecode → text-input step (code goes to `comments`). Empty on
+  /// internal/manual-provider cards (no API distinction).
+  final String form;
+
+  /// Prestmit's numeric subcategory id used as `giftcard_id` at
+  /// sale time. For non-Prestmit catalogues this mirrors `cardType`.
+  final String subcategoryId;
+
+  /// ISO/Prestmit country tag (e.g. "USA", "UK") for region-specific
+  /// variants. Surfaced on the card chooser so the user picks the
+  /// right regional rate.
+  final String country;
+
   const SellableCard({
     required this.cardType,
     required this.displayName,
@@ -461,14 +476,52 @@ class SellableCard extends Equatable {
     this.minDenomination = 0.0,
     this.maxDenomination = 0.0,
     this.providerName = '',
+    this.form = '',
+    this.subcategoryId = '',
+    this.country = '',
   });
+
+  /// True when the card is an Ecode and the sell flow should ask for a
+  /// code string instead of attachment images.
+  bool get isEcode => form.toLowerCase() == 'ecode';
+
+  /// True when the card is Physical and the sell flow should ask for
+  /// at least one attachment image.
+  bool get isPhysical => form.toLowerCase() == 'physical';
 
   @override
   List<Object?> get props => [
     cardType, displayName, logoUrl, category,
     denominations, currencies, minDenomination, maxDenomination,
-    providerName,
+    providerName, form, subcategoryId, country,
   ];
+}
+
+/// A payout method available for the user to pick on the sell flow.
+/// Source: Prestmit's GET /giftcard-trade/sell/payout-methods. Filtered
+/// to available-only by the backend so the UI never offers an option
+/// Prestmit will reject.
+class PayoutMethodEntity extends Equatable {
+  /// Payout-method name as Prestmit expects it back at sale time
+  /// (e.g. "NAIRA", "CEDIS"). This is what we send as `payoutMethod`
+  /// in /giftcard-trade/sell/create.
+  final String name;
+
+  /// Optional currency tag the method pays out in.
+  final String currency;
+
+  /// Whether the method is currently usable. The backend pre-filters
+  /// to available==true, but the entity carries it for completeness.
+  final bool available;
+
+  const PayoutMethodEntity({
+    required this.name,
+    this.currency = '',
+    this.available = true,
+  });
+
+  @override
+  List<Object?> get props => [name, currency, available];
 }
 
 /// Rate for selling a gift card

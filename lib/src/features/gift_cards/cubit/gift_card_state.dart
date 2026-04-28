@@ -423,6 +423,43 @@ class SellQueued extends GiftCardState {
   List<Object> get props => [message];
 }
 
+/// Payout-method picker — loading.
+class PayoutMethodsLoading extends GiftCardState {
+  const PayoutMethodsLoading();
+}
+
+/// Payout-method picker — methods returned by the backend (filtered to
+/// available==true). The Flutter sell flow renders these as a single-
+/// selection list.
+class PayoutMethodsLoaded extends GiftCardState {
+  final List<PayoutMethodEntity> methods;
+  /// Pre-selected method when the system_settings default is in the
+  /// available list, empty string when the UI should pick the first row.
+  final String defaultMethodName;
+
+  const PayoutMethodsLoaded(this.methods, {this.defaultMethodName = ''});
+
+  @override
+  List<Object> get props => [methods, defaultMethodName];
+}
+
+/// Payout-method fetch failure. Shown as inline error on the picker
+/// step; user can retry.
+class PayoutMethodsError extends GiftCardState {
+  final String message;
+  const PayoutMethodsError(this.message);
+
+  @override
+  List<Object> get props => [message];
+}
+
+/// Emitted when the user attempts to advance past the disclaimer step
+/// without ticking the acceptance checkbox. The UI listens for this to
+/// shake the checkbox / show inline error copy.
+class SellDisclaimerNotAccepted extends GiftCardState {
+  const SellDisclaimerNotAccepted();
+}
+
 class GiftCardBrandsLoadingMore extends GiftCardState {
   final List<GiftCardBrand> currentBrands;
   const GiftCardBrandsLoadingMore(this.currentBrands);

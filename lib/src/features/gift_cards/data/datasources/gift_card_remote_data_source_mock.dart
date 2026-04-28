@@ -256,6 +256,14 @@ class GiftCardRemoteDataSourceMock implements IGiftCardRemoteDataSource {
   }
 
   @override
+  Future<List<PayoutMethodEntity>> getPayoutMethods() async {
+    await _simulateNetworkDelay();
+    return const [
+      PayoutMethodEntity(name: 'NAIRA', currency: 'NGN', available: true),
+    ];
+  }
+
+  @override
   Future<GiftCardSaleModel> sellGiftCard({
     required String cardType,
     required String cardNumber,
@@ -263,6 +271,11 @@ class GiftCardRemoteDataSourceMock implements IGiftCardRemoteDataSource {
     required double denomination,
     required String transactionId,
     required String verificationToken,
+    String? payoutMethod,
+    String? form,
+    String? subcategoryId,
+    String? cardCode,
+    bool disclaimerAccepted = false,
     String? currency,
     List<String>? images,
     String? idempotencyKey,

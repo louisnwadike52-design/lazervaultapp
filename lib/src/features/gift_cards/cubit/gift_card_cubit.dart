@@ -678,6 +678,36 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     }
   }
 
+  /// Loads the active sell-provider's payout methods. Sourced server-side
+  /// from Prestmit's rate-calculator-data.sellGiftcardPayoutMethods,
+  /// pre-filtered to available==true. The returned list drives the
+  /// payout-method picker step on the sell flow.
+  Future<void> loadPayoutMethods() async {
+    try {
+      if (isClosed) return;
+      emit(const PayoutMethodsLoading());
+
+      final result = await _repository.getPayoutMethods();
+      if (isClosed) return;
+
+      result.fold(
+        (failure) => emit(PayoutMethodsError(failure.message)),
+        (methods) {
+          if (methods.isEmpty) {
+            emit(const PayoutMethodsError(
+              'No payout methods available. Try again in a moment.',
+            ));
+          } else {
+            emit(PayoutMethodsLoaded(methods));
+          }
+        },
+      );
+    } catch (e) {
+      if (isClosed) return;
+      emit(PayoutMethodsError(e.toString()));
+    }
+  }
+
   Future<void> sellGiftCard({
     required String cardType,
     required String cardNumber,
@@ -685,6 +715,20 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     required double denomination,
     required String transactionId,
     required String verificationToken,
+    /// Doc-aligned Prestmit `payoutMethod` (e.g. "NAIRA"). When empty
+    /// the backend resolves from system_settings.default_payout_method.
+    String? payoutMethod,
+    /// Doc-aligned Prestmit `form`: "Physical" or "Ecode". Drives the
+    /// multipart shape backend-side.
+    String? form,
+    /// Doc-aligned Prestmit `giftcard_id` (subcategory). When empty
+    /// the backend falls back to cardType.
+    String? subcategoryId,
+    /// Explicit Ecode value (replaces card_number when both are set).
+    String? cardCode,
+    /// MUST be true. The backend rejects with FailedPrecondition
+    /// otherwise; the legal/UX safety net for the sell flow.
+    bool disclaimerAccepted = false,
     String? currency,
     List<String>? images,
     String? idempotencyKey,
@@ -699,6 +743,13 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     double? ocrDenomination,
     String? ocrCurrency,
   }) async {
+    // Backend gate: explicit acceptance required. Mirror it client-side
+    // so we can give immediate UX feedback without a round-trip.
+    if (!disclaimerAccepted) {
+      if (isClosed) return;
+      emit(const SellDisclaimerNotAccepted());
+      return;
+    }
     try {
       // Generate idempotency key if not provided
       final effectiveIdempotencyKey = idempotencyKey ?? generateSellIdempotencyKey(cardType);
@@ -707,15 +758,7 @@ class GiftCardCubit extends Cubit<GiftCardState> {
       emit(SellProcessing(
         cardType: cardType,
         denomination: denomination,
-        currentStep: 'Validating card details...',
-        progress: 0.2,
-      ));
-
-      if (isClosed) return;
-      emit(SellProcessing(
-        cardType: cardType,
-        denomination: denomination,
-        currentStep: 'Submitting card for review...',
+        currentStep: 'Submitting to Prestmit…',
         progress: 0.5,
       ));
 
@@ -726,6 +769,11 @@ class GiftCardCubit extends Cubit<GiftCardState> {
         denomination: denomination,
         transactionId: transactionId,
         verificationToken: verificationToken,
+        payoutMethod: payoutMethod,
+        form: form,
+        subcategoryId: subcategoryId,
+        cardCode: cardCode,
+        disclaimerAccepted: disclaimerAccepted,
         currency: currency,
         images: images,
         idempotencyKey: effectiveIdempotencyKey,

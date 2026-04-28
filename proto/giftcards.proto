@@ -75,17 +75,34 @@ service GiftCardsService {
     };
   }
 
-  // Get current sell rate for a card type + denomination
-  rpc GetSellRate(GetSellRateRequest) returns (GetSellRateResponse) {
-    option (google.api.http) = {
-      get: "/api/v1/giftcards/sellrate"
-    };
-  }
-
   // Get active gift card sell provider (manual or prestmit)
   rpc GetSellProvider(GetSellProviderRequest) returns (GetSellProviderResponse) {
     option (google.api.http) = {
       get: "/api/v1/giftcards/sell/provider"
+    };
+  }
+
+  // Update gift card feature flag (admin only)
+  rpc UpdateFeatureFlag(UpdateFeatureFlagRequest) returns (UpdateFeatureFlagResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/giftcards/feature-flags/update"
+    };
+  }
+
+  // Get current sell rate for a card type + denomination
+  // GetPayoutMethods returns Prestmit's available payout methods,
+  // pre-filtered to available==true. Sourced from
+  // /giftcard-trade/sell/rate-calculator-data per the docs (the only
+  // payout-methods JSON shape Prestmit publishes verbatim).
+  rpc GetPayoutMethods(GetPayoutMethodsRequest) returns (GetPayoutMethodsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/giftcards/payout-methods"
+    };
+  }
+
+  rpc GetSellRate(GetSellRateRequest) returns (GetSellRateResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/giftcards/sellrate"
     };
   }
 
@@ -136,6 +153,15 @@ service GiftCardsService {
     };
   }
 
+  // List buy-side gift-card purchases (the giftcards table) for the
+  // admin Transactions tab. Filterable by status; results paginated.
+  // Sell-side transactions are listed via AdminListPendingSales(status="all").
+  rpc AdminListBuyTransactions(AdminListBuyTransactionsRequest) returns (AdminListBuyTransactionsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/giftcards/admin/buy-transactions"
+    };
+  }
+
   // Get full sell request details for admin review (includes images)
   rpc AdminGetSaleDetail(AdminGetSaleDetailRequest) returns (AdminGetSaleDetailResponse) {
     option (google.api.http) = {
@@ -143,10 +169,18 @@ service GiftCardsService {
     };
   }
 
-  // Approve a sell request (credits user account, optionally submits to provider)
+  // Approve a sell request (marks as approved, payout is separate)
   rpc AdminApproveSale(AdminApproveSaleRequest) returns (AdminApproveSaleResponse) {
     option (google.api.http) = {
       post: "/api/v1/giftcards/admin/sale/approve"
+      body: "*"
+    };
+  }
+
+  // Process payout for an approved sale (credits user account)
+  rpc AdminProcessPayout(AdminProcessPayoutRequest) returns (AdminProcessPayoutResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/giftcards/admin/sale/payout"
       body: "*"
     };
   }
@@ -196,6 +230,131 @@ service GiftCardsService {
   rpc GetSupportedCountries(GetSupportedCountriesRequest) returns (GetSupportedCountriesResponse) {
     option (google.api.http) = {
       get: "/api/v1/giftcards/countries"
+    };
+  }
+
+  // (Settlement RPCs were removed — they were declared in proto but never
+  // implemented. Settlement is now exposed via PerformManualOperation
+  // (operation = "retry_settlement") and the GiftCardSale.settlement_status
+  // field on the sales list endpoints.)
+
+  // ===== ANALYTICS APIS =====
+
+  // Get gift cards analytics dashboard data
+  rpc GetGiftCardsAnalytics(GetGiftCardsAnalyticsRequest) returns (GetGiftCardsAnalyticsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/giftcards/admin/analytics"
+    };
+  }
+
+  // ===== RECONCILIATION APIS =====
+
+  // Get reconciliation overview
+  rpc GetReconciliationOverview(GetReconciliationOverviewRequest) returns (GetReconciliationOverviewResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/giftcards/admin/reconciliation/overview"
+    };
+  }
+
+  // Get orphaned transactions
+  rpc GetOrphanedTransactions(GetOrphanedTransactionsRequest) returns (GetOrphanedTransactionsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/giftcards/admin/reconciliation/orphaned"
+    };
+  }
+
+  // Resolve orphaned transaction
+  rpc ResolveOrphanedTransaction(ResolveOrphanedTransactionRequest) returns (ResolveOrphanedTransactionResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/giftcards/admin/reconciliation/orphaned/{id}/resolve"
+      body: "*"
+    };
+  }
+
+  // Get pending verifications
+  rpc GetPendingVerifications(GetPendingVerificationsRequest) returns (GetPendingVerificationsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/giftcards/admin/reconciliation/pending"
+    };
+  }
+
+  // Get escalated items
+  rpc GetEscalatedItems(GetEscalatedItemsRequest) returns (GetEscalatedItemsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/giftcards/admin/reconciliation/escalated"
+    };
+  }
+
+  // Resolve escalated item
+  rpc ResolveEscalatedItem(ResolveEscalatedItemRequest) returns (ResolveEscalatedItemResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/giftcards/admin/reconciliation/escalated/{id}/resolve"
+      body: "*"
+    };
+  }
+
+  // Get reconciliation history
+  rpc GetReconciliationHistory(GetReconciliationHistoryRequest) returns (GetReconciliationHistoryResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/giftcards/admin/reconciliation/history"
+    };
+  }
+
+  // ===== CUSTOMER SUPPORT APIS =====
+
+  // Lookup user by email, userId, or phoneNumber
+  rpc LookupUser(LookupUserRequest) returns (LookupUserResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/giftcards/admin/users/lookup"
+    };
+  }
+
+  // Get user details for support
+  rpc GetUserDetails(GetUserDetailsRequest) returns (GetUserDetailsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/giftcards/admin/users/{user_id}"
+    };
+  }
+
+  // Search gift card transaction by reference
+  rpc SearchGiftCardTransaction(SearchGiftCardTransactionRequest) returns (SearchGiftCardTransactionResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/giftcards/admin/transactions/search"
+    };
+  }
+
+  // Perform manual operation (retry, reverse, cancel, etc.)
+  rpc PerformManualOperation(PerformManualOperationRequest) returns (PerformManualOperationResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/giftcards/admin/operations"
+      body: "*"
+    };
+  }
+
+  // Get gift card audit log
+  rpc GetGiftCardAuditLog(GetGiftCardAuditLogRequest) returns (GetGiftCardAuditLogResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/giftcards/admin/audit-log"
+    };
+  }
+
+  // ===== SYSTEM CONFIGURATION (admin-tunable knobs) =====
+
+  // List system settings (sync/async toggles, cache TTL, reconciler intervals).
+  // Reads from the system_settings table. Filter by category to scope to
+  // giftcards-only rows.
+  rpc ListSystemSettings(ListSystemSettingsRequest) returns (ListSystemSettingsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/giftcards/admin/system-settings"
+    };
+  }
+
+  // Update a single system setting. Invalidates the in-memory cache so the
+  // change takes effect within ~10s (next miss in the SettingsService TTL).
+  rpc UpdateSystemSetting(UpdateSystemSettingRequest) returns (UpdateSystemSettingResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/giftcards/admin/system-settings/update"
+      body: "*"
     };
   }
 }
@@ -454,6 +613,16 @@ message SellableCard {
   double min_denomination = 7;
   double max_denomination = 8;
   string provider_name = 9;            // Provider that supplied this card (e.g., "reloadly", "prestmit")
+  // Prestmit `form` value: "Physical" | "Ecode". Drives sell-flow UI:
+  // Physical → image upload (attachments[]); Ecode → text-input
+  // (code goes to `comments`). Empty for providers that don't
+  // distinguish (manual/internal).
+  string form = 10;
+  // Prestmit numeric subcategory id used as `giftcard_id` at sale time.
+  // Mirrors `card_type` for non-Prestmit catalogues.
+  string subcategory_id = 11;
+  // ISO/Prestmit country tag (e.g. "USA", "UK") for region variants.
+  string country = 12;
 }
 
 message SellRate {
@@ -483,33 +652,34 @@ message GiftCardSale {
   string submitted_at = 15;
   string reviewed_at = 16;
   string paid_at = 17;
-  string created_at = 18;
-  string updated_at = 19;
+  string payout_error = 18;             // Error message if automatic payout failed
+  string created_at = 19;
+  string updated_at = 20;
   // Image and OCR fields
-  repeated string image_urls = 20;      // URLs of uploaded card images
-  string ocr_brand = 21;               // LLM-extracted brand
-  string ocr_card_number = 22;         // LLM-extracted card number
-  string ocr_pin = 23;                 // LLM-extracted PIN
-  double ocr_denomination = 24;        // LLM-extracted denomination
-  string ocr_currency = 25;            // LLM-extracted currency
+  repeated string image_urls = 21;      // URLs of uploaded card images
+  string ocr_brand = 22;               // LLM-extracted brand
+  string ocr_card_number = 23;         // LLM-extracted card number
+  string ocr_pin = 24;                 // LLM-extracted PIN
+  double ocr_denomination = 25;        // LLM-extracted denomination
+  string ocr_currency = 26;            // LLM-extracted currency
   // Admin review fields
-  string admin_reviewer_id = 26;
-  string rejection_reason = 27;
-  string admin_notes = 28;
-  string card_pin = 29;                // User-entered card PIN (for admin review)
+  string admin_reviewer_id = 27;
+  string rejection_reason = 28;
+  string admin_notes = 29;
+  string card_pin = 30;                // User-entered card PIN (for admin review)
   // Dynamic pricing breakdown
-  double exit_rate_percent = 30;
-  double base_margin_percent = 31;
-  double risk_buffer_percent = 32;
-  double commission_amount = 33;
+  double exit_rate_percent = 31;
+  double base_margin_percent = 32;
+  double risk_buffer_percent = 33;
+  double commission_amount = 34;
   // Risk scoring
-  int32 risk_score = 34;
-  string risk_level = 35;
-  repeated string risk_flags = 36;
-  string risk_action = 37;
+  int32 risk_score = 35;
+  string risk_level = 36;
+  repeated string risk_flags = 37;
+  string risk_action = 38;
   // Card details
-  string card_country = 38;
-  string card_format = 39;
+  string card_country = 39;
+  string card_format = 40;
 }
 
 message GetSellableCardsRequest {
@@ -521,6 +691,38 @@ message GetSellableCardsResponse {
   int32 total = 2;
 }
 
+// ===== GET SELL PROVIDER =====
+
+message GetSellProviderRequest {}
+
+message GetSellProviderResponse {
+  string provider = 1; // "manual" or "prestmit"
+  string description = 2;
+}
+
+message UpdateFeatureFlagRequest {
+  string key = 1;
+  string value = 2;
+  string reason = 3;
+}
+
+message UpdateFeatureFlagResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message GetPayoutMethodsRequest {}
+
+message PayoutMethod {
+  string name = 1;       // "NAIRA", "CEDIS", "BITCOINS", etc.
+  bool   available = 2;
+  string currency = 3;
+}
+
+message GetPayoutMethodsResponse {
+  repeated PayoutMethod methods = 1;
+}
+
 message GetSellRateRequest {
   string card_type = 1;
   double denomination = 2;
@@ -528,14 +730,6 @@ message GetSellRateRequest {
 
 message GetSellRateResponse {
   SellRate rate = 1;
-}
-
-// Get sell provider request/response
-message GetSellProviderRequest {}
-
-message GetSellProviderResponse {
-  string provider = 1; // "manual" or "prestmit"
-  string description = 2;
 }
 
 // NOTE: user_id extracted from JWT token
@@ -561,7 +755,26 @@ message SellGiftCardRequest {
   string ocr_currency = 17;
   // Card origin details
   string card_country = 18;             // Country of origin (US, UK, CA, AU, etc.)
-  string card_format = 19;              // "ecode" or "physical"
+  string card_format = 19;              // "ecode" or "physical" — legacy lower-case
+  double ocr_confidence = 20;           // OCR confidence score (0-1) from ExtractCardDetails
+  // Prestmit-aligned fields (per documentation.prestmit.io):
+  // subcategory_id = sellableGiftcards[i].id from rate-calculator-data,
+  // sent verbatim as `giftcard_id` to /giftcard-trade/sell/create.
+  string subcategory_id = 21;
+  // form = "Physical" | "Ecode". Branches the multipart payload:
+  // Physical → attachments[]; Ecode → comments=card_code.
+  string form = 22;
+  // payout_method = name from sellGiftcardPayoutMethods (e.g.
+  // "NAIRA", "CEDIS"). Backend also resolves from system_settings
+  // when this is empty.
+  string payout_method = 23;
+  // card_code = explicit Ecode value (replaces card_number/card_pin
+  // for Ecode submissions).
+  string card_code = 24;
+  // disclaimer_accepted MUST be true. The Flutter app gates Submit
+  // behind a checkbox; the backend rejects when false to enforce the
+  // operator's audit trail of explicit user acceptance.
+  bool disclaimer_accepted = 25;
 }
 
 message SellGiftCardResponse {
@@ -629,6 +842,37 @@ message AdminListPendingSalesResponse {
   int32 total = 2;
 }
 
+// Buy-side admin transactions — flat projection of the giftcards table.
+// Status mirrors the chk_giftcard_status enum:
+// pending | available | redeemed | transferred | expired | failed.
+message AdminListBuyTransactionsRequest {
+  string status = 1;                  // Optional. Empty = all statuses.
+  string search = 2;                  // Optional. Matches reference / brand_name / user_id.
+  int32 page = 3;                     // 1-based.
+  int32 limit = 4;                    // 1..200, default 25.
+}
+
+message AdminBuyTransaction {
+  string id = 1;
+  string user_id = 2;
+  string brand_name = 3;
+  double original_amount = 4;
+  string currency = 5;
+  string status = 6;
+  string idempotency_key = 7;
+  string created_at = 8;              // RFC3339
+  string updated_at = 9;              // RFC3339
+  string recipient_email = 10;
+  string recipient_name = 11;
+}
+
+message AdminListBuyTransactionsResponse {
+  repeated AdminBuyTransaction transactions = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 limit = 4;
+}
+
 message AdminGetSaleDetailRequest {
   string sale_id = 1;
 }
@@ -646,6 +890,15 @@ message AdminApproveSaleRequest {
 }
 
 message AdminApproveSaleResponse {
+  GiftCardSale sale = 1;
+  string message = 2;
+}
+
+message AdminProcessPayoutRequest {
+  string sale_id = 1;
+}
+
+message AdminProcessPayoutResponse {
   GiftCardSale sale = 1;
   string message = 2;
 }
@@ -765,4 +1018,304 @@ message GetSupportedCountriesRequest {}
 
 message GetSupportedCountriesResponse {
   repeated GiftCardCountry countries = 1;
+}
+
+// =====================================================================
+// ADMIN ANALYTICS / RECONCILIATION / SUPPORT MESSAGE TYPES
+//
+// Used by the admin dashboard via admin-gateway. These power
+// /giftcards/analytics, /giftcards/reconciliation, and /giftcards/support.
+// All currency amounts are decimal kobo unless noted otherwise.
+// =====================================================================
+
+// ----- Analytics ----------------------------------------------------
+
+message GetGiftCardsAnalyticsRequest {
+  string time_range = 1;   // "24h" | "7d" | "30d" | "90d" | "all"
+  string provider   = 2;   // "" | "prestmit" | "manual" | provider_name
+}
+
+message RevenuePoint {
+  string date       = 1;   // YYYY-MM-DD bucket
+  double revenue    = 2;
+  double payouts    = 3;
+}
+
+message ProviderSlice {
+  string provider   = 1;
+  int64  sales      = 2;
+  double revenue    = 3;
+}
+
+message TopCardType {
+  string card_type  = 1;
+  int64  sales      = 2;
+  double revenue    = 3;
+}
+
+message SettlementSlice {
+  string status     = 1;
+  int64  count      = 2;
+}
+
+message ProviderPerformance {
+  string provider          = 1;
+  double success_rate      = 2;
+  double average_latency_ms = 3;
+  int64  errors            = 4;
+}
+
+message GetGiftCardsAnalyticsResponse {
+  double total_revenue            = 1;
+  double total_payouts            = 2;
+  double gross_profit             = 3;
+  double profit_margin            = 4;
+  int64  total_sales              = 5;
+  double approval_rate            = 6;
+  double revenue_change_percent   = 7;
+  double payouts_change_percent   = 8;
+  double profit_change_percent    = 9;
+  double sales_change_percent     = 10;
+  repeated RevenuePoint revenue_over_time      = 11;
+  repeated ProviderSlice sales_by_provider     = 12;
+  repeated TopCardType top_card_types          = 13;
+  repeated SettlementSlice settlement_status   = 14;
+  repeated ProviderPerformance provider_performance = 15;
+}
+
+// ----- Reconciliation ----------------------------------------------
+
+message ReconciliationRun {
+  string id              = 1;
+  string type            = 2;   // orphan_resolution | escalation | scheduled
+  string status          = 3;   // pass | partial | fail
+  string timestamp       = 4;   // RFC3339
+  int64  items_processed = 5;
+  int64  resolved        = 6;
+  int64  escalated       = 7;
+  string duration        = 8;   // human readable
+}
+
+message GetReconciliationOverviewRequest {}
+
+message GetReconciliationOverviewResponse {
+  int64  orphaned_transactions  = 1;
+  int64  pending_verification   = 2;
+  int64  escalated_items        = 3;
+  int64  resolved_today         = 4;
+  double float_variance         = 5;
+  bool   float_variance_critical = 6;
+  ReconciliationRun last_reconciliation = 7;
+}
+
+message OrphanedTransaction {
+  string id          = 1;
+  string type        = 2;   // sell | buy | refund
+  string reference   = 3;
+  double amount      = 4;
+  string issue       = 5;
+  string created_at  = 6;
+}
+
+message GetOrphanedTransactionsRequest {
+  int32 page  = 1;
+  int32 limit = 2;
+}
+
+message GetOrphanedTransactionsResponse {
+  repeated OrphanedTransaction transactions = 1;
+  int64 total = 2;
+  int32 page  = 3;
+  int32 limit = 4;
+}
+
+message ResolveOrphanedTransactionRequest {
+  string id         = 1;
+  string resolution = 2;   // marked_resolved | reissued | refunded
+  string notes      = 3;
+}
+
+message ResolveOrphanedTransactionResponse {
+  bool   success = 1;
+  string message = 2;
+}
+
+message PendingVerification {
+  string id                    = 1;
+  string reference             = 2;
+  string card_type             = 3;
+  double denomination          = 4;
+  string currency              = 5;
+  int32  verification_attempts = 6;
+  string last_checked          = 7;
+  string status                = 8;
+}
+
+message GetPendingVerificationsRequest {
+  int32 page  = 1;
+  int32 limit = 2;
+}
+
+message GetPendingVerificationsResponse {
+  repeated PendingVerification verifications = 1;
+  int64 total = 2;
+  int32 page  = 3;
+  int32 limit = 4;
+}
+
+message EscalatedItem {
+  string id           = 1;
+  string reference    = 2;
+  double amount       = 3;
+  string reason       = 4;
+  string escalated_at = 5;
+  string status       = 6;
+  string assigned_to  = 7;
+}
+
+message GetEscalatedItemsRequest {
+  int32 page  = 1;
+  int32 limit = 2;
+}
+
+message GetEscalatedItemsResponse {
+  repeated EscalatedItem items = 1;
+  int64 total = 2;
+  int32 page  = 3;
+  int32 limit = 4;
+}
+
+message ResolveEscalatedItemRequest {
+  string id         = 1;
+  string resolution = 2;   // approved | rejected | refunded
+  string notes      = 3;
+}
+
+message ResolveEscalatedItemResponse {
+  bool   success = 1;
+  string message = 2;
+}
+
+message GetReconciliationHistoryRequest {
+  int32 limit = 1;   // default 20
+}
+
+message GetReconciliationHistoryResponse {
+  repeated ReconciliationRun runs = 1;
+}
+
+// ----- Support: User lookup -----------------------------------------
+
+message UserSummary {
+  string id                    = 1;
+  string name                  = 2;
+  string email                 = 3;
+  string phone                 = 4;
+  int64  total_gift_card_sales = 5;
+  double total_payouts         = 6;
+  string created_at            = 7;
+}
+
+message LookupUserRequest {
+  string query = 1;          // email | phone | userId
+  string type  = 2;          // email|phone|userId; "" = unified
+}
+
+message LookupUserResponse {
+  repeated UserSummary users = 1;
+}
+
+message GetUserDetailsRequest {
+  string user_id = 1;
+}
+
+message GetUserDetailsResponse {
+  UserSummary user                = 1;
+  repeated GiftCardSale recent_sales = 2;
+}
+
+// ----- Support: Transaction search ----------------------------------
+
+message AuditLogEntry {
+  string id        = 1;
+  string timestamp = 2;
+  string admin     = 3;
+  string action    = 4;
+  string target    = 5;
+  string details   = 6;
+}
+
+message SearchGiftCardTransactionRequest {
+  string reference = 1;
+}
+
+message SearchGiftCardTransactionResponse {
+  GiftCardSale sale            = 1;
+  repeated AuditLogEntry events = 2;
+}
+
+// ----- Support: Manual operations -----------------------------------
+
+message PerformManualOperationRequest {
+  string transaction_id  = 1;
+  // Operation key. `refund_sale` is canonical; `reverse_sale` kept as
+  // a back-compat alias during the rename rollout. Both route through
+  // the three-phase rollback pipeline (verify → refund → reverse
+  // settlement) and end at status='refunded'.
+  // retry_settlement|manual_payout|refund_sale|reverse_sale|cancel_sale|escalate
+  string operation       = 2;
+  string reason          = 3;
+  string notes           = 4;
+  double amount_override = 5;   // used by manual_payout
+}
+
+message PerformManualOperationResponse {
+  bool   success = 1;
+  string message = 2;
+  GiftCardSale sale = 3;
+}
+
+// ----- Support: Audit log -------------------------------------------
+
+message GetGiftCardAuditLogRequest {
+  string transaction_id = 1;
+  string user_id        = 2;
+  int32  page           = 3;
+  int32  limit          = 4;
+}
+
+message GetGiftCardAuditLogResponse {
+  repeated AuditLogEntry logs = 1;
+  int64 total = 2;
+  int32 page  = 3;
+  int32 limit = 4;
+}
+
+// ----- System configuration (admin-tunable knobs) -------------------
+
+message SystemSetting {
+  string key         = 1;   // e.g., "async_giftcards_buy_enabled"
+  string value       = 2;   // stored as string; UI parses by key convention
+  string category    = 3;   // grouping: "giftcards"
+  string description = 4;   // human-readable help text shown to admin
+  string updated_at  = 5;
+}
+
+message ListSystemSettingsRequest {
+  string category = 1; // optional filter, e.g. "giftcards" — empty = all
+}
+
+message ListSystemSettingsResponse {
+  repeated SystemSetting settings = 1;
+}
+
+message UpdateSystemSettingRequest {
+  string key   = 1;
+  string value = 2;
+}
+
+message UpdateSystemSettingResponse {
+  bool   success = 1;
+  string message = 2;
+  SystemSetting setting = 3;
 }

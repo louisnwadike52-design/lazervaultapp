@@ -247,6 +247,18 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
   }
 
   @override
+  Future<Either<Failure, List<PayoutMethodEntity>>> getPayoutMethods() async {
+    try {
+      final methods = await RetryPolicy.standard.execute(
+        () => _remoteDataSource.getPayoutMethods(),
+      );
+      return Right(methods);
+    } catch (e) {
+      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
+    }
+  }
+
+  @override
   Future<Either<Failure, GiftCardSale>> sellGiftCard({
     required String cardType,
     required String cardNumber,
@@ -254,6 +266,11 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
     required double denomination,
     required String transactionId,
     required String verificationToken,
+    String? payoutMethod,
+    String? form,
+    String? subcategoryId,
+    String? cardCode,
+    bool disclaimerAccepted = false,
     String? currency,
     List<String>? images,
     String? idempotencyKey,
@@ -277,6 +294,11 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
           denomination: denomination,
           transactionId: transactionId,
           verificationToken: verificationToken,
+          payoutMethod: payoutMethod,
+          form: form,
+          subcategoryId: subcategoryId,
+          cardCode: cardCode,
+          disclaimerAccepted: disclaimerAccepted,
           currency: currency,
           images: images,
           idempotencyKey: idempotencyKey,
