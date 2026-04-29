@@ -217,15 +217,42 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
       icon = Icons.hourglass_top;
       color = const Color(0xFFFB923C);
     } else {
-      icon = Icons.check_circle;
+      icon = Icons.check;
       color = const Color(0xFF10B981);
     }
-    return AnimatedBuilder(
-      animation: _checkScale,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _checkScale.value,
-          child: Container(
+
+    // When the brand has a logo we lead with it (Stripe / Apple Pay
+    // pattern) — a 80px brand avatar with a status badge in the
+    // bottom-right. Falls back to the original tinted-circle icon
+    // when no logo URL came through (legacy rows / Reloadly outage).
+    final hasLogo = giftCard.logoUrl.trim().isNotEmpty;
+    final base = hasLogo
+        ? Container(
+            width: 80.w,
+            height: 80.w,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20.r),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.4),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20.r),
+              child: Image.network(
+                giftCard.logoUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Icon(Icons.card_giftcard,
+                    size: 40.sp,
+                    color: const Color(0xFF6B7280)),
+              ),
+            ),
+          )
+        : Container(
             width: 64.w,
             height: 64.w,
             decoration: BoxDecoration(
@@ -233,14 +260,54 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: color, size: 40.sp),
-          ),
+          );
+
+    return AnimatedBuilder(
+      animation: _checkScale,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _checkScale.value,
+          child: hasLogo
+              ? Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    base,
+                    // Status badge on the bottom-right of the brand
+                    // avatar — colour reflects status (green=ok,
+                    // orange=in-flight, red=failed).
+                    Positioned(
+                      right: -4.w,
+                      bottom: -4.h,
+                      child: Container(
+                        width: 28.w,
+                        height: 28.w,
+                        decoration: BoxDecoration(
+                          color: color,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: const Color(0xFF0A0A0A),
+                            width: 2.5,
+                          ),
+                        ),
+                        child:
+                            Icon(icon, color: Colors.white, size: 16.sp),
+                      ),
+                    ),
+                  ],
+                )
+              : base,
         );
       },
     );
   }
 
   // ── Redemption code card (gift card analogue of electricity token) ──
+  // Renders the redemption code and PIN as two parallel copyable
+  // rows. Each row has its own copy icon + tap-to-copy behaviour;
+  // the user-flagged need: PIN was previously a static read-only
+  // chip with no copy affordance, now matches the code's UX.
   Widget _buildCodeCard() {
+    final hasPin = (giftCard.redemptionPin ?? '').isNotEmpty;
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(16.w),
@@ -268,7 +335,7 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
                   color: const Color(0xFFE9D5FF), size: 16.sp),
               SizedBox(width: 6.w),
               Text(
-                'REDEMPTION CODE',
+                'REDEMPTION CREDENTIALS',
                 style: GoogleFonts.inter(
                   color: const Color(0xFFE9D5FF),
                   fontSize: 11.sp,
@@ -279,93 +346,109 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
             ],
           ),
           SizedBox(height: 10.h),
-          GestureDetector(
-            onTap: () {
-              final code = giftCard.redemptionCode;
-              if (code == null || code.isEmpty) return;
-              Clipboard.setData(ClipboardData(text: code));
-              HapticFeedback.mediumImpact();
-              Get.snackbar(
-                'Copied',
-                'Redemption code copied to clipboard',
-                backgroundColor: const Color(0xFF10B981),
-                colorText: Colors.white,
-                duration: const Duration(seconds: 2),
-                snackPosition: SnackPosition.BOTTOM,
-                margin: EdgeInsets.all(16.w),
-              );
-            },
-            child: Container(
-              width: double.infinity,
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.25),
-                borderRadius: BorderRadius.circular(10.r),
-                border: Border.all(
-                  color: const Color(0xFFE9D5FF).withValues(alpha: 0.3),
-                ),
-              ),
-              child: Column(
-                children: [
-                  SelectableText(
-                    giftCard.redemptionCode ?? '',
-                    style: GoogleFonts.robotoMono(
-                      color: const Color(0xFFF5F3FF),
-                      fontSize: 20.sp,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 2,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 6.h),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.copy_rounded,
-                          color: const Color(0xFFE9D5FF).withValues(alpha: 0.8),
-                          size: 12.sp),
-                      SizedBox(width: 4.w),
-                      Text(
-                        'Tap to copy code',
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFFE9D5FF).withValues(alpha: 0.8),
-                          fontSize: 11.sp,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+          _buildCopyRow(
+            label: 'CODE',
+            value: giftCard.redemptionCode ?? '',
+            valueLabel: 'redemption code',
           ),
-          if ((giftCard.redemptionPin ?? '').isNotEmpty) ...[
+          if (hasPin) ...[
             SizedBox(height: 10.h),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(16.r),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.lock_outline,
-                      color: const Color(0xFFE9D5FF), size: 12.sp),
-                  SizedBox(width: 4.w),
-                  Text(
-                    'PIN: ${giftCard.redemptionPin}',
-                    style: GoogleFonts.robotoMono(
-                      color: const Color(0xFFF5F3FF),
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
+            _buildCopyRow(
+              label: 'PIN',
+              value: giftCard.redemptionPin ?? '',
+              valueLabel: 'PIN',
             ),
           ],
         ],
+      ),
+    );
+  }
+
+  // Single copyable row inside the redemption credentials card.
+  // Uses a tiny label chip on the left, the monospace value
+  // centred, and an explicit copy icon button on the right so
+  // users can copy without tapping the entire row.
+  Widget _buildCopyRow({
+    required String label,
+    required String value,
+    required String valueLabel,
+  }) {
+    void onCopy() {
+      if (value.isEmpty) return;
+      Clipboard.setData(ClipboardData(text: value));
+      HapticFeedback.mediumImpact();
+      Get.snackbar(
+        'Copied',
+        'Your $valueLabel was copied to clipboard',
+        backgroundColor: const Color(0xFF10B981),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 2),
+        snackPosition: SnackPosition.BOTTOM,
+        margin: EdgeInsets.all(16.w),
+      );
+    }
+
+    return GestureDetector(
+      onTap: onCopy,
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.25),
+          borderRadius: BorderRadius.circular(10.r),
+          border: Border.all(
+            color: const Color(0xFFE9D5FF).withValues(alpha: 0.3),
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding:
+                  EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE9D5FF).withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(6.r),
+              ),
+              child: Text(
+                label,
+                style: GoogleFonts.inter(
+                  color: const Color(0xFFE9D5FF),
+                  fontSize: 10.sp,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1,
+                ),
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: SelectableText(
+                value,
+                style: GoogleFonts.robotoMono(
+                  color: const Color(0xFFF5F3FF),
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 2,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            SizedBox(width: 8.w),
+            // Explicit copy IconButton so the affordance is visible
+            // even when the user doesn't realise the row is tappable.
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              padding: EdgeInsets.zero,
+              constraints: BoxConstraints(minWidth: 32.w, minHeight: 32.w),
+              onPressed: onCopy,
+              icon: Icon(
+                Icons.copy_rounded,
+                color: const Color(0xFFE9D5FF),
+                size: 18.sp,
+              ),
+              tooltip: 'Copy $valueLabel',
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -428,8 +511,6 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
 
           _row('Reference',
               giftCard.providerTransactionId ?? giftCard.id),
-          SizedBox(height: 10.h),
-          _row('Provider', _resolveProvider()),
           if (giftCard.purchaseDate.isNotEmpty) ...[
             SizedBox(height: 10.h),
             _row('Date', _safeFormat(displayDate, dateFormat)),
@@ -499,12 +580,6 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
       default:
         return Colors.white;
     }
-  }
-
-  String _resolveProvider() {
-    // The Reloadly product → giftcard row stores no provider name;
-    // every buy goes through Reloadly today, so we default to that.
-    return 'Reloadly';
   }
 
   DateTime _resolveTimestamp() {
