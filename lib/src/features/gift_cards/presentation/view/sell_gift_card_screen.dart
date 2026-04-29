@@ -13,6 +13,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../cubit/gift_card_cubit.dart';
 import '../../cubit/gift_card_state.dart';
 import '../../domain/entities/gift_card_entity.dart';
+import '../../domain/validation/gift_card_validation.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
 import '../../../../../core/types/app_routes.dart';
@@ -950,6 +951,46 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
       final file = File(picked.path);
       final bytes = await file.readAsBytes();
       final filename = picked.name;
+
+      // Pre-upload validation against Prestmit's documented limits
+      // (JPG/PNG only, ≤5MB per file). Magic-byte sniff catches the
+      // common iOS HEIC-renamed-to-jpg case that would otherwise 422
+      // at /sell/create. Reject inline so the user re-picks rather
+      // than waiting through a wasted upload + Prestmit round-trip.
+      final fmtCheck = GiftCardValidation.validateImageBytes(bytes);
+      if (fmtCheck.isLeft()) {
+        if (!mounted) return;
+        final err = fmtCheck.fold(
+          (l) => l,
+          (_) => const GeneralValidationError("Invalid image"),
+        );
+        Get.snackbar('Image Rejected', err.message,
+          backgroundColor: const Color(0xFFFB923C),
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+          duration: const Duration(seconds: 4),
+        );
+        return;
+      }
+
+      // Per-submission attachment cap (≤20).
+      final newCount = slotIndex < _localImageFiles.length
+          ? _localImageFiles.length // replacing — no new slot
+          : _localImageFiles.length + 1;
+      final batchCheck = GiftCardValidation.validateImageBatch(newCount);
+      if (batchCheck.isLeft()) {
+        if (!mounted) return;
+        final err = batchCheck.fold(
+          (l) => l,
+          (_) => const GeneralValidationError("Too many images"),
+        );
+        Get.snackbar('Image Limit', err.message,
+          backgroundColor: const Color(0xFFFB923C),
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+        );
+        return;
+      }
 
       setState(() {
         if (slotIndex < _localImageFiles.length) {

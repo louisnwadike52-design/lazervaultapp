@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:fpdart/fpdart.dart';
 import '../entities/gift_card_entity.dart';
 
@@ -389,5 +391,106 @@ class GiftCardValidation {
   /// Helper method to check if validation passed
   static bool isValid<T>(Either<ValidationError, T> validation) {
     return validation.isRight();
+  }
+
+  // ── Sell-flow image upload validation ────────────────────────────
+  //
+  // Mirrors Prestmit's documented /giftcard-trade/sell/create limits
+  // verbatim (per documentation.prestmit.io "Common Issues #2"):
+  //   • Format: JPG or PNG only
+  //   • Size:   ≤ 5MB per file
+  //   • Count:  ≤ 20 attachments per trade
+  // Reject client-side BEFORE upload so the user sees a clear inline
+  // error instead of a 422 from /sell/create that's parsed back as a
+  // generic "service error". Each helper is independently callable so
+  // the sell screen can validate one slot at a time as the user picks.
+
+  /// Maximum file size accepted by Prestmit's /sell/create attachments[].
+  static const int maxImageBytes = 5 * 1024 * 1024;
+
+  /// Maximum number of attachments per Prestmit sell submission.
+  static const int maxImagesPerSubmission = 20;
+
+  /// Magic-byte signatures for the two formats Prestmit accepts.
+  static const List<int> _jpegMagic = [0xFF, 0xD8, 0xFF];
+  static const List<int> _pngMagic = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
+
+  /// validateImageBytes inspects the file's magic bytes + size in one
+  /// pass. Magic-byte sniff is the canonical "is this really a JPG/PNG"
+  /// check — file extension on iOS / Android can lie (heic/webp
+  /// renamed to .jpg). Returns Right(null) on accept; Left(error) on
+  /// any rule violation.
+  static Either<ValidationError, void> validateImageBytes(Uint8List bytes) {
+    if (bytes.isEmpty) {
+      return left(const GeneralValidationError(
+        "Image is empty.",
+        "image",
+      ));
+    }
+    if (bytes.length > maxImageBytes) {
+      return left(GeneralValidationError(
+        "Image is ${(bytes.length / 1024 / 1024).toStringAsFixed(1)} MB. "
+        "Prestmit accepts up to ${(maxImageBytes / 1024 / 1024).toStringAsFixed(0)} MB.",
+        "image",
+      ));
+    }
+    if (!_matchesMagic(bytes, _jpegMagic) && !_matchesMagic(bytes, _pngMagic)) {
+      return left(const GeneralValidationError(
+        "Image must be JPG or PNG. Take a photo or save the screenshot as JPEG/PNG.",
+        "image",
+      ));
+    }
+    return right(null);
+  }
+
+  /// validateImageFile is the File-aware variant for image_picker
+  /// results. Reads the file's bytes and forwards to
+  /// validateImageBytes — keeps the magic-byte sniff identical.
+  static Future<Either<ValidationError, void>> validateImageFile(File file) async {
+    try {
+      final stat = await file.stat();
+      if (stat.size > maxImageBytes) {
+        return left(GeneralValidationError(
+          "Image is ${(stat.size / 1024 / 1024).toStringAsFixed(1)} MB. "
+          "Prestmit accepts up to ${(maxImageBytes / 1024 / 1024).toStringAsFixed(0)} MB.",
+          "image",
+        ));
+      }
+      final bytes = await file.readAsBytes();
+      return validateImageBytes(bytes);
+    } catch (e) {
+      return left(GeneralValidationError(
+        "Couldn't read image: $e",
+        "image",
+      ));
+    }
+  }
+
+  /// validateImageBatch enforces the per-submission attachment cap.
+  /// Call once before /sell/create with the full list of staged
+  /// images; per-image format/size checks should already have run
+  /// at upload time.
+  static Either<ValidationError, void> validateImageBatch(int count) {
+    if (count <= 0) {
+      return left(const GeneralValidationError(
+        "At least one image is required for Physical cards.",
+        "images",
+      ));
+    }
+    if (count > maxImagesPerSubmission) {
+      return left(GeneralValidationError(
+        "Too many images: $count. Prestmit accepts up to $maxImagesPerSubmission per submission.",
+        "images",
+      ));
+    }
+    return right(null);
+  }
+
+  static bool _matchesMagic(Uint8List bytes, List<int> magic) {
+    if (bytes.length < magic.length) return false;
+    for (var i = 0; i < magic.length; i++) {
+      if (bytes[i] != magic[i]) return false;
+    }
+    return true;
   }
 }
