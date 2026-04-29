@@ -15,7 +15,11 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
+import 'giftcards.pbenum.dart';
+
 export 'package:protobuf/protobuf.dart' show GeneratedMessageGenericExtensions;
+
+export 'giftcards.pbenum.dart';
 
 class GiftCard extends $pb.GeneratedMessage {
   factory GiftCard({
@@ -1305,6 +1309,66 @@ class BuyGiftCardResponse extends $pb.GeneratedMessage {
   $core.bool hasRecipientCurrency() => $_has(7);
   @$pb.TagNumber(8)
   void clearRecipientCurrency() => $_clearField(8);
+}
+
+/// BuyError is attached to gRPC status details so a structured client
+/// (Flutter) can branch on `code` without parsing English strings.
+class BuyError extends $pb.GeneratedMessage {
+  factory BuyError({
+    BuyErrorCode? code,
+    $core.String? message,
+  }) {
+    final result = create();
+    if (code != null) result.code = code;
+    if (message != null) result.message = message;
+    return result;
+  }
+
+  BuyError._();
+
+  factory BuyError.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
+  factory BuyError.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BuyError', package: const $pb.PackageName(_omitMessageNames ? '' : 'giftcards'), createEmptyInstance: create)
+    ..e<BuyErrorCode>(1, _omitFieldNames ? '' : 'code', $pb.PbFieldType.OE, defaultOrMaker: BuyErrorCode.BUY_ERROR_UNSPECIFIED, valueOf: BuyErrorCode.valueOf, enumValues: BuyErrorCode.values)
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  BuyError clone() => BuyError()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  BuyError copyWith(void Function(BuyError) updates) => super.copyWith((message) => updates(message as BuyError)) as BuyError;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static BuyError create() => BuyError._();
+  @$core.override
+  BuyError createEmptyInstance() => create();
+  static $pb.PbList<BuyError> createRepeated() => $pb.PbList<BuyError>();
+  @$core.pragma('dart2js:noInline')
+  static BuyError getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<BuyError>(create);
+  static BuyError? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  BuyErrorCode get code => $_getN(0);
+  @$pb.TagNumber(1)
+  set code(BuyErrorCode value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasCode() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCode() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => $_clearField(2);
 }
 
 /// ===== GET REDEEM CODE =====
