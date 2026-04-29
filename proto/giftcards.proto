@@ -494,6 +494,35 @@ message BuyGiftCardResponse {
   string recipient_currency = 8;       // Card currency (e.g., "GBP")
 }
 
+// BuyErrorCode is the machine-readable classification surfaced via
+// gRPC status details on BuyGiftCard failures. Lets the Flutter
+// client map outcomes to localized copy without string-matching the
+// freeform `message` (which is logged for ops + may change). Stable
+// — values must never be reused.
+enum BuyErrorCode {
+  BUY_ERROR_UNSPECIFIED = 0;
+  BUY_ERROR_INSUFFICIENT_FUNDS = 1;            // user wallet
+  BUY_ERROR_PROVIDER_WALLET_LOW = 2;           // Reloadly platform wallet
+  BUY_ERROR_INVALID_AMOUNT = 3;                // amount not a valid denomination
+  BUY_ERROR_PROVIDER_BUSY = 4;                 // circuit breaker open / rate limit
+  BUY_ERROR_PROVIDER_MISMATCH = 5;             // listing provider != purchase provider
+  BUY_ERROR_OUT_OF_STOCK = 6;                  // brand temporarily unavailable
+  BUY_ERROR_PRODUCT_UNAVAILABLE = 7;           // product not found / not ready
+  BUY_ERROR_DUPLICATE_ORDER = 8;               // identical order already in progress
+  BUY_ERROR_RATE_LIMITED = 9;                  // user hit per-window throttle
+  BUY_ERROR_SELF_SEND = 10;                    // recipient_email == sender's own email
+  BUY_ERROR_ACCOUNT_NOT_ACTIVE = 11;           // frozen / suspended / closed
+  BUY_ERROR_SPENDING_LIMIT = 12;               // daily/monthly cap exceeded
+  BUY_ERROR_INTERNAL = 100;                    // catch-all
+}
+
+// BuyError is attached to gRPC status details so a structured client
+// (Flutter) can branch on `code` without parsing English strings.
+message BuyError {
+  BuyErrorCode code = 1;
+  string message = 2; // human-readable; may be localized server-side later
+}
+
 // ===== GET REDEEM CODE =====
 // Fetches the merchant redeem code (e.g., Amazon code, Google Play code) for a gift card
 // purchased on this platform. Uses the stored provider transaction ID to call Reloadly.

@@ -127,6 +127,15 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
 
       return GiftCardModel.fromProto(response.giftCard);
     } on GrpcError catch (e) {
+      // Prefer the structured BuyError attached to status details
+      // (server emits via grpcstatus.WithDetails). Falls back to the
+      // legacy substring branch only if the server didn't attach one
+      // (older deploy, gateway stripped it, etc.) — that path stays
+      // for backward compat but should be unreachable post-rollout.
+      final structured = _readBuyError(e);
+      if (structured != null) {
+        throw Exception(_messageFor(structured));
+      }
       final msg = (e.message ?? '').toLowerCase();
       if (e.code == StatusCode.failedPrecondition) {
         if (msg.contains('insufficient')) {
@@ -155,6 +164,54 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
       throw Exception(e.message ?? 'Purchase failed. Please try again.');
     } catch (e) {
       throw Exception('Unexpected error during purchase. Please try again.');
+    }
+  }
+
+  /// Pulls the typed BuyError out of the gRPC status details list, if
+  /// the server attached one. Returns null when not present (older
+  /// build, no details on the wire).
+  pb.BuyError? _readBuyError(GrpcError e) {
+    final details = e.details;
+    if (details == null) return null;
+    for (final d in details) {
+      if (d is pb.BuyError) return d;
+    }
+    return null;
+  }
+
+  /// Maps a structured BuyError to user-facing copy. The server's
+  /// English `message` is the fallback — but we override per code so
+  /// the wording stays consistent regardless of upstream changes.
+  String _messageFor(pb.BuyError err) {
+    switch (err.code) {
+      case pb.BuyErrorCode.BUY_ERROR_INSUFFICIENT_FUNDS:
+        return 'Insufficient funds for purchase';
+      case pb.BuyErrorCode.BUY_ERROR_PROVIDER_WALLET_LOW:
+        return 'This gift card is temporarily unavailable. Please try again shortly.';
+      case pb.BuyErrorCode.BUY_ERROR_INVALID_AMOUNT:
+        return 'Invalid amount for this gift card. Please check the price and try again.';
+      case pb.BuyErrorCode.BUY_ERROR_PROVIDER_BUSY:
+        return 'Gift card service is temporarily busy. Please try again in a moment.';
+      case pb.BuyErrorCode.BUY_ERROR_PROVIDER_MISMATCH:
+        return 'Gift card catalog has been updated. Please browse brands again and try your purchase.';
+      case pb.BuyErrorCode.BUY_ERROR_OUT_OF_STOCK:
+        return 'This gift card is currently sold out. Please try a different card.';
+      case pb.BuyErrorCode.BUY_ERROR_PRODUCT_UNAVAILABLE:
+        return 'This gift card is temporarily unavailable. Please try again later.';
+      case pb.BuyErrorCode.BUY_ERROR_DUPLICATE_ORDER:
+        return 'This order is already being processed.';
+      case pb.BuyErrorCode.BUY_ERROR_RATE_LIMITED:
+        return 'Too many purchase attempts. Please wait a moment and try again.';
+      case pb.BuyErrorCode.BUY_ERROR_SELF_SEND:
+        return 'You cannot send a gift card to your own email. Choose a different recipient.';
+      case pb.BuyErrorCode.BUY_ERROR_ACCOUNT_NOT_ACTIVE:
+        return 'Your account is not active. Contact support to resolve.';
+      case pb.BuyErrorCode.BUY_ERROR_SPENDING_LIMIT:
+        return 'Spending limit exceeded. Try a smaller amount or wait until your limit resets.';
+      default:
+        return err.message.isNotEmpty
+            ? err.message
+            : 'Gift card purchase failed. Please try again.';
     }
   }
 
