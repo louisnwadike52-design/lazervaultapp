@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -118,7 +119,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
                 Expanded(
                   child: RefreshIndicator(
                     onRefresh: _onRefresh,
-                    color: const Color(0xFF3B82F6),
+                    color: InvoiceThemeColors.primaryPurple,
                     backgroundColor: const Color(0xFF1F1F1F),
                     child: _currentTab == 0
                         ? _buildBrandsList(context.watch<GiftCardCubit>().state)
@@ -182,7 +183,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
             serviceName: 'Gift Cards',
             sourceContext: 'giftcards',
             icon: Icons.chat_bubble_outline,
-            iconColor: const Color(0xFF3B82F6),
+            iconColor: InvoiceThemeColors.primaryPurple,
           ),
         ],
       ),
@@ -210,7 +211,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
             child: _buildQuickActionCard(
               icon: Icons.card_giftcard_rounded,
               label: 'My Cards',
-              color: const Color(0xFF3B82F6),
+              color: InvoiceThemeColors.primaryPurple,
               onTap: () => Get.toNamed(AppRoutes.myGiftCards),
             ),
           ),
@@ -459,12 +460,12 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
                   contentPadding: EdgeInsets.symmetric(horizontal: 8.w),
                   leading: Icon(
                     isSelected ? Icons.check_circle : Icons.circle_outlined,
-                    color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFF6B7280),
+                    color: isSelected ? InvoiceThemeColors.primaryPurple : const Color(0xFF6B7280),
                     size: 20.sp,
                   ),
                   title: Text(cat['name']!,
                     style: GoogleFonts.inter(
-                      color: isSelected ? const Color(0xFF3B82F6) : Colors.white,
+                      color: isSelected ? InvoiceThemeColors.primaryPurple : Colors.white,
                       fontSize: 14.sp,
                       fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                     )),
@@ -513,8 +514,24 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
       });
       return _buildLoadingGrid();
     }
-    // For any unrelated state (e.g. after a redeem/transfer), show the last known brands
-    // or trigger a fresh load
+    // Fall-through: any unrelated state (after a redeem, transfer,
+    // sell, or purchase). Without recovery this used to shimmer
+    // forever — buy tab effectively bricked once the user touched a
+    // non-brand flow. Show last-known brands when we have them, and
+    // trigger a re-load otherwise so the screen always converges.
+    final cachedBrands = context.read<GiftCardCubit>().cachedBrands;
+    if (cachedBrands.isNotEmpty) {
+      return _buildBrandsGrid(
+        cachedBrands,
+        hasNext: context.read<GiftCardCubit>().hasNextPage,
+      );
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<GiftCardCubit>().loadGiftCardBrands(
+            countryCode:
+                _selectedCountryCode.isEmpty ? null : _selectedCountryCode,
+          );
+    });
     return _buildLoadingGrid();
   }
 
@@ -574,7 +591,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
                 height: 24.w,
                 child: const CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: Color(0xFF3B82F6),
+                  color: InvoiceThemeColors.primaryPurple,
                 ),
               ),
             ),
@@ -656,7 +673,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
                   style: GoogleFonts.inter(
                     fontSize: 11.sp,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF3B82F6),
+                    color: InvoiceThemeColors.primaryPurple,
                   ),
                 ),
               ] else if (brand.denominations.isNotEmpty) ...[
@@ -665,7 +682,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
                   style: GoogleFonts.inter(
                     fontSize: 11.sp,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF3B82F6),
+                    color: InvoiceThemeColors.primaryPurple,
                   ),
                 ),
               ],
@@ -739,7 +756,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
                       countryCode: _selectedCountryCode,
                     ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3B82F6),
+                  backgroundColor: InvoiceThemeColors.primaryPurple,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),
                   ),
@@ -836,7 +853,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
                   alignment: Alignment.center,
                   margin: EdgeInsets.all(4.w),
                   decoration: BoxDecoration(
-                    color: _currentTab == 0 ? const Color(0xFF3B82F6) : Colors.transparent,
+                    color: _currentTab == 0 ? InvoiceThemeColors.primaryPurple : Colors.transparent,
                     borderRadius: BorderRadius.circular(10.r),
                   ),
                   child: Text(
@@ -864,7 +881,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
                   alignment: Alignment.center,
                   margin: EdgeInsets.all(4.w),
                   decoration: BoxDecoration(
-                    color: _currentTab == 1 ? const Color(0xFF3B82F6) : Colors.transparent,
+                    color: _currentTab == 1 ? InvoiceThemeColors.primaryPurple : Colors.transparent,
                     borderRadius: BorderRadius.circular(10.r),
                   ),
                   child: Text(
@@ -1045,7 +1062,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
               ElevatedButton(
                 onPressed: () => context.read<GiftCardCubit>().loadSellableCards(),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3B82F6),
+                  backgroundColor: InvoiceThemeColors.primaryPurple,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),
                   ),
