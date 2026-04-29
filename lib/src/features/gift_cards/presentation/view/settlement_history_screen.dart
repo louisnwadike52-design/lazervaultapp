@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -49,7 +50,7 @@ class _SettlementHistoryScreenState extends State<SettlementHistoryScreen> {
         builder: (context, state) {
           if (state is GiftCardLoading) {
             return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+              child: CircularProgressIndicator(color: InvoiceThemeColors.primaryPurple),
             );
           }
 
@@ -59,7 +60,7 @@ class _SettlementHistoryScreenState extends State<SettlementHistoryScreen> {
             }
             return RefreshIndicator(
               onRefresh: _onRefresh,
-              color: const Color(0xFF3B82F6),
+              color: InvoiceThemeColors.primaryPurple,
               backgroundColor: const Color(0xFF1F1F1F),
               child: ListView.separated(
                 padding: EdgeInsets.all(16.w),
@@ -96,7 +97,7 @@ class _SettlementHistoryScreenState extends State<SettlementHistoryScreen> {
                   ElevatedButton(
                     onPressed: _onRefresh,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF3B82F6),
+                      backgroundColor: InvoiceThemeColors.primaryPurple,
                       minimumSize: Size(120.w, 44.h),
                     ),
                     child: Text(

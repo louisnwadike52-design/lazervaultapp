@@ -53,17 +53,6 @@ abstract class IGiftCardRepository {
     bool forceRefresh = false,
   });
 
-  Future<Either<Failure, GiftCard>> transferGiftCard({
-    required String giftCardId,
-    required String recipientEmail,
-    required String recipientName,
-    required String message,
-    required String transactionId,
-    required String verificationToken,
-    String? recipientUserId,
-    String transferType = 'email',
-  });
-
   // Sell flow methods
 
   Future<Either<Failure, List<SellableCard>>> getSellableCards({String? countryCode});

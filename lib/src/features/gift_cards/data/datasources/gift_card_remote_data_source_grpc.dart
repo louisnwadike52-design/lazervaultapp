@@ -335,50 +335,6 @@ class GiftCardRemoteDataSourceGrpc implements IGiftCardRemoteDataSource {
     }
   }
 
-  @override
-  Future<GiftCardModel> transferGiftCard({
-    required String giftCardId,
-    required String recipientEmail,
-    required String recipientName,
-    required String message,
-    required String transactionId,
-    required String verificationToken,
-    String? recipientUserId,
-    String transferType = 'email',
-  }) async {
-    try {
-      final request = pb.TransferGiftCardRequest(
-        giftCardId: giftCardId,
-        recipientEmail: recipientEmail,
-        recipientName: recipientName,
-        message: message,
-        transactionId: transactionId,
-        verificationToken: verificationToken,
-        recipientUserId: recipientUserId ?? '',
-        transferType: transferType,
-      );
-      final options = await grpcClient.callOptions;
-
-      final response = await grpcClient.giftCardClient.transferGiftCard(
-        request,
-        options: options,
-      );
-
-      return GiftCardModel.fromProto(response.giftCard);
-    } on GrpcError catch (e) {
-      if (e.code == StatusCode.notFound) {
-        throw Exception('Gift card not found');
-      } else if (e.code == StatusCode.permissionDenied) {
-        throw Exception('Invalid transaction PIN');
-      } else if (e.code == StatusCode.failedPrecondition) {
-        throw Exception(e.message ?? 'Gift card cannot be transferred');
-      }
-      throw Exception('Transfer failed: ${e.message}');
-    } catch (e) {
-      throw Exception('Unexpected error during transfer: $e');
-    }
-  }
-
   // Sell flow methods
 
   @override

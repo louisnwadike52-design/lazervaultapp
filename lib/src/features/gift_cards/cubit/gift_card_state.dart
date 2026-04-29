@@ -98,11 +98,22 @@ class GiftCardPurchaseError extends GiftCardState {
 
 class MyGiftCardsLoaded extends GiftCardState {
   final List<GiftCard> giftCards;
+  /// More pages available behind the current accumulator.
+  final bool hasMore;
+  /// Set while a tail-of-list "load more" round-trip is in flight; the
+  /// list view should keep showing the existing items and append a
+  /// loading indicator at the bottom rather than swap to a full
+  /// loading state.
+  final bool isLoadingMore;
 
-  const MyGiftCardsLoaded(this.giftCards);
+  const MyGiftCardsLoaded(
+    this.giftCards, {
+    this.hasMore = false,
+    this.isLoadingMore = false,
+  });
 
   @override
-  List<Object> get props => [giftCards];
+  List<Object> get props => [giftCards, hasMore, isLoadingMore];
 }
 
 // ============================================
@@ -284,28 +295,6 @@ class RedeemCodeLoaded extends GiftCardState {
 class GiftCardRedeemError extends GiftCardState {
   final String message;
   const GiftCardRedeemError(this.message);
-  @override
-  List<Object> get props => [message];
-}
-
-// ============================================
-// TRANSFER FLOW STATES
-// ============================================
-
-class GiftCardTransferring extends GiftCardState {}
-
-class GiftCardTransferred extends GiftCardState {
-  final GiftCard giftCard;
-
-  const GiftCardTransferred({required this.giftCard});
-
-  @override
-  List<Object> get props => [giftCard];
-}
-
-class GiftCardTransferError extends GiftCardState {
-  final String message;
-  const GiftCardTransferError(this.message);
   @override
   List<Object> get props => [message];
 }

@@ -352,46 +352,6 @@ class GiftCardRemoteDataSourceMock implements IGiftCardRemoteDataSource {
   }
 
   @override
-  Future<GiftCardModel> transferGiftCard({
-    required String giftCardId,
-    required String recipientEmail,
-    required String recipientName,
-    required String message,
-    required String transactionId,
-    required String verificationToken,
-    String? recipientUserId,
-    String transferType = 'email',
-  }) async {
-    await _simulateNetworkDelay();
-    _simulateRandomFailure();
-
-    try {
-      final card = _userGiftCards.firstWhere((c) => c.id == giftCardId);
-      final transferred = GiftCardModel(
-        id: card.id,
-        brandId: card.brandId,
-        brandName: card.brandName,
-        logoUrl: card.logoUrl,
-        originalAmount: card.originalAmount,
-        currency: card.currency,
-        status: 'transferred',
-        purchaseDate: card.purchaseDate,
-        expiryDate: card.expiryDate,
-        recipientEmail: recipientEmail,
-        recipientName: recipientName,
-        message: message,
-        redemptionCode: card.redemptionCode,
-        redemptionPin: card.redemptionPin,
-        createdAt: card.createdAt,
-        updatedAt: DateTime.now().toIso8601String(),
-      );
-      return transferred;
-    } catch (e) {
-      throw Exception('Gift card not found');
-    }
-  }
-
-  @override
   Future<List<GiftCardSaleModel>> getMySales({
     String? status,
     int limit = 50,

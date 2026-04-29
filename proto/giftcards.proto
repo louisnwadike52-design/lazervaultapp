@@ -40,14 +40,7 @@ service GiftCardsService {
     };
   }
 
-  // Transfer gift card to another user
-  rpc TransferGiftCard(TransferGiftCardRequest) returns (TransferGiftCardResponse) {
-    option (google.api.http) = {
-      post: "/api/v1/giftcards/transfergiftcard"
-      body: "*"
-    };
-  }
-
+  // Removed: TransferGiftCard — transfer flow dropped end-to-end.
   // Removed: GetGiftCardBalance — gift card balance lives on the merchant's platform, not ours
 
   // === MERCHANT & BRANDS ===
@@ -595,28 +588,9 @@ message GetGiftCardResponse {
   GiftCard gift_card = 1;
 }
 
-// ===== TRANSFER GIFT CARD =====
-// NOTE: user_id extracted from JWT token, not from request
-message TransferGiftCardRequest {
-  string gift_card_id = 1;
-  string recipient_email = 2;
-  string recipient_name = 3;
-  string message = 4;
-
-  // Transaction PIN verification (replaces direct PIN field)
-  string transaction_id = 5;           // Unique transaction identifier
-  string verification_token = 6;        // Token from TransactionPinService validation
-
-  // Platform transfer fields (when transferring to a LazerVault user)
-  string recipient_user_id = 7;        // LazerVault user ID (if platform transfer)
-  string transfer_type = 8;            // "platform" or "email" (default: "email")
-}
-
-message TransferGiftCardResponse {
-  GiftCard gift_card = 1;              // Sender's card (status: transferred)
-  string message = 2;
-  GiftCard recipient_gift_card = 3;    // Recipient's new card (only for platform transfers)
-}
+// ===== TRANSFER GIFT CARD ===== — REMOVED. Transfer flow dropped
+// end-to-end. Old buy rows with status=transferred / transfer_type
+// are kept readable but no new write path exists.
 
 // ===== GET GIFT CARD BALANCE =====
 
@@ -737,6 +711,36 @@ message GiftCardSale {
   // Card details
   string card_country = 39;
   string card_format = 40;
+  // ── Buy-side fields ───────────────────────────────────────────────
+  // The admin Transaction Detail screen serves both buy + sell rows
+  // through this single message (mapBuyPurchaseToSale projects a buy
+  // GiftCard onto a sparse GiftCardSale). These are the buy-only
+  // payload bits the sell shape doesn't have an analogue for. Sell
+  // submissions leave them empty.
+  string brand_name             = 41; // Reloadly product brand
+  double original_amount        = 42; // Card face value (recipient currency)
+  double retail_amount          = 43; // What user paid (locale currency)
+  string retail_currency        = 44;
+  double wholesale_amount       = 45; // Cost from Reloadly (locale currency)
+  string wholesale_currency     = 46;
+  double commission_amount_buy  = 47; // Buy-side commission (separate slot to keep field 34's sell semantics)
+  string commission_currency    = 48;
+  double sender_amount          = 49; // What Reloadly charged (their wallet currency, e.g. GBP)
+  string sender_currency        = 50;
+  double fx_rate                = 51; // Sender → retail rate
+  double fee_percentage         = 52;
+  string redemption_code        = 53; // Reloadly redeem code (admin-only — sensitive)
+  string redemption_pin         = 54; // Reloadly PIN
+  string provider_transaction_id = 55; // Reloadly transactionId
+  string completed_at           = 56;
+  // Provider exchange — populated by the post-saga goroutine that
+  // writes request_json + response_json onto the giftcards row.
+  // Lets the admin detail page render the raw provider call in one
+  // shot instead of joining provider_response_logs.
+  string request_json           = 57;
+  string response_json          = 58;
+  int32  provider_http_status   = 59;
+  int64  provider_duration_ms   = 60;
 }
 
 message GetSellableCardsRequest {
@@ -947,6 +951,14 @@ message AdminBuyTransaction {
   string provider_transaction_id = 28; // Reloadly transactionId (cross-ref to their dashboard)
   string mode = 29;                   // "sync" | "async" — captures how the buy was processed
   bool   has_refund_entry = 30;       // True iff a refund_ledger row exists for this reference
+  // Raw provider request/response captured by a fire-and-forget
+  // goroutine after saga completion. Populated for the admin
+  // Transaction Detail page; empty if the goroutine hasn't run yet
+  // (eventual consistency window is < 1s in practice).
+  string request_json           = 31; // pretty-printed JSON; sensitive fields stay because admin-only
+  string response_json          = 32;
+  int32  provider_http_status   = 33;
+  int64  provider_duration_ms   = 34;
 }
 
 message AdminListBuyTransactionsResponse {

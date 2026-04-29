@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -175,7 +176,7 @@ class _GiftCardPurchaseProcessingScreenState
           height: 100.w,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+            color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
           ),
           child: Center(
             child: Container(
@@ -183,7 +184,7 @@ class _GiftCardPurchaseProcessingScreenState
               height: 72.w,
               decoration: const BoxDecoration(
                 shape: BoxShape.circle,
-                color: Color(0xFF3B82F6),
+                color: InvoiceThemeColors.primaryPurple,
               ),
               child: Icon(
                 Icons.card_giftcard,
@@ -215,7 +216,7 @@ class _GiftCardPurchaseProcessingScreenState
               style: GoogleFonts.inter(
                 fontSize: 13.sp,
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF3B82F6),
+                color: InvoiceThemeColors.primaryPurple,
               ),
             ),
           ],
@@ -228,7 +229,7 @@ class _GiftCardPurchaseProcessingScreenState
             minHeight: 6.h,
             backgroundColor: const Color(0xFF1F1F1F),
             valueColor:
-                const AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                const AlwaysStoppedAnimation<Color>(InvoiceThemeColors.primaryPurple),
           ),
         ),
       ],
@@ -265,13 +266,13 @@ class _GiftCardPurchaseProcessingScreenState
                   color: isCompleted
                       ? const Color(0xFF10B981)
                       : isActive
-                          ? const Color(0xFF3B82F6)
+                          ? InvoiceThemeColors.primaryPurple
                           : const Color(0xFF1F1F1F),
                   border: Border.all(
                     color: isCompleted
                         ? const Color(0xFF10B981)
                         : isActive
-                            ? const Color(0xFF3B82F6)
+                            ? InvoiceThemeColors.primaryPurple
                             : const Color(0xFF2D2D2D),
                     width: 2,
                   ),
@@ -458,7 +459,7 @@ class _GiftCardPurchaseProcessingScreenState
                   padding: EdgeInsets.symmetric(vertical: 16.h),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF3B82F6), Color(0xFF6366F1)],
+                      colors: [InvoiceThemeColors.primaryPurple, Color(0xFF6366F1)],
                       begin: Alignment.centerLeft,
                       end: Alignment.centerRight,
                     ),

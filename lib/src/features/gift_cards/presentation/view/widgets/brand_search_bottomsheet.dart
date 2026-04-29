@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -268,12 +269,12 @@ class _BrandSearchBottomSheetState extends State<BrandSearchBottomSheet> {
                 padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? const Color(0xFF3B82F6).withValues(alpha: 0.2)
+                      ? InvoiceThemeColors.primaryPurple.withValues(alpha: 0.2)
                       : const Color(0xFF0A0A0A),
                   borderRadius: BorderRadius.circular(10.r),
                   border: Border.all(
                     color: isSelected
-                        ? const Color(0xFF3B82F6)
+                        ? InvoiceThemeColors.primaryPurple
                         : const Color(0xFF2D2D2D),
                   ),
                 ),
@@ -285,7 +286,7 @@ class _BrandSearchBottomSheetState extends State<BrandSearchBottomSheet> {
                       fontWeight:
                           isSelected ? FontWeight.w600 : FontWeight.w500,
                       color: isSelected
-                          ? const Color(0xFF3B82F6)
+                          ? InvoiceThemeColors.primaryPurple
                           : const Color(0xFF9CA3AF),
                     ),
                   ),
@@ -482,7 +483,7 @@ class _BrandSearchBottomSheetState extends State<BrandSearchBottomSheet> {
                 _onSearchChanged('');
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
+                backgroundColor: InvoiceThemeColors.primaryPurple,
                 padding:
                     EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
                 shape: RoundedRectangleBorder(
@@ -580,7 +581,7 @@ class _BrandSearchBottomSheetState extends State<BrandSearchBottomSheet> {
               ),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF3B82F6),
+              backgroundColor: InvoiceThemeColors.primaryPurple,
               foregroundColor: Colors.white,
               padding:
                   EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),

@@ -184,36 +184,6 @@ class GiftCardRepositoryImpl implements IGiftCardRepository {
     }
   }
 
-  @override
-  Future<Either<Failure, GiftCard>> transferGiftCard({
-    required String giftCardId,
-    required String recipientEmail,
-    required String recipientName,
-    required String message,
-    required String transactionId,
-    required String verificationToken,
-    String? recipientUserId,
-    String transferType = 'email',
-  }) async {
-    try {
-      final giftCard = await RetryPolicy.critical.execute(
-        () => _remoteDataSource.transferGiftCard(
-          giftCardId: giftCardId,
-          recipientEmail: recipientEmail,
-          recipientName: recipientName,
-          message: message,
-          transactionId: transactionId,
-          verificationToken: verificationToken,
-          recipientUserId: recipientUserId,
-          transferType: transferType,
-        ),
-      );
-      return Right(giftCard);
-    } catch (e) {
-      return Left(APIFailure(message: _extractErrorMessage(e), statusCode: 500));
-    }
-  }
-
   // Sell flow methods
 
   @override

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../cubit/gift_card_cubit.dart';
 import '../../cubit/gift_card_state.dart';
@@ -130,12 +131,12 @@ class _GiftCardSellProviderAdminScreenState extends State<GiftCardSellProviderAd
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: newProvider == 'prestmit'
-                    ? const Color(0xFF3B82F6).withValues(alpha: 0.1)
+                    ? InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1)
                     : const Color(0xFF10B981).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
                   color: newProvider == 'prestmit'
-                      ? const Color(0xFF3B82F6)
+                      ? InvoiceThemeColors.primaryPurple
                       : const Color(0xFF10B981),
                 ),
               ),
@@ -144,7 +145,7 @@ class _GiftCardSellProviderAdminScreenState extends State<GiftCardSellProviderAd
                   Icon(
                     newProvider == 'prestmit' ? Icons.info_outline : Icons.check_circle_outline,
                     color: newProvider == 'prestmit'
-                        ? const Color(0xFF3B82F6)
+                        ? InvoiceThemeColors.primaryPurple
                         : const Color(0xFF10B981),
                   ),
                   const SizedBox(width: 12),
@@ -173,7 +174,7 @@ class _GiftCardSellProviderAdminScreenState extends State<GiftCardSellProviderAd
             onPressed: () => Navigator.of(context).pop(true),
             style: ElevatedButton.styleFrom(
               backgroundColor: newProvider == 'prestmit'
-                  ? const Color(0xFF3B82F6)
+                  ? InvoiceThemeColors.primaryPurple
                   : const Color(0xFF10B981),
             ),
             child: const Text('Confirm'),
@@ -199,7 +200,7 @@ class _GiftCardSellProviderAdminScreenState extends State<GiftCardSellProviderAd
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
             color: isPrestmit
-                ? const Color(0xFF3B82F6)
+                ? InvoiceThemeColors.primaryPurple
                 : const Color(0xFF10B981),
             borderRadius: BorderRadius.circular(16),
           ),
@@ -332,7 +333,7 @@ class _GiftCardSellProviderAdminScreenState extends State<GiftCardSellProviderAd
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
                               color: _currentProvider == 'prestmit'
-                                  ? const Color(0xFF3B82F6)
+                                  ? InvoiceThemeColors.primaryPurple
                                   : const Color(0xFF10B981),
                               shape: BoxShape.circle,
                             ),
@@ -374,7 +375,7 @@ class _GiftCardSellProviderAdminScreenState extends State<GiftCardSellProviderAd
                               height: 20,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                                valueColor: AlwaysStoppedAnimation<Color>(InvoiceThemeColors.primaryPurple),
                               ),
                             ),
                         ],
@@ -411,7 +412,7 @@ class _GiftCardSellProviderAdminScreenState extends State<GiftCardSellProviderAd
                 description: 'Cards are automatically processed via Prestmit API. '
                     'Usually takes 5-15 minutes. Available 24/7.',
                 icon: Icons.flash_on,
-                color: const Color(0xFF3B82F6),
+                color: InvoiceThemeColors.primaryPurple,
                 isSelected: _currentProvider == 'prestmit',
                 onTap: _isToggling ? () {} : () => _toggleProvider('prestmit'),
               ),
@@ -476,7 +477,7 @@ class _GiftCardSellProviderAdminScreenState extends State<GiftCardSellProviderAd
                         leading: Icon(
                           log.to == 'prestmit' ? Icons.flash_on : Icons.person,
                           color: log.to == 'prestmit'
-                              ? const Color(0xFF3B82F6)
+                              ? InvoiceThemeColors.primaryPurple
                               : const Color(0xFF10B981),
                         ),
                         title: Text(
@@ -514,7 +515,7 @@ class _GiftCardSellProviderAdminScreenState extends State<GiftCardSellProviderAd
                         Icons.info_outline,
                         'Prestmit API',
                         'Automated gift card trading across Africa',
-                        const Color(0xFF3B82F6),
+                        InvoiceThemeColors.primaryPurple,
                       ),
                       const Divider(height: 32, color: Color(0xFF2D2D2D)),
                       _buildInfoRow(
@@ -528,7 +529,7 @@ class _GiftCardSellProviderAdminScreenState extends State<GiftCardSellProviderAd
                         Icons.access_time,
                         'Availability',
                         '24/7 automated processing',
-                        const Color(0xFF3B82F6),
+                        InvoiceThemeColors.primaryPurple,
                       ),
                       const Divider(height: 32, color: Color(0xFF2D2D2D)),
                       _buildInfoRow(

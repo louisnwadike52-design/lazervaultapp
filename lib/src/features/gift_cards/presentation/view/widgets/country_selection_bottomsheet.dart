@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../domain/entities/gift_card_entity.dart';
@@ -229,7 +230,7 @@ class _CountrySelectionBottomsheetState extends State<CountrySelectionBottomshee
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12.r),
-                  borderSide: const BorderSide(color: Color(0xFF3B82F6)),
+                  borderSide: const BorderSide(color: InvoiceThemeColors.primaryPurple),
                 ),
                 contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
               ),
@@ -291,11 +292,11 @@ class _CountrySelectionBottomsheetState extends State<CountrySelectionBottomshee
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF3B82F6).withValues(alpha: 0.15)
+              ? InvoiceThemeColors.primaryPurple.withValues(alpha: 0.15)
               : const Color(0xFF0A0A0A),
           borderRadius: BorderRadius.circular(14.r),
           border: Border.all(
-            color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFF2D2D2D),
+            color: isSelected ? InvoiceThemeColors.primaryPurple : const Color(0xFF2D2D2D),
             width: isSelected ? 1.5 : 1,
           ),
         ),
@@ -315,7 +316,7 @@ class _CountrySelectionBottomsheetState extends State<CountrySelectionBottomshee
                     style: GoogleFonts.inter(
                       fontSize: 15.sp,
                       fontWeight: FontWeight.w600,
-                      color: isSelected ? const Color(0xFF3B82F6) : Colors.white,
+                      color: isSelected ? InvoiceThemeColors.primaryPurple : Colors.white,
                     ),
                   ),
                   SizedBox(height: 2.h),
@@ -336,7 +337,7 @@ class _CountrySelectionBottomsheetState extends State<CountrySelectionBottomshee
                 width: 22.w,
                 height: 22.w,
                 decoration: const BoxDecoration(
-                  color: Color(0xFF3B82F6),
+                  color: InvoiceThemeColors.primaryPurple,
                   shape: BoxShape.circle,
                 ),
                 child: Icon(

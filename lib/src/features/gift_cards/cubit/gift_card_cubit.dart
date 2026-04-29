@@ -423,145 +423,147 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     }
   }
 
-  /// Transfer a gift card to another user (platform or email)
-  Future<void> transferGiftCard({
-    required String giftCardId,
-    required String recipientEmail,
-    required String recipientName,
-    required String message,
-    required String transactionId,
-    required String verificationToken,
-    String? recipientUserId,
-    String transferType = 'email',
-  }) async {
-    try {
-      if (isClosed) return;
-
-      // Pre-validate inputs
-      if (giftCardId.isEmpty) {
-        emit(const GiftCardTransferError('Gift card ID is missing'));
-        return;
-      }
-
-      if (transferType == 'platform') {
-        if (recipientUserId == null || recipientUserId.isEmpty) {
-          emit(const GiftCardTransferError('Recipient user is required'));
-          return;
-        }
-      } else {
-        if (recipientEmail.isEmpty || !_isValidEmail(recipientEmail)) {
-          emit(const GiftCardTransferError('Please enter a valid email address'));
-          return;
-        }
-      }
-
-      if (recipientName.trim().isEmpty) {
-        emit(const GiftCardTransferError('Recipient name is required'));
-        return;
-      }
-
-      emit(GiftCardTransferring());
-
-      final result = await _repository.transferGiftCard(
-        giftCardId: giftCardId,
-        recipientEmail: recipientEmail,
-        recipientName: recipientName,
-        message: message,
-        transactionId: transactionId,
-        verificationToken: verificationToken,
-        recipientUserId: recipientUserId,
-        transferType: transferType,
-      );
-      if (isClosed) return;
-
-      result.fold(
-        (failure) {
-          if (failure.message.contains('Invalid transaction PIN')) {
-            emit(const GiftCardTransferError('Invalid transaction PIN'));
-          } else if (failure.message.contains('not found')) {
-            emit(const GiftCardTransferError('Gift card not found'));
-          } else if (failure.message.contains('not active') ||
-              failure.message.contains('only transfer active')) {
-            emit(const GiftCardTransferError('Only active gift cards can be transferred'));
-          } else if (failure.message.contains('cannot transfer gift card to yourself')) {
-            emit(const GiftCardTransferError('You cannot transfer a gift card to yourself'));
-          } else {
-            emit(GiftCardTransferError(failure.message));
-          }
-        },
-        (giftCard) {
-          // Invalidate cache after transfer
-          _cacheManager.invalidate('my_gift_cards');
-
-          emit(GiftCardTransferred(giftCard: giftCard));
-        },
-      );
-    } catch (e) {
-      if (isClosed) return;
-      emit(GiftCardTransferError(e.toString()));
-    }
-  }
 
   void resetState() {
     if (isClosed) return;
     emit(GiftCardInitial());
   }
 
+  // Pagination accumulator for My Gift Cards. Reset on filter change or
+  // pull-to-refresh. The accumulator + page tracker live on the cubit
+  // (not in state) so loadMore() can append without reading them back
+  // out of MyGiftCardsLoaded.
+  static const int _myGiftCardsPageSize = 20;
+  List<GiftCard> _myGiftCardsAccumulated = [];
+  int _myGiftCardsPage = 0;
+  bool _myGiftCardsHasMore = false;
+  bool _myGiftCardsLoadingMore = false;
+  String? _lastMyGiftCardsStatus;
+  String? _lastMyGiftCardsBrandId;
+
   Future<void> loadMyGiftCards({String? status, String? brandId}) async {
     try {
       if (isClosed) return;
       emit(GiftCardLoading());
 
-      final cacheKey = 'my_gift_cards${status != null ? '_$status' : ''}${brandId != null ? '_$brandId' : ''}';
+      // Reset pagination state — first page only.
+      _myGiftCardsAccumulated = [];
+      _myGiftCardsPage = 0;
+      _myGiftCardsHasMore = false;
+      _myGiftCardsLoadingMore = false;
+      _lastMyGiftCardsStatus = status;
+      _lastMyGiftCardsBrandId = brandId;
 
-      await for (final result in _cacheManager.get<List<GiftCard>>(
-        key: cacheKey,
-        fetcher: () async {
-          final r = await _repository.getUserGiftCards(
-            status: status,
-            brandId: brandId,
-          );
-          return r.fold(
-            (failure) => throw Exception(failure.message),
-            (cards) => cards,
-          );
-        },
-        config: CacheConfig.giftCards,
-        serializer: (cards) => jsonEncode(cards.map((c) => c.toJson()).toList()),
-        deserializer: (json) {
-          final list = jsonDecode(json) as List;
-          return list.map((j) => GiftCard.fromJson(j as Map<String, dynamic>)).toList();
-        },
-      )) {
-        if (isClosed) return;
-        if (result.data != null) {
-          final giftCards = result.data!;
-          if (giftCards.isEmpty) {
-            emit(const UserGiftCardsEmpty());
-          } else {
-            emit(MyGiftCardsLoaded(giftCards));
-          }
-        } else if (result.error != null) {
-          final errorMsg = result.error.toString();
-          if (errorMsg.contains('timed out') || errorMsg.contains('TimeoutException')) {
-            emit(GiftCardTimeoutError(operation: 'Loading your gift cards'));
-          } else if (errorMsg.contains('unavailable') || errorMsg.contains('UNAVAILABLE')) {
-            emit(GiftCardServerUnavailable(operation: 'Loading your gift cards'));
-          } else {
-            emit(GiftCardNetworkError(
-              message: errorMsg,
-              canRetry: true,
-              operation: 'Loading your gift cards',
-            ));
-          }
-        }
+      // Skip cache when paginated — cached responses are page-0 only,
+      // and merging cached page-0 with subsequent fetched pages risks
+      // duplicates. Direct fetch keeps the page-0 source-of-truth on
+      // the wire, with offset/limit driven by the cubit.
+      final cards = await _repository
+          .getUserGiftCards(
+        status: status,
+        brandId: brandId,
+        limit: _myGiftCardsPageSize,
+        offset: 0,
+      )
+          .then((r) => r.fold(
+                (failure) => throw Exception(failure.message),
+                (list) => list,
+              ));
+
+      if (isClosed) return;
+
+      _myGiftCardsAccumulated = List.of(cards);
+      _myGiftCardsPage = 1;
+      // Pagination heuristic: a full page back means a next page may
+      // exist. Repository signals end-of-list with a < pageSize page.
+      _myGiftCardsHasMore = cards.length == _myGiftCardsPageSize;
+
+      if (_myGiftCardsAccumulated.isEmpty) {
+        emit(const UserGiftCardsEmpty());
+      } else {
+        emit(MyGiftCardsLoaded(
+          List.unmodifiable(_myGiftCardsAccumulated),
+          hasMore: _myGiftCardsHasMore,
+        ));
       }
+      return;
     } catch (e) {
       if (isClosed) return;
+      final errorMsg = e.toString();
+      if (errorMsg.contains('timed out') ||
+          errorMsg.contains('TimeoutException')) {
+        emit(GiftCardTimeoutError(operation: 'Loading your gift cards'));
+        return;
+      } else if (errorMsg.contains('unavailable') ||
+          errorMsg.contains('UNAVAILABLE')) {
+        emit(GiftCardServerUnavailable(operation: 'Loading your gift cards'));
+        return;
+      }
       emit(GiftCardNetworkError(
-        message: e.toString(),
+        message: errorMsg,
         canRetry: true,
         operation: 'Loading your gift cards',
+      ));
+    }
+  }
+
+  /// Load the next page of My Gift Cards on scroll-near-end. Bails
+  /// when no more pages, when a load is already in flight, or when
+  /// the cubit is in a non-loaded state. Emits the existing list
+  /// with isLoadingMore=true while fetching, then re-emits with the
+  /// appended page on success — no full-screen spinner.
+  Future<void> loadMoreMyGiftCards() async {
+    if (isClosed) return;
+    if (_myGiftCardsLoadingMore) return;
+    if (!_myGiftCardsHasMore) return;
+
+    _myGiftCardsLoadingMore = true;
+    emit(MyGiftCardsLoaded(
+      List.unmodifiable(_myGiftCardsAccumulated),
+      hasMore: _myGiftCardsHasMore,
+      isLoadingMore: true,
+    ));
+
+    try {
+      final cards = await _repository
+          .getUserGiftCards(
+        status: _lastMyGiftCardsStatus,
+        brandId: _lastMyGiftCardsBrandId,
+        limit: _myGiftCardsPageSize,
+        offset: _myGiftCardsPage * _myGiftCardsPageSize,
+      )
+          .then((r) => r.fold(
+                (failure) => throw Exception(failure.message),
+                (list) => list,
+              ));
+
+      if (isClosed) return;
+      _myGiftCardsLoadingMore = false;
+
+      // Defensive de-dupe by id — if the backend returns rows that
+      // already exist in the accumulator (race with a refresh), drop
+      // them. Keeps the list monotonic.
+      final existingIds = _myGiftCardsAccumulated.map((c) => c.id).toSet();
+      final fresh =
+          cards.where((c) => !existingIds.contains(c.id)).toList();
+
+      _myGiftCardsAccumulated = [..._myGiftCardsAccumulated, ...fresh];
+      _myGiftCardsPage++;
+      _myGiftCardsHasMore = cards.length == _myGiftCardsPageSize;
+
+      emit(MyGiftCardsLoaded(
+        List.unmodifiable(_myGiftCardsAccumulated),
+        hasMore: _myGiftCardsHasMore,
+      ));
+    } catch (e) {
+      if (isClosed) return;
+      _myGiftCardsLoadingMore = false;
+      // Don't blow away the existing list on a load-more failure —
+      // re-emit the current accumulator and surface the error via
+      // a separate snackbar in the screen layer.
+      emit(MyGiftCardsLoaded(
+        List.unmodifiable(_myGiftCardsAccumulated),
+        hasMore: _myGiftCardsHasMore,
       ));
     }
   }
@@ -1028,11 +1030,6 @@ class GiftCardCubit extends Cubit<GiftCardState> {
       if (isClosed) return;
       emit(OCRFailed(e.toString()));
     }
-  }
-
-  static bool _isValidEmail(String email) {
-    final regex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
-    return regex.hasMatch(email);
   }
 
   // Get active sell provider (admin only - returns default for now)
