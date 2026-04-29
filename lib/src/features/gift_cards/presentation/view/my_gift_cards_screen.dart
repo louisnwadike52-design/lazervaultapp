@@ -582,14 +582,37 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
     );
   }
 
-  // Repeat = re-enter the buy flow scoped to the same brand. We don't
-  // have the full GiftCardBrand entity on a GiftCard row (only id,
-  // name, logo, productId, currency), so the cleanest UX is to drop
-  // the user back at the brands browser. They'll see their last
-  // selected country pre-applied and can pick the brand directly —
-  // no risk of routing through a stale brand snapshot.
+  // Repeat = navigate directly to the purchase screen with the
+  // amount LOCKED to the original order. Build a stub
+  // GiftCardBrand from the GiftCard fields we already have: id,
+  // name, logo, productId, currency. The purchase screen handles
+  // _isLockedAmount by hiding pills + custom input + activating
+  // the buy CTA on mount. Live-rate validation still happens at
+  // saga time so a stale stub can't ship a bad amount.
   void _onRepeat(GiftCard card) {
-    Get.toNamed(AppRoutes.giftCards);
+    final stub = GiftCardBrand(
+      id: card.brandId,
+      name: card.brandName,
+      logoUrl: card.logoUrl,
+      currencyCode: card.currency,
+      productId: card.providerProductId,
+      countryCode: card.countryCode ?? '',
+      // Anchor the FX/min-bounds on the previous purchase so the
+      // price summary's sender-amount estimate works even though
+      // we haven't fetched the live brand. The lockedAmount path
+      // only ever shows this single denomination so anything
+      // tighter is unnecessary.
+      minAmount: card.originalAmount,
+      maxAmount: card.originalAmount,
+      senderCurrencyCode: card.senderCurrency,
+      minSenderAmount: card.senderAmount,
+      maxSenderAmount: card.senderAmount,
+    );
+    Get.toNamed(
+      AppRoutes.purchaseGiftCard,
+      arguments: PurchaseGiftCardArgs(
+          brand: stub, lockedAmount: card.originalAmount),
+    );
   }
 
   Widget _kv(String label, String value) {
@@ -734,4 +757,14 @@ class _Tone {
   final Color bg;
   final Color fg;
   const _Tone({required this.bg, required this.fg});
+}
+
+/// Argument bundle the router accepts for the purchase route. When
+/// `lockedAmount` is non-null the screen renders in repeat-purchase
+/// mode (pills + custom input hidden, buy CTA hot on mount). Public
+/// so the router can dispatch on type without coupling to internals.
+class PurchaseGiftCardArgs {
+  final GiftCardBrand brand;
+  final double? lockedAmount;
+  const PurchaseGiftCardArgs({required this.brand, this.lockedAmount});
 }

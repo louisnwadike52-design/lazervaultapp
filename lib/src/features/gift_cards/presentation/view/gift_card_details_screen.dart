@@ -119,42 +119,58 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
         ),
         centerTitle: true,
       ),
+      // Actions pinned in the bottom safe area — visible the moment
+      // the receipt loads regardless of scroll position. The body
+      // above stays scrollable for the long-tail content (QR block,
+      // accordion, etc.) while Share + Download never disappear off
+      // the bottom of common phone viewports.
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 12.h),
+          child: _buildActions(),
+        ),
+      ),
       body: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+        // Tighter vertical padding + smaller spacers so most of the
+        // receipt fits in a single screen on a 6.1" phone before the
+        // user scrolls. Bottom padding 12.h is enough to give the
+        // BillReceiptQrBlock breathing room above the pinned actions.
+        padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 12.h),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             _buildSuccessIcon(),
-            SizedBox(height: 12.h),
+            SizedBox(height: 8.h),
             Text(
               _heroTitle(),
               style: GoogleFonts.inter(
                 color: Colors.white,
-                fontSize: 20.sp,
+                fontSize: 18.sp,
                 fontWeight: FontWeight.w700,
               ),
             ),
-            SizedBox(height: 4.h),
+            SizedBox(height: 2.h),
             Text(
               _statusMessage(),
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
                 color: const Color(0xFF9CA3AF),
-                fontSize: 13.sp,
+                fontSize: 12.sp,
                 fontWeight: FontWeight.w400,
               ),
             ),
-            SizedBox(height: 16.h),
+            SizedBox(height: 12.h),
             // Redemption code + PIN — equivalent of the electricity
             // token card, styled the same way (purple gradient instead
             // of orange so it doesn't impersonate an electricity token).
             if ((giftCard.redemptionCode ?? '').isNotEmpty)
               _buildCodeCard(),
             if ((giftCard.redemptionCode ?? '').isNotEmpty)
-              SizedBox(height: 14.h),
+              SizedBox(height: 10.h),
             _buildTransactionDetails(),
-            SizedBox(height: 20.h),
+            SizedBox(height: 14.h),
             BillReceiptQrBlock(
               type: 'gift_card',
               reference: giftCard.providerTransactionId ?? giftCard.id,
@@ -169,9 +185,6 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
                   'code': giftCard.redemptionCode!,
               },
             ),
-            SizedBox(height: 20.h),
-            _buildActions(),
-            SizedBox(height: 32.h),
           ],
         ),
       ),
@@ -478,32 +491,35 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
             'Transaction Details',
             style: GoogleFonts.inter(
               color: Colors.white,
-              fontSize: 15.sp,
+              fontSize: 14.sp,
               fontWeight: FontWeight.w700,
             ),
           ),
-          SizedBox(height: 14.h),
+          SizedBox(height: 10.h),
+          // Tighter vertical rhythm — 6.h between rows instead of
+          // 10.h. Receipt now fits the actions onscreen at a glance
+          // on a 6.1" device while keeping every row visible.
           _row('Card Value', cardAmount),
           if (giftCard.isMultiCurrency && giftCard.senderAmount > 0) ...[
-            SizedBox(height: 10.h),
+            SizedBox(height: 6.h),
             _row('You Paid', paid),
           ],
-          SizedBox(height: 10.h),
+          SizedBox(height: 6.h),
           _row('Total', paid, isBold: true),
 
           _divider(),
 
           _row('Brand', giftCard.brandName),
           if ((giftCard.recipientName ?? '').isNotEmpty) ...[
-            SizedBox(height: 10.h),
+            SizedBox(height: 6.h),
             _row('Recipient', giftCard.recipientName!),
           ],
           if ((giftCard.recipientEmail ?? '').isNotEmpty) ...[
-            SizedBox(height: 10.h),
+            SizedBox(height: 6.h),
             _row('Recipient Email', giftCard.recipientEmail!),
           ],
           if ((giftCard.countryCode ?? '').isNotEmpty) ...[
-            SizedBox(height: 10.h),
+            SizedBox(height: 6.h),
             _row('Country', giftCard.countryCode!),
           ],
 
@@ -512,16 +528,16 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
           _row('Reference',
               giftCard.providerTransactionId ?? giftCard.id),
           if (giftCard.purchaseDate.isNotEmpty) ...[
-            SizedBox(height: 10.h),
+            SizedBox(height: 6.h),
             _row('Date', _safeFormat(displayDate, dateFormat)),
-            SizedBox(height: 10.h),
+            SizedBox(height: 6.h),
             _row('Time', _safeFormat(displayDate, timeFormat)),
           ],
           if (giftCard.expiryDate.isNotEmpty) ...[
-            SizedBox(height: 10.h),
+            SizedBox(height: 6.h),
             _row('Expires', giftCard.expiryDate),
           ],
-          SizedBox(height: 10.h),
+          SizedBox(height: 6.h),
           _row('Status', giftCard.status.toUpperCase(),
               valueColor: _statusColor()),
         ],
@@ -539,7 +555,7 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
           label,
           style: GoogleFonts.inter(
             color: const Color(0xFF9CA3AF),
-            fontSize: 13.sp,
+            fontSize: 12.sp,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -550,7 +566,7 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
             textAlign: TextAlign.right,
             style: GoogleFonts.inter(
               color: valueColor ?? Colors.white,
-              fontSize: 13.sp,
+              fontSize: 12.sp,
               fontWeight: isBold ? FontWeight.w700 : FontWeight.w600,
             ),
           ),
@@ -560,7 +576,7 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
   }
 
   Widget _divider() => Padding(
-        padding: EdgeInsets.symmetric(vertical: 10.h),
+        padding: EdgeInsets.symmetric(vertical: 6.h),
         child: const Divider(color: Color(0xFF2D2D2D), height: 1),
       );
 
