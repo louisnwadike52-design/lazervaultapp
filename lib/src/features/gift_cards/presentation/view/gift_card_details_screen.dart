@@ -118,6 +118,20 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
           ),
         ),
         centerTitle: true,
+        actions: [
+          // LazerVault wordmark in the top-right — co-brands the
+          // receipt so a screenshot or downloaded PDF carries the
+          // platform identity alongside the merchant brand.
+          Padding(
+            padding: EdgeInsets.only(right: 16.w),
+            child: Image.asset(
+              'assets/images/logos/lazervault-full-logo-no-background.png',
+              height: 22.h,
+              fit: BoxFit.contain,
+              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+            ),
+          ),
+        ],
       ),
       // Actions pinned in the bottom safe area — visible the moment
       // the receipt loads regardless of scroll position. The body
