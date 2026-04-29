@@ -282,31 +282,20 @@ class GiftCardCubit extends Cubit<GiftCardState> {
       // Generate idempotency key if not provided
       final effectiveIdempotencyKey = idempotencyKey ?? generateIdempotencyKey(brandId);
 
-      // Step 1: Validating (10%)
+      // Single honest "in-flight" state. The previous code emitted
+      // four fake progress milestones (10%/30%/60%/90%) back-to-back
+      // before the gRPC call even started — pure UI theatre that
+      // misled users into thinking distinct steps were happening
+      // when in reality everything was just one async round-trip.
+      // The processing screen's progress bar now stays at the
+      // in-flight level until the API actually returns Completed
+      // or an error state.
       if (isClosed) return;
       emit(GiftCardPurchaseProcessing(
         brandId: brandId,
         amount: amount,
-        currentStep: 'Validating purchase...',
-        progress: 0.1,
-      ));
-
-      // Step 2: Debiting (30%)
-      if (isClosed) return;
-      emit(GiftCardPurchaseProcessing(
-        brandId: brandId,
-        amount: amount,
-        currentStep: 'Debiting your account...',
-        progress: 0.3,
-      ));
-
-      // Step 3: Purchasing (60%)
-      if (isClosed) return;
-      emit(GiftCardPurchaseProcessing(
-        brandId: brandId,
-        amount: amount,
-        currentStep: 'Purchasing gift card...',
-        progress: 0.6,
+        currentStep: 'Processing your purchase…',
+        progress: 0.5,
       ));
 
       // Make the actual purchase
@@ -370,21 +359,17 @@ class GiftCardCubit extends Cubit<GiftCardState> {
           }
         },
         (giftCard) async {
-          // Step 4: Delivering (90%)
-          if (isClosed) return;
-          emit(GiftCardPurchaseProcessing(
-            brandId: brandId,
-            amount: amount,
-            currentStep: 'Delivering your gift card...',
-            progress: 0.9,
-          ));
-          await Future.delayed(const Duration(milliseconds: 300));
           if (isClosed) return;
 
           // Invalidate user's gift cards cache so next load gets fresh data
           _cacheManager.invalidate('my_gift_cards');
 
-          // Complete
+          // Complete immediately. The previous code emitted a fake
+          // "Delivering..." 90% step + a 300ms cosmetic delay before
+          // completing — both stripped because the API call has
+          // already returned a real giftCard at this point and the
+          // user is owed the success screen now, not after a fake
+          // shimmer.
           emit(GiftCardPurchaseCompleted(
             giftCard: giftCard,
             transactionId: giftCard.providerTransactionId,
