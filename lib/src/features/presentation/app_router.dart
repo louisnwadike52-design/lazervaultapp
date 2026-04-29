@@ -25,7 +25,6 @@ import 'package:lazervault/src/features/gift_cards/presentation/view/gift_cards_
 import 'package:lazervault/src/features/gift_cards/presentation/view/purchase_gift_card_screen.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/gift_card_details_screen.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/gift_card_purchase_processing_screen.dart';
-import 'package:lazervault/src/features/gift_cards/presentation/view/gift_card_transactions_screen.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/my_gift_cards_screen.dart';
 import 'package:lazervault/src/features/gift_cards/domain/entities/gift_card_entity.dart';
 import 'package:lazervault/src/features/gift_cards/cubit/gift_card_cubit.dart';
@@ -452,8 +451,8 @@ import 'package:lazervault/src/features/subscriptions/presentation/screens/subsc
 // Currency Exchange imports (BLoC/Cubit)
 import 'package:lazervault/src/features/currency_exchange/presentation/cubit/exchange_cubit.dart';
 import 'package:lazervault/src/features/currency_exchange/presentation/views/exchange_home_screen.dart';
-import 'package:lazervault/src/features/currency_exchange/presentation/views/exchange_recipient_screen.dart';
 import 'package:lazervault/src/features/currency_exchange/presentation/views/exchange_processing_screen.dart';
+import 'package:lazervault/src/features/currency_exchange/presentation/views/exchange_recipient_screen.dart';
 import 'package:lazervault/src/features/currency_exchange/presentation/views/exchange_receipt_screen.dart';
 import 'package:lazervault/src/features/currency_exchange/presentation/views/exchange_detail_screen.dart';
 import 'package:lazervault/src/features/currency_exchange/presentation/views/exchange_history_screen.dart';
@@ -1326,6 +1325,9 @@ class AppRouter {
     ),
     GetPage(
       name: AppRoutes.exchangeProcessing,
+      // Fresh cubit per processing-screen mount — the host screen has
+      // already done its PIN validation; this screen owns the entire
+      // post-PIN execution lifecycle (RPC + WS subscription).
       page: () => BlocProvider(
         create: (_) => serviceLocator<ExchangeCubit>(),
         child: const ExchangeProcessingScreen(),
@@ -1339,10 +1341,10 @@ class AppRouter {
     ),
     GetPage(
       name: AppRoutes.exchangeDetail,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<ExchangeCubit>(),
-        child: const ExchangeDetailScreen(),
-      ),
+      // The detail screen is now a receipt-style view with no cubit
+      // interaction (the Repeat-Transaction CTA that needed ExchangeCubit
+      // was removed). No BlocProvider wrapper needed.
+      page: () => const ExchangeDetailScreen(),
       transition: Transition.rightToLeft,
     ),
     GetPage(
@@ -1390,14 +1392,6 @@ class AppRouter {
         );
       },
       transition: Transition.fade,
-    ),
-    GetPage(
-      name: AppRoutes.giftCardTransactions,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<GiftCardCubit>(),
-        child: const GiftCardTransactionsScreen(),
-      ),
-      transition: Transition.rightToLeft,
     ),
     GetPage(
       name: AppRoutes.myGiftCards,

@@ -382,47 +382,6 @@ final $typed_data.Uint8List getGiftCardResponseDescriptor = $convert.base64Decod
     'ChNHZXRHaWZ0Q2FyZFJlc3BvbnNlEjAKCWdpZnRfY2FyZBgBIAEoCzITLmdpZnRjYXJkcy5HaW'
     'Z0Q2FyZFIIZ2lmdENhcmQ=');
 
-@$core.Deprecated('Use transferGiftCardRequestDescriptor instead')
-const TransferGiftCardRequest$json = {
-  '1': 'TransferGiftCardRequest',
-  '2': [
-    {'1': 'gift_card_id', '3': 1, '4': 1, '5': 9, '10': 'giftCardId'},
-    {'1': 'recipient_email', '3': 2, '4': 1, '5': 9, '10': 'recipientEmail'},
-    {'1': 'recipient_name', '3': 3, '4': 1, '5': 9, '10': 'recipientName'},
-    {'1': 'message', '3': 4, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'transaction_id', '3': 5, '4': 1, '5': 9, '10': 'transactionId'},
-    {'1': 'verification_token', '3': 6, '4': 1, '5': 9, '10': 'verificationToken'},
-    {'1': 'recipient_user_id', '3': 7, '4': 1, '5': 9, '10': 'recipientUserId'},
-    {'1': 'transfer_type', '3': 8, '4': 1, '5': 9, '10': 'transferType'},
-  ],
-};
-
-/// Descriptor for `TransferGiftCardRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List transferGiftCardRequestDescriptor = $convert.base64Decode(
-    'ChdUcmFuc2ZlckdpZnRDYXJkUmVxdWVzdBIgCgxnaWZ0X2NhcmRfaWQYASABKAlSCmdpZnRDYX'
-    'JkSWQSJwoPcmVjaXBpZW50X2VtYWlsGAIgASgJUg5yZWNpcGllbnRFbWFpbBIlCg5yZWNpcGll'
-    'bnRfbmFtZRgDIAEoCVINcmVjaXBpZW50TmFtZRIYCgdtZXNzYWdlGAQgASgJUgdtZXNzYWdlEi'
-    'UKDnRyYW5zYWN0aW9uX2lkGAUgASgJUg10cmFuc2FjdGlvbklkEi0KEnZlcmlmaWNhdGlvbl90'
-    'b2tlbhgGIAEoCVIRdmVyaWZpY2F0aW9uVG9rZW4SKgoRcmVjaXBpZW50X3VzZXJfaWQYByABKA'
-    'lSD3JlY2lwaWVudFVzZXJJZBIjCg10cmFuc2Zlcl90eXBlGAggASgJUgx0cmFuc2ZlclR5cGU=');
-
-@$core.Deprecated('Use transferGiftCardResponseDescriptor instead')
-const TransferGiftCardResponse$json = {
-  '1': 'TransferGiftCardResponse',
-  '2': [
-    {'1': 'gift_card', '3': 1, '4': 1, '5': 11, '6': '.giftcards.GiftCard', '10': 'giftCard'},
-    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
-    {'1': 'recipient_gift_card', '3': 3, '4': 1, '5': 11, '6': '.giftcards.GiftCard', '10': 'recipientGiftCard'},
-  ],
-};
-
-/// Descriptor for `TransferGiftCardResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List transferGiftCardResponseDescriptor = $convert.base64Decode(
-    'ChhUcmFuc2ZlckdpZnRDYXJkUmVzcG9uc2USMAoJZ2lmdF9jYXJkGAEgASgLMhMuZ2lmdGNhcm'
-    'RzLkdpZnRDYXJkUghnaWZ0Q2FyZBIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdlEkMKE3JlY2lw'
-    'aWVudF9naWZ0X2NhcmQYAyABKAsyEy5naWZ0Y2FyZHMuR2lmdENhcmRSEXJlY2lwaWVudEdpZn'
-    'RDYXJk');
-
 @$core.Deprecated('Use getGiftCardBrandsRequestDescriptor instead')
 const GetGiftCardBrandsRequest$json = {
   '1': 'GetGiftCardBrandsRequest',
@@ -593,6 +552,26 @@ const GiftCardSale$json = {
     {'1': 'risk_action', '3': 38, '4': 1, '5': 9, '10': 'riskAction'},
     {'1': 'card_country', '3': 39, '4': 1, '5': 9, '10': 'cardCountry'},
     {'1': 'card_format', '3': 40, '4': 1, '5': 9, '10': 'cardFormat'},
+    {'1': 'brand_name', '3': 41, '4': 1, '5': 9, '10': 'brandName'},
+    {'1': 'original_amount', '3': 42, '4': 1, '5': 1, '10': 'originalAmount'},
+    {'1': 'retail_amount', '3': 43, '4': 1, '5': 1, '10': 'retailAmount'},
+    {'1': 'retail_currency', '3': 44, '4': 1, '5': 9, '10': 'retailCurrency'},
+    {'1': 'wholesale_amount', '3': 45, '4': 1, '5': 1, '10': 'wholesaleAmount'},
+    {'1': 'wholesale_currency', '3': 46, '4': 1, '5': 9, '10': 'wholesaleCurrency'},
+    {'1': 'commission_amount_buy', '3': 47, '4': 1, '5': 1, '10': 'commissionAmountBuy'},
+    {'1': 'commission_currency', '3': 48, '4': 1, '5': 9, '10': 'commissionCurrency'},
+    {'1': 'sender_amount', '3': 49, '4': 1, '5': 1, '10': 'senderAmount'},
+    {'1': 'sender_currency', '3': 50, '4': 1, '5': 9, '10': 'senderCurrency'},
+    {'1': 'fx_rate', '3': 51, '4': 1, '5': 1, '10': 'fxRate'},
+    {'1': 'fee_percentage', '3': 52, '4': 1, '5': 1, '10': 'feePercentage'},
+    {'1': 'redemption_code', '3': 53, '4': 1, '5': 9, '10': 'redemptionCode'},
+    {'1': 'redemption_pin', '3': 54, '4': 1, '5': 9, '10': 'redemptionPin'},
+    {'1': 'provider_transaction_id', '3': 55, '4': 1, '5': 9, '10': 'providerTransactionId'},
+    {'1': 'completed_at', '3': 56, '4': 1, '5': 9, '10': 'completedAt'},
+    {'1': 'request_json', '3': 57, '4': 1, '5': 9, '10': 'requestJson'},
+    {'1': 'response_json', '3': 58, '4': 1, '5': 9, '10': 'responseJson'},
+    {'1': 'provider_http_status', '3': 59, '4': 1, '5': 5, '10': 'providerHttpStatus'},
+    {'1': 'provider_duration_ms', '3': 60, '4': 1, '5': 3, '10': 'providerDurationMs'},
   ],
 };
 
@@ -622,7 +601,22 @@ final $typed_data.Uint8List giftCardSaleDescriptor = $convert.base64Decode(
     'giIAEoAVIQY29tbWlzc2lvbkFtb3VudBIdCgpyaXNrX3Njb3JlGCMgASgFUglyaXNrU2NvcmUS'
     'HQoKcmlza19sZXZlbBgkIAEoCVIJcmlza0xldmVsEh0KCnJpc2tfZmxhZ3MYJSADKAlSCXJpc2'
     'tGbGFncxIfCgtyaXNrX2FjdGlvbhgmIAEoCVIKcmlza0FjdGlvbhIhCgxjYXJkX2NvdW50cnkY'
-    'JyABKAlSC2NhcmRDb3VudHJ5Eh8KC2NhcmRfZm9ybWF0GCggASgJUgpjYXJkRm9ybWF0');
+    'JyABKAlSC2NhcmRDb3VudHJ5Eh8KC2NhcmRfZm9ybWF0GCggASgJUgpjYXJkRm9ybWF0Eh0KCm'
+    'JyYW5kX25hbWUYKSABKAlSCWJyYW5kTmFtZRInCg9vcmlnaW5hbF9hbW91bnQYKiABKAFSDm9y'
+    'aWdpbmFsQW1vdW50EiMKDXJldGFpbF9hbW91bnQYKyABKAFSDHJldGFpbEFtb3VudBInCg9yZX'
+    'RhaWxfY3VycmVuY3kYLCABKAlSDnJldGFpbEN1cnJlbmN5EikKEHdob2xlc2FsZV9hbW91bnQY'
+    'LSABKAFSD3dob2xlc2FsZUFtb3VudBItChJ3aG9sZXNhbGVfY3VycmVuY3kYLiABKAlSEXdob2'
+    'xlc2FsZUN1cnJlbmN5EjIKFWNvbW1pc3Npb25fYW1vdW50X2J1eRgvIAEoAVITY29tbWlzc2lv'
+    'bkFtb3VudEJ1eRIvChNjb21taXNzaW9uX2N1cnJlbmN5GDAgASgJUhJjb21taXNzaW9uQ3Vycm'
+    'VuY3kSIwoNc2VuZGVyX2Ftb3VudBgxIAEoAVIMc2VuZGVyQW1vdW50EicKD3NlbmRlcl9jdXJy'
+    'ZW5jeRgyIAEoCVIOc2VuZGVyQ3VycmVuY3kSFwoHZnhfcmF0ZRgzIAEoAVIGZnhSYXRlEiUKDm'
+    'ZlZV9wZXJjZW50YWdlGDQgASgBUg1mZWVQZXJjZW50YWdlEicKD3JlZGVtcHRpb25fY29kZRg1'
+    'IAEoCVIOcmVkZW1wdGlvbkNvZGUSJQoOcmVkZW1wdGlvbl9waW4YNiABKAlSDXJlZGVtcHRpb2'
+    '5QaW4SNgoXcHJvdmlkZXJfdHJhbnNhY3Rpb25faWQYNyABKAlSFXByb3ZpZGVyVHJhbnNhY3Rp'
+    'b25JZBIhCgxjb21wbGV0ZWRfYXQYOCABKAlSC2NvbXBsZXRlZEF0EiEKDHJlcXVlc3RfanNvbh'
+    'g5IAEoCVILcmVxdWVzdEpzb24SIwoNcmVzcG9uc2VfanNvbhg6IAEoCVIMcmVzcG9uc2VKc29u'
+    'EjAKFHByb3ZpZGVyX2h0dHBfc3RhdHVzGDsgASgFUhJwcm92aWRlckh0dHBTdGF0dXMSMAoUcH'
+    'JvdmlkZXJfZHVyYXRpb25fbXMYPCABKANSEnByb3ZpZGVyRHVyYXRpb25Ncw==');
 
 @$core.Deprecated('Use getSellableCardsRequestDescriptor instead')
 const GetSellableCardsRequest$json = {
@@ -1031,6 +1025,10 @@ const AdminBuyTransaction$json = {
     {'1': 'provider_transaction_id', '3': 28, '4': 1, '5': 9, '10': 'providerTransactionId'},
     {'1': 'mode', '3': 29, '4': 1, '5': 9, '10': 'mode'},
     {'1': 'has_refund_entry', '3': 30, '4': 1, '5': 8, '10': 'hasRefundEntry'},
+    {'1': 'request_json', '3': 31, '4': 1, '5': 9, '10': 'requestJson'},
+    {'1': 'response_json', '3': 32, '4': 1, '5': 9, '10': 'responseJson'},
+    {'1': 'provider_http_status', '3': 33, '4': 1, '5': 5, '10': 'providerHttpStatus'},
+    {'1': 'provider_duration_ms', '3': 34, '4': 1, '5': 3, '10': 'providerDurationMs'},
   ],
 };
 
@@ -1056,7 +1054,10 @@ final $typed_data.Uint8List adminBuyTransactionDescriptor = $convert.base64Decod
     'RlbXB0aW9uQ29kZRIlCg5yZWRlbXB0aW9uX3BpbhgbIAEoCVINcmVkZW1wdGlvblBpbhI2Chdw'
     'cm92aWRlcl90cmFuc2FjdGlvbl9pZBgcIAEoCVIVcHJvdmlkZXJUcmFuc2FjdGlvbklkEhIKBG'
     '1vZGUYHSABKAlSBG1vZGUSKAoQaGFzX3JlZnVuZF9lbnRyeRgeIAEoCFIOaGFzUmVmdW5kRW50'
-    'cnk=');
+    'cnkSIQoMcmVxdWVzdF9qc29uGB8gASgJUgtyZXF1ZXN0SnNvbhIjCg1yZXNwb25zZV9qc29uGC'
+    'AgASgJUgxyZXNwb25zZUpzb24SMAoUcHJvdmlkZXJfaHR0cF9zdGF0dXMYISABKAVSEnByb3Zp'
+    'ZGVySHR0cFN0YXR1cxIwChRwcm92aWRlcl9kdXJhdGlvbl9tcxgiIAEoA1IScHJvdmlkZXJEdX'
+    'JhdGlvbk1z');
 
 @$core.Deprecated('Use adminListBuyTransactionsResponseDescriptor instead')
 const AdminListBuyTransactionsResponse$json = {

@@ -1812,214 +1812,6 @@ class GetGiftCardResponse extends $pb.GeneratedMessage {
   GiftCard ensureGiftCard() => $_ensure(0);
 }
 
-/// ===== TRANSFER GIFT CARD =====
-/// NOTE: user_id extracted from JWT token, not from request
-class TransferGiftCardRequest extends $pb.GeneratedMessage {
-  factory TransferGiftCardRequest({
-    $core.String? giftCardId,
-    $core.String? recipientEmail,
-    $core.String? recipientName,
-    $core.String? message,
-    $core.String? transactionId,
-    $core.String? verificationToken,
-    $core.String? recipientUserId,
-    $core.String? transferType,
-  }) {
-    final result = create();
-    if (giftCardId != null) result.giftCardId = giftCardId;
-    if (recipientEmail != null) result.recipientEmail = recipientEmail;
-    if (recipientName != null) result.recipientName = recipientName;
-    if (message != null) result.message = message;
-    if (transactionId != null) result.transactionId = transactionId;
-    if (verificationToken != null) result.verificationToken = verificationToken;
-    if (recipientUserId != null) result.recipientUserId = recipientUserId;
-    if (transferType != null) result.transferType = transferType;
-    return result;
-  }
-
-  TransferGiftCardRequest._();
-
-  factory TransferGiftCardRequest.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
-  factory TransferGiftCardRequest.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'TransferGiftCardRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'giftcards'), createEmptyInstance: create)
-    ..aOS(1, _omitFieldNames ? '' : 'giftCardId')
-    ..aOS(2, _omitFieldNames ? '' : 'recipientEmail')
-    ..aOS(3, _omitFieldNames ? '' : 'recipientName')
-    ..aOS(4, _omitFieldNames ? '' : 'message')
-    ..aOS(5, _omitFieldNames ? '' : 'transactionId')
-    ..aOS(6, _omitFieldNames ? '' : 'verificationToken')
-    ..aOS(7, _omitFieldNames ? '' : 'recipientUserId')
-    ..aOS(8, _omitFieldNames ? '' : 'transferType')
-    ..hasRequiredFields = false
-  ;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  TransferGiftCardRequest clone() => TransferGiftCardRequest()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  TransferGiftCardRequest copyWith(void Function(TransferGiftCardRequest) updates) => super.copyWith((message) => updates(message as TransferGiftCardRequest)) as TransferGiftCardRequest;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static TransferGiftCardRequest create() => TransferGiftCardRequest._();
-  @$core.override
-  TransferGiftCardRequest createEmptyInstance() => create();
-  static $pb.PbList<TransferGiftCardRequest> createRepeated() => $pb.PbList<TransferGiftCardRequest>();
-  @$core.pragma('dart2js:noInline')
-  static TransferGiftCardRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<TransferGiftCardRequest>(create);
-  static TransferGiftCardRequest? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.String get giftCardId => $_getSZ(0);
-  @$pb.TagNumber(1)
-  set giftCardId($core.String value) => $_setString(0, value);
-  @$pb.TagNumber(1)
-  $core.bool hasGiftCardId() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearGiftCardId() => $_clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.String get recipientEmail => $_getSZ(1);
-  @$pb.TagNumber(2)
-  set recipientEmail($core.String value) => $_setString(1, value);
-  @$pb.TagNumber(2)
-  $core.bool hasRecipientEmail() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearRecipientEmail() => $_clearField(2);
-
-  @$pb.TagNumber(3)
-  $core.String get recipientName => $_getSZ(2);
-  @$pb.TagNumber(3)
-  set recipientName($core.String value) => $_setString(2, value);
-  @$pb.TagNumber(3)
-  $core.bool hasRecipientName() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearRecipientName() => $_clearField(3);
-
-  @$pb.TagNumber(4)
-  $core.String get message => $_getSZ(3);
-  @$pb.TagNumber(4)
-  set message($core.String value) => $_setString(3, value);
-  @$pb.TagNumber(4)
-  $core.bool hasMessage() => $_has(3);
-  @$pb.TagNumber(4)
-  void clearMessage() => $_clearField(4);
-
-  /// Transaction PIN verification (replaces direct PIN field)
-  @$pb.TagNumber(5)
-  $core.String get transactionId => $_getSZ(4);
-  @$pb.TagNumber(5)
-  set transactionId($core.String value) => $_setString(4, value);
-  @$pb.TagNumber(5)
-  $core.bool hasTransactionId() => $_has(4);
-  @$pb.TagNumber(5)
-  void clearTransactionId() => $_clearField(5);
-
-  @$pb.TagNumber(6)
-  $core.String get verificationToken => $_getSZ(5);
-  @$pb.TagNumber(6)
-  set verificationToken($core.String value) => $_setString(5, value);
-  @$pb.TagNumber(6)
-  $core.bool hasVerificationToken() => $_has(5);
-  @$pb.TagNumber(6)
-  void clearVerificationToken() => $_clearField(6);
-
-  /// Platform transfer fields (when transferring to a LazerVault user)
-  @$pb.TagNumber(7)
-  $core.String get recipientUserId => $_getSZ(6);
-  @$pb.TagNumber(7)
-  set recipientUserId($core.String value) => $_setString(6, value);
-  @$pb.TagNumber(7)
-  $core.bool hasRecipientUserId() => $_has(6);
-  @$pb.TagNumber(7)
-  void clearRecipientUserId() => $_clearField(7);
-
-  @$pb.TagNumber(8)
-  $core.String get transferType => $_getSZ(7);
-  @$pb.TagNumber(8)
-  set transferType($core.String value) => $_setString(7, value);
-  @$pb.TagNumber(8)
-  $core.bool hasTransferType() => $_has(7);
-  @$pb.TagNumber(8)
-  void clearTransferType() => $_clearField(8);
-}
-
-class TransferGiftCardResponse extends $pb.GeneratedMessage {
-  factory TransferGiftCardResponse({
-    GiftCard? giftCard,
-    $core.String? message,
-    GiftCard? recipientGiftCard,
-  }) {
-    final result = create();
-    if (giftCard != null) result.giftCard = giftCard;
-    if (message != null) result.message = message;
-    if (recipientGiftCard != null) result.recipientGiftCard = recipientGiftCard;
-    return result;
-  }
-
-  TransferGiftCardResponse._();
-
-  factory TransferGiftCardResponse.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
-  factory TransferGiftCardResponse.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'TransferGiftCardResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'giftcards'), createEmptyInstance: create)
-    ..aOM<GiftCard>(1, _omitFieldNames ? '' : 'giftCard', subBuilder: GiftCard.create)
-    ..aOS(2, _omitFieldNames ? '' : 'message')
-    ..aOM<GiftCard>(3, _omitFieldNames ? '' : 'recipientGiftCard', subBuilder: GiftCard.create)
-    ..hasRequiredFields = false
-  ;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  TransferGiftCardResponse clone() => TransferGiftCardResponse()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  TransferGiftCardResponse copyWith(void Function(TransferGiftCardResponse) updates) => super.copyWith((message) => updates(message as TransferGiftCardResponse)) as TransferGiftCardResponse;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static TransferGiftCardResponse create() => TransferGiftCardResponse._();
-  @$core.override
-  TransferGiftCardResponse createEmptyInstance() => create();
-  static $pb.PbList<TransferGiftCardResponse> createRepeated() => $pb.PbList<TransferGiftCardResponse>();
-  @$core.pragma('dart2js:noInline')
-  static TransferGiftCardResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<TransferGiftCardResponse>(create);
-  static TransferGiftCardResponse? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  GiftCard get giftCard => $_getN(0);
-  @$pb.TagNumber(1)
-  set giftCard(GiftCard value) => $_setField(1, value);
-  @$pb.TagNumber(1)
-  $core.bool hasGiftCard() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearGiftCard() => $_clearField(1);
-  @$pb.TagNumber(1)
-  GiftCard ensureGiftCard() => $_ensure(0);
-
-  @$pb.TagNumber(2)
-  $core.String get message => $_getSZ(1);
-  @$pb.TagNumber(2)
-  set message($core.String value) => $_setString(1, value);
-  @$pb.TagNumber(2)
-  $core.bool hasMessage() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearMessage() => $_clearField(2);
-
-  @$pb.TagNumber(3)
-  GiftCard get recipientGiftCard => $_getN(2);
-  @$pb.TagNumber(3)
-  set recipientGiftCard(GiftCard value) => $_setField(3, value);
-  @$pb.TagNumber(3)
-  $core.bool hasRecipientGiftCard() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearRecipientGiftCard() => $_clearField(3);
-  @$pb.TagNumber(3)
-  GiftCard ensureRecipientGiftCard() => $_ensure(2);
-}
-
 class GetGiftCardBrandsRequest extends $pb.GeneratedMessage {
   factory GetGiftCardBrandsRequest({
     $core.String? category,
@@ -2707,6 +2499,26 @@ class GiftCardSale extends $pb.GeneratedMessage {
     $core.String? riskAction,
     $core.String? cardCountry,
     $core.String? cardFormat,
+    $core.String? brandName,
+    $core.double? originalAmount,
+    $core.double? retailAmount,
+    $core.String? retailCurrency,
+    $core.double? wholesaleAmount,
+    $core.String? wholesaleCurrency,
+    $core.double? commissionAmountBuy,
+    $core.String? commissionCurrency,
+    $core.double? senderAmount,
+    $core.String? senderCurrency,
+    $core.double? fxRate,
+    $core.double? feePercentage,
+    $core.String? redemptionCode,
+    $core.String? redemptionPin,
+    $core.String? providerTransactionId,
+    $core.String? completedAt,
+    $core.String? requestJson,
+    $core.String? responseJson,
+    $core.int? providerHttpStatus,
+    $fixnum.Int64? providerDurationMs,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -2749,6 +2561,26 @@ class GiftCardSale extends $pb.GeneratedMessage {
     if (riskAction != null) result.riskAction = riskAction;
     if (cardCountry != null) result.cardCountry = cardCountry;
     if (cardFormat != null) result.cardFormat = cardFormat;
+    if (brandName != null) result.brandName = brandName;
+    if (originalAmount != null) result.originalAmount = originalAmount;
+    if (retailAmount != null) result.retailAmount = retailAmount;
+    if (retailCurrency != null) result.retailCurrency = retailCurrency;
+    if (wholesaleAmount != null) result.wholesaleAmount = wholesaleAmount;
+    if (wholesaleCurrency != null) result.wholesaleCurrency = wholesaleCurrency;
+    if (commissionAmountBuy != null) result.commissionAmountBuy = commissionAmountBuy;
+    if (commissionCurrency != null) result.commissionCurrency = commissionCurrency;
+    if (senderAmount != null) result.senderAmount = senderAmount;
+    if (senderCurrency != null) result.senderCurrency = senderCurrency;
+    if (fxRate != null) result.fxRate = fxRate;
+    if (feePercentage != null) result.feePercentage = feePercentage;
+    if (redemptionCode != null) result.redemptionCode = redemptionCode;
+    if (redemptionPin != null) result.redemptionPin = redemptionPin;
+    if (providerTransactionId != null) result.providerTransactionId = providerTransactionId;
+    if (completedAt != null) result.completedAt = completedAt;
+    if (requestJson != null) result.requestJson = requestJson;
+    if (responseJson != null) result.responseJson = responseJson;
+    if (providerHttpStatus != null) result.providerHttpStatus = providerHttpStatus;
+    if (providerDurationMs != null) result.providerDurationMs = providerDurationMs;
     return result;
   }
 
@@ -2798,6 +2630,26 @@ class GiftCardSale extends $pb.GeneratedMessage {
     ..aOS(38, _omitFieldNames ? '' : 'riskAction')
     ..aOS(39, _omitFieldNames ? '' : 'cardCountry')
     ..aOS(40, _omitFieldNames ? '' : 'cardFormat')
+    ..aOS(41, _omitFieldNames ? '' : 'brandName')
+    ..a<$core.double>(42, _omitFieldNames ? '' : 'originalAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(43, _omitFieldNames ? '' : 'retailAmount', $pb.PbFieldType.OD)
+    ..aOS(44, _omitFieldNames ? '' : 'retailCurrency')
+    ..a<$core.double>(45, _omitFieldNames ? '' : 'wholesaleAmount', $pb.PbFieldType.OD)
+    ..aOS(46, _omitFieldNames ? '' : 'wholesaleCurrency')
+    ..a<$core.double>(47, _omitFieldNames ? '' : 'commissionAmountBuy', $pb.PbFieldType.OD)
+    ..aOS(48, _omitFieldNames ? '' : 'commissionCurrency')
+    ..a<$core.double>(49, _omitFieldNames ? '' : 'senderAmount', $pb.PbFieldType.OD)
+    ..aOS(50, _omitFieldNames ? '' : 'senderCurrency')
+    ..a<$core.double>(51, _omitFieldNames ? '' : 'fxRate', $pb.PbFieldType.OD)
+    ..a<$core.double>(52, _omitFieldNames ? '' : 'feePercentage', $pb.PbFieldType.OD)
+    ..aOS(53, _omitFieldNames ? '' : 'redemptionCode')
+    ..aOS(54, _omitFieldNames ? '' : 'redemptionPin')
+    ..aOS(55, _omitFieldNames ? '' : 'providerTransactionId')
+    ..aOS(56, _omitFieldNames ? '' : 'completedAt')
+    ..aOS(57, _omitFieldNames ? '' : 'requestJson')
+    ..aOS(58, _omitFieldNames ? '' : 'responseJson')
+    ..a<$core.int>(59, _omitFieldNames ? '' : 'providerHttpStatus', $pb.PbFieldType.O3)
+    ..aInt64(60, _omitFieldNames ? '' : 'providerDurationMs')
     ..hasRequiredFields = false
   ;
 
@@ -3170,6 +3022,196 @@ class GiftCardSale extends $pb.GeneratedMessage {
   $core.bool hasCardFormat() => $_has(39);
   @$pb.TagNumber(40)
   void clearCardFormat() => $_clearField(40);
+
+  /// ── Buy-side fields ───────────────────────────────────────────────
+  /// The admin Transaction Detail screen serves both buy + sell rows
+  /// through this single message (mapBuyPurchaseToSale projects a buy
+  /// GiftCard onto a sparse GiftCardSale). These are the buy-only
+  /// payload bits the sell shape doesn't have an analogue for. Sell
+  /// submissions leave them empty.
+  @$pb.TagNumber(41)
+  $core.String get brandName => $_getSZ(40);
+  @$pb.TagNumber(41)
+  set brandName($core.String value) => $_setString(40, value);
+  @$pb.TagNumber(41)
+  $core.bool hasBrandName() => $_has(40);
+  @$pb.TagNumber(41)
+  void clearBrandName() => $_clearField(41);
+
+  @$pb.TagNumber(42)
+  $core.double get originalAmount => $_getN(41);
+  @$pb.TagNumber(42)
+  set originalAmount($core.double value) => $_setDouble(41, value);
+  @$pb.TagNumber(42)
+  $core.bool hasOriginalAmount() => $_has(41);
+  @$pb.TagNumber(42)
+  void clearOriginalAmount() => $_clearField(42);
+
+  @$pb.TagNumber(43)
+  $core.double get retailAmount => $_getN(42);
+  @$pb.TagNumber(43)
+  set retailAmount($core.double value) => $_setDouble(42, value);
+  @$pb.TagNumber(43)
+  $core.bool hasRetailAmount() => $_has(42);
+  @$pb.TagNumber(43)
+  void clearRetailAmount() => $_clearField(43);
+
+  @$pb.TagNumber(44)
+  $core.String get retailCurrency => $_getSZ(43);
+  @$pb.TagNumber(44)
+  set retailCurrency($core.String value) => $_setString(43, value);
+  @$pb.TagNumber(44)
+  $core.bool hasRetailCurrency() => $_has(43);
+  @$pb.TagNumber(44)
+  void clearRetailCurrency() => $_clearField(44);
+
+  @$pb.TagNumber(45)
+  $core.double get wholesaleAmount => $_getN(44);
+  @$pb.TagNumber(45)
+  set wholesaleAmount($core.double value) => $_setDouble(44, value);
+  @$pb.TagNumber(45)
+  $core.bool hasWholesaleAmount() => $_has(44);
+  @$pb.TagNumber(45)
+  void clearWholesaleAmount() => $_clearField(45);
+
+  @$pb.TagNumber(46)
+  $core.String get wholesaleCurrency => $_getSZ(45);
+  @$pb.TagNumber(46)
+  set wholesaleCurrency($core.String value) => $_setString(45, value);
+  @$pb.TagNumber(46)
+  $core.bool hasWholesaleCurrency() => $_has(45);
+  @$pb.TagNumber(46)
+  void clearWholesaleCurrency() => $_clearField(46);
+
+  @$pb.TagNumber(47)
+  $core.double get commissionAmountBuy => $_getN(46);
+  @$pb.TagNumber(47)
+  set commissionAmountBuy($core.double value) => $_setDouble(46, value);
+  @$pb.TagNumber(47)
+  $core.bool hasCommissionAmountBuy() => $_has(46);
+  @$pb.TagNumber(47)
+  void clearCommissionAmountBuy() => $_clearField(47);
+
+  @$pb.TagNumber(48)
+  $core.String get commissionCurrency => $_getSZ(47);
+  @$pb.TagNumber(48)
+  set commissionCurrency($core.String value) => $_setString(47, value);
+  @$pb.TagNumber(48)
+  $core.bool hasCommissionCurrency() => $_has(47);
+  @$pb.TagNumber(48)
+  void clearCommissionCurrency() => $_clearField(48);
+
+  @$pb.TagNumber(49)
+  $core.double get senderAmount => $_getN(48);
+  @$pb.TagNumber(49)
+  set senderAmount($core.double value) => $_setDouble(48, value);
+  @$pb.TagNumber(49)
+  $core.bool hasSenderAmount() => $_has(48);
+  @$pb.TagNumber(49)
+  void clearSenderAmount() => $_clearField(49);
+
+  @$pb.TagNumber(50)
+  $core.String get senderCurrency => $_getSZ(49);
+  @$pb.TagNumber(50)
+  set senderCurrency($core.String value) => $_setString(49, value);
+  @$pb.TagNumber(50)
+  $core.bool hasSenderCurrency() => $_has(49);
+  @$pb.TagNumber(50)
+  void clearSenderCurrency() => $_clearField(50);
+
+  @$pb.TagNumber(51)
+  $core.double get fxRate => $_getN(50);
+  @$pb.TagNumber(51)
+  set fxRate($core.double value) => $_setDouble(50, value);
+  @$pb.TagNumber(51)
+  $core.bool hasFxRate() => $_has(50);
+  @$pb.TagNumber(51)
+  void clearFxRate() => $_clearField(51);
+
+  @$pb.TagNumber(52)
+  $core.double get feePercentage => $_getN(51);
+  @$pb.TagNumber(52)
+  set feePercentage($core.double value) => $_setDouble(51, value);
+  @$pb.TagNumber(52)
+  $core.bool hasFeePercentage() => $_has(51);
+  @$pb.TagNumber(52)
+  void clearFeePercentage() => $_clearField(52);
+
+  @$pb.TagNumber(53)
+  $core.String get redemptionCode => $_getSZ(52);
+  @$pb.TagNumber(53)
+  set redemptionCode($core.String value) => $_setString(52, value);
+  @$pb.TagNumber(53)
+  $core.bool hasRedemptionCode() => $_has(52);
+  @$pb.TagNumber(53)
+  void clearRedemptionCode() => $_clearField(53);
+
+  @$pb.TagNumber(54)
+  $core.String get redemptionPin => $_getSZ(53);
+  @$pb.TagNumber(54)
+  set redemptionPin($core.String value) => $_setString(53, value);
+  @$pb.TagNumber(54)
+  $core.bool hasRedemptionPin() => $_has(53);
+  @$pb.TagNumber(54)
+  void clearRedemptionPin() => $_clearField(54);
+
+  @$pb.TagNumber(55)
+  $core.String get providerTransactionId => $_getSZ(54);
+  @$pb.TagNumber(55)
+  set providerTransactionId($core.String value) => $_setString(54, value);
+  @$pb.TagNumber(55)
+  $core.bool hasProviderTransactionId() => $_has(54);
+  @$pb.TagNumber(55)
+  void clearProviderTransactionId() => $_clearField(55);
+
+  @$pb.TagNumber(56)
+  $core.String get completedAt => $_getSZ(55);
+  @$pb.TagNumber(56)
+  set completedAt($core.String value) => $_setString(55, value);
+  @$pb.TagNumber(56)
+  $core.bool hasCompletedAt() => $_has(55);
+  @$pb.TagNumber(56)
+  void clearCompletedAt() => $_clearField(56);
+
+  /// Provider exchange — populated by the post-saga goroutine that
+  /// writes request_json + response_json onto the giftcards row.
+  /// Lets the admin detail page render the raw provider call in one
+  /// shot instead of joining provider_response_logs.
+  @$pb.TagNumber(57)
+  $core.String get requestJson => $_getSZ(56);
+  @$pb.TagNumber(57)
+  set requestJson($core.String value) => $_setString(56, value);
+  @$pb.TagNumber(57)
+  $core.bool hasRequestJson() => $_has(56);
+  @$pb.TagNumber(57)
+  void clearRequestJson() => $_clearField(57);
+
+  @$pb.TagNumber(58)
+  $core.String get responseJson => $_getSZ(57);
+  @$pb.TagNumber(58)
+  set responseJson($core.String value) => $_setString(57, value);
+  @$pb.TagNumber(58)
+  $core.bool hasResponseJson() => $_has(57);
+  @$pb.TagNumber(58)
+  void clearResponseJson() => $_clearField(58);
+
+  @$pb.TagNumber(59)
+  $core.int get providerHttpStatus => $_getIZ(58);
+  @$pb.TagNumber(59)
+  set providerHttpStatus($core.int value) => $_setSignedInt32(58, value);
+  @$pb.TagNumber(59)
+  $core.bool hasProviderHttpStatus() => $_has(58);
+  @$pb.TagNumber(59)
+  void clearProviderHttpStatus() => $_clearField(59);
+
+  @$pb.TagNumber(60)
+  $fixnum.Int64 get providerDurationMs => $_getI64(59);
+  @$pb.TagNumber(60)
+  set providerDurationMs($fixnum.Int64 value) => $_setInt64(59, value);
+  @$pb.TagNumber(60)
+  $core.bool hasProviderDurationMs() => $_has(59);
+  @$pb.TagNumber(60)
+  void clearProviderDurationMs() => $_clearField(60);
 }
 
 class GetSellableCardsRequest extends $pb.GeneratedMessage {
@@ -4867,6 +4909,10 @@ class AdminBuyTransaction extends $pb.GeneratedMessage {
     $core.String? providerTransactionId,
     $core.String? mode,
     $core.bool? hasRefundEntry,
+    $core.String? requestJson,
+    $core.String? responseJson,
+    $core.int? providerHttpStatus,
+    $fixnum.Int64? providerDurationMs,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -4899,6 +4945,10 @@ class AdminBuyTransaction extends $pb.GeneratedMessage {
     if (providerTransactionId != null) result.providerTransactionId = providerTransactionId;
     if (mode != null) result.mode = mode;
     if (hasRefundEntry != null) result.hasRefundEntry = hasRefundEntry;
+    if (requestJson != null) result.requestJson = requestJson;
+    if (responseJson != null) result.responseJson = responseJson;
+    if (providerHttpStatus != null) result.providerHttpStatus = providerHttpStatus;
+    if (providerDurationMs != null) result.providerDurationMs = providerDurationMs;
     return result;
   }
 
@@ -4938,6 +4988,10 @@ class AdminBuyTransaction extends $pb.GeneratedMessage {
     ..aOS(28, _omitFieldNames ? '' : 'providerTransactionId')
     ..aOS(29, _omitFieldNames ? '' : 'mode')
     ..aOB(30, _omitFieldNames ? '' : 'hasRefundEntry')
+    ..aOS(31, _omitFieldNames ? '' : 'requestJson')
+    ..aOS(32, _omitFieldNames ? '' : 'responseJson')
+    ..a<$core.int>(33, _omitFieldNames ? '' : 'providerHttpStatus', $pb.PbFieldType.O3)
+    ..aInt64(34, _omitFieldNames ? '' : 'providerDurationMs')
     ..hasRequiredFields = false
   ;
 
@@ -5234,6 +5288,46 @@ class AdminBuyTransaction extends $pb.GeneratedMessage {
   $core.bool hasHasRefundEntry() => $_has(29);
   @$pb.TagNumber(30)
   void clearHasRefundEntry() => $_clearField(30);
+
+  /// Raw provider request/response captured by a fire-and-forget
+  /// goroutine after saga completion. Populated for the admin
+  /// Transaction Detail page; empty if the goroutine hasn't run yet
+  /// (eventual consistency window is < 1s in practice).
+  @$pb.TagNumber(31)
+  $core.String get requestJson => $_getSZ(30);
+  @$pb.TagNumber(31)
+  set requestJson($core.String value) => $_setString(30, value);
+  @$pb.TagNumber(31)
+  $core.bool hasRequestJson() => $_has(30);
+  @$pb.TagNumber(31)
+  void clearRequestJson() => $_clearField(31);
+
+  @$pb.TagNumber(32)
+  $core.String get responseJson => $_getSZ(31);
+  @$pb.TagNumber(32)
+  set responseJson($core.String value) => $_setString(31, value);
+  @$pb.TagNumber(32)
+  $core.bool hasResponseJson() => $_has(31);
+  @$pb.TagNumber(32)
+  void clearResponseJson() => $_clearField(32);
+
+  @$pb.TagNumber(33)
+  $core.int get providerHttpStatus => $_getIZ(32);
+  @$pb.TagNumber(33)
+  set providerHttpStatus($core.int value) => $_setSignedInt32(32, value);
+  @$pb.TagNumber(33)
+  $core.bool hasProviderHttpStatus() => $_has(32);
+  @$pb.TagNumber(33)
+  void clearProviderHttpStatus() => $_clearField(33);
+
+  @$pb.TagNumber(34)
+  $fixnum.Int64 get providerDurationMs => $_getI64(33);
+  @$pb.TagNumber(34)
+  set providerDurationMs($fixnum.Int64 value) => $_setInt64(33, value);
+  @$pb.TagNumber(34)
+  $core.bool hasProviderDurationMs() => $_has(33);
+  @$pb.TagNumber(34)
+  void clearProviderDurationMs() => $_clearField(34);
 }
 
 class AdminListBuyTransactionsResponse extends $pb.GeneratedMessage {

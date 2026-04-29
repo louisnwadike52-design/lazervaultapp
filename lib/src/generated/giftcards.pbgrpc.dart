@@ -53,11 +53,6 @@ class GiftCardsServiceClient extends $grpc.Client {
     return $createUnaryCall(_$getGiftCard, request, options: options);
   }
 
-  /// Transfer gift card to another user
-  $grpc.ResponseFuture<$0.TransferGiftCardResponse> transferGiftCard($0.TransferGiftCardRequest request, {$grpc.CallOptions? options,}) {
-    return $createUnaryCall(_$transferGiftCard, request, options: options);
-  }
-
   /// Get available gift card brands/merchants
   $grpc.ResponseFuture<$0.GetGiftCardBrandsResponse> getGiftCardBrands($0.GetGiftCardBrandsRequest request, {$grpc.CallOptions? options,}) {
     return $createUnaryCall(_$getGiftCardBrands, request, options: options);
@@ -291,10 +286,6 @@ class GiftCardsServiceClient extends $grpc.Client {
       '/giftcards.GiftCardsService/GetGiftCard',
       ($0.GetGiftCardRequest value) => value.writeToBuffer(),
       $0.GetGiftCardResponse.fromBuffer);
-  static final _$transferGiftCard = $grpc.ClientMethod<$0.TransferGiftCardRequest, $0.TransferGiftCardResponse>(
-      '/giftcards.GiftCardsService/TransferGiftCard',
-      ($0.TransferGiftCardRequest value) => value.writeToBuffer(),
-      $0.TransferGiftCardResponse.fromBuffer);
   static final _$getGiftCardBrands = $grpc.ClientMethod<$0.GetGiftCardBrandsRequest, $0.GetGiftCardBrandsResponse>(
       '/giftcards.GiftCardsService/GetGiftCardBrands',
       ($0.GetGiftCardBrandsRequest value) => value.writeToBuffer(),
@@ -490,13 +481,6 @@ abstract class GiftCardsServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.GetGiftCardRequest.fromBuffer(value),
         ($0.GetGiftCardResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.TransferGiftCardRequest, $0.TransferGiftCardResponse>(
-        'TransferGiftCard',
-        transferGiftCard_Pre,
-        false,
-        false,
-        ($core.List<$core.int> value) => $0.TransferGiftCardRequest.fromBuffer(value),
-        ($0.TransferGiftCardResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.GetGiftCardBrandsRequest, $0.GetGiftCardBrandsResponse>(
         'GetGiftCardBrands',
         getGiftCardBrands_Pre,
@@ -802,12 +786,6 @@ abstract class GiftCardsServiceBase extends $grpc.Service {
   }
 
   $async.Future<$0.GetGiftCardResponse> getGiftCard($grpc.ServiceCall call, $0.GetGiftCardRequest request);
-
-  $async.Future<$0.TransferGiftCardResponse> transferGiftCard_Pre($grpc.ServiceCall $call, $async.Future<$0.TransferGiftCardRequest> $request) async {
-    return transferGiftCard($call, await $request);
-  }
-
-  $async.Future<$0.TransferGiftCardResponse> transferGiftCard($grpc.ServiceCall call, $0.TransferGiftCardRequest request);
 
   $async.Future<$0.GetGiftCardBrandsResponse> getGiftCardBrands_Pre($grpc.ServiceCall $call, $async.Future<$0.GetGiftCardBrandsRequest> $request) async {
     return getGiftCardBrands($call, await $request);
