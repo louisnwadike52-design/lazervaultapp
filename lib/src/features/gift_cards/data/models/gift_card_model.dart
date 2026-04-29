@@ -134,6 +134,7 @@ class GiftCardBrandModel extends GiftCardBrand {
     super.maxSenderAmount,
     super.senderFee,
     super.senderFeePercentage,
+    super.denominationType,
   });
 
   factory GiftCardBrandModel.fromProto(pb.GiftCardBrand proto) {
@@ -173,6 +174,7 @@ class GiftCardBrandModel extends GiftCardBrand {
       maxSenderAmount: proto.maxSenderAmount,
       senderFee: proto.senderFee,
       senderFeePercentage: proto.senderFeePercentage,
+      denominationType: proto.denominationType,
     );
   }
 
