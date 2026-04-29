@@ -162,6 +162,16 @@ service GiftCardsService {
     };
   }
 
+  // List refund_ledger rows (past + present) — drives the admin
+  // Refunds tab on both sides. Filterable by side ("buy"/"sell") so
+  // each tab scopes correctly without the consumer reaching into the
+  // ledger's direction column.
+  rpc AdminListRefundLedger(AdminListRefundLedgerRequest) returns (AdminListRefundLedgerResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/giftcards/admin/refund-ledger"
+    };
+  }
+
   // Get full sell request details for admin review (includes images)
   rpc AdminGetSaleDetail(AdminGetSaleDetailRequest) returns (AdminGetSaleDetailResponse) {
     option (google.api.http) = {
@@ -324,6 +334,18 @@ service GiftCardsService {
   }
 
   // Perform manual operation (retry, reverse, cancel, etc.)
+  // BulkPerformManualOperation drains a manual_review backlog by
+  // applying the same operation to N sales in one round-trip. Used by
+  // the admin Refunds / Stuck tabs to resolve queues that have piled
+  // up. Per-row failures are reported individually so a single bad
+  // row doesn't roll back the others.
+  rpc BulkPerformManualOperation(BulkPerformManualOperationRequest) returns (BulkPerformManualOperationResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/giftcards/admin/manual-operations/bulk"
+      body: "*"
+    };
+  }
+
   rpc PerformManualOperation(PerformManualOperationRequest) returns (PerformManualOperationResponse) {
     option (google.api.http) = {
       post: "/api/v1/giftcards/admin/operations"
@@ -430,6 +452,12 @@ message GiftCardBrand {
   double sender_fee_percentage = 23;   // Fee percentage
   // Fixed sender denomination objects (paired with recipient denominations)
   repeated GiftCardDenomination fixed_sender_denominations = 24;
+  // Reloadly's authoritative denomination model: "FIXED" (only the
+  // listed denominations are valid) or "RANGE" (any value within
+  // min/max is valid). Empty string for products where the upstream
+  // didn't supply it — clients fall back to the
+  // fixedDenominations.empty heuristic.
+  string denomination_type = 25;
 }
 
 // Fixed denomination from Reloadly
@@ -893,10 +921,80 @@ message AdminBuyTransaction {
   string updated_at = 9;              // RFC3339
   string recipient_email = 10;
   string recipient_name = 11;
+  // Settlement / FX breakdown — needed by the admin Settlements tab
+  // to render per-transaction revenue distribution. All amounts in
+  // major units; currency fields name the wallet for each leg.
+  string reference = 12;
+  double retail_amount = 13;          // What user paid (NGN typically)
+  string retail_currency = 14;
+  double wholesale_amount = 15;       // Cost from Reloadly (in user's currency)
+  string wholesale_currency = 16;
+  double commission_amount = 17;      // Our revenue = retail - wholesale
+  string commission_currency = 18;
+  double sender_amount = 19;          // What Reloadly charged in their wallet (e.g. GBP)
+  string sender_currency = 20;
+  double fx_rate = 21;                // FX rate sender→retail
+  double fee_percentage = 22;
+  string completed_at = 23;
+  // Operational columns — needed by the admin Transactions table so
+  // operators can triage at a glance without drilling in. Mirrors
+  // the electricity-bill-payment admin row: Provider, Mode, Token,
+  // Refund link, Failover marker, Source.
+  string provider_name = 24;          // "reloadly" — buy uses Reloadly only
+  string failure_reason = 25;         // Reloadly rejection reason (FAILED/REFUNDED status)
+  string redemption_code = 26;        // Reloadly redeem code (preview only — truncate in UI)
+  string redemption_pin = 27;         // Reloadly redeem PIN (preview only)
+  string provider_transaction_id = 28; // Reloadly transactionId (cross-ref to their dashboard)
+  string mode = 29;                   // "sync" | "async" — captures how the buy was processed
+  bool   has_refund_entry = 30;       // True iff a refund_ledger row exists for this reference
 }
 
 message AdminListBuyTransactionsResponse {
   repeated AdminBuyTransaction transactions = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 limit = 4;
+}
+
+// AdminListRefundLedger surfaces refund_ledger rows for the Refunds
+// admin tabs. Returns past + present refunds (any
+// confirmation_status, any settlement_status) so operators see the
+// full history not just in-flight items. Filterable by `side`
+// (buy/sell) so each tab scopes correctly.
+message AdminListRefundLedgerRequest {
+  string side = 1;          // "buy" | "sell" | "" (both)
+  string status = 2;        // optional confirmation_status filter
+  int32 page = 3;           // 1-based
+  int32 limit = 4;          // 1..200, default 25
+}
+
+message AdminRefundLedgerEntry {
+  string id = 1;
+  string original_reference = 2;
+  string refund_reference = 3;
+  string user_id = 4;
+  string account_id = 5;
+  double amount = 6;
+  string currency = 7;
+  string direction = 8;            // "credit" | "debit"
+  string reason = 9;
+  string confirmation_status = 10; // pending | confirmed | denied
+  string settlement_status = 11;   // pending | verified | failed
+  string provider_transaction_id = 12;
+  string provider_status = 13;
+  string notes = 14;
+  string executed_at = 15;
+  string confirmed_at = 16;
+  string escalated_at = 17;
+  int32  verification_attempts = 18;
+  int32  max_verification_retries = 19;
+  string created_at = 20;
+  string updated_at = 21;
+  string side = 22;                // derived: "buy" | "sell"
+}
+
+message AdminListRefundLedgerResponse {
+  repeated AdminRefundLedgerEntry entries = 1;
   int32 total = 2;
   int32 page = 3;
   int32 limit = 4;
@@ -1284,6 +1382,25 @@ message SearchGiftCardTransactionResponse {
 }
 
 // ----- Support: Manual operations -----------------------------------
+
+message BulkPerformManualOperationRequest {
+  repeated string transaction_ids = 1;       // 1..200; bounds enforced server-side
+  string operation = 2;                       // same set as PerformManualOperation
+  string reason = 3;
+  string notes = 4;
+}
+
+message BulkPerformManualOperationResult {
+  string transaction_id = 1;
+  bool   success = 2;
+  string error = 3;     // populated on failure; success rows leave it empty
+}
+
+message BulkPerformManualOperationResponse {
+  repeated BulkPerformManualOperationResult results = 1;
+  int32 succeeded = 2;
+  int32 failed = 3;
+}
 
 message PerformManualOperationRequest {
   string transaction_id  = 1;

@@ -199,6 +199,12 @@ class GiftCardBrand extends Equatable {
   final double maxSenderAmount;
   final double senderFee;
   final double senderFeePercentage;
+  /// Reloadly's authoritative denomination model.
+  ///   "FIXED" — only listed `fixedDenominations` are valid amounts
+  ///   "RANGE" — any value in [minAmount, maxAmount] is valid
+  ///   ""      — upstream didn't supply; fall back to the
+  ///             fixedDenominations.empty heuristic.
+  final String denominationType;
 
   const GiftCardBrand({
     required this.id,
@@ -225,7 +231,20 @@ class GiftCardBrand extends Equatable {
     this.maxSenderAmount = 0.0,
     this.senderFee = 0.0,
     this.senderFeePercentage = 0.0,
+    this.denominationType = '',
   });
+
+  /// True when Reloadly says this brand accepts custom amounts in the
+  /// allowed range. Prefers the explicit denominationType field; falls
+  /// back to the legacy heuristic for brands seeded before the field
+  /// was wired through (model, service, proto, regen).
+  bool get acceptsCustomAmount {
+    final t = denominationType.toUpperCase().trim();
+    if (t == 'RANGE') return true;
+    if (t == 'FIXED') return false;
+    // Legacy fallback.
+    return fixedDenominations.isEmpty && minAmount > 0 && maxAmount > 0;
+  }
 
   /// Whether this brand has different sender and recipient currencies.
   /// Also requires sender denomination data to actually display dual pricing.
@@ -299,6 +318,7 @@ class GiftCardBrand extends Equatable {
       'maxSenderAmount': maxSenderAmount,
       'senderFee': senderFee,
       'senderFeePercentage': senderFeePercentage,
+      'denominationType': denominationType,
     };
   }
 
@@ -336,6 +356,7 @@ class GiftCardBrand extends Equatable {
       maxSenderAmount: (json['maxSenderAmount'] as num?)?.toDouble() ?? 0.0,
       senderFee: (json['senderFee'] as num?)?.toDouble() ?? 0.0,
       senderFeePercentage: (json['senderFeePercentage'] as num?)?.toDouble() ?? 0.0,
+      denominationType: json['denominationType'] as String? ?? '',
     );
   }
 }

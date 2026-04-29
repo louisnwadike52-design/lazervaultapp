@@ -133,6 +133,14 @@ class GiftCardsServiceClient extends $grpc.Client {
     return $createUnaryCall(_$adminListBuyTransactions, request, options: options);
   }
 
+  /// List refund_ledger rows (past + present) — drives the admin
+  /// Refunds tab on both sides. Filterable by side ("buy"/"sell") so
+  /// each tab scopes correctly without the consumer reaching into the
+  /// ledger's direction column.
+  $grpc.ResponseFuture<$0.AdminListRefundLedgerResponse> adminListRefundLedger($0.AdminListRefundLedgerRequest request, {$grpc.CallOptions? options,}) {
+    return $createUnaryCall(_$adminListRefundLedger, request, options: options);
+  }
+
   /// Get full sell request details for admin review (includes images)
   $grpc.ResponseFuture<$0.AdminGetSaleDetailResponse> adminGetSaleDetail($0.AdminGetSaleDetailRequest request, {$grpc.CallOptions? options,}) {
     return $createUnaryCall(_$adminGetSaleDetail, request, options: options);
@@ -234,6 +242,15 @@ class GiftCardsServiceClient extends $grpc.Client {
   }
 
   /// Perform manual operation (retry, reverse, cancel, etc.)
+  /// BulkPerformManualOperation drains a manual_review backlog by
+  /// applying the same operation to N sales in one round-trip. Used by
+  /// the admin Refunds / Stuck tabs to resolve queues that have piled
+  /// up. Per-row failures are reported individually so a single bad
+  /// row doesn't roll back the others.
+  $grpc.ResponseFuture<$0.BulkPerformManualOperationResponse> bulkPerformManualOperation($0.BulkPerformManualOperationRequest request, {$grpc.CallOptions? options,}) {
+    return $createUnaryCall(_$bulkPerformManualOperation, request, options: options);
+  }
+
   $grpc.ResponseFuture<$0.PerformManualOperationResponse> performManualOperation($0.PerformManualOperationRequest request, {$grpc.CallOptions? options,}) {
     return $createUnaryCall(_$performManualOperation, request, options: options);
   }
@@ -334,6 +351,10 @@ class GiftCardsServiceClient extends $grpc.Client {
       '/giftcards.GiftCardsService/AdminListBuyTransactions',
       ($0.AdminListBuyTransactionsRequest value) => value.writeToBuffer(),
       $0.AdminListBuyTransactionsResponse.fromBuffer);
+  static final _$adminListRefundLedger = $grpc.ClientMethod<$0.AdminListRefundLedgerRequest, $0.AdminListRefundLedgerResponse>(
+      '/giftcards.GiftCardsService/AdminListRefundLedger',
+      ($0.AdminListRefundLedgerRequest value) => value.writeToBuffer(),
+      $0.AdminListRefundLedgerResponse.fromBuffer);
   static final _$adminGetSaleDetail = $grpc.ClientMethod<$0.AdminGetSaleDetailRequest, $0.AdminGetSaleDetailResponse>(
       '/giftcards.GiftCardsService/AdminGetSaleDetail',
       ($0.AdminGetSaleDetailRequest value) => value.writeToBuffer(),
@@ -414,6 +435,10 @@ class GiftCardsServiceClient extends $grpc.Client {
       '/giftcards.GiftCardsService/SearchGiftCardTransaction',
       ($0.SearchGiftCardTransactionRequest value) => value.writeToBuffer(),
       $0.SearchGiftCardTransactionResponse.fromBuffer);
+  static final _$bulkPerformManualOperation = $grpc.ClientMethod<$0.BulkPerformManualOperationRequest, $0.BulkPerformManualOperationResponse>(
+      '/giftcards.GiftCardsService/BulkPerformManualOperation',
+      ($0.BulkPerformManualOperationRequest value) => value.writeToBuffer(),
+      $0.BulkPerformManualOperationResponse.fromBuffer);
   static final _$performManualOperation = $grpc.ClientMethod<$0.PerformManualOperationRequest, $0.PerformManualOperationResponse>(
       '/giftcards.GiftCardsService/PerformManualOperation',
       ($0.PerformManualOperationRequest value) => value.writeToBuffer(),
@@ -570,6 +595,13 @@ abstract class GiftCardsServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.AdminListBuyTransactionsRequest.fromBuffer(value),
         ($0.AdminListBuyTransactionsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AdminListRefundLedgerRequest, $0.AdminListRefundLedgerResponse>(
+        'AdminListRefundLedger',
+        adminListRefundLedger_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.AdminListRefundLedgerRequest.fromBuffer(value),
+        ($0.AdminListRefundLedgerResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.AdminGetSaleDetailRequest, $0.AdminGetSaleDetailResponse>(
         'AdminGetSaleDetail',
         adminGetSaleDetail_Pre,
@@ -710,6 +742,13 @@ abstract class GiftCardsServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.SearchGiftCardTransactionRequest.fromBuffer(value),
         ($0.SearchGiftCardTransactionResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.BulkPerformManualOperationRequest, $0.BulkPerformManualOperationResponse>(
+        'BulkPerformManualOperation',
+        bulkPerformManualOperation_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.BulkPerformManualOperationRequest.fromBuffer(value),
+        ($0.BulkPerformManualOperationResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.PerformManualOperationRequest, $0.PerformManualOperationResponse>(
         'PerformManualOperation',
         performManualOperation_Pre,
@@ -854,6 +893,12 @@ abstract class GiftCardsServiceBase extends $grpc.Service {
 
   $async.Future<$0.AdminListBuyTransactionsResponse> adminListBuyTransactions($grpc.ServiceCall call, $0.AdminListBuyTransactionsRequest request);
 
+  $async.Future<$0.AdminListRefundLedgerResponse> adminListRefundLedger_Pre($grpc.ServiceCall $call, $async.Future<$0.AdminListRefundLedgerRequest> $request) async {
+    return adminListRefundLedger($call, await $request);
+  }
+
+  $async.Future<$0.AdminListRefundLedgerResponse> adminListRefundLedger($grpc.ServiceCall call, $0.AdminListRefundLedgerRequest request);
+
   $async.Future<$0.AdminGetSaleDetailResponse> adminGetSaleDetail_Pre($grpc.ServiceCall $call, $async.Future<$0.AdminGetSaleDetailRequest> $request) async {
     return adminGetSaleDetail($call, await $request);
   }
@@ -973,6 +1018,12 @@ abstract class GiftCardsServiceBase extends $grpc.Service {
   }
 
   $async.Future<$0.SearchGiftCardTransactionResponse> searchGiftCardTransaction($grpc.ServiceCall call, $0.SearchGiftCardTransactionRequest request);
+
+  $async.Future<$0.BulkPerformManualOperationResponse> bulkPerformManualOperation_Pre($grpc.ServiceCall $call, $async.Future<$0.BulkPerformManualOperationRequest> $request) async {
+    return bulkPerformManualOperation($call, await $request);
+  }
+
+  $async.Future<$0.BulkPerformManualOperationResponse> bulkPerformManualOperation($grpc.ServiceCall call, $0.BulkPerformManualOperationRequest request);
 
   $async.Future<$0.PerformManualOperationResponse> performManualOperation_Pre($grpc.ServiceCall $call, $async.Future<$0.PerformManualOperationRequest> $request) async {
     return performManualOperation($call, await $request);

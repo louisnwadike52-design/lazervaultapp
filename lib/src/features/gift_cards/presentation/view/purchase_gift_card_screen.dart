@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -30,6 +32,10 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
   final TextEditingController _amountController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   double? _selectedAmount;
+  // True = user is typing in sender (locale) currency. False (default)
+  // = user is typing in recipient/card currency. The sender FX rate is
+  // derived from minSenderAmount/minAmount and applied symmetrically.
+  bool _entryInSenderCurrency = false;
 
   List<double> get _denominations {
     if (widget.brand.fixedDenominations.isNotEmpty) {
@@ -64,7 +70,46 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
       widget.brand.minAmount > 0 &&
       widget.brand.maxAmount > 0;
 
-  bool get _hasCustomAmount => _isRangeBased;
+  // Custom amount is allowed only when Reloadly classifies the brand
+  // as RANGE. acceptsCustomAmount prefers the explicit
+  // denominationType field and falls back to the legacy heuristic for
+  // brands seeded before the field was wired through.
+  bool get _hasCustomAmount => widget.brand.acceptsCustomAmount;
+
+  // FX ratio for converting between sender (locale) and recipient
+  // (card) currency on this brand. Derived from the live minSender/
+  // minRecipient pair Reloadly returns; null when the brand is
+  // single-currency or doesn't expose sender pricing.
+  double? get _fxRecipientPerSender {
+    if (widget.brand.minSenderAmount <= 0 || widget.brand.minAmount <= 0) {
+      return null;
+    }
+    return widget.brand.minAmount / widget.brand.minSenderAmount;
+  }
+
+  // The currency the prefix icon + hint should reflect. Toggled by the
+  // switch CTA next to the input.
+  String get _activeEntryCurrency =>
+      _entryInSenderCurrency ? _senderCurrency : _recipientCurrency;
+  String get _otherEntryCurrency =>
+      _entryInSenderCurrency ? _recipientCurrency : _senderCurrency;
+  // True only when both currencies are populated and distinct, AND we
+  // have FX data to translate between them. Without that, switching is
+  // meaningless.
+  bool get _canSwitchCurrency =>
+      widget.brand.isMultiCurrency && _fxRecipientPerSender != null;
+
+  // Translate the typed value into the recipient (card-face) amount
+  // that the saga + validator expect. When entry is already in
+  // recipient currency, this is identity.
+  double? _typedToRecipient(String raw) {
+    final v = double.tryParse(raw.replaceAll(',', ''));
+    if (v == null) return null;
+    if (!_entryInSenderCurrency) return v;
+    final fx = _fxRecipientPerSender;
+    if (fx == null) return v;
+    return v * fx;
+  }
 
   /// For range-based products, calculate the local currency price using backend-provided fee config.
   /// Uses: (recipientAmount * fxRate) + margin% + flatFee
@@ -299,12 +344,12 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
                 padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? const Color(0xFF3B82F6)
+                      ? InvoiceThemeColors.primaryPurple
                       : const Color(0xFF1F1F1F),
                   borderRadius: BorderRadius.circular(12.r),
                   border: Border.all(
                     color: isSelected
-                        ? const Color(0xFF3B82F6)
+                        ? InvoiceThemeColors.primaryPurple
                         : const Color(0xFF2D2D2D),
                   ),
                 ),
@@ -340,68 +385,178 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
             );
           }).toList(),
         ),
-        if (_hasCustomAmount) ...[
-          SizedBox(height: 16.h),
-          Text(
-            'Or enter custom amount',
-            style: GoogleFonts.inter(
-              fontSize: 13.sp,
-              fontWeight: FontWeight.w500,
-              color: const Color(0xFF9CA3AF),
-            ),
-          ),
-          SizedBox(height: 10.h),
-          Container(
-            decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
-              borderRadius: BorderRadius.circular(14.r),
-              border: Border.all(color: const Color(0xFF2D2D2D)),
-            ),
-            child: TextFormField(
-              controller: _amountController,
-              keyboardType: TextInputType.number,
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w600,
+        // Custom amount block — always rendered so the user knows the
+        // input exists, but DISABLED when the brand is FIXED-only
+        // (Reloadly denominationType=FIXED). Per-brand:
+        //   • RANGE → editable; min/max validation
+        //   • FIXED → disabled; helper text directs the user to pills
+        SizedBox(height: 16.h),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                _hasCustomAmount
+                    ? 'Or enter custom amount'
+                    : 'This card only accepts the listed amounts',
+                style: GoogleFonts.inter(
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF9CA3AF),
+                ),
               ),
-              onChanged: (value) {
-                if (value.isNotEmpty) {
+            ),
+            // Currency switch CTA — only shown when the brand is
+            // multi-currency and we have FX to convert between
+            // recipient (card face) and sender (locale) values.
+            if (_hasCustomAmount && _canSwitchCurrency)
+              GestureDetector(
+                onTap: () {
                   setState(() {
-                    _selectedAmount = double.tryParse(value);
+                    _entryInSenderCurrency = !_entryInSenderCurrency;
+                    _amountController.clear();
+                    _selectedAmount = null;
                   });
-                }
-              },
-              decoration: InputDecoration(
-                hintText: 'Enter amount',
-                hintStyle: GoogleFonts.inter(
-                  color: const Color(0xFF6B7280),
-                  fontSize: 16.sp,
+                },
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                      horizontal: 10.w, vertical: 6.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1F1F1F),
+                    borderRadius: BorderRadius.circular(8.r),
+                    border: Border.all(
+                        color:
+                            InvoiceThemeColors.primaryPurple.withValues(alpha: 0.4)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.swap_horiz_rounded,
+                          size: 14.sp,
+                          color: InvoiceThemeColors.primaryPurple),
+                      SizedBox(width: 4.w),
+                      Text(
+                        'Switch to $_otherEntryCurrency',
+                        style: GoogleFonts.inter(
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w600,
+                          color: InvoiceThemeColors.primaryPurple,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                prefixIcon: Icon(
-                  Icons.attach_money_rounded,
-                  color: const Color(0xFF6B7280),
-                  size: 22.sp,
-                ),
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter an amount';
-                }
-                final amount = double.tryParse(value);
-                if (amount == null || amount <= 0) {
-                  return 'Please enter a valid amount';
-                }
-                if (widget.brand.minAmount > 0 && amount < widget.brand.minAmount) {
-                  return 'Minimum amount is ${widget.brand.minAmount.toStringAsFixed(0)}';
-                }
-                if (widget.brand.maxAmount > 0 && amount > widget.brand.maxAmount) {
-                  return 'Maximum amount is ${widget.brand.maxAmount.toStringAsFixed(0)}';
-                }
-                return null;
-              },
+          ],
+        ),
+        SizedBox(height: 10.h),
+        Container(
+          decoration: BoxDecoration(
+            color: _hasCustomAmount
+                ? const Color(0xFF1F1F1F)
+                : const Color(0xFF141414),
+            borderRadius: BorderRadius.circular(14.r),
+            border: Border.all(color: const Color(0xFF2D2D2D)),
+          ),
+          child: TextFormField(
+            controller: _amountController,
+            enabled: _hasCustomAmount,
+            keyboardType: const TextInputType.numberWithOptions(decimal: false),
+            // Hard-clip pasted/IME input to digits only (keyboardType alone
+            // is a hint, not a guarantee — clipboard can still inject text).
+            // Length cap of 8 digits = up to 99,999,999 in entry units,
+            // which exceeds every Reloadly maxRecipientDenomination we've
+            // seen and prevents UI overflow / overflow exceptions.
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(8),
+            ],
+            style: GoogleFonts.inter(
+              color: _hasCustomAmount
+                  ? Colors.white
+                  : const Color(0xFF6B7280),
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
+            ),
+            onChanged: (value) {
+              if (value.isEmpty) return;
+              setState(() {
+                _selectedAmount = _typedToRecipient(value);
+              });
+            },
+            decoration: InputDecoration(
+              hintText: _hasCustomAmount
+                  ? 'Enter amount in $_activeEntryCurrency'
+                  : 'Pick one of the amounts above',
+              hintStyle: GoogleFonts.inter(
+                color: const Color(0xFF6B7280),
+                fontSize: 16.sp,
+              ),
+              // Currency code chip in the prefix slot — replaces the
+              // hardcoded Icons.attach_money_rounded ($) so the icon
+              // matches the destination currency rather than always
+              // showing USD.
+              prefixIcon: Container(
+                margin: EdgeInsets.only(left: 12.w, right: 8.w),
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2D2D2D),
+                  borderRadius: BorderRadius.circular(6.r),
+                ),
+                child: Center(
+                  widthFactor: 1,
+                  child: Text(
+                    _activeEntryCurrency,
+                    style: GoogleFonts.inter(
+                      color: _hasCustomAmount
+                          ? Colors.white
+                          : const Color(0xFF6B7280),
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ),
+              prefixIconConstraints:
+                  BoxConstraints(minWidth: 0, minHeight: 0),
+              border: InputBorder.none,
+              contentPadding:
+                  EdgeInsets.symmetric(horizontal: 4.w, vertical: 16.h),
+            ),
+            validator: (value) {
+              // Validation only fires when the field is enabled —
+              // disabled (FIXED-only) brands rely solely on the pills.
+              if (!_hasCustomAmount) return null;
+              if (value == null || value.isEmpty) {
+                return 'Please enter an amount';
+              }
+              final recipient = _typedToRecipient(value);
+              if (recipient == null || recipient <= 0) {
+                return 'Please enter a valid amount';
+              }
+              if (widget.brand.minAmount > 0 &&
+                  recipient < widget.brand.minAmount) {
+                return 'Minimum is $_recipientCurrency ${widget.brand.minAmount.toStringAsFixed(0)}';
+              }
+              if (widget.brand.maxAmount > 0 &&
+                  recipient > widget.brand.maxAmount) {
+                return 'Maximum is $_recipientCurrency ${widget.brand.maxAmount.toStringAsFixed(0)}';
+              }
+              return null;
+            },
+          ),
+        ),
+        // Allowed range — always shown so the user knows the bounds
+        // even on FIXED brands (helps explain why custom is locked).
+        if (widget.brand.minAmount > 0 && widget.brand.maxAmount > 0) ...[
+          SizedBox(height: 6.h),
+          Text(
+            _hasCustomAmount
+                ? 'Allowed: $_recipientCurrency ${widget.brand.minAmount.toStringAsFixed(0)} – ${widget.brand.maxAmount.toStringAsFixed(0)}'
+                : 'Listed amounts only — custom entry disabled by Reloadly',
+            style: GoogleFonts.inter(
+              fontSize: 11.sp,
+              color: const Color(0xFF6B7280),
             ),
           ),
         ],
@@ -466,6 +621,16 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
             _buildPriceRow(
               'Service Fee',
               '$_senderCurrency ${_formatAmount(flatFee)}',
+            ),
+          ],
+          // FX rate line — surfaces the Reloadly rate (already including our
+          // FX margin from the backend) so the user can see why the locale
+          // total differs from the card face value.
+          if (hasSenderPrice && amount > 0 && total > 0) ...[
+            SizedBox(height: 10.h),
+            _buildPriceRow(
+              'FX rate',
+              '1 $_recipientCurrency = ${_formatAmount(total / amount)} $_senderCurrency',
             ),
           ],
           if (widget.brand.discountPercentage > 0) ...[
@@ -545,7 +710,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
           decoration: BoxDecoration(
             gradient: isValid
                 ? const LinearGradient(
-                    colors: [Color(0xFF3B82F6), Color(0xFF6366F1)],
+                    colors: [InvoiceThemeColors.primaryPurple, Color(0xFF6366F1)],
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                   )
@@ -619,6 +784,12 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
         currency: displayCurrency,
         title: 'Confirm Gift Card Purchase',
         message: confirmMessage,
+        // Gift card purchase: provider call happens on the dedicated
+        // gift_card_purchase_processing screen *after* this modal closes,
+        // so the modal should stop at "PIN verified" rather than animating
+        // a "processing" phase whose timing has nothing to do with the
+        // actual Reloadly call.
+        showProcessingPhase: false,
         onPinValidated: (token) async {
           verificationToken = token;
         },

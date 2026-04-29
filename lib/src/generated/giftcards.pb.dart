@@ -433,6 +433,7 @@ class GiftCardBrand extends $pb.GeneratedMessage {
     $core.double? senderFee,
     $core.double? senderFeePercentage,
     $core.Iterable<GiftCardDenomination>? fixedSenderDenominations,
+    $core.String? denominationType,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -459,6 +460,7 @@ class GiftCardBrand extends $pb.GeneratedMessage {
     if (senderFee != null) result.senderFee = senderFee;
     if (senderFeePercentage != null) result.senderFeePercentage = senderFeePercentage;
     if (fixedSenderDenominations != null) result.fixedSenderDenominations.addAll(fixedSenderDenominations);
+    if (denominationType != null) result.denominationType = denominationType;
     return result;
   }
 
@@ -492,6 +494,7 @@ class GiftCardBrand extends $pb.GeneratedMessage {
     ..a<$core.double>(22, _omitFieldNames ? '' : 'senderFee', $pb.PbFieldType.OD)
     ..a<$core.double>(23, _omitFieldNames ? '' : 'senderFeePercentage', $pb.PbFieldType.OD)
     ..pc<GiftCardDenomination>(24, _omitFieldNames ? '' : 'fixedSenderDenominations', $pb.PbFieldType.PM, subBuilder: GiftCardDenomination.create)
+    ..aOS(25, _omitFieldNames ? '' : 'denominationType')
     ..hasRequiredFields = false
   ;
 
@@ -707,6 +710,20 @@ class GiftCardBrand extends $pb.GeneratedMessage {
   /// Fixed sender denomination objects (paired with recipient denominations)
   @$pb.TagNumber(24)
   $pb.PbList<GiftCardDenomination> get fixedSenderDenominations => $_getList(23);
+
+  /// Reloadly's authoritative denomination model: "FIXED" (only the
+  /// listed denominations are valid) or "RANGE" (any value within
+  /// min/max is valid). Empty string for products where the upstream
+  /// didn't supply it — clients fall back to the
+  /// fixedDenominations.empty heuristic.
+  @$pb.TagNumber(25)
+  $core.String get denominationType => $_getSZ(24);
+  @$pb.TagNumber(25)
+  set denominationType($core.String value) => $_setString(24, value);
+  @$pb.TagNumber(25)
+  $core.bool hasDenominationType() => $_has(24);
+  @$pb.TagNumber(25)
+  void clearDenominationType() => $_clearField(25);
 }
 
 /// Fixed denomination from Reloadly
@@ -4831,6 +4848,25 @@ class AdminBuyTransaction extends $pb.GeneratedMessage {
     $core.String? updatedAt,
     $core.String? recipientEmail,
     $core.String? recipientName,
+    $core.String? reference,
+    $core.double? retailAmount,
+    $core.String? retailCurrency,
+    $core.double? wholesaleAmount,
+    $core.String? wholesaleCurrency,
+    $core.double? commissionAmount,
+    $core.String? commissionCurrency,
+    $core.double? senderAmount,
+    $core.String? senderCurrency,
+    $core.double? fxRate,
+    $core.double? feePercentage,
+    $core.String? completedAt,
+    $core.String? providerName,
+    $core.String? failureReason,
+    $core.String? redemptionCode,
+    $core.String? redemptionPin,
+    $core.String? providerTransactionId,
+    $core.String? mode,
+    $core.bool? hasRefundEntry,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -4844,6 +4880,25 @@ class AdminBuyTransaction extends $pb.GeneratedMessage {
     if (updatedAt != null) result.updatedAt = updatedAt;
     if (recipientEmail != null) result.recipientEmail = recipientEmail;
     if (recipientName != null) result.recipientName = recipientName;
+    if (reference != null) result.reference = reference;
+    if (retailAmount != null) result.retailAmount = retailAmount;
+    if (retailCurrency != null) result.retailCurrency = retailCurrency;
+    if (wholesaleAmount != null) result.wholesaleAmount = wholesaleAmount;
+    if (wholesaleCurrency != null) result.wholesaleCurrency = wholesaleCurrency;
+    if (commissionAmount != null) result.commissionAmount = commissionAmount;
+    if (commissionCurrency != null) result.commissionCurrency = commissionCurrency;
+    if (senderAmount != null) result.senderAmount = senderAmount;
+    if (senderCurrency != null) result.senderCurrency = senderCurrency;
+    if (fxRate != null) result.fxRate = fxRate;
+    if (feePercentage != null) result.feePercentage = feePercentage;
+    if (completedAt != null) result.completedAt = completedAt;
+    if (providerName != null) result.providerName = providerName;
+    if (failureReason != null) result.failureReason = failureReason;
+    if (redemptionCode != null) result.redemptionCode = redemptionCode;
+    if (redemptionPin != null) result.redemptionPin = redemptionPin;
+    if (providerTransactionId != null) result.providerTransactionId = providerTransactionId;
+    if (mode != null) result.mode = mode;
+    if (hasRefundEntry != null) result.hasRefundEntry = hasRefundEntry;
     return result;
   }
 
@@ -4864,6 +4919,25 @@ class AdminBuyTransaction extends $pb.GeneratedMessage {
     ..aOS(9, _omitFieldNames ? '' : 'updatedAt')
     ..aOS(10, _omitFieldNames ? '' : 'recipientEmail')
     ..aOS(11, _omitFieldNames ? '' : 'recipientName')
+    ..aOS(12, _omitFieldNames ? '' : 'reference')
+    ..a<$core.double>(13, _omitFieldNames ? '' : 'retailAmount', $pb.PbFieldType.OD)
+    ..aOS(14, _omitFieldNames ? '' : 'retailCurrency')
+    ..a<$core.double>(15, _omitFieldNames ? '' : 'wholesaleAmount', $pb.PbFieldType.OD)
+    ..aOS(16, _omitFieldNames ? '' : 'wholesaleCurrency')
+    ..a<$core.double>(17, _omitFieldNames ? '' : 'commissionAmount', $pb.PbFieldType.OD)
+    ..aOS(18, _omitFieldNames ? '' : 'commissionCurrency')
+    ..a<$core.double>(19, _omitFieldNames ? '' : 'senderAmount', $pb.PbFieldType.OD)
+    ..aOS(20, _omitFieldNames ? '' : 'senderCurrency')
+    ..a<$core.double>(21, _omitFieldNames ? '' : 'fxRate', $pb.PbFieldType.OD)
+    ..a<$core.double>(22, _omitFieldNames ? '' : 'feePercentage', $pb.PbFieldType.OD)
+    ..aOS(23, _omitFieldNames ? '' : 'completedAt')
+    ..aOS(24, _omitFieldNames ? '' : 'providerName')
+    ..aOS(25, _omitFieldNames ? '' : 'failureReason')
+    ..aOS(26, _omitFieldNames ? '' : 'redemptionCode')
+    ..aOS(27, _omitFieldNames ? '' : 'redemptionPin')
+    ..aOS(28, _omitFieldNames ? '' : 'providerTransactionId')
+    ..aOS(29, _omitFieldNames ? '' : 'mode')
+    ..aOB(30, _omitFieldNames ? '' : 'hasRefundEntry')
     ..hasRequiredFields = false
   ;
 
@@ -4982,6 +5056,184 @@ class AdminBuyTransaction extends $pb.GeneratedMessage {
   $core.bool hasRecipientName() => $_has(10);
   @$pb.TagNumber(11)
   void clearRecipientName() => $_clearField(11);
+
+  /// Settlement / FX breakdown — needed by the admin Settlements tab
+  /// to render per-transaction revenue distribution. All amounts in
+  /// major units; currency fields name the wallet for each leg.
+  @$pb.TagNumber(12)
+  $core.String get reference => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set reference($core.String value) => $_setString(11, value);
+  @$pb.TagNumber(12)
+  $core.bool hasReference() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearReference() => $_clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.double get retailAmount => $_getN(12);
+  @$pb.TagNumber(13)
+  set retailAmount($core.double value) => $_setDouble(12, value);
+  @$pb.TagNumber(13)
+  $core.bool hasRetailAmount() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearRetailAmount() => $_clearField(13);
+
+  @$pb.TagNumber(14)
+  $core.String get retailCurrency => $_getSZ(13);
+  @$pb.TagNumber(14)
+  set retailCurrency($core.String value) => $_setString(13, value);
+  @$pb.TagNumber(14)
+  $core.bool hasRetailCurrency() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearRetailCurrency() => $_clearField(14);
+
+  @$pb.TagNumber(15)
+  $core.double get wholesaleAmount => $_getN(14);
+  @$pb.TagNumber(15)
+  set wholesaleAmount($core.double value) => $_setDouble(14, value);
+  @$pb.TagNumber(15)
+  $core.bool hasWholesaleAmount() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearWholesaleAmount() => $_clearField(15);
+
+  @$pb.TagNumber(16)
+  $core.String get wholesaleCurrency => $_getSZ(15);
+  @$pb.TagNumber(16)
+  set wholesaleCurrency($core.String value) => $_setString(15, value);
+  @$pb.TagNumber(16)
+  $core.bool hasWholesaleCurrency() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearWholesaleCurrency() => $_clearField(16);
+
+  @$pb.TagNumber(17)
+  $core.double get commissionAmount => $_getN(16);
+  @$pb.TagNumber(17)
+  set commissionAmount($core.double value) => $_setDouble(16, value);
+  @$pb.TagNumber(17)
+  $core.bool hasCommissionAmount() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearCommissionAmount() => $_clearField(17);
+
+  @$pb.TagNumber(18)
+  $core.String get commissionCurrency => $_getSZ(17);
+  @$pb.TagNumber(18)
+  set commissionCurrency($core.String value) => $_setString(17, value);
+  @$pb.TagNumber(18)
+  $core.bool hasCommissionCurrency() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearCommissionCurrency() => $_clearField(18);
+
+  @$pb.TagNumber(19)
+  $core.double get senderAmount => $_getN(18);
+  @$pb.TagNumber(19)
+  set senderAmount($core.double value) => $_setDouble(18, value);
+  @$pb.TagNumber(19)
+  $core.bool hasSenderAmount() => $_has(18);
+  @$pb.TagNumber(19)
+  void clearSenderAmount() => $_clearField(19);
+
+  @$pb.TagNumber(20)
+  $core.String get senderCurrency => $_getSZ(19);
+  @$pb.TagNumber(20)
+  set senderCurrency($core.String value) => $_setString(19, value);
+  @$pb.TagNumber(20)
+  $core.bool hasSenderCurrency() => $_has(19);
+  @$pb.TagNumber(20)
+  void clearSenderCurrency() => $_clearField(20);
+
+  @$pb.TagNumber(21)
+  $core.double get fxRate => $_getN(20);
+  @$pb.TagNumber(21)
+  set fxRate($core.double value) => $_setDouble(20, value);
+  @$pb.TagNumber(21)
+  $core.bool hasFxRate() => $_has(20);
+  @$pb.TagNumber(21)
+  void clearFxRate() => $_clearField(21);
+
+  @$pb.TagNumber(22)
+  $core.double get feePercentage => $_getN(21);
+  @$pb.TagNumber(22)
+  set feePercentage($core.double value) => $_setDouble(21, value);
+  @$pb.TagNumber(22)
+  $core.bool hasFeePercentage() => $_has(21);
+  @$pb.TagNumber(22)
+  void clearFeePercentage() => $_clearField(22);
+
+  @$pb.TagNumber(23)
+  $core.String get completedAt => $_getSZ(22);
+  @$pb.TagNumber(23)
+  set completedAt($core.String value) => $_setString(22, value);
+  @$pb.TagNumber(23)
+  $core.bool hasCompletedAt() => $_has(22);
+  @$pb.TagNumber(23)
+  void clearCompletedAt() => $_clearField(23);
+
+  /// Operational columns — needed by the admin Transactions table so
+  /// operators can triage at a glance without drilling in. Mirrors
+  /// the electricity-bill-payment admin row: Provider, Mode, Token,
+  /// Refund link, Failover marker, Source.
+  @$pb.TagNumber(24)
+  $core.String get providerName => $_getSZ(23);
+  @$pb.TagNumber(24)
+  set providerName($core.String value) => $_setString(23, value);
+  @$pb.TagNumber(24)
+  $core.bool hasProviderName() => $_has(23);
+  @$pb.TagNumber(24)
+  void clearProviderName() => $_clearField(24);
+
+  @$pb.TagNumber(25)
+  $core.String get failureReason => $_getSZ(24);
+  @$pb.TagNumber(25)
+  set failureReason($core.String value) => $_setString(24, value);
+  @$pb.TagNumber(25)
+  $core.bool hasFailureReason() => $_has(24);
+  @$pb.TagNumber(25)
+  void clearFailureReason() => $_clearField(25);
+
+  @$pb.TagNumber(26)
+  $core.String get redemptionCode => $_getSZ(25);
+  @$pb.TagNumber(26)
+  set redemptionCode($core.String value) => $_setString(25, value);
+  @$pb.TagNumber(26)
+  $core.bool hasRedemptionCode() => $_has(25);
+  @$pb.TagNumber(26)
+  void clearRedemptionCode() => $_clearField(26);
+
+  @$pb.TagNumber(27)
+  $core.String get redemptionPin => $_getSZ(26);
+  @$pb.TagNumber(27)
+  set redemptionPin($core.String value) => $_setString(26, value);
+  @$pb.TagNumber(27)
+  $core.bool hasRedemptionPin() => $_has(26);
+  @$pb.TagNumber(27)
+  void clearRedemptionPin() => $_clearField(27);
+
+  @$pb.TagNumber(28)
+  $core.String get providerTransactionId => $_getSZ(27);
+  @$pb.TagNumber(28)
+  set providerTransactionId($core.String value) => $_setString(27, value);
+  @$pb.TagNumber(28)
+  $core.bool hasProviderTransactionId() => $_has(27);
+  @$pb.TagNumber(28)
+  void clearProviderTransactionId() => $_clearField(28);
+
+  @$pb.TagNumber(29)
+  $core.String get mode => $_getSZ(28);
+  @$pb.TagNumber(29)
+  set mode($core.String value) => $_setString(28, value);
+  @$pb.TagNumber(29)
+  $core.bool hasMode() => $_has(28);
+  @$pb.TagNumber(29)
+  void clearMode() => $_clearField(29);
+
+  @$pb.TagNumber(30)
+  $core.bool get hasRefundEntry => $_getBF(29);
+  @$pb.TagNumber(30)
+  set hasRefundEntry($core.bool value) => $_setBool(29, value);
+  @$pb.TagNumber(30)
+  $core.bool hasHasRefundEntry() => $_has(29);
+  @$pb.TagNumber(30)
+  void clearHasRefundEntry() => $_clearField(30);
 }
 
 class AdminListBuyTransactionsResponse extends $pb.GeneratedMessage {
@@ -5031,6 +5283,467 @@ class AdminListBuyTransactionsResponse extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(1)
   $pb.PbList<AdminBuyTransaction> get transactions => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get total => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set total($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasTotal() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotal() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get page => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set page($core.int value) => $_setSignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasPage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPage() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get limit => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set limit($core.int value) => $_setSignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasLimit() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearLimit() => $_clearField(4);
+}
+
+/// AdminListRefundLedger surfaces refund_ledger rows for the Refunds
+/// admin tabs. Returns past + present refunds (any
+/// confirmation_status, any settlement_status) so operators see the
+/// full history not just in-flight items. Filterable by `side`
+/// (buy/sell) so each tab scopes correctly.
+class AdminListRefundLedgerRequest extends $pb.GeneratedMessage {
+  factory AdminListRefundLedgerRequest({
+    $core.String? side,
+    $core.String? status,
+    $core.int? page,
+    $core.int? limit,
+  }) {
+    final result = create();
+    if (side != null) result.side = side;
+    if (status != null) result.status = status;
+    if (page != null) result.page = page;
+    if (limit != null) result.limit = limit;
+    return result;
+  }
+
+  AdminListRefundLedgerRequest._();
+
+  factory AdminListRefundLedgerRequest.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
+  factory AdminListRefundLedgerRequest.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AdminListRefundLedgerRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'giftcards'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'side')
+    ..aOS(2, _omitFieldNames ? '' : 'status')
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminListRefundLedgerRequest clone() => AdminListRefundLedgerRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminListRefundLedgerRequest copyWith(void Function(AdminListRefundLedgerRequest) updates) => super.copyWith((message) => updates(message as AdminListRefundLedgerRequest)) as AdminListRefundLedgerRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminListRefundLedgerRequest create() => AdminListRefundLedgerRequest._();
+  @$core.override
+  AdminListRefundLedgerRequest createEmptyInstance() => create();
+  static $pb.PbList<AdminListRefundLedgerRequest> createRepeated() => $pb.PbList<AdminListRefundLedgerRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AdminListRefundLedgerRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AdminListRefundLedgerRequest>(create);
+  static AdminListRefundLedgerRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get side => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set side($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSide() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSide() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get status => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set status($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasStatus() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearStatus() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get page => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set page($core.int value) => $_setSignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasPage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPage() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get limit => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set limit($core.int value) => $_setSignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasLimit() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearLimit() => $_clearField(4);
+}
+
+class AdminRefundLedgerEntry extends $pb.GeneratedMessage {
+  factory AdminRefundLedgerEntry({
+    $core.String? id,
+    $core.String? originalReference,
+    $core.String? refundReference,
+    $core.String? userId,
+    $core.String? accountId,
+    $core.double? amount,
+    $core.String? currency,
+    $core.String? direction,
+    $core.String? reason,
+    $core.String? confirmationStatus,
+    $core.String? settlementStatus,
+    $core.String? providerTransactionId,
+    $core.String? providerStatus,
+    $core.String? notes,
+    $core.String? executedAt,
+    $core.String? confirmedAt,
+    $core.String? escalatedAt,
+    $core.int? verificationAttempts,
+    $core.int? maxVerificationRetries,
+    $core.String? createdAt,
+    $core.String? updatedAt,
+    $core.String? side,
+  }) {
+    final result = create();
+    if (id != null) result.id = id;
+    if (originalReference != null) result.originalReference = originalReference;
+    if (refundReference != null) result.refundReference = refundReference;
+    if (userId != null) result.userId = userId;
+    if (accountId != null) result.accountId = accountId;
+    if (amount != null) result.amount = amount;
+    if (currency != null) result.currency = currency;
+    if (direction != null) result.direction = direction;
+    if (reason != null) result.reason = reason;
+    if (confirmationStatus != null) result.confirmationStatus = confirmationStatus;
+    if (settlementStatus != null) result.settlementStatus = settlementStatus;
+    if (providerTransactionId != null) result.providerTransactionId = providerTransactionId;
+    if (providerStatus != null) result.providerStatus = providerStatus;
+    if (notes != null) result.notes = notes;
+    if (executedAt != null) result.executedAt = executedAt;
+    if (confirmedAt != null) result.confirmedAt = confirmedAt;
+    if (escalatedAt != null) result.escalatedAt = escalatedAt;
+    if (verificationAttempts != null) result.verificationAttempts = verificationAttempts;
+    if (maxVerificationRetries != null) result.maxVerificationRetries = maxVerificationRetries;
+    if (createdAt != null) result.createdAt = createdAt;
+    if (updatedAt != null) result.updatedAt = updatedAt;
+    if (side != null) result.side = side;
+    return result;
+  }
+
+  AdminRefundLedgerEntry._();
+
+  factory AdminRefundLedgerEntry.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
+  factory AdminRefundLedgerEntry.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AdminRefundLedgerEntry', package: const $pb.PackageName(_omitMessageNames ? '' : 'giftcards'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'originalReference')
+    ..aOS(3, _omitFieldNames ? '' : 'refundReference')
+    ..aOS(4, _omitFieldNames ? '' : 'userId')
+    ..aOS(5, _omitFieldNames ? '' : 'accountId')
+    ..a<$core.double>(6, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(7, _omitFieldNames ? '' : 'currency')
+    ..aOS(8, _omitFieldNames ? '' : 'direction')
+    ..aOS(9, _omitFieldNames ? '' : 'reason')
+    ..aOS(10, _omitFieldNames ? '' : 'confirmationStatus')
+    ..aOS(11, _omitFieldNames ? '' : 'settlementStatus')
+    ..aOS(12, _omitFieldNames ? '' : 'providerTransactionId')
+    ..aOS(13, _omitFieldNames ? '' : 'providerStatus')
+    ..aOS(14, _omitFieldNames ? '' : 'notes')
+    ..aOS(15, _omitFieldNames ? '' : 'executedAt')
+    ..aOS(16, _omitFieldNames ? '' : 'confirmedAt')
+    ..aOS(17, _omitFieldNames ? '' : 'escalatedAt')
+    ..a<$core.int>(18, _omitFieldNames ? '' : 'verificationAttempts', $pb.PbFieldType.O3)
+    ..a<$core.int>(19, _omitFieldNames ? '' : 'maxVerificationRetries', $pb.PbFieldType.O3)
+    ..aOS(20, _omitFieldNames ? '' : 'createdAt')
+    ..aOS(21, _omitFieldNames ? '' : 'updatedAt')
+    ..aOS(22, _omitFieldNames ? '' : 'side')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminRefundLedgerEntry clone() => AdminRefundLedgerEntry()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminRefundLedgerEntry copyWith(void Function(AdminRefundLedgerEntry) updates) => super.copyWith((message) => updates(message as AdminRefundLedgerEntry)) as AdminRefundLedgerEntry;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminRefundLedgerEntry create() => AdminRefundLedgerEntry._();
+  @$core.override
+  AdminRefundLedgerEntry createEmptyInstance() => create();
+  static $pb.PbList<AdminRefundLedgerEntry> createRepeated() => $pb.PbList<AdminRefundLedgerEntry>();
+  @$core.pragma('dart2js:noInline')
+  static AdminRefundLedgerEntry getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AdminRefundLedgerEntry>(create);
+  static AdminRefundLedgerEntry? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get originalReference => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set originalReference($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasOriginalReference() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearOriginalReference() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get refundReference => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set refundReference($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasRefundReference() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearRefundReference() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get userId => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set userId($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasUserId() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearUserId() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get accountId => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set accountId($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasAccountId() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearAccountId() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.double get amount => $_getN(5);
+  @$pb.TagNumber(6)
+  set amount($core.double value) => $_setDouble(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasAmount() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearAmount() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get currency => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set currency($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasCurrency() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearCurrency() => $_clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get direction => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set direction($core.String value) => $_setString(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasDirection() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearDirection() => $_clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get reason => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set reason($core.String value) => $_setString(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasReason() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearReason() => $_clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get confirmationStatus => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set confirmationStatus($core.String value) => $_setString(9, value);
+  @$pb.TagNumber(10)
+  $core.bool hasConfirmationStatus() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearConfirmationStatus() => $_clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get settlementStatus => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set settlementStatus($core.String value) => $_setString(10, value);
+  @$pb.TagNumber(11)
+  $core.bool hasSettlementStatus() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearSettlementStatus() => $_clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get providerTransactionId => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set providerTransactionId($core.String value) => $_setString(11, value);
+  @$pb.TagNumber(12)
+  $core.bool hasProviderTransactionId() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearProviderTransactionId() => $_clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.String get providerStatus => $_getSZ(12);
+  @$pb.TagNumber(13)
+  set providerStatus($core.String value) => $_setString(12, value);
+  @$pb.TagNumber(13)
+  $core.bool hasProviderStatus() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearProviderStatus() => $_clearField(13);
+
+  @$pb.TagNumber(14)
+  $core.String get notes => $_getSZ(13);
+  @$pb.TagNumber(14)
+  set notes($core.String value) => $_setString(13, value);
+  @$pb.TagNumber(14)
+  $core.bool hasNotes() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearNotes() => $_clearField(14);
+
+  @$pb.TagNumber(15)
+  $core.String get executedAt => $_getSZ(14);
+  @$pb.TagNumber(15)
+  set executedAt($core.String value) => $_setString(14, value);
+  @$pb.TagNumber(15)
+  $core.bool hasExecutedAt() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearExecutedAt() => $_clearField(15);
+
+  @$pb.TagNumber(16)
+  $core.String get confirmedAt => $_getSZ(15);
+  @$pb.TagNumber(16)
+  set confirmedAt($core.String value) => $_setString(15, value);
+  @$pb.TagNumber(16)
+  $core.bool hasConfirmedAt() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearConfirmedAt() => $_clearField(16);
+
+  @$pb.TagNumber(17)
+  $core.String get escalatedAt => $_getSZ(16);
+  @$pb.TagNumber(17)
+  set escalatedAt($core.String value) => $_setString(16, value);
+  @$pb.TagNumber(17)
+  $core.bool hasEscalatedAt() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearEscalatedAt() => $_clearField(17);
+
+  @$pb.TagNumber(18)
+  $core.int get verificationAttempts => $_getIZ(17);
+  @$pb.TagNumber(18)
+  set verificationAttempts($core.int value) => $_setSignedInt32(17, value);
+  @$pb.TagNumber(18)
+  $core.bool hasVerificationAttempts() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearVerificationAttempts() => $_clearField(18);
+
+  @$pb.TagNumber(19)
+  $core.int get maxVerificationRetries => $_getIZ(18);
+  @$pb.TagNumber(19)
+  set maxVerificationRetries($core.int value) => $_setSignedInt32(18, value);
+  @$pb.TagNumber(19)
+  $core.bool hasMaxVerificationRetries() => $_has(18);
+  @$pb.TagNumber(19)
+  void clearMaxVerificationRetries() => $_clearField(19);
+
+  @$pb.TagNumber(20)
+  $core.String get createdAt => $_getSZ(19);
+  @$pb.TagNumber(20)
+  set createdAt($core.String value) => $_setString(19, value);
+  @$pb.TagNumber(20)
+  $core.bool hasCreatedAt() => $_has(19);
+  @$pb.TagNumber(20)
+  void clearCreatedAt() => $_clearField(20);
+
+  @$pb.TagNumber(21)
+  $core.String get updatedAt => $_getSZ(20);
+  @$pb.TagNumber(21)
+  set updatedAt($core.String value) => $_setString(20, value);
+  @$pb.TagNumber(21)
+  $core.bool hasUpdatedAt() => $_has(20);
+  @$pb.TagNumber(21)
+  void clearUpdatedAt() => $_clearField(21);
+
+  @$pb.TagNumber(22)
+  $core.String get side => $_getSZ(21);
+  @$pb.TagNumber(22)
+  set side($core.String value) => $_setString(21, value);
+  @$pb.TagNumber(22)
+  $core.bool hasSide() => $_has(21);
+  @$pb.TagNumber(22)
+  void clearSide() => $_clearField(22);
+}
+
+class AdminListRefundLedgerResponse extends $pb.GeneratedMessage {
+  factory AdminListRefundLedgerResponse({
+    $core.Iterable<AdminRefundLedgerEntry>? entries,
+    $core.int? total,
+    $core.int? page,
+    $core.int? limit,
+  }) {
+    final result = create();
+    if (entries != null) result.entries.addAll(entries);
+    if (total != null) result.total = total;
+    if (page != null) result.page = page;
+    if (limit != null) result.limit = limit;
+    return result;
+  }
+
+  AdminListRefundLedgerResponse._();
+
+  factory AdminListRefundLedgerResponse.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
+  factory AdminListRefundLedgerResponse.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AdminListRefundLedgerResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'giftcards'), createEmptyInstance: create)
+    ..pc<AdminRefundLedgerEntry>(1, _omitFieldNames ? '' : 'entries', $pb.PbFieldType.PM, subBuilder: AdminRefundLedgerEntry.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminListRefundLedgerResponse clone() => AdminListRefundLedgerResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminListRefundLedgerResponse copyWith(void Function(AdminListRefundLedgerResponse) updates) => super.copyWith((message) => updates(message as AdminListRefundLedgerResponse)) as AdminListRefundLedgerResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminListRefundLedgerResponse create() => AdminListRefundLedgerResponse._();
+  @$core.override
+  AdminListRefundLedgerResponse createEmptyInstance() => create();
+  static $pb.PbList<AdminListRefundLedgerResponse> createRepeated() => $pb.PbList<AdminListRefundLedgerResponse>();
+  @$core.pragma('dart2js:noInline')
+  static AdminListRefundLedgerResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AdminListRefundLedgerResponse>(create);
+  static AdminListRefundLedgerResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<AdminRefundLedgerEntry> get entries => $_getList(0);
 
   @$pb.TagNumber(2)
   $core.int get total => $_getIZ(1);
@@ -9174,6 +9887,216 @@ class SearchGiftCardTransactionResponse extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(2)
   $pb.PbList<AuditLogEntry> get events => $_getList(1);
+}
+
+class BulkPerformManualOperationRequest extends $pb.GeneratedMessage {
+  factory BulkPerformManualOperationRequest({
+    $core.Iterable<$core.String>? transactionIds,
+    $core.String? operation,
+    $core.String? reason,
+    $core.String? notes,
+  }) {
+    final result = create();
+    if (transactionIds != null) result.transactionIds.addAll(transactionIds);
+    if (operation != null) result.operation = operation;
+    if (reason != null) result.reason = reason;
+    if (notes != null) result.notes = notes;
+    return result;
+  }
+
+  BulkPerformManualOperationRequest._();
+
+  factory BulkPerformManualOperationRequest.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
+  factory BulkPerformManualOperationRequest.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BulkPerformManualOperationRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'giftcards'), createEmptyInstance: create)
+    ..pPS(1, _omitFieldNames ? '' : 'transactionIds')
+    ..aOS(2, _omitFieldNames ? '' : 'operation')
+    ..aOS(3, _omitFieldNames ? '' : 'reason')
+    ..aOS(4, _omitFieldNames ? '' : 'notes')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  BulkPerformManualOperationRequest clone() => BulkPerformManualOperationRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  BulkPerformManualOperationRequest copyWith(void Function(BulkPerformManualOperationRequest) updates) => super.copyWith((message) => updates(message as BulkPerformManualOperationRequest)) as BulkPerformManualOperationRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static BulkPerformManualOperationRequest create() => BulkPerformManualOperationRequest._();
+  @$core.override
+  BulkPerformManualOperationRequest createEmptyInstance() => create();
+  static $pb.PbList<BulkPerformManualOperationRequest> createRepeated() => $pb.PbList<BulkPerformManualOperationRequest>();
+  @$core.pragma('dart2js:noInline')
+  static BulkPerformManualOperationRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<BulkPerformManualOperationRequest>(create);
+  static BulkPerformManualOperationRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<$core.String> get transactionIds => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.String get operation => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set operation($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasOperation() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearOperation() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get reason => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set reason($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasReason() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearReason() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get notes => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set notes($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasNotes() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearNotes() => $_clearField(4);
+}
+
+class BulkPerformManualOperationResult extends $pb.GeneratedMessage {
+  factory BulkPerformManualOperationResult({
+    $core.String? transactionId,
+    $core.bool? success,
+    $core.String? error,
+  }) {
+    final result = create();
+    if (transactionId != null) result.transactionId = transactionId;
+    if (success != null) result.success = success;
+    if (error != null) result.error = error;
+    return result;
+  }
+
+  BulkPerformManualOperationResult._();
+
+  factory BulkPerformManualOperationResult.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
+  factory BulkPerformManualOperationResult.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BulkPerformManualOperationResult', package: const $pb.PackageName(_omitMessageNames ? '' : 'giftcards'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'transactionId')
+    ..aOB(2, _omitFieldNames ? '' : 'success')
+    ..aOS(3, _omitFieldNames ? '' : 'error')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  BulkPerformManualOperationResult clone() => BulkPerformManualOperationResult()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  BulkPerformManualOperationResult copyWith(void Function(BulkPerformManualOperationResult) updates) => super.copyWith((message) => updates(message as BulkPerformManualOperationResult)) as BulkPerformManualOperationResult;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static BulkPerformManualOperationResult create() => BulkPerformManualOperationResult._();
+  @$core.override
+  BulkPerformManualOperationResult createEmptyInstance() => create();
+  static $pb.PbList<BulkPerformManualOperationResult> createRepeated() => $pb.PbList<BulkPerformManualOperationResult>();
+  @$core.pragma('dart2js:noInline')
+  static BulkPerformManualOperationResult getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<BulkPerformManualOperationResult>(create);
+  static BulkPerformManualOperationResult? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get transactionId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set transactionId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasTransactionId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearTransactionId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.bool get success => $_getBF(1);
+  @$pb.TagNumber(2)
+  set success($core.bool value) => $_setBool(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasSuccess() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearSuccess() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get error => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set error($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasError() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearError() => $_clearField(3);
+}
+
+class BulkPerformManualOperationResponse extends $pb.GeneratedMessage {
+  factory BulkPerformManualOperationResponse({
+    $core.Iterable<BulkPerformManualOperationResult>? results,
+    $core.int? succeeded,
+    $core.int? failed,
+  }) {
+    final result = create();
+    if (results != null) result.results.addAll(results);
+    if (succeeded != null) result.succeeded = succeeded;
+    if (failed != null) result.failed = failed;
+    return result;
+  }
+
+  BulkPerformManualOperationResponse._();
+
+  factory BulkPerformManualOperationResponse.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
+  factory BulkPerformManualOperationResponse.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BulkPerformManualOperationResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'giftcards'), createEmptyInstance: create)
+    ..pc<BulkPerformManualOperationResult>(1, _omitFieldNames ? '' : 'results', $pb.PbFieldType.PM, subBuilder: BulkPerformManualOperationResult.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'succeeded', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'failed', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  BulkPerformManualOperationResponse clone() => BulkPerformManualOperationResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  BulkPerformManualOperationResponse copyWith(void Function(BulkPerformManualOperationResponse) updates) => super.copyWith((message) => updates(message as BulkPerformManualOperationResponse)) as BulkPerformManualOperationResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static BulkPerformManualOperationResponse create() => BulkPerformManualOperationResponse._();
+  @$core.override
+  BulkPerformManualOperationResponse createEmptyInstance() => create();
+  static $pb.PbList<BulkPerformManualOperationResponse> createRepeated() => $pb.PbList<BulkPerformManualOperationResponse>();
+  @$core.pragma('dart2js:noInline')
+  static BulkPerformManualOperationResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<BulkPerformManualOperationResponse>(create);
+  static BulkPerformManualOperationResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<BulkPerformManualOperationResult> get results => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get succeeded => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set succeeded($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasSucceeded() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearSucceeded() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get failed => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set failed($core.int value) => $_setSignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasFailed() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearFailed() => $_clearField(3);
 }
 
 class PerformManualOperationRequest extends $pb.GeneratedMessage {

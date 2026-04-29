@@ -139,6 +139,7 @@ const GiftCardBrand$json = {
     {'1': 'sender_fee', '3': 22, '4': 1, '5': 1, '10': 'senderFee'},
     {'1': 'sender_fee_percentage', '3': 23, '4': 1, '5': 1, '10': 'senderFeePercentage'},
     {'1': 'fixed_sender_denominations', '3': 24, '4': 3, '5': 11, '6': '.giftcards.GiftCardDenomination', '10': 'fixedSenderDenominations'},
+    {'1': 'denomination_type', '3': 25, '4': 1, '5': 9, '10': 'denominationType'},
   ],
 };
 
@@ -162,7 +163,8 @@ final $typed_data.Uint8List giftCardBrandDescriptor = $convert.base64Decode(
     '91bnQSHQoKc2VuZGVyX2ZlZRgWIAEoAVIJc2VuZGVyRmVlEjIKFXNlbmRlcl9mZWVfcGVyY2Vu'
     'dGFnZRgXIAEoAVITc2VuZGVyRmVlUGVyY2VudGFnZRJdChpmaXhlZF9zZW5kZXJfZGVub21pbm'
     'F0aW9ucxgYIAMoCzIfLmdpZnRjYXJkcy5HaWZ0Q2FyZERlbm9taW5hdGlvblIYZml4ZWRTZW5k'
-    'ZXJEZW5vbWluYXRpb25z');
+    'ZXJEZW5vbWluYXRpb25zEisKEWRlbm9taW5hdGlvbl90eXBlGBkgASgJUhBkZW5vbWluYXRpb2'
+    '5UeXBl');
 
 @$core.Deprecated('Use giftCardDenominationDescriptor instead')
 const GiftCardDenomination$json = {
@@ -1010,6 +1012,25 @@ const AdminBuyTransaction$json = {
     {'1': 'updated_at', '3': 9, '4': 1, '5': 9, '10': 'updatedAt'},
     {'1': 'recipient_email', '3': 10, '4': 1, '5': 9, '10': 'recipientEmail'},
     {'1': 'recipient_name', '3': 11, '4': 1, '5': 9, '10': 'recipientName'},
+    {'1': 'reference', '3': 12, '4': 1, '5': 9, '10': 'reference'},
+    {'1': 'retail_amount', '3': 13, '4': 1, '5': 1, '10': 'retailAmount'},
+    {'1': 'retail_currency', '3': 14, '4': 1, '5': 9, '10': 'retailCurrency'},
+    {'1': 'wholesale_amount', '3': 15, '4': 1, '5': 1, '10': 'wholesaleAmount'},
+    {'1': 'wholesale_currency', '3': 16, '4': 1, '5': 9, '10': 'wholesaleCurrency'},
+    {'1': 'commission_amount', '3': 17, '4': 1, '5': 1, '10': 'commissionAmount'},
+    {'1': 'commission_currency', '3': 18, '4': 1, '5': 9, '10': 'commissionCurrency'},
+    {'1': 'sender_amount', '3': 19, '4': 1, '5': 1, '10': 'senderAmount'},
+    {'1': 'sender_currency', '3': 20, '4': 1, '5': 9, '10': 'senderCurrency'},
+    {'1': 'fx_rate', '3': 21, '4': 1, '5': 1, '10': 'fxRate'},
+    {'1': 'fee_percentage', '3': 22, '4': 1, '5': 1, '10': 'feePercentage'},
+    {'1': 'completed_at', '3': 23, '4': 1, '5': 9, '10': 'completedAt'},
+    {'1': 'provider_name', '3': 24, '4': 1, '5': 9, '10': 'providerName'},
+    {'1': 'failure_reason', '3': 25, '4': 1, '5': 9, '10': 'failureReason'},
+    {'1': 'redemption_code', '3': 26, '4': 1, '5': 9, '10': 'redemptionCode'},
+    {'1': 'redemption_pin', '3': 27, '4': 1, '5': 9, '10': 'redemptionPin'},
+    {'1': 'provider_transaction_id', '3': 28, '4': 1, '5': 9, '10': 'providerTransactionId'},
+    {'1': 'mode', '3': 29, '4': 1, '5': 9, '10': 'mode'},
+    {'1': 'has_refund_entry', '3': 30, '4': 1, '5': 8, '10': 'hasRefundEntry'},
   ],
 };
 
@@ -1021,7 +1042,21 @@ final $typed_data.Uint8List adminBuyTransactionDescriptor = $convert.base64Decod
     'N0YXR1cxgGIAEoCVIGc3RhdHVzEicKD2lkZW1wb3RlbmN5X2tleRgHIAEoCVIOaWRlbXBvdGVu'
     'Y3lLZXkSHQoKY3JlYXRlZF9hdBgIIAEoCVIJY3JlYXRlZEF0Eh0KCnVwZGF0ZWRfYXQYCSABKA'
     'lSCXVwZGF0ZWRBdBInCg9yZWNpcGllbnRfZW1haWwYCiABKAlSDnJlY2lwaWVudEVtYWlsEiUK'
-    'DnJlY2lwaWVudF9uYW1lGAsgASgJUg1yZWNpcGllbnROYW1l');
+    'DnJlY2lwaWVudF9uYW1lGAsgASgJUg1yZWNpcGllbnROYW1lEhwKCXJlZmVyZW5jZRgMIAEoCV'
+    'IJcmVmZXJlbmNlEiMKDXJldGFpbF9hbW91bnQYDSABKAFSDHJldGFpbEFtb3VudBInCg9yZXRh'
+    'aWxfY3VycmVuY3kYDiABKAlSDnJldGFpbEN1cnJlbmN5EikKEHdob2xlc2FsZV9hbW91bnQYDy'
+    'ABKAFSD3dob2xlc2FsZUFtb3VudBItChJ3aG9sZXNhbGVfY3VycmVuY3kYECABKAlSEXdob2xl'
+    'c2FsZUN1cnJlbmN5EisKEWNvbW1pc3Npb25fYW1vdW50GBEgASgBUhBjb21taXNzaW9uQW1vdW'
+    '50Ei8KE2NvbW1pc3Npb25fY3VycmVuY3kYEiABKAlSEmNvbW1pc3Npb25DdXJyZW5jeRIjCg1z'
+    'ZW5kZXJfYW1vdW50GBMgASgBUgxzZW5kZXJBbW91bnQSJwoPc2VuZGVyX2N1cnJlbmN5GBQgAS'
+    'gJUg5zZW5kZXJDdXJyZW5jeRIXCgdmeF9yYXRlGBUgASgBUgZmeFJhdGUSJQoOZmVlX3BlcmNl'
+    'bnRhZ2UYFiABKAFSDWZlZVBlcmNlbnRhZ2USIQoMY29tcGxldGVkX2F0GBcgASgJUgtjb21wbG'
+    'V0ZWRBdBIjCg1wcm92aWRlcl9uYW1lGBggASgJUgxwcm92aWRlck5hbWUSJQoOZmFpbHVyZV9y'
+    'ZWFzb24YGSABKAlSDWZhaWx1cmVSZWFzb24SJwoPcmVkZW1wdGlvbl9jb2RlGBogASgJUg5yZW'
+    'RlbXB0aW9uQ29kZRIlCg5yZWRlbXB0aW9uX3BpbhgbIAEoCVINcmVkZW1wdGlvblBpbhI2Chdw'
+    'cm92aWRlcl90cmFuc2FjdGlvbl9pZBgcIAEoCVIVcHJvdmlkZXJUcmFuc2FjdGlvbklkEhIKBG'
+    '1vZGUYHSABKAlSBG1vZGUSKAoQaGFzX3JlZnVuZF9lbnRyeRgeIAEoCFIOaGFzUmVmdW5kRW50'
+    'cnk=');
 
 @$core.Deprecated('Use adminListBuyTransactionsResponseDescriptor instead')
 const AdminListBuyTransactionsResponse$json = {
@@ -1040,6 +1075,87 @@ final $typed_data.Uint8List adminListBuyTransactionsResponseDescriptor = $conver
     'syHi5naWZ0Y2FyZHMuQWRtaW5CdXlUcmFuc2FjdGlvblIMdHJhbnNhY3Rpb25zEhQKBXRvdGFs'
     'GAIgASgFUgV0b3RhbBISCgRwYWdlGAMgASgFUgRwYWdlEhQKBWxpbWl0GAQgASgFUgVsaW1pdA'
     '==');
+
+@$core.Deprecated('Use adminListRefundLedgerRequestDescriptor instead')
+const AdminListRefundLedgerRequest$json = {
+  '1': 'AdminListRefundLedgerRequest',
+  '2': [
+    {'1': 'side', '3': 1, '4': 1, '5': 9, '10': 'side'},
+    {'1': 'status', '3': 2, '4': 1, '5': 9, '10': 'status'},
+    {'1': 'page', '3': 3, '4': 1, '5': 5, '10': 'page'},
+    {'1': 'limit', '3': 4, '4': 1, '5': 5, '10': 'limit'},
+  ],
+};
+
+/// Descriptor for `AdminListRefundLedgerRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminListRefundLedgerRequestDescriptor = $convert.base64Decode(
+    'ChxBZG1pbkxpc3RSZWZ1bmRMZWRnZXJSZXF1ZXN0EhIKBHNpZGUYASABKAlSBHNpZGUSFgoGc3'
+    'RhdHVzGAIgASgJUgZzdGF0dXMSEgoEcGFnZRgDIAEoBVIEcGFnZRIUCgVsaW1pdBgEIAEoBVIF'
+    'bGltaXQ=');
+
+@$core.Deprecated('Use adminRefundLedgerEntryDescriptor instead')
+const AdminRefundLedgerEntry$json = {
+  '1': 'AdminRefundLedgerEntry',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'original_reference', '3': 2, '4': 1, '5': 9, '10': 'originalReference'},
+    {'1': 'refund_reference', '3': 3, '4': 1, '5': 9, '10': 'refundReference'},
+    {'1': 'user_id', '3': 4, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'account_id', '3': 5, '4': 1, '5': 9, '10': 'accountId'},
+    {'1': 'amount', '3': 6, '4': 1, '5': 1, '10': 'amount'},
+    {'1': 'currency', '3': 7, '4': 1, '5': 9, '10': 'currency'},
+    {'1': 'direction', '3': 8, '4': 1, '5': 9, '10': 'direction'},
+    {'1': 'reason', '3': 9, '4': 1, '5': 9, '10': 'reason'},
+    {'1': 'confirmation_status', '3': 10, '4': 1, '5': 9, '10': 'confirmationStatus'},
+    {'1': 'settlement_status', '3': 11, '4': 1, '5': 9, '10': 'settlementStatus'},
+    {'1': 'provider_transaction_id', '3': 12, '4': 1, '5': 9, '10': 'providerTransactionId'},
+    {'1': 'provider_status', '3': 13, '4': 1, '5': 9, '10': 'providerStatus'},
+    {'1': 'notes', '3': 14, '4': 1, '5': 9, '10': 'notes'},
+    {'1': 'executed_at', '3': 15, '4': 1, '5': 9, '10': 'executedAt'},
+    {'1': 'confirmed_at', '3': 16, '4': 1, '5': 9, '10': 'confirmedAt'},
+    {'1': 'escalated_at', '3': 17, '4': 1, '5': 9, '10': 'escalatedAt'},
+    {'1': 'verification_attempts', '3': 18, '4': 1, '5': 5, '10': 'verificationAttempts'},
+    {'1': 'max_verification_retries', '3': 19, '4': 1, '5': 5, '10': 'maxVerificationRetries'},
+    {'1': 'created_at', '3': 20, '4': 1, '5': 9, '10': 'createdAt'},
+    {'1': 'updated_at', '3': 21, '4': 1, '5': 9, '10': 'updatedAt'},
+    {'1': 'side', '3': 22, '4': 1, '5': 9, '10': 'side'},
+  ],
+};
+
+/// Descriptor for `AdminRefundLedgerEntry`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminRefundLedgerEntryDescriptor = $convert.base64Decode(
+    'ChZBZG1pblJlZnVuZExlZGdlckVudHJ5Eg4KAmlkGAEgASgJUgJpZBItChJvcmlnaW5hbF9yZW'
+    'ZlcmVuY2UYAiABKAlSEW9yaWdpbmFsUmVmZXJlbmNlEikKEHJlZnVuZF9yZWZlcmVuY2UYAyAB'
+    'KAlSD3JlZnVuZFJlZmVyZW5jZRIXCgd1c2VyX2lkGAQgASgJUgZ1c2VySWQSHQoKYWNjb3VudF'
+    '9pZBgFIAEoCVIJYWNjb3VudElkEhYKBmFtb3VudBgGIAEoAVIGYW1vdW50EhoKCGN1cnJlbmN5'
+    'GAcgASgJUghjdXJyZW5jeRIcCglkaXJlY3Rpb24YCCABKAlSCWRpcmVjdGlvbhIWCgZyZWFzb2'
+    '4YCSABKAlSBnJlYXNvbhIvChNjb25maXJtYXRpb25fc3RhdHVzGAogASgJUhJjb25maXJtYXRp'
+    'b25TdGF0dXMSKwoRc2V0dGxlbWVudF9zdGF0dXMYCyABKAlSEHNldHRsZW1lbnRTdGF0dXMSNg'
+    'oXcHJvdmlkZXJfdHJhbnNhY3Rpb25faWQYDCABKAlSFXByb3ZpZGVyVHJhbnNhY3Rpb25JZBIn'
+    'Cg9wcm92aWRlcl9zdGF0dXMYDSABKAlSDnByb3ZpZGVyU3RhdHVzEhQKBW5vdGVzGA4gASgJUg'
+    'Vub3RlcxIfCgtleGVjdXRlZF9hdBgPIAEoCVIKZXhlY3V0ZWRBdBIhCgxjb25maXJtZWRfYXQY'
+    'ECABKAlSC2NvbmZpcm1lZEF0EiEKDGVzY2FsYXRlZF9hdBgRIAEoCVILZXNjYWxhdGVkQXQSMw'
+    'oVdmVyaWZpY2F0aW9uX2F0dGVtcHRzGBIgASgFUhR2ZXJpZmljYXRpb25BdHRlbXB0cxI4Chht'
+    'YXhfdmVyaWZpY2F0aW9uX3JldHJpZXMYEyABKAVSFm1heFZlcmlmaWNhdGlvblJldHJpZXMSHQ'
+    'oKY3JlYXRlZF9hdBgUIAEoCVIJY3JlYXRlZEF0Eh0KCnVwZGF0ZWRfYXQYFSABKAlSCXVwZGF0'
+    'ZWRBdBISCgRzaWRlGBYgASgJUgRzaWRl');
+
+@$core.Deprecated('Use adminListRefundLedgerResponseDescriptor instead')
+const AdminListRefundLedgerResponse$json = {
+  '1': 'AdminListRefundLedgerResponse',
+  '2': [
+    {'1': 'entries', '3': 1, '4': 3, '5': 11, '6': '.giftcards.AdminRefundLedgerEntry', '10': 'entries'},
+    {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
+    {'1': 'page', '3': 3, '4': 1, '5': 5, '10': 'page'},
+    {'1': 'limit', '3': 4, '4': 1, '5': 5, '10': 'limit'},
+  ],
+};
+
+/// Descriptor for `AdminListRefundLedgerResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminListRefundLedgerResponseDescriptor = $convert.base64Decode(
+    'Ch1BZG1pbkxpc3RSZWZ1bmRMZWRnZXJSZXNwb25zZRI7CgdlbnRyaWVzGAEgAygLMiEuZ2lmdG'
+    'NhcmRzLkFkbWluUmVmdW5kTGVkZ2VyRW50cnlSB2VudHJpZXMSFAoFdG90YWwYAiABKAVSBXRv'
+    'dGFsEhIKBHBhZ2UYAyABKAVSBHBhZ2USFAoFbGltaXQYBCABKAVSBWxpbWl0');
 
 @$core.Deprecated('Use adminGetSaleDetailRequestDescriptor instead')
 const AdminGetSaleDetailRequest$json = {
@@ -1941,6 +2057,55 @@ final $typed_data.Uint8List searchGiftCardTransactionResponseDescriptor = $conve
     'CiFTZWFyY2hHaWZ0Q2FyZFRyYW5zYWN0aW9uUmVzcG9uc2USKwoEc2FsZRgBIAEoCzIXLmdpZn'
     'RjYXJkcy5HaWZ0Q2FyZFNhbGVSBHNhbGUSMAoGZXZlbnRzGAIgAygLMhguZ2lmdGNhcmRzLkF1'
     'ZGl0TG9nRW50cnlSBmV2ZW50cw==');
+
+@$core.Deprecated('Use bulkPerformManualOperationRequestDescriptor instead')
+const BulkPerformManualOperationRequest$json = {
+  '1': 'BulkPerformManualOperationRequest',
+  '2': [
+    {'1': 'transaction_ids', '3': 1, '4': 3, '5': 9, '10': 'transactionIds'},
+    {'1': 'operation', '3': 2, '4': 1, '5': 9, '10': 'operation'},
+    {'1': 'reason', '3': 3, '4': 1, '5': 9, '10': 'reason'},
+    {'1': 'notes', '3': 4, '4': 1, '5': 9, '10': 'notes'},
+  ],
+};
+
+/// Descriptor for `BulkPerformManualOperationRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List bulkPerformManualOperationRequestDescriptor = $convert.base64Decode(
+    'CiFCdWxrUGVyZm9ybU1hbnVhbE9wZXJhdGlvblJlcXVlc3QSJwoPdHJhbnNhY3Rpb25faWRzGA'
+    'EgAygJUg50cmFuc2FjdGlvbklkcxIcCglvcGVyYXRpb24YAiABKAlSCW9wZXJhdGlvbhIWCgZy'
+    'ZWFzb24YAyABKAlSBnJlYXNvbhIUCgVub3RlcxgEIAEoCVIFbm90ZXM=');
+
+@$core.Deprecated('Use bulkPerformManualOperationResultDescriptor instead')
+const BulkPerformManualOperationResult$json = {
+  '1': 'BulkPerformManualOperationResult',
+  '2': [
+    {'1': 'transaction_id', '3': 1, '4': 1, '5': 9, '10': 'transactionId'},
+    {'1': 'success', '3': 2, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'error', '3': 3, '4': 1, '5': 9, '10': 'error'},
+  ],
+};
+
+/// Descriptor for `BulkPerformManualOperationResult`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List bulkPerformManualOperationResultDescriptor = $convert.base64Decode(
+    'CiBCdWxrUGVyZm9ybU1hbnVhbE9wZXJhdGlvblJlc3VsdBIlCg50cmFuc2FjdGlvbl9pZBgBIA'
+    'EoCVINdHJhbnNhY3Rpb25JZBIYCgdzdWNjZXNzGAIgASgIUgdzdWNjZXNzEhQKBWVycm9yGAMg'
+    'ASgJUgVlcnJvcg==');
+
+@$core.Deprecated('Use bulkPerformManualOperationResponseDescriptor instead')
+const BulkPerformManualOperationResponse$json = {
+  '1': 'BulkPerformManualOperationResponse',
+  '2': [
+    {'1': 'results', '3': 1, '4': 3, '5': 11, '6': '.giftcards.BulkPerformManualOperationResult', '10': 'results'},
+    {'1': 'succeeded', '3': 2, '4': 1, '5': 5, '10': 'succeeded'},
+    {'1': 'failed', '3': 3, '4': 1, '5': 5, '10': 'failed'},
+  ],
+};
+
+/// Descriptor for `BulkPerformManualOperationResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List bulkPerformManualOperationResponseDescriptor = $convert.base64Decode(
+    'CiJCdWxrUGVyZm9ybU1hbnVhbE9wZXJhdGlvblJlc3BvbnNlEkUKB3Jlc3VsdHMYASADKAsyKy'
+    '5naWZ0Y2FyZHMuQnVsa1BlcmZvcm1NYW51YWxPcGVyYXRpb25SZXN1bHRSB3Jlc3VsdHMSHAoJ'
+    'c3VjY2VlZGVkGAIgASgFUglzdWNjZWVkZWQSFgoGZmFpbGVkGAMgASgFUgZmYWlsZWQ=');
 
 @$core.Deprecated('Use performManualOperationRequestDescriptor instead')
 const PerformManualOperationRequest$json = {
