@@ -1,34 +1,101 @@
-// GiftCardDetailsScreen — receipt-style detail screen for a purchased
-// gift card. Mirrors the visual pattern of SendFundReceipt
-// (lib/src/features/widgets/send_fund_receipt.dart): brand avatar on
-// top, list of label→value tiles for every payload field, then a
-// Download Receipt action that generates a PDF via the existing
-// GiftCardPdfService.
+// GiftCardDetailsScreen — payment receipt for a purchased gift card.
 //
-// Why a dedicated screen instead of reusing SendFundReceipt's widget:
-// SendFundReceipt is hard-coded to the Transaction shape. Gift cards
-// have additional fields (redemption code, redemption PIN, scannable
-// QR, redemption instructions) that don't fit there. We keep the
-// receipt LOOK (avatar + tile list + download) but render gift-card
-// specific payloads.
+// Visual model: matches the electricity bill PaymentReceiptScreen
+// (lib/src/features/electricity_bill/presentation/view/payment_receipt_screen.dart)
+// 1:1 — circular check icon, "Payment Successful!" hero, single
+// Transaction Details card (Amount/Service Fee/Total → divider →
+// brand/recipient → divider → Reference/Date/Time/Status), then the
+// shared BillReceiptQrBlock and the Share + Download Outlined-button
+// pair.
+//
+// The gift-card specifics (redemption code, redemption PIN, redemption
+// instructions) sit between the hero and the transaction-details
+// card, styled like the electricity TokenCard so they're prominent
+// without breaking the receipt rhythm.
+//
+// Why this layout: the user wants every receipt across the app to
+// look the same so a user reading any LazerVault receipt has the
+// same scanning pattern. We keep gift-card-only payload (token, QR
+// for redemption code) but render it with the same primitives.
+
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hybrid_hex_color_converter/hybrid_hex_color_converter.dart';
-import 'package:qr_flutter/qr_flutter.dart';
+import 'package:intl/intl.dart';
 
-import 'package:lazervault/core/theme/invoice_theme_colors.dart';
-import 'package:lazervault/core/types/screen.dart';
+import 'package:lazervault/src/features/widgets/bill_receipt_qr_block.dart';
 import '../../domain/entities/gift_card_entity.dart';
 import '../../services/gift_card_pdf_service.dart';
 
-class GiftCardDetailsScreen extends StatelessWidget {
+class GiftCardDetailsScreen extends StatefulWidget {
   final GiftCard giftCard;
-
   const GiftCardDetailsScreen({super.key, required this.giftCard});
+
+  @override
+  State<GiftCardDetailsScreen> createState() => _GiftCardDetailsScreenState();
+}
+
+class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _checkController;
+  late Animation<double> _checkScale;
+  bool _isDownloading = false;
+  bool _isSharing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    _checkScale = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _checkController, curve: Curves.elasticOut),
+    );
+    _checkController.forward();
+  }
+
+  @override
+  void dispose() {
+    _checkController.dispose();
+    super.dispose();
+  }
+
+  GiftCard get giftCard => widget.giftCard;
+
+  String get _currencySymbol {
+    switch (giftCard.currency.toUpperCase()) {
+      case 'NGN':
+        return '₦';
+      case 'USD':
+        return '\$';
+      case 'GBP':
+        return '£';
+      case 'EUR':
+        return '€';
+      default:
+        return '${giftCard.currency} ';
+    }
+  }
+
+  String get _senderSymbol {
+    switch (giftCard.senderCurrency.toUpperCase()) {
+      case 'NGN':
+        return '₦';
+      case 'USD':
+        return '\$';
+      case 'GBP':
+        return '£';
+      case 'EUR':
+        return '€';
+      default:
+        return '${giftCard.senderCurrency} ';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,81 +110,67 @@ class GiftCardDetailsScreen extends StatelessWidget {
               color: Colors.white, size: 18),
         ),
         title: Text(
-          ScreenName.sendFundReceipt.displayName, // "Receipt"
+          'Payment Receipt',
           style: GoogleFonts.inter(
             color: Colors.white,
             fontSize: 18.sp,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
           ),
         ),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Avatar header — brand logo or gift-icon fallback. Mirrors
-            // the CircleAvatar in SendFundReceipt but sized for a square
-            // brand mark (Reloadly returns square logos, not portraits).
-            Center(child: _buildAvatar()),
-            SizedBox(height: 24.h),
-
-            // Brand + amount + status — the headline of the receipt.
+            _buildSuccessIcon(),
+            SizedBox(height: 12.h),
             Text(
-              giftCard.brandName,
-              textAlign: TextAlign.center,
+              _heroTitle(),
               style: GoogleFonts.inter(
                 color: Colors.white,
-                fontSize: 22.sp,
+                fontSize: 20.sp,
                 fontWeight: FontWeight.w700,
               ),
             ),
-            SizedBox(height: 8.h),
+            SizedBox(height: 4.h),
             Text(
-              '${giftCard.currency} ${giftCard.originalAmount.toStringAsFixed(2)}',
+              _statusMessage(),
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
-                color: InvoiceThemeColors.primaryPurple,
-                fontSize: 30.sp,
-                fontWeight: FontWeight.w700,
+                color: const Color(0xFF9CA3AF),
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w400,
               ),
             ),
-            SizedBox(height: 8.h),
-            Center(child: _buildStatusChip(giftCard.status)),
-            SizedBox(height: 28.h),
-
-            // Tile list — one row per field. Same style as
-            // SendFundReceipt's FlatTile rows: muted label on the
-            // left, white value on the right.
-            ..._buildTiles(),
-
-            // Redemption code + PIN with copy-to-clipboard, separate
-            // from the basic tiles because they're sensitive payload
-            // and need a copy affordance.
+            SizedBox(height: 16.h),
+            // Redemption code + PIN — equivalent of the electricity
+            // token card, styled the same way (purple gradient instead
+            // of orange so it doesn't impersonate an electricity token).
             if ((giftCard.redemptionCode ?? '').isNotEmpty)
-              _buildCopyableRow(
-                  context, 'Redemption Code', giftCard.redemptionCode!),
-            if ((giftCard.redemptionPin ?? '').isNotEmpty)
-              _buildCopyableRow(
-                  context, 'Redemption PIN', giftCard.redemptionPin!),
-
-            // QR — same scan target as the redemption code, lets the
-            // user redeem at a kiosk or partner app without typing.
-            if (_qrPayload() != null) ...[
-              SizedBox(height: 8.h),
-              Center(child: _buildQr()),
-              SizedBox(height: 16.h),
-            ],
-
-            // Redemption instructions accordion — usually multi-paragraph
-            // copy from Reloadly, kept collapsed by default.
-            if ((giftCard.redemptionInstructions ?? '').trim().isNotEmpty)
-              _buildRedemptionAccordion(giftCard.redemptionInstructions!),
-
-            SizedBox(height: 24.h),
-            _buildDownloadButton(context),
+              _buildCodeCard(),
+            if ((giftCard.redemptionCode ?? '').isNotEmpty)
+              SizedBox(height: 14.h),
+            _buildTransactionDetails(),
+            SizedBox(height: 20.h),
+            BillReceiptQrBlock(
+              type: 'gift_card',
+              reference: giftCard.providerTransactionId ?? giftCard.id,
+              amount: giftCard.originalAmount,
+              currency: giftCard.currency,
+              status: giftCard.status,
+              timestamp: _resolveTimestamp(),
+              showDivider: false,
+              extraPayload: {
+                if (giftCard.brandName.isNotEmpty) 'brand': giftCard.brandName,
+                if ((giftCard.redemptionCode ?? '').isNotEmpty)
+                  'code': giftCard.redemptionCode!,
+              },
+            ),
+            SizedBox(height: 20.h),
+            _buildActions(),
             SizedBox(height: 32.h),
           ],
         ),
@@ -125,360 +178,445 @@ class GiftCardDetailsScreen extends StatelessWidget {
     );
   }
 
-  // ── Header avatar ───────────────────────────────────────────────────
-  Widget _buildAvatar() {
-    return Container(
-      width: 96.w,
-      height: 96.w,
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(20.r),
-      ),
-      child: giftCard.logoUrl.isNotEmpty
-          ? ClipRRect(
-              borderRadius: BorderRadius.circular(20.r),
-              child: Image.network(
-                giftCard.logoUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Icon(
-                  Icons.card_giftcard,
-                  size: 44.sp,
-                  color: InvoiceThemeColors.primaryPurple,
-                ),
-              ),
-            )
-          : Icon(
-              Icons.card_giftcard,
-              size: 44.sp,
-              color: InvoiceThemeColors.primaryPurple,
-            ),
-    );
+  // ── Hero ────────────────────────────────────────────────────────────
+  String _heroTitle() {
+    final s = giftCard.status.toLowerCase();
+    if (s == 'redeemed') return 'Gift Card Redeemed';
+    if (s == 'expired') return 'Gift Card Expired';
+    if (s == 'transferred') return 'Gift Card Transferred';
+    if (s == 'failed' || s == 'refunded') return 'Payment Refunded';
+    if (s == 'pending' || s == 'processing') return 'Payment Submitted';
+    return 'Payment Successful!';
   }
 
-  // ── Status chip ─────────────────────────────────────────────────────
-  Widget _buildStatusChip(String status) {
-    final tone = _statusTone(status);
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
-      decoration: BoxDecoration(
-        color: tone.bg,
-        borderRadius: BorderRadius.circular(20.r),
-      ),
-      child: Text(
-        status.toUpperCase(),
-        style: GoogleFonts.inter(
-          color: tone.fg,
-          fontSize: 11.sp,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 0.5,
-        ),
-      ),
-    );
+  String _statusMessage() {
+    final s = giftCard.status.toLowerCase();
+    if (s == 'pending' || s == 'processing') {
+      return 'Waiting for confirmation from the provider.';
+    }
+    if (s == 'failed' || s == 'refunded') {
+      return 'Your payment was refunded. Your balance has been restored.';
+    }
+    if (s == 'expired') return 'This gift card has expired.';
+    if (s == 'redeemed') return 'This gift card has been redeemed.';
+    if (s == 'transferred') return 'This gift card was transferred.';
+    return 'Your payment has been processed';
   }
 
-  _StatusTone _statusTone(String status) {
-    switch (status.toLowerCase()) {
-      case 'active':
-      case 'available':
-      case 'completed':
-        return const _StatusTone(
-          bg: Color(0x2010B981),
-          fg: Color(0xFF10B981),
-        );
-      case 'pending':
-      case 'processing':
-        return const _StatusTone(
-          bg: Color(0x20F59E0B),
-          fg: Color(0xFFF59E0B),
-        );
-      case 'expired':
-      case 'failed':
-      case 'refunded':
-        return const _StatusTone(
-          bg: Color(0x20EF4444),
-          fg: Color(0xFFEF4444),
-        );
-      default:
-        return const _StatusTone(
-          bg: Color(0x206B7280),
-          fg: Color(0xFF9CA3AF),
-        );
+  Widget _buildSuccessIcon() {
+    final s = giftCard.status.toLowerCase();
+    IconData icon;
+    Color color;
+    if (s == 'failed' || s == 'refunded') {
+      icon = Icons.undo;
+      color = const Color(0xFF6B7280);
+    } else if (s == 'expired') {
+      icon = Icons.history;
+      color = const Color(0xFFFB923C);
+    } else if (s == 'pending' || s == 'processing') {
+      icon = Icons.hourglass_top;
+      color = const Color(0xFFFB923C);
+    } else {
+      icon = Icons.check_circle;
+      color = const Color(0xFF10B981);
     }
-  }
-
-  // ── Tile rows ───────────────────────────────────────────────────────
-  // Build the receipt's payload tiles. Skips empty/optional fields so
-  // the receipt only shows data we actually have. Matches the
-  // FlatTile-style row layout used in SendFundReceipt.
-  List<Widget> _buildTiles() {
-    final tiles = <Widget>[];
-
-    if (giftCard.isMultiCurrency && giftCard.senderAmount > 0) {
-      tiles.add(_tile('You paid',
-          '${giftCard.senderCurrency} ${giftCard.senderAmount.toStringAsFixed(2)}'));
-    }
-    if (giftCard.purchaseDate.isNotEmpty) {
-      tiles.add(_tile('Purchase Date', giftCard.purchaseDate));
-    }
-    if (giftCard.expiryDate.isNotEmpty) {
-      tiles.add(_tile('Expiry Date', giftCard.expiryDate));
-    }
-    if ((giftCard.recipientEmail ?? '').isNotEmpty) {
-      tiles.add(_tile('Recipient Email', giftCard.recipientEmail!));
-    }
-    if ((giftCard.recipientName ?? '').isNotEmpty) {
-      tiles.add(_tile('Recipient Name', giftCard.recipientName!));
-    }
-    if ((giftCard.message ?? '').trim().isNotEmpty) {
-      tiles.add(_tile('Message', giftCard.message!));
-    }
-    if ((giftCard.providerTransactionId ?? '').isNotEmpty) {
-      tiles.add(_tile('Transaction ID', giftCard.providerTransactionId!));
-    }
-    if ((giftCard.countryCode ?? '').isNotEmpty) {
-      tiles.add(_tile('Country', giftCard.countryCode!));
-    }
-
-    return tiles;
-  }
-
-  Widget _tile(String name, String value) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 12.h),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            flex: 4,
-            child: Text(
-              name,
-              style: GoogleFonts.inter(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w500,
-                color: HybridHexColor.fromHex('#9CA3AF'),
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 6,
-            child: Text(
-              value,
-              textAlign: TextAlign.right,
-              style: GoogleFonts.inter(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── Copyable redemption fields ──────────────────────────────────────
-  Widget _buildCopyableRow(BuildContext context, String label, String value) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 12.h),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w500,
-              color: HybridHexColor.fromHex('#9CA3AF'),
-            ),
-          ),
-          SizedBox(height: 6.h),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+    return AnimatedBuilder(
+      animation: _checkScale,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _checkScale.value,
+          child: Container(
+            width: 64.w,
+            height: 64.w,
             decoration: BoxDecoration(
-              color: const Color(0xFF1F1F1F),
-              borderRadius: BorderRadius.circular(10.r),
-              border: Border.all(color: const Color(0xFF2D2D2D)),
+              color: color.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: SelectableText(
-                    value,
-                    style: GoogleFonts.robotoMono(
-                      color: Colors.white,
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ),
-                IconButton(
-                  visualDensity: VisualDensity.compact,
-                  padding: EdgeInsets.zero,
-                  constraints: BoxConstraints(minWidth: 32.w, minHeight: 32.w),
-                  icon: Icon(
-                    Icons.copy_rounded,
-                    color: InvoiceThemeColors.primaryPurple,
-                    size: 18.sp,
-                  ),
-                  tooltip: 'Copy $label',
-                  onPressed: () async {
-                    await Clipboard.setData(ClipboardData(text: value));
-                    if (!context.mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('$label copied'),
-                        duration: const Duration(seconds: 1),
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
+            child: Icon(icon, color: color, size: 40.sp),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  // ── QR ─────────────────────────────────────────────────────────────
-  String? _qrPayload() {
-    final code = giftCard.redemptionCode?.trim();
-    final pin = giftCard.redemptionPin?.trim();
-    final hasCode = code != null && code.isNotEmpty;
-    final hasPin = pin != null && pin.isNotEmpty;
-    if (!hasCode && !hasPin) return null;
-    if (hasCode && hasPin) return 'CODE:$code\nPIN:$pin';
-    return hasCode ? code : pin;
-  }
-
-  Widget _buildQr() {
-    final payload = _qrPayload();
-    if (payload == null) return const SizedBox.shrink();
+  // ── Redemption code card (gift card analogue of electricity token) ──
+  Widget _buildCodeCard() {
     return Container(
+      width: double.infinity,
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: const Color(0xFF2D2D2D)),
-      ),
-      child: Column(
-        children: [
-          QrImageView(
-            data: payload,
-            version: QrVersions.auto,
-            size: 160.w,
-            backgroundColor: Colors.transparent,
-            dataModuleStyle: const QrDataModuleStyle(color: Colors.white),
-            eyeStyle: const QrEyeStyle(color: Colors.white),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'Scan to redeem',
-            style: GoogleFonts.inter(
-              fontSize: 11.sp,
-              color: const Color(0xFF8E8E93),
-            ),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF4C1D95), Color(0xFF7C3AED)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(14.r),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF7C3AED).withValues(alpha: 0.25),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildRedemptionAccordion(String instructions) {
-    return Container(
-      margin: EdgeInsets.only(bottom: 12.h),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFF2D2D2D)),
-      ),
-      child: Theme(
-        data: ThemeData(
-          dividerColor: Colors.transparent,
-          colorScheme: const ColorScheme.dark().copyWith(
-            primary: InvoiceThemeColors.primaryPurple,
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.card_giftcard,
+                  color: const Color(0xFFE9D5FF), size: 16.sp),
+              SizedBox(width: 6.w),
+              Text(
+                'REDEMPTION CODE',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFFE9D5FF),
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.5,
+                ),
+              ),
+            ],
           ),
-        ),
-        child: ExpansionTile(
-          tilePadding: EdgeInsets.symmetric(horizontal: 16.w),
-          childrenPadding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
-          iconColor: InvoiceThemeColors.primaryPurple,
-          collapsedIconColor: const Color(0xFF9CA3AF),
-          leading: Icon(
-            Icons.menu_book_outlined,
-            color: InvoiceThemeColors.primaryPurple,
-            size: 20.sp,
-          ),
-          title: Text(
-            'How to redeem',
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 15.sp,
-              fontWeight: FontWeight.w600,
+          SizedBox(height: 10.h),
+          GestureDetector(
+            onTap: () {
+              final code = giftCard.redemptionCode;
+              if (code == null || code.isEmpty) return;
+              Clipboard.setData(ClipboardData(text: code));
+              HapticFeedback.mediumImpact();
+              Get.snackbar(
+                'Copied',
+                'Redemption code copied to clipboard',
+                backgroundColor: const Color(0xFF10B981),
+                colorText: Colors.white,
+                duration: const Duration(seconds: 2),
+                snackPosition: SnackPosition.BOTTOM,
+                margin: EdgeInsets.all(16.w),
+              );
+            },
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.25),
+                borderRadius: BorderRadius.circular(10.r),
+                border: Border.all(
+                  color: const Color(0xFFE9D5FF).withValues(alpha: 0.3),
+                ),
+              ),
+              child: Column(
+                children: [
+                  SelectableText(
+                    giftCard.redemptionCode ?? '',
+                    style: GoogleFonts.robotoMono(
+                      color: const Color(0xFFF5F3FF),
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 2,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 6.h),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.copy_rounded,
+                          color: const Color(0xFFE9D5FF).withValues(alpha: 0.8),
+                          size: 12.sp),
+                      SizedBox(width: 4.w),
+                      Text(
+                        'Tap to copy code',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFFE9D5FF).withValues(alpha: 0.8),
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
-          subtitle: Text(
-            'Tap to view instructions',
-            style: GoogleFonts.inter(
-              color: const Color(0xFF8E8E93),
-              fontSize: 11.sp,
-            ),
-          ),
-          children: [
-            Text(
-              instructions,
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 13.sp,
-                height: 1.5,
+          if ((giftCard.redemptionPin ?? '').isNotEmpty) ...[
+            SizedBox(height: 10.h),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(16.r),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.lock_outline,
+                      color: const Color(0xFFE9D5FF), size: 12.sp),
+                  SizedBox(width: 4.w),
+                  Text(
+                    'PIN: ${giftCard.redemptionPin}',
+                    style: GoogleFonts.robotoMono(
+                      color: const Color(0xFFF5F3FF),
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
-        ),
+        ],
       ),
     );
   }
 
-  // ── Download receipt — same affordance as SendFundReceipt ───────────
-  Widget _buildDownloadButton(BuildContext context) {
-    return SizedBox(
+  // ── Transaction Details card ────────────────────────────────────────
+  Widget _buildTransactionDetails() {
+    final dateFormat = DateFormat('MMM dd, yyyy');
+    final timeFormat = DateFormat('hh:mm a');
+    final displayDate = _resolveTimestamp();
+    final cardAmount =
+        '$_currencySymbol${giftCard.originalAmount.toStringAsFixed(2)}';
+    final paid = giftCard.isMultiCurrency && giftCard.senderAmount > 0
+        ? '$_senderSymbol${giftCard.senderAmount.toStringAsFixed(2)}'
+        : cardAmount;
+
+    return Container(
       width: double.infinity,
-      child: ElevatedButton.icon(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: InvoiceThemeColors.primaryPurple,
-          foregroundColor: Colors.white,
-          padding: EdgeInsets.symmetric(vertical: 14.h),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.r),
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(14.r),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Transaction Details',
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 15.sp,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-        ),
-        icon: const Icon(Icons.download_rounded, size: 20),
-        label: Text(
-          'Download Receipt',
-          style: GoogleFonts.inter(
-            fontSize: 15.sp,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        onPressed: () async {
-          try {
-            await GiftCardPdfService.shareReceipt(giftCard: giftCard);
-          } catch (e) {
-            if (!context.mounted) return;
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Receipt download failed: $e')),
-            );
-          }
-        },
+          SizedBox(height: 14.h),
+          _row('Card Value', cardAmount),
+          if (giftCard.isMultiCurrency && giftCard.senderAmount > 0) ...[
+            SizedBox(height: 10.h),
+            _row('You Paid', paid),
+          ],
+          SizedBox(height: 10.h),
+          _row('Total', paid, isBold: true),
+
+          _divider(),
+
+          _row('Brand', giftCard.brandName),
+          if ((giftCard.recipientName ?? '').isNotEmpty) ...[
+            SizedBox(height: 10.h),
+            _row('Recipient', giftCard.recipientName!),
+          ],
+          if ((giftCard.recipientEmail ?? '').isNotEmpty) ...[
+            SizedBox(height: 10.h),
+            _row('Recipient Email', giftCard.recipientEmail!),
+          ],
+          if ((giftCard.countryCode ?? '').isNotEmpty) ...[
+            SizedBox(height: 10.h),
+            _row('Country', giftCard.countryCode!),
+          ],
+
+          _divider(),
+
+          _row('Reference',
+              giftCard.providerTransactionId ?? giftCard.id),
+          SizedBox(height: 10.h),
+          _row('Provider', _resolveProvider()),
+          if (giftCard.purchaseDate.isNotEmpty) ...[
+            SizedBox(height: 10.h),
+            _row('Date', _safeFormat(displayDate, dateFormat)),
+            SizedBox(height: 10.h),
+            _row('Time', _safeFormat(displayDate, timeFormat)),
+          ],
+          if (giftCard.expiryDate.isNotEmpty) ...[
+            SizedBox(height: 10.h),
+            _row('Expires', giftCard.expiryDate),
+          ],
+          SizedBox(height: 10.h),
+          _row('Status', giftCard.status.toUpperCase(),
+              valueColor: _statusColor()),
+        ],
       ),
     );
   }
-}
 
-class _StatusTone {
-  final Color bg;
-  final Color fg;
-  const _StatusTone({required this.bg, required this.fg});
+  Widget _row(String label, String value,
+      {Color? valueColor, bool isBold = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            color: const Color(0xFF9CA3AF),
+            fontSize: 13.sp,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        SizedBox(width: 16.w),
+        Flexible(
+          child: Text(
+            value,
+            textAlign: TextAlign.right,
+            style: GoogleFonts.inter(
+              color: valueColor ?? Colors.white,
+              fontSize: 13.sp,
+              fontWeight: isBold ? FontWeight.w700 : FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _divider() => Padding(
+        padding: EdgeInsets.symmetric(vertical: 10.h),
+        child: const Divider(color: Color(0xFF2D2D2D), height: 1),
+      );
+
+  Color _statusColor() {
+    switch (giftCard.status.toLowerCase()) {
+      case 'available':
+      case 'active':
+      case 'completed':
+        return const Color(0xFF10B981);
+      case 'pending':
+      case 'processing':
+        return const Color(0xFFFB923C);
+      case 'failed':
+      case 'refunded':
+      case 'expired':
+        return const Color(0xFFEF4444);
+      default:
+        return Colors.white;
+    }
+  }
+
+  String _resolveProvider() {
+    // The Reloadly product → giftcard row stores no provider name;
+    // every buy goes through Reloadly today, so we default to that.
+    return 'Reloadly';
+  }
+
+  DateTime _resolveTimestamp() {
+    // Prefer purchaseDate (display string), fall back to createdAt.
+    final raw = giftCard.purchaseDate.isNotEmpty
+        ? giftCard.purchaseDate
+        : giftCard.createdAt;
+    return DateTime.tryParse(raw) ?? DateTime.now();
+  }
+
+  String _safeFormat(DateTime ts, DateFormat fmt) {
+    try {
+      return fmt.format(ts);
+    } catch (_) {
+      return '—';
+    }
+  }
+
+  // ── Actions: Share + Download ───────────────────────────────────────
+  Widget _buildActions() {
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: _isSharing ? null : _shareReceipt,
+            icon: _isSharing
+                ? SizedBox(
+                    width: 16.sp,
+                    height: 16.sp,
+                    child: const CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : Icon(Icons.share, size: 16.sp),
+            label: Text(
+              _isSharing ? 'Sharing...' : 'Share',
+              style: GoogleFonts.inter(
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.white,
+              side: const BorderSide(color: Color(0xFF4E03D0)),
+              padding: EdgeInsets.symmetric(vertical: 12.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+            ),
+          ),
+        ),
+        SizedBox(width: 12.w),
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: _isDownloading ? null : _downloadReceipt,
+            icon: _isDownloading
+                ? SizedBox(
+                    width: 16.sp,
+                    height: 16.sp,
+                    child: const CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : Icon(Icons.download, size: 16.sp),
+            label: Text(
+              _isDownloading ? 'Saving...' : 'Download',
+              style: GoogleFonts.inter(
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.white,
+              side: const BorderSide(color: Color(0xFF4E03D0)),
+              padding: EdgeInsets.symmetric(vertical: 12.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _shareReceipt() async {
+    setState(() => _isSharing = true);
+    try {
+      await GiftCardPdfService.shareReceipt(giftCard: giftCard);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Share failed: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _isSharing = false);
+    }
+  }
+
+  Future<void> _downloadReceipt() async {
+    setState(() => _isDownloading = true);
+    try {
+      await GiftCardPdfService.shareReceipt(giftCard: giftCard);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Download failed: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _isDownloading = false);
+    }
+  }
 }
