@@ -13,10 +13,17 @@ import '../../../../../core/types/app_routes.dart';
 
 class PurchaseGiftCardScreen extends StatefulWidget {
   final GiftCardBrand brand;
+  /// When set, the screen renders in "repeat purchase" mode:
+  /// the amount is pre-selected and locked (denomination pills +
+  /// custom-amount input both hidden), and the buy CTA is active
+  /// the moment the screen mounts. Used by MyGiftCards' bottom-sheet
+  /// "Repeat" action.
+  final double? lockedAmount;
 
   const PurchaseGiftCardScreen({
     super.key,
     required this.brand,
+    this.lockedAmount,
   });
 
   @override
@@ -36,6 +43,20 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
   // = user is typing in recipient/card currency. The sender FX rate is
   // derived from minSenderAmount/minAmount and applied symmetrically.
   bool _entryInSenderCurrency = false;
+
+  // Repeat-purchase mode: when widget.lockedAmount is non-null, the
+  // amount is fixed (no pills, no custom input). Pre-selected on
+  // mount so the buy CTA is immediately active.
+  bool get _isLockedAmount => widget.lockedAmount != null;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_isLockedAmount) {
+      _selectedAmount = widget.lockedAmount;
+      _amountController.text = widget.lockedAmount!.toStringAsFixed(0);
+    }
+  }
 
   List<double> get _denominations {
     if (widget.brand.fixedDenominations.isNotEmpty) {
@@ -109,6 +130,36 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
     final fx = _fxRecipientPerSender;
     if (fx == null) return v;
     return v * fx;
+  }
+
+  // Render the allowed-range hint in the active entry currency.
+  // Sender mode: prefer Reloadly's authoritative minSenderAmount /
+  // maxSenderAmount when available; fall back to the FX-derived
+  // bounds when missing (defensive — should always be populated for
+  // multi-currency brands).
+  String _allowedRangeText() {
+    if (!_entryInSenderCurrency) {
+      return 'Allowed: $_recipientCurrency '
+          '${widget.brand.minAmount.toStringAsFixed(0)} – '
+          '${widget.brand.maxAmount.toStringAsFixed(0)}';
+    }
+    double minS = widget.brand.minSenderAmount;
+    double maxS = widget.brand.maxSenderAmount;
+    if (minS <= 0 || maxS <= 0) {
+      // Derive from FX: sender = recipient / (recipient/sender).
+      final fx = _fxRecipientPerSender;
+      if (fx != null && fx > 0) {
+        if (minS <= 0) minS = widget.brand.minAmount / fx;
+        if (maxS <= 0) maxS = widget.brand.maxAmount / fx;
+      }
+    }
+    if (minS <= 0 || maxS <= 0) {
+      return 'Allowed: $_recipientCurrency '
+          '${widget.brand.minAmount.toStringAsFixed(0)} – '
+          '${widget.brand.maxAmount.toStringAsFixed(0)}';
+    }
+    return 'Allowed: $_senderCurrency '
+        '${_formatAmount(minS)} – ${_formatAmount(maxS)}';
   }
 
   /// For range-based products, calculate the local currency price using backend-provided fee config.
@@ -304,6 +355,74 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
   }
 
   Widget _buildAmountSelection() {
+    // Repeat-purchase mode: render a single locked summary instead
+    // of pills + custom input. Mirrors the "you're buying X" pattern
+    // — user can't change the amount, just confirm and tap Buy.
+    if (_isLockedAmount) {
+      final senderPrice = _currentSenderAmount;
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Amount',
+            style: GoogleFonts.inter(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(height: 12.h),
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 18.h),
+            decoration: BoxDecoration(
+              color: InvoiceThemeColors.primaryPurple,
+              borderRadius: BorderRadius.circular(14.r),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  '$_recipientCurrency ${_selectedAmount!.toStringAsFixed(0)}',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 22.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                if (senderPrice != null &&
+                    _senderCurrency != _recipientCurrency) ...[
+                  SizedBox(height: 4.h),
+                  Text(
+                    '$_senderCurrency ${_formatAmount(senderPrice)}',
+                    style: GoogleFonts.inter(
+                      color: Colors.white.withValues(alpha: 0.8),
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Row(
+            children: [
+              Icon(Icons.lock_rounded,
+                  size: 12.sp, color: const Color(0xFF6B7280)),
+              SizedBox(width: 4.w),
+              Text(
+                'Repeat purchase — amount locked to your previous order',
+                style: GoogleFonts.inter(
+                  fontSize: 11.sp,
+                  color: const Color(0xFF9CA3AF),
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -424,22 +543,24 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
                     color: const Color(0xFF1F1F1F),
                     borderRadius: BorderRadius.circular(8.r),
                     border: Border.all(
-                        color:
-                            InvoiceThemeColors.primaryPurple.withValues(alpha: 0.4)),
+                        color: const Color(0xFF3D3D3D)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      // Muted label so the switch reads as a
+                      // secondary affordance — it's an option,
+                      // not a primary CTA.
                       Icon(Icons.swap_horiz_rounded,
                           size: 14.sp,
-                          color: InvoiceThemeColors.primaryPurple),
+                          color: const Color(0xFF9CA3AF)),
                       SizedBox(width: 4.w),
                       Text(
                         'Switch to $_otherEntryCurrency',
                         style: GoogleFonts.inter(
                           fontSize: 11.sp,
-                          fontWeight: FontWeight.w600,
-                          color: InvoiceThemeColors.primaryPurple,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF9CA3AF),
                         ),
                       ),
                     ],
@@ -548,12 +669,14 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
         ),
         // Allowed range — always shown so the user knows the bounds
         // even on FIXED brands (helps explain why custom is locked).
+        // Range reflects the active entry currency: when the user
+        // toggled to sender, we show min/max in sender units derived
+        // from Reloadly's minSenderAmount/maxSenderAmount (the same
+        // numbers that drive the price summary's FX rate row).
         if (widget.brand.minAmount > 0 && widget.brand.maxAmount > 0) ...[
           SizedBox(height: 6.h),
           Text(
-            _hasCustomAmount
-                ? 'Allowed: $_recipientCurrency ${widget.brand.minAmount.toStringAsFixed(0)} – ${widget.brand.maxAmount.toStringAsFixed(0)}'
-                : 'Listed amounts only — custom entry disabled by Reloadly',
+            _hasCustomAmount ? _allowedRangeText() : 'Listed amounts only — custom entry disabled by Reloadly',
             style: GoogleFonts.inter(
               fontSize: 11.sp,
               color: const Color(0xFF6B7280),

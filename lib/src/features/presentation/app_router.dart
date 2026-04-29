@@ -1366,8 +1366,18 @@ class AppRouter {
     GetPage(
       name: AppRoutes.purchaseGiftCard,
       page: () {
-        final brand = Get.arguments as GiftCardBrand;
-        return PurchaseGiftCardScreen(brand: brand);
+        // Two arg shapes: a plain GiftCardBrand (normal buy) or a
+        // PurchaseGiftCardArgs bundle (repeat purchase carrying the
+        // locked amount). Dispatching on type keeps the route
+        // backwards-compatible with every existing call site.
+        final args = Get.arguments;
+        if (args is PurchaseGiftCardArgs) {
+          return PurchaseGiftCardScreen(
+            brand: args.brand,
+            lockedAmount: args.lockedAmount,
+          );
+        }
+        return PurchaseGiftCardScreen(brand: args as GiftCardBrand);
       },
       transition: Transition.rightToLeft,
     ),
