@@ -27,6 +27,12 @@ class GiftCardCubit extends Cubit<GiftCardState> {
 
   /// Whether more pages are available (for search results infinite scroll)
   bool get hasNextPage => _hasNextPage;
+
+  /// Last-known-good brand list. Survives unrelated state transitions
+  /// (purchase, redeem, transfer) so the buy tab can show its catalog
+  /// instead of an infinite shimmer when the cubit is on any non-brand
+  /// state. Returns an empty list before the first successful load.
+  List<GiftCardBrand> get cachedBrands => List.unmodifiable(_accumulatedBrands);
   String? _lastCountryCode;
   String? _lastCategory;
 
