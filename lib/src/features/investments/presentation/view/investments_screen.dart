@@ -225,6 +225,12 @@ class _InvestmentsScreenState extends State<InvestmentsScreen>
       floating: true,
       snap: true,
       actions: [
+        ServiceVoiceButton(
+          serviceName: 'stocks',
+          iconColor: InvestTradingUi.accent,
+          backgroundColor: InvestTradingUi.accent,
+        ),
+        SizedBox(width: 8.w),
         Padding(
           padding: EdgeInsets.only(right: 16.w),
           child: MicroserviceChatIcon(

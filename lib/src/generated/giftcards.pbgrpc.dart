@@ -128,6 +128,16 @@ class GiftCardsServiceClient extends $grpc.Client {
     return $createUnaryCall(_$adminListBuyTransactions, request, options: options);
   }
 
+  /// Sell-side settlements — rows that reached paid or settled status.
+  /// Mirrors AdminListBuyTransactions(status=completed) for the buy
+  /// settlements tab. Returns a flat projection with the full pricing
+  /// breakdown (face value, FX, pre-margin payout, paid-to-user, sale
+  /// proceeds, total revenue, margin pct + flat fee, source) so the
+  /// admin Settlements tab can render per-row revenue distribution.
+  $grpc.ResponseFuture<$0.AdminListSellSettlementsResponse> adminListSellSettlements($0.AdminListSellSettlementsRequest request, {$grpc.CallOptions? options,}) {
+    return $createUnaryCall(_$adminListSellSettlements, request, options: options);
+  }
+
   /// List refund_ledger rows (past + present) — drives the admin
   /// Refunds tab on both sides. Filterable by side ("buy"/"sell") so
   /// each tab scopes correctly without the consumer reaching into the
@@ -154,6 +164,46 @@ class GiftCardsServiceClient extends $grpc.Client {
   /// Reject a sell request with reason
   $grpc.ResponseFuture<$0.AdminRejectSaleResponse> adminRejectSale($0.AdminRejectSaleRequest request, {$grpc.CallOptions? options,}) {
     return $createUnaryCall(_$adminRejectSale, request, options: options);
+  }
+
+  /// AdminRetryHoldRelease retries the auto-rollback release for a buy
+  /// purchase that landed in `manual_review` because the original
+  /// ReleaseHold call failed (accounts-service outage etc.). On success
+  /// the row flips to `failed` and `hold_released_at` is stamped; on
+  /// failure the row stays in `manual_review` and the new error is
+  /// appended to `failure_reason`.
+  $grpc.ResponseFuture<$0.AdminRetryHoldReleaseResponse> adminRetryHoldRelease($0.AdminRetryHoldReleaseRequest request, {$grpc.CallOptions? options,}) {
+    return $createUnaryCall(_$adminRetryHoldRelease, request, options: options);
+  }
+
+  /// AdminManualRefundPurchase routes a buy-side purchase into the
+  /// refund pipeline. Mirrors the electricity bill refund CTA — sets
+  /// status=refund_pending, seeds a refund_ledger credit row that the
+  /// RollbackProcessor picks up on its next tick. Idempotent: re-firing
+  /// on a row already in refund_pending / refunded / refund_failed is
+  /// a no-op.
+  $grpc.ResponseFuture<$0.AdminManualRefundPurchaseResponse> adminManualRefundPurchase($0.AdminManualRefundPurchaseRequest request, {$grpc.CallOptions? options,}) {
+    return $createUnaryCall(_$adminManualRefundPurchase, request, options: options);
+  }
+
+  /// AdminForceReconcilePurchase triggers the reconciler for a single
+  /// buy purchase row immediately, bypassing the scheduled tick. Mirrors
+  /// the electricity bill ManualReconcile CTA: for refund_pending /
+  /// refund_failed rows it resets the refund_ledger entry so the
+  /// RollbackProcessor retries; for processing / awaiting_webhook rows
+  /// it bumps next_reconciliation_at so the ReconcilerService picks it
+  /// up on the next tick.
+  $grpc.ResponseFuture<$0.AdminForceReconcilePurchaseResponse> adminForceReconcilePurchase($0.AdminForceReconcilePurchaseRequest request, {$grpc.CallOptions? options,}) {
+    return $createUnaryCall(_$adminForceReconcilePurchase, request, options: options);
+  }
+
+  /// AdminSetSellPayoutOverride sets the manual payout override for a
+  /// sell sale. Used by admins when the off-platform sale price
+  /// differs from the expected_payout quoted to the user. Amount may
+  /// be in the source currency (NGN) or destination currency (e.g.
+  /// USD); payout converts to NGN at execution time.
+  $grpc.ResponseFuture<$0.AdminSetSellPayoutOverrideResponse> adminSetSellPayoutOverride($0.AdminSetSellPayoutOverrideRequest request, {$grpc.CallOptions? options,}) {
+    return $createUnaryCall(_$adminSetSellPayoutOverride, request, options: options);
   }
 
   /// List all sell rate configurations
@@ -342,6 +392,10 @@ class GiftCardsServiceClient extends $grpc.Client {
       '/giftcards.GiftCardsService/AdminListBuyTransactions',
       ($0.AdminListBuyTransactionsRequest value) => value.writeToBuffer(),
       $0.AdminListBuyTransactionsResponse.fromBuffer);
+  static final _$adminListSellSettlements = $grpc.ClientMethod<$0.AdminListSellSettlementsRequest, $0.AdminListSellSettlementsResponse>(
+      '/giftcards.GiftCardsService/AdminListSellSettlements',
+      ($0.AdminListSellSettlementsRequest value) => value.writeToBuffer(),
+      $0.AdminListSellSettlementsResponse.fromBuffer);
   static final _$adminListRefundLedger = $grpc.ClientMethod<$0.AdminListRefundLedgerRequest, $0.AdminListRefundLedgerResponse>(
       '/giftcards.GiftCardsService/AdminListRefundLedger',
       ($0.AdminListRefundLedgerRequest value) => value.writeToBuffer(),
@@ -362,6 +416,22 @@ class GiftCardsServiceClient extends $grpc.Client {
       '/giftcards.GiftCardsService/AdminRejectSale',
       ($0.AdminRejectSaleRequest value) => value.writeToBuffer(),
       $0.AdminRejectSaleResponse.fromBuffer);
+  static final _$adminRetryHoldRelease = $grpc.ClientMethod<$0.AdminRetryHoldReleaseRequest, $0.AdminRetryHoldReleaseResponse>(
+      '/giftcards.GiftCardsService/AdminRetryHoldRelease',
+      ($0.AdminRetryHoldReleaseRequest value) => value.writeToBuffer(),
+      $0.AdminRetryHoldReleaseResponse.fromBuffer);
+  static final _$adminManualRefundPurchase = $grpc.ClientMethod<$0.AdminManualRefundPurchaseRequest, $0.AdminManualRefundPurchaseResponse>(
+      '/giftcards.GiftCardsService/AdminManualRefundPurchase',
+      ($0.AdminManualRefundPurchaseRequest value) => value.writeToBuffer(),
+      $0.AdminManualRefundPurchaseResponse.fromBuffer);
+  static final _$adminForceReconcilePurchase = $grpc.ClientMethod<$0.AdminForceReconcilePurchaseRequest, $0.AdminForceReconcilePurchaseResponse>(
+      '/giftcards.GiftCardsService/AdminForceReconcilePurchase',
+      ($0.AdminForceReconcilePurchaseRequest value) => value.writeToBuffer(),
+      $0.AdminForceReconcilePurchaseResponse.fromBuffer);
+  static final _$adminSetSellPayoutOverride = $grpc.ClientMethod<$0.AdminSetSellPayoutOverrideRequest, $0.AdminSetSellPayoutOverrideResponse>(
+      '/giftcards.GiftCardsService/AdminSetSellPayoutOverride',
+      ($0.AdminSetSellPayoutOverrideRequest value) => value.writeToBuffer(),
+      $0.AdminSetSellPayoutOverrideResponse.fromBuffer);
   static final _$adminListSellRates = $grpc.ClientMethod<$0.AdminListSellRatesRequest, $0.AdminListSellRatesResponse>(
       '/giftcards.GiftCardsService/AdminListSellRates',
       ($0.AdminListSellRatesRequest value) => value.writeToBuffer(),
@@ -579,6 +649,13 @@ abstract class GiftCardsServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.AdminListBuyTransactionsRequest.fromBuffer(value),
         ($0.AdminListBuyTransactionsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AdminListSellSettlementsRequest, $0.AdminListSellSettlementsResponse>(
+        'AdminListSellSettlements',
+        adminListSellSettlements_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.AdminListSellSettlementsRequest.fromBuffer(value),
+        ($0.AdminListSellSettlementsResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.AdminListRefundLedgerRequest, $0.AdminListRefundLedgerResponse>(
         'AdminListRefundLedger',
         adminListRefundLedger_Pre,
@@ -614,6 +691,34 @@ abstract class GiftCardsServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.AdminRejectSaleRequest.fromBuffer(value),
         ($0.AdminRejectSaleResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AdminRetryHoldReleaseRequest, $0.AdminRetryHoldReleaseResponse>(
+        'AdminRetryHoldRelease',
+        adminRetryHoldRelease_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.AdminRetryHoldReleaseRequest.fromBuffer(value),
+        ($0.AdminRetryHoldReleaseResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AdminManualRefundPurchaseRequest, $0.AdminManualRefundPurchaseResponse>(
+        'AdminManualRefundPurchase',
+        adminManualRefundPurchase_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.AdminManualRefundPurchaseRequest.fromBuffer(value),
+        ($0.AdminManualRefundPurchaseResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AdminForceReconcilePurchaseRequest, $0.AdminForceReconcilePurchaseResponse>(
+        'AdminForceReconcilePurchase',
+        adminForceReconcilePurchase_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.AdminForceReconcilePurchaseRequest.fromBuffer(value),
+        ($0.AdminForceReconcilePurchaseResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AdminSetSellPayoutOverrideRequest, $0.AdminSetSellPayoutOverrideResponse>(
+        'AdminSetSellPayoutOverride',
+        adminSetSellPayoutOverride_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.AdminSetSellPayoutOverrideRequest.fromBuffer(value),
+        ($0.AdminSetSellPayoutOverrideResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.AdminListSellRatesRequest, $0.AdminListSellRatesResponse>(
         'AdminListSellRates',
         adminListSellRates_Pre,
@@ -871,6 +976,12 @@ abstract class GiftCardsServiceBase extends $grpc.Service {
 
   $async.Future<$0.AdminListBuyTransactionsResponse> adminListBuyTransactions($grpc.ServiceCall call, $0.AdminListBuyTransactionsRequest request);
 
+  $async.Future<$0.AdminListSellSettlementsResponse> adminListSellSettlements_Pre($grpc.ServiceCall $call, $async.Future<$0.AdminListSellSettlementsRequest> $request) async {
+    return adminListSellSettlements($call, await $request);
+  }
+
+  $async.Future<$0.AdminListSellSettlementsResponse> adminListSellSettlements($grpc.ServiceCall call, $0.AdminListSellSettlementsRequest request);
+
   $async.Future<$0.AdminListRefundLedgerResponse> adminListRefundLedger_Pre($grpc.ServiceCall $call, $async.Future<$0.AdminListRefundLedgerRequest> $request) async {
     return adminListRefundLedger($call, await $request);
   }
@@ -900,6 +1011,30 @@ abstract class GiftCardsServiceBase extends $grpc.Service {
   }
 
   $async.Future<$0.AdminRejectSaleResponse> adminRejectSale($grpc.ServiceCall call, $0.AdminRejectSaleRequest request);
+
+  $async.Future<$0.AdminRetryHoldReleaseResponse> adminRetryHoldRelease_Pre($grpc.ServiceCall $call, $async.Future<$0.AdminRetryHoldReleaseRequest> $request) async {
+    return adminRetryHoldRelease($call, await $request);
+  }
+
+  $async.Future<$0.AdminRetryHoldReleaseResponse> adminRetryHoldRelease($grpc.ServiceCall call, $0.AdminRetryHoldReleaseRequest request);
+
+  $async.Future<$0.AdminManualRefundPurchaseResponse> adminManualRefundPurchase_Pre($grpc.ServiceCall $call, $async.Future<$0.AdminManualRefundPurchaseRequest> $request) async {
+    return adminManualRefundPurchase($call, await $request);
+  }
+
+  $async.Future<$0.AdminManualRefundPurchaseResponse> adminManualRefundPurchase($grpc.ServiceCall call, $0.AdminManualRefundPurchaseRequest request);
+
+  $async.Future<$0.AdminForceReconcilePurchaseResponse> adminForceReconcilePurchase_Pre($grpc.ServiceCall $call, $async.Future<$0.AdminForceReconcilePurchaseRequest> $request) async {
+    return adminForceReconcilePurchase($call, await $request);
+  }
+
+  $async.Future<$0.AdminForceReconcilePurchaseResponse> adminForceReconcilePurchase($grpc.ServiceCall call, $0.AdminForceReconcilePurchaseRequest request);
+
+  $async.Future<$0.AdminSetSellPayoutOverrideResponse> adminSetSellPayoutOverride_Pre($grpc.ServiceCall $call, $async.Future<$0.AdminSetSellPayoutOverrideRequest> $request) async {
+    return adminSetSellPayoutOverride($call, await $request);
+  }
+
+  $async.Future<$0.AdminSetSellPayoutOverrideResponse> adminSetSellPayoutOverride($grpc.ServiceCall call, $0.AdminSetSellPayoutOverrideRequest request);
 
   $async.Future<$0.AdminListSellRatesResponse> adminListSellRates_Pre($grpc.ServiceCall $call, $async.Future<$0.AdminListSellRatesRequest> $request) async {
     return adminListSellRates($call, await $request);

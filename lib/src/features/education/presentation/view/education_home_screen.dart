@@ -89,9 +89,16 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
       body: SafeArea(
         child: BlocBuilder<EducationCubit, EducationState>(
           builder: (context, state) {
-            final args = Get.arguments as Map<String, dynamic>?;
+            // Defensive read: `Get.arguments` and the nested `rebuyPurchase`
+            // payload may be anything (or missing). Earlier the second cast
+            // crashed when callers passed an `EducationHistoryEntity`
+            // directly — coerce only when the shape matches.
+            final args = Get.arguments;
+            final argsMap =
+                args is Map<String, dynamic> ? args : const <String, dynamic>{};
+            final rebuyArg = argsMap['rebuyPurchase'];
             final rebuyPurchase =
-                args?['rebuyPurchase'] as Map<String, dynamic>?;
+                rebuyArg is Map<String, dynamic> ? rebuyArg : null;
 
             if (state is EducationProvidersLoaded && rebuyPurchase != null) {
               _handleRebuyPurchase(rebuyPurchase, state.providers);

@@ -6,11 +6,13 @@ import 'package:flutter/material.dart';
 class ExchangeTheme {
   ExchangeTheme._();
 
-  // Primary accent — purple, matches invoice flow.
-  static const Color primary = Color(0xFF7C3AED);     // main CTAs
+  // Primary accent — invoice flow's deep purple. Single source of truth
+  // so swapping the brand purple here cascades through every CTA, icon
+  // tint and badge in the exchange surface.
+  static const Color primary = Color(0xFF4E03D0);     // main CTAs (matches InvoiceThemeColors.primaryPurple)
   static const Color primaryDark = Color(0xFF4E03D0); // deep accent (icons, dots)
   static const Color primarySoft = Color(0xFF6D28D9); // hover / pressed
-  static const Color primaryTint = Color(0x337C3AED); // 20% overlays
+  static const Color primaryTint = Color(0x334E03D0); // 20% overlays
 
   // Dark backgrounds (unchanged across the app).
   static const Color background = Color(0xFF0A0A0A);

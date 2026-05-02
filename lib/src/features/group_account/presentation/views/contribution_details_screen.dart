@@ -88,6 +88,14 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       backgroundColor: const Color(0xFF0A0A0A),
       body: SafeArea(
         child: BlocConsumer<GroupAccountCubit, GroupAccountState>(
+          // Only rebuild for the states the body renders. Side-effect
+          // states (success snack-bars, navigation) still fire the listener.
+          buildWhen: (previous, current) =>
+              current is GroupAccountLoading ||
+              current is GroupAccountGroupLoaded ||
+              current is ContributionPaymentSuccess ||
+              current is ContributionPaymentFailed ||
+              current is GroupAccountError,
           listener: (context, state) {
             if (state is GroupAccountError) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -1013,19 +1021,27 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     // Group payments by user
     final userPayments = <String, List<ContributionPayment>>{};
 
-    // Combine local and static payments for member grouping
+    // Merge local + static payments without the previous O(n²) `any()` scan
+    // by indexing seen IDs and transaction IDs in two sets.
+    final seenIds = <String>{};
+    final seenTxIds = <String>{};
     final allPayments = <ContributionPayment>[];
-    allPayments.addAll(_localPayments);
+    for (final p in _localPayments) {
+      seenIds.add(p.id);
+      if (p.transactionId != null) seenTxIds.add(p.transactionId!);
+      allPayments.add(p);
+    }
     for (final staticPayment in contribution.payments) {
-      final isDuplicate = allPayments.any((localPayment) =>
-        localPayment.id == staticPayment.id ||
-        (localPayment.transactionId != null &&
-         staticPayment.transactionId != null &&
-         localPayment.transactionId == staticPayment.transactionId)
-      );
-      if (!isDuplicate) {
-        allPayments.add(staticPayment);
+      if (seenIds.contains(staticPayment.id)) continue;
+      if (staticPayment.transactionId != null &&
+          seenTxIds.contains(staticPayment.transactionId)) {
+        continue;
       }
+      seenIds.add(staticPayment.id);
+      if (staticPayment.transactionId != null) {
+        seenTxIds.add(staticPayment.transactionId!);
+      }
+      allPayments.add(staticPayment);
     }
 
     for (final payment in allPayments) {
@@ -2232,14 +2248,20 @@ Powered by LazerVault 🚀
         return const Color(0xFFF59E0B);
       case PaymentStatus.processing:
         return const Color(0xFF3B82F6);
+      case PaymentStatus.awaitingVerification:
+        return const Color(0xFFF59E0B);
       case PaymentStatus.completed:
         return const Color(0xFF10B981);
       case PaymentStatus.failed:
         return const Color(0xFFEF4444);
       case PaymentStatus.cancelled:
         return const Color(0xFF6B7280);
+      case PaymentStatus.refunding:
+        return const Color(0xFFF59E0B);
       case PaymentStatus.refunded:
         return const Color.fromARGB(255, 78, 3, 208);
+      case PaymentStatus.manualReview:
+        return const Color(0xFFEF4444);
     }
   }
 

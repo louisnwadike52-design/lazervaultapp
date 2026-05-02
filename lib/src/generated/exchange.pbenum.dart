@@ -1,20 +1,25 @@
-///
-//  Generated code. Do not modify.
-//  source: exchange.proto
+// This is a generated file - do not edit.
 //
-// @dart = 2.12
-// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
+// Generated from exchange.proto.
 
-// ignore_for_file: UNDEFINED_SHOWN_NAME
+// @dart = 3.3
+
+// ignore_for_file: annotate_overrides, camel_case_types, comment_references
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names
+
 import 'dart:core' as $core;
+
 import 'package:protobuf/protobuf.dart' as $pb;
 
 class ExchangeStatus extends $pb.ProtobufEnum {
-  static const ExchangeStatus PENDING = ExchangeStatus._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'PENDING');
-  static const ExchangeStatus PROCESSING = ExchangeStatus._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'PROCESSING');
-  static const ExchangeStatus COMPLETED = ExchangeStatus._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'COMPLETED');
-  static const ExchangeStatus FAILED = ExchangeStatus._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'FAILED');
-  static const ExchangeStatus CANCELLED = ExchangeStatus._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'CANCELLED');
+  static const ExchangeStatus PENDING = ExchangeStatus._(0, _omitEnumNames ? '' : 'PENDING');
+  static const ExchangeStatus PROCESSING = ExchangeStatus._(1, _omitEnumNames ? '' : 'PROCESSING');
+  static const ExchangeStatus COMPLETED = ExchangeStatus._(2, _omitEnumNames ? '' : 'COMPLETED');
+  static const ExchangeStatus FAILED = ExchangeStatus._(3, _omitEnumNames ? '' : 'FAILED');
+  static const ExchangeStatus CANCELLED = ExchangeStatus._(4, _omitEnumNames ? '' : 'CANCELLED');
 
   static const $core.List<ExchangeStatus> values = <ExchangeStatus> [
     PENDING,
@@ -24,16 +29,16 @@ class ExchangeStatus extends $pb.ProtobufEnum {
     CANCELLED,
   ];
 
-  static final $core.Map<$core.int, ExchangeStatus> _byValue = $pb.ProtobufEnum.initByValue(values);
-  static ExchangeStatus? valueOf($core.int value) => _byValue[value];
+  static final $core.List<ExchangeStatus?> _byValue = $pb.ProtobufEnum.$_initByValueList(values, 4);
+  static ExchangeStatus? valueOf($core.int value) =>  value < 0 || value >= _byValue.length ? null : _byValue[value];
 
-  const ExchangeStatus._($core.int v, $core.String n) : super(v, n);
+  const ExchangeStatus._(super.value, super.name);
 }
 
 class ExchangeType extends $pb.ProtobufEnum {
-  static const ExchangeType EXCHANGE_TYPE_UNSPECIFIED = ExchangeType._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'EXCHANGE_TYPE_UNSPECIFIED');
-  static const ExchangeType CONVERSION = ExchangeType._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'CONVERSION');
-  static const ExchangeType INTERNATIONAL = ExchangeType._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'INTERNATIONAL');
+  static const ExchangeType EXCHANGE_TYPE_UNSPECIFIED = ExchangeType._(0, _omitEnumNames ? '' : 'EXCHANGE_TYPE_UNSPECIFIED');
+  static const ExchangeType CONVERSION = ExchangeType._(1, _omitEnumNames ? '' : 'CONVERSION');
+  static const ExchangeType INTERNATIONAL = ExchangeType._(2, _omitEnumNames ? '' : 'INTERNATIONAL');
 
   static const $core.List<ExchangeType> values = <ExchangeType> [
     EXCHANGE_TYPE_UNSPECIFIED,
@@ -41,9 +46,11 @@ class ExchangeType extends $pb.ProtobufEnum {
     INTERNATIONAL,
   ];
 
-  static final $core.Map<$core.int, ExchangeType> _byValue = $pb.ProtobufEnum.initByValue(values);
-  static ExchangeType? valueOf($core.int value) => _byValue[value];
+  static final $core.List<ExchangeType?> _byValue = $pb.ProtobufEnum.$_initByValueList(values, 2);
+  static ExchangeType? valueOf($core.int value) =>  value < 0 || value >= _byValue.length ? null : _byValue[value];
 
-  const ExchangeType._($core.int v, $core.String n) : super(v, n);
+  const ExchangeType._(super.value, super.name);
 }
 
+
+const $core.bool _omitEnumNames = $core.bool.fromEnvironment('protobuf.omit_enum_names');

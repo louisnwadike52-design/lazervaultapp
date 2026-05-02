@@ -902,15 +902,27 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
   }
 
   Widget _buildSellableCardsList(GiftCardState state) {
-    if (state is SellableCardsLoading) {
-      return _buildLoadingGrid();
-    } else if (state is SellableCardsLoaded) {
-      return _buildSellableCardsGrid(state.cards);
-    } else if (state is SellableCardsEmpty) {
+    // Stale-while-revalidate: if the cubit holds cached sellable cards,
+    // always render them — even when the current state is a Loading or an
+    // unrelated state from a sibling tab (buy / countries / mySales).
+    // The cubit re-emits SellableCardsLoaded on revalidation; users only
+    // see a loading state on the very first load.
+    final cubit = context.read<GiftCardCubit>();
+    final cached = cubit.cachedSellableCards;
+
+    if (state is SellableCardsEmpty) {
       return _buildSellEmptyState();
-    } else if (state is GiftCardNetworkError) {
+    }
+    if (state is SellableCardsLoaded) {
+      return _buildSellableCardsGrid(state.cards);
+    }
+    if (cached.isNotEmpty) {
+      return _buildSellableCardsGrid(cached);
+    }
+    if (state is GiftCardNetworkError) {
       return _buildErrorState(state.message, state.canRetry);
     }
+    // Only true cold start (no cache, no data) shows the loading shimmer.
     return _buildLoadingGrid();
   }
 

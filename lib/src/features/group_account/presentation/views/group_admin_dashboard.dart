@@ -919,6 +919,8 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
         return const Color(0xFFFB923C);
       case GroupMemberRole.member:
         return const Color(0xFF10B981);
+      case GroupMemberRole.viewer:
+        return const Color(0xFF6B7280);
     }
   }
 
@@ -930,6 +932,8 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
         return 'Moderator';
       case GroupMemberRole.member:
         return 'Member';
+      case GroupMemberRole.viewer:
+        return 'Viewer';
     }
   }
 

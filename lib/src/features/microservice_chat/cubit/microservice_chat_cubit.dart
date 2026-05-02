@@ -185,10 +185,26 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
 
             // Extract transient receipt_data from entities (not round-tripped)
             final receiptData = _entities.remove('_receipt_data');
-            Map<String, dynamic>? messageMetadata;
+            // Bill-payment signals surfaced by chat-products-service.
+            final quickActions = (_entities.remove('_quick_actions') as List?)
+                ?.whereType<String>()
+                .toList(growable: false);
+            final billType = _entities['last_bill_type'] as String?;
+            final lastPaymentId = _entities['last_payment_id'] as String?;
+
+            final messageMetadata = <String, dynamic>{};
             if (receiptData is Map<String, dynamic>) {
-              messageMetadata = {'receipt_data': receiptData};
+              messageMetadata['receipt_data'] = receiptData;
               _invalidateTransferRelatedCaches();
+            }
+            if (quickActions != null && quickActions.isNotEmpty) {
+              messageMetadata['quick_actions'] = quickActions;
+            }
+            if (billType != null && billType.isNotEmpty) {
+              messageMetadata['bill_type'] = billType;
+            }
+            if (lastPaymentId != null && lastPaymentId.isNotEmpty) {
+              messageMetadata['last_payment_id'] = lastPaymentId;
             }
 
             final botMessage = MicroserviceChatMessageEntity(
@@ -196,7 +212,7 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
               isUser: false,
               timestamp: DateTime.now(),
               serviceRoutedTo: chatResponse.serviceRoutedTo,
-              metadata: messageMetadata,
+              metadata: messageMetadata.isEmpty ? null : messageMetadata,
             );
             _currentMessages.add(botMessage);
 
@@ -231,17 +247,32 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
           // Extract transient receipt_data from entities (same pattern as direct path)
           final responseEntities = Map<String, dynamic>.from(chatResponse.entities);
           final receiptData = responseEntities.remove('_receipt_data');
-          Map<String, dynamic>? messageMetadata;
+          final quickActions = (responseEntities.remove('_quick_actions') as List?)
+              ?.whereType<String>()
+              .toList(growable: false);
+          final billType = responseEntities['last_bill_type'] as String?;
+          final lastPaymentId = responseEntities['last_payment_id'] as String?;
+
+          final messageMetadata = <String, dynamic>{};
           if (receiptData is Map<String, dynamic>) {
-            messageMetadata = {'receipt_data': receiptData};
+            messageMetadata['receipt_data'] = receiptData;
             _invalidateTransferRelatedCaches();
+          }
+          if (quickActions != null && quickActions.isNotEmpty) {
+            messageMetadata['quick_actions'] = quickActions;
+          }
+          if (billType != null && billType.isNotEmpty) {
+            messageMetadata['bill_type'] = billType;
+          }
+          if (lastPaymentId != null && lastPaymentId.isNotEmpty) {
+            messageMetadata['last_payment_id'] = lastPaymentId;
           }
 
           final botMessage = MicroserviceChatMessageEntity(
             text: chatResponse.response,
             isUser: false,
             timestamp: DateTime.now(),
-            metadata: messageMetadata,
+            metadata: messageMetadata.isEmpty ? null : messageMetadata,
           );
           _currentMessages.add(botMessage);
 
@@ -354,17 +385,32 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
         // Extract transient receipt_data (same pattern as sendMessage)
         final responseEntities = Map<String, dynamic>.from(chatResponse.entities);
         final receiptData = responseEntities.remove('_receipt_data');
-        Map<String, dynamic>? messageMetadata;
+        final quickActions = (responseEntities.remove('_quick_actions') as List?)
+            ?.whereType<String>()
+            .toList(growable: false);
+        final billType = responseEntities['last_bill_type'] as String?;
+        final lastPaymentId = responseEntities['last_payment_id'] as String?;
+
+        final messageMetadata = <String, dynamic>{};
         if (receiptData is Map<String, dynamic>) {
-          messageMetadata = {'receipt_data': receiptData};
+          messageMetadata['receipt_data'] = receiptData;
           _invalidateTransferRelatedCaches();
+        }
+        if (quickActions != null && quickActions.isNotEmpty) {
+          messageMetadata['quick_actions'] = quickActions;
+        }
+        if (billType != null && billType.isNotEmpty) {
+          messageMetadata['bill_type'] = billType;
+        }
+        if (lastPaymentId != null && lastPaymentId.isNotEmpty) {
+          messageMetadata['last_payment_id'] = lastPaymentId;
         }
 
         final botMessage = MicroserviceChatMessageEntity(
           text: chatResponse.response,
           isUser: false,
           timestamp: DateTime.now(),
-          metadata: messageMetadata,
+          metadata: messageMetadata.isEmpty ? null : messageMetadata,
         );
         _currentMessages.add(botMessage);
         emit(MicroserviceChatMessageSuccess(messages: List.from(_currentMessages)));

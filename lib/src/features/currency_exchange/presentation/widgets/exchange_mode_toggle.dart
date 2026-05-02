@@ -50,7 +50,7 @@ class ExchangeModeToggle extends StatelessWidget {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: isSelected ? const Color(0xFF7C3AED) : Colors.transparent,
+            color: isSelected ? const Color(0xFF4E03D0) : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Row(

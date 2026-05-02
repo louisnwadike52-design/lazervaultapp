@@ -225,6 +225,16 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
           print('🧾 [RECEIPT] Receipt data keys: ${response.receiptData!.keys}');
         }
 
+        // Pluck bill-payment metadata fields (surfaced by chat-products-service
+        // via main.py) so the chat UI can render quick-action chips and a
+        // deep-link button under the receipt card.
+        final responseMeta = response.metadata ?? const {};
+        final quickActions = (responseMeta['quick_actions'] as List?)
+            ?.whereType<String>()
+            .toList(growable: false);
+        final billType = responseMeta['bill_type'] as String?;
+        final lastPaymentId = responseMeta['last_payment_id'] as String?;
+
         final botMessage = GeneralChatMessageEntity(
           text: response.response,
           isUser: false,
@@ -240,6 +250,12 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
             'isSystemMessage': false,
             if (response.receiptData != null)
               'receipt_data': response.receiptData,
+            if (quickActions != null && quickActions.isNotEmpty)
+              'quick_actions': quickActions,
+            if (billType != null && billType.isNotEmpty)
+              'bill_type': billType,
+            if (lastPaymentId != null && lastPaymentId.isNotEmpty)
+              'last_payment_id': lastPaymentId,
           },
         );
         updatedMessages.add(botMessage);

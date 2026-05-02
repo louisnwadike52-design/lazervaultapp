@@ -158,14 +158,20 @@ class PaymentHistoryCard extends StatelessWidget {
         return const Color(0xFFF59E0B);
       case PaymentStatus.processing:
         return const Color(0xFF3B82F6);
+      case PaymentStatus.awaitingVerification:
+        return const Color(0xFFF59E0B); // amber — money may have moved
       case PaymentStatus.completed:
         return const Color(0xFF10B981);
       case PaymentStatus.failed:
         return const Color(0xFFEF4444);
       case PaymentStatus.cancelled:
         return const Color(0xFF6B7280);
+      case PaymentStatus.refunding:
+        return const Color(0xFFF59E0B); // amber — refund in progress
       case PaymentStatus.refunded:
         return const Color.fromARGB(255, 78, 3, 208);
+      case PaymentStatus.manualReview:
+        return const Color(0xFFEF4444); // red — operator action required
     }
   }
 
@@ -175,14 +181,20 @@ class PaymentHistoryCard extends StatelessWidget {
         return Icons.schedule;
       case PaymentStatus.processing:
         return Icons.sync;
+      case PaymentStatus.awaitingVerification:
+        return Icons.hourglass_top;
       case PaymentStatus.completed:
         return Icons.check_circle;
       case PaymentStatus.failed:
         return Icons.error;
       case PaymentStatus.cancelled:
         return Icons.cancel;
+      case PaymentStatus.refunding:
+        return Icons.sync_problem;
       case PaymentStatus.refunded:
         return Icons.undo;
+      case PaymentStatus.manualReview:
+        return Icons.report_problem;
     }
   }
 } 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -6,6 +7,7 @@ import 'package:get/get.dart';
 import '../../domain/entities/group_entities.dart';
 import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
+import '../utils/group_validators.dart';
 
 class CreateGroupBottomSheet extends StatefulWidget {
   const CreateGroupBottomSheet({super.key});
@@ -23,13 +25,60 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
   bool _isLoading = false;
   bool _isPublic = false;
 
+  // Focus-aware error display for the optional social-link fields.
+  // Pattern: error text shows when (a) the field has lost focus at least
+  // once AND (b) the current value fails the canonical-link regex. As
+  // soon as the user starts editing again the error clears, so they
+  // aren't shouted at while mid-type.
+  final FocusNode _whatsappFocus = FocusNode();
+  final FocusNode _telegramFocus = FocusNode();
+  String? _whatsappError;
+  String? _telegramError;
+
+  @override
+  void initState() {
+    super.initState();
+    _whatsappFocus.addListener(_onWhatsappFocusChanged);
+    _telegramFocus.addListener(_onTelegramFocusChanged);
+    _whatsappLinkController.addListener(_clearWhatsappErrorOnEdit);
+    _telegramLinkController.addListener(_clearTelegramErrorOnEdit);
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
+    _whatsappLinkController.removeListener(_clearWhatsappErrorOnEdit);
+    _telegramLinkController.removeListener(_clearTelegramErrorOnEdit);
     _whatsappLinkController.dispose();
     _telegramLinkController.dispose();
+    _whatsappFocus.dispose();
+    _telegramFocus.dispose();
     super.dispose();
+  }
+
+  void _onWhatsappFocusChanged() {
+    if (_whatsappFocus.hasFocus) return;
+    setState(() {
+      _whatsappError = GroupValidators.whatsappLink(_whatsappLinkController.text);
+    });
+  }
+
+  void _onTelegramFocusChanged() {
+    if (_telegramFocus.hasFocus) return;
+    setState(() {
+      _telegramError = GroupValidators.telegramLink(_telegramLinkController.text);
+    });
+  }
+
+  void _clearWhatsappErrorOnEdit() {
+    if (_whatsappError == null) return;
+    setState(() => _whatsappError = null);
+  }
+
+  void _clearTelegramErrorOnEdit() {
+    if (_telegramError == null) return;
+    setState(() => _telegramError = null);
   }
 
   @override
@@ -166,6 +215,14 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
                     TextFormField(
                       controller: _nameController,
                       style: GoogleFonts.inter(color: Colors.white),
+                      // Hard cap at the storage limit. Counter shown so the
+                      // user knows they're approaching the limit.
+                      maxLength: GroupValidators.nameMaxLength,
+                      inputFormatters: [
+                        LengthLimitingTextInputFormatter(GroupValidators.nameMaxLength),
+                      ],
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      textInputAction: TextInputAction.next,
                       decoration: InputDecoration(
                         hintText: 'Enter group name',
                         hintStyle: GoogleFonts.inter(
@@ -198,16 +255,12 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
                         ),
                         filled: true,
                         fillColor: const Color(0xFF0A0A0A),
+                        counterStyle: GoogleFonts.inter(
+                          color: Colors.grey[500],
+                          fontSize: 11.sp,
+                        ),
                       ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Please enter a group name';
-                        }
-                        if (value.trim().length < 3) {
-                          return 'Group name must be at least 3 characters';
-                        }
-                        return null;
-                      },
+                      validator: GroupValidators.name,
                     ),
                     SizedBox(height: 24.h),
 
@@ -224,6 +277,11 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
                     TextFormField(
                       controller: _descriptionController,
                       maxLines: 3,
+                      maxLength: GroupValidators.descriptionMaxLength,
+                      inputFormatters: [
+                        LengthLimitingTextInputFormatter(GroupValidators.descriptionMaxLength),
+                      ],
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
                       style: GoogleFonts.inter(color: Colors.white),
                       decoration: InputDecoration(
                         hintText: 'Describe the purpose of this group...',
@@ -260,16 +318,12 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
                         ),
                         filled: true,
                         fillColor: const Color(0xFF0A0A0A),
+                        counterStyle: GoogleFonts.inter(
+                          color: Colors.grey[500],
+                          fontSize: 11.sp,
+                        ),
                       ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Please enter a description';
-                        }
-                        if (value.trim().length < 10) {
-                          return 'Description must be at least 10 characters';
-                        }
-                        return null;
-                      },
+                      validator: GroupValidators.description,
                     ),
                     SizedBox(height: 24.h),
 
@@ -416,7 +470,20 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
                     // WhatsApp Link Field
                     TextFormField(
                       controller: _whatsappLinkController,
+                      focusNode: _whatsappFocus,
                       style: GoogleFonts.inter(color: Colors.white),
+                      keyboardType: TextInputType.url,
+                      maxLength: GroupValidators.linkMaxLength,
+                      inputFormatters: [
+                        LengthLimitingTextInputFormatter(GroupValidators.linkMaxLength),
+                      ],
+                      // The TextFormField has its own validator so it gets
+                      // checked again at form-submit time. The errorText
+                      // below is what drives the focus-aware "show on blur,
+                      // hide on type" behaviour: we set _whatsappError on
+                      // focus loss, clear it as soon as the user starts
+                      // typing again. Both gates the submit button.
+                      validator: GroupValidators.whatsappLink,
                       decoration: InputDecoration(
                         hintText: 'https://chat.whatsapp.com/...',
                         hintStyle: GoogleFonts.inter(
@@ -443,8 +510,18 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
                             width: 2,
                           ),
                         ),
+                        errorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                          borderSide: const BorderSide(color: Color(0xFFEF4444)),
+                        ),
                         filled: true,
                         fillColor: const Color(0xFF0A0A0A),
+                        errorText: _whatsappError,
+                        errorStyle: GoogleFonts.inter(
+                          color: const Color(0xFFEF4444),
+                          fontSize: 12.sp,
+                        ),
+                        counterText: '',
                       ),
                     ),
                     SizedBox(height: 12.h),
@@ -452,7 +529,14 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
                     // Telegram Link Field
                     TextFormField(
                       controller: _telegramLinkController,
+                      focusNode: _telegramFocus,
                       style: GoogleFonts.inter(color: Colors.white),
+                      keyboardType: TextInputType.url,
+                      maxLength: GroupValidators.linkMaxLength,
+                      inputFormatters: [
+                        LengthLimitingTextInputFormatter(GroupValidators.linkMaxLength),
+                      ],
+                      validator: GroupValidators.telegramLink,
                       decoration: InputDecoration(
                         hintText: 'https://t.me/...',
                         hintStyle: GoogleFonts.inter(
@@ -479,8 +563,18 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
                             width: 2,
                           ),
                         ),
+                        errorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                          borderSide: const BorderSide(color: Color(0xFFEF4444)),
+                        ),
                         filled: true,
                         fillColor: const Color(0xFF0A0A0A),
+                        errorText: _telegramError,
+                        errorStyle: GoogleFonts.inter(
+                          color: const Color(0xFFEF4444),
+                          fontSize: 12.sp,
+                        ),
+                        counterText: '',
                       ),
                     ),
                     SizedBox(height: 32.h),

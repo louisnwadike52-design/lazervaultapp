@@ -36,6 +36,17 @@ class GiftCardCubit extends Cubit<GiftCardState> {
   String? _lastCountryCode;
   String? _lastCategory;
 
+  // Sellable-cards cache. Same shape as [_accumulatedBrands]: lets the sell
+  // tab render its grid immediately on re-entry / revalidation instead of
+  // flashing a loading state and then re-rendering items. The cubit only
+  // emits [SellableCardsLoading] on the *first* load (no cache yet) — once
+  // we have data, subsequent loads run silently and re-emit
+  // [SellableCardsLoaded] when the network response lands. Per-country.
+  List<SellableCard> _accumulatedSellableCards = [];
+  String? _lastSellCountryCode;
+  List<SellableCard> get cachedSellableCards =>
+      List.unmodifiable(_accumulatedSellableCards);
+
   GiftCardCubit({
     required IGiftCardRepository repository,
     required SWRCacheManager cacheManager,
@@ -59,12 +70,38 @@ class GiftCardCubit extends Cubit<GiftCardState> {
 
       final isLoadMore = page > 0;
 
-      if (!isLoadMore) {
+      // Stale-while-revalidate: on a fresh (non-paginated) load with
+      // the SAME filters as the cached set, keep the cached brands on
+      // screen and refresh in the background. Only show the spinner
+      // on:
+      //   - the very first load (cache empty)
+      //   - a filter change (country / category / search)
+      //   - explicit pagination (page > 0)
+      // Tab switches that re-call loadGiftCardBrands with identical
+      // filters serve cache instantly with no loader flicker.
+      final filtersUnchanged = countryCode == _lastCountryCode &&
+          category == _lastCategory &&
+          searchQuery == _lastSearchQuery;
+      final hasCache = _accumulatedBrands.isNotEmpty;
+
+      if (isLoadMore) {
+        emit(GiftCardBrandsLoadingMore(_accumulatedBrands));
+      } else if (hasCache && filtersUnchanged) {
+        // Re-emit so a newly mounted listener (tab switch) sees the
+        // cache immediately rather than the cubit's last unrelated
+        // state. Network call below revalidates silently.
+        emit(GiftCardBrandsLoaded(
+          _accumulatedBrands,
+          selectedCategory: category,
+          currentPage: _currentPage,
+          totalPages: _totalPages,
+          hasNext: _hasNextPage,
+        ));
+      } else {
+        // First load OR filter changed: clear cache + show loader.
         _accumulatedBrands = [];
         _currentPage = 0;
         emit(GiftCardBrandsLoading());
-      } else {
-        emit(GiftCardBrandsLoadingMore(_accumulatedBrands));
       }
 
       _lastCountryCode = countryCode;
@@ -83,6 +120,12 @@ class GiftCardCubit extends Cubit<GiftCardState> {
 
       result.fold(
         (failure) {
+          // Revalidation-failure path: when we have cached brands on
+          // screen, NEVER replace them with an error state. The user
+          // keeps browsing what they had; we'll retry next tab switch.
+          if (!isLoadMore && hasCache && filtersUnchanged) {
+            return;
+          }
           final msg = failure.message;
           if (msg.contains('timed out') || msg.contains('TimeoutException')) {
             emit(GiftCardTimeoutError(operation: 'Loading brands'));
@@ -121,6 +164,10 @@ class GiftCardCubit extends Cubit<GiftCardState> {
       );
     } catch (e) {
       if (isClosed) return;
+      // Same defence as fold-failure: don't blast a cached UI with an
+      // error state when we have something to show.
+      final hasCache = _accumulatedBrands.isNotEmpty;
+      if (page == 0 && hasCache) return;
       emit(GiftCardNetworkError(
         message: e.toString(),
         canRetry: true,
@@ -364,12 +411,25 @@ class GiftCardCubit extends Cubit<GiftCardState> {
           // Invalidate user's gift cards cache so next load gets fresh data
           _cacheManager.invalidate('my_gift_cards');
 
-          // Complete immediately. The previous code emitted a fake
-          // "Delivering..." 90% step + a 300ms cosmetic delay before
-          // completing — both stripped because the API call has
-          // already returned a real giftCard at this point and the
-          // user is owed the success screen now, not after a fake
-          // shimmer.
+          // Async mode: backend returned the row before the provider
+          // call completed (status != "available", no redemption code
+          // yet). Stay on the processing screen — it listens on the
+          // balance WebSocket for a `giftcard_purchase` event with a
+          // matching reference and refetches the card on terminal
+          // events. Sync mode skips this branch (status is already
+          // "available" and the redemption code is populated).
+          final isStillProcessing = giftCard.status != 'available' ||
+              (giftCard.redemptionCode == null ||
+                  giftCard.redemptionCode!.isEmpty);
+          if (isStillProcessing) {
+            emit(GiftCardPurchaseAwaitingProvider(
+              giftCard: giftCard,
+              reference: giftCard.providerTransactionId ?? brandId,
+            ));
+            return;
+          }
+
+          // Sync-mode happy path: receipt is fully ready.
           emit(GiftCardPurchaseCompleted(
             giftCard: giftCard,
             transactionId: giftCard.providerTransactionId,
@@ -609,6 +669,54 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     }
   }
 
+  /// Pull-to-refresh / fetch-on-load variant for the details screen.
+  /// Mirrors loadGiftCardDetails but skips the GiftCardLoading shimmer
+  /// so the screen keeps showing the existing receipt while the
+  /// network round-trip is in flight. Used during the async-buy
+  /// awaiting-provider flow and on RefreshIndicator pull-down.
+  Future<void> refreshGiftCardDetails(String giftCardId) async {
+    try {
+      if (giftCardId.trim().isEmpty || isClosed) return;
+      final result = await _repository.getGiftCardById(giftCardId);
+      if (isClosed) return;
+      result.fold(
+        (_) {
+          // Silent failure — the screen keeps its current view.
+          // RefreshIndicator's spinner naturally settles.
+        },
+        (giftCard) {
+          // Treat "available + redemption code present" as terminal happy.
+          // Treat "failed/refunded/manual_review" as terminal sad.
+          // Otherwise stay awaiting so the screen keeps its loading affordance.
+          final s = giftCard.status.toLowerCase();
+          final hasCode =
+              (giftCard.redemptionCode ?? '').trim().isNotEmpty;
+          if (s == 'available' && hasCode) {
+            emit(GiftCardPurchaseCompleted(
+              giftCard: giftCard,
+              transactionId: giftCard.providerTransactionId,
+            ));
+            return;
+          }
+          if (s == 'failed' || s == 'refunded') {
+            emit(GiftCardPurchaseError(
+              'The gift card purchase did not complete. Your funds will be returned.',
+            ));
+            return;
+          }
+          // Still in-flight: re-emit awaiting with the fresh row.
+          emit(GiftCardPurchaseAwaitingProvider(
+            giftCard: giftCard,
+            reference: giftCard.providerTransactionId ?? giftCard.id,
+          ));
+        },
+      );
+    } catch (_) {
+      // Network blip on a refresh is non-fatal; the screen retains its
+      // existing state and the user can pull again.
+    }
+  }
+
   // ============================================
   // SELL FLOW METHODS
   // ============================================
@@ -616,18 +724,40 @@ class GiftCardCubit extends Cubit<GiftCardState> {
   Future<void> loadSellableCards({String? countryCode}) async {
     try {
       if (isClosed) return;
-      emit(SellableCardsLoading());
+
+      // Stale-while-revalidate: if we already have cached cards for this
+      // country, keep them on screen and refresh silently. Only show the
+      // loading spinner on the very first load, an explicit error retry,
+      // or a country switch (where the cached set is for a different list).
+      final sameCountry = countryCode == _lastSellCountryCode;
+      final hasCache = _accumulatedSellableCards.isNotEmpty;
+      if (hasCache && sameCountry) {
+        // Re-emit so any newly mounted listener (tab switch) sees the cache
+        // immediately rather than the cubit's last unrelated state.
+        emit(SellableCardsLoaded(_accumulatedSellableCards));
+      } else {
+        emit(SellableCardsLoading());
+      }
+
+      _lastSellCountryCode = countryCode;
 
       final result = await _repository.getSellableCards(countryCode: countryCode);
       if (isClosed) return;
 
       result.fold(
-        (failure) => emit(GiftCardNetworkError(
-          message: failure.message,
-          canRetry: true,
-          operation: 'Loading sellable cards',
-        )),
+        (failure) {
+          // On revalidation failure, keep showing the cached grid so the
+          // user is never punished for a transient network blip. Only
+          // surface an error when there's nothing to show.
+          if (_accumulatedSellableCards.isNotEmpty) return;
+          emit(GiftCardNetworkError(
+            message: failure.message,
+            canRetry: true,
+            operation: 'Loading sellable cards',
+          ));
+        },
         (cards) {
+          _accumulatedSellableCards = List<SellableCard>.from(cards);
           if (cards.isEmpty) {
             emit(const SellableCardsEmpty());
           } else {
@@ -637,6 +767,7 @@ class GiftCardCubit extends Cubit<GiftCardState> {
       );
     } catch (e) {
       if (isClosed) return;
+      if (_accumulatedSellableCards.isNotEmpty) return;
       emit(GiftCardNetworkError(
         message: e.toString(),
         canRetry: true,
@@ -812,7 +943,53 @@ class GiftCardCubit extends Cubit<GiftCardState> {
           // Invalidate sales cache
           _cacheManager.invalidate('my_sales');
 
-          emit(SellSubmitted(sale: sale));
+          // Branch on the sale row's status. The backend's response
+          // shape encodes which downstream UX is correct; we don't
+          // need to ask "what mode am I in?" client-side because
+          // status already answers it:
+          //   - paid / settled  → auto + (sync or async) terminal
+          //                       success → receipt
+          //   - rejected        → auto rejected → error screen
+          //   - manual_review   → auto-escalated; same UX as the manual
+          //                       queue (operator owns it)
+          //   - pending_review  → manual provider path → "Submitted"
+          //   - pending / reviewing → automated mode in flight; sit on
+          //                       the processing screen with WebSocket
+          //                       and refetch on terminal events.
+          switch (sale.status) {
+            case 'paid':
+            case 'settled':
+              emit(GiftCardSellPaid(sale));
+              break;
+            case 'rejected':
+              emit(SellRejected(
+                sale: sale,
+                // Use the row's rejection_reason — populated by both
+                // admin reject (operator-typed user-facing copy) and
+                // Prestmit webhook reject (provider's reason). Falls
+                // back to a generic message only when the server
+                // omitted it (legacy build).
+                reason: sale.rejectionReason.isNotEmpty
+                    ? sale.rejectionReason
+                    : 'Your sale was rejected. Please contact support if you need details.',
+              ));
+              break;
+            case 'manual_review':
+              emit(SellEscalatedToManualReview(sale));
+              break;
+            case 'pending':
+            case 'reviewing':
+              emit(GiftCardSellAwaitingProvider(
+                sale: sale,
+                reference: sale.reference,
+              ));
+              break;
+            default:
+              // pending_review (manual queue) and any unknown future
+              // states fall back to the existing "submitted for
+              // review" UX. Safe default.
+              emit(SellSubmitted(sale: sale));
+          }
         },
       );
     } on GrpcError catch (e) {
@@ -853,6 +1030,66 @@ class GiftCardCubit extends Cubit<GiftCardState> {
     } catch (e) {
       if (isClosed) return;
       emit(SellError(e.toString()));
+    }
+  }
+
+  /// Re-fetch a sale row by id and emit the appropriate post-terminal
+  /// state. Called by the sell processing screen when a `giftcard_sale`
+  /// WebSocket event arrives matching the awaited reference, and as
+  /// the pull-to-refresh fallback when the WS isn't available.
+  ///
+  /// Mirrors [refreshGiftCardDetails] for the buy flow but emits the
+  /// sell-side terminal states (GiftCardSellPaid / SellRejected /
+  /// SellEscalatedToManualReview) instead of buy ones.
+  Future<void> refreshSaleDetails(String saleId) async {
+    try {
+      final result = await _repository.getSellStatus(saleId);
+      if (isClosed) return;
+      result.fold(
+        (failure) {
+          // Don't emit a hard error while the user sits on the
+          // processing screen — they may simply have lost network
+          // mid-poll. The screen will either retry on the next WS
+          // tick or the user will pull-to-refresh.
+        },
+        (sale) {
+          switch (sale.status) {
+            case 'paid':
+            case 'settled':
+              emit(GiftCardSellPaid(sale));
+              break;
+            case 'rejected':
+              emit(SellRejected(
+                sale: sale,
+                // Use the row's rejection_reason — populated by both
+                // admin reject (operator-typed user-facing copy) and
+                // Prestmit webhook reject (provider's reason). Falls
+                // back to a generic message only when the server
+                // omitted it (legacy build).
+                reason: sale.rejectionReason.isNotEmpty
+                    ? sale.rejectionReason
+                    : 'Your sale was rejected. Please contact support if you need details.',
+              ));
+              break;
+            case 'manual_review':
+              emit(SellEscalatedToManualReview(sale));
+              break;
+            case 'pending':
+            case 'reviewing':
+              // Still in flight — keep the awaiting state visible.
+              emit(GiftCardSellAwaitingProvider(
+                sale: sale,
+                reference: sale.reference,
+              ));
+              break;
+            default:
+              // pending_review and other intermediate states stay on
+              // the same screen; nothing to do.
+          }
+        },
+      );
+    } catch (_) {
+      // Silent — see comment above.
     }
   }
 

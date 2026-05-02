@@ -11,6 +11,7 @@ import 'package:lazervault/core/services/signup_state_service.dart';
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/group_account/presentation/cubit/group_account_cubit.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/src/core/grpc/crypto_grpc_client.dart';
 import 'package:lazervault/core/config/country_config.dart';
@@ -589,6 +590,12 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     await _clearSession();
     // Clear currency sync state on logout
     _currencySyncService.clear();
+    // Wipe per-user caches owned by long-lived singletons. The group-account
+    // cubit is registered as a lazy singleton so its in-memory state outlives
+    // the session unless explicitly cleared.
+    if (serviceLocator.isRegistered<GroupAccountCubit>()) {
+      serviceLocator<GroupAccountCubit>().clearOnLogout();
+    }
     _showInfoSnackbar('Logged Out', 'Come back soon!');
     // Emit PasscodeLoginInProgress instead of AuthenticationInitial
     // to prevent infinite loading spinner on passcode screen

@@ -1,13 +1,17 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import '../../cubit/gift_card_cubit.dart';
 import '../../cubit/gift_card_state.dart';
 import '../../domain/entities/gift_card_entity.dart';
 import '../../../../../core/types/app_routes.dart';
+import '../../../account_cards_summary/services/balance_websocket_service.dart';
 import 'widgets/gift_card_error_widget.dart';
 
 class GiftCardPurchaseProcessingScreen extends StatefulWidget {
@@ -34,6 +38,14 @@ class _GiftCardPurchaseProcessingScreenState
   IconData _errorIcon = Icons.error_outline;
   Color _errorIconColor = const Color(0xFFEF4444);
 
+  // Async-buy WebSocket plumbing. When the backend returns the row in
+  // a non-terminal state, we sit on this screen and wait for a
+  // `giftcard_purchase` event with a matching reference, then refetch.
+  // No polling timers — the WebSocket is the source of truth.
+  StreamSubscription<BalanceUpdateEvent>? _balanceSub;
+  String? _awaitingReference;
+  String? _awaitingGiftCardId;
+
   @override
   void initState() {
     super.initState();
@@ -46,7 +58,33 @@ class _GiftCardPurchaseProcessingScreenState
   @override
   void dispose() {
     _animationController.dispose();
+    _balanceSub?.cancel();
     super.dispose();
+  }
+
+  void _ensureBalanceSubscription() {
+    if (_balanceSub != null) return;
+    try {
+      final wsService = GetIt.I<BalanceWebSocketService>();
+      _balanceSub = wsService.balanceUpdates.listen(_handleBalanceEvent);
+    } catch (_) {
+      // Service not registered — pull-to-refresh on the receipt screen
+      // is the fallback. The cubit's awaiting state stays mounted.
+    }
+  }
+
+  void _handleBalanceEvent(BalanceUpdateEvent event) {
+    if (!mounted) return;
+    final ref = _awaitingReference;
+    final gid = _awaitingGiftCardId;
+    if (ref == null || gid == null) return;
+    if (event.eventType != 'giftcard_purchase') return;
+    if (event.reference != ref) return;
+    // Terminal event matched — refetch by id; cubit will emit
+    // GiftCardPurchaseCompleted (success), GiftCardPurchaseError
+    // (refunded/failed), or stay GiftCardPurchaseAwaitingProvider if
+    // the backend reports the row hasn't flipped yet (race).
+    context.read<GiftCardCubit>().refreshGiftCardDetails(gid);
   }
 
   void _startPurchase(BuildContext context) {
@@ -99,6 +137,13 @@ class _GiftCardPurchaseProcessingScreenState
                 AppRoutes.giftCardDetails,
                 arguments: state.giftCard,
               );
+            } else if (state is GiftCardPurchaseAwaitingProvider) {
+              // Async path: backend returned the row but provider hasn't
+              // confirmed yet. Subscribe to the balance WebSocket and
+              // wait for a giftcard_purchase event matching this ref.
+              _awaitingReference = state.reference;
+              _awaitingGiftCardId = state.giftCard.id;
+              _ensureBalanceSubscription();
             } else if (state is GiftCardPurchaseError ||
                 state is GiftCardInsufficientFunds ||
                 state is GiftCardNetworkError ||
@@ -121,6 +166,13 @@ class _GiftCardPurchaseProcessingScreenState
               if (state is GiftCardPurchaseProcessing) {
                 progress = state.progress;
                 currentStep = state.currentStep;
+              } else if (state is GiftCardPurchaseAwaitingProvider) {
+                // Async path: row exists, provider call still pending.
+                // Show steady waiting state until the WebSocket flips us
+                // to Completed via _handleBalanceEvent + refresh.
+                progress = 0.75;
+                currentStep =
+                    'Waiting for confirmation from the provider.';
               }
 
               return SafeArea(

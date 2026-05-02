@@ -553,6 +553,14 @@ class SellRate extends Equatable {
   final double payoutAmount;
   final String currency;
   final String expiresAt;
+  // Manual-mode payout range. Both 0 in automated mode (use
+  // payoutAmount as a point estimate). hasRange returns true only
+  // when both bounds are populated AND distinct from zero — guards
+  // against a legacy server that hasn't been redeployed yet (the
+  // backend defaults the proto fields to 0 when no range applies).
+  final double payoutLowerBound;
+  final double payoutUpperBound;
+  final bool isManualMode;
 
   const SellRate({
     required this.cardType,
@@ -561,11 +569,26 @@ class SellRate extends Equatable {
     required this.payoutAmount,
     this.currency = 'NGN',
     this.expiresAt = '',
+    this.payoutLowerBound = 0,
+    this.payoutUpperBound = 0,
+    this.isManualMode = false,
   });
+
+  /// True only when we have a real, meaningful range to render.
+  /// Falls back to false (Flutter shows point estimate) if either:
+  ///   - the row isn't manual mode
+  ///   - the server returned 0/0 (pre-redeploy, before range was added)
+  ///   - upper <= lower (degenerate band — should never happen)
+  bool get hasRange =>
+      isManualMode &&
+      payoutLowerBound > 0 &&
+      payoutUpperBound > 0 &&
+      payoutUpperBound > payoutLowerBound;
 
   @override
   List<Object?> get props => [
     cardType, denomination, ratePercentage, payoutAmount, currency, expiresAt,
+    payoutLowerBound, payoutUpperBound, isManualMode,
   ];
 }
 
@@ -590,6 +613,18 @@ class GiftCardSale extends Equatable {
   final String paidAt;
   final String createdAt;
   final String updatedAt;
+  // Rejection reason — populated when status=rejected (admin reject
+  // OR Prestmit-webhook reject). User-facing copy that the receipt /
+  // sell detail screen renders. Distinct from the operator's internal
+  // admin_notes which the giftcards-service strips on user RPCs.
+  final String rejectionReason;
+  // Backend's denormalised lifecycle label. Computed from (status,
+  // settlement_status, settlement_confirmations) so the UI never
+  // shows "paid" until settlement is fully confirmed. Optional —
+  // empty for legacy rows / pre-redeploy server builds; falls back
+  // to status. Drives userDisplayStatus below.
+  final String displayStatus;
+  final String settlementStatus;
 
   const GiftCardSale({
     required this.id,
@@ -611,13 +646,58 @@ class GiftCardSale extends Equatable {
     this.paidAt = '',
     this.createdAt = '',
     this.updatedAt = '',
+    this.rejectionReason = '',
+    this.displayStatus = '',
+    this.settlementStatus = '',
   });
+
+  // userDisplayStatus is the simplified label shown to end users on
+  // Flutter. Internal lifecycle states like "settling",
+  // "pending_settlement", "approved" all collapse to "pending"
+  // because the user only cares whether they have the money yet.
+  // Terminal states (paid, rejected, refunded, settled) pass through.
+  // Drives the My Sales status badge so users never see operator
+  // jargon and never see "Paid" before they actually have funds.
+  String get userDisplayStatus {
+    final s = displayStatus.isNotEmpty ? displayStatus : status;
+    switch (s) {
+      case 'paid':
+      case 'settled':
+        return 'paid';
+      case 'rejected':
+      case 'failed':
+        return 'rejected';
+      case 'refunded':
+        return 'refunded';
+      case 'refund_pending':
+      case 'refund_failed':
+        return 'pending';
+      // Every internal in-flight state collapses to user-facing "pending".
+      case 'settling':
+      case 'pending_settlement':
+      case 'approved':
+      case 'reviewing':
+      case 'pending_review':
+      case 'manual_review':
+      case 'pending':
+        return 'pending';
+      default:
+        return s;
+    }
+  }
 
   bool get isPending => status == 'pending';
   bool get isReviewing => status == 'reviewing';
   bool get isApproved => status == 'approved';
   bool get isRejected => status == 'rejected';
   bool get isPaid => status == 'paid';
+  // Pending settlement = provider confirmed the trade but the wallet
+  // credit hasn't landed yet (either the credit was never attempted or
+  // the credit attempt failed and is queued for retry by the
+  // settlement-retry worker). Distinct from isPaid: the user does NOT
+  // yet have the money. UI must render "Pending wallet credit" rather
+  // than "Paid".
+  bool get isPendingSettlement => status == 'pending_settlement';
   // Canonical sell terminal-failure name is `failed` (post migration 013).
   // The legacy `cancelled` value is treated as a synonym so older rows
   // emitted before the rename still surface correctly.
@@ -632,6 +712,7 @@ class GiftCardSale extends Equatable {
     id, userId, accountId, cardType, cardNumber, denomination, currency,
     ratePercentage, expectedPayout, actualPayout, status, providerSaleId,
     providerName, reference, submittedAt, reviewedAt, paidAt, createdAt, updatedAt,
+    rejectionReason, displayStatus, settlementStatus,
   ];
 
   Map<String, dynamic> toJson() {
@@ -655,6 +736,9 @@ class GiftCardSale extends Equatable {
       'paidAt': paidAt,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
+      'rejectionReason': rejectionReason,
+      'displayStatus': displayStatus,
+      'settlementStatus': settlementStatus,
     };
   }
 
@@ -679,6 +763,9 @@ class GiftCardSale extends Equatable {
       paidAt: json['paidAt'] as String? ?? '',
       createdAt: json['createdAt'] as String? ?? '',
       updatedAt: json['updatedAt'] as String? ?? '',
+      rejectionReason: json['rejectionReason'] as String? ?? json['rejection_reason'] as String? ?? '',
+      displayStatus: json['displayStatus'] as String? ?? json['display_status'] as String? ?? '',
+      settlementStatus: json['settlementStatus'] as String? ?? json['settlement_status'] as String? ?? '',
     );
   }
 }

@@ -55,12 +55,12 @@ class QuickAmountButtons extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? const Color(0xFF7C3AED).withValues(alpha: 0.15)
+                      ? const Color(0xFF4E03D0).withValues(alpha: 0.15)
                       : const Color(0xFF1F1F1F),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: isSelected
-                        ? const Color(0xFF7C3AED)
+                        ? const Color(0xFF4E03D0)
                         : const Color(0xFF2D2D2D),
                   ),
                 ),
@@ -68,7 +68,7 @@ class QuickAmountButtons extends StatelessWidget {
                   child: Text(
                     _formatAmount(amount),
                     style: TextStyle(
-                      color: isSelected ? const Color(0xFF7C3AED) : Colors.white,
+                      color: isSelected ? const Color(0xFF4E03D0) : Colors.white,
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),

@@ -63,8 +63,11 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
 
   bool _showInviteUI = false;
 
-  // Track how many members have been added successfully
+  // Track add-attempt outcomes so the sheet always pops once every
+  // attempt has either succeeded or failed (no more "stuck open" state).
+  // Both counters together must reach _totalToAdd before the sheet pops.
   int _addedCount = 0;
+  int _failedCount = 0;
   int _totalToAdd = 0;
 
   @override
@@ -215,7 +218,13 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
   }
 
   bool _isUserAlreadyMember(UserSearchResultEntity user) {
-    return widget.existingMembers.any((m) => m.userId == user.userId);
+    // Two sources can carry the membership list: the explicit parameter
+    // (legacy callers) and widget.group.members (the canonical source).
+    // Match against either so a caller using only one still gets dedup.
+    if (widget.existingMembers.any((m) => m.userId == user.userId)) {
+      return true;
+    }
+    return widget.group.members.any((m) => m.userId == user.userId);
   }
 
   bool _isUserAlreadySelected(UserSearchResultEntity user) {
@@ -243,16 +252,34 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
   void _addMembers() {
     if (_selectedMembers.isEmpty && _pendingInvites.isEmpty) return;
 
+    // Local dedup against the group's existing members. Even if the user
+    // somehow selected a current member, refuse client-side so we don't
+    // even send the request (and don't risk counting it as failed).
+    final existingMemberUserIds = widget.group.members
+        .map((m) => m.userId)
+        .where((id) => id.isNotEmpty)
+        .toSet();
+    final selectedFiltered = _selectedMembers
+        .where((m) => !existingMemberUserIds.contains(m.user.userId))
+        .toList();
+
+    final total = selectedFiltered.length + _pendingInvites.length;
+    if (total == 0) {
+      // Everyone selected is already a member; close the sheet quietly.
+      Navigator.pop(context);
+      return;
+    }
+
     setState(() {
       _isLoading = true;
       _addedCount = 0;
-      _totalToAdd = _selectedMembers.length + _pendingInvites.length;
+      _failedCount = 0;
+      _totalToAdd = total;
     });
 
     final cubit = context.read<GroupAccountCubit>();
 
-    // Add all selected LazerVault users
-    for (final member in _selectedMembers) {
+    for (final member in selectedFiltered) {
       cubit.addMemberToGroupAccount(
         groupId: widget.group.id,
         userId: member.user.userId,
@@ -264,7 +291,6 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
       );
     }
 
-    // Send invites to non-LazerVault users
     for (final invite in _pendingInvites) {
       cubit.inviteUserToGroup(
         groupId: widget.group.id,
@@ -276,29 +302,60 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
     }
   }
 
+  /// Pop the sheet once every in-flight attempt has resolved (success or
+  /// failure). Never gets stuck: we count failures as terminal too. The
+  /// snackbar on the underlying screen tells the user how many landed.
+  void _maybePopAfterAddBatch() {
+    if (!_isLoading) return;
+    if (_addedCount + _failedCount < _totalToAdd) return;
+
+    setState(() => _isLoading = false);
+    if (!mounted) return;
+    Navigator.pop(context, _addedCount > 0);
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (messenger == null) return;
+    if (_failedCount == 0) {
+      messenger.showSnackBar(SnackBar(
+        content: Text(_totalToAdd == 1
+            ? 'Member added successfully'
+            : '$_addedCount members added successfully'),
+        backgroundColor: const Color(0xFF10B981),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+        behavior: SnackBarBehavior.floating,
+      ));
+    } else if (_addedCount == 0) {
+      messenger.showSnackBar(SnackBar(
+        content: Text('Could not add members. Please try again.'),
+        backgroundColor: const Color(0xFFEF4444),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+        behavior: SnackBarBehavior.floating,
+      ));
+    } else {
+      messenger.showSnackBar(SnackBar(
+        content: Text('$_addedCount of $_totalToAdd added. $_failedCount failed.'),
+        backgroundColor: const Color(0xFFF59E0B),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+        behavior: SnackBarBehavior.floating,
+      ));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<GroupAccountCubit, GroupAccountState>(
       listener: (context, state) {
         if (state is MemberAddedSuccess || state is InviteSentSuccess) {
           _addedCount++;
-
-          if (_addedCount >= _totalToAdd) {
-            setState(() => _isLoading = false);
-            Navigator.pop(context, true);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(_totalToAdd == 1
-                    ? 'Member added successfully'
-                    : '$_totalToAdd members added successfully'),
-                backgroundColor: const Color(0xFF10B981),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
-          }
+          _maybePopAfterAddBatch();
+        } else if (state is GroupAccountError && _isLoading) {
+          // Treat each error as one terminal outcome of the in-flight
+          // batch. Don't reset _isLoading mid-batch (other calls may
+          // still be in flight) — pop is gated on _addedCount + _failedCount.
+          _failedCount++;
+          _maybePopAfterAddBatch();
         } else if (state is GroupAccountError) {
-          setState(() => _isLoading = false);
+          // Outside of an active add batch (e.g. error from a different
+          // flow): just surface to the user without touching loading.
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
@@ -642,8 +699,16 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
       return _buildInviteUI();
     }
 
-    // Search results
-    if (_searchResults.isNotEmpty) {
+    // Search results — filter out users that are already in the group OR
+    // already in the just-selected batch. Server still rechecks on submit
+    // (defense-in-depth) but doing it here means duplicates never even
+    // appear as tappable rows. Also keeps the count of search hits
+    // honest: "No users found" if the only match is already a member.
+    final visibleResults = _searchResults
+        .where((u) => !_isUserAlreadyMember(u) && !_isUserAlreadySelected(u))
+        .take(5)
+        .toList();
+    if (visibleResults.isNotEmpty) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -656,8 +721,16 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
             ),
           ),
           SizedBox(height: 12.h),
-          ...(_searchResults.take(5).map((user) => _buildUserResultCard(user))),
+          ...visibleResults.map((user) => _buildUserResultCard(user)),
         ],
+      );
+    }
+    if (_searchResults.isNotEmpty && visibleResults.isEmpty) {
+      // Every match is already a member or already queued for add.
+      return _buildEmptyState(
+        icon: Icons.group_outlined,
+        title: 'Already in the group',
+        subtitle: 'These users are already members or queued to be added',
       );
     }
 
@@ -997,6 +1070,11 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
         color = const Color(0xFF10B981);
         description = 'Can view and contribute';
         break;
+      case GroupMemberRole.viewer:
+        icon = Icons.visibility;
+        color = const Color(0xFF6B7280);
+        description = 'Read-only access';
+        break;
     }
 
     return GestureDetector(
@@ -1129,6 +1207,11 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
         description = 'Can view group content and make contributions';
         icon = Icons.person;
         break;
+      case GroupMemberRole.viewer:
+        color = const Color(0xFF6B7280);
+        description = 'Read-only access — cannot contribute';
+        icon = Icons.visibility;
+        break;
     }
 
     return GestureDetector(
@@ -1200,7 +1283,12 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
           children: [
             Expanded(
               child: OutlinedButton(
-                onPressed: _isLoading ? null : () => Navigator.pop(context),
+                // Cancel must ALWAYS work, even mid-flight. The user
+                // expects the sheet to close on tap; backend writes that
+                // already started will complete asynchronously and the
+                // group-details screen will reactively pick them up via
+                // the cubit's optimistic-append path.
+                onPressed: () => Navigator.pop(context),
                 style: OutlinedButton.styleFrom(
                   side: BorderSide(color: Colors.grey[700]!),
                   padding: EdgeInsets.symmetric(vertical: 16.h),

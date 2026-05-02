@@ -11,6 +11,7 @@ import '../widgets/category_pie_chart.dart';
 import '../widgets/monthly_trend_line_chart.dart';
 import '../widgets/revenue_expense_bar_chart.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
@@ -68,6 +69,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
         ),
         centerTitle: true,
         actions: [
+          ServiceVoiceButton(serviceName: 'analytics'),
+          SizedBox(width: 8.w),
           Padding(
             padding: EdgeInsets.only(right: 16.w),
             child: MicroserviceChatIcon(

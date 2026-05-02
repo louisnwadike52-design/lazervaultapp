@@ -6,6 +6,7 @@ import 'package:lazervault/core/widgets/bill_history_actions_sheet.dart';
 
 import '../../domain/entities/transaction_entity.dart';
 import '../theme/exchange_theme.dart';
+import 'report_issue_dialog.dart';
 
 /// Bottom sheet of actions available on a past exchange transaction
 /// (Convert or Send Abroad). Modelled on `WaterHistoryActionsSheet`:
@@ -49,14 +50,46 @@ class ExchangeHistoryActionsSheet {
           label: 'Repeat Exchange',
           onTap: () {
             Get.back();
-            Get.toNamed(
-              AppRoutes.exchangeHome,
-              arguments: {
-                'fromCurrency': tx.fromCurrency,
-                'toCurrency': tx.toCurrency,
-                'amount': tx.fromAmount,
-              },
-            );
+            final isConversion = tx.type.isConversionLike;
+            if (isConversion) {
+              // Convert: home screen handles wallet↔wallet. The
+              // repeatPrefill flag tells it to auto-advance past the
+              // amount-entry step and open the confirmation modal with
+              // the prior amount/rate baked in.
+              Get.toNamed(
+                AppRoutes.exchangeHome,
+                arguments: {
+                  'fromCurrency': tx.fromCurrency,
+                  'toCurrency': tx.toCurrency,
+                  'amount': tx.fromAmount,
+                  'mode': 'convert',
+                  'repeatPrefill': true,
+                },
+              );
+            } else {
+              // Send Abroad: jump straight to the recipient form with all
+              // receiver fields pre-filled so the user lands on the
+              // confirm button. They can still edit anything.
+              Get.toNamed(
+                AppRoutes.exchangeRecipient,
+                arguments: {
+                  'fromCurrency': tx.fromCurrency,
+                  'toCurrency': tx.toCurrency,
+                  'amount': tx.fromAmount,
+                  'mode': 'sendAbroad',
+                  'repeatPrefill': true,
+                  'recipientName': tx.recipient.name,
+                  'recipientAccountNumber': tx.recipient.accountNumber,
+                  'recipientBankName': tx.recipient.bankName,
+                  'recipientSwiftCode': tx.recipient.swiftCode ?? '',
+                  'recipientIban': tx.recipient.iban ?? '',
+                  'recipientCountry': tx.recipient.countryCode,
+                  'recipientRoutingNumber':
+                      tx.recipient.routingNumber ?? '',
+                  'recipientAddress': tx.recipient.address ?? '',
+                },
+              );
+            }
           },
         ),
         BillHistoryAction(
@@ -75,21 +108,19 @@ class ExchangeHistoryActionsSheet {
             );
           },
         ),
+        // Report Issue surfaces only on terminal sad-path states — failed
+        // or cancelled (refunded). Happy-path and in-flight transactions
+        // don't need a complaint channel; there's nothing to complain
+        // about yet.
         if (tx.status == TransactionStatus.failed ||
-            tx.status == TransactionStatus.pending)
+            tx.status == TransactionStatus.cancelled)
           BillHistoryAction(
             icon: Icons.support_agent,
             color: ExchangeTheme.warning,
             label: 'Report Issue',
             onTap: () {
               Get.back();
-              Get.snackbar(
-                'Support',
-                'Reference $reference copied. Our team will follow up.',
-                snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: ExchangeTheme.cardBackground,
-                colorText: Colors.white,
-              );
+              ReportIssueDialog.show(context, tx);
             },
           ),
       ],

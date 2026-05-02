@@ -11,9 +11,14 @@ class InvoiceThemeColors {
   static const Color inputBackground = Color(0xFF0A0A0A); // Darker for inputs
 
   // Primary Brand Colors
-  static const Color primaryPurple = Color.fromARGB(255, 78, 3, 208); // Main purple
+  static const Color primaryPurple = Color.fromARGB(255, 78, 3, 208); // Main purple — buttons, accents
   static const Color alternativePurple = Color.fromARGB(255, 78, 3, 208); // Payment screens
   static const Color gradientPurple = Color.fromARGB(255, 78, 3, 208); // Gradient complement
+  // Lighter shade for use as text / icon / border on DARK backgrounds.
+  // The deep #4E03D0 fails WCAG contrast on #0A0A0A; #A78BFA (Tailwind
+  // violet-400) hits ~7:1 contrast which keeps text + thin borders
+  // legible without losing brand identity.
+  static const Color primaryPurpleLight = Color(0xFFA78BFA);
 
   // Status Colors
   static const Color successGreen = Color(0xFF10B981); // Completed/Paid

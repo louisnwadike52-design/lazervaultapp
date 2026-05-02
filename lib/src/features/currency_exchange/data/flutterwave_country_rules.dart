@@ -40,6 +40,12 @@ class ExchangeCountryRule {
   final bool requiresBranchCode;
   final bool supportsPaystackNameResolve; // NG/GH/KE/ZA via /recipients/verify-account
   final bool omitBeneficiaryName; // NG: resolved from bank+account
+  // UK/EU/US banks run Confirmation-of-Payee and reject name-pattern
+  // mismatches (individual name on a business account or vice versa).
+  // When true we render the Individual|Business segmented control and
+  // plumb the choice to meta.beneficiary_type. African corridors don't
+  // CoP so the control is hidden to reduce form friction.
+  final bool supportsBeneficiaryType;
   final double minAmount; // minor-unit equivalent is enforced server-side
   final double maxAmount;
   final List<ExchangeFieldSpec> fields;
@@ -54,6 +60,7 @@ class ExchangeCountryRule {
     this.requiresBranchCode = false,
     this.supportsPaystackNameResolve = false,
     this.omitBeneficiaryName = false,
+    this.supportsBeneficiaryType = false,
     required this.minAmount,
     required this.maxAmount,
     required this.fields,
@@ -195,16 +202,10 @@ class FlutterwaveCountryRules {
           type: 'text',
           minLength: 3,
         ),
-        ExchangeFieldSpec(name: 'email', label: 'Email', required: false, type: 'email'),
-        ExchangeFieldSpec(
-          name: 'phone',
-          label: 'Phone Number',
-          required: false,
-          type: 'phone',
-          hint: '+254 7XX XXX XXX',
-          minLength: 9,
-          maxLength: 12,
-        ),
+        // Email + phone were previously rendered as "optional" but
+        // Flutterwave's Kenya bank_kes recipient shape doesn't require
+        // them and the transfer goes through without them. Dropped to
+        // reduce friction.
       ],
       purposeOfPaymentOptions: _africanPurposes,
     ),
@@ -236,15 +237,17 @@ class FlutterwaveCountryRules {
           type: 'text',
           minLength: 3,
         ),
-        ExchangeFieldSpec(name: 'email', label: 'Email', required: false, type: 'email'),
+        // Address (street + city) is the only extra field ZAR's
+        // bank_zar type wants beyond name + bank + account. Email/phone
+        // were previously rendered as optional but Flutterwave doesn't
+        // mandate them — dropped to reduce form friction.
         ExchangeFieldSpec(
-          name: 'phone',
-          label: 'Phone Number',
-          required: false,
-          type: 'phone',
-          hint: '+27 7X XXX XXXX',
-          minLength: 9,
-          maxLength: 11,
+          name: 'beneficiary_address',
+          label: 'Recipient Address',
+          required: true,
+          type: 'text',
+          hint: 'Street, City',
+          minLength: 5,
         ),
       ],
       purposeOfPaymentOptions: _africanPurposes,
@@ -350,6 +353,7 @@ class FlutterwaveCountryRules {
       countryName: 'United States',
       dialCode: '1',
       requiresBankCode: false,
+      supportsBeneficiaryType: true,
       minAmount: 1,
       maxAmount: 1000000,
       fields: [
@@ -414,6 +418,7 @@ class FlutterwaveCountryRules {
       countryName: 'United Kingdom',
       dialCode: '44',
       requiresBankCode: false,
+      supportsBeneficiaryType: true,
       minAmount: 1,
       maxAmount: 500000,
       fields: [
@@ -475,6 +480,7 @@ class FlutterwaveCountryRules {
       countryName: 'Europe (SEPA)',
       dialCode: '49',
       requiresBankCode: false,
+      supportsBeneficiaryType: true,
       minAmount: 1,
       maxAmount: 500000,
       fields: [

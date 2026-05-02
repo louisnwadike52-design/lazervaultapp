@@ -14,6 +14,7 @@ import '../widgets/payroll_summary_widget.dart';
 import '../widgets/pending_invoices_card.dart';
 import '../widgets/period_selector_chip.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 
 class BusinessDashboardScreen extends StatefulWidget {
   const BusinessDashboardScreen({super.key});
@@ -57,6 +58,8 @@ class _BusinessDashboardScreenState extends State<BusinessDashboardScreen> {
         ),
         centerTitle: true,
         actions: [
+          ServiceVoiceButton(serviceName: 'accounts'),
+          SizedBox(width: 8.w),
           Padding(
             padding: EdgeInsets.only(right: 4.w),
             child: MicroserviceChatIcon(

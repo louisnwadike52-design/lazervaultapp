@@ -176,7 +176,17 @@ class ExchangeValidators {
   /// Beneficiary name: at least 2 words for international wires, at least
   /// 3 characters otherwise. Skipped entirely when the country rule
   /// declares omitBeneficiaryName (e.g. NG — name is auto-resolved).
-  static String? beneficiaryName(String? value, ExchangeCountryRule rule) {
+  ///
+  /// [isBusiness] ties the validation to the Individual | Business toggle:
+  /// UK/EU/US banks run Confirmation-of-Payee and reject patterns that
+  /// don't match the selected account type. We want to catch the common
+  /// mismatch ("business" picked + a clearly-personal name entered) before
+  /// the user has to watch the payment fail at the recipient's bank.
+  static String? beneficiaryName(
+    String? value,
+    ExchangeCountryRule rule, {
+    bool isBusiness = false,
+  }) {
     if (rule.omitBeneficiaryName) return null;
     final v = (value ?? '').trim();
     final spec = rule.fields.firstWhere(
@@ -189,11 +199,36 @@ class ExchangeValidators {
     }
     final min = spec.minLength ?? 3;
     if (v.length < min) return 'Recipient name is too short';
-    // USD/GBP/EUR wires require a full legal name (at least two tokens).
-    if ({'USD', 'GBP', 'EUR'}.contains(rule.currency)) {
-      if (!v.contains(' ')) {
-        return 'Enter the recipient\'s full legal name (first and last)';
+
+    final isCopCorridor = {'USD', 'GBP', 'EUR'}.contains(rule.currency);
+    if (!isCopCorridor) return null;
+
+    if (isBusiness) {
+      // Accept anything that looks like a registered entity: common
+      // suffixes (Ltd, Inc, Corp, LLC, LLP, GmbH, SA, BV, NV, AG, PLC,
+      // Pty, Oy, Srl, Sp) OR a single-token brand name (no space), since
+      // many legitimate businesses trade as one word. Reject the obvious
+      // mismatch: two personal tokens with no entity suffix.
+      final tokens = v.split(RegExp(r'\s+'));
+      if (tokens.length < 2) return null;
+      const suffixes = {
+        'ltd', 'ltd.', 'limited', 'inc', 'inc.', 'incorporated',
+        'corp', 'corp.', 'corporation', 'llc', 'l.l.c.', 'llp',
+        'gmbh', 'sa', 's.a.', 'bv', 'b.v.', 'nv', 'n.v.', 'ag',
+        'plc', 'pty', 'oy', 'srl', 's.r.l.', 'sp', 'co', 'co.',
+        'company', 'group', 'holdings', 'enterprises', 'trust',
+      };
+      final hasSuffix = tokens.any(
+          (t) => suffixes.contains(t.toLowerCase().replaceAll(',', '')));
+      if (!hasSuffix) {
+        return 'Enter the registered business name (e.g. Acme Ltd, Acme Inc).';
       }
+      return null;
+    }
+
+    // Individual — require first + last name.
+    if (!v.contains(' ')) {
+      return 'Enter the recipient\'s full legal name (first and last).';
     }
     return null;
   }

@@ -174,6 +174,10 @@ class MemberCard extends StatelessWidget {
         backgroundColor = const Color(0xFF10B981).withValues(alpha: 0.2);
         textColor = const Color(0xFF10B981);
         break;
+      case GroupMemberRole.viewer:
+        backgroundColor = const Color(0xFF6B7280).withValues(alpha: 0.2);
+        textColor = const Color(0xFF6B7280);
+        break;
     }
 
     return Container(

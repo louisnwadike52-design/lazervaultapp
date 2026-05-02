@@ -36,14 +36,19 @@ class MyGiftCardsScreen extends StatefulWidget {
 class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
-  // 0 = Available, 1 = Expired, 2 = All. Transfer tab dropped.
+  // 0 = Available, 1 = Expired, 2 = Failed, 3 = All. Transfer tab dropped.
   int _selectedTabIndex = 0;
   final ScrollController _scrollController = ScrollController();
+  // Cached snapshot of the last successfully-loaded list. Lets the
+  // screen keep rendering the previous results during transient
+  // GiftCardLoading emissions (pull-to-refresh, opening the details
+  // bottom sheet, etc.) instead of flashing blank.
+  MyGiftCardsLoaded? _lastLoaded;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
         setState(() {
@@ -64,9 +69,14 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
   }
 
   // Trigger pagination ~200px before the bottom so the next page
-  // arrives before the user's thumb hits end-of-list.
+  // arrives before the user's thumb hits end-of-list. Skips while
+  // a modal route (e.g. the details bottom sheet) is on top so a
+  // layout-driven scroll callback can't kick off a refresh that
+  // would visually wipe the list behind the sheet.
   void _onScroll() {
     if (!_scrollController.hasClients) return;
+    final route = ModalRoute.of(context);
+    if (route != null && !route.isCurrent) return;
     final pos = _scrollController.position;
     if (pos.pixels >= pos.maxScrollExtent - 200) {
       context.read<GiftCardCubit>().loadMoreMyGiftCards();
@@ -81,7 +91,15 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
   Widget build(BuildContext context) {
     return BlocListener<GiftCardCubit, GiftCardState>(
       listener: (context, state) {
-        if (state is RedeemCodeLoaded && state.status == 'available') {
+        if (state is MyGiftCardsLoaded) {
+          // Snapshot every successful load so the screen never
+          // re-enters the spinner state once the user has data on
+          // screen. Critical for the bottom-sheet flow: opening the
+          // sheet must not blank the list behind it.
+          setState(() => _lastLoaded = state);
+        } else if (state is UserGiftCardsEmpty) {
+          setState(() => _lastLoaded = null);
+        } else if (state is RedeemCodeLoaded && state.status == 'available') {
           Get.snackbar(
             'Redeem Code',
             'Code: ${state.redemptionCode}${state.redemptionPin.isNotEmpty ? " · PIN: ${state.redemptionPin}" : ""}',
@@ -122,6 +140,17 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
                       curr is MyGiftCardsLoaded ||
                       curr is UserGiftCardsEmpty,
                   builder: (context, state) {
+                    if (state is MyGiftCardsLoaded) {
+                      return _buildGiftCardList(state);
+                    }
+                    if (state is UserGiftCardsEmpty) return _buildEmptyView();
+                    // For any transient/loading/error state, prefer the
+                    // last snapshot if we have one — keeps the list on
+                    // screen during pull-to-refresh and during the
+                    // details bottom sheet animation.
+                    if (_lastLoaded != null) {
+                      return _buildGiftCardList(_lastLoaded!);
+                    }
                     if (state is GiftCardLoading) return _buildLoadingView();
                     if (state is GiftCardError) {
                       return _buildErrorView(state.message);
@@ -136,9 +165,6 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
                     if (state is GiftCardServerUnavailable) {
                       return _buildErrorView(
                           'Service temporarily unavailable. Pull down to retry.');
-                    }
-                    if (state is MyGiftCardsLoaded) {
-                      return _buildGiftCardList(state);
                     }
                     return _buildEmptyView();
                   },
@@ -192,35 +218,67 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
 
   Widget _buildTabBar() {
     return Container(
+      height: 48.h,
       margin: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 8.h),
+      padding: EdgeInsets.all(4.w),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(12.r),
+        color: const Color(0xFF1A1A1A),
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: const Color(0xFF2D2D2D), width: 1),
       ),
       child: TabBar(
         controller: _tabController,
         indicator: BoxDecoration(
           color: InvoiceThemeColors.primaryPurple,
           borderRadius: BorderRadius.circular(10.r),
+          boxShadow: [
+            BoxShadow(
+              color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.35),
+              blurRadius: 12,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         labelColor: Colors.white,
         unselectedLabelColor: const Color(0xFF9CA3AF),
         labelStyle: GoogleFonts.inter(
           fontWeight: FontWeight.w600,
-          fontSize: 14.sp,
+          fontSize: 13.sp,
+          letterSpacing: 0.2,
         ),
         unselectedLabelStyle: GoogleFonts.inter(
           fontWeight: FontWeight.w500,
-          fontSize: 14.sp,
+          fontSize: 13.sp,
+          letterSpacing: 0.2,
         ),
         indicatorSize: TabBarIndicatorSize.tab,
         dividerColor: Colors.transparent,
-        indicatorPadding: EdgeInsets.all(3.w),
-        tabs: const [
-          Tab(text: 'Available'),
-          Tab(text: 'Expired'),
-          Tab(text: 'All'),
+        splashFactory: NoSplash.splashFactory,
+        overlayColor: WidgetStateProperty.all(Colors.transparent),
+        tabs: [
+          _tabFor(icon: Icons.check_circle_outline, label: 'Available'),
+          _tabFor(icon: Icons.schedule_outlined, label: 'Expired'),
+          _tabFor(icon: Icons.error_outline, label: 'Failed'),
+          _tabFor(icon: Icons.all_inclusive_rounded, label: 'All'),
         ],
+      ),
+    );
+  }
+
+  Tab _tabFor({required IconData icon, required String label}) {
+    return Tab(
+      height: 40.h,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 14.sp),
+            SizedBox(width: 6.w),
+            Text(label, maxLines: 1, softWrap: false),
+          ],
+        ),
       ),
     );
   }
@@ -235,6 +293,15 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
     }
   }
 
+  // _isFailed treats both terminal-failed and refunded states as
+  // "Failed" from the user's perspective. The auto-rollback worker
+  // moves stuck cards into 'failed' / 'refunded' once held funds
+  // are released; legacy 'reversed' is kept for pre-migration rows.
+  bool _isFailed(GiftCard card) {
+    final s = card.status.toLowerCase();
+    return s == 'failed' || s == 'refunded' || s == 'reversed';
+  }
+
   Widget _buildGiftCardList(MyGiftCardsLoaded state) {
     final filtered = state.giftCards.where((card) {
       switch (_selectedTabIndex) {
@@ -243,7 +310,12 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
         case 1:
           return _isExpired(card);
         case 2:
+          return _isFailed(card);
+        case 3:
         default:
+          // "All" intentionally includes failed rows so transaction
+          // history is complete — the user's last attempt to buy is
+          // visible even when it didn't end in an active card.
           return true;
       }
     }).toList();
@@ -259,12 +331,12 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
         padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 24.h),
         physics: const AlwaysScrollableScrollPhysics(),
         // +1 row at the bottom for the load-more sentinel when more
-        // pages are available (only on the All tab — the Available
-        // and Expired tabs filter the accumulator client-side and
-        // would mislead the user with a "loading more" footer that
-        // can't actually grow their visible list).
-        itemCount: filtered.length +
-            (state.hasMore && _selectedTabIndex == 2 ? 1 : 0),
+        // pages are available (only on the All tab — the other tabs
+        // filter the accumulator client-side and would mislead the
+        // user with a "loading more" footer that can't actually grow
+        // their visible list). All is now index 3.
+        itemCount:
+            filtered.length + (state.hasMore && _selectedTabIndex == 3 ? 1 : 0),
         itemBuilder: (context, index) {
           if (index >= filtered.length) {
             return _buildLoadMoreFooter(state.isLoadingMore);
@@ -449,133 +521,145 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1A1A1A),
+      // isScrollControlled lets the sheet expand for long content;
+      // useSafeArea keeps it clear of system bars; useRootNavigator
+      // floats it above any nested Navigator (e.g. tab routes) so
+      // closing the sheet never pops the host screen.
       isScrollControlled: true,
+      useSafeArea: true,
+      useRootNavigator: true,
       shape: RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.vertical(top: Radius.circular(20.r)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
       builder: (sheetCtx) {
-        return Padding(
-          padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Drag handle
-              Center(
-                child: Container(
-                  width: 40.w,
-                  height: 4.h,
-                  margin: EdgeInsets.only(bottom: 16.h),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF3D3D3D),
-                    borderRadius: BorderRadius.circular(2.r),
+        // Cap the sheet height so the underlying list stays partly
+        // visible — communicates that the page is still there and
+        // prevents the impression that the screen has navigated away.
+        final maxSheetHeight = MediaQuery.of(sheetCtx).size.height * 0.75;
+        return ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: maxSheetHeight),
+          child: SingleChildScrollView(
+            padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Drag handle
+                Center(
+                  child: Container(
+                    width: 40.w,
+                    height: 4.h,
+                    margin: EdgeInsets.only(bottom: 16.h),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3D3D3D),
+                      borderRadius: BorderRadius.circular(2.r),
+                    ),
                   ),
                 ),
-              ),
-              // Header: brand logo + brand + amount/status
-              Row(
-                children: [
-                  _brandLogo(card),
-                  SizedBox(width: 12.w),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          card.brandName,
+                // Header: brand logo + brand + amount/status
+                Row(
+                  children: [
+                    _brandLogo(card),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            card.brandName,
+                            style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          SizedBox(height: 4.h),
+                          _statusChip(card),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      '${card.currency} ${card.originalAmount.toStringAsFixed(0)}',
+                      style: GoogleFonts.inter(
+                        color: InvoiceThemeColors.primaryPurple,
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16.h),
+                const Divider(color: Color(0xFF2D2D2D), height: 1),
+                SizedBox(height: 12.h),
+                // Compact key/value rows
+                if (card.purchaseDate.isNotEmpty)
+                  _kv('Purchased', _humanDate(card.purchaseDate)),
+                if (card.expiryDate.isNotEmpty)
+                  _kv('Expires', _humanDate(card.expiryDate)),
+                if (card.isMultiCurrency && card.senderAmount > 0)
+                  _kv('You paid',
+                      '${card.senderCurrency} ${card.senderAmount.toStringAsFixed(2)}'),
+                if ((card.providerTransactionId ?? '').isNotEmpty)
+                  _kv('Reference', card.providerTransactionId!),
+                SizedBox(height: 20.h),
+                // CTAs
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.of(sheetCtx).pop();
+                          _onRepeat(card);
+                        },
+                        icon: Icon(Icons.repeat_rounded, size: 18.sp),
+                        label: Text(
+                          'Repeat',
                           style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w700,
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                        SizedBox(height: 4.h),
-                        _statusChip(card),
-                      ],
-                    ),
-                  ),
-                  Text(
-                    '${card.currency} ${card.originalAmount.toStringAsFixed(0)}',
-                    style: GoogleFonts.inter(
-                      color: InvoiceThemeColors.primaryPurple,
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 16.h),
-              const Divider(color: Color(0xFF2D2D2D), height: 1),
-              SizedBox(height: 12.h),
-              // Compact key/value rows
-              if (card.purchaseDate.isNotEmpty)
-                _kv('Purchased', _humanDate(card.purchaseDate)),
-              if (card.expiryDate.isNotEmpty)
-                _kv('Expires', _humanDate(card.expiryDate)),
-              if (card.isMultiCurrency && card.senderAmount > 0)
-                _kv('You paid',
-                    '${card.senderCurrency} ${card.senderAmount.toStringAsFixed(2)}'),
-              if ((card.providerTransactionId ?? '').isNotEmpty)
-                _kv('Reference', card.providerTransactionId!),
-              SizedBox(height: 20.h),
-              // CTAs
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.of(sheetCtx).pop();
-                        _onRepeat(card);
-                      },
-                      icon: Icon(Icons.repeat_rounded, size: 18.sp),
-                      label: Text(
-                        'Repeat',
-                        style: GoogleFonts.inter(
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        side: BorderSide(
-                            color: InvoiceThemeColors.primaryPurple),
-                        padding: EdgeInsets.symmetric(vertical: 12.h),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10.r),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          side: BorderSide(
+                              color: InvoiceThemeColors.primaryPurple),
+                          padding: EdgeInsets.symmetric(vertical: 12.h),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10.r),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  SizedBox(width: 12.w),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.of(sheetCtx).pop();
-                        Get.toNamed(AppRoutes.giftCardDetails,
-                            arguments: card);
-                      },
-                      icon: Icon(Icons.receipt_long_rounded, size: 18.sp),
-                      label: Text(
-                        'View receipt',
-                        style: GoogleFonts.inter(
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w600,
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.of(sheetCtx).pop();
+                          Get.toNamed(AppRoutes.giftCardDetails,
+                              arguments: card);
+                        },
+                        icon: Icon(Icons.receipt_long_rounded, size: 18.sp),
+                        label: Text(
+                          'View receipt',
+                          style: GoogleFonts.inter(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: InvoiceThemeColors.primaryPurple,
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(vertical: 12.h),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10.r),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: InvoiceThemeColors.primaryPurple,
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.symmetric(vertical: 12.h),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10.r),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -610,8 +694,8 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
     );
     Get.toNamed(
       AppRoutes.purchaseGiftCard,
-      arguments: PurchaseGiftCardArgs(
-          brand: stub, lockedAmount: card.originalAmount),
+      arguments:
+          PurchaseGiftCardArgs(brand: stub, lockedAmount: card.originalAmount),
     );
   }
 
@@ -653,8 +737,8 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
   Widget _buildLoadingView() {
     return Center(
       child: CircularProgressIndicator(
-        valueColor: AlwaysStoppedAnimation<Color>(
-            InvoiceThemeColors.primaryPurple),
+        valueColor:
+            AlwaysStoppedAnimation<Color>(InvoiceThemeColors.primaryPurple),
       ),
     );
   }
@@ -699,8 +783,7 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
               style: ElevatedButton.styleFrom(
                 backgroundColor: InvoiceThemeColors.primaryPurple,
                 foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(
-                    horizontal: 20.w, vertical: 12.h),
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10.r),
                 ),
@@ -713,27 +796,81 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
   }
 
   Widget _buildEmptyTabView() {
-    final label = _selectedTabIndex == 0
-        ? 'No available gift cards'
-        : _selectedTabIndex == 1
-            ? 'Nothing has expired'
-            : 'No gift cards yet';
+    // _selectedTabIndex maps to the tabs in _buildTabBar:
+    //   0=Available, 1=Expired, 2=Failed, 3=All. The "All" branch is
+    //   the only state where we know the user has nothing at all;
+    //   the others just mean "nothing of THIS status" — they may
+    //   have entries in another tab, so we offer a one-tap "See all"
+    //   CTA to take them there instead of leaving them stuck.
+    final isAllTab = _selectedTabIndex == 3;
+    final (title, subtitle, icon) = switch (_selectedTabIndex) {
+      0 => (
+          'No available cards',
+          'Cards you can redeem appear here. Buy one to get started.',
+          Icons.check_circle_outline,
+        ),
+      1 => (
+          'Nothing has expired',
+          'Cards that pass their expiry date will show up here.',
+          Icons.schedule_outlined,
+        ),
+      2 => (
+          'No failed purchases',
+          "Empty here means every purchase landed cleanly. That's a good thing.",
+          Icons.error_outline,
+        ),
+      3 => (
+          'No gift cards yet',
+          'Your purchased cards will appear here.',
+          Icons.card_giftcard,
+        ),
+      _ => (
+          'No gift cards yet',
+          'Your purchased cards will appear here.',
+          Icons.card_giftcard,
+        ),
+    };
     return Center(
       child: Padding(
-        padding: EdgeInsets.all(32.w),
+        padding: EdgeInsets.symmetric(horizontal: 32.w),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.inbox_outlined,
-                size: 48.sp, color: const Color(0xFF6B7280)),
-            SizedBox(height: 8.h),
+            Icon(icon, size: 48.sp, color: const Color(0xFF6B7280)),
+            SizedBox(height: 12.h),
             Text(
-              label,
+              title,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 6.h),
+            Text(
+              subtitle,
+              textAlign: TextAlign.center,
               style: GoogleFonts.inter(
                 color: const Color(0xFF9CA3AF),
                 fontSize: 13.sp,
+                height: 1.4,
               ),
             ),
+            if (!isAllTab) ...[
+              SizedBox(height: 14.h),
+              TextButton.icon(
+                onPressed: () {
+                  setState(() => _selectedTabIndex = 3);
+                  _tabController.animateTo(3);
+                },
+                icon: const Icon(Icons.list_rounded, size: 16),
+                label: const Text('See all cards'),
+                style: TextButton.styleFrom(
+                  foregroundColor: InvoiceThemeColors.primaryPurple,
+                ),
+              ),
+            ],
           ],
         ),
       ),

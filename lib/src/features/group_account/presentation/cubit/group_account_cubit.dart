@@ -1,10 +1,10 @@
 import 'dart:async';
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/utils/user_search_query.dart';
-import '../../../../../core/cache/swr_cache_manager.dart';
-import '../../../../../core/offline/mutation_queue.dart';
+import 'package:lazervault/src/core/auth/token_manager.dart';
 import '../../domain/usecases/group_account_usecases.dart';
 import '../../domain/entities/group_entities.dart';
 import '../../services/group_account_report_service.dart';
@@ -42,11 +42,12 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
   final ListPublicGroups? listPublicGroups;
   final GetPublicGroup? getPublicGroup;
   final JoinPublicGroup? joinPublicGroup;
-  final SWRCacheManager? cacheManager;
-  final MutationQueue? mutationQueue;
   final GroupAccountReportService? reportService;
-
-  StreamSubscription<SWRResult<List<GroupAccount>>>? _cacheSubscription;
+  // Live session source-of-truth (reads from FlutterSecureStorage). Used to
+  // detect a user-ID mismatch that bypassed setUserId/clearOnLogout — a
+  // critical safeguard because a stale _currentUserId would resolve the
+  // WRONG user's source account on payment.
+  final TokenManager _tokenManager;
 
   // Current user ID and name - set from authentication state
   String? _currentUserId;
@@ -62,12 +63,55 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
   GroupAccountReport? _cachedReport;
   GroupAccountReport? get cachedReport => _cachedReport;
 
-  /// Set the current user ID and name from authentication state
+  // Snapshot of the last GroupAccountGroupLoaded payload. Used by mutation
+  // handlers to apply optimistic patches without refetching, and by views
+  // (e.g. GroupDetailsScreen) to render the last good state when the
+  // cubit's current state is something unrelated (e.g. a payment-flow
+  // emission that doesn't carry group data). The getters expose the
+  // snapshot read-only — never mutate it from a view.
+  GroupAccount? _lastLoadedGroup;
+  List<GroupMember>? _lastLoadedMembers;
+  List<Contribution>? _lastLoadedContributions;
+
+  GroupAccount? get lastLoadedGroup => _lastLoadedGroup;
+  List<GroupMember>? get lastLoadedMembers => _lastLoadedMembers;
+  List<Contribution>? get lastLoadedContributions => _lastLoadedContributions;
+
+  /// Set the current user ID and name from authentication state.
+  ///
+  /// The cubit is a long-lived singleton (see app_router.dart for why) so
+  /// any user-ID change must wipe per-user caches before the next load,
+  /// otherwise stale data from the previous account leaks into the new one.
   void setUserId(String userId, {String? userName}) {
+    final isUserSwitch = _currentUserId != null && _currentUserId != userId;
+    if (isUserSwitch) {
+      _clearUserScopedState();
+    }
     _currentUserId = userId;
     if (userName != null) _currentUserName = userName;
     // Automatically load groups when user ID is set
     loadUserGroups();
+  }
+
+  /// Drop every piece of in-memory state owned by the previous user.
+  /// Safe to call at any time — used by setUserId on user switch and by
+  /// the auth flow on explicit logout.
+  void clearOnLogout() {
+    _currentUserId = null;
+    _currentUserName = null;
+    _clearUserScopedState();
+    if (!isClosed) {
+      emit(GroupAccountInitial());
+    }
+  }
+
+  void _clearUserScopedState() {
+    _cachedGroups = null;
+    _cachedReport = null;
+    _cachedPublicGroups = null;
+    _lastLoadedGroup = null;
+    _lastLoadedMembers = null;
+    _lastLoadedContributions = null;
   }
 
   GroupAccountCubit({
@@ -102,19 +146,93 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     this.listPublicGroups,
     this.getPublicGroup,
     this.joinPublicGroup,
-    this.cacheManager,
-    this.mutationQueue,
     this.reportService,
-  }) : super(GroupAccountInitial());
+    TokenManager? tokenManager,
+  })  : _tokenManager = tokenManager ?? TokenManager(),
+        super(GroupAccountInitial());
 
-  @override
-  Future<void> close() {
-    _cacheSubscription?.cancel();
-    return super.close();
+  /// Verify the cached `_currentUserId` still matches the live session.
+  /// Returns the live user ID on success, or null if the session is gone /
+  /// has changed under us — in which case caches are wiped and the caller
+  /// should abort. Belt-and-suspenders against any path that changes the
+  /// authenticated user without going through setUserId/clearOnLogout.
+  Future<String?> _assertSessionUser() async {
+    final liveId = await _tokenManager.getUserId();
+    if (liveId == null) {
+      // No session — wipe anything left over and surface unauthenticated.
+      if (_currentUserId != null) {
+        debugPrint('[GroupAccountCubit] session disappeared, clearing caches');
+        clearOnLogout();
+      }
+      if (!isClosed) {
+        emit(const GroupAccountError('Session expired. Please log in again.'));
+      }
+      return null;
+    }
+    if (_currentUserId != null && _currentUserId != liveId) {
+      // User switched without setUserId being called (e.g. session restored
+      // from token without going through the auth flow). Wipe per-user
+      // state immediately so the next op uses the new user's account.
+      debugPrint('[GroupAccountCubit] user mismatch '
+          'cached=$_currentUserId live=$liveId — clearing caches');
+      _clearUserScopedState();
+      _currentUserName = null;
+    }
+    _currentUserId = liveId;
+    return liveId;
   }
 
-  String _getGroupsCacheKey() {
-    return 'groups:${_currentUserId ?? 'unknown'}';
+  /// Snapshot of the loaded group/members/contributions tuple. Used by
+  /// optimistic mutations to revert if the server rejects the change.
+  _LoadedSnapshot? _snapshotLoaded() {
+    if (_lastLoadedGroup == null ||
+        _lastLoadedMembers == null ||
+        _lastLoadedContributions == null) {
+      return null;
+    }
+    return _LoadedSnapshot(
+      group: _lastLoadedGroup!,
+      members: List.of(_lastLoadedMembers!),
+      contributions: List.of(_lastLoadedContributions!),
+    );
+  }
+
+  /// Apply a patch to the cached snapshot and emit GroupAccountGroupLoaded
+  /// immediately. Optional fields default to the current cached value.
+  void _patchLoaded({
+    GroupAccount? group,
+    List<GroupMember>? members,
+    List<Contribution>? contributions,
+  }) {
+    if (_lastLoadedGroup == null ||
+        _lastLoadedMembers == null ||
+        _lastLoadedContributions == null) {
+      return;
+    }
+    _lastLoadedGroup = group ?? _lastLoadedGroup;
+    _lastLoadedMembers = members ?? _lastLoadedMembers;
+    _lastLoadedContributions = contributions ?? _lastLoadedContributions;
+    if (!isClosed) {
+      emit(GroupAccountGroupLoaded(
+        group: _lastLoadedGroup!,
+        members: _lastLoadedMembers!,
+        contributions: _lastLoadedContributions!,
+      ));
+    }
+  }
+
+  /// Restore the cached snapshot (used after a failed optimistic mutation).
+  void _restoreSnapshot(_LoadedSnapshot snapshot) {
+    _lastLoadedGroup = snapshot.group;
+    _lastLoadedMembers = snapshot.members;
+    _lastLoadedContributions = snapshot.contributions;
+    if (!isClosed) {
+      emit(GroupAccountGroupLoaded(
+        group: snapshot.group,
+        members: snapshot.members,
+        contributions: snapshot.contributions,
+      ));
+    }
   }
 
   /// Check if an error is a network-related error that should trigger offline queuing
@@ -134,13 +252,19 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
         errorStr.contains('unreachable');
   }
 
-  // Group management methods
+  // Group management methods.
+  //
+  // SWR semantics: if `_cachedGroups` is non-empty, emit it IMMEDIATELY and
+  // refetch in the background. The user never sees a spinner on revisits.
+  // Only the first cold load shows GroupAccountLoading. On background
+  // refresh failure we keep the cached state visible (no error toast for a
+  // background blip), the user-visible flow only flips to error on cold
+  // failure.
   Future<void> loadUserGroups([String? userId]) async {
     if (isClosed) {
       return;
     }
 
-    // Check if user is authenticated
     final effectiveUserId = userId ?? currentUserId;
     if (effectiveUserId == null) {
       if (isClosed) return;
@@ -148,35 +272,96 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       return;
     }
 
-    emit(const GroupAccountLoading(message: 'Loading groups...'));
+    final hasCache = _cachedGroups != null && _cachedGroups!.isNotEmpty;
+    if (hasCache) {
+      // Serve from cache immediately. UI renders instantly.
+      emit(GroupAccountGroupsLoaded(_cachedGroups!));
+    } else {
+      emit(const GroupAccountLoading(message: 'Loading groups...'));
+    }
+
     try {
       final groups = await getUserGroups(effectiveUserId);
       if (isClosed) return;
-      _cachedGroups = groups; // Cache the groups list
+      _cachedGroups = groups;
       emit(GroupAccountGroupsLoaded(groups));
     } catch (e) {
       if (isClosed) return;
+      if (hasCache) {
+        // Background refresh failed but the user already sees cached data.
+        // Stay quiet. Logging only so we don't trigger an error UI for
+        // what the user perceives as a working screen.
+        debugPrint('[GroupAccountCubit] background refresh of groups failed: $e');
+        return;
+      }
       emit(GroupAccountError('Failed to load groups: ${e.toString()}'));
     }
   }
 
+  /// Load (or refresh) a group's full details.
+  ///
+  /// SWR semantics:
+  ///   - If we have a snapshot for this exact group already, emit it
+  ///     IMMEDIATELY (so back-navigation from a contribution shows the
+  ///     group page populated, no spinner) and refresh in the background.
+  ///   - Background refresh emits a fresh GroupAccountGroupLoaded only on
+  ///     success and only if the data actually changed (Equatable handles
+  ///     the diff so the BlocConsumer skips redundant rebuilds).
+  ///   - Background refresh failure is silent — the user still sees the
+  ///     cached snapshot, no error toast for a transient blip.
+  ///   - Cold load (no cache, or cache for a different group) shows
+  ///     Loading once, and a real error on failure.
+  ///
+  /// `silent: true` is preserved for legacy callers that explicitly want
+  /// no Loading state even on a cold path. With SWR baked in, most
+  /// callers don't need to pass it any more.
   Future<void> loadGroupDetails(String groupId, {bool silent = false}) async {
     if (isClosed) {
       return;
     }
+
+    // Verify session before reading per-user data; clears caches if user
+    // changed under us. Skipped on silent reloads to avoid extra storage
+    // I/O on rapid sequential refreshes.
     if (!silent) {
+      final liveUserId = await _assertSessionUser();
+      if (liveUserId == null) return;
+    }
+
+    final hasSnapshot = _lastLoadedGroup != null &&
+        _lastLoadedGroup!.id == groupId &&
+        _lastLoadedMembers != null &&
+        _lastLoadedContributions != null;
+
+    if (hasSnapshot) {
+      // Serve from cache immediately so the screen renders instantly.
+      emit(GroupAccountGroupLoaded(
+        group: _lastLoadedGroup!,
+        members: _lastLoadedMembers!,
+        contributions: _lastLoadedContributions!,
+      ));
+    } else if (!silent) {
       emit(const GroupAccountLoading(message: 'Loading group details...'));
     }
+
     try {
-      final group = await getGroupById(groupId);
-
-      final members = await getGroupMembers(groupId);
-
-      final contributions = await getGroupContributions(groupId);
+      // Three independent reads — fan out so total wall time is one RTT
+      // instead of three.
+      final results = await Future.wait([
+        getGroupById(groupId),
+        getGroupMembers(groupId),
+        getGroupContributions(groupId),
+      ]);
 
       if (isClosed) {
         return;
       }
+      final group = results[0] as GroupAccount;
+      final members = results[1] as List<GroupMember>;
+      final contributions = results[2] as List<Contribution>;
+      _lastLoadedGroup = group;
+      _lastLoadedMembers = members;
+      _lastLoadedContributions = contributions;
       emit(GroupAccountGroupLoaded(
         group: group,
         members: members,
@@ -184,6 +369,13 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       ));
     } catch (e) {
       if (isClosed) return;
+      if (hasSnapshot) {
+        // Background refresh of a screen that's already showing cached
+        // data — don't surface to the UI; just log. The user sees the
+        // last good snapshot rather than a regression to an error view.
+        debugPrint('[GroupAccountCubit] background refresh of group $groupId failed: $e');
+        return;
+      }
       if (!silent) {
         emit(GroupAccountError('Failed to load group details: ${e.toString()}'));
       }
@@ -204,7 +396,11 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       emit(const GroupAccountError('User not authenticated'));
       return;
     }
-    emit(const GroupAccountLoading(message: 'Creating group...'));
+
+    // No GroupAccountLoading emit. The bottom sheet manages its own
+    // button-level "Creating..." state; emitting a global Loading would
+    // wipe the My Groups list under the user (regressing UX after the
+    // SWR work). The list stays visible.
     try {
       final group = await createGroup(CreateGroupParams(
         name: name,
@@ -215,10 +411,21 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
         imageUrl: imageUrl,
       ));
       if (isClosed) return;
-      emit(GroupAccountGroupCreated(group));
 
-      // Auto-generate group creation report
-      await generateGroupCreationReport(group: group);
+      // Reactively append the new group to the cached list and emit a
+      // fresh GroupAccountGroupsLoaded so the My Groups tab updates
+      // without a network round-trip. The previous flow's
+      // `loadUserGroups()` reload (a full re-fetch + spinner) is now
+      // unnecessary — the row we just received from the create RPC is
+      // already authoritative.
+      final updated = [group, ..._cachedGroups ?? const <GroupAccount>[]];
+      _cachedGroups = updated;
+      emit(GroupAccountGroupCreated(group));
+      emit(GroupAccountGroupsLoaded(updated));
+
+      // Auto-generate group creation report (background, non-blocking
+      // for UI rendering).
+      unawaited(generateGroupCreationReport(group: group));
     } catch (e) {
       if (isClosed) return;
       emit(GroupAccountError('Failed to create group: ${e.toString()}'));
@@ -227,17 +434,19 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
 
   Future<void> updateGroupDetails(GroupAccount group) async {
     if (isClosed) return;
-    emit(const GroupAccountLoading(message: 'Updating group...'));
+    final snapshot = _snapshotLoaded();
+    // Optimistic patch: show the new group payload immediately.
+    if (snapshot != null && snapshot.group.id == group.id) {
+      _patchLoaded(group: group);
+    }
     try {
       await updateGroup(group);
       if (isClosed) return;
-      // Reload group details silently to preserve UI
-      await loadGroupDetails(group.id, silent: true);
-
-      // Check if social links were added and trigger report
+      // No reload — the local cache already reflects the change.
       await generateSocialLinkedReport(group: group);
     } catch (e) {
       if (isClosed) return;
+      if (snapshot != null) _restoreSnapshot(snapshot);
       emit(GroupAccountError('Failed to update group: ${e.toString()}'));
     }
   }
@@ -260,13 +469,13 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
   // Member management methods
   Future<void> searchUsersToAdd(String query) async {
     if (query.length < 2) return;
-    
+
     if (isClosed) return;
     emit(const GroupAccountLoading(message: 'Searching users...'));
     try {
-      await searchUsers(query);
+      final users = await searchUsers(query);
       if (isClosed) return;
-      emit(GroupAccountSuccess('Users found'));
+      emit(UsersFound(users: users, query: query));
     } catch (e) {
       if (isClosed) return;
       emit(GroupAccountError('Failed to search users: ${e.toString()}'));
@@ -283,7 +492,10 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     GroupMemberRole role = GroupMemberRole.member,
   }) async {
     if (isClosed) return;
-    emit(const GroupAccountLoading(message: 'Adding member...'));
+    // No GroupAccountLoading emit: the bottom sheet has its own button-
+    // level loading state, and a global Loading would clobber the group-
+    // details screen behind the sheet (regression to "Loading group
+    // details..." spinner that doesn't recover until the sheet closes).
     try {
       final newMember = await addMemberToGroup(AddMemberParams(
         groupId: groupId,
@@ -296,7 +508,25 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       ));
       if (isClosed) return;
 
-      // Emit success with the new member for reactive UI updates
+      // Optimistically append to the cached snapshot so the group-details
+      // members list updates instantly when the bottom sheet pops. The
+      // backend has already committed the row.
+      if (_lastLoadedGroup != null && _lastLoadedGroup!.id == groupId &&
+          _lastLoadedMembers != null) {
+        final dedup = _lastLoadedMembers!
+            .where((m) => m.userId != newMember.userId)
+            .toList()
+          ..add(newMember);
+        _lastLoadedMembers = dedup;
+        if (_lastLoadedContributions != null) {
+          emit(GroupAccountGroupLoaded(
+            group: _lastLoadedGroup!,
+            members: dedup,
+            contributions: _lastLoadedContributions!,
+          ));
+        }
+      }
+
       emit(MemberAddedSuccess(
         member: newMember,
         groupId: groupId,
@@ -314,7 +544,13 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     required GroupMemberRole newRole,
   }) async {
     if (isClosed) return;
-    emit(const GroupAccountLoading(message: 'Updating member role...'));
+    final snapshot = _snapshotLoaded();
+    if (snapshot != null && snapshot.group.id == groupId) {
+      final patched = snapshot.members
+          .map((m) => m.id == memberId ? m.copyWith(role: newRole) : m)
+          .toList();
+      _patchLoaded(members: patched);
+    }
     try {
       await updateMemberRole(UpdateMemberRoleParams(
         groupId: groupId,
@@ -323,10 +559,9 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       ));
       if (isClosed) return;
       emit(const GroupAccountSuccess('Member role updated successfully'));
-      // Reload group details
-      await loadGroupDetails(groupId);
     } catch (e) {
       if (isClosed) return;
+      if (snapshot != null) _restoreSnapshot(snapshot);
       emit(GroupAccountError('Failed to update member role: ${e.toString()}'));
     }
   }
@@ -336,7 +571,12 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     required String memberId,
   }) async {
     if (isClosed) return;
-    emit(const GroupAccountLoading(message: 'Removing member...'));
+    final snapshot = _snapshotLoaded();
+    if (snapshot != null && snapshot.group.id == groupId) {
+      final patched =
+          snapshot.members.where((m) => m.id != memberId).toList();
+      _patchLoaded(members: patched);
+    }
     try {
       await removeMemberFromGroup(RemoveMemberParams(
         groupId: groupId,
@@ -344,10 +584,9 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       ));
       if (isClosed) return;
       emit(const GroupAccountSuccess('Member removed successfully'));
-      // Reload group details
-      await loadGroupDetails(groupId);
     } catch (e) {
       if (isClosed) return;
+      if (snapshot != null) _restoreSnapshot(snapshot);
       emit(GroupAccountError('Failed to remove member: ${e.toString()}'));
     }
   }
@@ -444,30 +683,40 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
 
   Future<void> updateContributionDetails(Contribution contribution) async {
     if (isClosed) return;
-    emit(const GroupAccountLoading(message: 'Updating contribution...'));
+    final snapshot = _snapshotLoaded();
+    if (snapshot != null && snapshot.group.id == contribution.groupId) {
+      final patched = snapshot.contributions
+          .map((c) => c.id == contribution.id ? contribution : c)
+          .toList();
+      _patchLoaded(contributions: patched);
+    }
     try {
       await updateContribution(contribution);
       if (isClosed) return;
       emit(const GroupAccountSuccess('Contribution updated successfully'));
-      // Reload group details
-      await loadGroupDetails(contribution.groupId);
     } catch (e) {
       if (isClosed) return;
+      if (snapshot != null) _restoreSnapshot(snapshot);
       emit(GroupAccountError('Failed to update contribution: ${e.toString()}'));
     }
   }
 
   Future<void> deleteContributionFromGroup(String contributionId, String groupId) async {
     if (isClosed) return;
-    emit(const GroupAccountLoading(message: 'Deleting contribution...'));
+    final snapshot = _snapshotLoaded();
+    if (snapshot != null && snapshot.group.id == groupId) {
+      final patched = snapshot.contributions
+          .where((c) => c.id != contributionId)
+          .toList();
+      _patchLoaded(contributions: patched);
+    }
     try {
       await deleteContribution(contributionId);
       if (isClosed) return;
       emit(const GroupAccountSuccess('Contribution deleted successfully'));
-      // Reload group details
-      await loadGroupDetails(groupId);
     } catch (e) {
       if (isClosed) return;
+      if (snapshot != null) _restoreSnapshot(snapshot);
       emit(GroupAccountError('Failed to delete contribution: ${e.toString()}'));
     }
   }
@@ -533,10 +782,13 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     String? idempotencyKey,
   }) async {
     if (isClosed) return;
-    if (currentUserId == null) {
-      emit(const GroupAccountError('User not authenticated'));
-      return;
-    }
+    // CRITICAL: assert the cached user ID matches the live session BEFORE
+    // touching any money. If the singleton's _currentUserId is stale, the
+    // backend will resolve sourceAccountId from the wrong user and debit
+    // the wrong account. Refuse the payment outright if we can't confirm
+    // who is paying.
+    final liveUserId = await _assertSessionUser();
+    if (liveUserId == null) return;
 
     // Emit processing state
     emit(ContributionPaymentProcessing(
@@ -549,7 +801,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       final payment = await makeContributionPayment(MakePaymentParams(
         contributionId: contributionId,
         groupId: groupId,
-        userId: currentUserId!,
+        userId: liveUserId,
         userName: _currentUserName ?? 'User',
         amount: amount,
         currency: currency,
@@ -560,24 +812,123 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       ));
       if (isClosed) return;
 
-      // Emit success state with payment details
-      emit(ContributionPaymentSuccess(
-        payment: payment,
-        message: 'Payment completed successfully',
-      ));
+      // Branch on the AUTHORITATIVE payment status from the backend.
+      // The backend returns the same row on idempotent retries, so a
+      // retried in-flight payment correctly stays "in flight" in the UI
+      // instead of falsely showing success. This is load-bearing for
+      // money-safety messaging.
+      final status = payment.status;
+      if (status == PaymentStatus.completed) {
+        emit(ContributionPaymentSuccess(
+          payment: payment,
+          message: 'Payment completed successfully',
+        ));
+      } else if (status == PaymentStatus.failed) {
+        emit(ContributionPaymentFailed(
+          error: 'Payment failed. Please try again with a different amount or account.',
+          isInsufficientBalance: false,
+          isPinInvalid: false,
+          isDuplicate: false,
+        ));
+        return;
+      } else if (status == PaymentStatus.refunded) {
+        emit(const ContributionPaymentFailed(
+          error: 'Payment was reversed and refunded to your account.',
+          isInsufficientBalance: false,
+          isPinInvalid: false,
+          isDuplicate: false,
+        ));
+        return;
+      } else if (status == PaymentStatus.refunding) {
+        emit(const ContributionPaymentFailed(
+          error: 'Payment failed after debit. Your refund is being processed and will appear in your account shortly.',
+          isInsufficientBalance: false,
+          isPinInvalid: false,
+          isDuplicate: false,
+        ));
+        return;
+      } else if (status == PaymentStatus.awaitingVerification ||
+          status == PaymentStatus.processing ||
+          status == PaymentStatus.pending) {
+        // Still in flight at the backend. Surface as processing so the
+        // UI keeps a "verifying" state and the user does NOT retry.
+        emit(ContributionPaymentProcessing(
+          contributionId: contributionId,
+          amount: amount,
+          message: status == PaymentStatus.awaitingVerification
+              ? 'Verifying your payment with our payment provider…'
+              : 'Processing your payment…',
+        ));
+        return;
+      } else if (status == PaymentStatus.manualReview) {
+        emit(const ContributionPaymentFailed(
+          error: 'Your payment is under review by our team. Please contact support; do not retry.',
+          isInsufficientBalance: false,
+          isPinInvalid: false,
+          isDuplicate: false,
+        ));
+        return;
+      } else {
+        emit(ContributionPaymentSuccess(
+          payment: payment,
+          message: 'Payment recorded',
+        ));
+      }
 
-      // Reload group details to show updated contribution amounts
-      await loadGroupDetails(groupId);
+      // Only the `completed` path warrants patching contribution.current_amount
+      // and generating the success report. For any other status the amount
+      // either hasn't been credited (in flight / failed) or has been
+      // reversed (refunded / refunding) — patching would lie to the user.
+      if (status != PaymentStatus.completed) {
+        return;
+      }
 
-      // Get contribution for auto-generated report
-      final contribution = await getContributionById(contributionId);
-      final group = await getGroupById(groupId);
+      // Optimistically patch local state from cached GroupAccountGroupLoaded
+      // instead of refetching three endpoints. The server already incremented
+      // current_amount; we mirror that locally and skip the round trip.
+      GroupAccount freshGroup;
+      Contribution freshContribution;
+      final canPatch = _lastLoadedGroup != null &&
+          _lastLoadedGroup!.id == groupId &&
+          _lastLoadedContributions != null &&
+          _lastLoadedMembers != null;
+      final cachedContribution = canPatch
+          ? _lastLoadedContributions!.firstWhereOrNull(
+              (c) => c.id == contributionId,
+            )
+          : null;
+
+      if (canPatch && cachedContribution != null) {
+        final patchedContributions = _lastLoadedContributions!
+            .map((c) => c.id == contributionId
+                ? c.copyWith(currentAmount: c.currentAmount + amount)
+                : c)
+            .toList();
+        freshGroup = _lastLoadedGroup!;
+        freshContribution = patchedContributions.firstWhere(
+          (c) => c.id == contributionId,
+        );
+        _lastLoadedContributions = patchedContributions;
+        emit(GroupAccountGroupLoaded(
+          group: freshGroup,
+          members: _lastLoadedMembers!,
+          contributions: patchedContributions,
+        ));
+      } else {
+        // Cold path: parallel fetch (one RTT) instead of three sequential.
+        final results = await Future.wait([
+          getGroupById(groupId),
+          getContributionById(contributionId),
+        ]);
+        if (isClosed) return;
+        freshGroup = results[0] as GroupAccount;
+        freshContribution = results[1] as Contribution;
+      }
 
       if (!isClosed) {
-        // Auto-generate payment made report
         await generatePaymentMadeReport(
-          group: group,
-          contribution: contribution,
+          group: freshGroup,
+          contribution: freshContribution,
           payment: payment,
         );
       }
@@ -861,27 +1212,39 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     GroupMemberRole role = GroupMemberRole.member,
   }) async {
     if (isClosed) return;
-    emit(const GroupAccountLoading(message: 'Sending invite...'));
-
+    // No GroupAccountLoading emit (see addMemberToGroupAccount above).
     try {
-      // Create a partial member with invite status
-      // The backend will handle sending the actual invite notification
-      await addMemberToGroup(AddMemberParams(
+      final invited = await addMemberToGroup(AddMemberParams(
         groupId: groupId,
-        userId: '', // Empty - backend will create pending user
+        userId: '', // Empty: backend creates a pending/partial user
         userName: fullName,
         email: identifierType == UserSearchType.email ? identifier : '',
         role: role,
       ));
 
       if (isClosed) return;
+
+      // Optimistic append, same pattern as addMemberToGroupAccount.
+      if (_lastLoadedGroup != null && _lastLoadedGroup!.id == groupId &&
+          _lastLoadedMembers != null) {
+        final dedup = _lastLoadedMembers!
+            .where((m) => m.userId != invited.userId || invited.userId.isEmpty)
+            .toList()
+          ..add(invited);
+        _lastLoadedMembers = dedup;
+        if (_lastLoadedContributions != null) {
+          emit(GroupAccountGroupLoaded(
+            group: _lastLoadedGroup!,
+            members: dedup,
+            contributions: _lastLoadedContributions!,
+          ));
+        }
+      }
+
       emit(InviteSentSuccess(
         message: 'Invite sent to $fullName',
         identifier: identifier,
       ));
-
-      // Reload group details to show the pending member
-      await loadGroupDetails(groupId);
     } catch (e) {
       if (isClosed) return;
       emit(GroupAccountError('Failed to send invite: ${e.toString()}'));
@@ -1352,4 +1715,18 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       }
     }
   }
+}
+
+/// Holds a copy of the last GroupAccountGroupLoaded payload so a failed
+/// optimistic mutation can revert the UI without refetching.
+class _LoadedSnapshot {
+  final GroupAccount group;
+  final List<GroupMember> members;
+  final List<Contribution> contributions;
+
+  const _LoadedSnapshot({
+    required this.group,
+    required this.members,
+    required this.contributions,
+  });
 } 

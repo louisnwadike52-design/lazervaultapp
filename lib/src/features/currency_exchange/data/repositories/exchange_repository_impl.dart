@@ -107,6 +107,10 @@ class ExchangeRepositoryImpl implements IExchangeRepository {
     String? recipientRoutingNumber,
     String? recipientAddress,
     String? notes,
+    // "individual" or "business" — set by the recipient screen's toggle,
+    // plumbed into ReceiverDetails.beneficiary_type on the wire, and
+    // ultimately lands in Flutterwave meta.beneficiary_type.
+    String? beneficiaryType,
   }) async {
     try {
       final receiverDetails = ReceiverDetails()
@@ -118,7 +122,8 @@ class ExchangeRepositoryImpl implements IExchangeRepository {
         ..bankCode = recipientBankCode ?? ''
         ..email = recipientEmail ?? ''
         ..routingNumber = recipientRoutingNumber ?? ''
-        ..address = recipientAddress ?? '';
+        ..address = recipientAddress ?? ''
+        ..beneficiaryType = beneficiaryType ?? 'individual';
 
       final request = InitiateInternationalTransferRequest()
         ..fromCurrency = fromCurrency

@@ -756,9 +756,19 @@ message GetSellableCardsResponse {
 
 message GetSellProviderRequest {}
 
+// Sell-flow config. provider/description are the legacy fields; mode
+// + async_enabled drive the post-submit screen routing in Flutter:
+//   auto + sync   → SellGiftCard returns terminal row → receipt
+//   auto + async  → SellGiftCard returns pending → processing screen w/ WS
+//   manual        → SellGiftCard returns pending_review → "Submitted" screen
+//
+// All fields read from system_settings + feature_flags on the server,
+// never from .env. Single source of truth: admin Sell Configuration tab.
 message GetSellProviderResponse {
-  string provider = 1; // "manual" or "prestmit"
+  string provider = 1;       // "manual" or "prestmit"
   string description = 2;
+  string mode = 3;           // "auto" | "manual"
+  bool   async_enabled = 4;  // async_giftcards_sell_enabled
 }
 
 message UpdateFeatureFlagRequest {

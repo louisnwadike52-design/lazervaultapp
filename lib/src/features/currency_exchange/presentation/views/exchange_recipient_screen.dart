@@ -22,6 +22,19 @@ import '../../domain/repositories/i_exchange_repository.dart';
 
 enum _FieldType { african, uk, us, eu, generic }
 
+// Receiver classification — wire value maps to
+// ReceiverDetails.beneficiary_type ("individual"|"business") which the
+// exchange-service plumbs into the Flutterwave meta payload. Used for UK
+// CoP alignment + forward-compatibility with the Flutterwave v4 API's
+// recipient.type.
+enum _BeneficiaryKind {
+  individual,
+  business;
+
+  String get wireValue => this == _BeneficiaryKind.individual ? 'individual' : 'business';
+  String get label => this == _BeneficiaryKind.individual ? 'Individual' : 'Business';
+}
+
 class _CurrencyCountryConfig {
   final String countryCode;
   final String countryName;
@@ -233,7 +246,10 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
   // Step 2 controllers
   final _nameController = TextEditingController();
   final _swiftController = TextEditingController();
-  final _emailController = TextEditingController();
+  // _emailController removed — Flutterwave doesn't require recipient
+  // email for any corridor we support (USD/GBP/EUR/NGN/GHS/KES/ZAR/
+  // UGX/TZS/XOF). Rendering an optional field users would ignore was
+  // pure form friction.
   final _addressController = TextEditingController();
 
   // Generic fallback controllers
@@ -261,12 +277,25 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
   bool _isSubmitting = false;
   String? _purposeOfPayment;
 
+  // Individual vs Business beneficiary. UK banks (Revolut, Monzo, Barclays
+  // et al.) run Confirmation-of-Payee on inbound payments and reject
+  // transfers where the beneficiary name pattern doesn't match the
+  // registered account type. Default individual — flips to business when
+  // the user selects so we stop insisting on first+last name split and
+  // accept company names like "Acme Ltd".
+  _BeneficiaryKind _beneficiaryKind = _BeneficiaryKind.individual;
+
   // Data from home screen
   late String _fromCurrency;
   late String _toCurrency;
   late double _amount;
   ExchangeRate? _rate;
   late _CurrencyCountryConfig _countryConfig;
+  // Whether FlutterwaveCountryRules has a rule for _toCurrency. If false
+  // we still render the form (so the user sees where they were going) but
+  // disable Continue and show an inline "not yet supported" banner — the
+  // backend would 400 at submit anyway.
+  bool _corridorSupported = true;
 
   static const _purposes = [
     'Personal payment',
@@ -309,10 +338,47 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
       _rate = cubit.currentRate;
     }
     _countryConfig = _CurrencyCountryConfig.fromCurrency(_toCurrency);
+    // A currency that isn't in FlutterwaveCountryRules is one we have no
+    // per-corridor spec for — the backend would reject the payment anyway,
+    // so short-circuit here with a clear message instead of letting the
+    // user fill a generic form that will 400 at submit.
+    _corridorSupported =
+        FlutterwaveCountryRules.forCurrency(_toCurrency) != null;
 
     // Pre-fill generic country code from derived config
     if (_countryConfig.fieldType == _FieldType.generic) {
       _genericCountryController.text = _countryConfig.countryCode;
+    }
+
+    // Repeat-prefill: bottomsheet's Repeat Exchange for Send Abroad ships
+    // the prior transaction's receiver details so the user lands straight
+    // on the confirm button with everything filled. Fields stay editable
+    // so they can still tweak before submitting.
+    if (args != null && args['repeatPrefill'] == true) {
+      final name = args['recipientName'] as String? ?? '';
+      if (name.isNotEmpty) _nameController.text = name;
+      final account = args['recipientAccountNumber'] as String? ?? '';
+      if (account.isNotEmpty) {
+        _accountController.text = account;
+        // IBAN (EUR) uses the same account_number conceptually.
+        final iban = args['recipientIban'] as String? ?? '';
+        if (iban.isNotEmpty) _ibanController.text = iban;
+      }
+      final swift = args['recipientSwiftCode'] as String? ?? '';
+      if (swift.isNotEmpty) _swiftController.text = swift;
+      final routing = args['recipientRoutingNumber'] as String? ?? '';
+      if (routing.isNotEmpty) {
+        _routingController.text = routing;
+        // UK sort code uses the same field but is formatted XX-XX-XX.
+        _sortCodeController.text = routing;
+      }
+      final address = args['recipientAddress'] as String? ?? '';
+      if (address.isNotEmpty) _addressController.text = address;
+      final bank = args['recipientBankName'] as String? ?? '';
+      if (bank.isNotEmpty) {
+        _selectedBankName = bank;
+        _genericBankNameController.text = bank;
+      }
     }
 
     // Listen for account/bank changes to reset verification state
@@ -329,7 +395,6 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
     _ibanController.dispose();
     _nameController.dispose();
     _swiftController.dispose();
-    _emailController.dispose();
     _addressController.dispose();
     _genericBankNameController.dispose();
     _genericCountryController.dispose();
@@ -375,6 +440,16 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
   // ---------------------------------------------------------------------------
 
   void _goToStep2() {
+    if (!_corridorSupported) {
+      Get.snackbar(
+        'Currency not supported',
+        '$_toCurrency transfers aren\'t enabled yet. Please choose a supported destination.',
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+      return;
+    }
     if (_step1FormKey.currentState?.validate() != true) return;
 
     // Validate bank picker for field types that require it
@@ -512,70 +587,81 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
         recipientCountry = _countryConfig.countryCode;
       }
 
-      String? verificationToken;
-
+      // Fire the RPC INSIDE the onPinValidated callback so the PIN
+      // bottom sheet stays open in its processing state while we await
+      // Flutterwave. After the bottom sheet closes:
+      //   * ExchangeSuccess → straight to receipt (RPC returned terminal)
+      //   * ExchangeProcessing → handed off to the processing screen
+      //     which subscribes to the WS for the terminal event. Backed
+      //     by a flag so we don't double-navigate.
+      bool routedToProcessingScreen = false;
       final success = await validateTransactionPin(
         context: context,
-        transactionId: 'exchange-${DateTime.now().millisecondsSinceEpoch}',
+        transactionId:
+            'exchange-${DateTime.now().millisecondsSinceEpoch}',
         transactionType: 'international_transfer',
         amount: cubit.amount,
         currency: cubit.fromCurrency,
         title: 'Confirm Transfer',
-        message: 'Confirm international transfer of ${cubit.fromCurrency} ${cubit.amount.toStringAsFixed(2)}',
+        message:
+            'Confirm international transfer of ${cubit.fromCurrency} ${cubit.amount.toStringAsFixed(2)}',
         onPinValidated: (token) async {
-          verificationToken = token;
+          await cubit.initiateTransfer(
+            verificationToken: token,
+            recipientName: recipientName,
+            recipientAccountNumber: accountNumber,
+            recipientBankName: recipientBankName,
+            recipientBankCode: recipientBankCode,
+            recipientSwiftCode: _swiftController.text.trim().isNotEmpty
+                ? _swiftController.text.trim()
+                : null,
+            recipientCountry: recipientCountry,
+            purposeOfPayment: _purposeOfPayment,
+            recipientRoutingNumber: recipientBankCode,
+            recipientAddress: _addressController.text.trim().isNotEmpty
+                ? _addressController.text.trim()
+                : null,
+            beneficiaryType: (FlutterwaveCountryRules.forCurrency(_toCurrency)
+                        ?.supportsBeneficiaryType ??
+                    false)
+                ? _beneficiaryKind.wireValue
+                : null,
+          );
+          final state = cubit.state;
+          if (state is ExchangeError) {
+            throw Exception(state.message);
+          }
+          if (state is ExchangeProcessing) {
+            routedToProcessingScreen = true;
+            if (mounted) {
+              try {
+                Navigator.of(context).pop();
+              } catch (_) {}
+            }
+            Get.toNamed(
+              AppRoutes.exchangeProcessing,
+              arguments: {
+                'mode': 'sendAbroad',
+                'fromCurrency': cubit.fromCurrency,
+                'toCurrency': cubit.toCurrency,
+                'amount': cubit.amount,
+                'rate': cubit.currentRate,
+                'transactionId': state.transactionId,
+                'recipientName': recipientName,
+              },
+            );
+          }
+          // ExchangeSuccess: return normally; outer block navigates.
         },
       );
 
-      if (!success || verificationToken == null) return;
-      if (!mounted) return;
-
-      // Execute transfer AFTER modal is dismissed
-      await cubit.initiateTransfer(
-        verificationToken: verificationToken!,
-        recipientName: recipientName,
-        recipientAccountNumber: accountNumber,
-        recipientBankName: recipientBankName,
-        recipientBankCode: recipientBankCode,
-        recipientSwiftCode: _swiftController.text.trim().isNotEmpty
-            ? _swiftController.text.trim()
-            : null,
-        recipientCountry: recipientCountry,
-        recipientEmail: _emailController.text.trim().isNotEmpty
-            ? _emailController.text.trim()
-            : null,
-        purposeOfPayment: _purposeOfPayment,
-        recipientRoutingNumber: recipientBankCode,
-        recipientAddress: _addressController.text.trim().isNotEmpty
-            ? _addressController.text.trim()
-            : null,
-      );
-
-      final currentState = cubit.state;
-      if (currentState is ExchangeSuccess) {
+      if (!success || routedToProcessingScreen || !mounted) return;
+      final state = cubit.state;
+      if (state is ExchangeSuccess) {
         Get.offNamed(
           AppRoutes.exchangeReceipt,
-          arguments: currentState.transaction,
+          arguments: state.transaction,
         );
-      } else if (currentState is ExchangeProcessing) {
-        Get.offNamed(
-          AppRoutes.exchangeProcessing,
-          arguments: {
-            'transactionId': currentState.transactionId,
-            'isConversion': currentState.isConversion,
-          },
-        );
-      } else if (currentState is ExchangeError) {
-        cubit.restoreHomeState();
-        if (mounted) {
-          Get.snackbar(
-            'Transfer Failed',
-            currentState.message,
-            backgroundColor: const Color(0xFFEF4444),
-            colorText: Colors.white,
-            snackPosition: SnackPosition.TOP,
-          );
-        }
       }
     } finally {
       if (mounted) {
@@ -708,19 +794,19 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                                   horizontal: 14, vertical: 8),
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? const Color(0xFF7C3AED)
+                                    ? const Color(0xFF4E03D0)
                                         .withValues(alpha: 0.2)
                                     : const Color(0xFF2D2D2D),
                                 borderRadius: BorderRadius.circular(20),
                                 border: isSelected
-                                    ? Border.all(color: const Color(0xFF7C3AED))
+                                    ? Border.all(color: const Color(0xFF4E03D0))
                                     : null,
                               ),
                               child: Text(
                                 _bankChipLabel(bank['name']!),
                                 style: TextStyle(
                                   color: isSelected
-                                      ? const Color(0xFF7C3AED)
+                                      ? const Color(0xFF4E03D0)
                                       : Colors.white,
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500,
@@ -771,7 +857,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                                 ),
                                 trailing: isSelected
                                     ? const Icon(Icons.check_circle,
-                                        color: Color(0xFF7C3AED), size: 20)
+                                        color: Color(0xFF4E03D0), size: 20)
                                     : null,
                                 onTap: () {
                                   _onBankSelected(bank['name']!, bank['code']!);
@@ -804,7 +890,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
       height: 36,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF7C3AED), Color.fromARGB(255, 78, 3, 208)],
+          colors: [Color(0xFF4E03D0), Color.fromARGB(255, 78, 3, 208)],
         ),
         borderRadius: BorderRadius.circular(8),
       ),
@@ -945,7 +1031,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
       width: isActive ? 24 : 8,
       height: 8,
       decoration: BoxDecoration(
-        color: isActive ? const Color(0xFF7C3AED) : const Color(0xFF2D2D2D),
+        color: isActive ? const Color(0xFF4E03D0) : const Color(0xFF2D2D2D),
         borderRadius: BorderRadius.circular(4),
       ),
     );
@@ -1005,6 +1091,10 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                       style: const TextStyle(
                           color: Color(0xFF9CA3AF), fontSize: 13),
                     ),
+                    if (!_corridorSupported) ...[
+                      const SizedBox(height: 12),
+                      _buildUnsupportedCorridorBanner(),
+                    ],
                     const SizedBox(height: 20),
                     switch (_countryConfig.fieldType) {
                       _FieldType.african => _buildAfricanBankFields(),
@@ -1070,7 +1160,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
       margin: const EdgeInsets.only(top: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF7C3AED).withValues(alpha: 0.1),
+        color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: const Row(
@@ -1080,13 +1170,13 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
             height: 16,
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              color: Color(0xFF7C3AED),
+              color: Color(0xFF4E03D0),
             ),
           ),
           SizedBox(width: 10),
           Text(
             'Verifying account...',
-            style: TextStyle(color: Color(0xFF7C3AED), fontSize: 13),
+            style: TextStyle(color: Color(0xFF4E03D0), fontSize: 13),
           ),
         ],
       ),
@@ -1119,7 +1209,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                   child: const Text(
                     'Retry',
                     style: TextStyle(
-                      color: Color(0xFF7C3AED),
+                      color: Color(0xFF4E03D0),
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
@@ -1400,7 +1490,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
           return ElevatedButton(
             onPressed: isLoading ? null : _verifyAccount,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF7C3AED),
+              backgroundColor: const Color(0xFF4E03D0),
               disabledBackgroundColor: const Color(0xFF2D2D2D),
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
@@ -1425,7 +1515,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
         _goToStep2();
       },
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF7C3AED),
+        backgroundColor: const Color(0xFF4E03D0),
         padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
@@ -1458,6 +1548,18 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Individual / Business toggle — rendered only for
+                    // corridors that run Confirmation-of-Payee (USD /
+                    // GBP / EUR per FlutterwaveCountryRules). African
+                    // corridors don't CoP-check the name, so forcing
+                    // users to pick a type there is pure form friction.
+                    if (FlutterwaveCountryRules.forCurrency(_toCurrency)
+                            ?.supportsBeneficiaryType ??
+                        false) ...[
+                      _buildBeneficiaryKindPicker(),
+                      const SizedBox(height: 16),
+                    ],
+
                     // Verified account card OR name field.
                     //
                     // For currencies where `omitBeneficiaryName` is true (NG),
@@ -1471,13 +1573,22 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                         false))
                       _buildField(
                         controller: _nameController,
-                        label: 'Recipient Full Name',
-                        hint: 'Enter recipient\'s full name',
+                        label: _beneficiaryKind == _BeneficiaryKind.business
+                            ? 'Registered Business Name'
+                            : 'Recipient Full Name',
+                        hint: _beneficiaryKind == _BeneficiaryKind.business
+                            ? 'e.g. Acme Ltd'
+                            : 'Enter recipient\'s full name',
                         validator: (v) {
                           final rule = FlutterwaveCountryRules.forCurrency(
                               _toCurrency);
                           if (rule != null) {
-                            return ExchangeValidators.beneficiaryName(v, rule);
+                            return ExchangeValidators.beneficiaryName(
+                              v,
+                              rule,
+                              isBusiness: _beneficiaryKind ==
+                                  _BeneficiaryKind.business,
+                            );
                           }
                           return (v ?? '').trim().isEmpty
                               ? 'Name is required'
@@ -1520,23 +1631,12 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                       const SizedBox(height: 16),
                     ],
 
-                    // Email — optional for all, but helpful for notifications
-                    _buildField(
-                      controller: _emailController,
-                      label: 'Recipient Email (optional)',
-                      hint: 'Enter email for notification',
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (v) {
-                        final val = (v ?? '').trim();
-                        if (val.isEmpty) return null; // optional
-                        if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
-                            .hasMatch(val)) {
-                          return 'Enter a valid email address';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
+                    // Optional email/phone used to live here. Removed —
+                    // Flutterwave doesn't require them for any corridor
+                    // we support and they were adding friction. If we
+                    // ever need a recipient-notification channel, wire
+                    // it on the confirm-payment screen as a user-opt-in
+                    // toggle rather than every recipient entry.
 
                     // Purpose of payment
                     _buildPurposeDropdown(),
@@ -1726,6 +1826,101 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
     );
   }
 
+  Widget _buildUnsupportedCorridorBanner() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0x33EF4444),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFEF4444)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.warning_amber_rounded,
+              color: Color(0xFFEF4444), size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'We don\'t support $_toCurrency transfers yet. Please go back '
+              'and pick a supported destination.',
+              style: const TextStyle(color: Colors.white, fontSize: 12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Segmented toggle mirroring Revolut/Wise pattern: Individual vs
+  // Business. Picked BEFORE other recipient details because it changes
+  // how UK Confirmation-of-Payee validates the downstream name field.
+  Widget _buildBeneficiaryKindPicker() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Recipient type',
+          style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 13),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: const Color(0xFF2D2D2D)),
+          ),
+          padding: const EdgeInsets.all(4),
+          child: Row(
+            children: _BeneficiaryKind.values.map((kind) {
+              final selected = _beneficiaryKind == kind;
+              return Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    if (_beneficiaryKind == kind) return;
+                    setState(() => _beneficiaryKind = kind);
+                    // Re-run the name validator against the new kind.
+                    // Switching Individual → Business on "John Smith"
+                    // should light the error immediately, not at submit.
+                    _step2FormKey.currentState?.validate();
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      color: selected
+                          ? ExchangeTheme.primary
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      kind.label,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: selected
+                            ? Colors.white
+                            : const Color(0xFF9CA3AF),
+                        fontWeight:
+                            selected ? FontWeight.w600 : FontWeight.w400,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          _beneficiaryKind == _BeneficiaryKind.business
+              ? 'Enter the registered business name exactly as it appears on the account.'
+              : 'Enter the account holder\'s legal name as it appears on the account.',
+          style: const TextStyle(color: Color(0xFF6B7280), fontSize: 11),
+        ),
+      ],
+    );
+  }
+
   Widget _buildPurposeDropdown() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1802,7 +1997,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 8),
                 child: Icon(Icons.arrow_forward,
-                    color: Color(0xFF7C3AED), size: 24),
+                    color: Color(0xFF4E03D0), size: 24),
               ),
               Flexible(
                 child: _buildAmountDisplay(
@@ -1930,7 +2125,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF7C3AED)),
+              borderSide: const BorderSide(color: Color(0xFF4E03D0)),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),

@@ -259,6 +259,9 @@ class SellRateModel extends SellRate {
     required super.payoutAmount,
     super.currency,
     super.expiresAt,
+    super.payoutLowerBound,
+    super.payoutUpperBound,
+    super.isManualMode,
   });
 
   factory SellRateModel.fromProto(pb.SellRate proto) {
@@ -269,6 +272,9 @@ class SellRateModel extends SellRate {
       payoutAmount: proto.payoutAmount,
       currency: proto.currency,
       expiresAt: proto.expiresAt,
+      payoutLowerBound: proto.payoutLowerBound,
+      payoutUpperBound: proto.payoutUpperBound,
+      isManualMode: proto.isManualMode,
     );
   }
 }
@@ -294,6 +300,9 @@ class GiftCardSaleModel extends GiftCardSale {
     super.paidAt,
     super.createdAt,
     super.updatedAt,
+    super.rejectionReason,
+    super.displayStatus,
+    super.settlementStatus,
   });
 
   factory GiftCardSaleModel.fromProto(pb.GiftCardSale proto) {
@@ -317,6 +326,14 @@ class GiftCardSaleModel extends GiftCardSale {
       paidAt: proto.paidAt,
       createdAt: proto.createdAt,
       updatedAt: proto.updatedAt,
+      // Prefer the explicit rejection_reason; fall back to the
+      // unified failure_reason proto field for legacy server builds.
+      // Both are user-facing copy populated on rejected sales.
+      rejectionReason: proto.rejectionReason.isNotEmpty
+          ? proto.rejectionReason
+          : proto.failureReason,
+      displayStatus: proto.displayStatus,
+      settlementStatus: proto.settlementStatus,
     );
   }
 }

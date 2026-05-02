@@ -10,6 +10,7 @@ import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_cub
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_state.dart';
 import 'package:lazervault/src/features/autosave/presentation/widgets/autosave_progress_indicator.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 
 class AutoSaveDashboardScreen extends StatefulWidget {
   const AutoSaveDashboardScreen({super.key});
@@ -167,6 +168,12 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
             ),
           ),
           SizedBox(width: 12.w),
+          ServiceVoiceButton(
+            serviceName: 'autosave',
+            iconColor: const Color(0xFF4E03D0),
+            backgroundColor: const Color(0xFF4E03D0),
+          ),
+          SizedBox(width: 8.w),
           MicroserviceChatIcon(
             serviceName: 'Auto-Save',
             sourceContext: 'financial_products',

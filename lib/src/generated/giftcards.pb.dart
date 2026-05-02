@@ -2359,6 +2359,9 @@ class SellRate extends $pb.GeneratedMessage {
     $core.double? payoutAmount,
     $core.String? currency,
     $core.String? expiresAt,
+    $core.double? payoutLowerBound,
+    $core.double? payoutUpperBound,
+    $core.bool? isManualMode,
   }) {
     final result = create();
     if (cardType != null) result.cardType = cardType;
@@ -2367,6 +2370,9 @@ class SellRate extends $pb.GeneratedMessage {
     if (payoutAmount != null) result.payoutAmount = payoutAmount;
     if (currency != null) result.currency = currency;
     if (expiresAt != null) result.expiresAt = expiresAt;
+    if (payoutLowerBound != null) result.payoutLowerBound = payoutLowerBound;
+    if (payoutUpperBound != null) result.payoutUpperBound = payoutUpperBound;
+    if (isManualMode != null) result.isManualMode = isManualMode;
     return result;
   }
 
@@ -2382,6 +2388,9 @@ class SellRate extends $pb.GeneratedMessage {
     ..a<$core.double>(4, _omitFieldNames ? '' : 'payoutAmount', $pb.PbFieldType.OD)
     ..aOS(5, _omitFieldNames ? '' : 'currency')
     ..aOS(6, _omitFieldNames ? '' : 'expiresAt')
+    ..a<$core.double>(7, _omitFieldNames ? '' : 'payoutLowerBound', $pb.PbFieldType.OD)
+    ..a<$core.double>(8, _omitFieldNames ? '' : 'payoutUpperBound', $pb.PbFieldType.OD)
+    ..aOB(9, _omitFieldNames ? '' : 'isManualMode')
     ..hasRequiredFields = false
   ;
 
@@ -2455,6 +2464,36 @@ class SellRate extends $pb.GeneratedMessage {
   $core.bool hasExpiresAt() => $_has(5);
   @$pb.TagNumber(6)
   void clearExpiresAt() => $_clearField(6);
+
+  /// Manual-mode payout range. Both populated only in manual flow
+  /// (admin sells off-platform at a variable price). 0/0 in
+  /// automated mode — Flutter renders the point estimate.
+  @$pb.TagNumber(7)
+  $core.double get payoutLowerBound => $_getN(6);
+  @$pb.TagNumber(7)
+  set payoutLowerBound($core.double value) => $_setDouble(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasPayoutLowerBound() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearPayoutLowerBound() => $_clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.double get payoutUpperBound => $_getN(7);
+  @$pb.TagNumber(8)
+  set payoutUpperBound($core.double value) => $_setDouble(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasPayoutUpperBound() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearPayoutUpperBound() => $_clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.bool get isManualMode => $_getBF(8);
+  @$pb.TagNumber(9)
+  set isManualMode($core.bool value) => $_setBool(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasIsManualMode() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearIsManualMode() => $_clearField(9);
 }
 
 class GiftCardSale extends $pb.GeneratedMessage {
@@ -2519,6 +2558,10 @@ class GiftCardSale extends $pb.GeneratedMessage {
     $core.String? responseJson,
     $core.int? providerHttpStatus,
     $fixnum.Int64? providerDurationMs,
+    $core.String? failureReason,
+    $core.String? quoteProvider,
+    $core.String? settlementStatus,
+    $core.String? displayStatus,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -2581,6 +2624,10 @@ class GiftCardSale extends $pb.GeneratedMessage {
     if (responseJson != null) result.responseJson = responseJson;
     if (providerHttpStatus != null) result.providerHttpStatus = providerHttpStatus;
     if (providerDurationMs != null) result.providerDurationMs = providerDurationMs;
+    if (failureReason != null) result.failureReason = failureReason;
+    if (quoteProvider != null) result.quoteProvider = quoteProvider;
+    if (settlementStatus != null) result.settlementStatus = settlementStatus;
+    if (displayStatus != null) result.displayStatus = displayStatus;
     return result;
   }
 
@@ -2650,6 +2697,10 @@ class GiftCardSale extends $pb.GeneratedMessage {
     ..aOS(58, _omitFieldNames ? '' : 'responseJson')
     ..a<$core.int>(59, _omitFieldNames ? '' : 'providerHttpStatus', $pb.PbFieldType.O3)
     ..aInt64(60, _omitFieldNames ? '' : 'providerDurationMs')
+    ..aOS(61, _omitFieldNames ? '' : 'failureReason')
+    ..aOS(62, _omitFieldNames ? '' : 'quoteProvider')
+    ..aOS(63, _omitFieldNames ? '' : 'settlementStatus')
+    ..aOS(64, _omitFieldNames ? '' : 'displayStatus')
     ..hasRequiredFields = false
   ;
 
@@ -3212,6 +3263,68 @@ class GiftCardSale extends $pb.GeneratedMessage {
   $core.bool hasProviderDurationMs() => $_has(59);
   @$pb.TagNumber(60)
   void clearProviderDurationMs() => $_clearField(60);
+
+  /// Unified failure reason. For buy rows this is the underlying
+  /// GiftCard.FailureReason (Reloadly rejection, auto-rollback hold-
+  /// release error, etc.). For sell rows it is the GiftCardSale
+  /// RejectionReason or PayoutError, whichever is set. Admin
+  /// dashboards prefer this over the legacy payout_error field; the
+  /// legacy field is still populated for back-compat with older
+  /// clients on a transition window.
+  @$pb.TagNumber(61)
+  $core.String get failureReason => $_getSZ(60);
+  @$pb.TagNumber(61)
+  set failureReason($core.String value) => $_setString(60, value);
+  @$pb.TagNumber(61)
+  $core.bool hasFailureReason() => $_has(60);
+  @$pb.TagNumber(61)
+  void clearFailureReason() => $_clearField(61);
+
+  /// QUOTE provider — concrete real provider that answered the rate
+  /// quote at sale-creation time. "prestmit" | "internal". Distinct
+  /// from `provider_name` (the FINAL gateway / executor). When the
+  /// engine queried via MultiProviderSellManager, this surfaces the
+  /// underlying that responded rather than the wrapper. Empty for
+  /// legacy rows that pre-date the column.
+  @$pb.TagNumber(62)
+  $core.String get quoteProvider => $_getSZ(61);
+  @$pb.TagNumber(62)
+  set quoteProvider($core.String value) => $_setString(61, value);
+  @$pb.TagNumber(62)
+  $core.bool hasQuoteProvider() => $_has(61);
+  @$pb.TagNumber(62)
+  void clearQuoteProvider() => $_clearField(62);
+
+  /// Settlement substatus on the sale row. "pending" → not yet
+  /// verified by the reconciler (Phase 1 transient OR
+  /// settlement_confirmations < required); "verified" → reconciler
+  /// double-confirmed AND platform double-entry closed; "failed" /
+  /// "refund_failed" → credit failed and is queued for retry. The
+  /// dashboard derives the badge label by combining (status,
+  /// settlement_status) — "Paid" only renders when both have reached
+  /// their terminal success states.
+  @$pb.TagNumber(63)
+  $core.String get settlementStatus => $_getSZ(62);
+  @$pb.TagNumber(63)
+  set settlementStatus($core.String value) => $_setString(62, value);
+  @$pb.TagNumber(63)
+  $core.bool hasSettlementStatus() => $_has(62);
+  @$pb.TagNumber(63)
+  void clearSettlementStatus() => $_clearField(63);
+
+  /// Persisted denormalisation of (status, settlement_status,
+  /// settlement_confirmations). Computed by ComputeSaleDisplayStatus
+  /// and updated on every transition. The dashboard reads this
+  /// directly for the badge label so every tab agrees. Falls back to
+  /// status for legacy rows that pre-date the column.
+  @$pb.TagNumber(64)
+  $core.String get displayStatus => $_getSZ(63);
+  @$pb.TagNumber(64)
+  set displayStatus($core.String value) => $_setString(63, value);
+  @$pb.TagNumber(64)
+  $core.bool hasDisplayStatus() => $_has(63);
+  @$pb.TagNumber(64)
+  void clearDisplayStatus() => $_clearField(64);
 }
 
 class GetSellableCardsRequest extends $pb.GeneratedMessage {
@@ -3342,14 +3455,32 @@ class GetSellProviderRequest extends $pb.GeneratedMessage {
   static GetSellProviderRequest? _defaultInstance;
 }
 
+/// Sell-flow config for the Flutter sell screen. Returns:
+///   - provider: "manual" | "prestmit"  (the active flow mode)
+///   - description: human-readable summary
+///   - mode: "auto" | "manual"
+///       auto    → Prestmit submits the trade, no human in the loop
+///       manual  → admin reviews uploaded card photos and funds the user
+///     Drives the Flutter post-submit routing: auto → processing screen
+///     with WebSocket; manual → "Submitted for review" screen.
+///   - async_enabled: when true, SellGiftCard returns the row at
+///     status="pending" and a Kafka consumer makes the deferred Prestmit
+///     call. Flutter uses this with mode to pick the post-submit screen.
+///
+/// All fields are read from system_settings + feature_flags — never from
+/// .env. The admin Sell Configuration tab is the single source of truth.
 class GetSellProviderResponse extends $pb.GeneratedMessage {
   factory GetSellProviderResponse({
     $core.String? provider,
     $core.String? description,
+    $core.String? mode,
+    $core.bool? asyncEnabled,
   }) {
     final result = create();
     if (provider != null) result.provider = provider;
     if (description != null) result.description = description;
+    if (mode != null) result.mode = mode;
+    if (asyncEnabled != null) result.asyncEnabled = asyncEnabled;
     return result;
   }
 
@@ -3361,6 +3492,8 @@ class GetSellProviderResponse extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetSellProviderResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'giftcards'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'provider')
     ..aOS(2, _omitFieldNames ? '' : 'description')
+    ..aOS(3, _omitFieldNames ? '' : 'mode')
+    ..aOB(4, _omitFieldNames ? '' : 'asyncEnabled')
     ..hasRequiredFields = false
   ;
 
@@ -3398,6 +3531,24 @@ class GetSellProviderResponse extends $pb.GeneratedMessage {
   $core.bool hasDescription() => $_has(1);
   @$pb.TagNumber(2)
   void clearDescription() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get mode => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set mode($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasMode() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearMode() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.bool get asyncEnabled => $_getBF(3);
+  @$pb.TagNumber(4)
+  set asyncEnabled($core.bool value) => $_setBool(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasAsyncEnabled() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearAsyncEnabled() => $_clearField(4);
 }
 
 class UpdateFeatureFlagRequest extends $pb.GeneratedMessage {
@@ -4792,6 +4943,483 @@ class AdminListPendingSalesResponse extends $pb.GeneratedMessage {
   void clearTotal() => $_clearField(2);
 }
 
+/// Sell-side settlement projection — drives the admin Settlements tab
+/// for sell. status filter accepts "paid" | "settled" | "all" (default
+/// all means paid OR settled). source filter accepts "auto" |
+/// "manual_approved" | "all". A row is auto when it reached paid via
+/// the Prestmit webhook with no admin override; manual_approved when
+/// an admin set OverridePayoutAmount or AdminReviewerID is non-empty.
+class AdminListSellSettlementsRequest extends $pb.GeneratedMessage {
+  factory AdminListSellSettlementsRequest({
+    $core.String? status,
+    $core.String? source,
+    $core.int? page,
+    $core.int? limit,
+  }) {
+    final result = create();
+    if (status != null) result.status = status;
+    if (source != null) result.source = source;
+    if (page != null) result.page = page;
+    if (limit != null) result.limit = limit;
+    return result;
+  }
+
+  AdminListSellSettlementsRequest._();
+
+  factory AdminListSellSettlementsRequest.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
+  factory AdminListSellSettlementsRequest.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AdminListSellSettlementsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'giftcards'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'status')
+    ..aOS(2, _omitFieldNames ? '' : 'source')
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminListSellSettlementsRequest clone() => AdminListSellSettlementsRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminListSellSettlementsRequest copyWith(void Function(AdminListSellSettlementsRequest) updates) => super.copyWith((message) => updates(message as AdminListSellSettlementsRequest)) as AdminListSellSettlementsRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminListSellSettlementsRequest create() => AdminListSellSettlementsRequest._();
+  @$core.override
+  AdminListSellSettlementsRequest createEmptyInstance() => create();
+  static $pb.PbList<AdminListSellSettlementsRequest> createRepeated() => $pb.PbList<AdminListSellSettlementsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AdminListSellSettlementsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AdminListSellSettlementsRequest>(create);
+  static AdminListSellSettlementsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get status => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set status($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasStatus() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearStatus() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get source => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set source($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasSource() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearSource() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get page => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set page($core.int value) => $_setSignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasPage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPage() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get limit => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set limit($core.int value) => $_setSignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasLimit() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearLimit() => $_clearField(4);
+}
+
+class AdminSellSettlement extends $pb.GeneratedMessage {
+  factory AdminSellSettlement({
+    $core.String? id,
+    $core.String? reference,
+    $core.String? userId,
+    $core.String? brand,
+    $core.double? faceValue,
+    $core.String? faceCurrency,
+    $core.String? payoutCurrency,
+    $core.double? fxRate,
+    $core.double? preMarginPayout,
+    $core.double? paidToUser,
+    $core.double? saleProceeds,
+    $core.String? saleProceedsCurrency,
+    $core.double? totalRevenue,
+    $core.String? totalRevenueCurrency,
+    $core.double? marginPercentage,
+    $core.double? flatFee,
+    $core.String? source,
+    $core.String? status,
+    $core.String? providerName,
+    $core.String? paidAt,
+    $core.String? createdAt,
+  }) {
+    final result = create();
+    if (id != null) result.id = id;
+    if (reference != null) result.reference = reference;
+    if (userId != null) result.userId = userId;
+    if (brand != null) result.brand = brand;
+    if (faceValue != null) result.faceValue = faceValue;
+    if (faceCurrency != null) result.faceCurrency = faceCurrency;
+    if (payoutCurrency != null) result.payoutCurrency = payoutCurrency;
+    if (fxRate != null) result.fxRate = fxRate;
+    if (preMarginPayout != null) result.preMarginPayout = preMarginPayout;
+    if (paidToUser != null) result.paidToUser = paidToUser;
+    if (saleProceeds != null) result.saleProceeds = saleProceeds;
+    if (saleProceedsCurrency != null) result.saleProceedsCurrency = saleProceedsCurrency;
+    if (totalRevenue != null) result.totalRevenue = totalRevenue;
+    if (totalRevenueCurrency != null) result.totalRevenueCurrency = totalRevenueCurrency;
+    if (marginPercentage != null) result.marginPercentage = marginPercentage;
+    if (flatFee != null) result.flatFee = flatFee;
+    if (source != null) result.source = source;
+    if (status != null) result.status = status;
+    if (providerName != null) result.providerName = providerName;
+    if (paidAt != null) result.paidAt = paidAt;
+    if (createdAt != null) result.createdAt = createdAt;
+    return result;
+  }
+
+  AdminSellSettlement._();
+
+  factory AdminSellSettlement.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
+  factory AdminSellSettlement.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AdminSellSettlement', package: const $pb.PackageName(_omitMessageNames ? '' : 'giftcards'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'reference')
+    ..aOS(3, _omitFieldNames ? '' : 'userId')
+    ..aOS(4, _omitFieldNames ? '' : 'brand')
+    ..a<$core.double>(5, _omitFieldNames ? '' : 'faceValue', $pb.PbFieldType.OD)
+    ..aOS(6, _omitFieldNames ? '' : 'faceCurrency')
+    ..aOS(7, _omitFieldNames ? '' : 'payoutCurrency')
+    ..a<$core.double>(8, _omitFieldNames ? '' : 'fxRate', $pb.PbFieldType.OD)
+    ..a<$core.double>(9, _omitFieldNames ? '' : 'preMarginPayout', $pb.PbFieldType.OD)
+    ..a<$core.double>(10, _omitFieldNames ? '' : 'paidToUser', $pb.PbFieldType.OD)
+    ..a<$core.double>(11, _omitFieldNames ? '' : 'saleProceeds', $pb.PbFieldType.OD)
+    ..aOS(12, _omitFieldNames ? '' : 'saleProceedsCurrency')
+    ..a<$core.double>(13, _omitFieldNames ? '' : 'totalRevenue', $pb.PbFieldType.OD)
+    ..aOS(14, _omitFieldNames ? '' : 'totalRevenueCurrency')
+    ..a<$core.double>(15, _omitFieldNames ? '' : 'marginPercentage', $pb.PbFieldType.OD)
+    ..a<$core.double>(16, _omitFieldNames ? '' : 'flatFee', $pb.PbFieldType.OD)
+    ..aOS(17, _omitFieldNames ? '' : 'source')
+    ..aOS(18, _omitFieldNames ? '' : 'status')
+    ..aOS(19, _omitFieldNames ? '' : 'providerName')
+    ..aOS(20, _omitFieldNames ? '' : 'paidAt')
+    ..aOS(21, _omitFieldNames ? '' : 'createdAt')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminSellSettlement clone() => AdminSellSettlement()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminSellSettlement copyWith(void Function(AdminSellSettlement) updates) => super.copyWith((message) => updates(message as AdminSellSettlement)) as AdminSellSettlement;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminSellSettlement create() => AdminSellSettlement._();
+  @$core.override
+  AdminSellSettlement createEmptyInstance() => create();
+  static $pb.PbList<AdminSellSettlement> createRepeated() => $pb.PbList<AdminSellSettlement>();
+  @$core.pragma('dart2js:noInline')
+  static AdminSellSettlement getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AdminSellSettlement>(create);
+  static AdminSellSettlement? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get reference => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set reference($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasReference() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearReference() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get userId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set userId($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasUserId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearUserId() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get brand => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set brand($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasBrand() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearBrand() => $_clearField(4);
+
+  /// Face value of the card the user is selling.
+  @$pb.TagNumber(5)
+  $core.double get faceValue => $_getN(4);
+  @$pb.TagNumber(5)
+  set faceValue($core.double value) => $_setDouble(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasFaceValue() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearFaceValue() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get faceCurrency => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set faceCurrency($core.String value) => $_setString(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasFaceCurrency() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearFaceCurrency() => $_clearField(6);
+
+  /// Payout currency (user wallet — NGN typically).
+  @$pb.TagNumber(7)
+  $core.String get payoutCurrency => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set payoutCurrency($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasPayoutCurrency() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearPayoutCurrency() => $_clearField(7);
+
+  /// FX rate face_currency → payout_currency at sale time. Empty when
+  /// same-currency.
+  @$pb.TagNumber(8)
+  $core.double get fxRate => $_getN(7);
+  @$pb.TagNumber(8)
+  set fxRate($core.double value) => $_setDouble(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasFxRate() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearFxRate() => $_clearField(8);
+
+  /// Pre-margin payout = un-margined payout in payout_currency
+  /// (face_value × fx_rate). Lets the operator see what we'd have
+  /// paid the user with zero margin.
+  @$pb.TagNumber(9)
+  $core.double get preMarginPayout => $_getN(8);
+  @$pb.TagNumber(9)
+  set preMarginPayout($core.double value) => $_setDouble(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasPreMarginPayout() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearPreMarginPayout() => $_clearField(9);
+
+  /// What we credited the user (post-margin, post-flat-fee, after any
+  /// admin override).
+  @$pb.TagNumber(10)
+  $core.double get paidToUser => $_getN(9);
+  @$pb.TagNumber(10)
+  set paidToUser($core.double value) => $_setDouble(9, value);
+  @$pb.TagNumber(10)
+  $core.bool hasPaidToUser() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearPaidToUser() => $_clearField(10);
+
+  /// Sale proceeds = what the buyer (Prestmit, or platform on manual
+  /// approval) actually settled to us in sale_proceeds_currency. Only
+  /// populated once the sale lands at paid/settled.
+  @$pb.TagNumber(11)
+  $core.double get saleProceeds => $_getN(10);
+  @$pb.TagNumber(11)
+  set saleProceeds($core.double value) => $_setDouble(10, value);
+  @$pb.TagNumber(11)
+  $core.bool hasSaleProceeds() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearSaleProceeds() => $_clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get saleProceedsCurrency => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set saleProceedsCurrency($core.String value) => $_setString(11, value);
+  @$pb.TagNumber(12)
+  $core.bool hasSaleProceedsCurrency() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearSaleProceedsCurrency() => $_clearField(12);
+
+  /// Total revenue = sale_proceeds − paid_to_user. Captures both the
+  /// explicit margin AND any provider FX uplift. Mirrors the buy
+  /// commission_amount = retail − wholesale identity.
+  @$pb.TagNumber(13)
+  $core.double get totalRevenue => $_getN(12);
+  @$pb.TagNumber(13)
+  set totalRevenue($core.double value) => $_setDouble(12, value);
+  @$pb.TagNumber(13)
+  $core.bool hasTotalRevenue() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearTotalRevenue() => $_clearField(13);
+
+  @$pb.TagNumber(14)
+  $core.String get totalRevenueCurrency => $_getSZ(13);
+  @$pb.TagNumber(14)
+  set totalRevenueCurrency($core.String value) => $_setString(13, value);
+  @$pb.TagNumber(14)
+  $core.bool hasTotalRevenueCurrency() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearTotalRevenueCurrency() => $_clearField(14);
+
+  /// Margin breakdown — pct applied at quote time + flat fee leg in
+  /// payout_currency. The Settlements UI shows pct + (pct × pre_margin)
+  /// and flat_fee as separate columns.
+  @$pb.TagNumber(15)
+  $core.double get marginPercentage => $_getN(14);
+  @$pb.TagNumber(15)
+  set marginPercentage($core.double value) => $_setDouble(14, value);
+  @$pb.TagNumber(15)
+  $core.bool hasMarginPercentage() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearMarginPercentage() => $_clearField(15);
+
+  @$pb.TagNumber(16)
+  $core.double get flatFee => $_getN(15);
+  @$pb.TagNumber(16)
+  set flatFee($core.double value) => $_setDouble(15, value);
+  @$pb.TagNumber(16)
+  $core.bool hasFlatFee() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearFlatFee() => $_clearField(16);
+
+  /// Source = which path took the row to terminal status:
+  ///   "auto"            — Prestmit webhook flipped paid, no admin override.
+  ///   "manual_approved" — admin clicked Approve in Reviews queue.
+  @$pb.TagNumber(17)
+  $core.String get source => $_getSZ(16);
+  @$pb.TagNumber(17)
+  set source($core.String value) => $_setString(16, value);
+  @$pb.TagNumber(17)
+  $core.bool hasSource() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearSource() => $_clearField(17);
+
+  /// Status of the sale row (paid | settled).
+  @$pb.TagNumber(18)
+  $core.String get status => $_getSZ(17);
+  @$pb.TagNumber(18)
+  set status($core.String value) => $_setString(17, value);
+  @$pb.TagNumber(18)
+  $core.bool hasStatus() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearStatus() => $_clearField(18);
+
+  /// Provider that originated the sale ("prestmit" | "manual" | …).
+  @$pb.TagNumber(19)
+  $core.String get providerName => $_getSZ(18);
+  @$pb.TagNumber(19)
+  set providerName($core.String value) => $_setString(18, value);
+  @$pb.TagNumber(19)
+  $core.bool hasProviderName() => $_has(18);
+  @$pb.TagNumber(19)
+  void clearProviderName() => $_clearField(19);
+
+  /// When the user was paid (paid_at preferred, falls back to
+  /// updated_at). RFC3339.
+  @$pb.TagNumber(20)
+  $core.String get paidAt => $_getSZ(19);
+  @$pb.TagNumber(20)
+  set paidAt($core.String value) => $_setString(19, value);
+  @$pb.TagNumber(20)
+  $core.bool hasPaidAt() => $_has(19);
+  @$pb.TagNumber(20)
+  void clearPaidAt() => $_clearField(20);
+
+  /// When the row was created. Lets the UI show "When" (relative)
+  /// alongside the absolute timestamp.
+  @$pb.TagNumber(21)
+  $core.String get createdAt => $_getSZ(20);
+  @$pb.TagNumber(21)
+  set createdAt($core.String value) => $_setString(20, value);
+  @$pb.TagNumber(21)
+  $core.bool hasCreatedAt() => $_has(20);
+  @$pb.TagNumber(21)
+  void clearCreatedAt() => $_clearField(21);
+}
+
+class AdminListSellSettlementsResponse extends $pb.GeneratedMessage {
+  factory AdminListSellSettlementsResponse({
+    $core.Iterable<AdminSellSettlement>? settlements,
+    $core.int? total,
+    $core.int? page,
+    $core.int? limit,
+  }) {
+    final result = create();
+    if (settlements != null) result.settlements.addAll(settlements);
+    if (total != null) result.total = total;
+    if (page != null) result.page = page;
+    if (limit != null) result.limit = limit;
+    return result;
+  }
+
+  AdminListSellSettlementsResponse._();
+
+  factory AdminListSellSettlementsResponse.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
+  factory AdminListSellSettlementsResponse.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AdminListSellSettlementsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'giftcards'), createEmptyInstance: create)
+    ..pc<AdminSellSettlement>(1, _omitFieldNames ? '' : 'settlements', $pb.PbFieldType.PM, subBuilder: AdminSellSettlement.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminListSellSettlementsResponse clone() => AdminListSellSettlementsResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminListSellSettlementsResponse copyWith(void Function(AdminListSellSettlementsResponse) updates) => super.copyWith((message) => updates(message as AdminListSellSettlementsResponse)) as AdminListSellSettlementsResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminListSellSettlementsResponse create() => AdminListSellSettlementsResponse._();
+  @$core.override
+  AdminListSellSettlementsResponse createEmptyInstance() => create();
+  static $pb.PbList<AdminListSellSettlementsResponse> createRepeated() => $pb.PbList<AdminListSellSettlementsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static AdminListSellSettlementsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AdminListSellSettlementsResponse>(create);
+  static AdminListSellSettlementsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<AdminSellSettlement> get settlements => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get total => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set total($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasTotal() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotal() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get page => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set page($core.int value) => $_setSignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasPage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPage() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get limit => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set limit($core.int value) => $_setSignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasLimit() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearLimit() => $_clearField(4);
+}
+
 /// Buy-side admin transactions — flat projection of the giftcards table.
 /// Status mirrors the chk_giftcard_status enum:
 /// pending | available | redeemed | transferred | expired | failed.
@@ -4913,6 +5541,13 @@ class AdminBuyTransaction extends $pb.GeneratedMessage {
     $core.String? responseJson,
     $core.int? providerHttpStatus,
     $fixnum.Int64? providerDurationMs,
+    $core.String? refundState,
+    $core.String? refundSource,
+    $core.String? refundReason,
+    $core.String? finalGateway,
+    $core.String? source,
+    $core.String? failover,
+    $core.double? flatFee,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -4949,6 +5584,13 @@ class AdminBuyTransaction extends $pb.GeneratedMessage {
     if (responseJson != null) result.responseJson = responseJson;
     if (providerHttpStatus != null) result.providerHttpStatus = providerHttpStatus;
     if (providerDurationMs != null) result.providerDurationMs = providerDurationMs;
+    if (refundState != null) result.refundState = refundState;
+    if (refundSource != null) result.refundSource = refundSource;
+    if (refundReason != null) result.refundReason = refundReason;
+    if (finalGateway != null) result.finalGateway = finalGateway;
+    if (source != null) result.source = source;
+    if (failover != null) result.failover = failover;
+    if (flatFee != null) result.flatFee = flatFee;
     return result;
   }
 
@@ -4992,6 +5634,13 @@ class AdminBuyTransaction extends $pb.GeneratedMessage {
     ..aOS(32, _omitFieldNames ? '' : 'responseJson')
     ..a<$core.int>(33, _omitFieldNames ? '' : 'providerHttpStatus', $pb.PbFieldType.O3)
     ..aInt64(34, _omitFieldNames ? '' : 'providerDurationMs')
+    ..aOS(35, _omitFieldNames ? '' : 'refundState')
+    ..aOS(36, _omitFieldNames ? '' : 'refundSource')
+    ..aOS(37, _omitFieldNames ? '' : 'refundReason')
+    ..aOS(38, _omitFieldNames ? '' : 'finalGateway')
+    ..aOS(39, _omitFieldNames ? '' : 'source')
+    ..aOS(40, _omitFieldNames ? '' : 'failover')
+    ..a<$core.double>(41, _omitFieldNames ? '' : 'flatFee', $pb.PbFieldType.OD)
     ..hasRequiredFields = false
   ;
 
@@ -5328,6 +5977,87 @@ class AdminBuyTransaction extends $pb.GeneratedMessage {
   $core.bool hasProviderDurationMs() => $_has(33);
   @$pb.TagNumber(34)
   void clearProviderDurationMs() => $_clearField(34);
+
+  @$pb.TagNumber(35)
+  $core.String get refundState => $_getSZ(34);
+  @$pb.TagNumber(35)
+  set refundState($core.String value) => $_setString(34, value);
+  @$pb.TagNumber(35)
+  $core.bool hasRefundState() => $_has(34);
+  @$pb.TagNumber(35)
+  void clearRefundState() => $_clearField(35);
+
+  @$pb.TagNumber(36)
+  $core.String get refundSource => $_getSZ(35);
+  @$pb.TagNumber(36)
+  set refundSource($core.String value) => $_setString(35, value);
+  @$pb.TagNumber(36)
+  $core.bool hasRefundSource() => $_has(35);
+  @$pb.TagNumber(36)
+  void clearRefundSource() => $_clearField(36);
+
+  @$pb.TagNumber(37)
+  $core.String get refundReason => $_getSZ(36);
+  @$pb.TagNumber(37)
+  set refundReason($core.String value) => $_setString(36, value);
+  @$pb.TagNumber(37)
+  $core.bool hasRefundReason() => $_has(36);
+  @$pb.TagNumber(37)
+  void clearRefundReason() => $_clearField(37);
+
+  /// Final gateway = the provider that actually settled. For buy this
+  /// is reloadly when the row reached completed; "" when the saga
+  /// never reached the provider call.
+  @$pb.TagNumber(38)
+  $core.String get finalGateway => $_getSZ(37);
+  @$pb.TagNumber(38)
+  set finalGateway($core.String value) => $_setString(37, value);
+  @$pb.TagNumber(38)
+  $core.bool hasFinalGateway() => $_has(37);
+  @$pb.TagNumber(38)
+  void clearFinalGateway() => $_clearField(38);
+
+  /// Source: how the row originated. Mirrors the airtime payments
+  /// table — same value as `mode` for buys (sync/async); included as
+  /// a separate field so the UI doesn't need to alias.
+  @$pb.TagNumber(39)
+  $core.String get source => $_getSZ(38);
+  @$pb.TagNumber(39)
+  set source($core.String value) => $_setString(38, value);
+  @$pb.TagNumber(39)
+  $core.bool hasSource() => $_has(38);
+  @$pb.TagNumber(39)
+  void clearSource() => $_clearField(39);
+
+  /// Failover: did we have to retry on a backup provider? Buy is
+  /// Reloadly-only today so this is always "no"; included for
+  /// forward-compat with future multi-provider routing.
+  @$pb.TagNumber(40)
+  $core.String get failover => $_getSZ(39);
+  @$pb.TagNumber(40)
+  set failover($core.String value) => $_setString(39, value);
+  @$pb.TagNumber(40)
+  $core.bool hasFailover() => $_has(39);
+  @$pb.TagNumber(40)
+  void clearFailover() => $_clearField(40);
+
+  /// Refund-tab fields. Surfaced as separate columns next to the
+  /// primary purchase Status so an operator sees the refund state at
+  /// a glance without needing to drill into the detail page. Populated
+  /// from refund_ledger via the same canonical map bill-payments uses.
+  /// Flat fee leg of the platform commission, in user wallet currency.
+  /// The retail price = (wholesale_in_user_ccy × (1+fee_pct)) + flat_fee,
+  /// and commission_amount = retail − wholesale = pct_margin + flat_fee.
+  /// Surfaced separately so the Settlements tab can show pct vs flat as
+  /// independent columns instead of just the combined commission.
+  @$pb.TagNumber(41)
+  $core.double get flatFee => $_getN(40);
+  @$pb.TagNumber(41)
+  set flatFee($core.double value) => $_setDouble(40, value);
+  @$pb.TagNumber(41)
+  $core.bool hasFlatFee() => $_has(40);
+  @$pb.TagNumber(41)
+  void clearFlatFee() => $_clearField(41);
 }
 
 class AdminListBuyTransactionsResponse extends $pb.GeneratedMessage {
@@ -5517,6 +6247,7 @@ class AdminRefundLedgerEntry extends $pb.GeneratedMessage {
     $core.String? createdAt,
     $core.String? updatedAt,
     $core.String? side,
+    $core.String? source,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -5541,6 +6272,7 @@ class AdminRefundLedgerEntry extends $pb.GeneratedMessage {
     if (createdAt != null) result.createdAt = createdAt;
     if (updatedAt != null) result.updatedAt = updatedAt;
     if (side != null) result.side = side;
+    if (source != null) result.source = source;
     return result;
   }
 
@@ -5572,6 +6304,7 @@ class AdminRefundLedgerEntry extends $pb.GeneratedMessage {
     ..aOS(20, _omitFieldNames ? '' : 'createdAt')
     ..aOS(21, _omitFieldNames ? '' : 'updatedAt')
     ..aOS(22, _omitFieldNames ? '' : 'side')
+    ..aOS(23, _omitFieldNames ? '' : 'source')
     ..hasRequiredFields = false
   ;
 
@@ -5789,6 +6522,19 @@ class AdminRefundLedgerEntry extends $pb.GeneratedMessage {
   $core.bool hasSide() => $_has(21);
   @$pb.TagNumber(22)
   void clearSide() => $_clearField(22);
+
+  /// Originating subsystem that created this row. One of:
+  ///   saga_sync | async_consumer | reconciler | rollback_processor
+  ///   | clawback | webhook | admin | unknown
+  /// Mirrors bill-payment completion_source.
+  @$pb.TagNumber(23)
+  $core.String get source => $_getSZ(22);
+  @$pb.TagNumber(23)
+  set source($core.String value) => $_setString(22, value);
+  @$pb.TagNumber(23)
+  $core.bool hasSource() => $_has(22);
+  @$pb.TagNumber(23)
+  void clearSource() => $_clearField(23);
 }
 
 class AdminListRefundLedgerResponse extends $pb.GeneratedMessage {
@@ -6343,6 +7089,626 @@ class AdminRejectSaleResponse extends $pb.GeneratedMessage {
   $core.bool hasMessage() => $_has(1);
   @$pb.TagNumber(2)
   void clearMessage() => $_clearField(2);
+}
+
+class AdminRetryHoldReleaseRequest extends $pb.GeneratedMessage {
+  factory AdminRetryHoldReleaseRequest({
+    $core.String? cardId,
+    $core.String? adminId,
+  }) {
+    final result = create();
+    if (cardId != null) result.cardId = cardId;
+    if (adminId != null) result.adminId = adminId;
+    return result;
+  }
+
+  AdminRetryHoldReleaseRequest._();
+
+  factory AdminRetryHoldReleaseRequest.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
+  factory AdminRetryHoldReleaseRequest.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AdminRetryHoldReleaseRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'giftcards'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'cardId')
+    ..aOS(2, _omitFieldNames ? '' : 'adminId')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminRetryHoldReleaseRequest clone() => AdminRetryHoldReleaseRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminRetryHoldReleaseRequest copyWith(void Function(AdminRetryHoldReleaseRequest) updates) => super.copyWith((message) => updates(message as AdminRetryHoldReleaseRequest)) as AdminRetryHoldReleaseRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminRetryHoldReleaseRequest create() => AdminRetryHoldReleaseRequest._();
+  @$core.override
+  AdminRetryHoldReleaseRequest createEmptyInstance() => create();
+  static $pb.PbList<AdminRetryHoldReleaseRequest> createRepeated() => $pb.PbList<AdminRetryHoldReleaseRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AdminRetryHoldReleaseRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AdminRetryHoldReleaseRequest>(create);
+  static AdminRetryHoldReleaseRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get cardId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set cardId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasCardId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCardId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get adminId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set adminId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasAdminId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAdminId() => $_clearField(2);
+}
+
+class AdminRetryHoldReleaseResponse extends $pb.GeneratedMessage {
+  factory AdminRetryHoldReleaseResponse({
+    $core.bool? success,
+    $core.String? status,
+    $core.String? errorMessage,
+  }) {
+    final result = create();
+    if (success != null) result.success = success;
+    if (status != null) result.status = status;
+    if (errorMessage != null) result.errorMessage = errorMessage;
+    return result;
+  }
+
+  AdminRetryHoldReleaseResponse._();
+
+  factory AdminRetryHoldReleaseResponse.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
+  factory AdminRetryHoldReleaseResponse.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AdminRetryHoldReleaseResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'giftcards'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'status')
+    ..aOS(3, _omitFieldNames ? '' : 'errorMessage')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminRetryHoldReleaseResponse clone() => AdminRetryHoldReleaseResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminRetryHoldReleaseResponse copyWith(void Function(AdminRetryHoldReleaseResponse) updates) => super.copyWith((message) => updates(message as AdminRetryHoldReleaseResponse)) as AdminRetryHoldReleaseResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminRetryHoldReleaseResponse create() => AdminRetryHoldReleaseResponse._();
+  @$core.override
+  AdminRetryHoldReleaseResponse createEmptyInstance() => create();
+  static $pb.PbList<AdminRetryHoldReleaseResponse> createRepeated() => $pb.PbList<AdminRetryHoldReleaseResponse>();
+  @$core.pragma('dart2js:noInline')
+  static AdminRetryHoldReleaseResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AdminRetryHoldReleaseResponse>(create);
+  static AdminRetryHoldReleaseResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get status => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set status($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasStatus() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearStatus() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get errorMessage => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set errorMessage($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasErrorMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearErrorMessage() => $_clearField(3);
+}
+
+class AdminManualRefundPurchaseRequest extends $pb.GeneratedMessage {
+  factory AdminManualRefundPurchaseRequest({
+    $core.String? cardId,
+    $core.String? adminId,
+    $core.String? reason,
+    $core.String? notes,
+  }) {
+    final result = create();
+    if (cardId != null) result.cardId = cardId;
+    if (adminId != null) result.adminId = adminId;
+    if (reason != null) result.reason = reason;
+    if (notes != null) result.notes = notes;
+    return result;
+  }
+
+  AdminManualRefundPurchaseRequest._();
+
+  factory AdminManualRefundPurchaseRequest.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
+  factory AdminManualRefundPurchaseRequest.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AdminManualRefundPurchaseRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'giftcards'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'cardId')
+    ..aOS(2, _omitFieldNames ? '' : 'adminId')
+    ..aOS(3, _omitFieldNames ? '' : 'reason')
+    ..aOS(4, _omitFieldNames ? '' : 'notes')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminManualRefundPurchaseRequest clone() => AdminManualRefundPurchaseRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminManualRefundPurchaseRequest copyWith(void Function(AdminManualRefundPurchaseRequest) updates) => super.copyWith((message) => updates(message as AdminManualRefundPurchaseRequest)) as AdminManualRefundPurchaseRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminManualRefundPurchaseRequest create() => AdminManualRefundPurchaseRequest._();
+  @$core.override
+  AdminManualRefundPurchaseRequest createEmptyInstance() => create();
+  static $pb.PbList<AdminManualRefundPurchaseRequest> createRepeated() => $pb.PbList<AdminManualRefundPurchaseRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AdminManualRefundPurchaseRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AdminManualRefundPurchaseRequest>(create);
+  static AdminManualRefundPurchaseRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get cardId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set cardId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasCardId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCardId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get adminId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set adminId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasAdminId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAdminId() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get reason => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set reason($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasReason() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearReason() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get notes => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set notes($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasNotes() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearNotes() => $_clearField(4);
+}
+
+class AdminManualRefundPurchaseResponse extends $pb.GeneratedMessage {
+  factory AdminManualRefundPurchaseResponse({
+    $core.bool? success,
+    $core.String? status,
+    $core.String? message,
+  }) {
+    final result = create();
+    if (success != null) result.success = success;
+    if (status != null) result.status = status;
+    if (message != null) result.message = message;
+    return result;
+  }
+
+  AdminManualRefundPurchaseResponse._();
+
+  factory AdminManualRefundPurchaseResponse.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
+  factory AdminManualRefundPurchaseResponse.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AdminManualRefundPurchaseResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'giftcards'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'status')
+    ..aOS(3, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminManualRefundPurchaseResponse clone() => AdminManualRefundPurchaseResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminManualRefundPurchaseResponse copyWith(void Function(AdminManualRefundPurchaseResponse) updates) => super.copyWith((message) => updates(message as AdminManualRefundPurchaseResponse)) as AdminManualRefundPurchaseResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminManualRefundPurchaseResponse create() => AdminManualRefundPurchaseResponse._();
+  @$core.override
+  AdminManualRefundPurchaseResponse createEmptyInstance() => create();
+  static $pb.PbList<AdminManualRefundPurchaseResponse> createRepeated() => $pb.PbList<AdminManualRefundPurchaseResponse>();
+  @$core.pragma('dart2js:noInline')
+  static AdminManualRefundPurchaseResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AdminManualRefundPurchaseResponse>(create);
+  static AdminManualRefundPurchaseResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get status => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set status($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasStatus() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearStatus() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get message => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set message($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearMessage() => $_clearField(3);
+}
+
+class AdminForceReconcilePurchaseRequest extends $pb.GeneratedMessage {
+  factory AdminForceReconcilePurchaseRequest({
+    $core.String? cardId,
+    $core.String? adminId,
+    $core.String? reason,
+  }) {
+    final result = create();
+    if (cardId != null) result.cardId = cardId;
+    if (adminId != null) result.adminId = adminId;
+    if (reason != null) result.reason = reason;
+    return result;
+  }
+
+  AdminForceReconcilePurchaseRequest._();
+
+  factory AdminForceReconcilePurchaseRequest.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
+  factory AdminForceReconcilePurchaseRequest.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AdminForceReconcilePurchaseRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'giftcards'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'cardId')
+    ..aOS(2, _omitFieldNames ? '' : 'adminId')
+    ..aOS(3, _omitFieldNames ? '' : 'reason')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminForceReconcilePurchaseRequest clone() => AdminForceReconcilePurchaseRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminForceReconcilePurchaseRequest copyWith(void Function(AdminForceReconcilePurchaseRequest) updates) => super.copyWith((message) => updates(message as AdminForceReconcilePurchaseRequest)) as AdminForceReconcilePurchaseRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminForceReconcilePurchaseRequest create() => AdminForceReconcilePurchaseRequest._();
+  @$core.override
+  AdminForceReconcilePurchaseRequest createEmptyInstance() => create();
+  static $pb.PbList<AdminForceReconcilePurchaseRequest> createRepeated() => $pb.PbList<AdminForceReconcilePurchaseRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AdminForceReconcilePurchaseRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AdminForceReconcilePurchaseRequest>(create);
+  static AdminForceReconcilePurchaseRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get cardId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set cardId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasCardId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCardId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get adminId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set adminId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasAdminId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAdminId() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get reason => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set reason($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasReason() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearReason() => $_clearField(3);
+}
+
+class AdminForceReconcilePurchaseResponse extends $pb.GeneratedMessage {
+  factory AdminForceReconcilePurchaseResponse({
+    $core.bool? success,
+    $core.String? action,
+    $core.String? status,
+    $core.String? message,
+  }) {
+    final result = create();
+    if (success != null) result.success = success;
+    if (action != null) result.action = action;
+    if (status != null) result.status = status;
+    if (message != null) result.message = message;
+    return result;
+  }
+
+  AdminForceReconcilePurchaseResponse._();
+
+  factory AdminForceReconcilePurchaseResponse.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
+  factory AdminForceReconcilePurchaseResponse.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AdminForceReconcilePurchaseResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'giftcards'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'action')
+    ..aOS(3, _omitFieldNames ? '' : 'status')
+    ..aOS(4, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminForceReconcilePurchaseResponse clone() => AdminForceReconcilePurchaseResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminForceReconcilePurchaseResponse copyWith(void Function(AdminForceReconcilePurchaseResponse) updates) => super.copyWith((message) => updates(message as AdminForceReconcilePurchaseResponse)) as AdminForceReconcilePurchaseResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminForceReconcilePurchaseResponse create() => AdminForceReconcilePurchaseResponse._();
+  @$core.override
+  AdminForceReconcilePurchaseResponse createEmptyInstance() => create();
+  static $pb.PbList<AdminForceReconcilePurchaseResponse> createRepeated() => $pb.PbList<AdminForceReconcilePurchaseResponse>();
+  @$core.pragma('dart2js:noInline')
+  static AdminForceReconcilePurchaseResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AdminForceReconcilePurchaseResponse>(create);
+  static AdminForceReconcilePurchaseResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get action => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set action($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasAction() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAction() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get status => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set status($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasStatus() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearStatus() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get message => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set message($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasMessage() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearMessage() => $_clearField(4);
+}
+
+class AdminSetSellPayoutOverrideRequest extends $pb.GeneratedMessage {
+  factory AdminSetSellPayoutOverrideRequest({
+    $core.String? saleId,
+    $core.double? amount,
+    $core.String? currency,
+    $core.String? note,
+    $core.String? adminId,
+  }) {
+    final result = create();
+    if (saleId != null) result.saleId = saleId;
+    if (amount != null) result.amount = amount;
+    if (currency != null) result.currency = currency;
+    if (note != null) result.note = note;
+    if (adminId != null) result.adminId = adminId;
+    return result;
+  }
+
+  AdminSetSellPayoutOverrideRequest._();
+
+  factory AdminSetSellPayoutOverrideRequest.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
+  factory AdminSetSellPayoutOverrideRequest.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AdminSetSellPayoutOverrideRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'giftcards'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'saleId')
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(3, _omitFieldNames ? '' : 'currency')
+    ..aOS(4, _omitFieldNames ? '' : 'note')
+    ..aOS(5, _omitFieldNames ? '' : 'adminId')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminSetSellPayoutOverrideRequest clone() => AdminSetSellPayoutOverrideRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminSetSellPayoutOverrideRequest copyWith(void Function(AdminSetSellPayoutOverrideRequest) updates) => super.copyWith((message) => updates(message as AdminSetSellPayoutOverrideRequest)) as AdminSetSellPayoutOverrideRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminSetSellPayoutOverrideRequest create() => AdminSetSellPayoutOverrideRequest._();
+  @$core.override
+  AdminSetSellPayoutOverrideRequest createEmptyInstance() => create();
+  static $pb.PbList<AdminSetSellPayoutOverrideRequest> createRepeated() => $pb.PbList<AdminSetSellPayoutOverrideRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AdminSetSellPayoutOverrideRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AdminSetSellPayoutOverrideRequest>(create);
+  static AdminSetSellPayoutOverrideRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get saleId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set saleId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSaleId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSaleId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.double get amount => $_getN(1);
+  @$pb.TagNumber(2)
+  set amount($core.double value) => $_setDouble(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasAmount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAmount() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get currency => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set currency($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasCurrency() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCurrency() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get note => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set note($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasNote() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearNote() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get adminId => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set adminId($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasAdminId() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearAdminId() => $_clearField(5);
+}
+
+class AdminSetSellPayoutOverrideResponse extends $pb.GeneratedMessage {
+  factory AdminSetSellPayoutOverrideResponse({
+    $core.bool? success,
+    $core.double? overrideAmount,
+    $core.String? overrideCurrency,
+    $core.double? resolvedNgn,
+    $core.String? message,
+  }) {
+    final result = create();
+    if (success != null) result.success = success;
+    if (overrideAmount != null) result.overrideAmount = overrideAmount;
+    if (overrideCurrency != null) result.overrideCurrency = overrideCurrency;
+    if (resolvedNgn != null) result.resolvedNgn = resolvedNgn;
+    if (message != null) result.message = message;
+    return result;
+  }
+
+  AdminSetSellPayoutOverrideResponse._();
+
+  factory AdminSetSellPayoutOverrideResponse.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
+  factory AdminSetSellPayoutOverrideResponse.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AdminSetSellPayoutOverrideResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'giftcards'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'overrideAmount', $pb.PbFieldType.OD)
+    ..aOS(3, _omitFieldNames ? '' : 'overrideCurrency')
+    ..a<$core.double>(4, _omitFieldNames ? '' : 'resolvedNgn', $pb.PbFieldType.OD)
+    ..aOS(5, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminSetSellPayoutOverrideResponse clone() => AdminSetSellPayoutOverrideResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AdminSetSellPayoutOverrideResponse copyWith(void Function(AdminSetSellPayoutOverrideResponse) updates) => super.copyWith((message) => updates(message as AdminSetSellPayoutOverrideResponse)) as AdminSetSellPayoutOverrideResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AdminSetSellPayoutOverrideResponse create() => AdminSetSellPayoutOverrideResponse._();
+  @$core.override
+  AdminSetSellPayoutOverrideResponse createEmptyInstance() => create();
+  static $pb.PbList<AdminSetSellPayoutOverrideResponse> createRepeated() => $pb.PbList<AdminSetSellPayoutOverrideResponse>();
+  @$core.pragma('dart2js:noInline')
+  static AdminSetSellPayoutOverrideResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AdminSetSellPayoutOverrideResponse>(create);
+  static AdminSetSellPayoutOverrideResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.double get overrideAmount => $_getN(1);
+  @$pb.TagNumber(2)
+  set overrideAmount($core.double value) => $_setDouble(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasOverrideAmount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearOverrideAmount() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get overrideCurrency => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set overrideCurrency($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasOverrideCurrency() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearOverrideCurrency() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.double get resolvedNgn => $_getN(3);
+  @$pb.TagNumber(4)
+  set resolvedNgn($core.double value) => $_setDouble(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasResolvedNgn() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearResolvedNgn() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get message => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set message($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasMessage() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearMessage() => $_clearField(5);
 }
 
 class SellRateConfig extends $pb.GeneratedMessage {
@@ -10252,9 +11618,11 @@ class PerformManualOperationRequest extends $pb.GeneratedMessage {
 
   /// Operation key. `refund_sale` is canonical; `reverse_sale` kept as
   /// a back-compat alias during the rename rollout. Both route through
-  /// the three-phase rollback pipeline (verify → refund → reverse
-  /// settlement) and end at status='refunded'.
-  /// retry_settlement|manual_payout|refund_sale|reverse_sale|cancel_sale|escalate
+  /// the rollback pipeline and end at status='refunded'. `force_reconcile`
+  /// mirrors the electricity bill ManualReconcile CTA — it resets the
+  /// refund_ledger entry (or seeds one) so the worker retries on its
+  /// next tick.
+  /// retry_settlement|manual_payout|refund_sale|reverse_sale|cancel_sale|escalate|force_reconcile
   @$pb.TagNumber(2)
   $core.String get operation => $_getSZ(1);
   @$pb.TagNumber(2)
