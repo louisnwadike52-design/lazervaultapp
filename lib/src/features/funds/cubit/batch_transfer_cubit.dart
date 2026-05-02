@@ -61,9 +61,22 @@ class BatchTransferCubit extends Cubit<BatchTransferState> {
           emit(BatchTransferFailure(message: failure.message));
         },
         (batchTransferEntity) {
-          if (batchTransferEntity.status == 'partial' ||
-              batchTransferEntity.status == 'partially_failed') {
+          final status = batchTransferEntity.status;
+          if (status == 'partial' ||
+              status == 'partially_failed' ||
+              status == 'partially_completed') {
             emit(BatchTransferPartialSuccess(response: batchTransferEntity));
+          } else if (status == 'processing' || status == 'pending') {
+            // Async mode: server accepted the batch but is still working.
+            emit(BatchTransferPendingAsync(response: batchTransferEntity));
+          } else if (status == 'refund_pending' || status == 'refunding') {
+            emit(BatchTransferRefundPending(response: batchTransferEntity));
+          } else if (status == 'manual_review') {
+            emit(BatchTransferManualReview(response: batchTransferEntity));
+          } else if (status == 'auto_released') {
+            emit(BatchTransferAutoReleased(response: batchTransferEntity));
+          } else if (status == 'pending_verification') {
+            emit(BatchTransferPendingVerification(response: batchTransferEntity));
           } else {
             emit(BatchTransferSuccess(response: batchTransferEntity));
           }

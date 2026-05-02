@@ -12,6 +12,7 @@ import '../cubit/crowdfund_state.dart';
 import '../cubit/leaderboard_cubit.dart';
 import '../cubit/leaderboard_state.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 
 class CrowdfundHomeScreen extends StatefulWidget {
   const CrowdfundHomeScreen({super.key});
@@ -114,6 +115,12 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
               ),
             ),
           ),
+          ServiceVoiceButton(
+            serviceName: 'crowdfund',
+            iconColor: const Color(0xFF6366F1),
+            backgroundColor: const Color(0xFF6366F1),
+          ),
+          SizedBox(width: 8.w),
           MicroserviceChatIcon(
             serviceName: 'Crowdfund',
             sourceContext: 'financial_products',

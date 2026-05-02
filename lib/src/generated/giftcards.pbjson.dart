@@ -498,6 +498,9 @@ const SellRate$json = {
     {'1': 'payout_amount', '3': 4, '4': 1, '5': 1, '10': 'payoutAmount'},
     {'1': 'currency', '3': 5, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'expires_at', '3': 6, '4': 1, '5': 9, '10': 'expiresAt'},
+    {'1': 'payout_lower_bound', '3': 7, '4': 1, '5': 1, '10': 'payoutLowerBound'},
+    {'1': 'payout_upper_bound', '3': 8, '4': 1, '5': 1, '10': 'payoutUpperBound'},
+    {'1': 'is_manual_mode', '3': 9, '4': 1, '5': 8, '10': 'isManualMode'},
   ],
 };
 
@@ -506,7 +509,10 @@ final $typed_data.Uint8List sellRateDescriptor = $convert.base64Decode(
     'CghTZWxsUmF0ZRIbCgljYXJkX3R5cGUYASABKAlSCGNhcmRUeXBlEiIKDGRlbm9taW5hdGlvbh'
     'gCIAEoAVIMZGVub21pbmF0aW9uEicKD3JhdGVfcGVyY2VudGFnZRgDIAEoAVIOcmF0ZVBlcmNl'
     'bnRhZ2USIwoNcGF5b3V0X2Ftb3VudBgEIAEoAVIMcGF5b3V0QW1vdW50EhoKCGN1cnJlbmN5GA'
-    'UgASgJUghjdXJyZW5jeRIdCgpleHBpcmVzX2F0GAYgASgJUglleHBpcmVzQXQ=');
+    'UgASgJUghjdXJyZW5jeRIdCgpleHBpcmVzX2F0GAYgASgJUglleHBpcmVzQXQSLAoScGF5b3V0'
+    'X2xvd2VyX2JvdW5kGAcgASgBUhBwYXlvdXRMb3dlckJvdW5kEiwKEnBheW91dF91cHBlcl9ib3'
+    'VuZBgIIAEoAVIQcGF5b3V0VXBwZXJCb3VuZBIkCg5pc19tYW51YWxfbW9kZRgJIAEoCFIMaXNN'
+    'YW51YWxNb2Rl');
 
 @$core.Deprecated('Use giftCardSaleDescriptor instead')
 const GiftCardSale$json = {
@@ -572,6 +578,10 @@ const GiftCardSale$json = {
     {'1': 'response_json', '3': 58, '4': 1, '5': 9, '10': 'responseJson'},
     {'1': 'provider_http_status', '3': 59, '4': 1, '5': 5, '10': 'providerHttpStatus'},
     {'1': 'provider_duration_ms', '3': 60, '4': 1, '5': 3, '10': 'providerDurationMs'},
+    {'1': 'failure_reason', '3': 61, '4': 1, '5': 9, '10': 'failureReason'},
+    {'1': 'quote_provider', '3': 62, '4': 1, '5': 9, '10': 'quoteProvider'},
+    {'1': 'settlement_status', '3': 63, '4': 1, '5': 9, '10': 'settlementStatus'},
+    {'1': 'display_status', '3': 64, '4': 1, '5': 9, '10': 'displayStatus'},
   ],
 };
 
@@ -616,7 +626,10 @@ final $typed_data.Uint8List giftCardSaleDescriptor = $convert.base64Decode(
     'b25JZBIhCgxjb21wbGV0ZWRfYXQYOCABKAlSC2NvbXBsZXRlZEF0EiEKDHJlcXVlc3RfanNvbh'
     'g5IAEoCVILcmVxdWVzdEpzb24SIwoNcmVzcG9uc2VfanNvbhg6IAEoCVIMcmVzcG9uc2VKc29u'
     'EjAKFHByb3ZpZGVyX2h0dHBfc3RhdHVzGDsgASgFUhJwcm92aWRlckh0dHBTdGF0dXMSMAoUcH'
-    'JvdmlkZXJfZHVyYXRpb25fbXMYPCABKANSEnByb3ZpZGVyRHVyYXRpb25Ncw==');
+    'JvdmlkZXJfZHVyYXRpb25fbXMYPCABKANSEnByb3ZpZGVyRHVyYXRpb25NcxIlCg5mYWlsdXJl'
+    'X3JlYXNvbhg9IAEoCVINZmFpbHVyZVJlYXNvbhIlCg5xdW90ZV9wcm92aWRlchg+IAEoCVINcX'
+    'VvdGVQcm92aWRlchIrChFzZXR0bGVtZW50X3N0YXR1cxg/IAEoCVIQc2V0dGxlbWVudFN0YXR1'
+    'cxIlCg5kaXNwbGF5X3N0YXR1cxhAIAEoCVINZGlzcGxheVN0YXR1cw==');
 
 @$core.Deprecated('Use getSellableCardsRequestDescriptor instead')
 const GetSellableCardsRequest$json = {
@@ -660,13 +673,16 @@ const GetSellProviderResponse$json = {
   '2': [
     {'1': 'provider', '3': 1, '4': 1, '5': 9, '10': 'provider'},
     {'1': 'description', '3': 2, '4': 1, '5': 9, '10': 'description'},
+    {'1': 'mode', '3': 3, '4': 1, '5': 9, '10': 'mode'},
+    {'1': 'async_enabled', '3': 4, '4': 1, '5': 8, '10': 'asyncEnabled'},
   ],
 };
 
 /// Descriptor for `GetSellProviderResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getSellProviderResponseDescriptor = $convert.base64Decode(
     'ChdHZXRTZWxsUHJvdmlkZXJSZXNwb25zZRIaCghwcm92aWRlchgBIAEoCVIIcHJvdmlkZXISIA'
-    'oLZGVzY3JpcHRpb24YAiABKAlSC2Rlc2NyaXB0aW9u');
+    'oLZGVzY3JpcHRpb24YAiABKAlSC2Rlc2NyaXB0aW9uEhIKBG1vZGUYAyABKAlSBG1vZGUSIwoN'
+    'YXN5bmNfZW5hYmxlZBgEIAEoCFIMYXN5bmNFbmFibGVk');
 
 @$core.Deprecated('Use updateFeatureFlagRequestDescriptor instead')
 const UpdateFeatureFlagRequest$json = {
@@ -974,6 +990,85 @@ final $typed_data.Uint8List adminListPendingSalesResponseDescriptor = $convert.b
     'Ch1BZG1pbkxpc3RQZW5kaW5nU2FsZXNSZXNwb25zZRItCgVzYWxlcxgBIAMoCzIXLmdpZnRjYX'
     'Jkcy5HaWZ0Q2FyZFNhbGVSBXNhbGVzEhQKBXRvdGFsGAIgASgFUgV0b3RhbA==');
 
+@$core.Deprecated('Use adminListSellSettlementsRequestDescriptor instead')
+const AdminListSellSettlementsRequest$json = {
+  '1': 'AdminListSellSettlementsRequest',
+  '2': [
+    {'1': 'status', '3': 1, '4': 1, '5': 9, '10': 'status'},
+    {'1': 'source', '3': 2, '4': 1, '5': 9, '10': 'source'},
+    {'1': 'page', '3': 3, '4': 1, '5': 5, '10': 'page'},
+    {'1': 'limit', '3': 4, '4': 1, '5': 5, '10': 'limit'},
+  ],
+};
+
+/// Descriptor for `AdminListSellSettlementsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminListSellSettlementsRequestDescriptor = $convert.base64Decode(
+    'Ch9BZG1pbkxpc3RTZWxsU2V0dGxlbWVudHNSZXF1ZXN0EhYKBnN0YXR1cxgBIAEoCVIGc3RhdH'
+    'VzEhYKBnNvdXJjZRgCIAEoCVIGc291cmNlEhIKBHBhZ2UYAyABKAVSBHBhZ2USFAoFbGltaXQY'
+    'BCABKAVSBWxpbWl0');
+
+@$core.Deprecated('Use adminSellSettlementDescriptor instead')
+const AdminSellSettlement$json = {
+  '1': 'AdminSellSettlement',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'reference', '3': 2, '4': 1, '5': 9, '10': 'reference'},
+    {'1': 'user_id', '3': 3, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'brand', '3': 4, '4': 1, '5': 9, '10': 'brand'},
+    {'1': 'face_value', '3': 5, '4': 1, '5': 1, '10': 'faceValue'},
+    {'1': 'face_currency', '3': 6, '4': 1, '5': 9, '10': 'faceCurrency'},
+    {'1': 'payout_currency', '3': 7, '4': 1, '5': 9, '10': 'payoutCurrency'},
+    {'1': 'fx_rate', '3': 8, '4': 1, '5': 1, '10': 'fxRate'},
+    {'1': 'pre_margin_payout', '3': 9, '4': 1, '5': 1, '10': 'preMarginPayout'},
+    {'1': 'paid_to_user', '3': 10, '4': 1, '5': 1, '10': 'paidToUser'},
+    {'1': 'sale_proceeds', '3': 11, '4': 1, '5': 1, '10': 'saleProceeds'},
+    {'1': 'sale_proceeds_currency', '3': 12, '4': 1, '5': 9, '10': 'saleProceedsCurrency'},
+    {'1': 'total_revenue', '3': 13, '4': 1, '5': 1, '10': 'totalRevenue'},
+    {'1': 'total_revenue_currency', '3': 14, '4': 1, '5': 9, '10': 'totalRevenueCurrency'},
+    {'1': 'margin_percentage', '3': 15, '4': 1, '5': 1, '10': 'marginPercentage'},
+    {'1': 'flat_fee', '3': 16, '4': 1, '5': 1, '10': 'flatFee'},
+    {'1': 'source', '3': 17, '4': 1, '5': 9, '10': 'source'},
+    {'1': 'status', '3': 18, '4': 1, '5': 9, '10': 'status'},
+    {'1': 'provider_name', '3': 19, '4': 1, '5': 9, '10': 'providerName'},
+    {'1': 'paid_at', '3': 20, '4': 1, '5': 9, '10': 'paidAt'},
+    {'1': 'created_at', '3': 21, '4': 1, '5': 9, '10': 'createdAt'},
+  ],
+};
+
+/// Descriptor for `AdminSellSettlement`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminSellSettlementDescriptor = $convert.base64Decode(
+    'ChNBZG1pblNlbGxTZXR0bGVtZW50Eg4KAmlkGAEgASgJUgJpZBIcCglyZWZlcmVuY2UYAiABKA'
+    'lSCXJlZmVyZW5jZRIXCgd1c2VyX2lkGAMgASgJUgZ1c2VySWQSFAoFYnJhbmQYBCABKAlSBWJy'
+    'YW5kEh0KCmZhY2VfdmFsdWUYBSABKAFSCWZhY2VWYWx1ZRIjCg1mYWNlX2N1cnJlbmN5GAYgAS'
+    'gJUgxmYWNlQ3VycmVuY3kSJwoPcGF5b3V0X2N1cnJlbmN5GAcgASgJUg5wYXlvdXRDdXJyZW5j'
+    'eRIXCgdmeF9yYXRlGAggASgBUgZmeFJhdGUSKgoRcHJlX21hcmdpbl9wYXlvdXQYCSABKAFSD3'
+    'ByZU1hcmdpblBheW91dBIgCgxwYWlkX3RvX3VzZXIYCiABKAFSCnBhaWRUb1VzZXISIwoNc2Fs'
+    'ZV9wcm9jZWVkcxgLIAEoAVIMc2FsZVByb2NlZWRzEjQKFnNhbGVfcHJvY2VlZHNfY3VycmVuY3'
+    'kYDCABKAlSFHNhbGVQcm9jZWVkc0N1cnJlbmN5EiMKDXRvdGFsX3JldmVudWUYDSABKAFSDHRv'
+    'dGFsUmV2ZW51ZRI0ChZ0b3RhbF9yZXZlbnVlX2N1cnJlbmN5GA4gASgJUhR0b3RhbFJldmVudW'
+    'VDdXJyZW5jeRIrChFtYXJnaW5fcGVyY2VudGFnZRgPIAEoAVIQbWFyZ2luUGVyY2VudGFnZRIZ'
+    'CghmbGF0X2ZlZRgQIAEoAVIHZmxhdEZlZRIWCgZzb3VyY2UYESABKAlSBnNvdXJjZRIWCgZzdG'
+    'F0dXMYEiABKAlSBnN0YXR1cxIjCg1wcm92aWRlcl9uYW1lGBMgASgJUgxwcm92aWRlck5hbWUS'
+    'FwoHcGFpZF9hdBgUIAEoCVIGcGFpZEF0Eh0KCmNyZWF0ZWRfYXQYFSABKAlSCWNyZWF0ZWRBdA'
+    '==');
+
+@$core.Deprecated('Use adminListSellSettlementsResponseDescriptor instead')
+const AdminListSellSettlementsResponse$json = {
+  '1': 'AdminListSellSettlementsResponse',
+  '2': [
+    {'1': 'settlements', '3': 1, '4': 3, '5': 11, '6': '.giftcards.AdminSellSettlement', '10': 'settlements'},
+    {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
+    {'1': 'page', '3': 3, '4': 1, '5': 5, '10': 'page'},
+    {'1': 'limit', '3': 4, '4': 1, '5': 5, '10': 'limit'},
+  ],
+};
+
+/// Descriptor for `AdminListSellSettlementsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminListSellSettlementsResponseDescriptor = $convert.base64Decode(
+    'CiBBZG1pbkxpc3RTZWxsU2V0dGxlbWVudHNSZXNwb25zZRJACgtzZXR0bGVtZW50cxgBIAMoCz'
+    'IeLmdpZnRjYXJkcy5BZG1pblNlbGxTZXR0bGVtZW50UgtzZXR0bGVtZW50cxIUCgV0b3RhbBgC'
+    'IAEoBVIFdG90YWwSEgoEcGFnZRgDIAEoBVIEcGFnZRIUCgVsaW1pdBgEIAEoBVIFbGltaXQ=');
+
 @$core.Deprecated('Use adminListBuyTransactionsRequestDescriptor instead')
 const AdminListBuyTransactionsRequest$json = {
   '1': 'AdminListBuyTransactionsRequest',
@@ -1025,6 +1120,13 @@ const AdminBuyTransaction$json = {
     {'1': 'provider_transaction_id', '3': 28, '4': 1, '5': 9, '10': 'providerTransactionId'},
     {'1': 'mode', '3': 29, '4': 1, '5': 9, '10': 'mode'},
     {'1': 'has_refund_entry', '3': 30, '4': 1, '5': 8, '10': 'hasRefundEntry'},
+    {'1': 'flat_fee', '3': 41, '4': 1, '5': 1, '10': 'flatFee'},
+    {'1': 'refund_state', '3': 35, '4': 1, '5': 9, '10': 'refundState'},
+    {'1': 'refund_source', '3': 36, '4': 1, '5': 9, '10': 'refundSource'},
+    {'1': 'refund_reason', '3': 37, '4': 1, '5': 9, '10': 'refundReason'},
+    {'1': 'final_gateway', '3': 38, '4': 1, '5': 9, '10': 'finalGateway'},
+    {'1': 'source', '3': 39, '4': 1, '5': 9, '10': 'source'},
+    {'1': 'failover', '3': 40, '4': 1, '5': 9, '10': 'failover'},
     {'1': 'request_json', '3': 31, '4': 1, '5': 9, '10': 'requestJson'},
     {'1': 'response_json', '3': 32, '4': 1, '5': 9, '10': 'responseJson'},
     {'1': 'provider_http_status', '3': 33, '4': 1, '5': 5, '10': 'providerHttpStatus'},
@@ -1054,10 +1156,14 @@ final $typed_data.Uint8List adminBuyTransactionDescriptor = $convert.base64Decod
     'RlbXB0aW9uQ29kZRIlCg5yZWRlbXB0aW9uX3BpbhgbIAEoCVINcmVkZW1wdGlvblBpbhI2Chdw'
     'cm92aWRlcl90cmFuc2FjdGlvbl9pZBgcIAEoCVIVcHJvdmlkZXJUcmFuc2FjdGlvbklkEhIKBG'
     '1vZGUYHSABKAlSBG1vZGUSKAoQaGFzX3JlZnVuZF9lbnRyeRgeIAEoCFIOaGFzUmVmdW5kRW50'
-    'cnkSIQoMcmVxdWVzdF9qc29uGB8gASgJUgtyZXF1ZXN0SnNvbhIjCg1yZXNwb25zZV9qc29uGC'
-    'AgASgJUgxyZXNwb25zZUpzb24SMAoUcHJvdmlkZXJfaHR0cF9zdGF0dXMYISABKAVSEnByb3Zp'
-    'ZGVySHR0cFN0YXR1cxIwChRwcm92aWRlcl9kdXJhdGlvbl9tcxgiIAEoA1IScHJvdmlkZXJEdX'
-    'JhdGlvbk1z');
+    'cnkSGQoIZmxhdF9mZWUYKSABKAFSB2ZsYXRGZWUSIQoMcmVmdW5kX3N0YXRlGCMgASgJUgtyZW'
+    'Z1bmRTdGF0ZRIjCg1yZWZ1bmRfc291cmNlGCQgASgJUgxyZWZ1bmRTb3VyY2USIwoNcmVmdW5k'
+    'X3JlYXNvbhglIAEoCVIMcmVmdW5kUmVhc29uEiMKDWZpbmFsX2dhdGV3YXkYJiABKAlSDGZpbm'
+    'FsR2F0ZXdheRIWCgZzb3VyY2UYJyABKAlSBnNvdXJjZRIaCghmYWlsb3ZlchgoIAEoCVIIZmFp'
+    'bG92ZXISIQoMcmVxdWVzdF9qc29uGB8gASgJUgtyZXF1ZXN0SnNvbhIjCg1yZXNwb25zZV9qc2'
+    '9uGCAgASgJUgxyZXNwb25zZUpzb24SMAoUcHJvdmlkZXJfaHR0cF9zdGF0dXMYISABKAVSEnBy'
+    'b3ZpZGVySHR0cFN0YXR1cxIwChRwcm92aWRlcl9kdXJhdGlvbl9tcxgiIAEoA1IScHJvdmlkZX'
+    'JEdXJhdGlvbk1z');
 
 @$core.Deprecated('Use adminListBuyTransactionsResponseDescriptor instead')
 const AdminListBuyTransactionsResponse$json = {
@@ -1120,6 +1226,7 @@ const AdminRefundLedgerEntry$json = {
     {'1': 'created_at', '3': 20, '4': 1, '5': 9, '10': 'createdAt'},
     {'1': 'updated_at', '3': 21, '4': 1, '5': 9, '10': 'updatedAt'},
     {'1': 'side', '3': 22, '4': 1, '5': 9, '10': 'side'},
+    {'1': 'source', '3': 23, '4': 1, '5': 9, '10': 'source'},
   ],
 };
 
@@ -1139,7 +1246,7 @@ final $typed_data.Uint8List adminRefundLedgerEntryDescriptor = $convert.base64De
     'oVdmVyaWZpY2F0aW9uX2F0dGVtcHRzGBIgASgFUhR2ZXJpZmljYXRpb25BdHRlbXB0cxI4Chht'
     'YXhfdmVyaWZpY2F0aW9uX3JldHJpZXMYEyABKAVSFm1heFZlcmlmaWNhdGlvblJldHJpZXMSHQ'
     'oKY3JlYXRlZF9hdBgUIAEoCVIJY3JlYXRlZEF0Eh0KCnVwZGF0ZWRfYXQYFSABKAlSCXVwZGF0'
-    'ZWRBdBISCgRzaWRlGBYgASgJUgRzaWRl');
+    'ZWRBdBISCgRzaWRlGBYgASgJUgRzaWRlEhYKBnNvdXJjZRgXIAEoCVIGc291cmNl');
 
 @$core.Deprecated('Use adminListRefundLedgerResponseDescriptor instead')
 const AdminListRefundLedgerResponse$json = {
@@ -1270,6 +1377,138 @@ const AdminRejectSaleResponse$json = {
 final $typed_data.Uint8List adminRejectSaleResponseDescriptor = $convert.base64Decode(
     'ChdBZG1pblJlamVjdFNhbGVSZXNwb25zZRIrCgRzYWxlGAEgASgLMhcuZ2lmdGNhcmRzLkdpZn'
     'RDYXJkU2FsZVIEc2FsZRIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
+
+@$core.Deprecated('Use adminRetryHoldReleaseRequestDescriptor instead')
+const AdminRetryHoldReleaseRequest$json = {
+  '1': 'AdminRetryHoldReleaseRequest',
+  '2': [
+    {'1': 'card_id', '3': 1, '4': 1, '5': 9, '10': 'cardId'},
+    {'1': 'admin_id', '3': 2, '4': 1, '5': 9, '10': 'adminId'},
+  ],
+};
+
+/// Descriptor for `AdminRetryHoldReleaseRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminRetryHoldReleaseRequestDescriptor = $convert.base64Decode(
+    'ChxBZG1pblJldHJ5SG9sZFJlbGVhc2VSZXF1ZXN0EhcKB2NhcmRfaWQYASABKAlSBmNhcmRJZB'
+    'IZCghhZG1pbl9pZBgCIAEoCVIHYWRtaW5JZA==');
+
+@$core.Deprecated('Use adminRetryHoldReleaseResponseDescriptor instead')
+const AdminRetryHoldReleaseResponse$json = {
+  '1': 'AdminRetryHoldReleaseResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'status', '3': 2, '4': 1, '5': 9, '10': 'status'},
+    {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+  ],
+};
+
+/// Descriptor for `AdminRetryHoldReleaseResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminRetryHoldReleaseResponseDescriptor = $convert.base64Decode(
+    'Ch1BZG1pblJldHJ5SG9sZFJlbGVhc2VSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZX'
+    'NzEhYKBnN0YXR1cxgCIAEoCVIGc3RhdHVzEiMKDWVycm9yX21lc3NhZ2UYAyABKAlSDGVycm9y'
+    'TWVzc2FnZQ==');
+
+@$core.Deprecated('Use adminManualRefundPurchaseRequestDescriptor instead')
+const AdminManualRefundPurchaseRequest$json = {
+  '1': 'AdminManualRefundPurchaseRequest',
+  '2': [
+    {'1': 'card_id', '3': 1, '4': 1, '5': 9, '10': 'cardId'},
+    {'1': 'admin_id', '3': 2, '4': 1, '5': 9, '10': 'adminId'},
+    {'1': 'reason', '3': 3, '4': 1, '5': 9, '10': 'reason'},
+    {'1': 'notes', '3': 4, '4': 1, '5': 9, '10': 'notes'},
+  ],
+};
+
+/// Descriptor for `AdminManualRefundPurchaseRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminManualRefundPurchaseRequestDescriptor = $convert.base64Decode(
+    'CiBBZG1pbk1hbnVhbFJlZnVuZFB1cmNoYXNlUmVxdWVzdBIXCgdjYXJkX2lkGAEgASgJUgZjYX'
+    'JkSWQSGQoIYWRtaW5faWQYAiABKAlSB2FkbWluSWQSFgoGcmVhc29uGAMgASgJUgZyZWFzb24S'
+    'FAoFbm90ZXMYBCABKAlSBW5vdGVz');
+
+@$core.Deprecated('Use adminManualRefundPurchaseResponseDescriptor instead')
+const AdminManualRefundPurchaseResponse$json = {
+  '1': 'AdminManualRefundPurchaseResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'status', '3': 2, '4': 1, '5': 9, '10': 'status'},
+    {'1': 'message', '3': 3, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `AdminManualRefundPurchaseResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminManualRefundPurchaseResponseDescriptor = $convert.base64Decode(
+    'CiFBZG1pbk1hbnVhbFJlZnVuZFB1cmNoYXNlUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3'
+    'VjY2VzcxIWCgZzdGF0dXMYAiABKAlSBnN0YXR1cxIYCgdtZXNzYWdlGAMgASgJUgdtZXNzYWdl');
+
+@$core.Deprecated('Use adminForceReconcilePurchaseRequestDescriptor instead')
+const AdminForceReconcilePurchaseRequest$json = {
+  '1': 'AdminForceReconcilePurchaseRequest',
+  '2': [
+    {'1': 'card_id', '3': 1, '4': 1, '5': 9, '10': 'cardId'},
+    {'1': 'admin_id', '3': 2, '4': 1, '5': 9, '10': 'adminId'},
+    {'1': 'reason', '3': 3, '4': 1, '5': 9, '10': 'reason'},
+  ],
+};
+
+/// Descriptor for `AdminForceReconcilePurchaseRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminForceReconcilePurchaseRequestDescriptor = $convert.base64Decode(
+    'CiJBZG1pbkZvcmNlUmVjb25jaWxlUHVyY2hhc2VSZXF1ZXN0EhcKB2NhcmRfaWQYASABKAlSBm'
+    'NhcmRJZBIZCghhZG1pbl9pZBgCIAEoCVIHYWRtaW5JZBIWCgZyZWFzb24YAyABKAlSBnJlYXNv'
+    'bg==');
+
+@$core.Deprecated('Use adminForceReconcilePurchaseResponseDescriptor instead')
+const AdminForceReconcilePurchaseResponse$json = {
+  '1': 'AdminForceReconcilePurchaseResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'action', '3': 2, '4': 1, '5': 9, '10': 'action'},
+    {'1': 'status', '3': 3, '4': 1, '5': 9, '10': 'status'},
+    {'1': 'message', '3': 4, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `AdminForceReconcilePurchaseResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminForceReconcilePurchaseResponseDescriptor = $convert.base64Decode(
+    'CiNBZG1pbkZvcmNlUmVjb25jaWxlUHVyY2hhc2VSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUg'
+    'dzdWNjZXNzEhYKBmFjdGlvbhgCIAEoCVIGYWN0aW9uEhYKBnN0YXR1cxgDIAEoCVIGc3RhdHVz'
+    'EhgKB21lc3NhZ2UYBCABKAlSB21lc3NhZ2U=');
+
+@$core.Deprecated('Use adminSetSellPayoutOverrideRequestDescriptor instead')
+const AdminSetSellPayoutOverrideRequest$json = {
+  '1': 'AdminSetSellPayoutOverrideRequest',
+  '2': [
+    {'1': 'sale_id', '3': 1, '4': 1, '5': 9, '10': 'saleId'},
+    {'1': 'amount', '3': 2, '4': 1, '5': 1, '10': 'amount'},
+    {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
+    {'1': 'note', '3': 4, '4': 1, '5': 9, '10': 'note'},
+    {'1': 'admin_id', '3': 5, '4': 1, '5': 9, '10': 'adminId'},
+  ],
+};
+
+/// Descriptor for `AdminSetSellPayoutOverrideRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminSetSellPayoutOverrideRequestDescriptor = $convert.base64Decode(
+    'CiFBZG1pblNldFNlbGxQYXlvdXRPdmVycmlkZVJlcXVlc3QSFwoHc2FsZV9pZBgBIAEoCVIGc2'
+    'FsZUlkEhYKBmFtb3VudBgCIAEoAVIGYW1vdW50EhoKCGN1cnJlbmN5GAMgASgJUghjdXJyZW5j'
+    'eRISCgRub3RlGAQgASgJUgRub3RlEhkKCGFkbWluX2lkGAUgASgJUgdhZG1pbklk');
+
+@$core.Deprecated('Use adminSetSellPayoutOverrideResponseDescriptor instead')
+const AdminSetSellPayoutOverrideResponse$json = {
+  '1': 'AdminSetSellPayoutOverrideResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'override_amount', '3': 2, '4': 1, '5': 1, '10': 'overrideAmount'},
+    {'1': 'override_currency', '3': 3, '4': 1, '5': 9, '10': 'overrideCurrency'},
+    {'1': 'resolved_ngn', '3': 4, '4': 1, '5': 1, '10': 'resolvedNgn'},
+    {'1': 'message', '3': 5, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `AdminSetSellPayoutOverrideResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminSetSellPayoutOverrideResponseDescriptor = $convert.base64Decode(
+    'CiJBZG1pblNldFNlbGxQYXlvdXRPdmVycmlkZVJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3'
+    'N1Y2Nlc3MSJwoPb3ZlcnJpZGVfYW1vdW50GAIgASgBUg5vdmVycmlkZUFtb3VudBIrChFvdmVy'
+    'cmlkZV9jdXJyZW5jeRgDIAEoCVIQb3ZlcnJpZGVDdXJyZW5jeRIhCgxyZXNvbHZlZF9uZ24YBC'
+    'ABKAFSC3Jlc29sdmVkTmduEhgKB21lc3NhZ2UYBSABKAlSB21lc3NhZ2U=');
 
 @$core.Deprecated('Use sellRateConfigDescriptor instead')
 const SellRateConfig$json = {

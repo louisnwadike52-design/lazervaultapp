@@ -1,5 +1,52 @@
 import '../../domain/entities/group_entities.dart';
 
+/// Parses a payment-status JSON value into the [PaymentStatus] enum,
+/// accepting both the dart enum-name (e.g. "awaitingVerification") and
+/// the canonical snake-case server value ("awaiting_verification"). The
+/// snake-case form is what the backend's GORM column stores.
+///
+/// Money-safety note: unknown values fall back to `pending` (the safest
+/// in-flight state), but every known status — including the ones that
+/// indicate a user-impacting condition (refunding / manual_review) — must
+/// be mapped explicitly so the UI can render the right messaging. NEVER
+/// silently coerce these to a friendlier-but-wrong status like completed.
+PaymentStatus _parsePaymentStatus(dynamic raw) {
+  if (raw is! String) return PaymentStatus.pending;
+  switch (raw) {
+    case 'pending':
+    case 'PaymentStatus.pending':
+      return PaymentStatus.pending;
+    case 'processing':
+    case 'PaymentStatus.processing':
+      return PaymentStatus.processing;
+    case 'awaiting_verification':
+    case 'awaitingVerification':
+    case 'PaymentStatus.awaitingVerification':
+      return PaymentStatus.awaitingVerification;
+    case 'completed':
+    case 'PaymentStatus.completed':
+      return PaymentStatus.completed;
+    case 'failed':
+    case 'PaymentStatus.failed':
+      return PaymentStatus.failed;
+    case 'cancelled':
+    case 'PaymentStatus.cancelled':
+      return PaymentStatus.cancelled;
+    case 'refunding':
+    case 'PaymentStatus.refunding':
+      return PaymentStatus.refunding;
+    case 'refunded':
+    case 'PaymentStatus.refunded':
+      return PaymentStatus.refunded;
+    case 'manual_review':
+    case 'manualReview':
+    case 'PaymentStatus.manualReview':
+      return PaymentStatus.manualReview;
+    default:
+      return PaymentStatus.pending;
+  }
+}
+
 // Group Account Model
 class GroupAccountModel extends GroupAccount {
   const GroupAccountModel({
@@ -574,10 +621,7 @@ class ContributionPaymentModel extends ContributionPayment {
       amount: (json['amount'] as num).toDouble(),
       currency: json['currency'] as String,
       paymentDate: DateTime.parse(json['paymentDate'] as String),
-      status: PaymentStatus.values.firstWhere(
-        (e) => e.toString().split('.').last == json['status'],
-        orElse: () => PaymentStatus.pending,
-      ),
+      status: _parsePaymentStatus(json['status']),
       transactionId: json['transactionId'] as String?,
       receiptId: json['receiptId'] as String?,
       notes: json['notes'] as String?,

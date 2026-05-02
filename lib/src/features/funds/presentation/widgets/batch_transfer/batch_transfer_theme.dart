@@ -25,17 +25,31 @@ Color batchStatusColor(String status) {
   switch (status.toLowerCase()) {
     case 'completed':
     case 'success':
+    case 'auto_released':
       return btGreen;
     case 'partial':
     case 'partial_success':
     case 'partially_failed':
+    case 'partially_completed':
       return btOrange;
     case 'failed':
+    case 'refund_failed':
       return btRed;
     case 'pending':
     case 'processing':
     case 'scheduled':
+    case 'awaiting_webhook':
+    case 'failover_submitted':
       return btOrange;
+    case 'refund_pending':
+    case 'refunding':
+    case 'reversing_settlement':
+    case 'pending_verification':
+      return btBlue;
+    case 'refunded':
+      return btGreen;
+    case 'manual_review':
+      return btPurple;
     default:
       return btTextTertiary;
   }
@@ -50,14 +64,35 @@ String formatBatchStatus(String status) {
     case 'partial':
     case 'partial_success':
     case 'partially_failed':
+    case 'partially_completed':
       return 'Partial';
     case 'failed':
       return 'Failed';
+    case 'refund_failed':
+      return 'Refund Failed';
     case 'pending':
     case 'processing':
       return 'Pending';
     case 'scheduled':
       return 'Scheduled';
+    case 'awaiting_webhook':
+      return 'Awaiting Confirmation';
+    case 'failover_submitted':
+      return 'Retrying';
+    case 'refund_pending':
+      return 'Refund Queued';
+    case 'refunding':
+      return 'Refunding';
+    case 'refunded':
+      return 'Refunded';
+    case 'reversing_settlement':
+      return 'Reversing Fee';
+    case 'pending_verification':
+      return 'Verifying';
+    case 'auto_released':
+      return 'Auto-Released';
+    case 'manual_review':
+      return 'Under Review';
     default:
       return status;
   }

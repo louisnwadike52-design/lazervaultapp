@@ -104,7 +104,7 @@ class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen>
         centerTitle: true,
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: const Color(0xFF7C3AED),
+          indicatorColor: const Color(0xFF4E03D0),
           indicatorWeight: 3,
           labelColor: Colors.white,
           unselectedLabelColor: const Color(0xFF9CA3AF),
@@ -136,13 +136,13 @@ class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen>
                       fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                     ),
                     backgroundColor: const Color(0xFF1F1F1F),
-                    selectedColor: const Color(0xFF7C3AED),
+                    selectedColor: const Color(0xFF4E03D0),
                     checkmarkColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                       side: BorderSide(
                         color: isSelected
-                            ? const Color(0xFF7C3AED)
+                            ? const Color(0xFF4E03D0)
                             : const Color(0xFF2D2D2D),
                       ),
                     ),
@@ -160,7 +160,7 @@ class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen>
               builder: (context, state) {
                 if (state is ExchangeLoading) {
                   return const Center(
-                    child: CircularProgressIndicator(color: Color(0xFF7C3AED)),
+                    child: CircularProgressIndicator(color: Color(0xFF4E03D0)),
                   );
                 }
 
@@ -202,7 +202,7 @@ class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen>
     }
     return RefreshIndicator(
       onRefresh: _refresh,
-      color: const Color(0xFF7C3AED),
+      color: const Color(0xFF4E03D0),
       backgroundColor: const Color(0xFF1F1F1F),
       child: ListView.separated(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -230,7 +230,7 @@ class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen>
 
     return RefreshIndicator(
       onRefresh: _refresh,
-      color: const Color(0xFF7C3AED),
+      color: const Color(0xFF4E03D0),
       backgroundColor: const Color(0xFF1F1F1F),
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -282,7 +282,7 @@ class _ExchangeHistoryScreenState extends State<ExchangeHistoryScreen>
             ElevatedButton(
               onPressed: _refresh,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF7C3AED),
+                backgroundColor: const Color(0xFF4E03D0),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),

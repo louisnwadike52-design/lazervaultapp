@@ -231,6 +231,7 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String giftCards = '/gift-cards';
   static const String purchaseGiftCard = '/gift-cards/purchase';
   static const String giftCardPurchaseProcessing = '/gift-cards/purchase-processing';
+  static const String giftCardSellProcessing = '/gift-cards/sell-processing';
   static const String giftCardDetails = '/gift-card-details';
   static const String myGiftCards = '/gift-cards/my-cards';
   static const String sellGiftCard = '/gift-cards/sell';

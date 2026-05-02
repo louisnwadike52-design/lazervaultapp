@@ -25,6 +25,7 @@ import 'package:lazervault/src/features/gift_cards/presentation/view/gift_cards_
 import 'package:lazervault/src/features/gift_cards/presentation/view/purchase_gift_card_screen.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/gift_card_details_screen.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/gift_card_purchase_processing_screen.dart';
+import 'package:lazervault/src/features/gift_cards/presentation/view/gift_card_sell_processing_screen.dart';
 import 'package:lazervault/src/features/gift_cards/presentation/view/my_gift_cards_screen.dart';
 import 'package:lazervault/src/features/gift_cards/domain/entities/gift_card_entity.dart';
 import 'package:lazervault/src/features/gift_cards/cubit/gift_card_cubit.dart';
@@ -1399,6 +1400,17 @@ class AppRouter {
         return BlocProvider(
           create: (_) => serviceLocator<GiftCardCubit>(),
           child: GiftCardPurchaseProcessingScreen(purchaseArgs: args),
+        );
+      },
+      transition: Transition.fade,
+    ),
+    GetPage(
+      name: AppRoutes.giftCardSellProcessing,
+      page: () {
+        final sale = Get.arguments as GiftCardSale;
+        return BlocProvider(
+          create: (_) => serviceLocator<GiftCardCubit>(),
+          child: GiftCardSellProcessingScreen(initialSale: sale),
         );
       },
       transition: Transition.fade,

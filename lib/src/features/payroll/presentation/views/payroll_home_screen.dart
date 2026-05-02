@@ -13,6 +13,7 @@ import 'add_employee_screen.dart';
 import 'create_pay_run_screen.dart';
 import 'pay_run_details_screen.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 
 class PayrollHomeScreen extends StatefulWidget {
   const PayrollHomeScreen({super.key});
@@ -181,6 +182,8 @@ class _PayrollHomeScreenState extends State<PayrollHomeScreen>
               ),
             ),
           ),
+          ServiceVoiceButton(serviceName: 'payroll'),
+          SizedBox(width: 8.w),
           MicroserviceChatIcon(
             serviceName: 'Payroll',
             sourceContext: 'payroll',

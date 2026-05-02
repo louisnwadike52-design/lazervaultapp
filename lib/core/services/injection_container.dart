@@ -147,6 +147,8 @@ import 'package:lazervault/src/features/account_actions/data/repositories/accoun
 import 'package:lazervault/src/features/account_actions/presentation/cubit/account_actions_cubit.dart';
 // End Account Actions Imports
 import 'package:lazervault/src/features/currency_exchange/data/repositories/exchange_repository_impl.dart';
+import 'package:lazervault/src/features/currency_exchange/data/services/exchange_websocket_service.dart';
+import 'package:lazervault/src/features/currency_exchange/data/services/report_issue_service.dart';
 import 'package:lazervault/src/features/currency_exchange/domain/exchange_feature_config.dart';
 import 'package:lazervault/src/features/currency_exchange/domain/repositories/i_exchange_repository.dart';
 import 'package:lazervault/src/features/currency_exchange/presentation/cubit/exchange_cubit.dart';
@@ -1179,9 +1181,29 @@ Future<void> init() async {
     ),
   );
 
+  // Raw HTTP service for the Report Issue flow. Uses financial-gateway's
+  // explicit /v1/exchange/report-issue route (reverse-proxied to
+  // exchange-service's HTTP port) — not on the gRPC surface since it's a
+  // simple user-text CRUD.
+  serviceLocator.registerLazySingleton<ReportIssueService>(
+    () => ReportIssueService(
+      dio: serviceLocator<Dio>(),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+    ),
+  );
+
+  // Exchange WebSocket service — single shared socket for terminal-state
+  // push from financial-gateway. Replaces the old polling loop in the
+  // processing screen. Registered as singleton so all cubits share one
+  // connection.
+  serviceLocator.registerLazySingleton<ExchangeWebSocketService>(
+    () => ExchangeWebSocketService(),
+  );
+
   // Blocs/Cubits
   serviceLocator.registerFactory(() => ExchangeCubit(
     repository: serviceLocator<IExchangeRepository>(),
+    wsService: serviceLocator<ExchangeWebSocketService>(),
   ));
 
   serviceLocator.registerFactory(() => DashboardRatesCubit(
@@ -2599,8 +2621,6 @@ Future<void> init() async {
     listPublicGroups: serviceLocator<ListPublicGroups>(),
     getPublicGroup: serviceLocator<GetPublicGroup>(),
     joinPublicGroup: serviceLocator<JoinPublicGroup>(),
-    cacheManager: serviceLocator<SWRCacheManager>(),
-    mutationQueue: serviceLocator<MutationQueue>(),
     reportService: serviceLocator<GroupAccountReportService>(),
   ));
 

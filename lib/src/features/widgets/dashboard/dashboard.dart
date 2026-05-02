@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/src/features/widgets/app_services_builder.dart';
@@ -27,10 +29,25 @@ import 'package:lazervault/src/features/family_account/domain/entities/family_ac
 import 'package:lazervault/core/services/account_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/dashboard/widgets/dashboard_action_sheet.dart';
 import 'package:get/get.dart';
 
 class Dashboard extends StatefulWidget {
-  const Dashboard({super.key});
+  /// Switches the bottom-nav to the AI Chat tab (index 2).
+  final VoidCallback? onSwitchToAiChat;
+
+  /// Opens the voice command bottom sheet.
+  final VoidCallback? onOpenVoiceAgent;
+
+  /// Navigates to the profile / settings screen.
+  final VoidCallback? onOpenProfile;
+
+  const Dashboard({
+    super.key,
+    this.onSwitchToAiChat,
+    this.onOpenVoiceAgent,
+    this.onOpenProfile,
+  });
 
   @override
   State<Dashboard> createState() => _DashboardState();
@@ -50,6 +67,12 @@ class _DashboardState extends State<Dashboard> {
     super.initState();
     _familyInviteCubit = serviceLocator<FamilyAccountCubit>();
     _familyInviteCubit.loadPendingInvitations();
+  }
+
+  @override
+  void dispose() {
+    _swipeProgress.dispose();
+    super.dispose();
   }
 
   Future<void> _onRefresh() async {
@@ -119,12 +142,77 @@ class _DashboardState extends State<Dashboard> {
     return false;
   }
 
+  // Accumulates downward overscroll attempts at the top of the list. When it
+  // crosses [_kSwipeDownTriggerPx] within a single gesture we open the
+  // quick-action sheet. Reset on every scroll start/end so a small natural
+  // overscroll never accidentally opens the sheet.
+  double _topOverscrollAccum = 0;
+  static const double _kSwipeDownTriggerPx = 80.0;
+  // Mirrors [_topOverscrollAccum] / [_kSwipeDownTriggerPx] (clamped 0..1).
+  // A ValueNotifier so the swipe-progress indicator can rebuild on every
+  // overscroll frame without re-running the whole dashboard tree.
+  final ValueNotifier<double> _swipeProgress = ValueNotifier<double>(0);
+  // Latches when the threshold trips so we don't fire haptic repeatedly
+  // while the user keeps holding the gesture after the sheet is queued.
+  bool _swipeArmed = false;
+
+  bool _handleScrollNotification(ScrollNotification notification) {
+    if (notification.depth != 0) return false;
+    if (notification is ScrollStartNotification ||
+        notification is ScrollEndNotification) {
+      _topOverscrollAccum = 0;
+      _swipeArmed = false;
+      if (_swipeProgress.value != 0) _swipeProgress.value = 0;
+      return false;
+    }
+    if (notification is OverscrollNotification &&
+        notification.overscroll < 0 &&
+        notification.metrics.pixels <= 0) {
+      _topOverscrollAccum += notification.overscroll.abs();
+      _swipeProgress.value =
+          (_topOverscrollAccum / _kSwipeDownTriggerPx).clamp(0.0, 1.0);
+      if (!_swipeArmed && _topOverscrollAccum >= _kSwipeDownTriggerPx) {
+        _swipeArmed = true;
+        HapticFeedback.mediumImpact();
+        _openQuickActionSheet();
+      }
+    }
+    return false;
+  }
+
+  void _openQuickActionSheet() {
+    if (!mounted) return;
+    showDashboardActionSheet(
+      context,
+      onRefreshAccounts: _onRefresh,
+      onOpenAiChat: () {
+        if (!mounted) return;
+        widget.onSwitchToAiChat?.call();
+      },
+      onOpenProfile: () {
+        if (!mounted) return;
+        widget.onOpenProfile?.call();
+      },
+      onOpenVoiceAgent: () async {
+        if (!mounted) return;
+        // Refresh first so the voice agent sees fresh balances.
+        try {
+          await _onRefresh();
+        } catch (_) {
+          // Refresh failure should not block opening the voice agent.
+        }
+        if (!mounted) return;
+        widget.onOpenVoiceAgent?.call();
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
         children: [
-          RefreshIndicator(
-            onRefresh: _onRefresh,
+          NotificationListener<ScrollNotification>(
+            onNotification: _handleScrollNotification,
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(
                 parent: ClampingScrollPhysics(),
@@ -170,6 +258,19 @@ class _DashboardState extends State<Dashboard> {
                     ),
                   ),
                 ],
+              ),
+            ),
+          ),
+          // Swipe-down progress chip — appears at the top while the user is
+          // pulling and animates with their drag, then disappears once the
+          // sheet opens or the gesture ends.
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 8.h,
+            left: 0,
+            right: 0,
+            child: IgnorePointer(
+              child: Center(
+                child: _SwipeDownIndicator(progress: _swipeProgress),
               ),
             ),
           ),
@@ -744,6 +845,84 @@ class _DashboardState extends State<Dashboard> {
             ),
         ],
       ),
+    );
+  }
+}
+
+/// Pill chip rendered at the top of the dashboard while the user is pulling
+/// down. Reads from a [ValueNotifier<double>] (0..1) so only this widget
+/// rebuilds during the drag — not the whole dashboard tree.
+class _SwipeDownIndicator extends StatelessWidget {
+  final ValueListenable<double> progress;
+
+  const _SwipeDownIndicator({required this.progress});
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<double>(
+      valueListenable: progress,
+      builder: (_, value, __) {
+        if (value <= 0.0) return const SizedBox.shrink();
+        final ready = value >= 1.0;
+        final scale = 0.85 + 0.15 * value;
+        // Opacity comes in fast so even a tiny pull confirms the gesture is
+        // being read.
+        final opacity = (value * 1.6).clamp(0.0, 1.0);
+        return Opacity(
+          opacity: opacity,
+          child: Transform.translate(
+            offset: Offset(0, value * 8),
+            child: Transform.scale(
+              scale: scale,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1F1F1F),
+                  borderRadius: BorderRadius.circular(20.r),
+                  border: Border.all(
+                    color: ready
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFF3B82F6).withValues(
+                            alpha: 0.4 + 0.6 * value,
+                          ),
+                    width: 1.2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.35),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      ready
+                          ? Icons.check_circle_rounded
+                          : Icons.swipe_down_rounded,
+                      size: 14.sp,
+                      color: ready
+                          ? const Color(0xFF10B981)
+                          : Colors.white,
+                    ),
+                    SizedBox(width: 6.w),
+                    Text(
+                      ready ? 'Release for actions' : 'Pull to open actions',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

@@ -1545,6 +1545,8 @@ class _MemberDetailsSheet extends StatelessWidget {
         return const Color(0xFFF59E0B);
       case GroupMemberRole.member:
         return const Color(0xFF10B981);
+      case GroupMemberRole.viewer:
+        return const Color(0xFF6B7280);
     }
   }
 

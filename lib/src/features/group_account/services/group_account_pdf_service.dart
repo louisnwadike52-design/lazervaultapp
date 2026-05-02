@@ -693,14 +693,20 @@ class GroupAccountPdfService {
         return 'Pending';
       case PaymentStatus.processing:
         return 'Processing';
+      case PaymentStatus.awaitingVerification:
+        return 'Verifying';
       case PaymentStatus.completed:
         return 'Completed';
       case PaymentStatus.failed:
         return 'Failed';
+      case PaymentStatus.refunding:
+        return 'Refund pending';
       case PaymentStatus.refunded:
         return 'Refunded';
       case PaymentStatus.cancelled:
         return 'Cancelled';
+      case PaymentStatus.manualReview:
+        return 'Under review';
     }
   }
 
@@ -712,6 +718,8 @@ class GroupAccountPdfService {
         return 'Moderator';
       case GroupMemberRole.member:
         return 'Member';
+      case GroupMemberRole.viewer:
+        return 'Viewer';
     }
   }
 

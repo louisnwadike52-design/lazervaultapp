@@ -3,23 +3,29 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../domain/entities/recipient_entity.dart';
+import '../../data/services/exchange_websocket_service.dart';
 import '../../domain/entities/transaction_entity.dart';
 import '../../domain/repositories/i_exchange_repository.dart';
 import 'exchange_state.dart';
 
 class ExchangeCubit extends Cubit<ExchangeState> {
   final IExchangeRepository _repository;
+  final ExchangeWebSocketService _wsService;
 
   ExchangeCubit({
     required IExchangeRepository repository,
+    required ExchangeWebSocketService wsService,
   })  : _repository = repository,
+        _wsService = wsService,
         super(ExchangeInitial());
 
-  Timer? _pollTimer;
-  int _pollCount = 0;
-  static const int _maxPollAttempts = 20;
-  static const Duration _pollInterval = Duration(seconds: 2);
+  // WebSocket subscription replaces polling entirely. While the
+  // processing screen is open the cubit subscribes via
+  // ExchangeWebSocketService; backend emits a terminal event from the
+  // outbox publisher → financial-gateway Kafka consumer → WS hub →
+  // here. No timers, no hardcoded delays.
+  StreamSubscription<ExchangeWsEvent>? _wsSub;
+  String? _activeWsTxId;
 
   // Cached state for the current flow
   ExchangeMode _currentMode = ExchangeMode.convert;
@@ -236,13 +242,24 @@ class ExchangeCubit extends Cubit<ExchangeState> {
     result.fold(
       (failure) => emit(ExchangeError(failure.message)),
       (transaction) {
-        if (transaction.isCompleted) {
+        // Sync mode (the default for conversion) returns the tx already
+        // terminal — emit success immediately so the host screen jumps
+        // to the receipt. Async mode returns processing; emit
+        // ExchangeProcessing AND auto-subscribe to the WS so the inline
+        // processing sheet on the host screen flips to ExchangeSuccess
+        // when the backend pushes the terminal event.
+        final st = transaction.statusString.toLowerCase();
+        final terminal = transaction.isCompleted ||
+            transaction.isFailed ||
+            st == 'cancelled';
+        if (terminal) {
           emit(ExchangeSuccess(transaction: transaction));
         } else {
           emit(ExchangeProcessing(
             transactionId: transaction.id,
             isConversion: true,
           ));
+          subscribeToTransactionStatus(transaction.id);
         }
       },
     );
@@ -261,6 +278,9 @@ class ExchangeCubit extends Cubit<ExchangeState> {
     String? purposeOfPayment,
     String? recipientRoutingNumber,
     String? recipientAddress,
+    // "individual" or "business" — carried end-to-end to Flutterwave
+    // meta.beneficiary_type. Null falls back to individual semantics.
+    String? beneficiaryType,
   }) async {
     // Always fetch a fresh rate before finalizing to protect the user
     // from stale rates that drifted during recipient entry / PIN flow.
@@ -304,110 +324,105 @@ class ExchangeCubit extends Cubit<ExchangeState> {
       recipientEmail: recipientEmail,
       recipientRoutingNumber: recipientRoutingNumber,
       recipientAddress: recipientAddress,
+      beneficiaryType: beneficiaryType,
     );
     if (isClosed) return;
 
     result.fold(
       (failure) => emit(ExchangeError(failure.message)),
       (transaction) {
-        if (transaction.isCompleted) {
+        // Same pattern as convertCurrency: terminal RPC response goes
+        // straight to receipt; only `processing` keeps the inline
+        // processing sheet open until the WS pushes terminal.
+        final st = transaction.statusString.toLowerCase();
+        final terminal = transaction.isCompleted ||
+            transaction.isFailed ||
+            st == 'cancelled';
+        if (terminal) {
           emit(ExchangeSuccess(transaction: transaction));
         } else {
           emit(ExchangeProcessing(
             transactionId: transaction.id,
             isConversion: false,
           ));
+          subscribeToTransactionStatus(transaction.id);
         }
       },
     );
   }
 
-  /// Poll transaction status until completed/failed or max attempts.
-  void pollTransactionStatus(String transactionId) {
-    _pollCount = 0;
-    _pollTimer?.cancel();
+  /// Subscribe to the exchange WebSocket for this transaction. Called
+  /// by the processing screen in initState. On terminal event we fetch
+  /// the full transaction via RPC (the WS only carries the minimal
+  /// event, not the full receipt payload) then emit ExchangeSuccess.
+  ///
+  /// No timers, no hardcoded delays — purely event-driven. If the WS
+  /// is down the connection helper retries with exponential backoff
+  /// internally; an extended outage surfaces as a connection error
+  /// that lets the user pull-to-refresh.
+  void subscribeToTransactionStatus(String transactionId) {
+    if (transactionId.isEmpty) {
+      emit(const ExchangeError('Missing transaction id — cannot subscribe.'));
+      return;
+    }
+    _cancelWsSub();
+    _activeWsTxId = transactionId;
 
-    _pollTimer = Timer.periodic(_pollInterval, (timer) async {
-      if (isClosed) {
-        timer.cancel();
-        return;
-      }
-      _pollCount++;
+    _wsSub = _wsService.events.listen((event) async {
+      if (isClosed || _activeWsTxId != transactionId) return;
+      if (event.transactionId != transactionId) return;
+      if (!event.terminal) return;
 
-      if (_pollCount > _maxPollAttempts) {
-        timer.cancel();
-        // Emit last known state — transaction may still be processing
-        final result = await _repository.getTransactionStatus(
-          transactionId: transactionId,
-        );
-        if (isClosed) return;
-        result.fold(
-          (failure) => emit(ExchangeError(
-            'Transfer is still processing. Check your exchange history for updates.',
-          )),
-          (tx) {
-            if (tx.isCompleted || tx.isFailed) {
-              emit(ExchangeSuccess(transaction: tx));
-            } else {
-              emit(ExchangeError(
-                'Transfer is still processing. Check your exchange history for updates.',
-              ));
-            }
-          },
-        );
-        return;
-      }
-
+      // Terminal event arrived. Fetch the full transaction so the
+      // receipt has every backend-authoritative field. If the fetch
+      // fails (rare — network blip), surface the error to the UI
+      // rather than fabricate a stub transaction; the user can
+      // pull-to-refresh on the processing screen to retry.
       final result = await _repository.getTransactionStatus(
         transactionId: transactionId,
       );
-      if (isClosed) {
-        timer.cancel();
-        return;
-      }
-
+      if (isClosed) return;
       result.fold(
-        (failure) {
-          // Don't stop polling on transient errors
-          emit(ExchangeStatusPolled(
-            transaction: CurrencyTransaction(
-              id: transactionId,
-              fromCurrency: _fromCurrency,
-              toCurrency: _toCurrency,
-              fromAmount: _amount,
-              toAmount: 0,
-              exchangeRate: 0,
-              fees: 0,
-              totalCost: 0,
-              recipient: Recipient(
-                id: '',
-                name: '',
-                email: '',
-                accountNumber: '',
-                bankName: '',
-                countryCode: '',
-                currency: '',
-                createdAt: DateTime.now(),
-              ),
-              status: TransactionStatus.processing,
-              createdAt: DateTime.now(),
-            ),
-            pollCount: _pollCount,
-          ));
-        },
-        (transaction) {
-          if (transaction.isCompleted || transaction.isFailed) {
-            timer.cancel();
-            emit(ExchangeSuccess(transaction: transaction));
-          } else {
-            emit(ExchangeStatusPolled(
-              transaction: transaction,
-              pollCount: _pollCount,
-            ));
-          }
+        (failure) => emit(ExchangeError(
+          'Could not load receipt: ${failure.message}. Pull to refresh.',
+        )),
+        (tx) {
+          _activeWsTxId = null;
+          emit(ExchangeSuccess(transaction: tx));
         },
       );
     });
+
+    // Tell the WS service to connect/subscribe for this user. Safe
+    // to call repeatedly — service maintains a single shared socket.
+    _wsService.ensureConnected();
+  }
+
+  /// Manual fetch for pull-to-refresh on the processing screen — if the
+  /// user suspects the WS dropped an event, they can force an RPC
+  /// reconcile. Still no polling loop; this fires exactly once per pull.
+  Future<void> refreshTransactionStatus() async {
+    final txId = _activeWsTxId;
+    if (txId == null) return;
+    final result = await _repository.getTransactionStatus(
+      transactionId: txId,
+    );
+    if (isClosed) return;
+    result.fold(
+      (_) {/* transient — leave state as-is */},
+      (tx) {
+        final st = tx.statusString.toLowerCase();
+        if (tx.isCompleted || tx.isFailed || st == 'cancelled') {
+          _activeWsTxId = null;
+          emit(ExchangeSuccess(transaction: tx));
+        }
+      },
+    );
+  }
+
+  void _cancelWsSub() {
+    _wsSub?.cancel();
+    _wsSub = null;
   }
 
   /// Load exchange history. Fetches all transactions; UI tabs handle type filtering.
@@ -459,7 +474,7 @@ class ExchangeCubit extends Cubit<ExchangeState> {
 
   @override
   Future<void> close() {
-    _pollTimer?.cancel();
+    _cancelWsSub();
     return super.close();
   }
 }

@@ -12,10 +12,97 @@ enum GroupVisibility {
   public,
 }
 
+/// Role granted to a member of a group.
+///
+/// Permission boundaries (enforced server-side; the Flutter side mirrors
+/// them in [GroupRolePermissions] for UI affordance gating only):
+///
+///   admin     — full control: edit + delete group, payouts, settings,
+///               and ALL moderator capabilities.
+///   moderator — day-to-day management: invite/remove non-admin members,
+///               edit non-financial group metadata. CANNOT delete the
+///               group, change another member's role to admin, or
+///               initiate payouts.
+///   member    — participate: contribute, view, no management.
+///   viewer    — read-only.
 enum GroupMemberRole {
   admin,
   moderator,
   member,
+  viewer,
+}
+
+/// Discrete actions a UI surface might want to enable/disable. Mirrors
+/// the server-side `internal/service/group_permissions.go` matrix so the
+/// Flutter app can hide affordances the user can't use — but the SERVER
+/// is still the source of truth and will reject any request that
+/// circumvents the UI gate.
+enum GroupAction {
+  editGroup,
+  deleteGroup,
+  inviteMember,
+  removeMember,
+  changeMemberRole,
+  promoteToAdmin,
+  approveJoinRequest,
+  createContribution,
+  editContribution,
+  deleteContribution,
+  makeContribution,
+  initiatePayout,
+  advancePayoutCycle,
+  viewGroup,
+  viewActivity,
+}
+
+/// UI-side mirror of the server's role-action matrix. Update both sides
+/// in lockstep; an out-of-sync table here is a UX bug, not a security
+/// bug (server still enforces).
+class GroupRolePermissions {
+  static const Map<GroupMemberRole, Set<GroupAction>> _allow = {
+    GroupMemberRole.admin: {
+      GroupAction.editGroup,
+      GroupAction.deleteGroup,
+      GroupAction.inviteMember,
+      GroupAction.removeMember,
+      GroupAction.changeMemberRole,
+      GroupAction.promoteToAdmin,
+      GroupAction.approveJoinRequest,
+      GroupAction.createContribution,
+      GroupAction.editContribution,
+      GroupAction.deleteContribution,
+      GroupAction.makeContribution,
+      GroupAction.initiatePayout,
+      GroupAction.advancePayoutCycle,
+      GroupAction.viewGroup,
+      GroupAction.viewActivity,
+    },
+    GroupMemberRole.moderator: {
+      GroupAction.editGroup,
+      GroupAction.inviteMember,
+      GroupAction.removeMember,
+      GroupAction.changeMemberRole,
+      GroupAction.approveJoinRequest,
+      GroupAction.makeContribution,
+      GroupAction.viewGroup,
+      GroupAction.viewActivity,
+    },
+    GroupMemberRole.member: {
+      GroupAction.makeContribution,
+      GroupAction.viewGroup,
+      GroupAction.viewActivity,
+    },
+    GroupMemberRole.viewer: {
+      GroupAction.viewGroup,
+      GroupAction.viewActivity,
+    },
+  };
+
+  /// True iff [role] is allowed to perform [action]. Default-deny.
+  static bool can(GroupMemberRole? role, GroupAction action) {
+    if (role == null) return false;
+    return _allow[role]?.contains(action) ?? false;
+  }
 }
 
 enum GroupMemberStatus {
@@ -35,10 +122,23 @@ enum ContributionStatus {
 enum PaymentStatus {
   pending,
   processing,
+  // Money may have moved at accounts-service but the response was lost or
+  // ambiguous. The backend supervisor is reconciling — outcome will land
+  // at completed | failed | refunding | manual_review. UI should treat
+  // this as "still in flight" and refuse to start a fresh payment with a
+  // different idempotency key for the same intent.
+  awaitingVerification,
   completed,
   failed,
   cancelled,
+  // Phase 3 of the payment failed AFTER a successful debit. The backend
+  // rollback processor is issuing the compensating credit. UI should
+  // surface this clearly: the user WILL be refunded but it isn't done yet.
+  refunding,
   refunded,
+  // Reconciliation exhausted automated retries. An operator must
+  // intervene. UI should show "we're looking into it" / contact-support.
+  manualReview,
 }
 
 enum ContributionType {
@@ -412,6 +512,8 @@ extension GroupAccountPermissions on GroupAccount {
         return 'Moderator';
       case GroupMemberRole.member:
         return 'Member';
+      case GroupMemberRole.viewer:
+        return 'Viewer';
     }
   }
 }
@@ -1117,6 +1219,8 @@ extension GroupMemberRoleExtension on GroupMemberRole {
         return 'Moderator';
       case GroupMemberRole.member:
         return 'Member';
+      case GroupMemberRole.viewer:
+        return 'Viewer';
     }
   }
 }
@@ -1158,15 +1262,40 @@ extension PaymentStatusExtension on PaymentStatus {
         return 'Pending';
       case PaymentStatus.processing:
         return 'Processing';
+      case PaymentStatus.awaitingVerification:
+        return 'Verifying';
       case PaymentStatus.completed:
         return 'Completed';
       case PaymentStatus.failed:
         return 'Failed';
       case PaymentStatus.cancelled:
         return 'Cancelled';
+      case PaymentStatus.refunding:
+        return 'Refund pending';
       case PaymentStatus.refunded:
         return 'Refunded';
+      case PaymentStatus.manualReview:
+        return 'Under review';
     }
+  }
+
+  /// True when the status is in-flight at the backend (non-terminal).
+  bool get isInFlight {
+    switch (this) {
+      case PaymentStatus.pending:
+      case PaymentStatus.processing:
+      case PaymentStatus.awaitingVerification:
+      case PaymentStatus.refunding:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  /// True when the user has been (or will be) refunded — money is being
+  /// returned, the contribution should NOT be considered paid.
+  bool get isRefundPath {
+    return this == PaymentStatus.refunding || this == PaymentStatus.refunded;
   }
 }
 

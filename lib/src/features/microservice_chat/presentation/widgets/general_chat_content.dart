@@ -11,9 +11,11 @@ import 'package:lazervault/core/utils/pin_mask_utils.dart';
 import 'package:lazervault/src/features/microservice_chat/cubit/general_chat_cubit.dart';
 import 'package:lazervault/src/features/microservice_chat/cubit/general_chat_state.dart';
 import 'package:lazervault/src/features/microservice_chat/domain/entities/general_chat_message_entity.dart';
+import 'bill_receipt_deeplink.dart';
 import 'chat_media_bubble.dart';
 import 'chat_media_input_bar.dart';
 import 'chat_receipt_card.dart';
+import 'quick_action_chips.dart';
 
 class GeneralChatContent extends StatefulWidget {
   const GeneralChatContent({super.key});
@@ -439,10 +441,14 @@ class _GeneralChatContentState extends State<GeneralChatContent>
     }
 
     final maxBubbleWidth = MediaQuery.of(context).size.width * 0.72;
+    // Bill-payment quick-action chips render beneath the assistant bubble on
+    // the first Bills Hub turn. Tapping a chip sends that label as the next
+    // user message — saves the user typing "Pay electricity" verbatim.
+    final quickActions = (!isUser)
+        ? (message.metadata?['quick_actions'] as List?)?.whereType<String>().toList(growable: false)
+        : null;
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
+    final bubbleRow = Row(
         mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -526,6 +532,15 @@ class _GeneralChatContentState extends State<GeneralChatContent>
                   // Receipt card for successful transfers
                   if (!isUser && message.metadata?['receipt_data'] != null)
                     _buildReceiptCard(message.metadata!['receipt_data']),
+                  // "Open full receipt" deep-link under any bill purchase.
+                  // Routes to the existing Flutter receipt screen for the bill type.
+                  if (!isUser &&
+                      message.metadata?['bill_type'] is String &&
+                      message.metadata?['last_payment_id'] is String)
+                    BillReceiptDeepLinkButton(
+                      billType: message.metadata!['bill_type'] as String,
+                      paymentId: message.metadata!['last_payment_id'] as String,
+                    ),
                   if (message.serviceRoutedTo != null && message.serviceRoutedTo != 'gateway') ...[
                     const SizedBox(height: 4),
                     Text(
@@ -546,6 +561,21 @@ class _GeneralChatContentState extends State<GeneralChatContent>
             const SizedBox(width: 8),
             _buildUserAvatar(),
           ],
+        ],
+      );
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          bubbleRow,
+          if (quickActions != null && quickActions.isNotEmpty)
+            QuickActionChips(
+              actions: quickActions,
+              onTap: (label) =>
+                  context.read<GeneralChatCubit>().sendMessage(label),
+            ),
         ],
       ),
     );

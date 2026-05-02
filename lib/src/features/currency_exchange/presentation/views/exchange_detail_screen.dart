@@ -1,401 +1,443 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:uuid/uuid.dart';
+
 import 'package:lazervault/core/types/app_routes.dart';
-import '../cubit/exchange_cubit.dart';
-import '../cubit/exchange_state.dart';
+
 import '../../domain/entities/transaction_entity.dart';
 import '../../services/exchange_pdf_service.dart';
 
-class ExchangeDetailScreen extends StatelessWidget {
+/// Transaction detail for a past exchange — opened from the history list.
+/// Visually identical to the post-transaction receipt: LazerVault logo
+/// top-right, international/globe icon, QR code, and Download/Share
+/// actions. No status timeline, no Repeat Transaction CTA — keep the UI
+/// quiet and receipt-like so the user doesn't get two different layouts
+/// for the same transaction surface.
+class ExchangeDetailScreen extends StatefulWidget {
   const ExchangeDetailScreen({super.key});
 
-  CurrencyTransaction? get _transaction => Get.arguments is CurrencyTransaction
-      ? Get.arguments as CurrencyTransaction
-      : null;
+  @override
+  State<ExchangeDetailScreen> createState() => _ExchangeDetailScreenState();
+}
+
+class _ExchangeDetailScreenState extends State<ExchangeDetailScreen> {
+  CurrencyTransaction? _tx;
+  bool _isDownloading = false;
+  bool _isSharing = false;
+  final GlobalKey _qrKey = GlobalKey();
+  final Uuid _uuid = const Uuid();
+  String? _qrData;
+
+  @override
+  void initState() {
+    super.initState();
+    final arg = Get.arguments;
+    _tx = arg is CurrencyTransaction ? arg : null;
+    _generateQrData();
+  }
+
+  void _generateQrData() {
+    final tx = _tx;
+    if (tx == null) {
+      _qrData = null;
+      return;
+    }
+    final ref = tx.referenceNumber ?? tx.transactionHash ?? tx.id;
+    final reference = ref.isNotEmpty ? ref : _uuid.v4();
+    final payload = {
+      'type': tx.type.isConversionLike
+          ? 'exchange.conversion'
+          : 'exchange.international',
+      'ref': reference,
+      'from': tx.fromAmount.toStringAsFixed(2),
+      'from_currency': tx.fromCurrency,
+      'to': tx.toAmount.toStringAsFixed(2),
+      'to_currency': tx.toCurrency,
+      'rate': tx.exchangeRate.toStringAsFixed(6),
+      if (tx.recipientName.isNotEmpty) 'recipient': tx.recipientName,
+      'date': tx.createdAt.toIso8601String(),
+    };
+    _qrData = jsonEncode(payload);
+  }
+
+  Future<void> _downloadReceipt() async {
+    if (_isDownloading || _tx == null) return;
+    setState(() => _isDownloading = true);
+    try {
+      final path = await ExchangePdfService.downloadReceipt(transaction: _tx!);
+      _toast('Receipt saved to $path', success: true);
+    } catch (_) {
+      _toast('Could not save receipt. Please try again.', success: false);
+    } finally {
+      if (mounted) setState(() => _isDownloading = false);
+    }
+  }
+
+  Future<void> _shareReceipt() async {
+    if (_isSharing || _tx == null) return;
+    setState(() => _isSharing = true);
+    try {
+      await ExchangePdfService.shareReceipt(transaction: _tx!);
+    } catch (_) {
+      _toast('Could not share receipt. Please try again.', success: false);
+    } finally {
+      if (mounted) setState(() => _isSharing = false);
+    }
+  }
+
+  void _toast(String message, {required bool success}) {
+    Get.snackbar(
+      success ? 'Done' : 'Failed',
+      message,
+      backgroundColor:
+          success ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+      colorText: Colors.white,
+      snackPosition: SnackPosition.BOTTOM,
+      margin: EdgeInsets.all(16.w),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final tx = _transaction;
-    if (tx == null) {
-      return Scaffold(
-        backgroundColor: const Color(0xFF0A0A0A),
-        body: Center(
+    final tx = _tx;
+    if (tx == null) return _buildMissingData();
+
+    return Scaffold(
+      backgroundColor: const Color(0xFF0A0A0A),
+      body: SafeArea(
+        // Flex layout fills the viewport height with Spacers so the
+        // receipt feels balanced rather than crammed. No scroll — content
+        // is tuned to fit on a single screen.
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20.w),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, color: Color(0xFFEF4444), size: 48),
-              const SizedBox(height: 16),
-              const Text('Transaction data unavailable', style: TextStyle(color: Colors.white)),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () => Get.offAllNamed(AppRoutes.exchangeHome),
-                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF7C3AED)),
-                child: const Text('Back to Exchange', style: TextStyle(color: Colors.white)),
+              _buildTopBar(),
+              const Spacer(flex: 1),
+              _buildHeader(tx),
+              const Spacer(flex: 2),
+              _buildDetailsCard(tx),
+              const Spacer(flex: 3),
+              _buildActions(),
+              SizedBox(height: 12.h),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTopBar() {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(12.w, 2.h, 12.w, 0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton(
+            onPressed: () => Get.back(),
+            icon: Icon(Icons.arrow_back, color: Colors.white, size: 22.sp),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+          Image.asset(
+            'assets/images/logo.png',
+            width: 28.w,
+            height: 28.w,
+            errorBuilder: (_, __, ___) => Icon(
+              Icons.shield_outlined,
+              color: const Color(0xFF4E03D0),
+              size: 24.sp,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader(CurrencyTransaction tx) {
+    final isConversion = tx.type.isConversionLike;
+    final accent = _statusColor(tx);
+
+    return Column(
+      children: [
+        Container(
+          width: 56.w,
+          height: 56.w,
+          decoration: BoxDecoration(
+            color: accent.withValues(alpha: 0.15),
+            shape: BoxShape.circle,
+            border:
+                Border.all(color: accent.withValues(alpha: 0.35), width: 1.4),
+          ),
+          child: Icon(_statusIcon(tx), color: accent, size: 28.sp),
+        ),
+        SizedBox(height: 14.h),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(
+                '${_code(tx.fromCurrency)}${tx.fromAmount.toStringAsFixed(2)}',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 26.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10.w),
+                child: Icon(Icons.arrow_forward,
+                    size: 18.sp, color: const Color(0xFF8E8E93)),
+              ),
+              Text(
+                '${_code(tx.toCurrency)}${tx.toAmount.toStringAsFixed(2)}',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFFE5E7EB),
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),
         ),
-      );
-    }
-    final isConversion = tx.type.isConversionLike;
-
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          onPressed: () => Get.back(),
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-        ),
-        title: const Text(
-          'Transaction Details',
-          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
-        ),
-        centerTitle: true,
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    // Status header
-                    _buildStatusHeader(tx),
-                    const SizedBox(height: 24),
-
-                    // Amount card
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1F1F1F),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFF2D2D2D)),
-                      ),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Column(
-                                children: [
-                                  const Text('Sent', style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12)),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    tx.formattedFromAmount,
-                                    style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-                                  ),
-                                ],
-                              ),
-                              const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 20),
-                                child: Icon(Icons.arrow_forward, color: Color(0xFF7C3AED), size: 24),
-                              ),
-                              Column(
-                                children: [
-                                  Text(
-                                    isConversion ? 'Received' : 'Converted',
-                                    style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    tx.formattedToAmount,
-                                    style: const TextStyle(color: Color(0xFF10B981), fontSize: 20, fontWeight: FontWeight.bold),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Details card
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1F1F1F),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFF2D2D2D)),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Transaction Details',
-                            style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
-                          ),
-                          const SizedBox(height: 16),
-                          _buildRow('Type', isConversion ? 'Wallet Conversion' : 'International Transfer'),
-                          _buildRow('Exchange Rate', '1 ${tx.fromCurrency} = ${tx.exchangeRate.toStringAsFixed(4)} ${tx.toCurrency}'),
-                          if (tx.fees > 0) _buildRow('Fee', tx.formattedFees),
-                          _buildRow('Total Cost', tx.formattedTotalCost),
-                          if (tx.referenceNumber != null) _buildRow('Reference', tx.referenceNumber!),
-                          _buildRow('Date', DateFormat('MMM d, yyyy HH:mm:ss').format(tx.createdAt)),
-                          if (tx.completedAt != null)
-                            _buildRow('Completed', DateFormat('MMM d, yyyy HH:mm:ss').format(tx.completedAt!)),
-                          _buildRow('Status', tx.statusString),
-                        ],
-                      ),
-                    ),
-
-                    // Recipient details (international)
-                    if (!isConversion && tx.recipientName.isNotEmpty) ...[
-                      const SizedBox(height: 16),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1F1F1F),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFF2D2D2D)),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Recipient',
-                              style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
-                            ),
-                            const SizedBox(height: 12),
-                            _buildRow('Name', tx.recipient.name),
-                            if (tx.recipient.accountNumber.isNotEmpty)
-                              _buildRow('Account', tx.recipient.accountNumber),
-                            if (tx.recipient.bankName.isNotEmpty)
-                              _buildRow('Bank', tx.recipient.bankName),
-                            if (tx.recipient.swiftCode != null && tx.recipient.swiftCode!.isNotEmpty)
-                              _buildRow('SWIFT/BIC', tx.recipient.swiftCode!),
-                          ],
-                        ),
-                      ),
-                    ],
-
-                    // Status timeline
-                    const SizedBox(height: 16),
-                    _buildStatusTimeline(tx),
-
-                    // Failure reason
-                    if (tx.isFailed && tx.failureReason != null) ...[
-                      const SizedBox(height: 16),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEF4444).withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('Failure Reason', style: TextStyle(color: Color(0xFFEF4444), fontSize: 12, fontWeight: FontWeight.w600)),
-                            const SizedBox(height: 4),
-                            Text(tx.failureReason!, style: const TextStyle(color: Color(0xFFEF4444), fontSize: 13)),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-
-            // Actions
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  if (tx.isCompleted)
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () => _downloadReceipt(context, tx),
-                            icon: const Icon(Icons.download, size: 18),
-                            label: const Text('Download'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.white,
-                              side: const BorderSide(color: Color(0xFF2D2D2D)),
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () => _shareReceipt(context, tx),
-                            icon: const Icon(Icons.share, size: 18),
-                            label: const Text('Share'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.white,
-                              side: const BorderSide(color: Color(0xFF2D2D2D)),
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () => _repeatTransaction(context, tx),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF7C3AED),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      child: const Text(
-                        'Repeat Transaction',
-                        style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatusHeader(CurrencyTransaction tx) {
-    Color color;
-    IconData icon;
-    String label;
-
-    switch (tx.status) {
-      case TransactionStatus.completed:
-        color = const Color(0xFF10B981);
-        icon = Icons.check_circle;
-        label = 'Completed';
-      case TransactionStatus.pending:
-      case TransactionStatus.processing:
-        color = const Color(0xFFFB923C);
-        icon = Icons.schedule;
-        label = 'Processing';
-      case TransactionStatus.failed:
-        color = const Color(0xFFEF4444);
-        icon = Icons.cancel;
-        label = 'Failed';
-      case TransactionStatus.cancelled:
-        color = const Color(0xFF6B7280);
-        icon = Icons.block;
-        label = 'Cancelled';
-    }
-
-    return Column(
-      children: [
-        Icon(icon, color: color, size: 48),
-        const SizedBox(height: 8),
+        SizedBox(height: 10.h),
         Text(
-          label,
-          style: TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.bold),
+          _headlineForStatus(tx, isConversion: isConversion),
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w500,
+          ),
         ),
+        SizedBox(height: 4.h),
+        Text(
+          '${_statusLabel(tx)} · ${_formatDateTime(tx.createdAt)}',
+          style: GoogleFonts.inter(
+            fontSize: 12.sp,
+            color: const Color(0xFF8E8E93),
+          ),
+        ),
+        if (tx.isFailed && (tx.failureReason?.isNotEmpty ?? false)) ...[
+          SizedBox(height: 8.h),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+            child: Text(
+              tx.failureReason!,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                color: const Color(0xFFEF4444),
+                fontSize: 11.sp,
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }
 
-  Widget _buildStatusTimeline(CurrencyTransaction tx) {
+  Widget _buildDetailsCard(CurrencyTransaction tx) {
+    final isConversion = tx.type.isConversionLike;
+    final reference = tx.referenceNumber ?? tx.transactionHash ?? tx.id;
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF2D2D2D)),
+        borderRadius: BorderRadius.circular(12.r),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Status Timeline',
-            style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
+          Padding(
+            padding: EdgeInsets.fromLTRB(16.w, 14.w, 16.w, 10.h),
+            child: Text(
+              'Details',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
-          const SizedBox(height: 16),
-          _buildTimelineItem('Created', tx.createdAt, true),
-          _buildTimelineItem(
-            'Processing',
-            tx.isProcessing || tx.isCompleted ? tx.createdAt : null,
-            tx.isProcessing || tx.isCompleted,
+          _row('Type',
+              isConversion ? 'Conversion' : 'International Transfer'),
+          _row('You sent',
+              '${_code(tx.fromCurrency)}${tx.fromAmount.toStringAsFixed(2)}'),
+          _row(
+            isConversion ? 'You received' : 'Recipient gets',
+            '${_code(tx.toCurrency)}${tx.toAmount.toStringAsFixed(2)}',
           ),
-          _buildTimelineItem(
-            tx.isFailed ? 'Failed' : 'Completed',
-            tx.completedAt,
-            tx.isCompleted || tx.isFailed,
+          _row(
+            'Rate',
+            '1 ${tx.fromCurrency} = ${tx.exchangeRate.toStringAsFixed(4)} ${tx.toCurrency}',
           ),
+          if (tx.fees > 0)
+            _row('Fee',
+                '${_code(tx.fromCurrency)}${tx.fees.toStringAsFixed(2)}'),
+          _row('Total debit',
+              '${_code(tx.fromCurrency)}${tx.totalCost.toStringAsFixed(2)}'),
+          if (!isConversion && tx.recipientName.isNotEmpty)
+            _row('Recipient', tx.recipientName),
+          if (!isConversion && tx.recipient.bankName.isNotEmpty)
+            _row('Bank', tx.recipient.bankName),
+          if (!isConversion && tx.recipient.accountNumber.isNotEmpty)
+            _row('Account', _mask(tx.recipient.accountNumber)),
+          if (!isConversion &&
+              tx.recipient.swiftCode != null &&
+              tx.recipient.swiftCode!.isNotEmpty)
+            _row('SWIFT/BIC', tx.recipient.swiftCode!),
+          if (!isConversion && tx.recipient.countryCode.isNotEmpty)
+            _row('Country', tx.recipient.countryCode),
+          _row('Status', _statusLabel(tx)),
+          SizedBox(height: 8.h),
+          Divider(
+            color: const Color(0xFF2D2D2D),
+            height: 1,
+            indent: 16.w,
+            endIndent: 16.w,
+          ),
+          SizedBox(height: 14.h),
+          if (_qrData != null)
+            Center(
+              child: RepaintBoundary(
+                key: _qrKey,
+                child: QrImageView(
+                  data: _qrData!,
+                  version: QrVersions.auto,
+                  size: 96.w,
+                  backgroundColor: Colors.transparent,
+                  dataModuleStyle:
+                      const QrDataModuleStyle(color: Colors.white),
+                  eyeStyle: const QrEyeStyle(color: Colors.white),
+                ),
+              ),
+            ),
+          SizedBox(height: 6.h),
+          if (reference.isNotEmpty)
+            Center(
+              child: Text(
+                reference,
+                style: GoogleFonts.robotoMono(
+                  fontSize: 10.sp,
+                  color: const Color(0xFF8E8E93),
+                  letterSpacing: 0.4,
+                ),
+              ),
+            ),
+          SizedBox(height: 14.h),
         ],
       ),
     );
   }
 
-  Widget _buildTimelineItem(String label, DateTime? time, bool isActive) {
+  Widget _buildActions() {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Column(
-          children: [
-            Container(
-              width: 12,
-              height: 12,
-              decoration: BoxDecoration(
-                color: isActive ? const Color(0xFF7C3AED) : const Color(0xFF2D2D2D),
-                borderRadius: BorderRadius.circular(6),
-              ),
-            ),
-            Container(
-              width: 2,
-              height: 24,
-              color: isActive ? const Color(0xFF7C3AED).withValues(alpha: 0.3) : const Color(0xFF2D2D2D),
-            ),
-          ],
+        Expanded(
+          child: _actionButton(
+            icon: _isDownloading ? null : Icons.download_outlined,
+            label: 'Download',
+            isLoading: _isDownloading,
+            onTap: _downloadReceipt,
+          ),
         ),
-        const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                color: isActive ? Colors.white : const Color(0xFF6B7280),
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            if (time != null)
-              Text(
-                DateFormat('MMM d, HH:mm').format(time),
-                style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 11),
-              ),
-          ],
+        SizedBox(width: 10.w),
+        Expanded(
+          child: _actionButton(
+            icon: _isSharing ? null : Icons.share_outlined,
+            label: 'Share',
+            isLoading: _isSharing,
+            onTap: _shareReceipt,
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildRow(String label, String value) {
+  Widget _actionButton({
+    IconData? icon,
+    required String label,
+    required VoidCallback onTap,
+    bool isLoading = false,
+  }) {
+    return Material(
+      color: const Color(0xFF1F1F1F),
+      borderRadius: BorderRadius.circular(10.r),
+      child: InkWell(
+        onTap: isLoading ? null : onTap,
+        borderRadius: BorderRadius.circular(10.r),
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 9.h),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (isLoading)
+                SizedBox(
+                  width: 14.sp,
+                  height: 14.sp,
+                  child: const CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              else if (icon != null)
+                Icon(icon, color: Colors.white, size: 16.sp),
+              if (!isLoading && icon != null) SizedBox(width: 6.w),
+              Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _row(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 7.h),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 13)),
-          const SizedBox(width: 16),
-          Flexible(
+          SizedBox(
+            width: 118.w,
+            child: Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 13.sp,
+                color: const Color(0xFF8E8E93),
+              ),
+            ),
+          ),
+          Expanded(
             child: Text(
               value,
-              style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
               textAlign: TextAlign.right,
+              style: GoogleFonts.inter(
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -403,41 +445,127 @@ class ExchangeDetailScreen extends StatelessWidget {
     );
   }
 
-  void _repeatTransaction(BuildContext context, CurrencyTransaction tx) {
-    final cubit = context.read<ExchangeCubit>();
-    cubit.setCurrencyPair(tx.fromCurrency, tx.toCurrency);
-    cubit.setMode(
-      tx.recipient.name.isEmpty ? ExchangeMode.convert : ExchangeMode.sendAbroad,
+  String _code(String currency) =>
+      currency.isEmpty ? '' : '${currency.toUpperCase()} ';
+
+  /// Backend collapses refunded/refund_pending/refund_failed onto the
+  /// Flutter enum (refunded→cancelled, refund_failed→failed, etc). Read
+  /// failure_reason to recover the correct label.
+  _RefundFlavour _refundFlavour(CurrencyTransaction tx) {
+    final reason = (tx.failureReason ?? '').toLowerCase();
+    final isRefundedKeyword = reason.contains('refund') ||
+        reason.contains('reversed') ||
+        reason.contains('released');
+    if (_isCancelled(tx)) return _RefundFlavour.refunded;
+    if ((tx.isFailed) && isRefundedKeyword) {
+      return reason.contains('pending')
+          ? _RefundFlavour.refundPending
+          : _RefundFlavour.refunded;
+    }
+    return _RefundFlavour.none;
+  }
+
+  bool _isCancelled(CurrencyTransaction tx) =>
+      tx.statusString.toLowerCase() == 'cancelled';
+
+  String _headlineForStatus(CurrencyTransaction tx,
+      {required bool isConversion}) {
+    final refund = _refundFlavour(tx);
+    if (refund == _RefundFlavour.refunded) return 'Transaction refunded';
+    if (refund == _RefundFlavour.refundPending) return 'Refund in progress';
+    if (tx.isCompleted) {
+      return isConversion ? 'Conversion successful' : 'Transfer initiated';
+    }
+    if (tx.isFailed) return 'Transaction failed';
+    if (tx.isProcessing) return 'Processing your transfer';
+    if (tx.isPending) return 'Transfer scheduled';
+    return 'Transaction received';
+  }
+
+  String _statusLabel(CurrencyTransaction tx) {
+    final refund = _refundFlavour(tx);
+    if (refund == _RefundFlavour.refunded) return 'Refunded';
+    if (refund == _RefundFlavour.refundPending) return 'Refund Pending';
+    if (tx.isCompleted) return 'Completed';
+    if (tx.isFailed) return 'Failed';
+    if (tx.isProcessing) return 'Processing';
+    if (tx.isPending) return 'Pending';
+    return tx.statusString;
+  }
+
+  Color _statusColor(CurrencyTransaction tx) {
+    final refund = _refundFlavour(tx);
+    if (refund == _RefundFlavour.refunded) return const Color(0xFF60A5FA);
+    if (refund == _RefundFlavour.refundPending) return const Color(0xFFFB923C);
+    if (tx.isCompleted) return const Color(0xFF10B981);
+    if (tx.isFailed) return const Color(0xFFEF4444);
+    return const Color(0xFF4E03D0);
+  }
+
+  IconData _statusIcon(CurrencyTransaction tx) {
+    final refund = _refundFlavour(tx);
+    if (refund == _RefundFlavour.refunded) return Icons.undo;
+    if (refund == _RefundFlavour.refundPending) return Icons.hourglass_bottom;
+    if (tx.isCompleted) return Icons.check;
+    if (tx.isFailed) return Icons.close;
+    return Icons.hourglass_bottom;
+  }
+
+  String _formatDateTime(DateTime dt) {
+    final d = '${dt.day}/${dt.month}/${dt.year}';
+    final t =
+        '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+    return '$d $t';
+  }
+
+  String _mask(String account) {
+    if (account.length <= 4) return account;
+    return '•••• ${account.substring(account.length - 4)}';
+  }
+
+  Widget _buildMissingData() {
+    return Scaffold(
+      backgroundColor: const Color(0xFF0A0A0A),
+      body: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.all(24.w),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.error_outline,
+                    color: const Color(0xFFEF4444), size: 48.sp),
+                SizedBox(height: 12.h),
+                Text(
+                  'Transaction data unavailable',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 16.sp,
+                  ),
+                ),
+                SizedBox(height: 20.h),
+                ElevatedButton(
+                  onPressed: () => Get.offAllNamed(AppRoutes.exchangeHome),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF4E03D0),
+                  ),
+                  child: Text(
+                    'Back to Exchange',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
-    Get.toNamed(AppRoutes.exchangeHome);
-  }
-
-  Future<void> _downloadReceipt(BuildContext context, CurrencyTransaction tx) async {
-    try {
-      final path = await ExchangePdfService.downloadReceipt(transaction: tx);
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Receipt saved to $path'), backgroundColor: const Color(0xFF10B981)),
-        );
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed: $e'), backgroundColor: const Color(0xFFEF4444)),
-        );
-      }
-    }
-  }
-
-  Future<void> _shareReceipt(BuildContext context, CurrencyTransaction tx) async {
-    try {
-      await ExchangePdfService.shareReceipt(transaction: tx);
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed: $e'), backgroundColor: const Color(0xFFEF4444)),
-        );
-      }
-    }
   }
 }
+
+// Same three-way split as the receipt screen — kept private to each file
+// so we don't leak a UI enum into the domain layer.
+enum _RefundFlavour { none, refunded, refundPending }

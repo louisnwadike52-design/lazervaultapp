@@ -13,6 +13,7 @@ import 'create_payment_session_screen.dart';
 import 'nfc_reader_screen.dart';
 import 'payment_history_screen.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 
 class ContactlessPaymentHomeScreen extends StatelessWidget {
   const ContactlessPaymentHomeScreen({super.key});
@@ -193,6 +194,8 @@ class _ContactlessPaymentHomeViewState
               ],
             ),
           ),
+          ServiceVoiceButton(serviceName: 'transfers'),
+          SizedBox(width: 8.w),
           MicroserviceChatIcon(
             serviceName: 'Contactless Pay',
             sourceContext: 'transfers',

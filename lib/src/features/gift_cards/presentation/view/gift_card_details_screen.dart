@@ -22,12 +22,18 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import 'package:intl/intl.dart';
 
 import 'package:lazervault/src/features/widgets/bill_receipt_qr_block.dart';
+import '../../../account_cards_summary/services/balance_websocket_service.dart';
+import '../../cubit/gift_card_cubit.dart';
+import '../../cubit/gift_card_state.dart';
 import '../../domain/entities/gift_card_entity.dart';
 import '../../services/gift_card_pdf_service.dart';
 
@@ -46,6 +52,16 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
   bool _isDownloading = false;
   bool _isSharing = false;
 
+  // Live row — starts at the constructor value and is replaced when
+  // refreshGiftCardDetails (via WS event or pull-to-refresh) emits a
+  // fresher GiftCard for the same id. Falls back to widget.giftCard.
+  GiftCard? _liveCard;
+
+  // Live updates via balance WebSocket. Filtered to events matching
+  // this card's reference / id; on match we refetch via the cubit so
+  // the receipt re-renders with the terminal status + redemption code.
+  StreamSubscription<BalanceUpdateEvent>? _balanceSub;
+
   @override
   void initState() {
     super.initState();
@@ -57,15 +73,43 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
       CurvedAnimation(parent: _checkController, curve: Curves.elasticOut),
     );
     _checkController.forward();
+
+    // Subscribe to the balance WebSocket. The processing screen also
+    // listens, but a user can navigate here directly (e.g., from the
+    // My Gift Cards list while a row is still in_flight) — so the
+    // receipt screen needs its own subscription.
+    try {
+      final wsService = GetIt.I<BalanceWebSocketService>();
+      _balanceSub = wsService.balanceUpdates.listen(_handleBalanceEvent);
+    } catch (_) {
+      // WS not registered — pull-to-refresh remains the manual path.
+    }
+
+    // Fetch on load so the receipt always reflects server-side state
+    // even if the row was stale at navigation time.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<GiftCardCubit>().refreshGiftCardDetails(giftCard.id);
+    });
   }
 
   @override
   void dispose() {
     _checkController.dispose();
+    _balanceSub?.cancel();
     super.dispose();
   }
 
-  GiftCard get giftCard => widget.giftCard;
+  void _handleBalanceEvent(BalanceUpdateEvent event) {
+    if (!mounted) return;
+    if (event.eventType != 'giftcard_purchase') return;
+    final ref = giftCard.providerTransactionId;
+    final matchesRef = ref != null && ref.isNotEmpty && event.reference == ref;
+    if (!matchesRef) return;
+    context.read<GiftCardCubit>().refreshGiftCardDetails(giftCard.id);
+  }
+
+  GiftCard get giftCard => _liveCard ?? widget.giftCard;
 
   String get _currencySymbol {
     switch (giftCard.currency.toUpperCase()) {
@@ -145,14 +189,37 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
           child: _buildActions(),
         ),
       ),
-      body: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        // Tighter vertical padding + smaller spacers so most of the
-        // receipt fits in a single screen on a 6.1" phone before the
-        // user scrolls. Bottom padding 12.h is enough to give the
-        // BillReceiptQrBlock breathing room above the pinned actions.
-        padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 12.h),
-        child: Column(
+      body: BlocListener<GiftCardCubit, GiftCardState>(
+        listenWhen: (_, current) =>
+            current is GiftCardPurchaseCompleted ||
+            current is GiftCardDetailsLoaded ||
+            current is GiftCardPurchaseAwaitingProvider,
+        listener: (context, state) {
+          GiftCard? fresh;
+          if (state is GiftCardPurchaseCompleted) {
+            fresh = state.giftCard;
+          } else if (state is GiftCardDetailsLoaded) {
+            fresh = state.giftCard;
+          } else if (state is GiftCardPurchaseAwaitingProvider) {
+            fresh = state.giftCard;
+          }
+          if (fresh == null || fresh.id != giftCard.id) return;
+          setState(() => _liveCard = fresh);
+        },
+        child: RefreshIndicator(
+          onRefresh: () => context
+              .read<GiftCardCubit>()
+              .refreshGiftCardDetails(giftCard.id),
+          color: const Color(0xFF7C3AED),
+          backgroundColor: const Color(0xFF1F1F1F),
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            // Tighter vertical padding + smaller spacers so most of the
+            // receipt fits in a single screen on a 6.1" phone before the
+            // user scrolls. Bottom padding 12.h is enough to give the
+            // BillReceiptQrBlock breathing room above the pinned actions.
+            padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 12.h),
+            child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             _buildSuccessIcon(),
@@ -183,6 +250,14 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
               _buildCodeCard(),
             if ((giftCard.redemptionCode ?? '').isNotEmpty)
               SizedBox(height: 10.h),
+            // Async-buy in-flight banner — only when the row is in
+            // processing/pending and the redemption code hasn't landed
+            // yet. Tells the user we'll notify them so they don't have
+            // to camp on this screen, with a manual pull-to-refresh
+            // hint. Mirrors the electricity bill awaiting-token card.
+            if (_isAsyncAwaitingPin())
+              _buildAwaitingPinCard(),
+            if (_isAsyncAwaitingPin()) SizedBox(height: 10.h),
             _buildTransactionDetails(),
             SizedBox(height: 14.h),
             BillReceiptQrBlock(
@@ -199,8 +274,99 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
                   'code': giftCard.redemptionCode!,
               },
             ),
-          ],
+              ],
+            ),
+          ),
         ),
+      ),
+    );
+  }
+
+  // ── Async pin-awaiting helpers ──────────────────────────────────────
+
+  // Async giftcard buys queue the Reloadly call on Kafka and return
+  // the row in `processing` immediately. The pin doesn't land until
+  // the consumer finishes, which can be seconds or minutes later. We
+  // detect this state by: status is non-terminal AND the redemption
+  // code is empty. The reverse (status=completed AND empty code) can
+  // happen briefly before the row is refetched — in that case we don't
+  // show the awaiting card so we don't flash it for one frame.
+  bool _isAsyncAwaitingPin() {
+    final s = giftCard.status.toLowerCase();
+    final isInFlight = s == 'pending' || s == 'processing';
+    final hasNoCode = (giftCard.redemptionCode ?? '').isEmpty;
+    return isInFlight && hasNoCode;
+  }
+
+  // Awaiting-pin card. Mirrors the electricity bill awaiting-token
+  // card: explains the user can leave this screen and get notified,
+  // with a pull-to-refresh hint and a link back to transaction history.
+  Widget _buildAwaitingPinCard() {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: const Color(0xFFFB923C).withValues(alpha: 0.4)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.hourglass_top, size: 18.sp, color: const Color(0xFFFB923C)),
+              SizedBox(width: 8.w),
+              Text(
+                'Generating your code',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            "We're confirming this purchase with the provider. Your code "
+            "and PIN will appear here as soon as they're ready — usually "
+            "within a few seconds, sometimes a couple of minutes during "
+            "high-traffic windows.",
+            style: GoogleFonts.inter(
+              color: const Color(0xFF9CA3AF),
+              fontSize: 11.sp,
+              height: 1.45,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            "You don't have to wait here. We'll notify you by push, email "
+            "and SMS as soon as the code is ready, and you can always "
+            "reopen this receipt from your transaction history.",
+            style: GoogleFonts.inter(
+              color: const Color(0xFF9CA3AF),
+              fontSize: 11.sp,
+              height: 1.45,
+            ),
+          ),
+          SizedBox(height: 10.h),
+          Row(
+            children: [
+              Icon(Icons.refresh, size: 14.sp, color: const Color(0xFF9CA3AF)),
+              SizedBox(width: 6.w),
+              Expanded(
+                child: Text(
+                  'Pull down to refresh.',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 11.sp,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -654,7 +820,7 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
             ),
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.white,
-              side: const BorderSide(color: Color(0xFF4E03D0)),
+              side: const BorderSide(color: InvoiceThemeColors.primaryPurpleLight),
               padding: EdgeInsets.symmetric(vertical: 12.h),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10.r),
@@ -685,7 +851,7 @@ class _GiftCardDetailsScreenState extends State<GiftCardDetailsScreen>
             ),
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.white,
-              side: const BorderSide(color: Color(0xFF4E03D0)),
+              side: const BorderSide(color: InvoiceThemeColors.primaryPurpleLight),
               padding: EdgeInsets.symmetric(vertical: 12.h),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10.r),

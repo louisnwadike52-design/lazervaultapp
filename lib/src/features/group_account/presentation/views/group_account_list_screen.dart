@@ -16,6 +16,7 @@ import '../../../presentation/views/dashboard/dashboard_screen.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 
 class GroupAccountListScreen extends StatefulWidget {
   const GroupAccountListScreen({super.key});
@@ -234,6 +235,8 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
               ],
             ),
           ),
+          ServiceVoiceButton(serviceName: 'groups'),
+          SizedBox(width: 8.w),
           MicroserviceChatIcon(
             serviceName: 'Joint Funds',
             sourceContext: 'group_accounts',
@@ -348,7 +351,11 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
               behavior: SnackBarBehavior.floating,
             ),
           );
-          context.read<GroupAccountCubit>().loadUserGroups();
+          // Cubit already prepended the new group to _cachedGroups and
+          // emitted GroupAccountGroupsLoaded — no second network round-trip
+          // needed. Triggering loadUserGroups() here would clobber the
+          // optimistic update with a backend response that may not yet be
+          // index-visible, making the new group disappear from the list.
         }
       },
       buildWhen: (previous, current) {

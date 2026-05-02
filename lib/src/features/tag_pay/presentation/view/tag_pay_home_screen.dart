@@ -17,6 +17,7 @@ import '../widgets/tag_pay_shimmer.dart';
 import '../widgets/tag_pay_pagination_bar.dart';
 import '../widgets/tag_details_bottom_sheet.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 
 class TagPayHomeScreen extends StatefulWidget {
   const TagPayHomeScreen({super.key});
@@ -191,6 +192,12 @@ class _TagPayHomeViewState extends State<_TagPayHomeView>
               ),
             ),
           ),
+          ServiceVoiceButton(
+            serviceName: 'tagpay',
+            iconColor: const Color(0xFF10B981),
+            backgroundColor: const Color(0xFF10B981),
+          ),
+          SizedBox(width: 8.w),
           MicroserviceChatIcon(
             serviceName: 'Tag Pay',
             sourceContext: 'tagpay',

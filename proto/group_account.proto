@@ -23,6 +23,7 @@ enum GroupMemberRole {
   GROUP_MEMBER_ROLE_ADMIN = 1;
   GROUP_MEMBER_ROLE_MEMBER = 2;
   GROUP_MEMBER_ROLE_VIEWER = 3;
+  GROUP_MEMBER_ROLE_MODERATOR = 4;
 }
 
 enum GroupMemberStatus {
@@ -58,6 +59,14 @@ enum ContributionStatus {
   CONTRIBUTION_STATUS_CANCELLED = 4;
 }
 
+// Role enum kept in sync with the backend at
+// `microservices/group-accounts-service/proto/group_account.proto`.
+// See `presentation/utils/group_role_permissions` (Flutter mirror) and
+// `internal/service/group_permissions.go` (server enforcement).
+//
+// (We don't redeclare this enum here because the proto file already does
+// at the top — this comment is a marker to keep the two sides aligned.)
+
 enum PaymentStatus {
   PAYMENT_STATUS_UNSPECIFIED = 0;
   PAYMENT_STATUS_PENDING = 1;
@@ -65,6 +74,14 @@ enum PaymentStatus {
   PAYMENT_STATUS_COMPLETED = 3;
   PAYMENT_STATUS_FAILED = 4;
   PAYMENT_STATUS_REFUNDED = 5;
+  // Phase 2 (debit) returned an ambiguous error. Supervisor is verifying
+  // with accounts-service. Money MAY have moved.
+  PAYMENT_STATUS_AWAITING_VERIFICATION = 6;
+  // Phase 3 failed AFTER successful debit. Rollback processor is issuing
+  // the compensating credit. Money WILL be returned.
+  PAYMENT_STATUS_REFUNDING = 7;
+  // Reconciliation exhausted retries. Operator action required.
+  PAYMENT_STATUS_MANUAL_REVIEW = 8;
 }
 
 enum PayoutStatus {

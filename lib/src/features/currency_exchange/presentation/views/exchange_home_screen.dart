@@ -14,6 +14,7 @@ import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:lazervault/src/generated/accounts.pb.dart' as accounts_pb;
@@ -23,6 +24,7 @@ import '../cubit/exchange_state.dart';
 import '../theme/exchange_theme.dart';
 import '../widgets/currency_pair_selector.dart';
 import '../widgets/exchange_mode_toggle.dart';
+import '../widgets/exchange_history_actions_sheet.dart';
 import '../widgets/exchange_transaction_tile.dart';
 import '../widgets/fee_breakdown_widget.dart';
 import '../widgets/quick_amount_buttons.dart';
@@ -388,7 +390,7 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
               else
                 const Icon(
                   Icons.currency_exchange,
-                  color: Color(0xFF7C3AED),
+                  color: Color(0xFF4E03D0),
                   size: 40,
                 ),
               const SizedBox(height: 12),
@@ -453,7 +455,7 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
                 child: ElevatedButton(
                   onPressed: () => Navigator.of(ctx).pop(true),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF7C3AED),
+                    backgroundColor: const Color(0xFF4E03D0),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -518,8 +520,12 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
     // The cubit always fetches a fresh rate inside convertCurrency(),
     // so we don't block on expired cached rate here.
 
-    String? verificationToken;
-
+    // Fire the RPC INSIDE the onPinValidated callback so the PIN
+    // bottom sheet stays open in its processing state while we await
+    // the backend. The mixin auto-calls setProcessing() right after
+    // PIN verifies, then pops the sheet (with a brief success flourish)
+    // when the callback returns. Matches the airtime flow exactly.
+    bool routedToProcessingScreen = false;
     final success = await validateTransactionPin(
       context: context,
       transactionId: 'exchange-${DateTime.now().millisecondsSinceEpoch}',
@@ -527,91 +533,108 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
       amount: cubit.amount,
       currency: cubit.fromCurrency,
       title: 'Confirm Exchange',
-      message: 'Confirm currency exchange of ${cubit.fromCurrency} ${cubit.amount.toStringAsFixed(2)}',
+      message:
+          'Confirm currency exchange of ${cubit.fromCurrency} ${cubit.amount.toStringAsFixed(2)}',
       onPinValidated: (token) async {
-        verificationToken = token;
+        await cubit.convertCurrency(verificationToken: token);
+        final state = cubit.state;
+        if (state is ExchangeError) {
+          // Bubble up so the mixin shows the failed state in the sheet.
+          throw Exception(state.message);
+        }
+        if (state is ExchangeProcessing) {
+          // Backend returned a processing-state tx (async mode).
+          // Pop the PIN sheet ourselves and route to the processing
+          // screen, which subscribes to the WS for the terminal event.
+          // Setting the flag prevents the mixin from also navigating.
+          routedToProcessingScreen = true;
+          if (mounted) {
+            try {
+              Navigator.of(context).pop();
+            } catch (_) {}
+          }
+          Get.toNamed(
+            AppRoutes.exchangeProcessing,
+            arguments: {
+              'mode': 'convert',
+              'fromCurrency': cubit.fromCurrency,
+              'toCurrency': cubit.toCurrency,
+              'amount': cubit.amount,
+              'rate': cubit.currentRate,
+              'transactionId': state.transactionId,
+            },
+          );
+        }
+        // ExchangeSuccess: return normally — mixin sets success + pops
+        // sheet — outer code navigates to the receipt below.
       },
     );
 
-    if (!success || verificationToken == null) return;
-    if (!mounted) return;
+    if (!success || routedToProcessingScreen || !mounted) return;
 
-    // Execute conversion AFTER modal is dismissed
-    await cubit.convertCurrency(verificationToken: verificationToken!);
-
-    final currentState = cubit.state;
-    if (currentState is ExchangeSuccess) {
+    final state = cubit.state;
+    if (state is ExchangeSuccess) {
       Get.offNamed(
         AppRoutes.exchangeReceipt,
-        arguments: currentState.transaction,
+        arguments: state.transaction,
       );
-    } else if (currentState is ExchangeProcessing) {
-      Get.offNamed(
-        AppRoutes.exchangeProcessing,
-        arguments: {
-          'transactionId': currentState.transactionId,
-          'isConversion': currentState.isConversion,
-        },
-      );
-    } else if (currentState is ExchangeError) {
-      cubit.restoreHomeState();
-      if (mounted) {
-        Get.snackbar(
-          'Exchange Failed',
-          currentState.message,
-          backgroundColor: const Color(0xFFEF4444),
-          colorText: Colors.white,
-          snackPosition: SnackPosition.TOP,
-        );
-      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          onPressed: () => Get.back(),
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-        ),
-        title: const Text(
-          'Currency Exchange',
-          style: TextStyle(
-              color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
-        ),
-        centerTitle: true,
-        actions: const [
-          MicroserviceChatIcon(
-            serviceName: 'Currency Exchange',
-            sourceContext: 'exchange',
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) Get.offAllNamed(AppRoutes.dashboard);
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFF0A0A0A),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            onPressed: () => Get.offAllNamed(AppRoutes.dashboard),
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
           ),
-        ],
-      ),
-      body: BlocConsumer<ExchangeCubit, ExchangeState>(
-        listener: (context, state) {
-          // Rate staleness is enforced server-side now. ExchangeRateExpired
-          // events (if any older code paths still emit them) are ignored.
-        },
-        builder: (context, state) {
-          if (state is ExchangeLoading) {
-            return const Center(
-                child: CircularProgressIndicator(color: Color(0xFF7C3AED)));
-          }
+          title: const Text(
+            'Currency Exchange',
+            style: TextStyle(
+                color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
+          ),
+          centerTitle: true,
+          actions: [
+            ServiceVoiceButton(serviceName: 'exchange'),
+            const SizedBox(width: 8),
+            const MicroserviceChatIcon(
+              serviceName: 'Currency Exchange',
+              sourceContext: 'exchange',
+            ),
+            const SizedBox(width: 8),
+          ],
+        ),
+        body: BlocConsumer<ExchangeCubit, ExchangeState>(
+          listener: (context, state) {
+            // Rate staleness is enforced server-side now. ExchangeRateExpired
+            // events (if any older code paths still emit them) are ignored.
+          },
+          builder: (context, state) {
+            if (state is ExchangeLoading) {
+              return const Center(
+                  child: CircularProgressIndicator(color: Color(0xFF4E03D0)));
+            }
 
-          if (state is ExchangeError) {
-            return _buildErrorState(state.message);
-          }
+            if (state is ExchangeError) {
+              return _buildErrorState(state.message);
+            }
 
-          if (state is ExchangeHomeWithRate) {
-            return _buildContent(state);
-          }
+            if (state is ExchangeHomeWithRate) {
+              return _buildContent(state);
+            }
 
-          return const SizedBox.shrink();
-        },
+            return const SizedBox.shrink();
+          },
+        ),
       ),
     );
   }
@@ -634,7 +657,7 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
             ElevatedButton(
               onPressed: _refresh,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF7C3AED),
+                backgroundColor: const Color(0xFF4E03D0),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
               ),
@@ -655,7 +678,7 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
 
     return RefreshIndicator(
       onRefresh: _refresh,
-      color: const Color(0xFF7C3AED),
+      color: const Color(0xFF4E03D0),
       backgroundColor: const Color(0xFF1F1F1F),
       child: Column(
         children: [
@@ -770,10 +793,13 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
                                 padding: const EdgeInsets.only(bottom: 8),
                                 child: ExchangeTransactionTile(
                                   transaction: tx,
-                                  onTap: () => Get.toNamed(
-                                    AppRoutes.exchangeDetail,
-                                    arguments: tx,
-                                  ),
+                                  // Open the actions bottom sheet (View /
+                                  // Repeat / Share / Report) just like the
+                                  // history screen. Going straight to the
+                                  // detail page skipped those actions for
+                                  // no good reason.
+                                  onTap: () => ExchangeHistoryActionsSheet
+                                      .show(context, tx),
                                 ),
                               )),
                       ],
@@ -889,7 +915,7 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isEditable
-              ? const Color(0xFF7C3AED).withValues(alpha: 0.5)
+              ? const Color(0xFF4E03D0).withValues(alpha: 0.5)
               : const Color(0xFF2D2D2D),
         ),
       ),
@@ -972,7 +998,7 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
             child: const Text(
               'View All',
               style: TextStyle(
-                color: Color(0xFF7C3AED),
+                color: Color(0xFF4E03D0),
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),
@@ -1150,7 +1176,7 @@ class _CurrencyPickerSheetState extends State<_CurrencyPickerSheet> {
                     ),
                     trailing: isSelected
                         ? const Icon(Icons.check_circle,
-                            color: Color(0xFF7C3AED), size: 20)
+                            color: Color(0xFF4E03D0), size: 20)
                         : isExcluded
                             ? const Text('Selected',
                                 style: TextStyle(

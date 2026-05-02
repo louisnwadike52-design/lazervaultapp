@@ -462,6 +462,24 @@ class _BatchTransferProcessingScreenState
             _navigateToReceipt(state.response);
           } else if (state is BatchTransferPartialSuccess) {
             _navigateToReceipt(state.response);
+          } else if (state is BatchTransferPendingAsync) {
+            // Async mode: batch accepted but still processing. Navigate to
+            // receipt with 'processing' status so the user sees confirmation.
+            _navigateToReceipt(state.response);
+          } else if (state is BatchTransferRefundPending ||
+              state is BatchTransferPendingVerification ||
+              state is BatchTransferAutoReleased ||
+              state is BatchTransferManualReview) {
+            // These lifecycle states resolve after submission — treat as a
+            // form of completion so the user leaves the processing screen.
+            final response = state is BatchTransferRefundPending
+                ? state.response
+                : state is BatchTransferPendingVerification
+                    ? state.response
+                    : state is BatchTransferAutoReleased
+                        ? state.response
+                        : (state as BatchTransferManualReview).response;
+            _navigateToReceipt(response);
           } else if (state is BatchTransferNetworkError) {
             _showErrorAndRetry(state.message);
           } else if (state is BatchTransferFailure) {

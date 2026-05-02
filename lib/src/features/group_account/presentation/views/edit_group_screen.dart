@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -8,6 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../domain/entities/group_entities.dart';
 import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
+import '../utils/group_validators.dart';
 
 class EditGroupScreen extends StatefulWidget {
   final GroupAccount group;
@@ -31,6 +33,13 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
   bool _isLoading = false;
   bool _hasChanges = false;
 
+  // Focus-aware error display for the social-link fields. See
+  // CreateGroupBottomSheet for the full pattern explanation.
+  final FocusNode _whatsappFocus = FocusNode();
+  final FocusNode _telegramFocus = FocusNode();
+  String? _whatsappError;
+  String? _telegramError;
+
   @override
   void initState() {
     super.initState();
@@ -44,15 +53,48 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
     _descriptionController.addListener(_onFieldChanged);
     _whatsappLinkController.addListener(_onFieldChanged);
     _telegramLinkController.addListener(_onFieldChanged);
+
+    _whatsappFocus.addListener(_onWhatsappFocusChanged);
+    _telegramFocus.addListener(_onTelegramFocusChanged);
+    _whatsappLinkController.addListener(_clearWhatsappErrorOnEdit);
+    _telegramLinkController.addListener(_clearTelegramErrorOnEdit);
   }
 
   @override
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
+    _whatsappLinkController.removeListener(_clearWhatsappErrorOnEdit);
+    _telegramLinkController.removeListener(_clearTelegramErrorOnEdit);
     _whatsappLinkController.dispose();
     _telegramLinkController.dispose();
+    _whatsappFocus.dispose();
+    _telegramFocus.dispose();
     super.dispose();
+  }
+
+  void _onWhatsappFocusChanged() {
+    if (_whatsappFocus.hasFocus) return;
+    setState(() {
+      _whatsappError = GroupValidators.whatsappLink(_whatsappLinkController.text);
+    });
+  }
+
+  void _onTelegramFocusChanged() {
+    if (_telegramFocus.hasFocus) return;
+    setState(() {
+      _telegramError = GroupValidators.telegramLink(_telegramLinkController.text);
+    });
+  }
+
+  void _clearWhatsappErrorOnEdit() {
+    if (_whatsappError == null) return;
+    setState(() => _whatsappError = null);
+  }
+
+  void _clearTelegramErrorOnEdit() {
+    if (_telegramError == null) return;
+    setState(() => _telegramError = null);
   }
 
   void _onFieldChanged() {
@@ -213,6 +255,12 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
         TextFormField(
           controller: _nameController,
           style: GoogleFonts.inter(color: Colors.white),
+          maxLength: GroupValidators.nameMaxLength,
+          inputFormatters: [
+            LengthLimitingTextInputFormatter(GroupValidators.nameMaxLength),
+          ],
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+          textInputAction: TextInputAction.next,
           decoration: InputDecoration(
             hintText: 'Enter group name',
             hintStyle: GoogleFonts.inter(color: Colors.grey[600]),
@@ -237,16 +285,12 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
               ),
             ),
             contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+            counterStyle: GoogleFonts.inter(
+              color: Colors.grey[500],
+              fontSize: 11.sp,
+            ),
           ),
-          validator: (value) {
-            if (value == null || value.trim().isEmpty) {
-              return 'Please enter a group name';
-            }
-            if (value.trim().length < 3) {
-              return 'Group name must be at least 3 characters';
-            }
-            return null;
-          },
+          validator: GroupValidators.name,
         ),
       ],
     );
@@ -269,6 +313,11 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
           controller: _descriptionController,
           style: GoogleFonts.inter(color: Colors.white),
           maxLines: 4,
+          maxLength: GroupValidators.descriptionMaxLength,
+          inputFormatters: [
+            LengthLimitingTextInputFormatter(GroupValidators.descriptionMaxLength),
+          ],
+          autovalidateMode: AutovalidateMode.onUserInteraction,
           decoration: InputDecoration(
             hintText: 'Describe your group',
             hintStyle: GoogleFonts.inter(color: Colors.grey[600]),
@@ -285,8 +334,20 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
                 width: 2,
               ),
             ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: const BorderSide(
+                color: Color(0xFFEF4444),
+                width: 1,
+              ),
+            ),
             contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+            counterStyle: GoogleFonts.inter(
+              color: Colors.grey[500],
+              fontSize: 11.sp,
+            ),
           ),
+          validator: GroupValidators.description,
         ),
       ],
     );
@@ -470,18 +531,24 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
         SizedBox(height: 16.h),
         _buildLinkField(
           controller: _whatsappLinkController,
+          focusNode: _whatsappFocus,
           label: 'WhatsApp Group Link',
           hint: 'https://chat.whatsapp.com/...',
           icon: Icons.message,
           color: const Color(0xFF25D366),
+          errorText: _whatsappError,
+          validator: GroupValidators.whatsappLink,
         ),
         SizedBox(height: 16.h),
         _buildLinkField(
           controller: _telegramLinkController,
+          focusNode: _telegramFocus,
           label: 'Telegram Group Link',
           hint: 'https://t.me/...',
           icon: Icons.send,
           color: const Color(0xFF0088CC),
+          errorText: _telegramError,
+          validator: GroupValidators.telegramLink,
         ),
       ],
     );
@@ -493,6 +560,9 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
     required String hint,
     required IconData icon,
     required Color color,
+    FocusNode? focusNode,
+    String? errorText,
+    String? Function(String?)? validator,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -508,7 +578,14 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
         SizedBox(height: 8.h),
         TextFormField(
           controller: controller,
+          focusNode: focusNode,
           style: GoogleFonts.inter(color: Colors.white),
+          keyboardType: TextInputType.url,
+          maxLength: GroupValidators.linkMaxLength,
+          inputFormatters: [
+            LengthLimitingTextInputFormatter(GroupValidators.linkMaxLength),
+          ],
+          validator: validator,
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: GoogleFonts.inter(color: Colors.grey[600]),
@@ -525,6 +602,19 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
                 width: 2,
               ),
             ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: const BorderSide(
+                color: Color(0xFFEF4444),
+                width: 1,
+              ),
+            ),
+            errorText: errorText,
+            errorStyle: GoogleFonts.inter(
+              color: const Color(0xFFEF4444),
+              fontSize: 12.sp,
+            ),
+            counterText: '',
             prefixIcon: Icon(
               icon,
               color: color,

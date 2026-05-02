@@ -32,6 +32,9 @@ abstract class IExchangeRepository {
     String? recipientRoutingNumber,
     String? recipientAddress,
     String? notes,
+    // "individual" or "business" — routed to Flutterwave's
+    // meta.beneficiary_type for UK Confirmation-of-Payee alignment.
+    String? beneficiaryType,
   });
 
   /// Convert currency between user's own wallets

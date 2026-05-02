@@ -19,6 +19,13 @@ class MySalesScreen extends StatefulWidget {
 class _MySalesScreenState extends State<MySalesScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  // True while a Sale Details bottom sheet is in front of the list.
+  // The sheet calls cubit.getSellStatus, which transiently emits
+  // GiftCardLoading → SellStatusLoaded; without this guard the list's
+  // BlocBuilder rebuilds against those non-list states and flashes
+  // "No sales yet" (the fall-through branch). Suppressing rebuilds
+  // while the sheet is open keeps the list stable underneath.
+  bool _sheetOpen = false;
 
   static const _tabs = ['All', 'In Review', 'Approved', 'Paid', 'Rejected'];
   static const _statusFilters = [null, 'pending_review', 'approved', 'paid', 'rejected'];
@@ -85,6 +92,19 @@ class _MySalesScreenState extends State<MySalesScreen>
         ),
       ),
       body: BlocBuilder<GiftCardCubit, GiftCardState>(
+        // Only react to states that actually describe the list. Sale-
+        // detail lookups (GiftCardLoading → SellStatusLoaded) and any
+        // sheet-scoped errors are owned by the bottom sheet's own
+        // BlocConsumer; letting them through here would flash the
+        // empty / loading view on top of a populated list.
+        buildWhen: (prev, curr) {
+          if (_sheetOpen) return false;
+          return curr is GiftCardInitial ||
+              curr is GiftCardLoading ||
+              curr is MySalesLoaded ||
+              curr is MySalesEmpty ||
+              curr is GiftCardNetworkError;
+        },
         builder: (context, state) {
           if (state is GiftCardLoading) {
             return const Center(
@@ -149,7 +169,7 @@ class _MySalesScreenState extends State<MySalesScreen>
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              _buildStatusBadge(sale.status),
+              _buildStatusBadge(sale.userDisplayStatus),
             ],
           ),
           SizedBox(height: 12.h),
@@ -238,7 +258,14 @@ class _MySalesScreenState extends State<MySalesScreen>
   }
 
   void _showSaleDetails(GiftCardSale sale) {
-    // Refresh status from backend
+    // Suppress list rebuilds for the lifetime of the sheet — the
+    // getSellStatus call below transitions the cubit through
+    // GiftCardLoading and SellStatusLoaded, neither of which the
+    // list view can render meaningfully.
+    setState(() => _sheetOpen = true);
+
+    // Refresh status from backend (bottom sheet's BlocConsumer will
+    // pick up SellStatusLoaded and re-render the displaySale).
     context.read<GiftCardCubit>().getSellStatus(sale.id);
 
     Get.bottomSheet(
@@ -292,7 +319,7 @@ class _MySalesScreenState extends State<MySalesScreen>
                           color: Colors.white,
                         ),
                       ),
-                      _buildStatusBadge(displaySale.status),
+                      _buildStatusBadge(displaySale.userDisplayStatus),
                     ],
                   ),
                   SizedBox(height: 20.h),
@@ -322,6 +349,42 @@ class _MySalesScreenState extends State<MySalesScreen>
                   if (displaySale.paidAt.isNotEmpty) ...[
                     SizedBox(height: 10.h),
                     _buildSaleDetailRow('Paid', _formatDate(displaySale.paidAt)),
+                  ],
+                  if (displaySale.isRejected && displaySale.rejectionReason.isNotEmpty) ...[
+                    SizedBox(height: 16.h),
+                    Container(
+                      padding: EdgeInsets.all(12.w),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8.r),
+                        border: Border.all(
+                          color: const Color(0xFFEF4444).withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Reason for rejection',
+                            style: GoogleFonts.inter(
+                              fontSize: 11.sp,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFFEF4444),
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          SizedBox(height: 6.h),
+                          Text(
+                            displaySale.rejectionReason,
+                            style: GoogleFonts.inter(
+                              fontSize: 13.sp,
+                              color: Colors.white,
+                              height: 1.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                   if (state is GiftCardLoading) ...[
                     SizedBox(height: 16.h),
@@ -367,7 +430,16 @@ class _MySalesScreenState extends State<MySalesScreen>
       ),
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-    );
+    ).whenComplete(() {
+      // Re-arm list rebuilds and re-fetch the current tab so any
+      // status change observed in the sheet (e.g. paid → settled)
+      // is reflected in the row when the user returns.
+      if (!mounted) return;
+      setState(() => _sheetOpen = false);
+      context.read<GiftCardCubit>().loadMySales(
+            status: _statusFilters[_tabController.index],
+          );
+    });
   }
 
   Widget _buildSaleDetailRow(String label, String value) {
@@ -439,6 +511,17 @@ class _MySalesScreenState extends State<MySalesScreen>
         textColor = const Color(0xFF10B981);
         label = 'Settled';
         break;
+      case 'pending_settlement':
+        // Provider confirmed but the wallet credit hasn't landed yet.
+        // Yellow (not green) so the user understands this is NOT
+        // terminal-paid — the settlement-retry worker is still trying
+        // to credit them. Distinct from the green "Paid" badge to
+        // prevent the trust hazard of showing 'paid' before the user
+        // can spend the money.
+        bgColor = const Color(0xFFFBBF24).withValues(alpha: 0.15);
+        textColor = const Color(0xFFFBBF24);
+        label = 'Pending wallet credit';
+        break;
       case 'failed':
       case 'cancelled': // legacy alias pre giftcards-service migration 013
         bgColor = const Color(0xFFEF4444).withValues(alpha: 0.15);
@@ -475,45 +558,98 @@ class _MySalesScreenState extends State<MySalesScreen>
   }
 
   Widget _buildEmptyState() {
+    // Tab-aware empty state. Each tab corresponds to a status filter
+    // (see _statusFilters); when MySalesEmpty fires we want to tell
+    // the user *why* this tab is empty rather than always showing
+    // the same "No sales yet" copy. The "All" tab is the only one
+    // where we know they've never sold; the others mean "nothing of
+    // THIS status" and may have entries in other tabs.
+    final tabIdx = _tabController.index;
+    final isAllTab = tabIdx == 0;
+    final (title, subtitle, icon) = switch (tabIdx) {
+      0 => (
+          'No sales yet',
+          "Sold gift cards will appear here once you submit one.",
+          Icons.sell_outlined,
+        ),
+      1 => (
+          'Nothing in review',
+          'Sales waiting for admin review will show up here.',
+          Icons.hourglass_empty_rounded,
+        ),
+      2 => (
+          'No approved sales',
+          'Sales that admin has approved (awaiting payout) appear here.',
+          Icons.check_circle_outline,
+        ),
+      3 => (
+          'No paid sales yet',
+          'Sales that have been paid into your wallet appear here.',
+          Icons.payments_outlined,
+        ),
+      4 => (
+          'No rejected sales',
+          'Sales rejected at review time appear here. Empty is good news!',
+          Icons.block_outlined,
+        ),
+      _ => (
+          'No sales yet',
+          'Your sold gift cards will appear here.',
+          Icons.sell_outlined,
+        ),
+    };
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
       children: [
         SizedBox(height: 120.h),
         Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 72.w,
-                height: 72.w,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1F1F1F),
-                  borderRadius: BorderRadius.circular(36.r),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 32.w),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 72.w,
+                  height: 72.w,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1F1F1F),
+                    borderRadius: BorderRadius.circular(36.r),
+                  ),
+                  child: Icon(icon, size: 32.sp, color: const Color(0xFF6B7280)),
                 ),
-                child: Icon(
-                  Icons.sell_outlined,
-                  size: 32.sp,
-                  color: const Color(0xFF6B7280),
+                SizedBox(height: 16.h),
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-              SizedBox(height: 16.h),
-              Text(
-                'No Sales Yet',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
+                SizedBox(height: 8.h),
+                Text(
+                  subtitle,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 13.sp,
+                    height: 1.4,
+                  ),
                 ),
-              ),
-              SizedBox(height: 8.h),
-              Text(
-                'Your sold gift cards will appear here',
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF9CA3AF),
-                  fontSize: 14.sp,
-                ),
-              ),
-            ],
+                if (!isAllTab) ...[
+                  SizedBox(height: 16.h),
+                  TextButton.icon(
+                    onPressed: () => _tabController.animateTo(0),
+                    icon: const Icon(Icons.list_rounded, size: 16),
+                    label: const Text('See all sales'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: InvoiceThemeColors.primaryPurple,
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ),
         ),
       ],

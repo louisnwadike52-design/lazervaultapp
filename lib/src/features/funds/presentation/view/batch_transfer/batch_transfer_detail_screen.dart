@@ -154,6 +154,9 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
           _buildSummaryCard(summary, currencySymbol, statusColor),
           SizedBox(height: 16.h),
 
+          // Lifecycle info banner for in-progress / refund states
+          _buildLifecycleBanner(summary.status),
+
           // Source account card
           if (detail.sourceAccountNumber.isNotEmpty)
             _buildSourceCard(detail),
@@ -222,6 +225,80 @@ class _BatchTransferDetailScreenState extends State<BatchTransferDetailScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildLifecycleBanner(String status) {
+    String? message;
+    Color? color;
+    IconData? icon;
+
+    switch (status.toLowerCase()) {
+      case 'processing':
+      case 'pending':
+      case 'awaiting_webhook':
+        message = 'Your batch transfer is being processed. This may take a few minutes.';
+        color = btOrange;
+        icon = Icons.access_time_rounded;
+        break;
+      case 'pending_verification':
+        message = 'We are verifying this transfer with the payment provider. No action needed.';
+        color = btBlue;
+        icon = Icons.search_rounded;
+        break;
+      case 'refund_pending':
+      case 'refunding':
+        message = 'A refund is in progress. Funds will return to your wallet within 5 minutes.';
+        color = btBlue;
+        icon = Icons.replay_rounded;
+        break;
+      case 'reversing_settlement':
+        message = 'Reversing service fee. This completes automatically.';
+        color = btBlue;
+        icon = Icons.replay_rounded;
+        break;
+      case 'auto_released':
+        message = 'This transfer was cancelled before reaching the provider. Your funds have been returned.';
+        color = btGreen;
+        icon = Icons.check_circle_outline_rounded;
+        break;
+      case 'manual_review':
+        message = 'This transfer is under review by our support team. You will be notified of the outcome.';
+        color = btPurple;
+        icon = Icons.support_agent_rounded;
+        break;
+      default:
+        return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: 16.h),
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(14.w),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, color: color, size: 18.sp),
+            SizedBox(width: 10.w),
+            Expanded(
+              child: Text(
+                message,
+                style: GoogleFonts.inter(
+                  color: color,
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

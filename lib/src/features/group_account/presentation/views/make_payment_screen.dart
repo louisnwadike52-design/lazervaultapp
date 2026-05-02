@@ -44,6 +44,40 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
   double? _selectedAccountBalance;
   bool _isProcessing = false;
 
+  // Idempotency key for the CURRENT payment intent. Generated lazily on
+  // the first attempt and REUSED on every retry until the user changes
+  // the parameters of the payment (amount or source account). This is
+  // load-bearing for money safety:
+  //
+  //   - If we generated a fresh key on each tap, a transient timeout +
+  //     user retry would create two distinct payments at the backend.
+  //     Even though accounts-service is idempotent, the SECOND call uses
+  //     a new key, so it would commit a fresh debit — charging the user
+  //     twice for the same intended payment.
+  //
+  //   - With a stable key, the backend's MakePayment idempotency check
+  //     returns the in-flight payment row instead of starting a new one.
+  //     The supervisor independently resolves the original via the
+  //     LookupTransactionByReference probe.
+  String? _pendingIdempotencyKey;
+  // The (amount + account) tuple the current key was issued for. If the
+  // user changes either, we treat it as a NEW payment intent and rotate
+  // the key so the backend doesn't conflate two distinct intents.
+  String? _pendingIdempotencyKeyFingerprint;
+
+  String _idempotencyFingerprint(double amount, String accountId) {
+    return '$accountId:${amount.toStringAsFixed(2)}';
+  }
+
+  String _resolveIdempotencyKey(double amount, String accountId) {
+    final fp = _idempotencyFingerprint(amount, accountId);
+    if (_pendingIdempotencyKey == null || _pendingIdempotencyKeyFingerprint != fp) {
+      _pendingIdempotencyKey = const Uuid().v4();
+      _pendingIdempotencyKeyFingerprint = fp;
+    }
+    return _pendingIdempotencyKey!;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -107,8 +141,10 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
 
     if (!mounted) return;
 
-    // Generate idempotency key
-    final idempotencyKey = const Uuid().v4();
+    // Resolve the idempotency key for THIS payment intent. Same key on
+    // every retry of the same (amount, account) tuple — backend dedupes.
+    final accountForKey = _selectedAccountId ?? 'default';
+    final idempotencyKey = _resolveIdempotencyKey(amount, accountForKey);
     final notes = _notesController.text.trim();
 
     // Call the cubit to make payment

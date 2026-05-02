@@ -52,6 +52,54 @@ final class BatchTransferNetworkError extends BatchTransferState {
   List<Object?> get props => [message];
 }
 
+// Async mode: server returned 'processing' — app should poll until terminal.
+final class BatchTransferPendingAsync extends BatchTransferState {
+  final BatchTransferEntity response;
+
+  const BatchTransferPendingAsync({required this.response});
+
+  @override
+  List<Object?> get props => [response];
+}
+
+// Item-level lifecycle states (surfaced on detail screen after completion).
+final class BatchTransferRefundPending extends BatchTransferState {
+  final BatchTransferEntity response;
+
+  const BatchTransferRefundPending({required this.response});
+
+  @override
+  List<Object?> get props => [response];
+}
+
+final class BatchTransferManualReview extends BatchTransferState {
+  final BatchTransferEntity response;
+  final String reason;
+
+  const BatchTransferManualReview({required this.response, this.reason = ''});
+
+  @override
+  List<Object?> get props => [response, reason];
+}
+
+final class BatchTransferAutoReleased extends BatchTransferState {
+  final BatchTransferEntity response;
+
+  const BatchTransferAutoReleased({required this.response});
+
+  @override
+  List<Object?> get props => [response];
+}
+
+final class BatchTransferPendingVerification extends BatchTransferState {
+  final BatchTransferEntity response;
+
+  const BatchTransferPendingVerification({required this.response});
+
+  @override
+  List<Object?> get props => [response];
+}
+
 // History states
 final class BatchTransferHistoryLoading extends BatchTransferState {
   const BatchTransferHistoryLoading();

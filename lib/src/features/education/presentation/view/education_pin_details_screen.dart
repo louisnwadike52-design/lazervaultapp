@@ -24,19 +24,36 @@ class EducationPinDetailsScreen extends StatelessWidget {
 
   void _rebuyPurchase(BuildContext context, EducationHistoryEntity purchase) {
     Get.back();
+    // Map shape (NOT the entity) — `education_home_screen` casts to
+    // `Map<String, dynamic>?` and crashes if it gets the entity.
     Get.toNamed(
       AppRoutes.educationHome,
-      arguments: {
-        'rebuyPurchase': purchase,
+      arguments: <String, dynamic>{
+        'rebuyPurchase': <String, dynamic>{
+          'serviceId': purchase.serviceId,
+          'phone': purchase.phoneNumber,
+          'billersCode': purchase.billersCode,
+          'quantity': purchase.quantity,
+        },
       },
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final args = Get.arguments as Map<String, dynamic>;
-    final purchase = args['purchase'] as EducationHistoryEntity;
-    final providerName = args['providerName'] as String?;
+    // Defensive arg parsing — same class of bug as the rebuy crash. Hard
+    // casts here used to throw if `Get.arguments` was null (deep link
+    // landed without args) or if `purchase` came in as a different
+    // shape. Render an empty-state instead of bringing the screen down.
+    final args = Get.arguments;
+    final argsMap =
+        args is Map<String, dynamic> ? args : const <String, dynamic>{};
+    final rawPurchase = argsMap['purchase'];
+    if (rawPurchase is! EducationHistoryEntity) {
+      return _buildMissingArgsScaffold();
+    }
+    final purchase = rawPurchase;
+    final providerName = argsMap['providerName'] as String?;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
@@ -377,5 +394,59 @@ class EducationPinDetailsScreen extends StatelessWidget {
     } catch (e) {
       return dateString;
     }
+  }
+
+  Widget _buildMissingArgsScaffold() {
+    return Scaffold(
+      backgroundColor: const Color(0xFF0A0A0A),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          onPressed: () => Get.back(),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+        ),
+        title: Text(
+          'PIN Details',
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 20.sp,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        centerTitle: true,
+      ),
+      body: Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 24.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.receipt_long_outlined,
+                  size: 48.sp, color: const Color(0xFF9CA3AF)),
+              SizedBox(height: 12.h),
+              Text(
+                'Receipt not available',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 6.h),
+              Text(
+                'Open this purchase from your PIN history to view its details.',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF9CA3AF),
+                  fontSize: 13.sp,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

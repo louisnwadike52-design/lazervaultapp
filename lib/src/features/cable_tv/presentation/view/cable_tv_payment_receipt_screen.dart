@@ -269,34 +269,6 @@ class _CableTVPaymentReceiptScreenState
     );
   }
 
-  /// Opens the create-reminder screen pre-filled with this purchase's
-  /// provider, smart card and package so the user only needs to pick
-  /// the renewal date.
-  void _openCreateReminder(CableTVPaymentEntity payment) {
-    final args = Get.arguments;
-    final map = args is Map<String, dynamic> ? args : const <String, dynamic>{};
-    final provider = map['provider'] as CableTVProviderEntity?;
-    final package = map['package'] as TVPackageEntity?;
-    final providerName = provider?.name.trim().isNotEmpty == true
-        ? provider!.name.trim()
-        : (payment.providerId.isNotEmpty
-            ? payment.providerId
-            : 'Cable TV');
-    final smartCardNumber = payment.customerNumber.trim();
-    final title = smartCardNumber.isNotEmpty
-        ? 'Renew $providerName · $smartCardNumber'
-        : 'Renew $providerName';
-
-    Get.toNamed(
-      AppRoutes.cableTVReminderCreate,
-      arguments: <String, dynamic>{
-        'title': title,
-        'amount': payment.amount > 0 ? payment.amount : null,
-        if ((package?.variationCode ?? '').isNotEmpty)
-          'packageId': package!.variationCode,
-      },
-    );
-  }
 
   String _formatAmount(double amount) {
     final format = NumberFormat('#,##0.00', 'en_NG');
@@ -705,35 +677,6 @@ class _CableTVPaymentReceiptScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (payment.isCompleted) ...[
-            OutlinedButton.icon(
-              onPressed: () => _openCreateReminder(payment),
-              icon: Icon(
-                Icons.notifications_active_outlined,
-                size: 18.sp,
-                color: const Color(0xFFFB923C),
-              ),
-              label: Text(
-                'Set Renewal Reminder',
-                style: GoogleFonts.inter(
-                  color: const Color(0xFFFB923C),
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              style: OutlinedButton.styleFrom(
-                side: BorderSide(
-                  color: const Color(0xFFFB923C).withValues(alpha: 0.5),
-                  width: 1.2,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                padding: EdgeInsets.symmetric(vertical: 12.h),
-              ),
-            ),
-            SizedBox(height: 10.h),
-          ],
           Row(
             children: [
               // Share Receipt

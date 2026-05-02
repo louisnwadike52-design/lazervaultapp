@@ -47,10 +47,28 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
   double _ocrConfidence = 0;
   final _cardNumberController = TextEditingController();
   final _cardPinController = TextEditingController();
+  // Used when the catalogue has no fixed denominations — user types
+  // the value within the [minDenomination, maxDenomination] window.
+  final _denominationController = TextEditingController();
+  String? _denominationError;
   double? _selectedDenomination;
   SellRate? _currentRate;
   GiftCardSale? _submittedSale;
+  // When SellRejected fires, step 4 renders a rejection-receipt view
+  // instead of the "Submitted for review" success view. Reason text
+  // comes from sale.rejectionReason (admin-typed for manual rejects,
+  // Prestmit's reason for auto rejects). Empty string falls back to
+  // a generic message at render time.
+  String? _rejectionReason;
   bool _isUploadingImage = false;
+  // Tracks the brief window between the user tapping Take Photo / Choose
+  // from Gallery and the OS image picker actually returning. Without this
+  // the UI looks frozen for ~1–3s on cold-start of the camera intent.
+  bool _isPickingImage = false;
+  ImageSource? _pickingSource;
+  int? _activePickerSlotIndex;
+  // Tracks an in-flight AI extraction call (OCRExtracting → OCRExtracted/OCRFailed).
+  bool _isExtractingDetails = false;
   String _selectedCountry = 'US';
   String _selectedFormat = 'ecode'; // "ecode" or "physical"
   String _selectedCategory = '';
@@ -95,17 +113,42 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
   @override
   void initState() {
     super.initState();
-    if (widget.preselectedCard != null) {
-      _selectedCard = widget.preselectedCard;
-      _currentStep = 1;
+    // The Gift Cards hub (GiftCardsScreen) is the canonical surface
+    // for browsing, filtering, and selecting a card to sell. This
+    // screen handles ONLY the post-selection flow (steps 1-4): card
+    // details, payout method, confirm, and submitted. A preselected
+    // card is therefore mandatory; if missing, send the user back to
+    // the hub instead of rendering a duplicate browse view.
+    if (widget.preselectedCard == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        Get.offAllNamed(AppRoutes.giftCards);
+      });
+      return;
     }
-    context.read<GiftCardCubit>().loadSellableCards(countryCode: _selectedCountry);
+    _selectedCard = widget.preselectedCard;
+    _currentStep = 1;
+    // Auto-prefill the denomination so the Get-Rate CTA is reachable
+    // without an extra tap. Many Prestmit subcategories ship with
+    // ONLY a `minimum` (no fixed denominations[]); the user otherwise
+    // has nothing to tap to set _selectedDenomination, which left the
+    // button stuck disabled. Pick the first fixed denom if any, else
+    // fall back to the catalogue's minimum.
+    final fixed = _selectedCard?.denominations ?? const <double>[];
+    if (fixed.isNotEmpty) {
+      _selectedDenomination = fixed.first;
+    } else if ((_selectedCard?.minDenomination ?? 0) > 0) {
+      _selectedDenomination = _selectedCard!.minDenomination;
+      _denominationController.text =
+          _selectedCard!.minDenomination.toStringAsFixed(0);
+    }
   }
 
   @override
   void dispose() {
     _cardNumberController.dispose();
     _cardPinController.dispose();
+    _denominationController.dispose();
     super.dispose();
   }
 
@@ -134,13 +177,6 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
           ),
         ),
         centerTitle: true,
-        actions: [
-          if (_currentStep < 4)
-            IconButton(
-              onPressed: () => Get.toNamed(AppRoutes.mySales),
-              icon: Icon(Icons.history, color: InvoiceThemeColors.primaryPurple, size: 22.sp),
-            ),
-        ],
       ),
       body: BlocConsumer<GiftCardCubit, GiftCardState>(
         listener: _onStateChanged,
@@ -178,28 +214,15 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
   }
 
   void _onBack() {
-    if (_currentStep > 0 && _currentStep < 4) {
+    // Step 1 is the entry point now (card-selection step 0 lives on
+    // the hub). Backing out of step 1 returns to the hub rather than
+    // dropping into a (no-longer-rendered) step 0.
+    if (_currentStep == 1) {
+      Get.back();
+      return;
+    }
+    if (_currentStep > 1 && _currentStep < 4) {
       setState(() {
-        if (_currentStep == 1) {
-          _selectedCard = null;
-          _selectedFormat = 'ecode';
-          _selectedDenomination = null;
-          _currentRate = null;
-          _ocrBrand = '';
-          _ocrCardNumber = '';
-          _ocrPin = '';
-          _ocrDenomination = 0;
-          _ocrCurrency = '';
-          _ocrConfidence = 0;
-          _cardNumberController.clear();
-          _cardPinController.clear();
-          _cardNumberError = null;
-          _cardPinError = null;
-          _uploadedImageUrls.clear();
-          _uploadedImageKeys.clear();
-          _localImageFiles.clear();
-          context.read<GiftCardCubit>().loadSellableCards(countryCode: _selectedCountry);
-        }
         if (_currentStep == 3) {
           // Reset disclaimer when leaving the confirm step so the user
           // re-acknowledges if they edit anything upstream.
@@ -228,8 +251,13 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
         colorText: Colors.white,
         snackPosition: SnackPosition.TOP,
       );
+    } else if (state is OCRExtracting) {
+      if (!_isExtractingDetails) {
+        setState(() => _isExtractingDetails = true);
+      }
     } else if (state is OCRExtracted) {
       setState(() {
+        _isExtractingDetails = false;
         _ocrBrand = state.brand;
         _ocrCardNumber = state.cardNumber;
         _ocrPin = state.pin;
@@ -253,6 +281,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
         duration: const Duration(seconds: 2),
       );
     } else if (state is OCRFailed) {
+      setState(() => _isExtractingDetails = false);
       Get.snackbar('Scan Failed', 'Card scan failed. Please enter details manually.',
         backgroundColor: const Color(0xFFFB923C),
         colorText: Colors.white,
@@ -262,10 +291,53 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
     } else if (state is SellRateLoaded) {
       setState(() => _currentRate = state.rate);
     } else if (state is SellSubmitted) {
+      // Manual-mode path (or unknown future intermediate state): show
+      // the in-screen "Submitted for review" confirmation.
       setState(() {
         _submittedSale = state.sale;
         _currentStep = 4;
       });
+    } else if (state is GiftCardSellAwaitingProvider) {
+      // Auto-mode (Prestmit) path: row is at pending or reviewing —
+      // hand off to the dedicated processing screen which subscribes
+      // to the balance WebSocket and refetches on a giftcard_sale
+      // terminal event matching this reference.
+      Get.offNamed(
+        AppRoutes.giftCardSellProcessing,
+        arguments: state.sale,
+      );
+    } else if (state is GiftCardSellPaid) {
+      // Auto-mode terminal success — Prestmit's webhook (or
+      // instant-settle short-circuit) already credited the user.
+      // Skip the in-screen "submitted for review" copy and route
+      // straight to My Sales where the row shows status=paid.
+      Get.offAllNamed(AppRoutes.mySales);
+    } else if (state is SellRejected) {
+      // Show a dedicated rejection receipt at step 4 instead of just
+      // a transient snackbar. The reason text comes from the sale's
+      // rejection_reason column — admin-typed for manual rejects,
+      // Prestmit's reason for auto rejects. Both reach the user
+      // identically here.
+      setState(() {
+        _submittedSale = state.sale;
+        _rejectionReason = state.reason;
+        _currentStep = 4;
+      });
+    } else if (state is SellEscalatedToManualReview) {
+      // Auto-flow gave up after retries. Same operator-owned outcome
+      // as the manual queue, so reuse the existing "submitted for
+      // review" UX with adjusted copy.
+      setState(() {
+        _submittedSale = state.sale;
+        _currentStep = 4;
+      });
+      Get.snackbar(
+        'Switched to manual review',
+        'Our team will take it from here.',
+        backgroundColor: const Color(0xFFFB923C),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
     } else if (state is PayoutMethodsLoaded) {
       // Pre-select sensibly: server-provided default → first available.
       final preferred = state.defaultMethodName;
@@ -310,8 +382,12 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
 
   Widget _buildCurrentStep(GiftCardState state) {
     switch (_currentStep) {
+      // Step 0 (card browse/select) was retired — the Gift Cards hub
+      // owns that surface. Anyone who lands on this screen with
+      // _currentStep=0 must have bypassed initState's redirect; pop
+      // them back to the hub rather than render a stale duplicate.
       case 0:
-        return _buildStep0CardSelection(state);
+        return const SizedBox();
       case 1:
         return _buildStep1CardDetailsAndImages();
       case 2:
@@ -330,11 +406,26 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
   // ============================================
 
   Widget _buildStep0CardSelection(GiftCardState state) {
+    // Stale-while-revalidate: keep the grid rendered if the cubit has
+    // cached cards, even when the current state is Loading or unrelated.
+    // The cubit re-emits SellableCardsLoaded once revalidation completes.
+    final cached = context.read<GiftCardCubit>().cachedSellableCards;
+
+    if (state is SellableCardsEmpty) {
+      // Empty result has two flavours: (a) the user picked a country
+      // that has no entries in Prestmit's catalogue (e.g. Nigeria,
+      // which has zero rows in the sandbox); (b) the upstream catalog
+      // is genuinely unavailable. We can tell the difference because
+      // the user only sees this state AFTER selecting a filter — so
+      // rendering a country-aware "no cards in {country}" message
+      // with a CTA to switch country is the right call.
+      return _buildEmptyForCountry(_selectedCountry);
+    }
     if (state is SellableCardsLoaded) {
       return _buildCardGridWithFilter(state.cards);
     }
-    if (state is SellableCardsEmpty) {
-      return _buildEmptyState();
+    if (cached.isNotEmpty) {
+      return _buildCardGridWithFilter(cached);
     }
     if (state is GiftCardNetworkError) {
       return _buildErrorState(state.message);
@@ -393,19 +484,37 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
     );
   }
 
-  Widget _buildCategorySelector() {
+  Widget _buildCategorySelector(List<SellableCard> cards) {
+    // Categories are derived from the LIVE catalogue, not from a
+    // hardcoded slug list. Prestmit's catalogue surfaces real names
+    // like "iTunes Gift Card v2" / "Amazon v2" — those are what each
+    // card's `category` field holds, so the chip values must equal
+    // them verbatim for the filter (`c.category == _selectedCategory`)
+    // to match. The previous static slug list ("gaming", "shopping",
+    // etc.) never matched anything → category filter was always empty.
+    final unique = <String>{};
+    for (final c in cards) {
+      final raw = c.category.trim();
+      if (raw.isNotEmpty) unique.add(raw);
+    }
+    final categories = unique.toList()..sort();
+    // Prepend the "All" chip (slug "") so the user can always reset.
+    final entries = [
+      const MapEntry('', 'All'),
+      ...categories.map((c) => MapEntry(c, c)),
+    ];
     return Container(
       height: 40.h,
       margin: EdgeInsets.symmetric(horizontal: 16.w),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: _sellCategories.length,
+        itemCount: entries.length,
         itemBuilder: (context, index) {
-          final cat = _sellCategories[index];
-          final isSelected = _selectedCategory == cat['slug'];
+          final entry = entries[index];
+          final isSelected = _selectedCategory == entry.key;
           return GestureDetector(
             onTap: () {
-              setState(() => _selectedCategory = cat['slug']!);
+              setState(() => _selectedCategory = entry.key);
             },
             child: Container(
               margin: EdgeInsets.only(right: 8.w),
@@ -417,7 +526,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
                 borderRadius: BorderRadius.circular(20.r),
               ),
               child: Text(
-                cat['label']!,
+                entry.value,
                 style: GoogleFonts.inter(
                   color: isSelected ? InvoiceThemeColors.primaryPurple : const Color(0xFF9CA3AF),
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
@@ -441,22 +550,81 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
         SizedBox(height: 8.h),
         _buildCountrySelector(),
         SizedBox(height: 8.h),
-        _buildCategorySelector(),
+        // Pass the loaded `cards` so the chip set reflects what's
+        // actually in the catalogue for this country, not a stale
+        // hardcoded slug list.
+        _buildCategorySelector(cards),
         SizedBox(height: 8.h),
         Expanded(
           child: filteredCards.isEmpty
-              ? Center(
-                  child: Text(
-                    'No cards in this category',
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFF9CA3AF),
-                      fontSize: 14.sp,
-                    ),
-                  ),
-                )
+              ? _buildEmptyForCategory(_selectedCategory, cards.length)
               : _buildCardGrid(filteredCards),
         ),
       ],
+    );
+  }
+
+  // _buildEmptyForCategory renders inline (with country + category
+  // selectors still visible above) when the catalog has cards but
+  // none match the active category filter. Distinct from
+  // _buildEmptyForCountry: the user has cards available — they just
+  // narrowed too far. The CTA clears the category to put them back
+  // on the full grid in one tap.
+  Widget _buildEmptyForCategory(String categorySlug, int totalCards) {
+    // Categories are now driven directly off the live catalogue —
+    // `_selectedCategory` IS the display label, no slug lookup needed.
+    final categoryLabel = categorySlug;
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 32.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 56.w,
+              height: 56.w,
+              decoration: BoxDecoration(
+                color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.10),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.search_off_rounded,
+                size: 28.sp,
+                color: InvoiceThemeColors.primaryPurple,
+              ),
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              'No cards in $categoryLabel',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 6.h),
+            Text(
+              '$totalCards other cards are available — clear the category to see them all.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                color: const Color(0xFF9CA3AF),
+                fontSize: 13.sp,
+                height: 1.4,
+              ),
+            ),
+            SizedBox(height: 16.h),
+            TextButton.icon(
+              onPressed: () => setState(() => _selectedCategory = ''),
+              icon: const Icon(Icons.clear, size: 16),
+              label: const Text('Clear filter'),
+              style: TextButton.styleFrom(
+                foregroundColor: InvoiceThemeColors.primaryPurple,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -675,8 +843,17 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
               FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9\-]')),
               _CardNumberFormatter(),
             ],
-            onChanged: (_) {
-              if (_cardNumberError != null) setState(() => _cardNumberError = null);
+            // Live validation: re-evaluate on every keystroke so the
+            // Get-Rate CTA + the inline error stay in sync with the
+            // current input. Until the field is non-empty we suppress
+            // the error to avoid yelling at users who haven't finished
+            // typing yet.
+            onChanged: (value) {
+              setState(() {
+                _cardNumberError = value.trim().isEmpty
+                    ? null
+                    : _validateCardNumberValue(value);
+              });
             },
           ),
           SizedBox(height: 16.h),
@@ -691,25 +868,33 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
             errorText: _cardPinError,
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')),
+              LengthLimitingTextInputFormatter(_kCardPinMaxLen),
             ],
-            onChanged: (_) {
-              if (_cardPinError != null) setState(() => _cardPinError = null);
+            onChanged: (value) {
+              setState(() {
+                _cardPinError =
+                    value.trim().isEmpty ? null : _validateCardPinValue(value);
+              });
             },
           ),
           SizedBox(height: 24.h),
 
-          // Card Photos section
-          Text('Card Photos', style: GoogleFonts.inter(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600)),
-          SizedBox(height: 4.h),
-          Text(
-            _selectedFormat == 'physical'
-                ? 'Upload clear photos of the front and back of your card'
-                : 'Upload a screenshot showing the gift card code',
-            style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 13.sp),
-          ),
-          SizedBox(height: 12.h),
+          // Card Photos section — physical only.
+          //
+          // Ecode is just `card_number` + `card_pin` text fields. No
+          // image is required to redeem the card or for the admin to
+          // verify the trade. The AI auto-fill affordance still lives
+          // here for ecode (a single OPTIONAL screenshot the user can
+          // attach to skip typing), but the section label, helper
+          // copy, and CTA stop talking about uploads being required.
           if (_selectedFormat == 'physical') ...[
-            // Physical: front + back
+            Text('Card Photos', style: GoogleFonts.inter(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600)),
+            SizedBox(height: 4.h),
+            Text(
+              'Upload clear photos of the front and back of your card',
+              style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 13.sp),
+            ),
+            SizedBox(height: 12.h),
             Row(
               children: [
                 Expanded(child: _buildImageSlot(0, 'Front')),
@@ -717,49 +902,43 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
                 Expanded(child: _buildImageSlot(1, 'Back')),
               ],
             ),
-          ] else ...[
-            // E-code: single screenshot
+            SizedBox(height: 8.h),
             Row(
               children: [
-                Expanded(child: _buildImageSlot(0, 'Screenshot')),
-                SizedBox(width: 12.w),
-                // Optional second image for e-codes
+                Icon(Icons.auto_awesome, size: 14.sp, color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.7)),
+                SizedBox(width: 6.w),
                 Expanded(
-                  child: _localImageFiles.isNotEmpty
-                      ? _buildImageSlot(1, 'Extra (optional)')
-                      : Container(
-                          height: 160.h,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1F1F1F).withValues(alpha: 0.5),
-                            borderRadius: BorderRadius.circular(12.r),
-                            border: Border.all(color: const Color(0xFF2D2D2D).withValues(alpha: 0.3)),
-                          ),
-                          child: Center(
-                            child: Text(
-                              'Optional',
-                              style: GoogleFonts.inter(color: const Color(0xFF4B5563), fontSize: 12.sp),
-                            ),
-                          ),
-                        ),
+                  child: Text(
+                    'Card images unlock AI auto-fill for card details above',
+                    style: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 11.sp, fontStyle: FontStyle.italic),
+                  ),
                 ),
               ],
             ),
-          ],
-          SizedBox(height: 8.h),
-          // Hint about AI auto-fill
-          Row(
-            children: [
-              Icon(Icons.auto_awesome, size: 14.sp, color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.7)),
-              SizedBox(width: 6.w),
-              Expanded(
-                child: Text(
-                  'Upload card images to unlock AI auto-fill for card details above',
-                  style: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 11.sp, fontStyle: FontStyle.italic),
+            SizedBox(height: 12.h),
+          ] else ...[
+            // Ecode: image upload is purely optional and used only as
+            // an autofill shortcut. Single compact slot; no "Card
+            // Photos" heading because nothing is required.
+            Row(
+              children: [
+                Icon(Icons.auto_awesome, size: 14.sp, color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.7)),
+                SizedBox(width: 6.w),
+                Expanded(
+                  child: Text(
+                    'Optional: paste a code screenshot to auto-fill the fields',
+                    style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 12.sp, fontStyle: FontStyle.italic),
+                  ),
                 ),
-              ),
-            ],
-          ),
-          SizedBox(height: 12.h),
+              ],
+            ),
+            SizedBox(height: 8.h),
+            SizedBox(
+              width: 200.w,
+              child: _buildImageSlot(0, 'Screenshot (optional)'),
+            ),
+            SizedBox(height: 12.h),
+          ],
 
           // Scan Card with AI button (optional, only when images uploaded)
           if (_uploadedImageUrls.isNotEmpty)
@@ -767,13 +946,32 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
               width: double.infinity,
               height: 44.h,
               child: OutlinedButton.icon(
-                onPressed: !_isUploadingImage ? _onScanCardWithDialog : null,
-                icon: Icon(Icons.auto_awesome, size: 18.sp),
-                label: Text('Auto-fill with AI Scan', style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                onPressed: (_isUploadingImage || _isExtractingDetails)
+                    ? null
+                    : _onScanCardWithDialog,
+                icon: _isExtractingDetails
+                    ? SizedBox(
+                        width: 16.w,
+                        height: 16.w,
+                        child: const CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation(
+                              InvoiceThemeColors.primaryPurple),
+                        ),
+                      )
+                    : Icon(Icons.auto_awesome, size: 18.sp),
+                label: Text(
+                  _isExtractingDetails
+                      ? 'Reading card with AI…'
+                      : 'Auto-fill with AI Scan',
+                  style: GoogleFonts.inter(
+                      fontSize: 14.sp, fontWeight: FontWeight.w600),
+                ),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: InvoiceThemeColors.primaryPurple,
                   side: const BorderSide(color: InvoiceThemeColors.primaryPurple),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r)),
                 ),
               ),
             ),
@@ -792,9 +990,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
                 elevation: 0,
               ),
               child: Text(
-                _canGetRate()
-                    ? 'Get Rate'
-                    : 'Fill all details + upload ${_requiredImageCount == 1 ? "screenshot" : "2 photos"}',
+                'Get Rate',
                 style: GoogleFonts.inter(
                   color: _canGetRate() ? Colors.white : const Color(0xFF6B7280),
                   fontSize: 16.sp,
@@ -803,6 +999,21 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
               ),
             ),
           ),
+          // Small subtitle under the CTA naming the FIRST blocker so
+          // the user knows what to do next without the button itself
+          // shouting nag copy. Only renders while the CTA is disabled.
+          if (!_canGetRate()) ...[
+            SizedBox(height: 8.h),
+            Center(
+              child: Text(
+                _firstBlocker(),
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF6B7280),
+                  fontSize: 12.sp,
+                ),
+              ),
+            ),
+          ],
           SizedBox(height: 16.h),
         ],
       ),
@@ -812,9 +1023,14 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
   Widget _buildImageSlot(int index, String label) {
     final hasImage = index < _localImageFiles.length;
     final isUploading = _isUploadingImage && index == _localImageFiles.length;
+    // Show the picker-launching spinner on the slot the user just tapped.
+    final isPicking = _isPickingImage &&
+        _activePickerSlotIndex == index &&
+        !hasImage;
+    final isBusy = isUploading || isPicking;
 
     return GestureDetector(
-      onTap: isUploading ? null : () => _showImagePickerOptions(index),
+      onTap: isBusy ? null : () => _showImagePickerOptions(index),
       child: Container(
         height: 160.h,
         decoration: BoxDecoration(
@@ -873,11 +1089,29 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
                   ),
                 ],
               )
-            : isUploading
-                ? const Center(
-                    child: CircularProgressIndicator(
-                      color: InvoiceThemeColors.primaryPurple,
-                      strokeWidth: 2,
+            : isBusy
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const CircularProgressIndicator(
+                          color: InvoiceThemeColors.primaryPurple,
+                          strokeWidth: 2,
+                        ),
+                        SizedBox(height: 10.h),
+                        Text(
+                          isPicking
+                              ? (_pickingSource == ImageSource.camera
+                                  ? 'Opening camera…'
+                                  : 'Opening gallery…')
+                              : 'Uploading…',
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFF9CA3AF),
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
                   )
                 : Column(
@@ -939,6 +1173,11 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
   }
 
   Future<void> _pickImage(ImageSource source, int slotIndex) async {
+    setState(() {
+      _isPickingImage = true;
+      _pickingSource = source;
+      _activePickerSlotIndex = slotIndex;
+    });
     try {
       final picked = await _imagePicker.pickImage(
         source: source,
@@ -946,6 +1185,14 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
         maxHeight: 1920,
         imageQuality: 85,
       );
+      // Clear the picker-launching spinner regardless of cancel/return.
+      if (mounted) {
+        setState(() {
+          _isPickingImage = false;
+          _pickingSource = null;
+          _activePickerSlotIndex = null;
+        });
+      }
       if (picked == null) return;
 
       final file = File(picked.path);
@@ -1012,12 +1259,18 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
         filename: filename,
       );
     } catch (e) {
-      if (!mounted) return;
-      Get.snackbar('Error', 'Failed to pick image. Please try again.',
-        backgroundColor: const Color(0xFFEF4444),
-        colorText: Colors.white,
-        snackPosition: SnackPosition.TOP,
-      );
+      if (mounted) {
+        setState(() {
+          _isPickingImage = false;
+          _pickingSource = null;
+          _activePickerSlotIndex = null;
+        });
+        Get.snackbar('Error', 'Failed to pick image. Please try again.',
+          backgroundColor: const Color(0xFFEF4444),
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+        );
+      }
     }
   }
 
@@ -1119,37 +1372,112 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
         _cardPinController.text.trim().isNotEmpty;
     if (!hasDetails) return false;
 
-    // Physical cards: require 2 images (front + back)
-    // E-codes: require 1 image (screenshot of code)
-    final requiredImages = _selectedFormat == 'physical' ? 2 : 1;
-    return _uploadedImageUrls.length >= requiredImages;
+    // Physical cards: require 2 images (front + back) — operators
+    // can't validate the card without seeing both sides.
+    // E-codes: NO image requirement — the code itself IS the card.
+    // The user already provided card_number + pin, which is the
+    // complete redemption payload. Asking for a screenshot adds
+    // friction without protecting the trade.
+    if (_selectedFormat == 'physical') {
+      return _uploadedImageUrls.length >= 2;
+    }
+    return true;
   }
 
-  int get _requiredImageCount => _selectedFormat == 'physical' ? 2 : 1;
+  // Required image count for the slot UI. Physical needs 2 (front +
+  // back), e-code needs 0 (optional screenshot). Other format
+  // strings fall back to 1 for back-compat with legacy rows.
+  int get _requiredImageCount {
+    switch (_selectedFormat) {
+      case 'physical':
+        return 2;
+      case 'ecode':
+        return 0;
+      default:
+        return 1;
+    }
+  }
+
+  // Validation rules — mirror what the backend's SellGiftCard handler
+  // checks at the boundary, plus a few client-side niceties so the
+  // user sees specific errors before round-tripping to the server.
+  //
+  //   Card number :
+  //     - required
+  //     - 4..50 chars (after stripping dashes/spaces)
+  //     - alphanumeric only (the inputFormatter already restricts
+  //       keystrokes; this catches paste of unsupported characters)
+  //   Card PIN :
+  //     - required (every brand we handle either uses one or accepts
+  //       a placeholder; the backend requires the field non-empty)
+  //     - 3..12 chars
+  //     - digits or letters only (most PINs are numeric; we allow
+  //       letters for brands that use alphanumeric scratch-off codes)
+  static const _kCardNumberMinLen = 4;
+  static const _kCardNumberMaxLen = 50;
+  static const _kCardPinMinLen = 3;
+  static const _kCardPinMaxLen = 12;
+  static final _kAlnumPattern = RegExp(r'^[A-Za-z0-9]+$');
+
+  String? _validateCardNumberValue(String raw) {
+    // Dashes are formatting only; the actual code is the alnum payload.
+    final v = raw.replaceAll('-', '').replaceAll(' ', '').trim();
+    if (v.isEmpty) return 'Card number is required';
+    if (v.length < _kCardNumberMinLen) {
+      return 'Card number must be at least $_kCardNumberMinLen characters';
+    }
+    if (v.length > _kCardNumberMaxLen) {
+      return 'Card number is too long (max $_kCardNumberMaxLen characters)';
+    }
+    if (!_kAlnumPattern.hasMatch(v)) {
+      return 'Card number can only contain letters and numbers';
+    }
+    return null;
+  }
+
+  String? _validateCardPinValue(String raw) {
+    final v = raw.trim();
+    if (v.isEmpty) return 'Card PIN is required';
+    if (v.length < _kCardPinMinLen) {
+      return 'PIN must be at least $_kCardPinMinLen characters';
+    }
+    if (v.length > _kCardPinMaxLen) {
+      return 'PIN is too long (max $_kCardPinMaxLen characters)';
+    }
+    if (!_kAlnumPattern.hasMatch(v)) {
+      return 'PIN can only contain letters and numbers';
+    }
+    return null;
+  }
+
+  // _firstBlocker returns a short hint naming the FIRST missing /
+  // invalid input on step 1, in priority order. Renders under the
+  // Get-Rate CTA only while it's disabled, so the user always knows
+  // what to address next without the button itself yelling nag copy.
+  String _firstBlocker() {
+    if (_selectedDenomination == null) return 'Pick a denomination';
+    if (_cardNumberController.text.trim().isEmpty) return 'Enter the card number';
+    if (_validateCardNumberValue(_cardNumberController.text) != null) {
+      return 'Card number looks invalid';
+    }
+    if (_cardPinController.text.trim().isEmpty) return 'Enter the card PIN';
+    if (_validateCardPinValue(_cardPinController.text) != null) {
+      return 'PIN looks invalid';
+    }
+    if (_selectedFormat == 'physical' && _uploadedImageUrls.length < 2) {
+      return 'Upload front and back photos';
+    }
+    return '';
+  }
 
   bool _validateCardFields() {
-    bool valid = true;
-    final cardNum = _cardNumberController.text.replaceAll('-', '').trim();
-    final cardPin = _cardPinController.text.trim();
-
-    if (cardNum.isEmpty) {
-      _cardNumberError = 'Card number is required';
-      valid = false;
-    } else if (cardNum.length < 4) {
-      _cardNumberError = 'Card number is too short';
-      valid = false;
-    }
-
-    if (cardPin.isEmpty) {
-      _cardPinError = 'Card PIN is required';
-      valid = false;
-    } else if (cardPin.length < 3) {
-      _cardPinError = 'Card PIN must be at least 3 characters';
-      valid = false;
-    }
-
-    if (!valid) setState(() {});
-    return valid;
+    final numErr = _validateCardNumberValue(_cardNumberController.text);
+    final pinErr = _validateCardPinValue(_cardPinController.text);
+    setState(() {
+      _cardNumberError = numErr;
+      _cardPinError = pinErr;
+    });
+    return numErr == null && pinErr == null;
   }
 
   void _onGetRate() {
@@ -1598,6 +1926,19 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
   // ============================================
 
   Widget _buildStep4Success() {
+    // Capture into a non-null local so any later code path doesn't
+    // need a null assertion. Empty/null both fall through to the
+    // success variant — never a crash even if the rejection state
+    // wasn't fully populated.
+    final rejectionReason = (_rejectionReason ?? '').trim();
+    final isRejected = rejectionReason.isNotEmpty;
+    final accentColor = isRejected
+        ? const Color(0xFFEF4444)
+        : const Color(0xFF10B981);
+    final headline = isRejected ? 'Sale rejected' : 'Submitted for review';
+    final subline = isRejected
+        ? "Your card was not accepted. The reason from our reviewer is shown below — if you believe this is an error, contact support and reference the ID below."
+        : "Status: PENDING. Most gaming cards verify in 5 – 10 minutes; e-commerce cards can take up to 24 hours. We'll notify you the moment the status changes.";
     return Center(
       child: Padding(
         padding: EdgeInsets.all(32.w),
@@ -1608,15 +1949,18 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
               width: 80.w,
               height: 80.w,
               decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                color: accentColor.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.check_circle_outline,
-                  color: const Color(0xFF10B981), size: 48.sp),
+              child: Icon(
+                isRejected ? Icons.cancel_outlined : Icons.check_circle_outline,
+                color: accentColor,
+                size: 48.sp,
+              ),
             ),
             SizedBox(height: 24.h),
             Text(
-              'Submitted for review',
+              headline,
               style: GoogleFonts.inter(
                 color: Colors.white,
                 fontSize: 20.sp,
@@ -1625,7 +1969,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
             ),
             SizedBox(height: 8.h),
             Text(
-              "Status: PENDING. Most gaming cards verify in 5 – 10 minutes; e-commerce cards can take up to 24 hours. We'll notify you the moment the status changes.",
+              subline,
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
                 color: const Color(0xFF9CA3AF),
@@ -1633,24 +1977,69 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
                 height: 1.4,
               ),
             ),
-            if (_submittedSale != null) ...[
+            // Rejection-reason block — rendered ONLY when the screen
+            // is in the rejected variant. Mirrors the My Sales detail
+            // sheet so the user sees the same operator-supplied copy
+            // either way.
+            if (isRejected) ...[
               SizedBox(height: 16.h),
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                key: const ValueKey('sell_rejection_reason_block'),
+                padding: EdgeInsets.all(14.w),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1F1F1F),
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-                child: Text(
-                  'Ref: ${_submittedSale!.reference}',
-                  style: GoogleFonts.inter(
-                    color: InvoiceThemeColors.primaryPurple,
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w500,
+                  color: accentColor.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(10.r),
+                  border: Border.all(
+                    color: accentColor.withValues(alpha: 0.30),
                   ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Reason for rejection',
+                      style: GoogleFonts.inter(
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w600,
+                        color: accentColor,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    SizedBox(height: 6.h),
+                    Text(
+                      rejectionReason,
+                      style: GoogleFonts.inter(
+                        fontSize: 14.sp,
+                        color: Colors.white,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
+            ...((){
+              final sale = _submittedSale;
+              if (sale == null) return const <Widget>[];
+              return [
+                SizedBox(height: 16.h),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1F1F1F),
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Text(
+                    'Ref: ${sale.reference}',
+                    style: GoogleFonts.inter(
+                      color: InvoiceThemeColors.primaryPurple,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ];
+            }()),
             SizedBox(height: 32.h),
             SizedBox(
               width: double.infinity,
@@ -1773,6 +2162,59 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
 
   Widget _buildDenominationChips() {
     final denominations = _selectedCard!.denominations;
+    final ccy = _selectedCard!.currencies.isNotEmpty
+        ? _selectedCard!.currencies.first
+        : 'USD';
+    // No fixed denominations — render a numeric input bounded by
+    // min/max from the catalogue. Prestmit's v2 catalogue surfaces
+    // many subcategories with only `minimum` set; without this path
+    // the user had nothing to tap and the Get-Rate CTA stayed
+    // disabled forever.
+    if (denominations.isEmpty) {
+      final min = _selectedCard!.minDenomination;
+      final max = _selectedCard!.maxDenomination;
+      final hint = max > 0
+          ? 'Min $ccy ${min.toStringAsFixed(0)} · Max $ccy ${max.toStringAsFixed(0)}'
+          : 'Min $ccy ${min.toStringAsFixed(0)}';
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildTextField(
+            controller: _denominationController,
+            hintText: hint,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            errorText: _denominationError,
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+            ],
+            onChanged: (value) {
+              final parsed = double.tryParse(value.trim());
+              setState(() {
+                if (parsed == null) {
+                  _denominationError = value.trim().isEmpty
+                      ? null
+                      : 'Enter a valid number';
+                  _selectedDenomination = null;
+                  return;
+                }
+                if (min > 0 && parsed < min) {
+                  _denominationError = 'Minimum is $ccy ${min.toStringAsFixed(0)}';
+                  _selectedDenomination = null;
+                  return;
+                }
+                if (max > 0 && parsed > max) {
+                  _denominationError = 'Maximum is $ccy ${max.toStringAsFixed(0)}';
+                  _selectedDenomination = null;
+                  return;
+                }
+                _denominationError = null;
+                _selectedDenomination = parsed;
+              });
+            },
+          ),
+        ],
+      );
+    }
     return Wrap(
       spacing: 8.w,
       runSpacing: 8.h,
@@ -1851,26 +2293,63 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
             ],
           ),
           SizedBox(height: 8.h),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'You receive',
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF9CA3AF),
-                  fontSize: 14.sp,
+          // Manual mode: render the payout RANGE rather than a fixed
+          // value, since the actual amount the user receives is set
+          // by the admin at approval time (off-platform sale price
+          // varies). hasRange returns false for legacy server builds
+          // (range fields default to 0/0 on the wire) so the point-
+          // estimate variant below remains the safe fallback.
+          if (_currentRate!.hasRange) ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "You'll receive between",
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 14.sp,
+                  ),
                 ),
-              ),
-              Text(
-                _formatCurrency(_currentRate!.payoutAmount),
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w700,
+                Text(
+                  '${_formatCurrency(_currentRate!.payoutLowerBound)} – ${_formatCurrency(_currentRate!.payoutUpperBound)}',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
+              ],
+            ),
+            SizedBox(height: 6.h),
+            Text(
+              'Final amount confirmed after the card is verified.',
+              style: GoogleFonts.inter(
+                color: const Color(0xFF9CA3AF),
+                fontSize: 11.sp,
               ),
-            ],
-          ),
+            ),
+          ] else ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'You receive',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 14.sp,
+                  ),
+                ),
+                Text(
+                  _formatCurrency(_currentRate!.payoutAmount),
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );
@@ -1976,28 +2455,148 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
 
   Widget _buildEmptyState() {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.sell_outlined, size: 48.sp, color: const Color(0xFF6B7280)),
-          SizedBox(height: 16.h),
-          Text(
-            'No Cards Available',
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 32.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 72.w,
+              height: 72.w,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFB923C).withValues(alpha: 0.10),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.cloud_off_rounded,
+                size: 36.sp,
+                color: const Color(0xFFFB923C),
+              ),
             ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'No gift card types are available for selling right now',
-            style: GoogleFonts.inter(
-              color: const Color(0xFF9CA3AF),
-              fontSize: 14.sp,
+            SizedBox(height: 20.h),
+            Text(
+              'Sell catalog temporarily unavailable',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 17.sp,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-          ),
-        ],
+            SizedBox(height: 8.h),
+            Text(
+              "We couldn't load the list of cards available for sale. This usually clears in a few minutes.",
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                color: const Color(0xFF9CA3AF),
+                fontSize: 14.sp,
+                height: 1.4,
+              ),
+            ),
+            SizedBox(height: 24.h),
+            ElevatedButton.icon(
+              onPressed: () => context
+                  .read<GiftCardCubit>()
+                  .loadSellableCards(countryCode: _selectedCountry),
+              icon: const Icon(Icons.refresh, size: 18),
+              label: const Text('Try again'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF3B82F6),
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // _buildEmptyForCountry renders when the catalogue API succeeds but
+  // returns zero rows for the selected country (Prestmit doesn't list
+  // any cards under that ISO, e.g. Nigeria in the current sandbox).
+  // Distinct from _buildEmptyState (network/upstream failure) so the
+  // user understands the filter is the cause and isn't pushed to keep
+  // hitting "Try again" on a fundamentally empty result.
+  Widget _buildEmptyForCountry(String countryCode) {
+    final country = _sellCountries.firstWhere(
+      (c) => c['code'] == countryCode,
+      orElse: () => {'code': countryCode, 'name': countryCode, 'flag': '🌍'},
+    );
+    final flag = country['flag'] ?? '🌍';
+    final name = country['name'] ?? countryCode;
+
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 32.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 72.w,
+              height: 72.w,
+              decoration: BoxDecoration(
+                color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: Text(flag, style: TextStyle(fontSize: 32.sp)),
+            ),
+            SizedBox(height: 20.h),
+            Text(
+              'No cards available for $name',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 17.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              "We don't currently buy gift cards from this region. Try a different country, or check back later as our partners onboard new card types.",
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                color: const Color(0xFF9CA3AF),
+                fontSize: 14.sp,
+                height: 1.4,
+              ),
+            ),
+            SizedBox(height: 24.h),
+            // Most cards in Prestmit's catalogue are USA-issued, so
+            // making "Switch to United States" the primary CTA gets
+            // the user back to a populated grid in one tap. The
+            // country selector at the top of the screen still lets
+            // them pick anything else.
+            if (countryCode != 'US')
+              ElevatedButton.icon(
+                onPressed: () {
+                  setState(() => _selectedCountry = 'US');
+                  context.read<GiftCardCubit>().loadSellableCards(countryCode: 'US');
+                },
+                icon: const Text('🇺🇸', style: TextStyle(fontSize: 18)),
+                label: const Text('Switch to United States'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: InvoiceThemeColors.primaryPurple,
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                ),
+              )
+            else
+              OutlinedButton.icon(
+                onPressed: () => context
+                    .read<GiftCardCubit>()
+                    .loadSellableCards(countryCode: countryCode),
+                icon: const Icon(Icons.refresh, size: 18),
+                label: const Text('Try again'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  side: const BorderSide(color: Color(0xFF2D2D2D)),
+                  padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

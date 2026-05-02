@@ -13,6 +13,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/lifestyle/presentation/cubit/lifestyle_cubit.dart';
 import 'package:lazervault/src/features/lifestyle/presentation/screens/lifestyle_screen.dart';
+import 'package:lazervault/src/features/widgets/dashboard/dashboard.dart';
+import 'package:lazervault/src/features/profile/cubit/profile_cubit.dart';
+import 'package:lazervault/src/features/statistics/cubit/statistics_cubit.dart';
 
 /// Set to `true` to show the voice banking setup bottom sheet when the dashboard loads.
 const bool _kShowVoiceSetupDashboardPrompt = false;
@@ -197,6 +200,11 @@ class _DashboardScreenState extends State<DashboardScreen>
                   .asMap()
                   .entries
                   .map((entry) {
+                    // Pass tab-switch + voice-open callbacks to the dashboard
+                    // tab so the swipe-down quick-actions sheet can drive them.
+                    if (entry.key == 0) {
+                      return _buildDashboardTab();
+                    }
                     // Pass tab-switch callback to the lifestyle tab so SprayMe
                     // bottom nav can jump back to any dashboard tab.
                     if (entry.key == 4) {
@@ -323,6 +331,38 @@ class _DashboardScreenState extends State<DashboardScreen>
     return BlocProvider(
       create: (_) => serviceLocator<LifestyleCubit>()..loadCategories(),
       child: NewLifestyleScreen(onSwitchTab: _handleOnTabChange),
+    );
+  }
+
+  /// Builds the dashboard tab with quick-action callbacks wired in. Mirrors
+  /// the providers from [Screen.dashboard] so the dashboard tree has the same
+  /// dependencies as the rest of the app.
+  Widget _buildDashboardTab() {
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => serviceLocator<ProfileCubit>()..getUserProfile(),
+        ),
+        BlocProvider.value(
+          value: serviceLocator<StatisticsCubit>(),
+        ),
+      ],
+      child: Dashboard(
+        onSwitchToAiChat: () {
+          if (!mounted) return;
+          // AI chat lives at index 2 of [DashboardScreen.tabItems].
+          if (_currentIndex == 2) return;
+          _handleOnTabChange(2);
+        },
+        onOpenVoiceAgent: () {
+          if (!mounted) return;
+          _openVoiceCommandSheet();
+        },
+        onOpenProfile: () {
+          if (!mounted) return;
+          Get.toNamed(AppRoutes.profileSettings);
+        },
+      ),
     );
   }
 

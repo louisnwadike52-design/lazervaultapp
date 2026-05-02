@@ -13,6 +13,7 @@ import 'package:lazervault/src/features/qr_payment/presentation/cubit/qr_payment
 import 'package:lazervault/src/features/qr_payment/presentation/widgets/qr_code_details_bottom_sheet.dart';
 import 'package:lazervault/src/features/qr_payment/presentation/widgets/qr_transaction_details_bottom_sheet.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 
 class QRPayHomeScreen extends StatefulWidget {
   const QRPayHomeScreen({super.key});
@@ -177,26 +178,11 @@ class _QRPayHomeScreenState extends State<QRPayHomeScreen>
               ],
             ),
           ),
+          ServiceVoiceButton(serviceName: 'qrpay'),
+          SizedBox(width: 8.w),
           MicroserviceChatIcon(
             serviceName: 'QR Pay',
             sourceContext: 'qrpay',
-          ),
-          SizedBox(width: 8.w),
-          GestureDetector(
-            onTap: () => Get.toNamed(AppRoutes.qrPaymentsHistory),
-            child: Container(
-              width: 44.w,
-              height: 44.w,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(22.r),
-              ),
-              child: Icon(
-                Icons.history_rounded,
-                color: Colors.white,
-                size: 22.sp,
-              ),
-            ),
           ),
         ],
       ),

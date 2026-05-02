@@ -157,6 +157,24 @@ class GiftCardPurchaseCompleted extends GiftCardState {
       ];
 }
 
+/// Backend returned the GiftCard row in a non-terminal state (async
+/// mode: row exists but Reloadly hasn't been called yet, or call
+/// pending). The processing screen stays mounted and listens on the
+/// balance WebSocket for a `giftcard_purchase` event matching this
+/// reference. On terminal event the screen calls
+/// [GiftCardCubit.getGiftCardById] which emits [GiftCardPurchaseCompleted]
+/// or a terminal error state.
+class GiftCardPurchaseAwaitingProvider extends GiftCardState {
+  final GiftCard giftCard;
+  final String reference; // matches BalanceUpdateEvent.reference
+  const GiftCardPurchaseAwaitingProvider({
+    required this.giftCard,
+    required this.reference,
+  });
+  @override
+  List<Object> get props => [giftCard, reference];
+}
+
 // Empty States
 class GiftCardBrandsEmpty extends GiftCardState {
   final String? category;
@@ -370,6 +388,58 @@ class SellSubmitted extends GiftCardState {
 
   @override
   List<Object> get props => [sale, message];
+}
+
+/// Backend returned the sale row in a non-terminal state in automated
+/// (Prestmit) mode. Async-sell: the row is at `pending` because the
+/// async-sell consumer hasn't called Prestmit InitiateSale yet. Sync
+/// auto-mode: the row is at `reviewing` while Prestmit verifies.
+///
+/// The processing screen stays mounted and listens on the balance
+/// WebSocket for a `giftcard_sale` event matching [reference]. On
+/// terminal events the screen calls [GiftCardCubit.refreshSaleDetails]
+/// which emits [GiftCardSellPaid] (success), [SellRejected] (provider
+/// rejected), [SellEscalatedToManualReview] (auto-flow gave up,
+/// operator now owns it), or stays in this state if the row hasn't
+/// flipped yet (race).
+class GiftCardSellAwaitingProvider extends GiftCardState {
+  final GiftCardSale sale;
+  final String reference; // matches BalanceUpdateEvent.reference
+  const GiftCardSellAwaitingProvider({
+    required this.sale,
+    required this.reference,
+  });
+  @override
+  List<Object> get props => [sale, reference];
+}
+
+/// Auto-flow terminal success: Prestmit (or instant-settle) paid the
+/// trade and accounts-service credited the user. Routes to the receipt.
+class GiftCardSellPaid extends GiftCardState {
+  final GiftCardSale sale;
+  const GiftCardSellPaid(this.sale);
+  @override
+  List<Object> get props => [sale];
+}
+
+/// Auto-flow rejected by provider. Distinguished from [SellError] so
+/// the processing screen can show the specific provider reason.
+class SellRejected extends GiftCardState {
+  final GiftCardSale sale;
+  final String reason;
+  const SellRejected({required this.sale, required this.reason});
+  @override
+  List<Object> get props => [sale, reason];
+}
+
+/// Auto-flow gave up after retries; the sale is now in the operator
+/// queue. UX-wise this is the same outcome as the manual-mode wait —
+/// admin will approve/reject it.
+class SellEscalatedToManualReview extends GiftCardState {
+  final GiftCardSale sale;
+  const SellEscalatedToManualReview(this.sale);
+  @override
+  List<Object> get props => [sale];
 }
 
 class SellStatusLoaded extends GiftCardState {

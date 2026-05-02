@@ -58,6 +58,12 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
       backgroundColor: const Color(0xFF0A0A0A),
       body: SafeArea(
         child: BlocConsumer<GroupAccountCubit, GroupAccountState>(
+          // Only rebuild for states the screen actually renders. Snack-bar
+          // / navigation states still flow through the listener.
+          buildWhen: (previous, current) =>
+              current is GroupAccountLoading ||
+              current is GroupAccountGroupLoaded ||
+              current is GroupAccountError,
           listener: (context, state) {
             if (state is GroupAccountError) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -95,18 +101,38 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
             }
           },
           builder: (context, state) {
-            if (state is GroupAccountLoading) {
-              return _buildLoadingView();
-            } else if (state is GroupAccountGroupLoaded) {
+            // Render order (SWR-friendly):
+            //   1. Fresh GroupAccountGroupLoaded from this group → use it.
+            //   2. Cubit holds a cached snapshot for this group → use it
+            //      even though the current state is something else
+            //      (e.g. arrived after a ContributionPaymentSuccess emit).
+            //   3. Real Loading from a cold load → show spinner.
+            //   4. Error → show error view.
+            //   5. Otherwise → spinner.
+            if (state is GroupAccountGroupLoaded &&
+                state.group.id == widget.groupId) {
               return _buildGroupDetailsView(
                 state.group,
                 state.members,
                 state.contributions,
               );
+            }
+            final cubit = context.read<GroupAccountCubit>();
+            if (cubit.lastLoadedGroup != null &&
+                cubit.lastLoadedGroup!.id == widget.groupId &&
+                cubit.lastLoadedMembers != null &&
+                cubit.lastLoadedContributions != null) {
+              return _buildGroupDetailsView(
+                cubit.lastLoadedGroup!,
+                cubit.lastLoadedMembers!,
+                cubit.lastLoadedContributions!,
+              );
+            }
+            if (state is GroupAccountLoading) {
+              return _buildLoadingView();
             } else if (state is GroupAccountError) {
               return _buildErrorView(state.message);
             }
-            
             return _buildLoadingView();
           },
         ),
@@ -250,6 +276,9 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
       case GroupMemberRole.member:
         roleColor = const Color(0xFF10B981);
         roleIcon = Icons.person;
+      case GroupMemberRole.viewer:
+        roleColor = const Color(0xFF6B7280);
+        roleIcon = Icons.visibility;
     }
 
     return GestureDetector(
@@ -332,6 +361,9 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
       case GroupMemberRole.member:
         roleColor = const Color(0xFF10B981);
         roleIcon = Icons.person;
+      case GroupMemberRole.viewer:
+        roleColor = const Color(0xFF6B7280);
+        roleIcon = Icons.visibility;
     }
 
     final permissions = <String>[];

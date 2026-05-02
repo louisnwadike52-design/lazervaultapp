@@ -1069,6 +1069,10 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     switch (role) {
       case pb_enum.GroupMemberRole.GROUP_MEMBER_ROLE_ADMIN:
         return GroupMemberRole.admin;
+      case pb_enum.GroupMemberRole.GROUP_MEMBER_ROLE_MODERATOR:
+        return GroupMemberRole.moderator;
+      case pb_enum.GroupMemberRole.GROUP_MEMBER_ROLE_VIEWER:
+        return GroupMemberRole.viewer;
       case pb_enum.GroupMemberRole.GROUP_MEMBER_ROLE_MEMBER:
         return GroupMemberRole.member;
       default:
@@ -1081,9 +1085,11 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       case GroupMemberRole.admin:
         return pb_enum.GroupMemberRole.GROUP_MEMBER_ROLE_ADMIN;
       case GroupMemberRole.moderator:
-        return pb_enum.GroupMemberRole.GROUP_MEMBER_ROLE_MEMBER;
+        return pb_enum.GroupMemberRole.GROUP_MEMBER_ROLE_MODERATOR;
       case GroupMemberRole.member:
         return pb_enum.GroupMemberRole.GROUP_MEMBER_ROLE_MEMBER;
+      case GroupMemberRole.viewer:
+        return pb_enum.GroupMemberRole.GROUP_MEMBER_ROLE_VIEWER;
     }
   }
 
@@ -1192,12 +1198,20 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     switch (status) {
       case pb_enum.PaymentStatus.PAYMENT_STATUS_PENDING:
         return PaymentStatus.pending;
+      case pb_enum.PaymentStatus.PAYMENT_STATUS_PROCESSING:
+        return PaymentStatus.processing;
+      case pb_enum.PaymentStatus.PAYMENT_STATUS_AWAITING_VERIFICATION:
+        return PaymentStatus.awaitingVerification;
       case pb_enum.PaymentStatus.PAYMENT_STATUS_COMPLETED:
         return PaymentStatus.completed;
       case pb_enum.PaymentStatus.PAYMENT_STATUS_FAILED:
         return PaymentStatus.failed;
+      case pb_enum.PaymentStatus.PAYMENT_STATUS_REFUNDING:
+        return PaymentStatus.refunding;
       case pb_enum.PaymentStatus.PAYMENT_STATUS_REFUNDED:
         return PaymentStatus.refunded;
+      case pb_enum.PaymentStatus.PAYMENT_STATUS_MANUAL_REVIEW:
+        return PaymentStatus.manualReview;
       default:
         return PaymentStatus.pending;
     }
@@ -1208,15 +1222,21 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       case PaymentStatus.pending:
         return pb_enum.PaymentStatus.PAYMENT_STATUS_PENDING;
       case PaymentStatus.processing:
-        return pb_enum.PaymentStatus.PAYMENT_STATUS_PENDING; // Map to pending as fallback
+        return pb_enum.PaymentStatus.PAYMENT_STATUS_PROCESSING;
+      case PaymentStatus.awaitingVerification:
+        return pb_enum.PaymentStatus.PAYMENT_STATUS_AWAITING_VERIFICATION;
       case PaymentStatus.completed:
         return pb_enum.PaymentStatus.PAYMENT_STATUS_COMPLETED;
       case PaymentStatus.failed:
         return pb_enum.PaymentStatus.PAYMENT_STATUS_FAILED;
       case PaymentStatus.cancelled:
-        return pb_enum.PaymentStatus.PAYMENT_STATUS_FAILED; // Map to failed as fallback
+        return pb_enum.PaymentStatus.PAYMENT_STATUS_FAILED; // legacy: no proto equivalent
+      case PaymentStatus.refunding:
+        return pb_enum.PaymentStatus.PAYMENT_STATUS_REFUNDING;
       case PaymentStatus.refunded:
         return pb_enum.PaymentStatus.PAYMENT_STATUS_REFUNDED;
+      case PaymentStatus.manualReview:
+        return pb_enum.PaymentStatus.PAYMENT_STATUS_MANUAL_REVIEW;
     }
   }
 

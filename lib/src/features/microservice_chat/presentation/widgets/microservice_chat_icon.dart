@@ -53,8 +53,8 @@ class MicroserviceChatIcon extends StatelessWidget {
         );
       },
       child: Container(
-        width: size ?? 50,
-        height: size ?? 50,
+        width: size ?? 44,
+        height: size ?? 44,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: useDarkInner
@@ -64,13 +64,13 @@ class MicroserviceChatIcon extends StatelessWidget {
             color: useDarkInner
                 ? Colors.white.withValues(alpha: 0.3)
                 : (iconColor ?? const Color.fromARGB(255, 78, 3, 208)),
-            width: size != null && size! < 40 ? 1.5 : 2,
+            width: (size ?? 44) < 40 ? 1.5 : 2,
           ),
         ),
         child: Icon(
           icon,
           color: iconColor ?? const Color.fromARGB(255, 78, 3, 208),
-          size: iconSize ?? 24,
+          size: iconSize ?? 20,
         ),
       ),
     );

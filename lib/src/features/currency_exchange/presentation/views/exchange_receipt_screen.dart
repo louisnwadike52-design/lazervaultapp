@@ -124,26 +124,25 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen> {
       child: Scaffold(
         backgroundColor: const Color(0xFF0A0A0A),
         body: SafeArea(
-          child: Column(
-            children: [
-              _buildTopBar(),
-              Expanded(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: EdgeInsets.symmetric(horizontal: 20.w),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      SizedBox(height: 8.h),
-                      _buildHeader(tx),
-                      SizedBox(height: 16.h),
-                      _buildDetailsCard(tx),
-                    ],
-                  ),
-                ),
-              ),
-              _buildActions(),
-            ],
+          // Flex layout fills the full viewport height without scrolling.
+          // Spacers distribute the breathing room between the header, the
+          // details card and the action row so the receipt feels balanced
+          // rather than crammed against the top bar.
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                _buildTopBar(),
+                const Spacer(flex: 1),
+                _buildHeader(tx),
+                const Spacer(flex: 2),
+                _buildDetailsCard(tx),
+                const Spacer(flex: 3),
+                _buildActions(),
+                SizedBox(height: 12.h),
+              ],
+            ),
           ),
         ),
       ),
@@ -172,7 +171,7 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen> {
             height: 28.w,
             errorBuilder: (_, __, ___) => Icon(
               Icons.shield_outlined,
-              color: const Color(0xFF7C3AED),
+              color: const Color(0xFF4E03D0),
               size: 24.sp,
             ),
           ),
@@ -191,51 +190,57 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen> {
 
     return Column(
       children: [
-        // International/exchange icon at the top. A globe + arrows works for
-        // both Convert (same-user FX) and Send Abroad — it reads as "money
-        // crossing currencies" which is the feature's whole identity.
+        // Status icon: check for success, error for failure, hourglass
+        // while the transfer is in flight. Single source-of-truth for
+        // the header emotion — the detail rows below keep the full
+        // status string.
         Container(
           width: 56.w,
           height: 56.w,
           decoration: BoxDecoration(
             color: accent.withValues(alpha: 0.15),
             shape: BoxShape.circle,
-            border: Border.all(color: accent.withValues(alpha: 0.35), width: 1.2),
+            border:
+                Border.all(color: accent.withValues(alpha: 0.35), width: 1.4),
           ),
-          child: Icon(
-            isConversion ? Icons.swap_horiz : Icons.public,
-            color: accent,
-            size: 28.sp,
-          ),
+          child: Icon(_statusIcon(tx), color: accent, size: 28.sp),
         ),
-        SizedBox(height: 12.h),
-        Text(
-          '${_code(tx.fromCurrency)} ${tx.fromAmount.toStringAsFixed(2)}',
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 28.sp,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        SizedBox(height: 2.h),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.south_east,
-              size: 14.sp,
-              color: const Color(0xFF8E8E93),
-            ),
-            SizedBox(width: 6.w),
-            Text(
-              '${_code(tx.toCurrency)} ${tx.toAmount.toStringAsFixed(2)}',
-              style: GoogleFonts.inter(
-                color: const Color(0xFFE5E7EB),
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w500,
+        SizedBox(height: 14.h),
+        // Single-line pair display keeps the headline amount visually
+        // prominent without forcing a two-line stacked layout.
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(
+                '${_code(tx.fromCurrency)}${tx.fromAmount.toStringAsFixed(2)}',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 26.sp,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
-            ),
-          ],
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10.w),
+                child: Icon(
+                  Icons.arrow_forward,
+                  size: 18.sp,
+                  color: const Color(0xFF8E8E93),
+                ),
+              ),
+              Text(
+                '${_code(tx.toCurrency)}${tx.toAmount.toStringAsFixed(2)}',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFFE5E7EB),
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
         ),
         SizedBox(height: 10.h),
         Text(
@@ -246,46 +251,28 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen> {
             fontWeight: FontWeight.w500,
           ),
         ),
-        SizedBox(height: 6.h),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              _statusLabel(tx),
-              style: GoogleFonts.inter(
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w500,
-                color: accent,
-              ),
-            ),
-            SizedBox(width: 8.w),
-            Text('·',
-                style: GoogleFonts.inter(
-                    fontSize: 14.sp, color: const Color(0xFF8E8E93))),
-            SizedBox(width: 8.w),
-            Text(
-              _formatDateTime(tx.createdAt),
-              style: GoogleFonts.inter(
-                fontSize: 12.sp,
-                color: const Color(0xFF8E8E93),
-              ),
-            ),
-          ],
+        SizedBox(height: 4.h),
+        Text(
+          '${_statusLabel(tx)} · ${_formatDateTime(tx.createdAt)}',
+          style: GoogleFonts.inter(
+            fontSize: 12.sp,
+            color: const Color(0xFF8E8E93),
+          ),
         ),
         if (tx.isFailed && (tx.failureReason?.isNotEmpty ?? false)) ...[
-          SizedBox(height: 12.h),
+          SizedBox(height: 8.h),
           Container(
-            padding: EdgeInsets.all(12.w),
+            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
             decoration: BoxDecoration(
               color: const Color(0xFFEF4444).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10.r),
+              borderRadius: BorderRadius.circular(8.r),
             ),
             child: Text(
               tx.failureReason!,
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
                 color: const Color(0xFFEF4444),
-                fontSize: 12.sp,
+                fontSize: 11.sp,
               ),
             ),
           ),
@@ -307,46 +294,41 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen> {
       width: double.infinity,
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(14.r),
+        borderRadius: BorderRadius.circular(12.r),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: EdgeInsets.fromLTRB(16.w, 16.w, 16.w, 0),
+            padding: EdgeInsets.fromLTRB(16.w, 14.w, 16.w, 10.h),
             child: Text(
               'Details',
               style: GoogleFonts.inter(
                 color: Colors.white,
-                fontSize: 15.sp,
+                fontSize: 14.sp,
                 fontWeight: FontWeight.w600,
               ),
             ),
           ),
-          SizedBox(height: 14.h),
           _row('Type',
-              isConversion ? 'Currency Conversion' : 'International Transfer'),
+              isConversion ? 'Conversion' : 'International Transfer'),
           _row(
             'You sent',
-            '${_code(tx.fromCurrency)} ${tx.fromAmount.toStringAsFixed(2)}',
+            '${_code(tx.fromCurrency)}${tx.fromAmount.toStringAsFixed(2)}',
           ),
           _row(
             isConversion ? 'You received' : 'Recipient gets',
-            '${_code(tx.toCurrency)} ${tx.toAmount.toStringAsFixed(2)}',
+            '${_code(tx.toCurrency)}${tx.toAmount.toStringAsFixed(2)}',
           ),
           _row(
-            'Exchange rate',
+            'Rate',
             '1 ${tx.fromCurrency} = ${tx.exchangeRate.toStringAsFixed(4)} ${tx.toCurrency}',
           ),
           if (tx.fees > 0)
-            _row(
-              'Fee',
-              '${_code(tx.fromCurrency)} ${tx.fees.toStringAsFixed(2)}',
-            ),
-          _row(
-            'Total debit',
-            '${_code(tx.fromCurrency)} ${tx.totalCost.toStringAsFixed(2)}',
-          ),
+            _row('Fee',
+                '${_code(tx.fromCurrency)}${tx.fees.toStringAsFixed(2)}'),
+          _row('Total debit',
+              '${_code(tx.fromCurrency)}${tx.totalCost.toStringAsFixed(2)}'),
           if (!isConversion && tx.recipientName.isNotEmpty)
             _row('Recipient', tx.recipientName),
           if (!isConversion && tx.recipient.bankName.isNotEmpty)
@@ -356,8 +338,7 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen> {
           if (!isConversion && tx.recipient.countryCode.isNotEmpty)
             _row('Country', tx.recipient.countryCode),
           _row('Status', _statusLabel(tx)),
-          if (reference.isNotEmpty) _row('Reference', reference),
-          // Divider before QR
+          SizedBox(height: 8.h),
           Divider(
             color: const Color(0xFF2D2D2D),
             height: 1,
@@ -372,7 +353,7 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen> {
                 child: QrImageView(
                   data: _qrData!,
                   version: QrVersions.auto,
-                  size: 80.w,
+                  size: 96.w,
                   backgroundColor: Colors.transparent,
                   dataModuleStyle:
                       const QrDataModuleStyle(color: Colors.white),
@@ -388,7 +369,7 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen> {
                 style: GoogleFonts.robotoMono(
                   fontSize: 10.sp,
                   color: const Color(0xFF8E8E93),
-                  letterSpacing: 0.5,
+                  letterSpacing: 0.4,
                 ),
               ),
             ),
@@ -403,29 +384,26 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen> {
   // ---------------------------------------------------------------------------
 
   Widget _buildActions() {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 8.h),
-      child: Row(
-        children: [
-          Expanded(
-            child: _actionButton(
-              icon: _isDownloading ? null : Icons.download_outlined,
-              label: 'Download',
-              isLoading: _isDownloading,
-              onTap: _downloadReceipt,
-            ),
+    return Row(
+      children: [
+        Expanded(
+          child: _actionButton(
+            icon: _isDownloading ? null : Icons.download_outlined,
+            label: 'Download',
+            isLoading: _isDownloading,
+            onTap: _downloadReceipt,
           ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: _actionButton(
-              icon: _isSharing ? null : Icons.share_outlined,
-              label: 'Share',
-              isLoading: _isSharing,
-              onTap: _shareReceipt,
-            ),
+        ),
+        SizedBox(width: 10.w),
+        Expanded(
+          child: _actionButton(
+            icon: _isSharing ? null : Icons.share_outlined,
+            label: 'Share',
+            isLoading: _isSharing,
+            onTap: _shareReceipt,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -437,31 +415,31 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen> {
   }) {
     return Material(
       color: const Color(0xFF1F1F1F),
-      borderRadius: BorderRadius.circular(12.r),
+      borderRadius: BorderRadius.circular(10.r),
       child: InkWell(
         onTap: isLoading ? null : onTap,
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(10.r),
         child: Container(
-          padding: EdgeInsets.symmetric(vertical: 10.h),
+          padding: EdgeInsets.symmetric(vertical: 9.h),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (isLoading)
                 SizedBox(
-                  width: 16.sp,
-                  height: 16.sp,
+                  width: 14.sp,
+                  height: 14.sp,
                   child: const CircularProgressIndicator(
                     strokeWidth: 2,
                     color: Colors.white,
                   ),
                 )
               else if (icon != null)
-                Icon(icon, color: Colors.white, size: 18.sp),
-              if (!isLoading && icon != null) SizedBox(width: 8.w),
+                Icon(icon, color: Colors.white, size: 16.sp),
+              if (!isLoading && icon != null) SizedBox(width: 6.w),
               Text(
                 label,
                 style: GoogleFonts.inter(
-                  fontSize: 14.sp,
+                  fontSize: 13.sp,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
                 ),
@@ -479,12 +457,12 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen> {
 
   Widget _row(String label, String value) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 10.h),
+      padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 7.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 120.w,
+            width: 118.w,
             child: Text(
               label,
               style: GoogleFonts.inter(
@@ -502,7 +480,7 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen> {
                 fontWeight: FontWeight.w500,
                 color: Colors.white,
               ),
-              maxLines: 3,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -514,8 +492,37 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen> {
   String _code(String currency) =>
       currency.isEmpty ? '' : '${currency.toUpperCase()} ';
 
+  /// Backend maps refunded/refund_pending/refund_failed onto the smaller
+  /// Flutter enum (refunded→cancelled, refund_failed→failed, refund_pending
+  /// →processing). Detect the "refunded" flavour via the reason string so
+  /// the receipt can show "Refunded" instead of a bare "Failed".
+  _RefundFlavour _refundFlavour(CurrencyTransaction tx) {
+    final reason = (tx.failureReason ?? '').toLowerCase();
+    final isRefundedKeyword = reason.contains('refund') ||
+        reason.contains('reversed') ||
+        reason.contains('released');
+    if (tx.isFailed || _isCancelled(tx)) {
+      if (isRefundedKeyword) return _RefundFlavour.refunded;
+    }
+    if (_isCancelled(tx)) return _RefundFlavour.refunded;
+    if (tx.isFailed && reason.contains('pending')) {
+      return _RefundFlavour.refundPending;
+    }
+    return _RefundFlavour.none;
+  }
+
+  bool _isCancelled(CurrencyTransaction tx) =>
+      tx.statusString.toLowerCase() == 'cancelled';
+
   String _headlineForStatus(CurrencyTransaction tx,
       {required bool isConversion}) {
+    final refund = _refundFlavour(tx);
+    if (refund == _RefundFlavour.refunded) {
+      return 'Transaction refunded';
+    }
+    if (refund == _RefundFlavour.refundPending) {
+      return 'Refund in progress';
+    }
     if (tx.isCompleted) {
       return isConversion ? 'Conversion successful' : 'Transfer initiated';
     }
@@ -526,6 +533,9 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen> {
   }
 
   String _statusLabel(CurrencyTransaction tx) {
+    final refund = _refundFlavour(tx);
+    if (refund == _RefundFlavour.refunded) return 'Refunded';
+    if (refund == _RefundFlavour.refundPending) return 'Refund Pending';
     if (tx.isCompleted) return 'Completed';
     if (tx.isFailed) return 'Failed';
     if (tx.isProcessing) return 'Processing';
@@ -534,9 +544,27 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen> {
   }
 
   Color _statusColor(CurrencyTransaction tx) {
+    final refund = _refundFlavour(tx);
+    if (refund == _RefundFlavour.refunded) {
+      return const Color(0xFF60A5FA); // cool blue — reversal, not failure
+    }
+    if (refund == _RefundFlavour.refundPending) {
+      return const Color(0xFFFB923C); // amber — in progress
+    }
     if (tx.isCompleted) return const Color(0xFF10B981);
     if (tx.isFailed) return const Color(0xFFEF4444);
-    return const Color(0xFF7C3AED); // processing / pending — purple accent
+    return const Color(0xFF4E03D0);
+  }
+
+  IconData _statusIcon(CurrencyTransaction tx) {
+    final refund = _refundFlavour(tx);
+    if (refund == _RefundFlavour.refunded) return Icons.undo;
+    if (refund == _RefundFlavour.refundPending) {
+      return Icons.hourglass_bottom;
+    }
+    if (tx.isCompleted) return Icons.check;
+    if (tx.isFailed) return Icons.close;
+    return Icons.hourglass_bottom;
   }
 
   String _formatDateTime(DateTime dt) {
@@ -575,7 +603,7 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen> {
                 ElevatedButton(
                   onPressed: _goBackToExchange,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF7C3AED),
+                    backgroundColor: const Color(0xFF4E03D0),
                   ),
                   child: Text(
                     'Back to Exchange',
@@ -593,3 +621,8 @@ class _ExchangeReceiptScreenState extends State<ExchangeReceiptScreen> {
     );
   }
 }
+
+// Refund flavour derived from failure_reason + status. The proto enum
+// collapses all terminal-sad states to FAILED/CANCELLED, so we recover
+// the richer label (Refunded / Refund Pending) from the reason string.
+enum _RefundFlavour { none, refunded, refundPending }

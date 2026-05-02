@@ -867,6 +867,8 @@ class _ChangeRoleDialogState extends State<ChangeRoleDialog> {
         return const Color(0xFFFB923C);
       case GroupMemberRole.member:
         return const Color(0xFF10B981);
+      case GroupMemberRole.viewer:
+        return const Color(0xFF6B7280);
     }
   }
 
@@ -875,9 +877,11 @@ class _ChangeRoleDialogState extends State<ChangeRoleDialog> {
       case GroupMemberRole.admin:
         return 'Full control over group settings and members';
       case GroupMemberRole.moderator:
-        return 'Can add members and manage contributions';
+        return 'Add/remove members. Cannot delete the group, change admin roles, or initiate payouts.';
       case GroupMemberRole.member:
         return 'Can view and make payments';
+      case GroupMemberRole.viewer:
+        return 'Read-only access. Cannot contribute or modify anything.';
     }
   }
 }

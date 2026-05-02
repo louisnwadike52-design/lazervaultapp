@@ -188,6 +188,17 @@ class GroupAccountSuccess extends GroupAccountState {
   List<Object?> get props => [message];
 }
 
+/// Result of a generic user search initiated from the add-member flow.
+class UsersFound extends GroupAccountState {
+  final List<GroupMember> users;
+  final String query;
+
+  const UsersFound({required this.users, required this.query});
+
+  @override
+  List<Object?> get props => [users, query];
+}
+
 /// Member added successfully - includes the new member for reactive UI updates
 class MemberAddedSuccess extends GroupAccountState {
   final GroupMember member;
