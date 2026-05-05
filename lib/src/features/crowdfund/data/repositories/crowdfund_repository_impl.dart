@@ -19,7 +19,6 @@ class CrowdfundRepositoryImpl implements CrowdfundRepository {
     DateTime? deadline,
     required String category,
     String? imageUrl,
-    required CrowdfundVisibility visibility,
     Map<String, dynamic>? metadata,
   }) async {
     try {
@@ -32,7 +31,6 @@ class CrowdfundRepositoryImpl implements CrowdfundRepository {
         deadline: deadline,
         category: category,
         imageUrl: imageUrl,
-        visibility: visibility,
         metadata: metadata,
       );
     } catch (e) {
@@ -57,7 +55,6 @@ class CrowdfundRepositoryImpl implements CrowdfundRepository {
     String? categoryFilter,
     bool myCrowdfundsOnly = false,
     String? sortBy,
-    CrowdfundVisibility? visibility,
   }) async {
     try {
       return await remoteDataSource.listCrowdfunds(
@@ -67,7 +64,6 @@ class CrowdfundRepositoryImpl implements CrowdfundRepository {
         categoryFilter: categoryFilter,
         myCrowdfundsOnly: myCrowdfundsOnly,
         sortBy: sortBy,
-        visibility: visibility,
       );
     } catch (e) {
       throw Exception('Failed to list crowdfunds: $e');

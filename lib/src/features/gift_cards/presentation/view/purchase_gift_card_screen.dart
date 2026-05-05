@@ -197,15 +197,15 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(height: 16.h),
+                      SizedBox(height: 10.h),
                       _buildBrandCard(),
-                      SizedBox(height: 28.h),
+                      SizedBox(height: 16.h),
                       _buildAmountSelection(),
-                      SizedBox(height: 28.h),
+                      SizedBox(height: 16.h),
                       _buildPriceSummary(),
-                      SizedBox(height: 32.h),
+                      SizedBox(height: 18.h),
                       _buildPurchaseButton(),
-                      SizedBox(height: 40.h),
+                      SizedBox(height: 20.h),
                     ],
                   ),
                 ),
@@ -219,33 +219,33 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
 
   Widget _buildHeader() {
     return Padding(
-      padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 0),
+      padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 0),
       child: Row(
         children: [
           GestureDetector(
             onTap: () => Get.back(),
             child: Container(
-              width: 44.w,
-              height: 44.w,
+              width: 38.w,
+              height: 38.w,
               decoration: BoxDecoration(
                 color: const Color(0xFF1F1F1F),
-                borderRadius: BorderRadius.circular(22.r),
+                borderRadius: BorderRadius.circular(19.r),
               ),
-              child: Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 18.sp),
+              child: Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 16.sp),
             ),
           ),
           Expanded(
             child: Text(
               'Purchase Gift Card',
               style: GoogleFonts.inter(
-                fontSize: 18.sp,
+                fontSize: 16.sp,
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
               ),
               textAlign: TextAlign.center,
             ),
           ),
-          SizedBox(width: 44.w),
+          SizedBox(width: 38.w),
         ],
       ),
     );
@@ -253,84 +253,87 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
 
   Widget _buildBrandCard() {
     return Container(
-      padding: EdgeInsets.all(20.w),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(14.r),
         border: Border.all(color: const Color(0xFF2D2D2D)),
       ),
       child: Row(
         children: [
           Container(
-            height: 64.h,
-            width: 64.w,
+            height: 48.h,
+            width: 48.w,
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(14.r),
+              borderRadius: BorderRadius.circular(12.r),
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(14.r),
+              borderRadius: BorderRadius.circular(12.r),
               child: CachedNetworkImage(
                 imageUrl: widget.brand.logoUrl,
                 fit: BoxFit.contain,
                 placeholder: (context, url) => Icon(
                   Icons.image_rounded,
                   color: Colors.grey.shade400,
-                  size: 28.sp,
+                  size: 22.sp,
                 ),
                 errorWidget: (context, url, error) => Icon(
                   Icons.card_giftcard_rounded,
                   color: Colors.grey.shade400,
-                  size: 28.sp,
+                  size: 22.sp,
                 ),
               ),
             ),
           ),
-          SizedBox(width: 16.w),
+          SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   widget.brand.name,
                   style: GoogleFonts.inter(
-                    fontSize: 18.sp,
+                    fontSize: 15.sp,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                SizedBox(height: 4.h),
+                SizedBox(height: 2.h),
                 Text(
                   widget.brand.description,
                   style: GoogleFonts.inter(
-                    fontSize: 13.sp,
+                    fontSize: 11.sp,
                     color: const Color(0xFF9CA3AF),
                     fontWeight: FontWeight.w400,
                   ),
-                  maxLines: 2,
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                if (widget.brand.discountPercentage > 0) ...[
-                  SizedBox(height: 8.h),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF10B981).withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                    child: Text(
-                      '${widget.brand.discountPercentage.toStringAsFixed(0)}% OFF',
-                      style: GoogleFonts.inter(
-                        fontSize: 11.sp,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF10B981),
-                      ),
-                    ),
-                  ),
-                ],
               ],
             ),
           ),
+          if (widget.brand.discountPercentage > 0) ...[
+            SizedBox(width: 8.w),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(6.r),
+              ),
+              child: Text(
+                '${widget.brand.discountPercentage.toStringAsFixed(0)}% OFF',
+                style: GoogleFonts.inter(
+                  fontSize: 10.sp,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF10B981),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -429,15 +432,15 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
         Text(
           'Select Amount',
           style: GoogleFonts.inter(
-            fontSize: 16.sp,
+            fontSize: 14.sp,
             fontWeight: FontWeight.w600,
             color: Colors.white,
           ),
         ),
-        SizedBox(height: 14.h),
+        SizedBox(height: 10.h),
         Wrap(
-          spacing: 10.w,
-          runSpacing: 10.h,
+          spacing: 8.w,
+          runSpacing: 8.h,
           children: _denominations.asMap().entries.map((entry) {
             final idx = entry.key;
             final amount = entry.value;
@@ -460,12 +463,12 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
                 });
               },
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
                 decoration: BoxDecoration(
                   color: isSelected
                       ? InvoiceThemeColors.primaryPurple
                       : const Color(0xFF1F1F1F),
-                  borderRadius: BorderRadius.circular(12.r),
+                  borderRadius: BorderRadius.circular(10.r),
                   border: Border.all(
                     color: isSelected
                         ? InvoiceThemeColors.primaryPurple
@@ -479,18 +482,18 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
                       '$_recipientCurrency ${amount.toStringAsFixed(0)}',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
-                        fontSize: 14.sp,
+                        fontSize: 13.sp,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
                       ),
                     ),
                     if (senderPrice != null && _senderCurrency != _recipientCurrency) ...[
-                      SizedBox(height: 4.h),
+                      SizedBox(height: 2.h),
                       Text(
                         '$_senderCurrency ${_formatAmount(senderPrice)}',
                         textAlign: TextAlign.center,
                         style: GoogleFonts.inter(
-                          fontSize: 12.sp,
+                          fontSize: 11.sp,
                           fontWeight: FontWeight.w500,
                           color: isSelected
                               ? Colors.white.withValues(alpha: 0.8)
@@ -509,7 +512,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
         // (Reloadly denominationType=FIXED). Per-brand:
         //   • RANGE → editable; min/max validation
         //   • FIXED → disabled; helper text directs the user to pills
-        SizedBox(height: 16.h),
+        SizedBox(height: 10.h),
         Row(
           children: [
             Expanded(
@@ -642,7 +645,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
                   BoxConstraints(minWidth: 0, minHeight: 0),
               border: InputBorder.none,
               contentPadding:
-                  EdgeInsets.symmetric(horizontal: 4.w, vertical: 16.h),
+                  EdgeInsets.symmetric(horizontal: 4.w, vertical: 12.h),
             ),
             validator: (value) {
               // Validation only fires when the field is enabled —
@@ -711,63 +714,55 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
     }
 
     return Container(
-      padding: EdgeInsets.all(20.w),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(14.r),
         border: Border.all(color: const Color(0xFF2D2D2D)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Price Summary',
-            style: GoogleFonts.inter(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: 16.h),
           // Card face value
           _buildPriceRow(
             'Gift Card Value',
             '$_recipientCurrency ${_formatAmount(amount)}',
           ),
           if (hasSenderPrice && subtotal > 0 && flatFee > 0) ...[
-            SizedBox(height: 10.h),
+            SizedBox(height: 6.h),
             _buildPriceRow(
               'Subtotal',
               '$_senderCurrency ${_formatAmount(subtotal)}',
             ),
-            SizedBox(height: 10.h),
+            SizedBox(height: 6.h),
             _buildPriceRow(
               'Service Fee',
               '$_senderCurrency ${_formatAmount(flatFee)}',
             ),
           ],
-          // FX rate line — surfaces the Reloadly rate (already including our
-          // FX margin from the backend) so the user can see why the locale
-          // total differs from the card face value.
+          // Effective rate: total / face value. Includes everything baked
+          // into the user's price — Reloadly wholesale + platform margin +
+          // any fees — not the raw inter-bank FX. Labelled "Effective rate"
+          // (not "FX rate") so the user isn't misled into thinking they're
+          // seeing a market quote.
           if (hasSenderPrice && amount > 0 && total > 0) ...[
-            SizedBox(height: 10.h),
+            SizedBox(height: 6.h),
             _buildPriceRow(
-              'FX rate',
+              'Effective rate',
               '1 $_recipientCurrency = ${_formatAmount(total / amount)} $_senderCurrency',
             ),
           ],
           if (widget.brand.discountPercentage > 0) ...[
-            SizedBox(height: 10.h),
+            SizedBox(height: 6.h),
             _buildPriceRow(
-              'Discount (${widget.brand.discountPercentage.toStringAsFixed(0)}%)',
-              '-${widget.brand.discountPercentage.toStringAsFixed(0)}%',
+              'Discount',
+              '-${widget.brand.discountPercentage.toStringAsFixed(widget.brand.discountPercentage % 1 == 0 ? 0 : 2)}%',
               isDiscount: true,
             ),
           ],
-          SizedBox(height: 12.h),
+          SizedBox(height: 8.h),
           Divider(color: const Color(0xFF2D2D2D), height: 1),
-          SizedBox(height: 12.h),
-          // Total in local currency
+          SizedBox(height: 8.h),
           _buildPriceRow(
             'Total',
             hasSenderPrice
@@ -775,16 +770,28 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
                 : '$_recipientCurrency ${_formatAmount(amount)}',
             isTotal: true,
           ),
-          if (hasSenderPrice && amount > 0) ...[
-            SizedBox(height: 4.h),
-            Text(
-              'Payment in $_senderCurrency for a $_recipientCurrency ${_formatAmount(amount)} card',
-              style: GoogleFonts.inter(
-                fontSize: 11.sp,
+          SizedBox(height: 6.h),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.info_outline,
+                size: 12.sp,
                 color: const Color(0xFF6B7280),
               ),
-            ),
-          ],
+              SizedBox(width: 6.w),
+              Expanded(
+                child: Text(
+                  'Final price is set at purchase. Live FX may shift the total slightly.',
+                  style: GoogleFonts.inter(
+                    fontSize: 10.sp,
+                    height: 1.3,
+                    color: const Color(0xFF6B7280),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -829,7 +836,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
         onTap: isValid && !_isPurchasing ? _purchaseGiftCard : null,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: EdgeInsets.symmetric(vertical: 16.h),
+          padding: EdgeInsets.symmetric(vertical: 13.h),
           decoration: BoxDecoration(
             gradient: isValid
                 ? const LinearGradient(
@@ -893,9 +900,17 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
       final isMultiCur = widget.brand.isMultiCurrency && senderAmt != null;
       final displayCurrency = isMultiCur ? _senderCurrency : _recipientCurrency;
       final displayAmount = isMultiCur ? senderAmt : amount;
+      // Final price is recomputed at execution time using the
+      // provider's live rate (Reloadly). The amount shown here is
+      // an estimate; if the rate moves between confirm and execute,
+      // the actual charge tracks the latest rate (account may go
+      // into a small overdraft if the rate climbs past the held
+      // buffer).
+      final priceNotice =
+          'Final price is calculated at the time of purchase using the provider\'s latest rate.';
       final confirmMessage = isMultiCur
-          ? 'Purchase ${widget.brand.name} $_recipientCurrency ${_formatAmount(amount)} gift card for $_senderCurrency ${_formatAmount(senderAmt)}?'
-          : 'Confirm purchase of $displayCurrency ${_formatAmount(displayAmount)} ${widget.brand.name} gift card?';
+          ? 'Purchase ${widget.brand.name} $_recipientCurrency ${_formatAmount(amount)} gift card for about $_senderCurrency ${_formatAmount(senderAmt)}.\n\n$priceNotice'
+          : 'Confirm purchase of $displayCurrency ${_formatAmount(displayAmount)} ${widget.brand.name} gift card.\n\n$priceNotice';
 
       String? verificationToken;
 
@@ -922,6 +937,13 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
       if (!mounted) return;
 
       setState(() => _isPurchasing = true);
+      // Always pass senderAmount + senderCurrency explicitly — the
+      // backend used to fall back to a hardcoded "NGN" when the
+      // currency was null, which was wrong for any non-NGN account.
+      // The brand's senderCurrencyCode comes from Reloadly's product
+      // response and reflects the currency the user-facing price is
+      // already denominated in (per-locale localised by Reloadly), so
+      // it's the SAME source as the listing display in this screen.
       Get.offNamed(
         AppRoutes.giftCardPurchaseProcessing,
         arguments: GiftCardPurchaseArgs(
@@ -933,7 +955,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
           countryCode: widget.brand.countryCode.isNotEmpty ? widget.brand.countryCode : null,
           providerName: widget.brand.providerName.isNotEmpty ? widget.brand.providerName : null,
           senderAmount: senderAmt,
-          senderCurrency: isMultiCur ? _senderCurrency : null,
+          senderCurrency: _senderCurrency,
         ),
       );
     }

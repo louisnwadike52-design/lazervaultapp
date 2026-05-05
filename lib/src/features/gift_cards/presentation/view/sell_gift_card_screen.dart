@@ -256,30 +256,92 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
         setState(() => _isExtractingDetails = true);
       }
     } else if (state is OCRExtracted) {
+      // Treat confidence=0 OR a totally-empty payload as a no-signal
+      // result rather than a successful scan — the model returns this
+      // shape when the image isn't a card or it can't read the code.
+      // Falling into the success branch with empty strings used to
+      // wipe out anything the user had already typed and showed a
+      // misleading "Details extracted" snackbar.
+      final hasAnySignal = state.confidence > 0 &&
+          (state.cardNumber.trim().isNotEmpty ||
+              state.pin.trim().isNotEmpty ||
+              state.denomination > 0);
+      if (!hasAnySignal) {
+        setState(() => _isExtractingDetails = false);
+        Get.snackbar(
+          'Scan Failed',
+          'We couldn\'t read the card from those images. Please enter details manually.',
+          backgroundColor: const Color(0xFFFB923C),
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+        );
+        return;
+      }
+
+      // Brand mismatch advisory. The risk engine still gates this at
+      // submit, but warning here lets the user double-check now
+      // instead of having Get-Rate fail at the next step.
+      String? brandWarning;
+      if (state.brand.trim().isNotEmpty && _selectedCard != null) {
+        final extracted = state.brand.toLowerCase().trim();
+        final selected = _selectedCard!.displayName.toLowerCase().trim();
+        final match = extracted == selected ||
+            extracted.contains(selected) ||
+            selected.contains(extracted);
+        if (!match) {
+          brandWarning =
+              'AI detected "${state.brand}" but you picked "${_selectedCard!.displayName}". '
+              'Verify before submitting.';
+        }
+      }
+
       setState(() {
         _isExtractingDetails = false;
         _ocrBrand = state.brand;
-        _ocrCardNumber = state.cardNumber;
-        _ocrPin = state.pin;
-        _ocrDenomination = state.denomination;
         _ocrCurrency = state.currency;
         _ocrConfidence = state.confidence;
-        _cardNumberController.text = state.cardNumber;
-        _cardPinController.text = state.pin;
-        if (_selectedCard != null && state.denomination > 0) {
-          final match = _selectedCard!.denominations
-              .where((d) => d == state.denomination)
-              .firstOrNull;
-          _selectedDenomination = match ?? state.denomination;
+        // Only overwrite controllers when the OCR has a non-empty
+        // value to give. Preserves any pre-typed input so the user
+        // never loses keystrokes to a partial scan.
+        if (state.cardNumber.trim().isNotEmpty) {
+          _ocrCardNumber = state.cardNumber;
+          _cardNumberController.text = state.cardNumber;
+        }
+        if (state.pin.trim().isNotEmpty) {
+          _ocrPin = state.pin;
+          _cardPinController.text = state.pin;
+        }
+        if (state.denomination > 0) {
+          _ocrDenomination = state.denomination;
+          if (_selectedCard != null) {
+            final match = _selectedCard!.denominations
+                .where((d) => d == state.denomination)
+                .firstOrNull;
+            _selectedDenomination = match ?? state.denomination;
+          }
         }
         // Stay on step 1 — fields are now populated, user verifies
       });
-      Get.snackbar('Card Scanned', 'Details extracted. Please verify and complete the form.',
-        backgroundColor: const Color(0xFF10B981),
-        colorText: Colors.white,
-        snackPosition: SnackPosition.TOP,
-        duration: const Duration(seconds: 2),
-      );
+
+      if (brandWarning != null) {
+        Get.snackbar('Brand mismatch', brandWarning,
+          backgroundColor: const Color(0xFFFB923C),
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+          duration: const Duration(seconds: 4),
+        );
+      } else {
+        Get.snackbar(
+          'Card Scanned',
+          'Details extracted${state.confidence < 0.6 ? ' (low confidence — please verify)' : '. Please verify and complete the form.'}',
+          backgroundColor: state.confidence < 0.6
+              ? const Color(0xFFFB923C)
+              : const Color(0xFF10B981),
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+          duration: const Duration(seconds: 2),
+        );
+      }
     } else if (state is OCRFailed) {
       setState(() => _isExtractingDetails = false);
       Get.snackbar('Scan Failed', 'Card scan failed. Please enter details manually.',

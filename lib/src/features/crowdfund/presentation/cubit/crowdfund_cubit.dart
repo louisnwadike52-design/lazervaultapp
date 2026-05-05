@@ -33,6 +33,14 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
   final CrowdfundReportService? reportService;
   final SWRCacheManager? _cacheManager;
 
+  // Monotonically increasing token used to invalidate in-flight pagination
+  // / detail fetches when a fresh `loadCrowdfunds` / `searchCrowdfunds` /
+  // `loadCrowdfundDetails` arrives. Without this, a slow page-2 fetch can
+  // append to a list that has since been replaced by a different filter
+  // or search result, mixing two queries' rows in the same view.
+  int _listGeneration = 0;
+  int _detailGeneration = 0;
+
   CrowdfundCubit({
     required this.createCrowdfundUseCase,
     required this.getCrowdfundUseCase,
@@ -70,11 +78,18 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
     try {
       if (isClosed) return;
 
+      // Bump the generation so any in-flight loadMore / search results
+      // discover their captured token is stale and drop their emit.
+      final gen = ++_listGeneration;
+
       final cacheKey =
           'crowdfunds:${statusFilter ?? ''}:${categoryFilter ?? ''}:$myCrowdfundsOnly:$page';
 
       if (_cacheManager != null) {
-        emit(const CrowdfundLoading(message: 'Loading crowdfunds...'));
+        // Avoid Loading flicker when we already have a list rendered.
+        if (state is! CrowdfundLoaded) {
+          emit(const CrowdfundLoading(message: 'Loading crowdfunds...'));
+        }
 
         await for (final result in _cacheManager!.get<List<Crowdfund>>(
           key: cacheKey,
@@ -92,13 +107,14 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
               .map((j) => Crowdfund.fromJson(j as Map<String, dynamic>))
               .toList(),
         )) {
-          if (isClosed) return;
+          if (isClosed || gen != _listGeneration) return;
           if (result.hasData) {
             emit(CrowdfundLoaded(
               crowdfunds: result.data!,
               totalCount: result.data!.length,
               currentPage: page,
               isStale: result.isStale,
+              hasMore: result.data!.length >= pageSize,
             ));
           } else if (result.hasError) {
             emit(CrowdfundError(message: getUserFriendlyErrorMessage(result.error)));
@@ -115,11 +131,12 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
           myCrowdfundsOnly: myCrowdfundsOnly,
         );
 
-        if (isClosed) return;
+        if (isClosed || gen != _listGeneration) return;
         emit(CrowdfundLoaded(
           crowdfunds: crowdfunds,
           totalCount: crowdfunds.length,
           currentPage: page,
+          hasMore: crowdfunds.length >= pageSize,
         ));
       }
     } catch (e) {
@@ -142,6 +159,12 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       return;
     }
 
+    // Capture the generation that produced `currentState`. If a fresh
+    // load (filter change, pull-to-refresh, search) bumps the generation
+    // before our await resolves, drop the result rather than appending
+    // page N of an obsolete query to the new list.
+    final gen = _listGeneration;
+
     try {
       if (isClosed) return;
       final nextPage = currentState.currentPage + 1;
@@ -155,7 +178,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
         myCrowdfundsOnly: myCrowdfundsOnly,
       );
 
-      if (isClosed) return;
+      if (isClosed || gen != _listGeneration) return;
       emit(CrowdfundLoaded(
         crowdfunds: [...currentState.crowdfunds, ...crowdfunds],
         totalCount: currentState.totalCount + crowdfunds.length,
@@ -163,7 +186,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
         hasMore: crowdfunds.length >= pageSize,
       ));
     } catch (e) {
-      if (isClosed) return;
+      if (isClosed || gen != _listGeneration) return;
       // On error, revert to previous state without loading indicator
       emit(currentState.copyWith(isLoadingMore: false));
     }
@@ -181,6 +204,10 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       }
 
       if (isClosed) return;
+
+      // Bump the generation: a search result replaces any list view, so
+      // any pending loadMore must not append page-2-of-old-filter to it.
+      final gen = ++_listGeneration;
 
       final cacheKey = 'crowdfund_search:$query';
 
@@ -200,13 +227,17 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
               .map((j) => Crowdfund.fromJson(j as Map<String, dynamic>))
               .toList(),
         )) {
-          if (isClosed) return;
+          if (isClosed || gen != _listGeneration) return;
           if (result.hasData) {
             emit(CrowdfundLoaded(
               crowdfunds: result.data!,
               totalCount: result.data!.length,
               currentPage: 1,
               isStale: result.isStale,
+              // Search isn't paginated server-side; mark hasMore=false so
+              // an infinite-scroll listener doesn't trip loadMoreCrowdfunds
+              // and clobber the search list with page-2 of the regular feed.
+              hasMore: false,
             ));
           } else if (result.hasError) {
             emit(CrowdfundError(
@@ -221,11 +252,12 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
           limit: limit,
         );
 
-        if (isClosed) return;
+        if (isClosed || gen != _listGeneration) return;
         emit(CrowdfundLoaded(
           crowdfunds: crowdfunds,
           totalCount: crowdfunds.length,
           currentPage: 1,
+          hasMore: false,
         ));
       }
     } catch (e) {
@@ -239,12 +271,23 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
     try {
       if (isClosed) return;
 
+      // Bump the detail generation: if the user navigates from campaign A
+      // to campaign B before A's parallel donations/stats fetches resolve,
+      // the captured token mismatch lets us drop A's results instead of
+      // rendering them on top of B.
+      final gen = ++_detailGeneration;
+
       final cacheKey = 'crowdfund_detail:$crowdfundId';
 
-      if (_cacheManager != null) {
-        emit(const CrowdfundLoading(message: 'Loading details...'));
+      // The detail screen only renders 5 donors before requiring a tap to
+      // expand, so over-fetching 50 just adds latency to first paint.
+      const initialDonationPageSize = 10;
 
-        // SWR cache the crowdfund object; donations/stats fetched fresh each time
+      if (_cacheManager != null) {
+        if (state is! CrowdfundDetailsLoaded) {
+          emit(const CrowdfundLoading(message: 'Loading details...'));
+        }
+
         await for (final result in _cacheManager!.get<Crowdfund>(
           key: cacheKey,
           fetcher: () => getCrowdfundUseCase(crowdfundId),
@@ -253,40 +296,37 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
           deserializer: (json) =>
               Crowdfund.fromJson(jsonDecode(json) as Map<String, dynamic>),
         )) {
-          if (isClosed) return;
+          if (isClosed || gen != _detailGeneration) return;
           if (result.hasData) {
             final crowdfund = result.data!;
 
-            if (result.isStale) {
-              // Emit cached crowdfund immediately with empty donations
-              emit(CrowdfundDetailsLoaded(
-                crowdfund: crowdfund,
-                donations: const [],
-                isStale: true,
-              ));
-            } else {
-              // Fresh data: also fetch donations and statistics
-              final donations = await getCrowdfundDonationsUseCase(
+            // Always paint the cached crowdfund first so the screen is
+            // interactive immediately, then fetch donations/stats in
+            // parallel and re-emit with them populated.
+            emit(CrowdfundDetailsLoaded(
+              crowdfund: crowdfund,
+              donations: const [],
+              isStale: result.isStale,
+            ));
+
+            final results = await Future.wait<Object?>([
+              getCrowdfundDonationsUseCase(
                 crowdfundId: crowdfundId,
                 page: 1,
-                pageSize: 50,
-              );
+                pageSize: initialDonationPageSize,
+              ).then<Object?>((d) => d).catchError(
+                  (_) => const <CrowdfundDonation>[]),
+              getCrowdfundStatisticsUseCase(crowdfundId)
+                  .then<Object?>((s) => s)
+                  .catchError((_) => null),
+            ]);
 
-              CrowdfundStatistics? statistics;
-              try {
-                statistics =
-                    await getCrowdfundStatisticsUseCase(crowdfundId);
-              } catch (_) {
-                // Statistics optional
-              }
-
-              if (isClosed) return;
-              emit(CrowdfundDetailsLoaded(
-                crowdfund: crowdfund,
-                donations: donations,
-                statistics: statistics,
-              ));
-            }
+            if (isClosed || gen != _detailGeneration) return;
+            emit(CrowdfundDetailsLoaded(
+              crowdfund: crowdfund,
+              donations: results[0] as List<CrowdfundDonation>,
+              statistics: results[1] as CrowdfundStatistics?,
+            ));
           } else if (result.hasError) {
             emit(CrowdfundError(message: getUserFriendlyErrorMessage(result.error)));
           }
@@ -294,25 +334,25 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       } else {
         emit(const CrowdfundLoading(message: 'Loading details...'));
 
-        final crowdfund = await getCrowdfundUseCase(crowdfundId);
-        final donations = await getCrowdfundDonationsUseCase(
-          crowdfundId: crowdfundId,
-          page: 1,
-          pageSize: 50,
-        );
+        // Kick off donations/statistics in parallel with the crowdfund fetch
+        // since they don't depend on each other.
+        final results = await Future.wait<Object?>([
+          getCrowdfundUseCase(crowdfundId),
+          getCrowdfundDonationsUseCase(
+            crowdfundId: crowdfundId,
+            page: 1,
+            pageSize: initialDonationPageSize,
+          ),
+          getCrowdfundStatisticsUseCase(crowdfundId)
+              .then<Object?>((s) => s)
+              .catchError((_) => null),
+        ]);
 
-        CrowdfundStatistics? statistics;
-        try {
-          statistics = await getCrowdfundStatisticsUseCase(crowdfundId);
-        } catch (_) {
-          // Statistics optional
-        }
-
-        if (isClosed) return;
+        if (isClosed || gen != _detailGeneration) return;
         emit(CrowdfundDetailsLoaded(
-          crowdfund: crowdfund,
-          donations: donations,
-          statistics: statistics,
+          crowdfund: results[0] as Crowdfund,
+          donations: results[1] as List<CrowdfundDonation>,
+          statistics: results[2] as CrowdfundStatistics?,
         ));
       }
     } catch (e) {
@@ -321,7 +361,10 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
     }
   }
 
-  /// Create a new crowdfund (verified users only)
+  /// Create a new crowdfund (verified users only).
+  ///
+  /// Crowdfunds are public by default — there is no visibility selector.
+  /// Anyone with the campaign's share link can fund it.
   Future<void> createCrowdfund({
     required String title,
     required String description,
@@ -331,7 +374,6 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
     DateTime? deadline,
     required String category,
     String? imageUrl,
-    required CrowdfundVisibility visibility,
     Map<String, dynamic>? metadata,
   }) async {
     try {
@@ -347,11 +389,24 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
         deadline: deadline,
         category: category,
         imageUrl: imageUrl,
-        visibility: visibility,
         metadata: metadata,
       );
 
+      // Invalidate the lists so the new campaign shows up next time the
+      // user lands on Browse All / My Campaigns.
       await _cacheManager?.invalidatePattern('crowdfunds:');
+
+      // Pre-populate the detail cache so the destination screen renders the
+      // just-created campaign on first frame instead of flashing a loading
+      // spinner. The detail screen still kicks off loadCrowdfundDetails on
+      // mount, which will revalidate (and lazily fetch the empty donations
+      // list + statistics) without blocking the UI.
+      await _cacheManager?.set<Crowdfund>(
+        key: 'crowdfund_detail:${crowdfund.id}',
+        data: crowdfund,
+        config: CacheConfig.crowdfundDetails,
+        serializer: (c) => jsonEncode(c.toJson()),
+      );
 
       if (isClosed) return;
       emit(CrowdfundCreated(crowdfund));
@@ -544,22 +599,66 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
   }) async {
     try {
       if (isClosed) return;
-      emit(const CrowdfundLoading(message: 'Loading your donations...'));
+      // Bump generation: a refresh of the donations list also resets any
+      // in-flight loadMoreUserDonations from a prior tab visit so we don't
+      // double-emit donations that were just refetched at page 1.
+      final gen = ++_listGeneration;
+      // Don't flash a spinner if we already have a list visible (e.g. pull
+      // to refresh on the My Funded tab). The new list will replace cleanly.
+      if (state is! UserDonationsLoaded) {
+        emit(const CrowdfundLoading(message: 'Loading your donations...'));
+      }
 
       final donations = await getUserDonationsUseCase(
         page: page,
         pageSize: pageSize,
       );
 
-      if (isClosed) return;
+      if (isClosed || gen != _listGeneration) return;
       emit(UserDonationsLoaded(
         donations: donations,
         totalCount: donations.length,
         currentPage: page,
+        hasMore: donations.length >= pageSize,
       ));
     } catch (e) {
       if (isClosed) return;
       emit(CrowdfundError(message: getUserFriendlyErrorMessage(e, fallback: "Couldn't load your donations. Please try again.")));
+    }
+  }
+
+  /// Load next page of the user's donations (append to existing list).
+  /// Used by the My Funded tab's infinite scroll.
+  Future<void> loadMoreUserDonations({int pageSize = 20}) async {
+    final currentState = state;
+    if (currentState is! UserDonationsLoaded ||
+        currentState.isLoadingMore ||
+        !currentState.hasMore) {
+      return;
+    }
+
+    final gen = _listGeneration;
+
+    try {
+      if (isClosed) return;
+      final nextPage = currentState.currentPage + 1;
+      emit(currentState.copyWith(isLoadingMore: true));
+
+      final donations = await getUserDonationsUseCase(
+        page: nextPage,
+        pageSize: pageSize,
+      );
+
+      if (isClosed || gen != _listGeneration) return;
+      emit(UserDonationsLoaded(
+        donations: [...currentState.donations, ...donations],
+        totalCount: currentState.totalCount + donations.length,
+        currentPage: nextPage,
+        hasMore: donations.length >= pageSize,
+      ));
+    } catch (e) {
+      if (isClosed || gen != _listGeneration) return;
+      emit(currentState.copyWith(isLoadingMore: false));
     }
   }
 

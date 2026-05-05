@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import '../../cubit/gift_card_cubit.dart';
 import '../../cubit/gift_card_state.dart';
 import '../../domain/entities/gift_card_entity.dart';
@@ -67,7 +68,10 @@ class _MySalesScreenState extends State<MySalesScreen>
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          onPressed: () => Get.back(),
+          onPressed: () => Get.offNamed(
+            AppRoutes.giftCards,
+            arguments: const {'initialTab': 'sell'},
+          ),
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 18),
         ),
         title: Text(

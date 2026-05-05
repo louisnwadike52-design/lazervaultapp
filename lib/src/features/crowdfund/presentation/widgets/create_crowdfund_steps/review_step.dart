@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../domain/entities/crowdfund_entities.dart';
+import '../../../../../../core/services/injection_container.dart';
+import '../../../../../../core/utils/currency_formatter.dart';
+import '../../../data/services/crowdfund_share_service.dart';
 
+/// Review & Create slide. Designed to fit a single phone screen — every
+/// piece of information the user has entered shows up at a glance, with
+/// no nested cards or duplicated section headings. The full story / long
+/// description preview lives behind an expand chip, not inline.
 class ReviewStep extends StatelessWidget {
   final String title;
   final String description;
@@ -12,7 +18,6 @@ class ReviewStep extends StatelessWidget {
   final String category;
   final DateTime? deadline;
   final String? imageUrl;
-  final CrowdfundVisibility visibility;
   final Map<String, String> socialLinks;
 
   const ReviewStep({
@@ -25,368 +30,324 @@ class ReviewStep extends StatelessWidget {
     required this.category,
     required this.deadline,
     required this.imageUrl,
-    required this.visibility,
     this.socialLinks = const {},
   });
 
+  String get _currencySymbol => CurrencySymbols.getSymbol(currency);
+
+  String get _formattedAmount {
+    if (targetAmount.isEmpty) return '$_currencySymbol 0';
+    return '$_currencySymbol $targetAmount';
+  }
+
+  String get _deadlineText {
+    if (deadline == null) return 'No deadline';
+    return '${deadline!.day}/${deadline!.month}/${deadline!.year}';
+  }
+
   @override
   Widget build(BuildContext context) {
+    final shareService = serviceLocator<CrowdfundShareService>();
+    final shareBase = shareService.baseUrl;
+
     return SingleChildScrollView(
-      padding: EdgeInsets.all(20.w),
+      padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildHeader(),
+          SizedBox(height: 16.h),
+          _buildHeroCard(),
+          SizedBox(height: 12.h),
+          _buildStatsRow(),
+          if (story.trim().isNotEmpty) ...[
+            SizedBox(height: 12.h),
+            _buildStoryRow(),
+          ],
+          if (socialLinks.isNotEmpty) ...[
+            SizedBox(height: 12.h),
+            _buildSocialRow(),
+          ],
+          SizedBox(height: 12.h),
+          _buildShareLinkPreview(shareBase),
+        ],
+      ),
+    );
+  }
+
+  // ──────────── Header ────────────
+
+  Widget _buildHeader() {
+    return Column(
+      children: [
+        Text(
+          'Review & Create',
+          style: GoogleFonts.inter(
+            fontSize: 22.sp,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+        ),
+        SizedBox(height: 4.h),
+        Text(
+          'Confirm everything looks right',
+          style: GoogleFonts.inter(
+            fontSize: 12.sp,
+            color: const Color(0xFF9CA3AF),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ──────────── Hero card (image + title + description) ────────────
+
+  Widget _buildHeroCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(14.r),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Icon header
-          Center(
-            child: Container(
-              width: 80.w,
-              height: 80.w,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(20.r),
+          AspectRatio(
+            aspectRatio: 16 / 7,
+            child: ClipRRect(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(14.r),
+                topRight: Radius.circular(14.r),
               ),
-              child: Icon(
-                Icons.check_circle_outline,
-                size: 40.sp,
-                color: Colors.white,
-              ),
+              child: imageUrl != null && imageUrl!.startsWith('http')
+                  ? Image.network(
+                      imageUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => _imagePlaceholder(),
+                    )
+                  : _imagePlaceholder(),
             ),
           ),
-          SizedBox(height: 24.h),
-
-          // Title
-          Center(
-            child: Text(
-              'Review & Create',
-              style: GoogleFonts.inter(
-                fontSize: 24.sp,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-              ),
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Center(
-            child: Text(
-              'Review your campaign before creating',
-              style: GoogleFonts.inter(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w400,
-                color: const Color(0xFF9CA3AF),
-              ),
-            ),
-          ),
-          SizedBox(height: 32.h),
-
-          // Campaign preview card
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFF1A1A3E),
-                  const Color(0xFF0A0E27),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(16.r),
-            ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(14.w, 12.h, 14.w, 12.h),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header with image or gradient
                 Container(
-                  height: 120.h,
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(16.r),
-                      topRight: Radius.circular(16.r),
+                    color: const Color(0xFF6366F1).withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(6.r),
+                  ),
+                  child: Text(
+                    category,
+                    style: GoogleFonts.inter(
+                      fontSize: 10.sp,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF6366F1),
                     ),
                   ),
-                  child: imageUrl != null && imageUrl!.isNotEmpty
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(16.r),
-                            topRight: Radius.circular(16.r),
-                          ),
-                          child: Image.network(
-                            imageUrl!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Center(
-                                child: Icon(
-                                  Icons.image_not_supported,
-                                  color: Colors.white.withValues(alpha: 0.5),
-                                  size: 40.sp,
-                                ),
-                              );
-                            },
-                          ),
-                        )
-                      : Center(
-                          child: Icon(
-                            Icons.volunteer_activism,
-                            color: Colors.white.withValues(alpha: 0.5),
-                            size: 48.sp,
-                          ),
-                        ),
                 ),
+                SizedBox(height: 8.h),
+                Text(
+                  title.isEmpty ? 'Untitled campaign' : title,
+                  style: GoogleFonts.inter(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  description.isEmpty ? 'No description yet' : description,
+                  style: GoogleFonts.inter(
+                    fontSize: 12.sp,
+                    color: const Color(0xFF9CA3AF),
+                    height: 1.4,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-                Padding(
-                  padding: EdgeInsets.all(20.w),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Category badge
-                      Container(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF6366F1).withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(8.r),
-                        ),
-                        child: Text(
-                          category,
-                          style: GoogleFonts.inter(
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF6366F1),
-                          ),
-                        ),
+  Widget _imagePlaceholder() {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF1A1A3E), Color(0xFF0A0E27)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Center(
+        child: Icon(
+          Icons.volunteer_activism,
+          color: Colors.white.withValues(alpha: 0.35),
+          size: 40.sp,
+        ),
+      ),
+    );
+  }
+
+  // ──────────── Stats: target + deadline ────────────
+
+  Widget _buildStatsRow() {
+    return Row(
+      children: [
+        Expanded(
+          child: _statTile(
+            icon: Icons.account_balance_wallet,
+            label: 'Goal',
+            value: _formattedAmount,
+            valueColor: const Color(0xFF6366F1),
+          ),
+        ),
+        SizedBox(width: 8.w),
+        Expanded(
+          child: _statTile(
+            icon: Icons.access_time,
+            label: 'Deadline',
+            value: _deadlineText,
+            valueColor: deadline == null
+                ? const Color(0xFF9CA3AF)
+                : Colors.white,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _statTile({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color valueColor,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 18.sp, color: const Color(0xFF6366F1)),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: GoogleFonts.inter(
+                    fontSize: 10.sp,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF6B7280),
+                  ),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  value,
+                  style: GoogleFonts.inter(
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w700,
+                    color: valueColor,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ──────────── Story preview (collapsed) ────────────
+
+  Widget _buildStoryRow() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.menu_book_outlined,
+              size: 16.sp, color: const Color(0xFF6366F1)),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Text(
+              story,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(
+                fontSize: 12.sp,
+                color: const Color(0xFF9CA3AF),
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ──────────── Social links pills ────────────
+
+  Widget _buildSocialRow() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.link, size: 16.sp, color: const Color(0xFF6366F1)),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Wrap(
+              spacing: 6.w,
+              runSpacing: 4.h,
+              children: socialLinks.entries
+                  .map(
+                    (e) => Container(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 8.w, vertical: 3.h),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0A0A0A),
+                        borderRadius: BorderRadius.circular(8.r),
                       ),
-                      SizedBox(height: 12.h),
-
-                      // Title
-                      Text(
-                        title.isEmpty ? 'Campaign Title' : title,
-                        style: GoogleFonts.inter(
-                          fontSize: 20.sp,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      ),
-                      SizedBox(height: 8.h),
-
-                      // Description
-                      Text(
-                        description.isEmpty
-                            ? 'Campaign description...'
-                            : description,
-                        style: GoogleFonts.inter(
-                          fontSize: 13.sp,
-                          fontWeight: FontWeight.w400,
-                          color: const Color(0xFF9CA3AF),
-                          height: 1.5,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      SizedBox(height: 16.h),
-
-                      // Goal amount
-                      Row(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
-                            Icons.account_balance_wallet,
-                            color: const Color(0xFF6366F1),
-                            size: 20.sp,
-                          ),
-                          SizedBox(width: 8.w),
+                          Icon(_socialIcon(e.key),
+                              size: 11.sp,
+                              color: const Color(0xFF9CA3AF)),
+                          SizedBox(width: 4.w),
                           Text(
-                            'Goal: ',
+                            e.value,
                             style: GoogleFonts.inter(
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w500,
+                              fontSize: 10.sp,
                               color: const Color(0xFF9CA3AF),
                             ),
                           ),
-                          Text(
-                            targetAmount.isEmpty
-                                ? '$currency 0.00'
-                                : '$currency $targetAmount',
-                            style: GoogleFonts.inter(
-                              fontSize: 18.sp,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFF6366F1),
-                            ),
-                          ),
                         ],
                       ),
-                      SizedBox(height: 12.h),
-
-                      // Metadata row
-                      Wrap(
-                        spacing: 12.w,
-                        runSpacing: 8.h,
-                        children: [
-                          if (deadline != null)
-                            _buildMetadataChip(
-                              Icons.access_time,
-                              'Due: ${deadline!.day}/${deadline!.month}/${deadline!.year}',
-                            ),
-                          _buildMetadataChip(
-                            _getVisibilityIcon(visibility),
-                            _getVisibilityLabel(visibility),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 24.h),
-
-          // Story preview
-          if (story.isNotEmpty) ...[
-            _buildSectionTitle('Story Preview'),
-            SizedBox(height: 8.h),
-            Container(
-              padding: EdgeInsets.all(16.w),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1F1F1F),
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              child: Text(
-                story,
-                style: GoogleFonts.inter(
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w400,
-                  color: const Color(0xFF9CA3AF),
-                  height: 1.5,
-                ),
-                maxLines: 4,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            SizedBox(height: 24.h),
-          ],
-
-          // Social links preview
-          if (socialLinks.isNotEmpty) ...[
-            _buildSectionTitle('Social Links'),
-            SizedBox(height: 8.h),
-            Container(
-              padding: EdgeInsets.all(16.w),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1F1F1F),
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Connected Profiles',
-                    style: GoogleFonts.inter(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF6B7280),
                     ),
-                  ),
-                  SizedBox(height: 12.h),
-                  ...socialLinks.entries.map((entry) {
-                    return Padding(
-                      padding: EdgeInsets.only(bottom: 8.h),
-                      child: Row(
-                        children: [
-                          Icon(
-                            _getSocialIcon(entry.key),
-                            color: const Color(0xFF6366F1),
-                            size: 16.sp,
-                          ),
-                          SizedBox(width: 8.w),
-                          Expanded(
-                            child: Text(
-                              entry.value,
-                              style: GoogleFonts.inter(
-                                fontSize: 12.sp,
-                                color: const Color(0xFF9CA3AF),
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
-                ],
-              ),
-            ),
-            SizedBox(height: 24.h),
-          ],
-
-          // Checklist
-          _buildSectionTitle('Campaign Checklist'),
-          SizedBox(height: 12.h),
-          _buildChecklistItem(
-            title.isNotEmpty,
-            'Campaign title is set',
-          ),
-          _buildChecklistItem(
-            description.isNotEmpty && description.length >= 20,
-            'Description meets minimum length',
-          ),
-          _buildChecklistItem(
-            targetAmount.isNotEmpty && double.tryParse(targetAmount) != null,
-            'Funding goal is set',
-          ),
-          _buildChecklistItem(
-            category.isNotEmpty,
-            'Category is selected',
-          ),
-          _buildChecklistItem(
-            true,
-            'Visibility is configured',
-          ),
-          _buildChecklistItem(
-            socialLinks.isNotEmpty,
-            'Social links connected (${socialLinks.length})',
-          ),
-          SizedBox(height: 32.h),
-
-          // Info card
-          Container(
-            padding: EdgeInsets.all(16.w),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFF6366F1).withValues(alpha: 0.1),
-                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.05),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(16.r),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.info_outline,
-                  color: const Color(0xFF6366F1),
-                  size: 20.sp,
-                ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: Text(
-                    'Once created, your campaign will be live. You can edit details later.',
-                    style: GoogleFonts.inter(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w400,
-                      color: const Color(0xFF9CA3AF),
-                    ),
-                  ),
-                ),
-              ],
+                  )
+                  .toList(),
             ),
           ),
         ],
@@ -394,93 +355,7 @@ class ReviewStep extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionTitle(String text) {
-    return Text(
-      text,
-      style: GoogleFonts.inter(
-        fontSize: 16.sp,
-        fontWeight: FontWeight.w600,
-        color: Colors.white,
-      ),
-    );
-  }
-
-  Widget _buildMetadataChip(IconData icon, String text) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0A0A0A),
-        borderRadius: BorderRadius.circular(8.r),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            color: const Color(0xFF6B7280),
-            size: 12.sp,
-          ),
-          SizedBox(width: 4.w),
-          Text(
-            text,
-            style: GoogleFonts.inter(
-              fontSize: 11.sp,
-              fontWeight: FontWeight.w500,
-              color: const Color(0xFF9CA3AF),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildChecklistItem(bool isChecked, String text) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 8.h),
-      child: Row(
-        children: [
-          Icon(
-            isChecked ? Icons.check_circle : Icons.circle_outlined,
-            color: isChecked ? const Color(0xFF10B981) : const Color(0xFF6B7280),
-            size: 18.sp,
-          ),
-          SizedBox(width: 12.w),
-          Text(
-            text,
-            style: GoogleFonts.inter(
-              fontSize: 13.sp,
-              fontWeight: FontWeight.w400,
-              color: isChecked ? Colors.white : const Color(0xFF6B7280),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  IconData _getVisibilityIcon(CrowdfundVisibility visibility) {
-    switch (visibility) {
-      case CrowdfundVisibility.public:
-        return Icons.public;
-      case CrowdfundVisibility.private:
-        return Icons.lock;
-      case CrowdfundVisibility.unlisted:
-        return Icons.link;
-    }
-  }
-
-  String _getVisibilityLabel(CrowdfundVisibility visibility) {
-    switch (visibility) {
-      case CrowdfundVisibility.public:
-        return 'Public';
-      case CrowdfundVisibility.private:
-        return 'Private';
-      case CrowdfundVisibility.unlisted:
-        return 'Unlisted';
-    }
-  }
-
-  IconData _getSocialIcon(String platform) {
+  IconData _socialIcon(String platform) {
     switch (platform.toLowerCase()) {
       case 'instagram':
         return Icons.camera_alt;
@@ -499,5 +374,62 @@ class ReviewStep extends StatelessWidget {
       default:
         return Icons.link;
     }
+  }
+
+  // ──────────── Share-link preview ────────────
+
+  /// Pre-creation share link preview. The `{id}` is filled in once the
+  /// campaign is created; the donor-facing URL on the campaign detail
+  /// screen will be `<base>/crowdfund/<id>`.
+  Widget _buildShareLinkPreview(String shareBase) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFF6366F1).withValues(alpha: 0.12),
+            const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.05),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.ios_share,
+              size: 16.sp, color: const Color(0xFF6366F1)),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Shareable link (anyone can fund)',
+                  style: GoogleFonts.inter(
+                    fontSize: 10.sp,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF6366F1),
+                  ),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  '$shareBase/crowdfund/{id}',
+                  style: GoogleFonts.jetBrainsMono(
+                    fontSize: 11.sp,
+                    color: Colors.white,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

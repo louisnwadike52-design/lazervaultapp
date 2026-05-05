@@ -59,7 +59,6 @@ class CrowdfundModel extends Crowdfund {
     required super.category,
     required super.status,
     super.imageUrl,
-    required super.visibility,
     super.metadata,
     required super.donorCount,
     required super.progressPercentage,
@@ -84,7 +83,6 @@ class CrowdfundModel extends Crowdfund {
       category: proto.category,
       status: _statusFromProto(proto.status),
       imageUrl: proto.imageUrl.isEmpty ? null : proto.imageUrl,
-      visibility: _visibilityFromProto(proto.visibility),
       metadata: proto.metadata.isEmpty ? null : _safeJsonDecode(proto.metadata),
       donorCount: proto.donorCount,
       progressPercentage: proto.progressPercentage,
@@ -108,20 +106,6 @@ class CrowdfundModel extends Crowdfund {
         return CrowdfundStatus.cancelled;
       default:
         return CrowdfundStatus.active;
-    }
-  }
-
-  static CrowdfundVisibility _visibilityFromProto(
-      pb.CrowdfundVisibility visibility) {
-    switch (visibility) {
-      case pb.CrowdfundVisibility.CROWDFUND_VISIBILITY_PUBLIC:
-        return CrowdfundVisibility.public;
-      case pb.CrowdfundVisibility.CROWDFUND_VISIBILITY_PRIVATE:
-        return CrowdfundVisibility.private;
-      case pb.CrowdfundVisibility.CROWDFUND_VISIBILITY_UNLISTED:
-        return CrowdfundVisibility.unlisted;
-      default:
-        return CrowdfundVisibility.public;
     }
   }
 

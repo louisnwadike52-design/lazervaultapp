@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../../core/services/injection_container.dart';
+import '../../data/services/crowdfund_share_service.dart';
 import '../../domain/entities/crowdfund_entities.dart';
 import '../cubit/crowdfund_cubit.dart';
 import '../cubit/crowdfund_state.dart';
@@ -259,6 +261,8 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                   ),
                 ),
                 SizedBox(height: 12.h),
+                _buildShareLinkCard(crowdfund),
+                SizedBox(height: 12.h),
                 // Description
                 Text('About', style: GoogleFonts.inter(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w700)),
                 SizedBox(height: 4.h),
@@ -359,6 +363,99 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
         content: Text('Crowdfund code copied to clipboard'),
         backgroundColor: Color(0xFF10B981),
         duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
+  /// Public share link card. Anyone with this URL can fund the campaign;
+  /// the URL pattern is `<base>/crowdfund/<id>` where `<base>` comes from
+  /// CrowdfundShareService (configurable via the admin dashboard).
+  Widget _buildShareLinkCard(Crowdfund crowdfund) {
+    final url = serviceLocator<CrowdfundShareService>().shareUrlFor(crowdfund.id);
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFF6366F1).withValues(alpha: 0.18),
+            const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.08),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.ios_share, size: 18.sp, color: const Color(0xFF6366F1)),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Share link (anyone can fund)',
+                  style: GoogleFonts.inter(
+                    fontSize: 10.sp,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF6366F1),
+                  ),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  url,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.jetBrainsMono(
+                    fontSize: 12.sp,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(width: 8.w),
+          IconButton(
+            tooltip: 'Copy link',
+            onPressed: () => _copyShareLink(url),
+            icon: Icon(Icons.copy, size: 18.sp, color: const Color(0xFF6366F1)),
+            visualDensity: VisualDensity.compact,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+          SizedBox(width: 8.w),
+          IconButton(
+            tooltip: 'Share',
+            onPressed: () => _shareLink(crowdfund, url),
+            icon: Icon(Icons.share, size: 18.sp, color: const Color(0xFF6366F1)),
+            visualDensity: VisualDensity.compact,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _copyShareLink(String url) {
+    Clipboard.setData(ClipboardData(text: url));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Share link copied'),
+        backgroundColor: Color(0xFF10B981),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _shareLink(Crowdfund crowdfund, String url) {
+    SharePlus.instance.share(
+      ShareParams(
+        text: 'Support "${crowdfund.title}" on LazerVault: $url',
+        subject: crowdfund.title,
       ),
     );
   }

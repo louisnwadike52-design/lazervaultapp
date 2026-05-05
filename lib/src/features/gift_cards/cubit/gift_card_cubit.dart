@@ -70,35 +70,16 @@ class GiftCardCubit extends Cubit<GiftCardState> {
 
       final isLoadMore = page > 0;
 
-      // Stale-while-revalidate: on a fresh (non-paginated) load with
-      // the SAME filters as the cached set, keep the cached brands on
-      // screen and refresh in the background. Only show the spinner
-      // on:
-      //   - the very first load (cache empty)
-      //   - a filter change (country / category / search)
-      //   - explicit pagination (page > 0)
-      // Tab switches that re-call loadGiftCardBrands with identical
-      // filters serve cache instantly with no loader flicker.
-      final filtersUnchanged = countryCode == _lastCountryCode &&
-          category == _lastCategory &&
-          searchQuery == _lastSearchQuery;
-      final hasCache = _accumulatedBrands.isNotEmpty;
-
+      // NO CACHE on listing. Brand prices are FX-derived and FX
+      // moves continuously. Serving cached brands while the buy
+      // saga uses fresh FX produces the listing↔receipt mismatch
+      // we hit. Always show the loader + fetch fresh on every
+      // call (including tab switches). Pagination "load more"
+      // still appends to the in-memory accumulator so scroll
+      // doesn't re-fetch page 0.
       if (isLoadMore) {
         emit(GiftCardBrandsLoadingMore(_accumulatedBrands));
-      } else if (hasCache && filtersUnchanged) {
-        // Re-emit so a newly mounted listener (tab switch) sees the
-        // cache immediately rather than the cubit's last unrelated
-        // state. Network call below revalidates silently.
-        emit(GiftCardBrandsLoaded(
-          _accumulatedBrands,
-          selectedCategory: category,
-          currentPage: _currentPage,
-          totalPages: _totalPages,
-          hasNext: _hasNextPage,
-        ));
       } else {
-        // First load OR filter changed: clear cache + show loader.
         _accumulatedBrands = [];
         _currentPage = 0;
         emit(GiftCardBrandsLoading());
@@ -120,12 +101,6 @@ class GiftCardCubit extends Cubit<GiftCardState> {
 
       result.fold(
         (failure) {
-          // Revalidation-failure path: when we have cached brands on
-          // screen, NEVER replace them with an error state. The user
-          // keeps browsing what they had; we'll retry next tab switch.
-          if (!isLoadMore && hasCache && filtersUnchanged) {
-            return;
-          }
           final msg = failure.message;
           if (msg.contains('timed out') || msg.contains('TimeoutException')) {
             emit(GiftCardTimeoutError(operation: 'Loading brands'));
@@ -164,10 +139,6 @@ class GiftCardCubit extends Cubit<GiftCardState> {
       );
     } catch (e) {
       if (isClosed) return;
-      // Same defence as fold-failure: don't blast a cached UI with an
-      // error state when we have something to show.
-      final hasCache = _accumulatedBrands.isNotEmpty;
-      if (page == 0 && hasCache) return;
       emit(GiftCardNetworkError(
         message: e.toString(),
         canRetry: true,
@@ -422,9 +393,18 @@ class GiftCardCubit extends Cubit<GiftCardState> {
               (giftCard.redemptionCode == null ||
                   giftCard.redemptionCode!.isEmpty);
           if (isStillProcessing) {
+            // The balance WebSocket emits events keyed on the
+            // backend-issued GC-{uuid} reference. Use that exact
+            // value (proto field `reference`) — falling back to
+            // providerTransactionId or brandId, as the previous code
+            // did, never matched the WS event and left the screen
+            // stuck on "generating" forever.
+            final wsRef = giftCard.reference.isNotEmpty
+                ? giftCard.reference
+                : (giftCard.providerTransactionId ?? brandId);
             emit(GiftCardPurchaseAwaitingProvider(
               giftCard: giftCard,
-              reference: giftCard.providerTransactionId ?? brandId,
+              reference: wsRef,
             ));
             return;
           }
@@ -705,9 +685,13 @@ class GiftCardCubit extends Cubit<GiftCardState> {
             return;
           }
           // Still in-flight: re-emit awaiting with the fresh row.
+          // Same WS-reference contract as the initial emit — match on
+          // backend GC-{uuid} so terminal events route correctly.
           emit(GiftCardPurchaseAwaitingProvider(
             giftCard: giftCard,
-            reference: giftCard.providerTransactionId ?? giftCard.id,
+            reference: giftCard.reference.isNotEmpty
+                ? giftCard.reference
+                : (giftCard.providerTransactionId ?? giftCard.id),
           ));
         },
       );
@@ -1096,7 +1080,17 @@ class GiftCardCubit extends Cubit<GiftCardState> {
   Future<void> loadMySales({String? status}) async {
     try {
       if (isClosed) return;
-      emit(GiftCardLoading());
+      // Only flash a spinner on cold loads. Tab switches reuse the
+      // SWR cache and yield the new tab's data within milliseconds —
+      // emitting Loading there blanks the list every time the user
+      // taps a tab. Preserve the current list/empty state when one
+      // is in hand; the stream below will upgrade the UI to the
+      // tab-specific data on the next emission.
+      final current = state;
+      final hasListInHand = current is MySalesLoaded || current is MySalesEmpty;
+      if (!hasListInHand) {
+        emit(GiftCardLoading());
+      }
 
       final cacheKey = 'my_sales${status != null ? '_$status' : ''}';
 

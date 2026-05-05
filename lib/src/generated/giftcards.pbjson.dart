@@ -79,6 +79,7 @@ const GiftCard$json = {
     {'1': 'sender_user_id', '3': 31, '4': 1, '5': 9, '10': 'senderUserId'},
     {'1': 'transfer_type', '3': 32, '4': 1, '5': 9, '10': 'transferType'},
     {'1': 'redemption_instructions', '3': 33, '4': 1, '5': 9, '10': 'redemptionInstructions'},
+    {'1': 'reference', '3': 34, '4': 1, '5': 9, '10': 'reference'},
   ],
   '9': [
     {'1': 6, '2': 7},
@@ -108,8 +109,8 @@ final $typed_data.Uint8List giftCardDescriptor = $convert.base64Decode(
     'cKD3NlbmRlcl9jdXJyZW5jeRgdIAEoCVIOc2VuZGVyQ3VycmVuY3kSLgoTdHJhbnNmZXJyZWRf'
     'ZnJvbV9pZBgeIAEoCVIRdHJhbnNmZXJyZWRGcm9tSWQSJAoOc2VuZGVyX3VzZXJfaWQYHyABKA'
     'lSDHNlbmRlclVzZXJJZBIjCg10cmFuc2Zlcl90eXBlGCAgASgJUgx0cmFuc2ZlclR5cGUSNwoX'
-    'cmVkZW1wdGlvbl9pbnN0cnVjdGlvbnMYISABKAlSFnJlZGVtcHRpb25JbnN0cnVjdGlvbnNKBA'
-    'gGEAdKBAgHEAhKBAgJEApKBAgREBI=');
+    'cmVkZW1wdGlvbl9pbnN0cnVjdGlvbnMYISABKAlSFnJlZGVtcHRpb25JbnN0cnVjdGlvbnMSHA'
+    'oJcmVmZXJlbmNlGCIgASgJUglyZWZlcmVuY2VKBAgGEAdKBAgHEAhKBAgJEApKBAgREBI=');
 
 @$core.Deprecated('Use giftCardBrandDescriptor instead')
 const GiftCardBrand$json = {
@@ -582,6 +583,8 @@ const GiftCardSale$json = {
     {'1': 'quote_provider', '3': 62, '4': 1, '5': 9, '10': 'quoteProvider'},
     {'1': 'settlement_status', '3': 63, '4': 1, '5': 9, '10': 'settlementStatus'},
     {'1': 'display_status', '3': 64, '4': 1, '5': 9, '10': 'displayStatus'},
+    {'1': 'escalated_at', '3': 65, '4': 1, '5': 9, '10': 'escalatedAt'},
+    {'1': 'escalation_reason', '3': 66, '4': 1, '5': 9, '10': 'escalationReason'},
   ],
 };
 
@@ -629,7 +632,9 @@ final $typed_data.Uint8List giftCardSaleDescriptor = $convert.base64Decode(
     'JvdmlkZXJfZHVyYXRpb25fbXMYPCABKANSEnByb3ZpZGVyRHVyYXRpb25NcxIlCg5mYWlsdXJl'
     'X3JlYXNvbhg9IAEoCVINZmFpbHVyZVJlYXNvbhIlCg5xdW90ZV9wcm92aWRlchg+IAEoCVINcX'
     'VvdGVQcm92aWRlchIrChFzZXR0bGVtZW50X3N0YXR1cxg/IAEoCVIQc2V0dGxlbWVudFN0YXR1'
-    'cxIlCg5kaXNwbGF5X3N0YXR1cxhAIAEoCVINZGlzcGxheVN0YXR1cw==');
+    'cxIlCg5kaXNwbGF5X3N0YXR1cxhAIAEoCVINZGlzcGxheVN0YXR1cxIhCgxlc2NhbGF0ZWRfYX'
+    'QYQSABKAlSC2VzY2FsYXRlZEF0EisKEWVzY2FsYXRpb25fcmVhc29uGEIgASgJUhBlc2NhbGF0'
+    'aW9uUmVhc29u');
 
 @$core.Deprecated('Use getSellableCardsRequestDescriptor instead')
 const GetSellableCardsRequest$json = {

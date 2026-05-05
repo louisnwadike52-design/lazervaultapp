@@ -32,17 +32,6 @@ class CrowdfundGrpcDataSource {
     return fixnum.Int64((amount * 100).round());
   }
 
-  pb.CrowdfundVisibility _visibilityToProto(CrowdfundVisibility visibility) {
-    switch (visibility) {
-      case CrowdfundVisibility.public:
-        return pb.CrowdfundVisibility.CROWDFUND_VISIBILITY_PUBLIC;
-      case CrowdfundVisibility.private:
-        return pb.CrowdfundVisibility.CROWDFUND_VISIBILITY_PRIVATE;
-      case CrowdfundVisibility.unlisted:
-        return pb.CrowdfundVisibility.CROWDFUND_VISIBILITY_UNLISTED;
-    }
-  }
-
   pb.CrowdfundStatus _statusToProto(CrowdfundStatus status) {
     switch (status) {
       case CrowdfundStatus.active:
@@ -69,7 +58,6 @@ class CrowdfundGrpcDataSource {
     DateTime? deadline,
     required String category,
     String? imageUrl,
-    required CrowdfundVisibility visibility,
     Map<String, dynamic>? metadata,
   }) async {
     try {
@@ -79,8 +67,7 @@ class CrowdfundGrpcDataSource {
         ..story = story
         ..targetAmount = _amountToInt64(targetAmount)
         ..currency = currency
-        ..category = category
-        ..visibility = _visibilityToProto(visibility);
+        ..category = category;
 
       if (deadline != null) {
         request.deadline = _dateTimeToTimestamp(deadline);
@@ -125,7 +112,6 @@ class CrowdfundGrpcDataSource {
     String? categoryFilter,
     bool myCrowdfundsOnly = false,
     String? sortBy,
-    CrowdfundVisibility? visibility,
   }) async {
     try {
       final request = pb.ListCrowdfundsRequest()
@@ -143,10 +129,6 @@ class CrowdfundGrpcDataSource {
 
       if (sortBy != null) {
         request.sortBy = sortBy;
-      }
-
-      if (visibility != null) {
-        request.visibility = _visibilityToProto(visibility);
       }
 
       final callOptions = await _callOptionsHelper.withAuth();

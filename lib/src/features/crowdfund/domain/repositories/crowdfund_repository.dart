@@ -14,7 +14,6 @@ abstract class CrowdfundRepository {
     DateTime? deadline,
     required String category,
     String? imageUrl,
-    required CrowdfundVisibility visibility,
     Map<String, dynamic>? metadata,
   });
 
@@ -27,7 +26,6 @@ abstract class CrowdfundRepository {
     String? categoryFilter,
     bool myCrowdfundsOnly = false,
     String? sortBy,
-    CrowdfundVisibility? visibility,
   });
 
   Future<List<Crowdfund>> searchCrowdfunds({

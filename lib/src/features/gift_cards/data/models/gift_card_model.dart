@@ -45,6 +45,7 @@ class GiftCardModel extends GiftCard {
     super.senderCurrency,
     super.createdAt,
     super.updatedAt,
+    super.reference,
   });
 
   factory GiftCardModel.fromProto(pb.GiftCard proto) {
@@ -74,6 +75,7 @@ class GiftCardModel extends GiftCard {
       senderCurrency: proto.senderCurrency,
       createdAt: proto.createdAt,
       updatedAt: proto.updatedAt,
+      reference: proto.reference,
     );
   }
 

@@ -11,12 +11,6 @@ enum CrowdfundStatus {
   cancelled,
 }
 
-enum CrowdfundVisibility {
-  public,
-  private,
-  unlisted,
-}
-
 enum DonationStatus {
   pending,
   processing,
@@ -114,7 +108,6 @@ class Crowdfund extends Equatable {
   final String category;
   final CrowdfundStatus status;
   final String? imageUrl;
-  final CrowdfundVisibility visibility;
   final Map<String, dynamic>? metadata;
   final int donorCount;
   final double progressPercentage;
@@ -137,7 +130,6 @@ class Crowdfund extends Equatable {
     required this.category,
     required this.status,
     this.imageUrl,
-    required this.visibility,
     this.metadata,
     required this.donorCount,
     required this.progressPercentage,
@@ -174,7 +166,6 @@ class Crowdfund extends Equatable {
         'category': category,
         'status': status.name,
         'imageUrl': imageUrl,
-        'visibility': visibility.name,
         'donorCount': donorCount,
         'progressPercentage': progressPercentage,
         'createdAt': createdAt.toIso8601String(),
@@ -202,10 +193,6 @@ class Crowdfund extends Equatable {
         orElse: () => CrowdfundStatus.active,
       ),
       imageUrl: json['imageUrl'] as String?,
-      visibility: CrowdfundVisibility.values.firstWhere(
-        (v) => v.name == json['visibility'],
-        orElse: () => CrowdfundVisibility.public,
-      ),
       donorCount: json['donorCount'] as int,
       progressPercentage: (json['progressPercentage'] as num).toDouble(),
       createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
@@ -229,7 +216,6 @@ class Crowdfund extends Equatable {
         category,
         status,
         imageUrl,
-        visibility,
         metadata,
         donorCount,
         progressPercentage,

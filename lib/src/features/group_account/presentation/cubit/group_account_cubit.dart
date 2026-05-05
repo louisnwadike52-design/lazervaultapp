@@ -2,9 +2,9 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/utils/user_search_query.dart';
-import 'package:lazervault/src/core/auth/token_manager.dart';
 import '../../domain/usecases/group_account_usecases.dart';
 import '../../domain/entities/group_entities.dart';
 import '../../services/group_account_report_service.dart';
@@ -43,11 +43,20 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
   final GetPublicGroup? getPublicGroup;
   final JoinPublicGroup? joinPublicGroup;
   final GroupAccountReportService? reportService;
-  // Live session source-of-truth (reads from FlutterSecureStorage). Used to
-  // detect a user-ID mismatch that bypassed setUserId/clearOnLogout — a
-  // critical safeguard because a stale _currentUserId would resolve the
-  // WRONG user's source account on payment.
-  final TokenManager _tokenManager;
+  // Live session source-of-truth. Reads the same `user_id` storage key
+  // the auth cubit writes (see authentication_cubit.dart `_userIdKey`).
+  // Used to detect a user-ID mismatch that bypassed setUserId/clearOnLogout
+  // — a critical safeguard because a stale _currentUserId would resolve
+  // the WRONG user's source account on payment.
+  //
+  // Important: this is OPTIONAL evidence, not authoritative. A null read
+  // from secure storage may simply mean the read raced (e.g. on a fresh
+  // process startup). We never wipe state on a null read, only on a
+  // positive mismatch with a non-null live id. The cubit's own
+  // `_currentUserId` (set by setUserId from the auth state) is the
+  // primary source of truth.
+  final FlutterSecureStorage _secureStorage;
+  static const String _liveUserIdKey = 'user_id';
 
   // Current user ID and name - set from authentication state
   String? _currentUserId;
@@ -147,32 +156,54 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     this.getPublicGroup,
     this.joinPublicGroup,
     this.reportService,
-    TokenManager? tokenManager,
-  })  : _tokenManager = tokenManager ?? TokenManager(),
+    FlutterSecureStorage? secureStorage,
+  })  : _secureStorage = secureStorage ?? const FlutterSecureStorage(),
         super(GroupAccountInitial());
 
   /// Verify the cached `_currentUserId` still matches the live session.
-  /// Returns the live user ID on success, or null if the session is gone /
-  /// has changed under us — in which case caches are wiped and the caller
-  /// should abort. Belt-and-suspenders against any path that changes the
-  /// authenticated user without going through setUserId/clearOnLogout.
+  /// Returns the user ID to operate as.
+  ///
+  /// Three outcomes:
+  ///
+  ///  1. Live read agrees with the cubit's `_currentUserId` → return it.
+  ///  2. Live read disagrees (non-null and != cached) → user actually
+  ///     switched without going through setUserId. Wipe per-user state
+  ///     and adopt the live id. This is the security guard.
+  ///  3. Live read is null OR throws → secure storage isn't yet readable
+  ///     (e.g. the app just resumed from background). DON'T treat that
+  ///     as a logout. Trust the cubit's `_currentUserId` if we have one;
+  ///     only emit "not authenticated" if BOTH are unknown.
+  ///
+  /// The previous implementation used a TokenManager that read from a
+  /// `user_session` storage key the auth flow never writes — so it
+  /// returned null on every call, falsely tripping the "Session expired"
+  /// path on every group-detail load. The fix reads the SAME `user_id`
+  /// key the auth cubit writes, and treats a null/error read as "no
+  /// signal" rather than a positive logout.
   Future<String?> _assertSessionUser() async {
-    final liveId = await _tokenManager.getUserId();
+    String? liveId;
+    try {
+      liveId = await _secureStorage.read(key: _liveUserIdKey);
+    } catch (e) {
+      debugPrint('[GroupAccountCubit] secure storage read failed: $e');
+      liveId = null;
+    }
+
     if (liveId == null) {
-      // No session — wipe anything left over and surface unauthenticated.
-      if (_currentUserId != null) {
-        debugPrint('[GroupAccountCubit] session disappeared, clearing caches');
-        clearOnLogout();
-      }
+      // No signal from storage — fall back to the cubit's own state.
+      // If we have it, trust it; if we don't, only THEN surface the
+      // unauthenticated error (the dashboard router should never have
+      // dropped us here without an auth state).
+      if (_currentUserId != null) return _currentUserId;
       if (!isClosed) {
-        emit(const GroupAccountError('Session expired. Please log in again.'));
+        emit(const GroupAccountError('Please log in to view your groups.'));
       }
       return null;
     }
+
     if (_currentUserId != null && _currentUserId != liveId) {
-      // User switched without setUserId being called (e.g. session restored
-      // from token without going through the auth flow). Wipe per-user
-      // state immediately so the next op uses the new user's account.
+      // Real user-switch detected. Wipe per-user state so the next op
+      // uses the new user's account.
       debugPrint('[GroupAccountCubit] user mismatch '
           'cached=$_currentUserId live=$liveId — clearing caches');
       _clearUserScopedState();
@@ -1660,26 +1691,40 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     }
   }
 
-  /// Get details of a public group (for non-members)
+  /// Get details of a public group (for non-members).
+  ///
+  /// Emits the dedicated `PublicGroupDetailLoading` / `PublicGroupDetailError`
+  /// states (NOT the global `GroupAccountLoading` / `GroupAccountError`)
+  /// so the leaderboard list rendered behind the bottom sheet doesn't
+  /// rebuild and lose its scroll position when the user taps a row.
   Future<void> loadPublicGroupDetail(String groupId) async {
     if (isClosed) return;
     if (getPublicGroup == null) {
-      emit(const GroupAccountError('Public group details not available'));
+      emit(PublicGroupDetailError(
+        groupId: groupId,
+        message: 'Public group details not available',
+      ));
       return;
     }
     if (groupId.trim().isEmpty) {
-      emit(const GroupAccountError('Invalid group ID'));
+      emit(const PublicGroupDetailError(
+        groupId: '',
+        message: 'Invalid group ID',
+      ));
       return;
     }
 
-    emit(const GroupAccountLoading(message: 'Loading group details...'));
+    emit(PublicGroupDetailLoading(groupId));
     try {
       final detail = await getPublicGroup!(groupId);
       if (isClosed) return;
       emit(PublicGroupDetailLoaded(detail));
     } catch (e) {
       if (isClosed) return;
-      emit(GroupAccountError('Failed to load group details: ${e.toString()}'));
+      emit(PublicGroupDetailError(
+        groupId: groupId,
+        message: 'Failed to load group details: ${e.toString()}',
+      ));
     }
   }
 

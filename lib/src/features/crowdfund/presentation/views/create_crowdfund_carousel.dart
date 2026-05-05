@@ -6,7 +6,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:convert';
-import '../../domain/entities/crowdfund_entities.dart';
 import '../cubit/crowdfund_cubit.dart';
 import '../cubit/crowdfund_state.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
@@ -59,7 +58,6 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
 
   late String _selectedCurrency;
   String _selectedCategory = 'Medical';
-  CrowdfundVisibility _selectedVisibility = CrowdfundVisibility.public;
   DateTime? _selectedDeadline;
   Map<String, String> _socialLinks = {};
 
@@ -185,16 +183,16 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
       _showErrorSnackBar('Please enter a title');
       return false;
     }
-    if (_titleController.text.trim().length < 10) {
-      _showErrorSnackBar('Title must be at least 10 characters');
+    if (_titleController.text.trim().length < 3) {
+      _showErrorSnackBar('Title must be at least 3 characters');
       return false;
     }
     if (_descriptionController.text.trim().isEmpty) {
       _showErrorSnackBar('Please enter a description');
       return false;
     }
-    if (_descriptionController.text.trim().length < 20) {
-      _showErrorSnackBar('Description must be at least 20 characters');
+    if (_descriptionController.text.trim().length < 5) {
+      _showErrorSnackBar('Description must be at least 5 characters');
       return false;
     }
     return true;
@@ -240,38 +238,8 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
       _isProcessing = true;
     });
 
-    // Show loading dialog
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => Center(
-        child: Container(
-          padding: EdgeInsets.all(24.w),
-          margin: EdgeInsets.symmetric(horizontal: 40.w),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1F1F35),
-            borderRadius: BorderRadius.circular(16.r),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircularProgressIndicator(
-                color: const Color(0xFF6366F1),
-              ),
-              SizedBox(height: 16.h),
-              Text(
-                'Creating Campaign...',
-                style: GoogleFonts.inter(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+    // No modal dialog — the inline spinner on the Create Campaign CTA is
+    // the only progress affordance until we navigate to the campaign.
 
     developer.log('CreateCrowdfund: Starting creation process', name: 'Crowdfund');
     developer.log('User authenticated: ${authState.profile.user.username ?? 'unknown'}', name: 'Crowdfund');
@@ -291,7 +259,6 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
           deadline: _selectedDeadline,
           category: _selectedCategory,
           imageUrl: _getValidImageUrl(),
-          visibility: _selectedVisibility,
           metadata: metadata.isNotEmpty ? metadata : null,
         );
   }
@@ -335,16 +302,9 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
     return BlocListener<CrowdfundCubit, CrowdfundState>(
       listener: (context, state) {
         if (state is CrowdfundCreated) {
-          setState(() {
-            _isProcessing = false;
-          });
-
-          // Close loading dialog if open
-          if (ModalRoute.of(context)?.isCurrent == false) {
-            Navigator.of(context).pop();
-          }
-
-          // Navigate to details screen via named route (provides CrowdfundCubit)
+          // Keep _isProcessing = true through navigation so the CTA stays
+          // disabled and the spinner never flickers off before the next
+          // route mounts. The carousel is destroyed on offNamed.
           Get.offNamed(
             AppRoutes.crowdfundDetails,
             arguments: state.crowdfund.id,
@@ -353,12 +313,6 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
           setState(() {
             _isProcessing = false;
           });
-
-          // Close loading dialog if open
-          if (ModalRoute.of(context)?.isCurrent == false) {
-            Navigator.of(context).pop();
-          }
-
           _showErrorSnackBar(state.message);
         }
       },
@@ -408,7 +362,6 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
                     selectedCategory: _selectedCategory,
                     categories: _categories,
                     selectedDeadline: _selectedDeadline,
-                    selectedVisibility: _selectedVisibility,
                     onCategoryChanged: (value) {
                       setState(() {
                         _selectedCategory = value;
@@ -417,11 +370,6 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
                     onDeadlineChanged: (date) {
                       setState(() {
                         _selectedDeadline = date;
-                      });
-                    },
-                    onVisibilityChanged: (value) {
-                      setState(() {
-                        _selectedVisibility = value;
                       });
                     },
                   ),
@@ -442,7 +390,6 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
                     category: _selectedCategory,
                     deadline: _selectedDeadline,
                     imageUrl: _imageUrlController.text,
-                    visibility: _selectedVisibility,
                     socialLinks: _socialLinks,
                   ),
                 ],

@@ -17,10 +17,63 @@ class CrowdfundImageUploadService {
 
   final _storage = const FlutterSecureStorage();
 
+  /// Resolves the products-gateway base URL.
+  ///
+  /// Resolution order:
+  ///   1. `PRODUCTS_BASE_URL` — full URL override (e.g. `https://api.lazervault.com`).
+  ///      Production must set this so traffic goes through HTTPS.
+  ///   2. `PRODUCTS_HTTP_HOST` + `PRODUCTS_HTTP_PORT` — explicit HTTP gateway.
+  ///   3. `PRODUCTS_GRPC_HOST` + `PRODUCTS_HTTP_PORT` — back-compat for envs
+  ///      that only set the gRPC host. The Android emulator default 10.0.2.2
+  ///      lives here; prod envs should override step 1 instead.
+  ///
+  /// The scheme defaults to https for non-loopback hosts so callers don't
+  /// silently downgrade to http in production.
+  ///
+  /// `PRODUCTS_BASE_URL` is normalized to scheme + authority only — any path,
+  /// query, or fragment the operator includes is stripped. Endpoint paths
+  /// (e.g. `/api/v1/crowdfunds/upload-image`) are owned by this client, so a
+  /// base URL like `https://api.example.com/v1` would otherwise produce
+  /// `https://api.example.com/v1/api/v1/...` with duplicated segments.
   String get _baseUrl {
-    final host = dotenv.env['PRODUCTS_GRPC_HOST'] ?? '10.0.2.2';
-    final port = dotenv.env['PRODUCTS_HTTP_PORT'] ?? '8083';
-    return 'http://$host:$port';
+    final override = dotenv.env['PRODUCTS_BASE_URL']?.trim();
+    if (override != null && override.isNotEmpty) {
+      final normalized = _normalizeOverride(override);
+      if (normalized != null) return normalized;
+      // Malformed override falls through to host/port resolution rather
+      // than firing a request at a broken URL.
+    }
+
+    final host = (dotenv.env['PRODUCTS_HTTP_HOST'] ??
+            dotenv.env['PRODUCTS_GRPC_HOST'] ??
+            '10.0.2.2')
+        .trim();
+    final port = (dotenv.env['PRODUCTS_HTTP_PORT'] ??
+            dotenv.env['PRODUCTS_WS_PORT'] ??
+            '8083')
+        .trim();
+    final scheme = _isLoopback(host) ? 'http' : 'https';
+    return '$scheme://$host:$port';
+  }
+
+  /// Returns `scheme://host[:port]` for a valid http/https override, or
+  /// null if the override fails to parse or has an empty host.
+  static String? _normalizeOverride(String raw) {
+    final uri = Uri.tryParse(raw);
+    if (uri == null) return null;
+    if (uri.scheme != 'http' && uri.scheme != 'https') return null;
+    if (uri.host.isEmpty) return null;
+    final port = uri.hasPort ? ':${uri.port}' : '';
+    return '${uri.scheme}://${uri.host}$port';
+  }
+
+  static bool _isLoopback(String host) {
+    return host == 'localhost' ||
+        host == '127.0.0.1' ||
+        host == '10.0.2.2' || // Android emulator -> host machine
+        host.startsWith('192.168.') ||
+        host.startsWith('10.') ||
+        host == '::1';
   }
 
   /// Validates and uploads an image file, returning the hosted URL.
