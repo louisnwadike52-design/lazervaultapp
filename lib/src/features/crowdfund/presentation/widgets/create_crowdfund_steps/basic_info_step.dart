@@ -74,7 +74,7 @@ class BasicInfoStep extends StatelessWidget {
             maxLength: 255,
           ),
           SizedBox(height: 4.h),
-          _buildHint('Minimum 10 characters'),
+          _buildHint('Minimum 3 characters'),
           SizedBox(height: 20.h),
 
           // Description field
@@ -87,7 +87,7 @@ class BasicInfoStep extends StatelessWidget {
             maxLength: 500,
           ),
           SizedBox(height: 4.h),
-          _buildHint('Minimum 20 characters'),
+          _buildHint('Minimum 5 characters'),
           SizedBox(height: 32.h),
 
           // Info card

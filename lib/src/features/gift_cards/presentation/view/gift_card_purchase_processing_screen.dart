@@ -28,9 +28,7 @@ class GiftCardPurchaseProcessingScreen extends StatefulWidget {
 }
 
 class _GiftCardPurchaseProcessingScreenState
-    extends State<GiftCardPurchaseProcessingScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
+    extends State<GiftCardPurchaseProcessingScreen> {
   bool _purchaseStarted = false;
   bool _hasError = false;
   String _errorTitle = '';
@@ -41,23 +39,14 @@ class _GiftCardPurchaseProcessingScreenState
   // Async-buy WebSocket plumbing. When the backend returns the row in
   // a non-terminal state, we sit on this screen and wait for a
   // `giftcard_purchase` event with a matching reference, then refetch.
-  // No polling timers — the WebSocket is the source of truth.
+  // No polling timers, no hardcoded delays — backend response time is
+  // the only source of truth for processing-screen transitions.
   StreamSubscription<BalanceUpdateEvent>? _balanceSub;
   String? _awaitingReference;
   String? _awaitingGiftCardId;
 
   @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    )..repeat();
-  }
-
-  @override
   void dispose() {
-    _animationController.dispose();
     _balanceSub?.cancel();
     super.dispose();
   }
@@ -112,7 +101,6 @@ class _GiftCardPurchaseProcessingScreenState
       _hasError = false;
       _purchaseStarted = false;
     });
-    _animationController.repeat();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _startPurchase(context);
     });
@@ -132,7 +120,6 @@ class _GiftCardPurchaseProcessingScreenState
         body: BlocListener<GiftCardCubit, GiftCardState>(
           listener: (context, state) {
             if (state is GiftCardPurchaseCompleted) {
-              _animationController.stop();
               Get.offNamed(
                 AppRoutes.giftCardDetails,
                 arguments: state.giftCard,
@@ -152,7 +139,6 @@ class _GiftCardPurchaseProcessingScreenState
                 state is GiftCardServerUnavailable ||
                 state is GiftCardValidationError ||
                 state is GiftCardNotFound) {
-              _animationController.stop();
               _setErrorState(state);
             }
           },
@@ -220,33 +206,30 @@ class _GiftCardPurchaseProcessingScreenState
   }
 
   Widget _buildAnimatedIcon() {
-    return AnimatedBuilder(
-      animation: _animationController,
-      builder: (context, child) {
-        return Container(
-          width: 100.w,
-          height: 100.w,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
-          ),
-          child: Center(
-            child: Container(
-              width: 72.w,
-              height: 72.w,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                color: InvoiceThemeColors.primaryPurple,
-              ),
-              child: Icon(
-                Icons.card_giftcard,
-                size: 36.sp,
-                color: Colors.white,
-              ),
+    // Plain stock indeterminate spinner — no app-controlled animation
+    // duration and no Future.delayed/Timer anywhere on this screen.
+    // The framework owns the spinner cadence; the screen's actual
+    // visible state changes are driven exclusively by cubit events
+    // (which themselves are driven by backend response time).
+    return Container(
+      width: 100.w,
+      height: 100.w,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: InvoiceThemeColors.primaryPurple.withValues(alpha: 0.1),
+      ),
+      child: Center(
+        child: SizedBox(
+          width: 72.w,
+          height: 72.w,
+          child: const CircularProgressIndicator(
+            strokeWidth: 4,
+            valueColor: AlwaysStoppedAnimation<Color>(
+              InvoiceThemeColors.primaryPurple,
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 

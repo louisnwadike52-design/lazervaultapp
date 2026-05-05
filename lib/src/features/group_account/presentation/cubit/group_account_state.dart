@@ -431,6 +431,19 @@ class PublicGroupsLoaded extends GroupAccountState {
   List<Object?> get props => [groups, totalCount, isStale];
 }
 
+/// Public group detail loading. Distinct from the global GroupAccountLoading
+/// so the bottom sheet's loading spinner doesn't clobber the leaderboard
+/// list behind it. Carries the requested groupId so the sheet can ignore
+/// stale loads if the user taps a different row.
+class PublicGroupDetailLoading extends GroupAccountState {
+  final String groupId;
+
+  const PublicGroupDetailLoading(this.groupId);
+
+  @override
+  List<Object?> get props => [groupId];
+}
+
 /// Public group detail loaded
 class PublicGroupDetailLoaded extends GroupAccountState {
   final PublicGroupDetail detail;
@@ -439,6 +452,18 @@ class PublicGroupDetailLoaded extends GroupAccountState {
 
   @override
   List<Object?> get props => [detail];
+}
+
+/// Public group detail failed to load. Separate from GroupAccountError so
+/// the leaderboard list doesn't pick up the bottom sheet's failure.
+class PublicGroupDetailError extends GroupAccountState {
+  final String groupId;
+  final String message;
+
+  const PublicGroupDetailError({required this.groupId, required this.message});
+
+  @override
+  List<Object?> get props => [groupId, message];
 }
 
 /// Successfully joined a public group

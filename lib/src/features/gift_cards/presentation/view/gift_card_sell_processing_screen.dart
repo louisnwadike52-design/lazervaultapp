@@ -36,10 +36,7 @@ class GiftCardSellProcessingScreen extends StatefulWidget {
 }
 
 class _GiftCardSellProcessingScreenState
-    extends State<GiftCardSellProcessingScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-
+    extends State<GiftCardSellProcessingScreen> {
   bool _hasError = false;
   String _errorTitle = '';
   String _errorMessage = '';
@@ -53,10 +50,9 @@ class _GiftCardSellProcessingScreenState
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    )..repeat();
+    // No animation controller — backend response time is the only
+    // source of truth for state changes. Spinner is the framework's
+    // built-in CircularProgressIndicator (see _buildAnimatedIcon).
     _awaitingReference = widget.initialSale.reference;
     _awaitingSaleId = widget.initialSale.id;
     _ensureBalanceSubscription();
@@ -64,7 +60,6 @@ class _GiftCardSellProcessingScreenState
 
   @override
   void dispose() {
-    _animationController.dispose();
     _balanceSub?.cancel();
     super.dispose();
   }
@@ -116,7 +111,6 @@ class _GiftCardSellProcessingScreenState
         _errorMessage = 'Please try again later.';
       }
     });
-    _animationController.stop();
   }
 
   @override
@@ -128,7 +122,6 @@ class _GiftCardSellProcessingScreenState
         body: BlocListener<GiftCardCubit, GiftCardState>(
           listener: (context, state) {
             if (state is GiftCardSellPaid) {
-              _animationController.stop();
               // Route to My Sales (or a sale detail screen if you
               // build one). Using the existing My Sales screen keeps
               // this aligned with the present sell-side UX.
@@ -168,29 +161,14 @@ class _GiftCardSellProcessingScreenState
           children: [
             SizedBox(height: 80.h),
             Center(
-              child: AnimatedBuilder(
-                animation: _animationController,
-                builder: (context, _) {
-                  return Container(
-                    width: 80.w,
-                    height: 80.w,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: const Color(0xFF1F1F1F),
-                      border: Border.all(
-                        color: const Color(0xFF3B82F6).withValues(
-                          alpha: 0.3 + 0.7 * _animationController.value,
-                        ),
-                        width: 2,
-                      ),
-                    ),
-                    child: const Icon(
-                      Icons.hourglass_empty,
-                      color: Color(0xFF3B82F6),
-                      size: 36,
-                    ),
-                  );
-                },
+              child: SizedBox(
+                width: 80.w,
+                height: 80.w,
+                child: const CircularProgressIndicator(
+                  strokeWidth: 3,
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                ),
               ),
             ),
             SizedBox(height: 32.h),

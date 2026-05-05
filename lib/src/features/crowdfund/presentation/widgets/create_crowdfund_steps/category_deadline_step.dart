@@ -1,26 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../domain/entities/crowdfund_entities.dart';
 
 class CategoryDeadlineStep extends StatelessWidget {
   final String selectedCategory;
   final List<String> categories;
   final DateTime? selectedDeadline;
-  final CrowdfundVisibility selectedVisibility;
   final Function(String) onCategoryChanged;
   final Function(DateTime?) onDeadlineChanged;
-  final Function(CrowdfundVisibility) onVisibilityChanged;
 
   const CategoryDeadlineStep({
     super.key,
     required this.selectedCategory,
     required this.categories,
     required this.selectedDeadline,
-    required this.selectedVisibility,
     required this.onCategoryChanged,
     required this.onDeadlineChanged,
-    required this.onVisibilityChanged,
   });
 
   @override
@@ -30,7 +25,6 @@ class CategoryDeadlineStep extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Icon header
           Center(
             child: Container(
               width: 80.w,
@@ -52,10 +46,9 @@ class CategoryDeadlineStep extends StatelessWidget {
           ),
           SizedBox(height: 24.h),
 
-          // Title
           Center(
             child: Text(
-              'Category & Settings',
+              'Category & Deadline',
               style: GoogleFonts.inter(
                 fontSize: 24.sp,
                 fontWeight: FontWeight.w700,
@@ -76,7 +69,6 @@ class CategoryDeadlineStep extends StatelessWidget {
           ),
           SizedBox(height: 32.h),
 
-          // Category selection
           _buildLabel('Category'),
           SizedBox(height: 12.h),
           Wrap(
@@ -91,7 +83,10 @@ class CategoryDeadlineStep extends StatelessWidget {
                   decoration: BoxDecoration(
                     gradient: isSelected
                         ? const LinearGradient(
-                            colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
+                            colors: [
+                              Color(0xFF6366F1),
+                              Color.fromARGB(255, 78, 3, 208)
+                            ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           )
@@ -113,7 +108,6 @@ class CategoryDeadlineStep extends StatelessWidget {
           ),
           SizedBox(height: 24.h),
 
-          // Deadline selector
           _buildLabel('Deadline (Optional)'),
           SizedBox(height: 8.h),
           GestureDetector(
@@ -161,79 +155,11 @@ class CategoryDeadlineStep extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(height: 24.h),
-
-          // Visibility selector
-          _buildLabel('Campaign Visibility'),
-          SizedBox(height: 12.h),
-          ...CrowdfundVisibility.values.map((visibility) {
-            final isSelected = selectedVisibility == visibility;
-            return GestureDetector(
-              onTap: () => onVisibilityChanged(visibility),
-              child: Container(
-                margin: EdgeInsets.only(bottom: 8.h),
-                padding: EdgeInsets.all(16.w),
-                decoration: BoxDecoration(
-                  gradient: isSelected
-                      ? LinearGradient(
-                          colors: [
-                            const Color(0xFF6366F1).withValues(alpha: 0.2),
-                            const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        )
-                      : null,
-                  color: isSelected ? null : const Color(0xFF1F1F1F),
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      _getVisibilityIcon(visibility),
-                      color: isSelected
-                          ? const Color(0xFF6366F1)
-                          : const Color(0xFF6B7280),
-                      size: 20.sp,
-                    ),
-                    SizedBox(width: 12.w),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _getVisibilityLabel(visibility),
-                            style: GoogleFonts.inter(
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
-                          ),
-                          Text(
-                            _getVisibilityDescription(visibility),
-                            style: GoogleFonts.inter(
-                              fontSize: 12.sp,
-                              fontWeight: FontWeight.w400,
-                              color: const Color(0xFF9CA3AF),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (isSelected)
-                      Icon(
-                        Icons.check_circle,
-                        color: const Color(0xFF6366F1),
-                        size: 20.sp,
-                      ),
-                  ],
-                ),
-              ),
-            );
-          }),
           SizedBox(height: 32.h),
 
-          // Info card
+          // Public-by-default explainer (no visibility selector — every
+          // campaign is publicly discoverable, and anyone with the
+          // share link can fund it).
           Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
@@ -257,7 +183,7 @@ class CategoryDeadlineStep extends StatelessWidget {
                 SizedBox(width: 12.w),
                 Expanded(
                   child: Text(
-                    'Public campaigns are discoverable by everyone. Private campaigns are only accessible via direct link.',
+                    'All campaigns are public. Once created, anyone with your share link can fund the campaign.',
                     style: GoogleFonts.inter(
                       fontSize: 12.sp,
                       fontWeight: FontWeight.w400,
@@ -282,39 +208,6 @@ class CategoryDeadlineStep extends StatelessWidget {
         color: Colors.white,
       ),
     );
-  }
-
-  IconData _getVisibilityIcon(CrowdfundVisibility visibility) {
-    switch (visibility) {
-      case CrowdfundVisibility.public:
-        return Icons.public;
-      case CrowdfundVisibility.private:
-        return Icons.lock;
-      case CrowdfundVisibility.unlisted:
-        return Icons.link;
-    }
-  }
-
-  String _getVisibilityLabel(CrowdfundVisibility visibility) {
-    switch (visibility) {
-      case CrowdfundVisibility.public:
-        return 'Public';
-      case CrowdfundVisibility.private:
-        return 'Private';
-      case CrowdfundVisibility.unlisted:
-        return 'Unlisted';
-    }
-  }
-
-  String _getVisibilityDescription(CrowdfundVisibility visibility) {
-    switch (visibility) {
-      case CrowdfundVisibility.public:
-        return 'Anyone can find and donate';
-      case CrowdfundVisibility.private:
-        return 'Only you can see this campaign';
-      case CrowdfundVisibility.unlisted:
-        return 'Anyone with the link can donate';
-    }
   }
 
   Future<void> _selectDeadline(BuildContext context) async {

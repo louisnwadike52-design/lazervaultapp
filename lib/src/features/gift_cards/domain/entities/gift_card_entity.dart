@@ -28,6 +28,12 @@ class GiftCard extends Equatable {
   final String senderCurrency;
   final String createdAt;
   final String updatedAt;
+  /// Stable internal reference (e.g. "GC-{uuid}") populated by the
+  /// backend at create-pending-card time. Drives the balance-WS
+  /// terminal-event match on the processing screen — the WS event's
+  /// `reference` field carries this exact value, so it must be the
+  /// identifier the cubit subscribes against.
+  final String reference;
 
   const GiftCard({
     required this.id,
@@ -55,6 +61,7 @@ class GiftCard extends Equatable {
     this.senderCurrency = '',
     this.createdAt = '',
     this.updatedAt = '',
+    this.reference = '',
   });
 
   /// Whether this card was purchased in a different currency from its face value
@@ -75,7 +82,7 @@ class GiftCard extends Equatable {
     recipientEmail, recipientName, message, providerTransactionId,
     redemptionCode, redemptionPin, redemptionInstructions, countryCode,
     providerProductId, discountPercentage, senderAmount, senderCurrency,
-    createdAt, updatedAt,
+    createdAt, updatedAt, reference,
   ];
 
   GiftCard copyWith({

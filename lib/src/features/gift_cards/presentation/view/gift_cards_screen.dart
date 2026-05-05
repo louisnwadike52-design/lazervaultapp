@@ -36,6 +36,13 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
   @override
   void initState() {
     super.initState();
+    // Read optional initialTab argument (e.g., from MySales back button)
+    // so callers can land users on a specific tab. "sell" → Sell tab,
+    // anything else (or absent) → Buy tab default.
+    final args = Get.arguments;
+    if (args is Map && args['initialTab']?.toString().toLowerCase() == 'sell') {
+      _currentTab = 1;
+    }
     final cubit = context.read<GiftCardCubit>();
     // Load data for both tabs so switching is instant
     cubit.loadGiftCardBrands();

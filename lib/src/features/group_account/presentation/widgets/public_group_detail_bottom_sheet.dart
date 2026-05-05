@@ -58,6 +58,12 @@ class _PublicGroupDetailBottomSheetState
         borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
       ),
       child: BlocConsumer<GroupAccountCubit, GroupAccountState>(
+        // Only react to states this sheet cares about. Filtering here keeps
+        // the sheet inert when the leaderboard (sharing the same cubit)
+        // emits unrelated states for its own list — and vice versa.
+        listenWhen: (previous, current) =>
+            current is JoinPublicGroupSuccess ||
+            (current is GroupAccountError && _isJoining),
         listener: (context, state) {
           if (state is JoinPublicGroupSuccess) {
             setState(() {
@@ -89,24 +95,20 @@ class _PublicGroupDetailBottomSheetState
             );
           }
         },
+        // Rebuild ONLY for this sheet's own detail-load lifecycle. The
+        // leaderboard list shares the cubit and emits PublicGroupsLoaded /
+        // GroupAccountLoading on its own refreshes — we ignore those here
+        // so the sheet doesn't flicker when the list does background work.
+        buildWhen: (previous, current) =>
+            current is PublicGroupDetailLoading ||
+            current is PublicGroupDetailLoaded ||
+            current is PublicGroupDetailError,
         builder: (context, state) {
-          if (state is GroupAccountLoading) {
-            return SizedBox(
-              height: 300.h,
-              child: const Center(
-                child: CircularProgressIndicator(
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-                ),
-              ),
-            );
-          }
-
           if (state is PublicGroupDetailLoaded) {
             return _buildContent(state.detail);
           }
 
-          if (state is GroupAccountError) {
+          if (state is PublicGroupDetailError) {
             return SizedBox(
               height: 300.h,
               child: Center(
@@ -149,7 +151,7 @@ class _PublicGroupDetailBottomSheetState
             );
           }
 
-          // Loading placeholder while waiting for state
+          // Either PublicGroupDetailLoading or initial — show spinner.
           return SizedBox(
             height: 300.h,
             child: const Center(

@@ -335,6 +335,7 @@ import 'package:lazervault/src/features/crowdfund/data/datasources/crowdfund_grp
 import 'package:lazervault/src/features/crowdfund/data/repositories/crowdfund_repository_impl.dart';
 import 'package:lazervault/src/features/crowdfund/data/services/crowdfund_pdf_service.dart';
 import 'package:lazervault/src/features/crowdfund/data/services/crowdfund_report_service.dart';
+import 'package:lazervault/src/features/crowdfund/data/services/crowdfund_share_service.dart';
 import 'package:lazervault/src/features/group_account/services/group_account_report_service.dart';
 import 'package:lazervault/src/features/crowdfund/domain/repositories/crowdfund_repository.dart';
 import 'package:lazervault/src/features/crowdfund/domain/usecases/crowdfund_usecases.dart';
@@ -1734,6 +1735,13 @@ Future<void> init() async {
   // PDF Service
   serviceLocator.registerLazySingleton<CrowdfundPdfService>(
     () => CrowdfundPdfService(),
+  );
+
+  // Share-link helper. Reads the configurable share base URL (mirrored
+  // from the admin dashboard's crowdfund Configuration tab) and exposes
+  // shareUrlFor(id) to UI consumers.
+  serviceLocator.registerLazySingleton<CrowdfundShareService>(
+    () => CrowdfundShareService(),
   );
 
   // Report Service (for AI-generated campaign reports)

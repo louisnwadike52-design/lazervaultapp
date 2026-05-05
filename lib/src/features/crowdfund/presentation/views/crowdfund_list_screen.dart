@@ -24,6 +24,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
   final TextEditingController _searchController = TextEditingController();
   final Debouncer _searchDebouncer = Debouncer.search();
   final ScrollController _browseScrollController = ScrollController();
+  final ScrollController _fundedScrollController = ScrollController();
   String _selectedFilter = 'All';
 
   static const _filters = ['All', 'Active', 'Completed', 'Cancelled'];
@@ -35,6 +36,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
     _tabController.addListener(_onTabChanged);
     _searchController.addListener(_onSearchTextChanged);
     _browseScrollController.addListener(_onBrowseScroll);
+    _fundedScrollController.addListener(_onFundedScroll);
     // Data loading is triggered by the route's BlocProvider (..loadCrowdfunds())
     // Only reload if cubit is in initial state
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -54,16 +56,47 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
     _searchDebouncer.dispose();
     _browseScrollController.removeListener(_onBrowseScroll);
     _browseScrollController.dispose();
+    _fundedScrollController.removeListener(_onFundedScroll);
+    _fundedScrollController.dispose();
     super.dispose();
   }
 
   void _onBrowseScroll() {
-    if (_browseScrollController.position.pixels >=
+    if (_browseScrollController.position.pixels <
         _browseScrollController.position.maxScrollExtent - 200) {
-      context.read<CrowdfundCubit>().loadMoreCrowdfunds(
-            statusFilter: _statusParam,
-          );
+      return;
     }
+    // Don't auto-paginate while the user is searching: search results
+    // aren't pageable and the cubit marks them hasMore=false anyway, but
+    // the early return here also avoids a stray gRPC call during the
+    // debounce window before the cubit's state flips.
+    if (_searchController.text.trim().isNotEmpty) return;
+
+    final state = context.read<CrowdfundCubit>().state;
+    // Only paginate from a settled list state. Skip while a fetch is in
+    // flight (Loading), errored (CrowdfundError), or while we're sitting
+    // on a different cubit phase (e.g. UserDonationsLoaded after a recent
+    // tab switch but before the rebuild has caught up).
+    if (state is! CrowdfundLoaded || !state.hasMore || state.isLoadingMore) {
+      return;
+    }
+    context.read<CrowdfundCubit>().loadMoreCrowdfunds(
+          statusFilter: _statusParam,
+        );
+  }
+
+  void _onFundedScroll() {
+    if (_fundedScrollController.position.pixels <
+        _fundedScrollController.position.maxScrollExtent - 200) {
+      return;
+    }
+    final state = context.read<CrowdfundCubit>().state;
+    if (state is! UserDonationsLoaded ||
+        !state.hasMore ||
+        state.isLoadingMore) {
+      return;
+    }
+    context.read<CrowdfundCubit>().loadMoreUserDonations();
   }
 
   void _onSearchTextChanged() {
@@ -398,7 +431,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
               subtitle: 'Donate to a campaign to see it here!',
             );
           }
-          return _buildFundedCampaignsList(state.donations);
+          return _buildFundedCampaignsList(state);
         }
 
         // Default: show shimmer while _onTabChanged triggers loadUserDonations
@@ -407,14 +440,17 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
     );
   }
 
-  Widget _buildFundedCampaignsList(List<CrowdfundDonation> donations) {
-    // Group donations by crowdfundId to show unique campaigns
+  Widget _buildFundedCampaignsList(UserDonationsLoaded state) {
+    // Group donations by crowdfundId to show unique campaigns. We preserve
+    // first-seen order so additional pages append cleanly at the bottom.
     final Map<String, List<CrowdfundDonation>> grouped = {};
-    for (final donation in donations) {
+    for (final donation in state.donations) {
       grouped.putIfAbsent(donation.crowdfundId, () => []).add(donation);
     }
 
     final campaignIds = grouped.keys.toList();
+    final showFooter = state.isLoadingMore || state.hasMore;
+    final itemCount = campaignIds.length + (showFooter ? 1 : 0);
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -423,10 +459,24 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
       color: const Color(0xFF6366F1),
       backgroundColor: const Color(0xFF1F1F1F),
       child: ListView.builder(
+        controller: _fundedScrollController,
         physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-        itemCount: campaignIds.length,
+        itemCount: itemCount,
         itemBuilder: (context, index) {
+          if (index >= campaignIds.length) {
+            return Padding(
+              padding: EdgeInsets.symmetric(vertical: 16.h),
+              child: Center(
+                child: state.isLoadingMore
+                    ? const CircularProgressIndicator(
+                        color: Color(0xFF6366F1),
+                        strokeWidth: 2,
+                      )
+                    : const SizedBox.shrink(),
+              ),
+            );
+          }
           final crowdfundId = campaignIds[index];
           final campaignDonations = grouped[crowdfundId]!;
           final totalDonated = campaignDonations.fold<double>(

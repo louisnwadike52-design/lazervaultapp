@@ -20,7 +20,6 @@ class CreateCrowdfundUseCase {
     DateTime? deadline,
     required String category,
     String? imageUrl,
-    required CrowdfundVisibility visibility,
     Map<String, dynamic>? metadata,
   }) {
     return repository.createCrowdfund(
@@ -32,7 +31,6 @@ class CreateCrowdfundUseCase {
       deadline: deadline,
       category: category,
       imageUrl: imageUrl,
-      visibility: visibility,
       metadata: metadata,
     );
   }
@@ -60,7 +58,6 @@ class ListCrowdfundsUseCase {
     String? categoryFilter,
     bool myCrowdfundsOnly = false,
     String? sortBy,
-    CrowdfundVisibility? visibility,
   }) {
     return repository.listCrowdfunds(
       page: page,
@@ -69,7 +66,6 @@ class ListCrowdfundsUseCase {
       categoryFilter: categoryFilter,
       myCrowdfundsOnly: myCrowdfundsOnly,
       sortBy: sortBy,
-      visibility: visibility,
     );
   }
 }

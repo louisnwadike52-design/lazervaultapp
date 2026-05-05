@@ -164,15 +164,36 @@ class UserDonationsLoaded extends CrowdfundState {
   final List<CrowdfundDonation> donations;
   final int totalCount;
   final int currentPage;
+  final bool hasMore;
+  final bool isLoadingMore;
 
   const UserDonationsLoaded({
     required this.donations,
     this.totalCount = 0,
     this.currentPage = 1,
+    this.hasMore = true,
+    this.isLoadingMore = false,
   });
 
+  UserDonationsLoaded copyWith({
+    List<CrowdfundDonation>? donations,
+    int? totalCount,
+    int? currentPage,
+    bool? hasMore,
+    bool? isLoadingMore,
+  }) {
+    return UserDonationsLoaded(
+      donations: donations ?? this.donations,
+      totalCount: totalCount ?? this.totalCount,
+      currentPage: currentPage ?? this.currentPage,
+      hasMore: hasMore ?? this.hasMore,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+    );
+  }
+
   @override
-  List<Object?> get props => [donations, totalCount, currentPage];
+  List<Object?> get props =>
+      [donations, totalCount, currentPage, hasMore, isLoadingMore];
 }
 
 /// Statistics loaded

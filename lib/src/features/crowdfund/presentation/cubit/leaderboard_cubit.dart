@@ -37,10 +37,18 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
       if (sortBy != null) _currentSortBy = sortBy;
       _currentCategory = category;
 
-      final cacheKey = 'crowdfund_leaderboard:${_currentSortBy.name}:${_currentCategory ?? ''}';
+      // Cache key includes limit so the 5-item landing-page preview and the
+      // 20-item full screen don't poison each other's cache.
+      final cacheKey =
+          'crowdfund_leaderboard:${_currentSortBy.name}:${_currentCategory ?? ''}:$limit';
 
       if (_cacheManager != null) {
-        emit(const LeaderboardLoading());
+        // Only show the Loading spinner when we have nothing to display.
+        // If we're already showing entries, keep them on screen until SWR
+        // returns either the cached or fresh result, to avoid a flicker.
+        if (state is! LeaderboardLoaded) {
+          emit(const LeaderboardLoading());
+        }
 
         await for (final result in _cacheManager!.get<List<LeaderboardEntry>>(
           key: cacheKey,

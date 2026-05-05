@@ -155,6 +155,18 @@ service GiftCardsService {
     };
   }
 
+  // Sell-side settlements — rows that reached paid or settled status.
+  // Mirrors AdminListBuyTransactions(status=completed) for the buy
+  // settlements tab. Returns a flat projection with the full pricing
+  // breakdown (face value, FX, pre-margin payout, paid-to-user, sale
+  // proceeds, total revenue, margin pct + flat fee, source) so the
+  // admin Settlements tab can render per-row revenue distribution.
+  rpc AdminListSellSettlements(AdminListSellSettlementsRequest) returns (AdminListSellSettlementsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/giftcards/admin/sell-settlements"
+    };
+  }
+
   // List refund_ledger rows (past + present) — drives the admin
   // Refunds tab on both sides. Filterable by side ("buy"/"sell") so
   // each tab scopes correctly without the consumer reaching into the
@@ -192,6 +204,58 @@ service GiftCardsService {
   rpc AdminRejectSale(AdminRejectSaleRequest) returns (AdminRejectSaleResponse) {
     option (google.api.http) = {
       post: "/api/v1/giftcards/admin/sale/reject"
+      body: "*"
+    };
+  }
+
+  // AdminRetryHoldRelease retries the auto-rollback release for a buy
+  // purchase that landed in `manual_review` because the original
+  // ReleaseHold call failed (accounts-service outage etc.). On success
+  // the row flips to `failed` and `hold_released_at` is stamped; on
+  // failure the row stays in `manual_review` and the new error is
+  // appended to `failure_reason`.
+  rpc AdminRetryHoldRelease(AdminRetryHoldReleaseRequest) returns (AdminRetryHoldReleaseResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/giftcards/admin/purchase/retry-release"
+      body: "*"
+    };
+  }
+
+  // AdminManualRefundPurchase routes a buy-side purchase into the
+  // refund pipeline. Mirrors the electricity bill refund CTA — sets
+  // status=refund_pending, seeds a refund_ledger credit row that the
+  // RollbackProcessor picks up on its next tick. Idempotent: re-firing
+  // on a row already in refund_pending / refunded / refund_failed is
+  // a no-op.
+  rpc AdminManualRefundPurchase(AdminManualRefundPurchaseRequest) returns (AdminManualRefundPurchaseResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/giftcards/admin/purchase/manual-refund"
+      body: "*"
+    };
+  }
+
+  // AdminForceReconcilePurchase triggers the reconciler for a single
+  // buy purchase row immediately, bypassing the scheduled tick. Mirrors
+  // the electricity bill ManualReconcile CTA: for refund_pending /
+  // refund_failed rows it resets the refund_ledger entry so the
+  // RollbackProcessor retries; for processing / awaiting_webhook rows
+  // it bumps next_reconciliation_at so the ReconcilerService picks it
+  // up on the next tick.
+  rpc AdminForceReconcilePurchase(AdminForceReconcilePurchaseRequest) returns (AdminForceReconcilePurchaseResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/giftcards/admin/purchase/force-reconcile"
+      body: "*"
+    };
+  }
+
+  // AdminSetSellPayoutOverride sets the manual payout override for a
+  // sell sale. Used by admins when the off-platform sale price
+  // differs from the expected_payout quoted to the user. Amount may
+  // be in the source currency (NGN) or destination currency (e.g.
+  // USD); payout converts to NGN at execution time.
+  rpc AdminSetSellPayoutOverride(AdminSetSellPayoutOverrideRequest) returns (AdminSetSellPayoutOverrideResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/giftcards/admin/sale/payout-override"
       body: "*"
     };
   }
@@ -414,6 +478,11 @@ message GiftCard {
   string transfer_type = 32;            // "platform" or "email"
   // Redemption instructions from Reloadly (how to use the code on the merchant's website)
   string redemption_instructions = 33;
+  // Internal reference (e.g. "GC-{uuid}") — same value the backend
+  // stamps on balance-WebSocket terminal events and refund_ledger
+  // rows. The processing screen uses this to match WS events back
+  // to the in-flight purchase.
+  string reference = 34;
 }
 
 message GiftCardBrand {
@@ -663,6 +732,12 @@ message SellRate {
   double payout_amount = 4;             // denomination * rate / 100 in payout currency
   string currency = 5;                  // payout currency (e.g. "NGN")
   string expires_at = 6;               // ISO 8601 timestamp
+  // Manual-mode payout range. Both populated only in manual flow
+  // (admin sells off-platform at a variable price). 0/0 in
+  // automated mode — Flutter renders the point estimate.
+  double payout_lower_bound = 7;
+  double payout_upper_bound = 8;
+  bool   is_manual_mode = 9;
 }
 
 message GiftCardSale {
@@ -741,6 +816,46 @@ message GiftCardSale {
   string response_json          = 58;
   int32  provider_http_status   = 59;
   int64  provider_duration_ms   = 60;
+  // Unified failure reason. For buy rows this is the underlying
+  // GiftCard.FailureReason (Reloadly rejection, auto-rollback hold-
+  // release error, etc.). For sell rows it is the GiftCardSale
+  // RejectionReason or PayoutError, whichever is set. Admin
+  // dashboards prefer this over the legacy payout_error field; the
+  // legacy field is still populated for back-compat with older
+  // clients on a transition window.
+  string failure_reason         = 61;
+  // QUOTE provider — concrete real provider that answered the rate
+  // quote at sale-creation time. "prestmit" | "internal". Distinct
+  // from `provider_name` (the FINAL gateway / executor). When the
+  // engine queried via MultiProviderSellManager, this surfaces the
+  // underlying that responded rather than the wrapper. Empty for
+  // legacy rows that pre-date the column.
+  string quote_provider         = 62;
+  // Settlement substatus on the sale row. "pending" → not yet
+  // verified by the reconciler (Phase 1 transient OR
+  // settlement_confirmations < required); "verified" → reconciler
+  // double-confirmed AND platform double-entry closed; "failed" /
+  // "refund_failed" → credit failed and is queued for retry. The
+  // dashboard derives the badge label by combining (status,
+  // settlement_status) — "Paid" only renders when both have reached
+  // their terminal success states.
+  string settlement_status      = 63;
+  // Persisted denormalisation of (status, settlement_status,
+  // settlement_confirmations). Computed by ComputeSaleDisplayStatus
+  // and updated on every transition. The dashboard reads this
+  // directly for the badge label so every tab agrees. Falls back to
+  // status for legacy rows that pre-date the column.
+  string display_status         = 64;
+  // Reconciler escalation audit trail. Populated when the reconciler
+  // exhausts Prestmit retries and flips status → manual_review;
+  // persists across subsequent state transitions (admin approve →
+  // paid → settled, etc.) so the dashboard can durably show that a
+  // row went through the failover path. Empty for rows that never
+  // escalated. Together they answer:
+  //   - escalated_at      : WHEN failover engaged
+  //   - escalation_reason : WHY (bucketed for ops; see escalateSaleToManualReview)
+  string escalated_at      = 65;
+  string escalation_reason = 66;
 }
 
 message GetSellableCardsRequest {
@@ -756,14 +871,20 @@ message GetSellableCardsResponse {
 
 message GetSellProviderRequest {}
 
-// Sell-flow config. provider/description are the legacy fields; mode
-// + async_enabled drive the post-submit screen routing in Flutter:
-//   auto + sync   → SellGiftCard returns terminal row → receipt
-//   auto + async  → SellGiftCard returns pending → processing screen w/ WS
-//   manual        → SellGiftCard returns pending_review → "Submitted" screen
+// Sell-flow config for the Flutter sell screen. Returns:
+//   - provider: "manual" | "prestmit"  (the active flow mode)
+//   - description: human-readable summary
+//   - mode: "auto" | "manual"
+//       auto    → Prestmit submits the trade, no human in the loop
+//       manual  → admin reviews uploaded card photos and funds the user
+//     Drives the Flutter post-submit routing: auto → processing screen
+//     with WebSocket; manual → "Submitted for review" screen.
+//   - async_enabled: when true, SellGiftCard returns the row at
+//     status="pending" and a Kafka consumer makes the deferred Prestmit
+//     call. Flutter uses this with mode to pick the post-submit screen.
 //
-// All fields read from system_settings + feature_flags on the server,
-// never from .env. Single source of truth: admin Sell Configuration tab.
+// All fields are read from system_settings + feature_flags — never from
+// .env. The admin Sell Configuration tab is the single source of truth.
 message GetSellProviderResponse {
   string provider = 1;       // "manual" or "prestmit"
   string description = 2;
@@ -913,6 +1034,77 @@ message AdminListPendingSalesResponse {
   int32 total = 2;
 }
 
+// Sell-side settlement projection — drives the admin Settlements tab
+// for sell. status filter accepts "paid" | "settled" | "all" (default
+// all means paid OR settled). source filter accepts "auto" |
+// "manual_approved" | "all". A row is auto when it reached paid via
+// the Prestmit webhook with no admin override; manual_approved when
+// an admin set OverridePayoutAmount or AdminReviewerID is non-empty.
+message AdminListSellSettlementsRequest {
+  string status = 1;                  // "paid" | "settled" | "all"
+  string source = 2;                  // "auto" | "manual_approved" | "all"
+  int32 page = 3;                     // 1-based
+  int32 limit = 4;                    // 1..200, default 25
+}
+
+message AdminSellSettlement {
+  string id = 1;
+  string reference = 2;
+  string user_id = 3;
+  string brand = 4;                   // card_type
+  // Face value of the card the user is selling.
+  double face_value = 5;
+  string face_currency = 6;
+  // Payout currency (user wallet — NGN typically).
+  string payout_currency = 7;
+  // FX rate face_currency → payout_currency at sale time. Empty when
+  // same-currency.
+  double fx_rate = 8;
+  // Pre-margin payout = un-margined payout in payout_currency
+  // (face_value × fx_rate). Lets the operator see what we'd have
+  // paid the user with zero margin.
+  double pre_margin_payout = 9;
+  // What we credited the user (post-margin, post-flat-fee, after any
+  // admin override).
+  double paid_to_user = 10;
+  // Sale proceeds = what the buyer (Prestmit, or platform on manual
+  // approval) actually settled to us in sale_proceeds_currency. Only
+  // populated once the sale lands at paid/settled.
+  double sale_proceeds = 11;
+  string sale_proceeds_currency = 12;
+  // Total revenue = sale_proceeds − paid_to_user. Captures both the
+  // explicit margin AND any provider FX uplift. Mirrors the buy
+  // commission_amount = retail − wholesale identity.
+  double total_revenue = 13;
+  string total_revenue_currency = 14;
+  // Margin breakdown — pct applied at quote time + flat fee leg in
+  // payout_currency. The Settlements UI shows pct + (pct × pre_margin)
+  // and flat_fee as separate columns.
+  double margin_percentage = 15;
+  double flat_fee = 16;
+  // Source = which path took the row to terminal status:
+  //   "auto"            — Prestmit webhook flipped paid, no admin override.
+  //   "manual_approved" — admin clicked Approve in Reviews queue.
+  string source = 17;
+  // Status of the sale row (paid | settled).
+  string status = 18;
+  // Provider that originated the sale ("prestmit" | "manual" | …).
+  string provider_name = 19;
+  // When the user was paid (paid_at preferred, falls back to
+  // updated_at). RFC3339.
+  string paid_at = 20;
+  // When the row was created. Lets the UI show "When" (relative)
+  // alongside the absolute timestamp.
+  string created_at = 21;
+}
+
+message AdminListSellSettlementsResponse {
+  repeated AdminSellSettlement settlements = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 limit = 4;
+}
+
 // Buy-side admin transactions — flat projection of the giftcards table.
 // Status mirrors the chk_giftcard_status enum:
 // pending | available | redeemed | transferred | expired | failed.
@@ -961,6 +1153,31 @@ message AdminBuyTransaction {
   string provider_transaction_id = 28; // Reloadly transactionId (cross-ref to their dashboard)
   string mode = 29;                   // "sync" | "async" — captures how the buy was processed
   bool   has_refund_entry = 30;       // True iff a refund_ledger row exists for this reference
+  // Refund-tab fields. Surfaced as separate columns next to the
+  // primary purchase Status so an operator sees the refund state at
+  // a glance without needing to drill into the detail page. Populated
+  // from refund_ledger via the same canonical map bill-payments uses.
+  // Flat fee leg of the platform commission, in user wallet currency.
+  // The retail price = (wholesale_in_user_ccy × (1+fee_pct)) + flat_fee,
+  // and commission_amount = retail − wholesale = pct_margin + flat_fee.
+  // Surfaced separately so the Settlements tab can show pct vs flat as
+  // independent columns instead of just the combined commission.
+  double flat_fee              = 41;
+  string refund_state          = 35; // "auto_released" | "refunded" | "refund_pending" | "refund_failed" | "" (none)
+  string refund_source         = 36; // e.g. "saga_compensation", "provider_refund", "admin_refund", "both_failed_client_error"
+  string refund_reason         = 37; // human-readable reason from refund_ledger.reason
+  // Final gateway = the provider that actually settled. For buy this
+  // is reloadly when the row reached completed; "" when the saga
+  // never reached the provider call.
+  string final_gateway         = 38;
+  // Source: how the row originated. Mirrors the airtime payments
+  // table — same value as `mode` for buys (sync/async); included as
+  // a separate field so the UI doesn't need to alias.
+  string source                = 39;
+  // Failover: did we have to retry on a backup provider? Buy is
+  // Reloadly-only today so this is always "no"; included for
+  // forward-compat with future multi-provider routing.
+  string failover              = 40;
   // Raw provider request/response captured by a fire-and-forget
   // goroutine after saga completion. Populated for the admin
   // Transaction Detail page; empty if the goroutine hasn't run yet
@@ -1013,6 +1230,11 @@ message AdminRefundLedgerEntry {
   string created_at = 20;
   string updated_at = 21;
   string side = 22;                // derived: "buy" | "sell"
+  // Originating subsystem that created this row. One of:
+  //   saga_sync | async_consumer | reconciler | rollback_processor
+  //   | clawback | webhook | admin | unknown
+  // Mirrors bill-payment completion_source.
+  string source = 23;
 }
 
 message AdminListRefundLedgerResponse {
@@ -1061,6 +1283,59 @@ message AdminRejectSaleRequest {
 message AdminRejectSaleResponse {
   GiftCardSale sale = 1;
   string message = 2;
+}
+
+message AdminRetryHoldReleaseRequest {
+  string card_id = 1;     // GiftCard.ID (UUID) of the manual_review row
+  string admin_id = 2;    // Audit trail
+}
+
+message AdminRetryHoldReleaseResponse {
+  bool success = 1;
+  string status = 2;       // 'failed' on success, 'manual_review' if still stuck
+  string error_message = 3; // Empty on success
+}
+
+message AdminManualRefundPurchaseRequest {
+  string card_id = 1;     // GiftCard.ID (UUID) of the purchase to refund
+  string admin_id = 2;
+  string reason   = 3;
+  string notes    = 4;
+}
+
+message AdminManualRefundPurchaseResponse {
+  bool   success = 1;
+  string status  = 2;       // New purchase_status (typically 'refund_pending')
+  string message = 3;
+}
+
+message AdminForceReconcilePurchaseRequest {
+  string card_id = 1;     // GiftCard.ID (UUID) of the row to force-reconcile
+  string admin_id = 2;
+  string reason   = 3;
+}
+
+message AdminForceReconcilePurchaseResponse {
+  bool   success = 1;
+  string action  = 2;       // e.g. 'rollback_record_reset', 'reconciler_bumped'
+  string status  = 3;       // current purchase_status after the operation
+  string message = 4;
+}
+
+message AdminSetSellPayoutOverrideRequest {
+  string sale_id           = 1;
+  double amount            = 2;   // 0 = clear override
+  string currency          = 3;   // "NGN" (source) or the gift card currency (destination)
+  string note              = 4;   // operator-provided context, stored for audit
+  string admin_id          = 5;
+}
+
+message AdminSetSellPayoutOverrideResponse {
+  bool    success           = 1;
+  double  override_amount   = 2;
+  string  override_currency = 3;
+  double  resolved_ngn      = 4;   // amount converted to NGN at request time (preview)
+  string  message           = 5;
 }
 
 // ===== ADMIN SELL RATE MANAGEMENT =====
@@ -1428,9 +1703,11 @@ message PerformManualOperationRequest {
   string transaction_id  = 1;
   // Operation key. `refund_sale` is canonical; `reverse_sale` kept as
   // a back-compat alias during the rename rollout. Both route through
-  // the three-phase rollback pipeline (verify → refund → reverse
-  // settlement) and end at status='refunded'.
-  // retry_settlement|manual_payout|refund_sale|reverse_sale|cancel_sale|escalate
+  // the rollback pipeline and end at status='refunded'. `force_reconcile`
+  // mirrors the electricity bill ManualReconcile CTA — it resets the
+  // refund_ledger entry (or seeds one) so the worker retries on its
+  // next tick.
+  // retry_settlement|manual_payout|refund_sale|reverse_sale|cancel_sale|escalate|force_reconcile
   string operation       = 2;
   string reason          = 3;
   string notes           = 4;

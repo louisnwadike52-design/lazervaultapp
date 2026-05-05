@@ -52,6 +52,7 @@ class GiftCard extends $pb.GeneratedMessage {
     $core.String? senderUserId,
     $core.String? transferType,
     $core.String? redemptionInstructions,
+    $core.String? reference,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -83,6 +84,7 @@ class GiftCard extends $pb.GeneratedMessage {
     if (senderUserId != null) result.senderUserId = senderUserId;
     if (transferType != null) result.transferType = transferType;
     if (redemptionInstructions != null) result.redemptionInstructions = redemptionInstructions;
+    if (reference != null) result.reference = reference;
     return result;
   }
 
@@ -121,6 +123,7 @@ class GiftCard extends $pb.GeneratedMessage {
     ..aOS(31, _omitFieldNames ? '' : 'senderUserId')
     ..aOS(32, _omitFieldNames ? '' : 'transferType')
     ..aOS(33, _omitFieldNames ? '' : 'redemptionInstructions')
+    ..aOS(34, _omitFieldNames ? '' : 'reference')
     ..hasRequiredFields = false
   ;
 
@@ -405,6 +408,19 @@ class GiftCard extends $pb.GeneratedMessage {
   $core.bool hasRedemptionInstructions() => $_has(28);
   @$pb.TagNumber(33)
   void clearRedemptionInstructions() => $_clearField(33);
+
+  /// Internal reference (e.g. "GC-{uuid}") — same value the backend
+  /// stamps on balance-WebSocket terminal events and refund_ledger
+  /// rows. The processing screen uses this to match WS events back
+  /// to the in-flight purchase.
+  @$pb.TagNumber(34)
+  $core.String get reference => $_getSZ(29);
+  @$pb.TagNumber(34)
+  set reference($core.String value) => $_setString(29, value);
+  @$pb.TagNumber(34)
+  $core.bool hasReference() => $_has(29);
+  @$pb.TagNumber(34)
+  void clearReference() => $_clearField(34);
 }
 
 class GiftCardBrand extends $pb.GeneratedMessage {
@@ -2562,6 +2578,8 @@ class GiftCardSale extends $pb.GeneratedMessage {
     $core.String? quoteProvider,
     $core.String? settlementStatus,
     $core.String? displayStatus,
+    $core.String? escalatedAt,
+    $core.String? escalationReason,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -2628,6 +2646,8 @@ class GiftCardSale extends $pb.GeneratedMessage {
     if (quoteProvider != null) result.quoteProvider = quoteProvider;
     if (settlementStatus != null) result.settlementStatus = settlementStatus;
     if (displayStatus != null) result.displayStatus = displayStatus;
+    if (escalatedAt != null) result.escalatedAt = escalatedAt;
+    if (escalationReason != null) result.escalationReason = escalationReason;
     return result;
   }
 
@@ -2701,6 +2721,8 @@ class GiftCardSale extends $pb.GeneratedMessage {
     ..aOS(62, _omitFieldNames ? '' : 'quoteProvider')
     ..aOS(63, _omitFieldNames ? '' : 'settlementStatus')
     ..aOS(64, _omitFieldNames ? '' : 'displayStatus')
+    ..aOS(65, _omitFieldNames ? '' : 'escalatedAt')
+    ..aOS(66, _omitFieldNames ? '' : 'escalationReason')
     ..hasRequiredFields = false
   ;
 
@@ -3325,6 +3347,32 @@ class GiftCardSale extends $pb.GeneratedMessage {
   $core.bool hasDisplayStatus() => $_has(63);
   @$pb.TagNumber(64)
   void clearDisplayStatus() => $_clearField(64);
+
+  /// Reconciler escalation audit trail. Populated when the reconciler
+  /// exhausts Prestmit retries and flips status → manual_review;
+  /// persists across subsequent state transitions (admin approve →
+  /// paid → settled, etc.) so the dashboard can durably show that a
+  /// row went through the failover path. Empty for rows that never
+  /// escalated. Together they answer:
+  ///   - escalated_at      : WHEN failover engaged
+  ///   - escalation_reason : WHY (bucketed for ops; see escalateSaleToManualReview)
+  @$pb.TagNumber(65)
+  $core.String get escalatedAt => $_getSZ(64);
+  @$pb.TagNumber(65)
+  set escalatedAt($core.String value) => $_setString(64, value);
+  @$pb.TagNumber(65)
+  $core.bool hasEscalatedAt() => $_has(64);
+  @$pb.TagNumber(65)
+  void clearEscalatedAt() => $_clearField(65);
+
+  @$pb.TagNumber(66)
+  $core.String get escalationReason => $_getSZ(65);
+  @$pb.TagNumber(66)
+  set escalationReason($core.String value) => $_setString(65, value);
+  @$pb.TagNumber(66)
+  $core.bool hasEscalationReason() => $_has(65);
+  @$pb.TagNumber(66)
+  void clearEscalationReason() => $_clearField(66);
 }
 
 class GetSellableCardsRequest extends $pb.GeneratedMessage {
