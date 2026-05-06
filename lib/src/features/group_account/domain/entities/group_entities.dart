@@ -83,6 +83,7 @@ class GroupRolePermissions {
       GroupAction.removeMember,
       GroupAction.changeMemberRole,
       GroupAction.approveJoinRequest,
+      GroupAction.createContribution,
       GroupAction.makeContribution,
       GroupAction.viewGroup,
       GroupAction.viewActivity,
@@ -102,6 +103,20 @@ class GroupRolePermissions {
   static bool can(GroupMemberRole? role, GroupAction action) {
     if (role == null) return false;
     return _allow[role]?.contains(action) ?? false;
+  }
+
+  /// True iff [member] is allowed to perform [action] right now.
+  ///
+  /// Combines the role-permission table with the member's lifecycle
+  /// state — a `pending` invite, an `inactive` member, or a `removed`
+  /// row never passes regardless of role. Mirrors the server's
+  /// `assertCan` which loads the row and checks `Status == active`
+  /// before consulting the role matrix; without this Flutter would
+  /// surface affordances that the backend immediately rejects.
+  static bool canMember(GroupMember? member, GroupAction action) {
+    if (member == null) return false;
+    if (member.status != GroupMemberStatus.active) return false;
+    return can(member.role, action);
   }
 }
 
@@ -144,8 +159,6 @@ enum PaymentStatus {
 enum ContributionType {
   oneTime,
   rotatingSavings,
-  investmentPool,
-  recurringGoal,
 }
 
 enum ContributionFrequency {
@@ -160,8 +173,10 @@ enum PayoutStatus {
   pending,
   processing,
   completed,
+  failed,
   cancelled,
   overdue,
+  manualReview,
 }
 
 enum PayoutTransactionStatus {
@@ -189,6 +204,12 @@ class GroupAccount extends Equatable {
   final int memberCount;
   final double totalRaised;
   final String? imageUrl;
+  // Denormalized server-side count of contributions on this group.
+  // Surfaced so the "Goals" stat tile on the My Groups list can read
+  // it directly — `contributions.length` is unreliable here because
+  // the list-groups endpoint deliberately does NOT preload the
+  // contributions array (perf) and would always show 0.
+  final int contributionCount;
 
   const GroupAccount({
     required this.id,
@@ -205,6 +226,7 @@ class GroupAccount extends Equatable {
     this.memberCount = 0,
     this.totalRaised = 0,
     this.imageUrl,
+    this.contributionCount = 0,
   });
 
   @override
@@ -223,6 +245,7 @@ class GroupAccount extends Equatable {
         memberCount,
         totalRaised,
         imageUrl,
+        contributionCount,
       ];
 
   GroupAccount copyWith({
@@ -240,6 +263,7 @@ class GroupAccount extends Equatable {
     int? memberCount,
     double? totalRaised,
     String? imageUrl,
+    int? contributionCount,
   }) {
     return GroupAccount(
       id: id ?? this.id,
@@ -256,6 +280,7 @@ class GroupAccount extends Equatable {
       memberCount: memberCount ?? this.memberCount,
       totalRaised: totalRaised ?? this.totalRaised,
       imageUrl: imageUrl ?? this.imageUrl,
+      contributionCount: contributionCount ?? this.contributionCount,
     );
   }
 
@@ -557,6 +582,14 @@ class Contribution extends Equatable {
   final bool allowPartialPayments;
   final double? minimumBalance; // Minimum balance required for payout
 
+  // Drives the payout scheduler. When true, the platform fires the
+  // payout automatically once a receiver is set (at deadline / cycle
+  // close, or immediately if the deadline already passed). When false,
+  // the creator must press the manual-trigger CTA to release funds.
+  // Distinct from autoPayEnabled (above) which controls MEMBER-side
+  // auto-debiting of contribution payments.
+  final bool autoPayoutEnabled;
+
   // Members assigned to this contribution
   final List<ContributionMember> members;
 
@@ -591,6 +624,7 @@ class Contribution extends Equatable {
     this.gracePeriodDays,
     this.allowPartialPayments = true,
     this.minimumBalance,
+    this.autoPayoutEnabled = false,
     this.members = const [],
   });
 
@@ -626,6 +660,7 @@ class Contribution extends Equatable {
         gracePeriodDays,
         allowPartialPayments,
         minimumBalance,
+        autoPayoutEnabled,
         members,
       ];
 
@@ -673,6 +708,7 @@ class Contribution extends Equatable {
     int? gracePeriodDays,
     bool? allowPartialPayments,
     double? minimumBalance,
+    bool? autoPayoutEnabled,
     List<ContributionMember>? members,
   }) {
     return Contribution(
@@ -706,6 +742,7 @@ class Contribution extends Equatable {
       gracePeriodDays: gracePeriodDays ?? this.gracePeriodDays,
       allowPartialPayments: allowPartialPayments ?? this.allowPartialPayments,
       minimumBalance: minimumBalance ?? this.minimumBalance,
+      autoPayoutEnabled: autoPayoutEnabled ?? this.autoPayoutEnabled,
       members: members ?? this.members,
     );
   }
@@ -1350,13 +1387,9 @@ extension ContributionTypeExtension on ContributionType {
   String get displayName {
     switch (this) {
       case ContributionType.oneTime:
-        return 'One-time Goal';
+        return 'One time Goal';
       case ContributionType.rotatingSavings:
         return 'Rotating Savings (Susu)';
-      case ContributionType.investmentPool:
-        return 'Investment Pool';
-      case ContributionType.recurringGoal:
-        return 'Recurring Goal';
     }
   }
 
@@ -1366,10 +1399,6 @@ extension ContributionTypeExtension on ContributionType {
         return 'Collect money once for a specific goal';
       case ContributionType.rotatingSavings:
         return 'Members contribute regularly and take turns receiving payouts';
-      case ContributionType.investmentPool:
-        return 'Pool money for group investments with shared returns';
-      case ContributionType.recurringGoal:
-        return 'Regular contributions toward an ongoing goal';
     }
   }
 }

@@ -1,851 +1,193 @@
+// Contribution payment receipt screen.
+//
+// Mirrors the canonical send-funds receipt
+// (`features/funds/.../transfer_receipt_screen.dart`):
+//   * compact success header (icon + amount + status + timestamp)
+//   * single details card (real values from the payment +
+//     contribution; no hardcoded fields, no "payment method" since
+//     the user already chose it earlier in the flow)
+//   * QR code at the bottom of the details card encoding the
+//     payment reference for scanner-based lookup
+//   * Download PDF + Share actions in a sticky footer
+//
+// Smart back navigation
+// ---------------------
+// `cameFromPayment` (default true) drives the back stack:
+//
+//   * true  — the screen opened from the payment-make flow. Going
+//             back unwinds: contribution detail → group detail →
+//             dashboard (with the active-services carousel). This
+//             matches the user's mental model of "I just paid; let
+//             me see how the contribution looks now, then back out
+//             a level at a time."
+//   * false — the screen opened from a "Generate Receipt" action on
+//             a past payment row. Going back is a single Navigator
+//             pop to wherever the user invoked it from.
+//
+// Edge cases handled:
+//   * No payment reference yet (transactionId nil/empty) → QR is
+//     hidden gracefully; receipt still prints.
+//   * Long transaction IDs / refs → wrapped with maxLines=2 +
+//     overflow=ellipsis instead of overflowing horizontally.
+//   * Currency missing on payment → falls back to contribution
+//     currency.
+
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+
+import 'package:lazervault/core/types/app_routes.dart';
 import '../../domain/entities/group_entities.dart';
 import '../../services/group_contribution_pdf_service.dart';
-import '../../../../../core/types/app_routes.dart';
 
 class ContributionPaymentConfirmationScreen extends StatefulWidget {
   final Contribution contribution;
   final ContributionPayment payment;
+  // Optional descriptor — kept on the API for backwards compat with
+  // existing call-sites; not rendered in the body anymore (the user
+  // already chose the source account / method earlier in the flow,
+  // it doesn't add value on the receipt).
   final String paymentMethod;
+  // Whether the user landed here from the live payment flow vs.
+  // tapping "Generate Receipt" on an existing payment row. Drives
+  // the back-button behavior — see header comment.
+  final bool cameFromPayment;
 
   const ContributionPaymentConfirmationScreen({
     super.key,
     required this.contribution,
     required this.payment,
     required this.paymentMethod,
+    this.cameFromPayment = true,
   });
 
   @override
-  State<ContributionPaymentConfirmationScreen> createState() => _ContributionPaymentConfirmationScreenState();
+  State<ContributionPaymentConfirmationScreen> createState() =>
+      _ContributionPaymentConfirmationScreenState();
 }
 
-class _ContributionPaymentConfirmationScreenState extends State<ContributionPaymentConfirmationScreen>
-    with SingleTickerProviderStateMixin {
-  
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
+class _ContributionPaymentConfirmationScreenState
+    extends State<ContributionPaymentConfirmationScreen> {
   bool _isDownloading = false;
+  bool _isSharing = false;
+  String? _qrData;
 
   @override
   void initState() {
     super.initState();
-    _initializeAnimations();
     HapticFeedback.lightImpact();
+    _generateQrData();
   }
 
-  void _initializeAnimations() {
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
+  void _generateQrData() {
+    final p = widget.payment;
+    final c = widget.contribution;
+    final ref = (p.transactionId ?? '').isNotEmpty
+        ? p.transactionId!
+        : (p.id.isNotEmpty ? p.id : '');
+    if (ref.isEmpty) return;
+    _qrData = jsonEncode({
+      'type': 'group_contribution',
+      'ref': ref,
+      'amount': p.amount.toStringAsFixed(2),
+      'currency': (p.currency.isNotEmpty ? p.currency : c.currency)
+          .toUpperCase(),
+      'to': c.title,
+      'date': p.paymentDate.toIso8601String(),
+    });
+  }
+
+  // -------------------------------------------------------------
+  // Smart back navigation
+  // -------------------------------------------------------------
+
+  Future<bool> _onBack() async {
+    if (!widget.cameFromPayment) {
+      // Receipt invoked from a past-payment "Generate Receipt"
+      // action — single pop back to wherever the bottom-sheet was.
+      Get.back();
+      return false;
+    }
+
+    // Payment-flow back behaviour: the user paid → landed on the
+    // receipt. Going back should rewind one level at a time —
+    // first to the contribution they paid into, then the group,
+    // then the dashboard. The processing screen and (often) the
+    // make-payment screen are deeper on the GetX stack but
+    // behaviourally we don't want to drop the user back into a
+    // mid-payment surface; we want them on the contribution detail
+    // with the freshly settled amount visible.
+    //
+    // Strategy:
+    //   * Try Get.until walking back to the contribution-details
+    //     route OR the navigator root. If we land on details (the
+    //     route was already on the stack), we're done — no
+    //     dashboard flicker, the processing/make-payment frames
+    //     get unwound automatically.
+    //   * If we land on the root (deep link / fresh app launch
+    //     direct to receipt), rebuild a clean stack: dashboard →
+    //     group → contribution-details. Dashboard flicker here is
+    //     acceptable because we genuinely have no prior state.
+    Get.until((route) =>
+        route.settings.name == AppRoutes.contributionDetails ||
+        route.isFirst);
+    final landed = Get.currentRoute == AppRoutes.contributionDetails;
+    if (landed) return false;
+    Get.offAllNamed(AppRoutes.dashboard);
+    Get.toNamed(
+      AppRoutes.groupDetails,
+      arguments: widget.contribution.groupId,
     );
-
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    Get.toNamed(
+      AppRoutes.contributionDetails,
+      arguments: widget.contribution.id,
     );
-
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOutBack));
-
-    _animationController.forward();
+    return false;
   }
 
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
+  // -------------------------------------------------------------
+  // Download / Share
+  // -------------------------------------------------------------
 
-  @override
-  Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop) return;
-        _navigateToContributionsList();
-      },
-      child: Scaffold(
-        backgroundColor: const Color(0xFF0A0E27),
-        body: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                const Color(0xFF1A1A3E),
-                const Color(0xFF0A0E27),
-                const Color(0xFF0F0F23),
-              ],
-            ),
-          ),
-          child: SafeArea(
-            child: Column(
-              children: [
-                _buildHeader(),
-                Expanded(
-                  child: SlideTransition(
-                    position: _slideAnimation,
-                    child: FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: SingleChildScrollView(
-                        padding: EdgeInsets.all(20.w),
-                        child: Column(
-                          children: [
-                            _buildSuccessIcon(),
-                            SizedBox(height: 32.h),
-                            _buildReceiptCard(),
-                            SizedBox(height: 24.h),
-                            _buildActionButtons(),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: _navigateToContributionsList,
-            child: Container(
-              padding: EdgeInsets.all(8.w),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              child: Icon(
-                Icons.arrow_back_ios,
-                color: Colors.white,
-                size: 18.sp,
-              ),
-            ),
-          ),
-          SizedBox(width: 16.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Payment Receipt',
-                  style: GoogleFonts.inter(
-                    fontSize: 24.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  'Contribution payment completed successfully',
-                  style: GoogleFonts.inter(
-                    fontSize: 14.sp,
-                    color: Colors.grey[400],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSuccessIcon() {
-    return Container(
-      width: 100.w,
-      height: 100.w,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: const LinearGradient(
-          colors: [Color(0xFF10B981), Color(0xFF059669)],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF10B981).withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Icon(
-        Icons.check,
-        color: Colors.white,
-        size: 50.sp,
-      ),
-    );
-  }
-
-  Widget _buildReceiptCard() {
-    return Container(
-      padding: EdgeInsets.all(24.w),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF2A2A3E).withValues(alpha: 0.8),
-            const Color(0xFF1F1F35).withValues(alpha: 0.9),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(20.r),        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildReceiptHeader(),
-          SizedBox(height: 24.h),
-          _buildDivider(),
-          SizedBox(height: 24.h),
-          _buildTransactionDetails(),
-          SizedBox(height: 24.h),
-          _buildDivider(),
-          SizedBox(height: 24.h),
-          _buildContributionProgress(),
-          SizedBox(height: 24.h),
-          _buildDivider(),
-          SizedBox(height: 24.h),
-          _buildPaymentMethod(),
-          SizedBox(height: 24.h),
-          _buildDivider(),
-          SizedBox(height: 24.h),
-          _buildAmountBreakdown(),
-          SizedBox(height: 24.h),
-          _buildDivider(),
-          SizedBox(height: 20.h),
-          _buildReceiptFooter(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildReceiptHeader() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: EdgeInsets.all(8.w),
-              decoration: BoxDecoration(
-                color: const Color(0xFF6366F1).withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(8.r),
-              ),
-              child: Icon(
-                Icons.receipt_long,
-                color: const Color(0xFF6366F1),
-                size: 24.sp,
-              ),
-            ),
-            SizedBox(width: 12.w),
-            Text(
-              'PAYMENT RECEIPT',
-              style: GoogleFonts.inter(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                letterSpacing: 1.2,
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 16.h),
-        Text(
-          widget.contribution.title,
-          style: GoogleFonts.inter(
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w600,
-            color: const Color(0xFF6366F1),
-          ),
-          textAlign: TextAlign.center,
-        ),
-        SizedBox(height: 8.h),
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-          decoration: BoxDecoration(
-            color: const Color(0xFF10B981).withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(12.r),
-            boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
-          ),
-          child: Text(
-            'PAID',
-            style: GoogleFonts.inter(
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF10B981),
-              letterSpacing: 0.8,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTransactionDetails() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Transaction Details',
-          style: GoogleFonts.inter(
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
-        SizedBox(height: 16.h),
-        _buildDetailRow('Transaction ID', widget.payment.transactionId ?? 'N/A'),
-        _buildDetailRow('Date & Time', DateFormat('MMM dd, yyyy HH:mm').format(widget.payment.paymentDate)),
-        _buildDetailRow('From', widget.payment.userName),
-        _buildDetailRow('To', widget.contribution.title),
-        _buildDetailRow('Status', 'Completed', isStatus: true),
-        if (widget.payment.notes != null && widget.payment.notes!.isNotEmpty)
-          _buildDetailRow('Notes', widget.payment.notes!),
-      ],
-    );
-  }
-
-  Widget _buildContributionProgress() {
-    final newProgress = ((widget.contribution.currentAmount + widget.payment.amount) / widget.contribution.targetAmount * 100).clamp(0.0, 100.0);
-    
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Contribution Progress',
-          style: GoogleFonts.inter(
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
-        SizedBox(height: 16.h),
-        Container(
-          padding: EdgeInsets.all(16.w),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(12.r),
-            boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
-          ),
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Progress',
-                    style: GoogleFonts.inter(
-                      fontSize: 14.sp,
-                      color: Colors.grey[400],
-                    ),
-                  ),
-                  Text(
-                    '${newProgress.toStringAsFixed(0)}%',
-                    style: GoogleFonts.inter(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF10B981),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 12.h),
-              Container(
-                height: 8.h,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(4.r),
-                ),
-                child: Stack(
-                  children: [
-                    FractionallySizedBox(
-                      widthFactor: newProgress / 100,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF10B981), Color(0xFF059669)],
-                          ),
-                          borderRadius: BorderRadius.circular(4.r),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 16.h),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'New Total',
-                        style: GoogleFonts.inter(
-                          fontSize: 12.sp,
-                          color: Colors.grey[400],
-                        ),
-                      ),
-                      Text(
-                        '${widget.contribution.currency} ${(widget.contribution.currentAmount + widget.payment.amount).toStringAsFixed(2)}',
-                        style: GoogleFonts.inter(
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        'Remaining',
-                        style: GoogleFonts.inter(
-                          fontSize: 12.sp,
-                          color: Colors.grey[400],
-                        ),
-                      ),
-                      Text(
-                        '${widget.contribution.currency} ${(widget.contribution.targetAmount - widget.contribution.currentAmount - widget.payment.amount).toStringAsFixed(2)}',
-                        style: GoogleFonts.inter(
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPaymentMethod() {
-    final methodInfo = _getPaymentMethodInfo();
-    
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Payment Method',
-          style: GoogleFonts.inter(
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
-        SizedBox(height: 16.h),
-        Container(
-          padding: EdgeInsets.all(16.w),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(12.r),
-            boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: EdgeInsets.all(8.w),
-                decoration: BoxDecoration(
-                  color: methodInfo['color'].withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-                child: Icon(
-                  methodInfo['icon'],
-                  color: methodInfo['color'],
-                  size: 20.sp,
-                ),
-              ),
-              SizedBox(width: 16.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      methodInfo['name'],
-                      style: GoogleFonts.inter(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                    if (methodInfo['description'] != null)
-                      Text(
-                        methodInfo['description'],
-                        style: GoogleFonts.inter(
-                          fontSize: 12.sp,
-                          color: Colors.grey[400],
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAmountBreakdown() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Amount Details',
-          style: GoogleFonts.inter(
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
-        SizedBox(height: 16.h),
-        _buildDetailRow('Contribution Amount', '${widget.payment.currency} ${widget.payment.amount.toStringAsFixed(2)}'),
-        SizedBox(height: 12.h),
-        Container(
-          padding: EdgeInsets.symmetric(vertical: 12.h),
-          decoration: BoxDecoration(
-            border: Border(
-              top: BorderSide(
-                color: Colors.white.withValues(alpha: 0.2),
-                width: 1,
-              ),
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Total Paid',
-                style: GoogleFonts.inter(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              Text(
-                '${widget.payment.currency} ${widget.payment.amount.toStringAsFixed(2)}',
-                style: GoogleFonts.inter(
-                  fontSize: 24.sp,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF10B981),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildReceiptFooter() {
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF6366F1).withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
-      ),
-      child: Column(
-        children: [
-          Text(
-            'Thank you for your contribution!',
-            style: GoogleFonts.inter(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF6366F1),
-            ),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'This receipt serves as proof of payment for your contribution. You\'re helping make this goal a reality!',
-            style: GoogleFonts.inter(
-              fontSize: 12.sp,
-              color: Colors.grey[400],
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value, {bool isStatus = false}) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 12.h),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              fontSize: 14.sp,
-              color: Colors.grey[400],
-            ),
-          ),
-          isStatus
-              ? Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  child: Text(
-                    value,
-                    style: GoogleFonts.inter(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF10B981),
-                    ),
-                  ),
-                )
-              : Text(
-                  value,
-                  style: GoogleFonts.inter(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white,
-                  ),
-                ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDivider() {
-    return Divider(
-      color: Colors.white.withValues(alpha: 0.1),
-      thickness: 1,
-    );
-  }
-
-  Widget _buildActionButtons() {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: Container(
-                height: 56.h,
-                decoration: BoxDecoration(
-                  color: Colors.transparent,
-                  borderRadius: BorderRadius.circular(16.r),
-                  border: Border.all(
-                    color: const Color(0xFF6366F1),
-                    width: 1.5,
-                  ),
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: _shareReceipt,
-                    borderRadius: BorderRadius.circular(16.r),
-                    child: Center(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.share,
-                            color: const Color(0xFF6366F1),
-                            size: 20.sp,
-                          ),
-                          SizedBox(width: 8.w),
-                          Text(
-                            'Share',
-                            style: GoogleFonts.inter(
-                              fontSize: 16.sp,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF6366F1),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(width: 16.w),
-            Expanded(
-              child: Container(
-                height: 56.h,
-                decoration: BoxDecoration(
-                  color: Colors.transparent,
-                  borderRadius: BorderRadius.circular(16.r),
-                  border: Border.all(
-                    color: const Color(0xFF6366F1),
-                    width: 1.5,
-                  ),
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: _downloadReceipt,
-                    borderRadius: BorderRadius.circular(16.r),
-                    child: Center(
-                      child: _isDownloading
-                          ? SizedBox(
-                              width: 20.w,
-                              height: 20.w,
-                              child: CircularProgressIndicator(
-                                color: const Color(0xFF6366F1),
-                                strokeWidth: 2,
-                              ),
-                            )
-                          : Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.download,
-                                  color: const Color(0xFF6366F1),
-                                  size: 20.sp,
-                                ),
-                                SizedBox(width: 8.w),
-                                Text(
-                                  'Download',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 16.sp,
-                                    fontWeight: FontWeight.w600,
-                                    color: const Color(0xFF6366F1),
-                                  ),
-                                ),
-                              ],
-                            ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 16.h),
-        Container(
-          width: double.infinity,
-          height: 56.h,
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(16.r),          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () => _navigateToContributionsList(),
-              borderRadius: BorderRadius.circular(16.r),
-              child: Center(
-                child: Text(
-                  'Back to Contributions',
-                  style: GoogleFonts.inter(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Map<String, dynamic> _getPaymentMethodInfo() {
-    switch (widget.paymentMethod.toLowerCase()) {
-      case 'bank_transfer':
-        return {
-          'name': 'Bank Transfer',
-          'description': 'Direct bank transfer',
-          'icon': Icons.account_balance,
-          'color': const Color(0xFF3B82F6),
-        };
-      case 'card':
-        return {
-          'name': 'Debit/Credit Card',
-          'description': 'Visa, Mastercard, etc.',
-          'icon': Icons.credit_card,
-          'color': const Color.fromARGB(255, 78, 3, 208),
-        };
-      case 'mobile_money':
-        return {
-          'name': 'Mobile Money',
-          'description': 'MTN, Vodafone, AirtelTigo',
-          'icon': Icons.phone_android,
-          'color': const Color(0xFF10B981),
-        };
-      case 'crypto':
-        return {
-          'name': 'Cryptocurrency',
-          'description': 'Bitcoin, Ethereum, USDT',
-          'icon': Icons.currency_bitcoin,
-          'color': const Color(0xFFF59E0B),
-        };
-      default:
-        return {
-          'name': widget.paymentMethod,
-          'description': null,
-          'icon': Icons.payment,
-          'color': const Color(0xFF6366F1),
-        };
+  Future<void> _downloadReceipt() async {
+    if (_isDownloading) return;
+    setState(() => _isDownloading = true);
+    try {
+      final path = await GroupContributionPdfService.downloadReceipt(
+        contribution: widget.contribution,
+        payment: widget.payment,
+        paymentMethod: widget.paymentMethod,
+      );
+      Get.snackbar(
+        'Receipt Saved',
+        'PDF receipt saved to $path.',
+        backgroundColor: const Color(0xFF10B981),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        margin: EdgeInsets.all(16.w),
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Save Failed',
+        'Could not save receipt. Please try again.',
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        margin: EdgeInsets.all(16.w),
+      );
+    } finally {
+      if (mounted) setState(() => _isDownloading = false);
     }
   }
 
   Future<void> _shareReceipt() async {
-    HapticFeedback.lightImpact();
-
+    if (_isSharing) return;
+    setState(() => _isSharing = true);
     try {
       await GroupContributionPdfService.shareReceipt(
         contribution: widget.contribution,
@@ -853,72 +195,401 @@ class _ContributionPaymentConfirmationScreenState extends State<ContributionPaym
         paymentMethod: widget.paymentMethod,
       );
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to share receipt: ${e.toString()}'),
-            backgroundColor: const Color(0xFFEF4444),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
-          ),
-        );
-      }
-    }
-  }
-
-  Future<void> _downloadReceipt() async {
-    HapticFeedback.lightImpact();
-
-    setState(() {
-      _isDownloading = true;
-    });
-
-    try {
-      final filePath = await GroupContributionPdfService.downloadReceipt(
-        contribution: widget.contribution,
-        payment: widget.payment,
-        paymentMethod: widget.paymentMethod,
+      Get.snackbar(
+        'Share Failed',
+        'Could not share receipt. Please try again.',
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        margin: EdgeInsets.all(16.w),
       );
-
-      if (mounted) {
-        setState(() {
-          _isDownloading = false;
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Receipt saved to $filePath'),
-            backgroundColor: const Color(0xFF10B981),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isDownloading = false;
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to download receipt: ${e.toString()}'),
-            backgroundColor: const Color(0xFFEF4444),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
-          ),
-        );
-      }
+    } finally {
+      if (mounted) setState(() => _isSharing = false);
     }
   }
 
-  void _navigateToContributionsList() {
-    HapticFeedback.lightImpact();
-    
-    // Navigate back to group details screen
-    Get.offAllNamed(
-      AppRoutes.groupDetails,
-      arguments: widget.contribution.groupId,
+  // -------------------------------------------------------------
+  // Build
+  // -------------------------------------------------------------
+
+  @override
+  Widget build(BuildContext context) {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        _onBack();
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFF0A0A0A),
+        body: SafeArea(
+          child: Column(
+            children: [
+              _buildBackButton(),
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(height: 8.h),
+                      _buildHeader(),
+                      SizedBox(height: 16.h),
+                      _buildDetailsCard(),
+                      SizedBox(height: 12.h),
+                    ],
+                  ),
+                ),
+              ),
+              _buildActions(),
+            ],
+          ),
+        ),
+      ),
     );
+  }
+
+  Widget _buildBackButton() {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(12.w, 2.h, 12.w, 0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton(
+            onPressed: _onBack,
+            icon: Icon(Icons.arrow_back, color: Colors.white, size: 22.sp),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+          Image.asset(
+            'assets/images/logo.png',
+            width: 28.w,
+            height: 28.w,
+            errorBuilder: (_, __, ___) => Icon(
+              Icons.shield_outlined,
+              color: const Color(0xFF3B82F6),
+              size: 24.sp,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    final p = widget.payment;
+    final amount = p.amount;
+    final currency =
+        (p.currency.isNotEmpty ? p.currency : widget.contribution.currency)
+            .toUpperCase();
+    final symbol = _currencySymbol(currency);
+    final statusLabel = _formatStatus(p.status);
+    final timestamp = p.paymentDate;
+    final isCompleted =
+        p.status == PaymentStatus.completed || p.status == PaymentStatus.processing;
+
+    return Column(
+      children: [
+        Container(
+          width: 48.w,
+          height: 48.w,
+          decoration: BoxDecoration(
+            color: isCompleted
+                ? const Color(0xFF10B981)
+                : const Color(0xFFFB923C),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            isCompleted ? Icons.check : Icons.hourglass_empty,
+            color: Colors.white,
+            size: 26.sp,
+          ),
+        ),
+        SizedBox(height: 10.h),
+        Text(
+          '$symbol${amount.toStringAsFixed(2)}',
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 28.sp,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        SizedBox(height: 6.h),
+        Text(
+          isCompleted
+              ? 'Contribution paid'
+              : 'Contribution ${statusLabel.toLowerCase()}',
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        SizedBox(height: 10.h),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              statusLabel,
+              style: GoogleFonts.inter(
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF8E8E93),
+              ),
+            ),
+            SizedBox(width: 8.w),
+            Text(
+              '·',
+              style: GoogleFonts.inter(
+                fontSize: 14.sp,
+                color: const Color(0xFF8E8E93),
+              ),
+            ),
+            SizedBox(width: 8.w),
+            Text(
+              DateFormat('MMM d, yyyy · h:mm a').format(timestamp),
+              style: GoogleFonts.inter(
+                fontSize: 12.sp,
+                color: const Color(0xFF8E8E93),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDetailsCard() {
+    final p = widget.payment;
+    final c = widget.contribution;
+    final ref = p.transactionId?.trim() ?? '';
+    final paymentId = p.id.trim();
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(14.r),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.fromLTRB(16.w, 16.w, 16.w, 0),
+            child: Text(
+              'Details',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          SizedBox(height: 14.h),
+          _buildDetailRow('Contribution', c.title),
+          if (p.userName.trim().isNotEmpty)
+            _buildDetailRow('From', p.userName),
+          if (ref.isNotEmpty) _buildDetailRow('Transaction Ref', ref),
+          if (paymentId.isNotEmpty && paymentId != ref)
+            _buildDetailRow('Payment ID', paymentId),
+          if (p.notes != null && p.notes!.trim().isNotEmpty)
+            _buildDetailRow('Notes', p.notes!),
+          _buildDetailRow(
+              'Amount',
+              '${(_currencySymbol(p.currency.isNotEmpty ? p.currency : c.currency))}${p.amount.toStringAsFixed(2)}'),
+          _buildDetailRow(
+              'Currency',
+              (p.currency.isNotEmpty ? p.currency : c.currency).toUpperCase()),
+          // Divider before QR — same visual rhythm as the
+          // transfer receipt.
+          Divider(
+            color: const Color(0xFF2D2D2D),
+            height: 1,
+            indent: 16.w,
+            endIndent: 16.w,
+          ),
+          SizedBox(height: 14.h),
+          if (_qrData != null)
+            Center(
+              child: QrImageView(
+                data: _qrData!,
+                version: QrVersions.auto,
+                size: 80.w,
+                backgroundColor: Colors.transparent,
+                dataModuleStyle:
+                    const QrDataModuleStyle(color: Colors.white),
+                eyeStyle: const QrEyeStyle(color: Colors.white),
+              ),
+            ),
+          SizedBox(height: 6.h),
+          if (ref.isNotEmpty)
+            Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                child: Text(
+                  ref,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.robotoMono(
+                    fontSize: 10.sp,
+                    color: const Color(0xFF8E8E93),
+                    letterSpacing: 0.5,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+          SizedBox(height: 14.h),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 10.h),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 110.w,
+            child: Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 13.sp,
+                color: const Color(0xFF8E8E93),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: GoogleFonts.inter(
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+              ),
+              // Multi-line + ellipsis kills horizontal overflow on
+              // long values like 64-char transaction refs.
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActions() {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 16.h),
+      child: Row(
+        children: [
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: _isDownloading ? null : _downloadReceipt,
+              icon: _isDownloading
+                  ? SizedBox(
+                      width: 16.w,
+                      height: 16.w,
+                      child: const CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Icon(Icons.download, size: 18.sp),
+              label: Text(
+                _isDownloading ? 'Saving…' : 'Download',
+                style: GoogleFonts.inter(
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Color(0xFF2D2D2D)),
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(vertical: 14.h),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r)),
+              ),
+            ),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: ElevatedButton.icon(
+              onPressed: _isSharing ? null : _shareReceipt,
+              icon: _isSharing
+                  ? SizedBox(
+                      width: 16.w,
+                      height: 16.w,
+                      child: const CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : Icon(Icons.ios_share, size: 18.sp),
+              label: Text(
+                _isSharing ? 'Sharing…' : 'Share',
+                style: GoogleFonts.inter(
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color.fromARGB(255, 78, 3, 208),
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(vertical: 14.h),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // -------------------------------------------------------------
+  // Helpers
+  // -------------------------------------------------------------
+
+  String _currencySymbol(String currency) {
+    switch (currency.toUpperCase()) {
+      case 'NGN':
+        return '₦';
+      case 'USD':
+        return '\$';
+      case 'GBP':
+        return '£';
+      case 'EUR':
+        return '€';
+      case 'GHS':
+        return 'GH₵';
+      case 'KES':
+        return 'KSh ';
+      case 'ZAR':
+        return 'R';
+      default:
+        return '${currency.toUpperCase()} ';
+    }
+  }
+
+  String _formatStatus(PaymentStatus s) {
+    switch (s) {
+      case PaymentStatus.completed:
+        return 'Completed';
+      case PaymentStatus.processing:
+        return 'Processing';
+      case PaymentStatus.pending:
+        return 'Pending';
+      case PaymentStatus.failed:
+        return 'Failed';
+      case PaymentStatus.refunded:
+        return 'Refunded';
+      case PaymentStatus.cancelled:
+        return 'Cancelled';
+      default:
+        return s.toString().split('.').last;
+    }
   }
 }

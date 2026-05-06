@@ -664,13 +664,9 @@ class GroupAccountPdfService {
   static String _getTypeLabel(ContributionType type) {
     switch (type) {
       case ContributionType.oneTime:
-        return 'One-Time Goal';
+        return 'One Time Goal';
       case ContributionType.rotatingSavings:
         return 'Rotating Savings';
-      case ContributionType.investmentPool:
-        return 'Investment Pool';
-      case ContributionType.recurringGoal:
-        return 'Recurring Goal';
     }
   }
 

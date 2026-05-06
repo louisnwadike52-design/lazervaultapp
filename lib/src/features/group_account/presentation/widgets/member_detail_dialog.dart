@@ -29,22 +29,46 @@ class MemberDetailDialog extends StatelessWidget {
     this.onRemoveMember,
   });
 
-  /// Check if current user can manage this member (change role, remove)
-  bool get _canManageMember {
+  /// Whether the current user can change THIS member's role.
+  /// Uses the canonical permission matrix (admin + moderator), blocks
+  /// moderators from promoting/demoting another admin, and requires
+  /// the operator's own membership to be active (a pending invite
+  /// shouldn't manage anyone yet).
+  bool get _canChangeRole {
     final currentMember = group.getMember(currentUserId);
     if (currentMember == null) return false;
-
-    // Only admins can manage members
-    if (!currentMember.isAdmin) return false;
-
-    // Cannot remove the group admin (original creator)
-    if (member.userId == group.adminId) return false;
-
-    // Cannot manage yourself
-    if (member.userId == currentUserId) return false;
-
+    if (member.userId == currentUserId) return false; // not yourself
+    if (member.userId == group.adminId) return false; // never the original admin
+    if (!GroupRolePermissions.canMember(currentMember, GroupAction.changeMemberRole)) {
+      return false;
+    }
+    // Moderators cannot change roles of other admins.
+    if (currentMember.role == GroupMemberRole.moderator &&
+        member.role == GroupMemberRole.admin) {
+      return false;
+    }
     return true;
   }
+
+  /// Whether the current user can remove THIS member from the group.
+  bool get _canRemoveMember {
+    final currentMember = group.getMember(currentUserId);
+    if (currentMember == null) return false;
+    if (member.userId == currentUserId) return false;
+    if (member.userId == group.adminId) return false;
+    if (!GroupRolePermissions.canMember(currentMember, GroupAction.removeMember)) {
+      return false;
+    }
+    // Moderators cannot remove admins.
+    if (currentMember.role == GroupMemberRole.moderator &&
+        member.role == GroupMemberRole.admin) {
+      return false;
+    }
+    return true;
+  }
+
+  /// Show the management section iff at least one action is available.
+  bool get _canManageMember => _canChangeRole || _canRemoveMember;
 
   /// Check if this member is the original group admin
   bool get _isGroupAdmin => member.userId == group.adminId;
@@ -523,29 +547,31 @@ class MemberDetailDialog extends StatelessWidget {
           SizedBox(height: 12.h),
           Row(
             children: [
-              Expanded(
-                child: _buildActionButton(
-                  icon: Icons.admin_panel_settings,
-                  label: 'Change Role',
-                  color: const Color(0xFFFB923C),
-                  onTap: () {
-                    Navigator.pop(context);
-                    onChangeRole?.call();
-                  },
+              if (_canChangeRole)
+                Expanded(
+                  child: _buildActionButton(
+                    icon: Icons.admin_panel_settings,
+                    label: 'Change Role',
+                    color: const Color(0xFFFB923C),
+                    onTap: () {
+                      Navigator.pop(context);
+                      onChangeRole?.call();
+                    },
+                  ),
                 ),
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: _buildActionButton(
-                  icon: Icons.person_remove,
-                  label: 'Remove',
-                  color: const Color(0xFFEF4444),
-                  onTap: () {
-                    Navigator.pop(context);
-                    onRemoveMember?.call();
-                  },
+              if (_canChangeRole && _canRemoveMember) SizedBox(width: 12.w),
+              if (_canRemoveMember)
+                Expanded(
+                  child: _buildActionButton(
+                    icon: Icons.person_remove,
+                    label: 'Remove',
+                    color: const Color(0xFFEF4444),
+                    onTap: () {
+                      Navigator.pop(context);
+                      onRemoveMember?.call();
+                    },
+                  ),
                 ),
-              ),
             ],
           ),
         ],
@@ -631,15 +657,25 @@ class MemberDetailDialog extends StatelessWidget {
   }
 }
 
-/// Dialog for changing member role
+/// Dialog for changing member role.
+///
+/// [currentUserRole] is the role of the operator opening the dialog.
+/// When it's not admin, the `admin` option is hidden from the picker
+/// (mirrors the server-side rule that only admins can promote to
+/// admin). Defaults to **viewer** (least-privilege) so any call site
+/// that forgets to pass it falls into the safest configuration —
+/// the picker shows non-admin options only and the server still
+/// rejects unauthorised submissions.
 class ChangeRoleDialog extends StatefulWidget {
   final GroupMember member;
   final Function(GroupMemberRole) onRoleSelected;
+  final GroupMemberRole currentUserRole;
 
   const ChangeRoleDialog({
     super.key,
     required this.member,
     required this.onRoleSelected,
+    this.currentUserRole = GroupMemberRole.viewer,
   });
 
   @override
@@ -726,11 +762,17 @@ class _ChangeRoleDialogState extends State<ChangeRoleDialog> {
                 ],
               ),
             ),
-            // Role options
+            // Role options — hide admin for non-admin operators (server
+            // rejects promotion-to-admin from a moderator anyway, this
+            // just keeps the UI honest).
             Padding(
               padding: EdgeInsets.all(16.w),
               child: Column(
-                children: GroupMemberRole.values.map((role) {
+                children: GroupMemberRole.values
+                    .where((role) =>
+                        role != GroupMemberRole.admin ||
+                        widget.currentUserRole == GroupMemberRole.admin)
+                    .map((role) {
                   final isSelected = role == _selectedRole;
                   final roleColor = _getRoleColor(role);
                   return GestureDetector(

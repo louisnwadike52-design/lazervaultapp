@@ -966,13 +966,9 @@ class _GroupAdminDashboardState extends State<GroupAdminDashboard>
   String _getTypeLabel(ContributionType type) {
     switch (type) {
       case ContributionType.oneTime:
-        return 'One-Time';
+        return 'One Time';
       case ContributionType.rotatingSavings:
         return 'Rotating';
-      case ContributionType.investmentPool:
-        return 'Investment';
-      case ContributionType.recurringGoal:
-        return 'Recurring';
     }
   }
 

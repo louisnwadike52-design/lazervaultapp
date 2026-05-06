@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
+import 'package:lazervault/src/features/autosave/domain/repositories/i_autosave_repository.dart';
 import 'package:lazervault/src/features/autosave/domain/usecases/create_autosave_rule_usecase.dart';
 import 'package:lazervault/src/features/autosave/domain/usecases/delete_autosave_rule_usecase.dart';
 import 'package:lazervault/src/features/autosave/domain/usecases/get_autosave_rules_usecase.dart';
@@ -19,12 +20,32 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
   final GetAutoSaveTransactionsUseCase getAutoSaveTransactionsUseCase;
   final GetAutoSaveStatisticsUseCase getAutoSaveStatisticsUseCase;
   final TriggerAutoSaveUseCase triggerAutoSaveUseCase;
+  // Repository is injected directly so the cubit can call the
+  // paginated rules endpoint (currently the only consumer of the
+  // limit/offset/sort/search params). Use-cases stay for legacy
+  // single-shot operations.
+  final IAutoSaveRepository _autoSaveRepository;
 
   // Cache management
   List<AutoSaveRuleEntity> _cachedRules = [];
   Map<String, String> _accountNamesCache = {};
   DateTime? _lastFetch;
   static const _cacheDuration = Duration(minutes: 5);
+
+  // Backend-aggregated stats. Fetched alongside the rules list so
+  // the All-Rules screen's analytics card can render lifetime
+  // totals + the best-performing rule without re-summing the
+  // currently-paginated `rules` array.
+  AutoSaveStatisticsEntity? _cachedStatistics;
+
+  // Server-side pagination state. _currentOffset is incremented by
+  // _pageSize on each loadMoreRules() call; reset to zero whenever a
+  // sort/filter/search change forces a fresh fetch. _hasMore comes
+  // straight from the gateway's has_more flag.
+  static const int _pageSize = 25;
+  int _currentOffset = 0;
+  bool _hasMore = false;
+  int _totalCount = 0;
 
   // Current filters/search/sort
   AutoSaveStatus? _currentFilter;
@@ -40,7 +61,9 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
     required this.getAutoSaveTransactionsUseCase,
     required this.getAutoSaveStatisticsUseCase,
     required this.triggerAutoSaveUseCase,
-  }) : super(AutoSaveInitial());
+    required IAutoSaveRepository autoSaveRepository,
+  })  : _autoSaveRepository = autoSaveRepository,
+        super(AutoSaveInitial());
 
   Future<void> createRule({
     required String name,
@@ -319,7 +342,9 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
     );
   }
 
-  // Enhanced getRules with caching
+  // Enhanced getRules with caching. Fetches the first page of rules
+  // and the backend-aggregated stats in parallel; subsequent pages
+  // are appended via [loadMoreRules].
   Future<void> getRulesWithCache({
     bool forceRefresh = false,
     AutoSaveStatus? filter,
@@ -330,7 +355,10 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
     if (!forceRefresh &&
         _lastFetch != null &&
         DateTime.now().difference(_lastFetch!) < _cacheDuration &&
-        _cachedRules.isNotEmpty) {
+        _cachedRules.isNotEmpty &&
+        _currentFilter == filter &&
+        _currentSearch == searchQuery &&
+        (sort == null || _currentSort == sort)) {
       _emitFilteredAndSorted(filter, searchQuery, sort);
       return;
     }
@@ -338,38 +366,124 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
     if (isClosed) return;
     emit(AutoSaveRulesLoadingState(cachedRules: _cachedRules));
 
-    final result = await getAutoSaveRulesUseCase(
-      accountId: null,
-      status: filter,
-    );
+    _currentFilter = filter;
+    _currentSearch = searchQuery;
+    _currentSort = sort ?? _currentSort;
+    _currentOffset = 0;
 
-    result.fold(
+    // Fetch first page + stats in parallel. Stats failure is
+    // non-fatal — the analytics card hides itself when stats are
+    // absent rather than blocking the rules list.
+    final results = await Future.wait([
+      _autoSaveRepository.getAutoSaveRulesPaged(
+        status: _currentFilter,
+        search: _currentSearch,
+        sort: _currentSort,
+        limit: _pageSize,
+        offset: 0,
+      ),
+      getAutoSaveStatisticsUseCase(),
+    ]);
+
+    final rulesResult = results[0];
+    final statsResult = results[1];
+
+    rulesResult.fold(
       (failure) => emit(AutoSaveError(failure.message)),
-      (rules) {
-        _cachedRules = rules;
+      (data) {
+        final page = data as AutoSavePagedResult;
+        _cachedRules = page.rules;
+        _hasMore = page.hasMore;
+        _totalCount = page.total;
         _lastFetch = DateTime.now();
-        _currentFilter = filter;
-        _currentSearch = searchQuery;
-        _currentSort = sort ?? _currentSort;
+
+        statsResult.fold(
+          (_) => _cachedStatistics = null,
+          (stats) =>
+              _cachedStatistics = stats as AutoSaveStatisticsEntity,
+        );
 
         _emitFilteredAndSorted(filter, searchQuery, sort);
       },
     );
   }
 
+  /// Append the next page of rules to the cache. The list screen
+  /// calls this from a ScrollController bottom-edge listener.
+  /// Drops to a no-op when the backend has signalled has_more=false.
+  Future<void> loadMoreRules() async {
+    if (isClosed || !_hasMore) return;
+    final current = state;
+    // Already loading the next page — don't double-fire.
+    if (current is AutoSaveRulesLoadedState && current.isLoadingMore) {
+      return;
+    }
+    if (current is AutoSaveRulesLoadedState) {
+      emit(current.copyWith(isLoadingMore: true));
+    }
+
+    final nextOffset = _currentOffset + _pageSize;
+    final result = await _autoSaveRepository.getAutoSaveRulesPaged(
+      status: _currentFilter,
+      search: _currentSearch,
+      sort: _currentSort,
+      limit: _pageSize,
+      offset: nextOffset,
+    );
+
+    result.fold(
+      (failure) {
+        // Don't emit AutoSaveError — that would replace the visible
+        // list with an error screen. Just stop the spinner; the
+        // user can pull-to-refresh to retry.
+        if (current is AutoSaveRulesLoadedState) {
+          emit(current.copyWith(isLoadingMore: false));
+        }
+      },
+      (page) {
+        // Append, dedup by id (server pagination + concurrent
+        // create can race; the server total is authoritative).
+        final seen = _cachedRules.map((r) => r.id).toSet();
+        for (final r in page.rules) {
+          if (seen.add(r.id)) _cachedRules.add(r);
+        }
+        _currentOffset = nextOffset;
+        _hasMore = page.hasMore;
+        _totalCount = page.total;
+        _emitFilteredAndSorted(_currentFilter, _currentSearch, _currentSort);
+      },
+    );
+  }
+
+  // Filter / sort / search are pushed to the backend so the result
+  // is accurate across the entire collection (not just whatever
+  // the current page happens to contain). Each call resets the
+  // pagination cursor and re-fetches page 1.
   void searchRules(String query) {
-    _currentSearch = query;
-    _emitFilteredAndSorted(_currentFilter, query, _currentSort);
+    getRulesWithCache(
+      forceRefresh: true,
+      filter: _currentFilter,
+      searchQuery: query,
+      sort: _currentSort,
+    );
   }
 
   void filterRules(AutoSaveStatus? status) {
-    _currentFilter = status;
-    _emitFilteredAndSorted(status, _currentSearch, _currentSort);
+    getRulesWithCache(
+      forceRefresh: true,
+      filter: status,
+      searchQuery: _currentSearch,
+      sort: _currentSort,
+    );
   }
 
   void sortRules(RuleSortOption option) {
-    _currentSort = option;
-    _emitFilteredAndSorted(_currentFilter, _currentSearch, option);
+    getRulesWithCache(
+      forceRefresh: true,
+      filter: _currentFilter,
+      searchQuery: _currentSearch,
+      sort: option,
+    );
   }
 
   void _emitFilteredAndSorted(
@@ -377,33 +491,28 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
     String? search,
     RuleSortOption? sort,
   ) {
-    var filtered = List<AutoSaveRuleEntity>.from(_cachedRules);
-
-    // Apply filter
-    if (filter != null) {
-      filtered = filtered.where((r) => r.status == filter).toList();
-    }
-
-    // Apply search
-    if (search != null && search.isNotEmpty) {
-      final lower = search.toLowerCase();
-      filtered = filtered.where((r) {
-        return r.name.toLowerCase().contains(lower) ||
-            r.description.toLowerCase().contains(lower);
-      }).toList();
-    }
-
-    // Apply sort
-    filtered = _sortRules(filtered, sort ?? _currentSort);
+    // Filter / search / sort are server-side now. The client just
+    // renders whatever the last fetch returned; we keep the
+    // local sort comparator below as a safety net so a sort
+    // change never produces a momentarily-mis-ordered list while
+    // the next page fetch is in flight.
+    final ordered = _sortRules(
+      List<AutoSaveRuleEntity>.from(_cachedRules),
+      sort ?? _currentSort,
+    );
 
     if (isClosed) return;
     emit(AutoSaveRulesLoadedState(
-      rules: filtered,
+      rules: ordered,
       accountNames: _accountNamesCache,
       appliedFilter: filter,
       appliedSearch: search,
-      appliedSort: sort,
+      appliedSort: sort ?? _currentSort,
       lastRefreshed: _lastFetch ?? DateTime.now(),
+      statistics: _cachedStatistics,
+      hasMore: _hasMore,
+      isLoadingMore: false,
+      totalCount: _totalCount,
     ));
   }
 
@@ -584,6 +693,25 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
     if (state is AutoSaveRulesLoadedState) {
       _emitFilteredAndSorted(_currentFilter, _currentSearch, _currentSort);
     }
+  }
+
+  /// Re-emit the current cache as a Loaded state without any network
+  /// I/O. Used when the rules list screen regains focus (e.g. on
+  /// return from the detail page): we want to render the cache
+  /// immediately so the empty-state placeholder doesn't flash. Any
+  /// mutation that happened in the detail view has already updated
+  /// the cache in-place via toggleRuleOptimistic / deleteRule.
+  ///
+  /// Falls back to a force-refresh when the cache is empty or older
+  /// than [_cacheDuration].
+  Future<void> refreshFromCache() async {
+    final stale = _lastFetch == null ||
+        DateTime.now().difference(_lastFetch!) >= _cacheDuration;
+    if (_cachedRules.isEmpty || stale) {
+      await getRulesWithCache(forceRefresh: stale);
+      return;
+    }
+    _emitFilteredAndSorted(_currentFilter, _currentSearch, _currentSort);
   }
 
   // Clear cache

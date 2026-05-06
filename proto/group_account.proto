@@ -18,6 +18,16 @@ enum GroupAccountStatus {
   GROUP_ACCOUNT_STATUS_CLOSED = 3;
 }
 
+// Role enum + canonical permission boundaries (enforced server-side):
+//
+//   ADMIN     — full control: edit group, delete group, manage payouts,
+//               update settings, and ALL moderator capabilities below.
+//   MODERATOR — day-to-day group management: invite/remove non-admin
+//               members, accept/reject join requests, edit non-financial
+//               group metadata. CANNOT delete the group, CANNOT change
+//               another member's role, CANNOT initiate payouts.
+//   MEMBER    — participate: contribute, view group + payment history.
+//   VIEWER    — read-only. Cannot contribute or modify anything.
 enum GroupMemberRole {
   GROUP_MEMBER_ROLE_UNSPECIFIED = 0;
   GROUP_MEMBER_ROLE_ADMIN = 1;
@@ -37,7 +47,8 @@ enum GroupMemberStatus {
 enum ContributionType {
   CONTRIBUTION_TYPE_UNSPECIFIED = 0;
   CONTRIBUTION_TYPE_ONE_TIME = 1;
-  CONTRIBUTION_TYPE_RECURRING = 2;
+  reserved 2;
+  reserved "CONTRIBUTION_TYPE_RECURRING";
   CONTRIBUTION_TYPE_ROTATING_SAVINGS = 3;
 }
 
@@ -59,14 +70,6 @@ enum ContributionStatus {
   CONTRIBUTION_STATUS_CANCELLED = 4;
 }
 
-// Role enum kept in sync with the backend at
-// `microservices/group-accounts-service/proto/group_account.proto`.
-// See `presentation/utils/group_role_permissions` (Flutter mirror) and
-// `internal/service/group_permissions.go` (server enforcement).
-//
-// (We don't redeclare this enum here because the proto file already does
-// at the top — this comment is a marker to keep the two sides aligned.)
-
 enum PaymentStatus {
   PAYMENT_STATUS_UNSPECIFIED = 0;
   PAYMENT_STATUS_PENDING = 1;
@@ -74,13 +77,17 @@ enum PaymentStatus {
   PAYMENT_STATUS_COMPLETED = 3;
   PAYMENT_STATUS_FAILED = 4;
   PAYMENT_STATUS_REFUNDED = 5;
-  // Phase 2 (debit) returned an ambiguous error. Supervisor is verifying
-  // with accounts-service. Money MAY have moved.
+  // Phase 2 (debit) returned an ambiguous error. The supervisor is
+  // verifying with accounts-service via LookupTransactionByReference.
+  // The user's money MAY have moved — UI should show "we're verifying"
+  // and refuse to start a fresh payment for this intent.
   PAYMENT_STATUS_AWAITING_VERIFICATION = 6;
-  // Phase 3 failed AFTER successful debit. Rollback processor is issuing
-  // the compensating credit. Money WILL be returned.
+  // Phase 3 failed AFTER a successful debit. The rollback processor is
+  // issuing the compensating credit. Money WILL be returned.
   PAYMENT_STATUS_REFUNDING = 7;
-  // Reconciliation exhausted retries. Operator action required.
+  // Reconciliation exhausted automated retries. An operator must
+  // intervene. Critical: the user is potentially out of pocket OR the
+  // platform is potentially out of pocket — either way, do not assume.
   PAYMENT_STATUS_MANUAL_REVIEW = 8;
 }
 
@@ -89,6 +96,9 @@ enum PayoutStatus {
   PAYOUT_STATUS_PENDING = 1;
   PAYOUT_STATUS_COMPLETED = 2;
   PAYOUT_STATUS_CANCELLED = 3;
+  PAYOUT_STATUS_PROCESSING = 4;
+  PAYOUT_STATUS_FAILED = 5;
+  PAYOUT_STATUS_MANUAL_REVIEW = 6;
 }
 
 enum PayoutTransactionStatus {
@@ -125,6 +135,10 @@ message GroupAccountMessage {
   int32 member_count = 12;
   uint64 total_raised = 13;
   string image_url = 14;
+  // Denormalized count of (non-soft-deleted) contributions on this
+  // group. Surfaced so list-groups callers (mobile "Goals" stat
+  // tile) don't need the heavy `contributions` array preloaded.
+  int32 contribution_count = 15;
 }
 
 message GroupMemberMessage {
@@ -141,6 +155,7 @@ message GroupMemberMessage {
   string phone_number = 11;
   bool is_partial = 12;
   string user_username = 13;
+  // Propagated from auth SearchUsers: do not infer from masked email/phone strings.
   bool email_matches_search_query = 14;
   bool phone_matches_search_query_exact = 15;
 }
@@ -181,6 +196,11 @@ message ContributionMessage {
   repeated PayoutScheduleMessage payout_schedule = 29;
   repeated PayoutTransactionMessage payout_history = 30;
   repeated ContributionMemberMessage members = 31;
+
+  // Whether the platform fires the payout itself (auto) or the
+  // creator must trigger it via TriggerManualPayout. Distinct from
+  // auto_pay_enabled (field 23) which controls MEMBER-side auto-debit.
+  bool auto_payout_enabled = 32;
 }
 
 // Member assigned to a contribution
@@ -224,6 +244,14 @@ message PayoutScheduleMessage {
   google.protobuf.Timestamp received_date = 8;
   uint64 actual_amount = 9;
   string notes = 10;
+  string contribution_id = 11;
+  string group_id = 12;
+  int32 attempts = 13;
+  google.protobuf.Timestamp last_attempt_at = 14;
+  google.protobuf.Timestamp next_attempt_at = 15;
+  string failure_reason = 16;
+  int64 version = 17;
+  string payout_transaction_id = 18;
 }
 
 message PayoutTransactionMessage {
@@ -266,6 +294,149 @@ message ContributionTranscriptMessage {
   uint64 total_amount = 6;
   string currency = 7;
   string member_contributions = 8;
+}
+
+// ============================================================================
+// PAYOUT RECEIVER + SCHEDULED-PAYOUT MESSAGES
+//
+// The receiver/scheduler feature has its own message types (rather than
+// piggybacking on PayoutScheduleMessage) so the wire format reflects the
+// new state machine cleanly. PayoutScheduleMessage stays for ROSCA
+// rotation accounting; ScheduledPayoutMessage is the dispatch-state
+// row.
+// ============================================================================
+
+enum ScheduledPayoutStatus {
+  SCHEDULED_PAYOUT_STATUS_UNSPECIFIED = 0;
+  SCHEDULED_PAYOUT_STATUS_PENDING_RECEIVER = 1;
+  SCHEDULED_PAYOUT_STATUS_READY = 2;
+  SCHEDULED_PAYOUT_STATUS_SCHEDULED = 3;
+  SCHEDULED_PAYOUT_STATUS_IN_FLIGHT = 4;
+  SCHEDULED_PAYOUT_STATUS_SETTLED = 5;
+  SCHEDULED_PAYOUT_STATUS_FAILED = 6;
+  SCHEDULED_PAYOUT_STATUS_EXHAUSTED = 7;
+  SCHEDULED_PAYOUT_STATUS_CANCELED = 8;
+}
+
+enum PayoutMode {
+  PAYOUT_MODE_UNSPECIFIED = 0;
+  PAYOUT_MODE_AUTO = 1;
+  PAYOUT_MODE_MANUAL = 2;
+}
+
+message PayoutReceiverMessage {
+  string id = 1;
+  string contribution_id = 2;
+  int32 cycle_index = 3;
+  string recipient_user_id = 4;
+  string recipient_account_id = 5;
+  string recipient_name = 6;
+  string recipient_username = 7;
+  string assigned_by_user_id = 8;
+  google.protobuf.Timestamp assigned_at = 9;
+  google.protobuf.Timestamp cleared_at = 10;
+  string note = 11;
+}
+
+message ScheduledPayoutMessage {
+  string id = 1;
+  string contribution_id = 2;
+  int32 cycle_index = 3;
+  ScheduledPayoutStatus status = 4;
+  google.protobuf.Timestamp scheduled_for = 5;
+  PayoutMode payout_mode = 6;
+  string contribution_type = 7;
+  uint64 amount_minor = 8;
+  string currency = 9;
+  string recipient_user_id = 10;
+  string recipient_account_id = 11;
+  string recipient_name = 12;
+  string idempotency_key = 13;
+  int32 attempts = 14;
+  google.protobuf.Timestamp last_attempted_at = 15;
+  string last_error = 16;
+  google.protobuf.Timestamp fired_at = 17;
+  google.protobuf.Timestamp settled_at = 18;
+  string payout_transaction_id = 19;
+  int64 version = 20;
+  google.protobuf.Timestamp created_at = 21;
+  google.protobuf.Timestamp updated_at = 22;
+}
+
+message PayoutEventMessage {
+  string id = 1;
+  string payout_id = 2;
+  string contribution_id = 3;
+  int32 cycle_index = 4;
+  string event_type = 5;
+  string payload = 6;       // JSON
+  string actor_user_id = 7;
+  google.protobuf.Timestamp occurred_at = 8;
+}
+
+message SetPayoutReceiverRequest {
+  string contribution_id = 1;
+  int32 cycle_index = 2;
+  string recipient_user_id = 3;
+  string recipient_account_id = 4;
+  string note = 5;
+}
+
+message SetPayoutReceiverResponse {
+  PayoutReceiverMessage receiver = 1;
+  ScheduledPayoutMessage scheduled_payout = 2;
+}
+
+message GetPayoutReceiverRequest {
+  string contribution_id = 1;
+  int32 cycle_index = 2;
+}
+
+message GetPayoutReceiverResponse {
+  PayoutReceiverMessage receiver = 1;
+  ScheduledPayoutMessage scheduled_payout = 2;
+}
+
+message ClearPayoutReceiverRequest {
+  string contribution_id = 1;
+  int32 cycle_index = 2;
+}
+
+message ClearPayoutReceiverResponse {
+  bool cleared = 1;
+  ScheduledPayoutMessage scheduled_payout = 2;
+}
+
+message TriggerManualPayoutRequest {
+  string contribution_id = 1;
+  int32 cycle_index = 2;
+}
+
+message TriggerManualPayoutResponse {
+  ScheduledPayoutMessage scheduled_payout = 1;
+}
+
+message ListScheduledPayoutsRequest {
+  string contribution_id = 1;        // optional filter
+  string group_id = 2;               // optional filter
+  repeated ScheduledPayoutStatus statuses = 3;
+  int32 limit = 4;
+  int32 offset = 5;
+}
+
+message ListScheduledPayoutsResponse {
+  repeated ScheduledPayoutMessage payouts = 1;
+  int32 total = 2;
+}
+
+message GetScheduledPayoutRequest {
+  string payout_id = 1;
+}
+
+message GetScheduledPayoutResponse {
+  ScheduledPayoutMessage payout = 1;
+  PayoutReceiverMessage receiver = 2;
+  repeated PayoutEventMessage events = 3;
 }
 
 // ============================================================================
@@ -393,6 +564,10 @@ message CreateContributionRequest {
   bool allow_partial_payments = 16;
   uint64 minimum_balance = 17;
   string metadata = 18;  // JSON string for external links (whatsapp, telegram) etc
+  // Drives the payout scheduler: when true, the platform fires the
+  // payout automatically once a receiver is set. When false, the
+  // creator must press the manual-trigger CTA.
+  bool auto_payout_enabled = 19;
 }
 
 message CreateContributionResponse {
@@ -427,6 +602,12 @@ message UpdateContributionRequest {
   google.protobuf.Timestamp deadline = 5;
   ContributionStatus status = 6;
   string metadata = 7;  // JSON string for external links (whatsapp, telegram) etc
+  // Optional toggle. Wrapped in a oneof-style explicit "set" flag so
+  // a caller that omits the field doesn't accidentally flip it to
+  // false. The handler treats auto_payout_enabled_set=false as
+  // "leave the existing value alone".
+  bool auto_payout_enabled = 8;
+  bool auto_payout_enabled_set = 9;
 }
 
 message UpdateContributionResponse {
@@ -511,12 +692,6 @@ message ProcessScheduledPaymentsResponse {
   repeated ContributionPaymentMessage payments_processed = 2;
 }
 
-message GetOverdueContributionsRequest {}
-
-message GetOverdueContributionsResponse {
-  repeated ContributionMessage contributions = 1;
-}
-
 message GetPayoutScheduleRequest {
   string contribution_id = 1;
 }
@@ -599,6 +774,12 @@ message GetUserContributionStatsResponse {
   uint64 total_amount = 2;
   int32 groups_count = 3;
   double average_payment = 4;
+}
+
+message GetOverdueContributionsRequest {}
+
+message GetOverdueContributionsResponse {
+  repeated ContributionMessage contributions = 1;
 }
 
 message GetContributionAnalyticsRequest {
@@ -920,12 +1101,6 @@ service GroupAccountService {
     };
   }
 
-  rpc GetOverdueContributions(GetOverdueContributionsRequest) returns (GetOverdueContributionsResponse) {
-    option (google.api.http) = {
-      get: "/v1/contributions/overdue"
-    };
-  }
-
   rpc GetPayoutSchedule(GetPayoutScheduleRequest) returns (GetPayoutScheduleResponse) {
     option (google.api.http) = {
       get: "/v1/contributions/{contribution_id}/payout-schedule"
@@ -950,6 +1125,45 @@ service GroupAccountService {
     option (google.api.http) = {
       post: "/v1/contributions/{contribution_id}/advance-rotation"
       body: "*"
+    };
+  }
+
+  // Receiver assignment + scheduled-payout dispatch.
+  rpc SetPayoutReceiver(SetPayoutReceiverRequest) returns (SetPayoutReceiverResponse) {
+    option (google.api.http) = {
+      post: "/v1/contributions/{contribution_id}/payout-receiver"
+      body: "*"
+    };
+  }
+
+  rpc GetPayoutReceiver(GetPayoutReceiverRequest) returns (GetPayoutReceiverResponse) {
+    option (google.api.http) = {
+      get: "/v1/contributions/{contribution_id}/payout-receiver"
+    };
+  }
+
+  rpc ClearPayoutReceiver(ClearPayoutReceiverRequest) returns (ClearPayoutReceiverResponse) {
+    option (google.api.http) = {
+      delete: "/v1/contributions/{contribution_id}/payout-receiver"
+    };
+  }
+
+  rpc TriggerManualPayout(TriggerManualPayoutRequest) returns (TriggerManualPayoutResponse) {
+    option (google.api.http) = {
+      post: "/v1/contributions/{contribution_id}/trigger-payout"
+      body: "*"
+    };
+  }
+
+  rpc ListScheduledPayouts(ListScheduledPayoutsRequest) returns (ListScheduledPayoutsResponse) {
+    option (google.api.http) = {
+      get: "/v1/scheduled-payouts"
+    };
+  }
+
+  rpc GetScheduledPayout(GetScheduledPayoutRequest) returns (GetScheduledPayoutResponse) {
+    option (google.api.http) = {
+      get: "/v1/scheduled-payouts/{payout_id}"
     };
   }
 
@@ -982,6 +1196,12 @@ service GroupAccountService {
   rpc GetUserContributionStats(GetUserContributionStatsRequest) returns (GetUserContributionStatsResponse) {
     option (google.api.http) = {
       get: "/v1/contributions/statistics"
+    };
+  }
+
+  rpc GetOverdueContributions(GetOverdueContributionsRequest) returns (GetOverdueContributionsResponse) {
+    option (google.api.http) = {
+      get: "/v1/contributions/overdue"
     };
   }
 

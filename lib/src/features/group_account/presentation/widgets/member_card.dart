@@ -90,7 +90,29 @@ class MemberCard extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
+                  // Username line — shown whenever the user has a
+                  // username set AND it isn't already what we put in
+                  // the displayName (the @username fallback). Mirrors
+                  // the MemberDetailDialog header so list and modal
+                  // present the same identity at a glance.
+                  if (member.userUsername != null &&
+                      member.userUsername!.isNotEmpty &&
+                      !displayName.startsWith('@')) ...[
+                    SizedBox(height: 2.h),
+                    Text(
+                      '@${member.userUsername!.startsWith('@') ? member.userUsername!.substring(1) : member.userUsername}',
+                      style: GoogleFonts.inter(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFF3B82F6),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                   SizedBox(height: 4.h),
                   Text(
                     member.email,
@@ -98,6 +120,8 @@ class MemberCard extends StatelessWidget {
                       fontSize: 13.sp,
                       color: Colors.grey[400],
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   SizedBox(height: 6.h),
                   Row(

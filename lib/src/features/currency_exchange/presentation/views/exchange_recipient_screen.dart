@@ -317,9 +317,40 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
     if (args != null) {
       _fromCurrency = args['fromCurrency'] as String? ?? 'NGN';
       _toCurrency = args['toCurrency'] as String? ?? 'USD';
-      _amount = args['amount'] as double? ?? 0;
+      // Amount can arrive as double (from the home flow) or num/int
+      // (from the history bottom sheet which round-trips through
+      // CurrencyTransaction). The bare `as double?` cast crashes on
+      // a num that's actually an int. Coerce defensively.
+      _amount = (args['amount'] as num?)?.toDouble() ?? 0;
       _rate = args['rate'] as ExchangeRate?;
-      final mode = args['mode'] as ExchangeMode? ?? ExchangeMode.sendAbroad;
+      // Mode arrives in two flavors:
+      //   * ExchangeMode enum — when called from exchange_home_screen
+      //     (line 237 ships `'mode': _mode` where _mode is the enum).
+      //   * String — when called from
+      //     exchange_history_actions_sheet on Repeat Exchange (line 79
+      //     ships `'mode': 'sendAbroad'`). The history sheet doesn't
+      //     import ExchangeMode and stays decoupled from the cubit.
+      // Casting `as ExchangeMode?` crashed the second path with
+      // "type 'String' is not a subtype of type 'ExchangeMode'".
+      // Accept either; default to sendAbroad since that's what lands
+      // on this screen.
+      final rawMode = args['mode'];
+      final ExchangeMode mode;
+      if (rawMode is ExchangeMode) {
+        mode = rawMode;
+      } else if (rawMode is String) {
+        switch (rawMode) {
+          case 'convert':
+            mode = ExchangeMode.convert;
+            break;
+          case 'sendAbroad':
+          default:
+            mode = ExchangeMode.sendAbroad;
+            break;
+        }
+      } else {
+        mode = ExchangeMode.sendAbroad;
+      }
 
       if (_rate != null) {
         context.read<ExchangeCubit>().initFromArguments(

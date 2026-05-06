@@ -1,19 +1,25 @@
-///
-//  Generated code. Do not modify.
-//  source: autosave.proto
+// This is a generated file - do not edit.
 //
-// @dart = 2.12
-// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
+// Generated from autosave.proto.
 
-// ignore_for_file: UNDEFINED_SHOWN_NAME
+// @dart = 3.3
+
+// ignore_for_file: annotate_overrides, camel_case_types, comment_references
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names
+
 import 'dart:core' as $core;
+
 import 'package:protobuf/protobuf.dart' as $pb;
 
+/// Auto-save rule trigger types
 class TriggerType extends $pb.ProtobufEnum {
-  static const TriggerType TRIGGER_UNKNOWN = TriggerType._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TRIGGER_UNKNOWN');
-  static const TriggerType TRIGGER_ON_DEPOSIT = TriggerType._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TRIGGER_ON_DEPOSIT');
-  static const TriggerType TRIGGER_SCHEDULED = TriggerType._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TRIGGER_SCHEDULED');
-  static const TriggerType TRIGGER_ROUND_UP = TriggerType._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TRIGGER_ROUND_UP');
+  static const TriggerType TRIGGER_UNKNOWN = TriggerType._(0, _omitEnumNames ? '' : 'TRIGGER_UNKNOWN');
+  static const TriggerType TRIGGER_ON_DEPOSIT = TriggerType._(1, _omitEnumNames ? '' : 'TRIGGER_ON_DEPOSIT');
+  static const TriggerType TRIGGER_SCHEDULED = TriggerType._(2, _omitEnumNames ? '' : 'TRIGGER_SCHEDULED');
+  static const TriggerType TRIGGER_ROUND_UP = TriggerType._(3, _omitEnumNames ? '' : 'TRIGGER_ROUND_UP');
 
   static const $core.List<TriggerType> values = <TriggerType> [
     TRIGGER_UNKNOWN,
@@ -22,18 +28,19 @@ class TriggerType extends $pb.ProtobufEnum {
     TRIGGER_ROUND_UP,
   ];
 
-  static final $core.Map<$core.int, TriggerType> _byValue = $pb.ProtobufEnum.initByValue(values);
-  static TriggerType? valueOf($core.int value) => _byValue[value];
+  static final $core.List<TriggerType?> _byValue = $pb.ProtobufEnum.$_initByValueList(values, 3);
+  static TriggerType? valueOf($core.int value) =>  value < 0 || value >= _byValue.length ? null : _byValue[value];
 
-  const TriggerType._($core.int v, $core.String n) : super(v, n);
+  const TriggerType._(super.value, super.name);
 }
 
+/// Schedule frequency for scheduled auto-saves
 class ScheduleFrequency extends $pb.ProtobufEnum {
-  static const ScheduleFrequency FREQUENCY_UNKNOWN = ScheduleFrequency._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'FREQUENCY_UNKNOWN');
-  static const ScheduleFrequency FREQUENCY_DAILY = ScheduleFrequency._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'FREQUENCY_DAILY');
-  static const ScheduleFrequency FREQUENCY_WEEKLY = ScheduleFrequency._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'FREQUENCY_WEEKLY');
-  static const ScheduleFrequency FREQUENCY_BIWEEKLY = ScheduleFrequency._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'FREQUENCY_BIWEEKLY');
-  static const ScheduleFrequency FREQUENCY_MONTHLY = ScheduleFrequency._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'FREQUENCY_MONTHLY');
+  static const ScheduleFrequency FREQUENCY_UNKNOWN = ScheduleFrequency._(0, _omitEnumNames ? '' : 'FREQUENCY_UNKNOWN');
+  static const ScheduleFrequency FREQUENCY_DAILY = ScheduleFrequency._(1, _omitEnumNames ? '' : 'FREQUENCY_DAILY');
+  static const ScheduleFrequency FREQUENCY_WEEKLY = ScheduleFrequency._(2, _omitEnumNames ? '' : 'FREQUENCY_WEEKLY');
+  static const ScheduleFrequency FREQUENCY_BIWEEKLY = ScheduleFrequency._(3, _omitEnumNames ? '' : 'FREQUENCY_BIWEEKLY');
+  static const ScheduleFrequency FREQUENCY_MONTHLY = ScheduleFrequency._(4, _omitEnumNames ? '' : 'FREQUENCY_MONTHLY');
 
   static const $core.List<ScheduleFrequency> values = <ScheduleFrequency> [
     FREQUENCY_UNKNOWN,
@@ -43,18 +50,19 @@ class ScheduleFrequency extends $pb.ProtobufEnum {
     FREQUENCY_MONTHLY,
   ];
 
-  static final $core.Map<$core.int, ScheduleFrequency> _byValue = $pb.ProtobufEnum.initByValue(values);
-  static ScheduleFrequency? valueOf($core.int value) => _byValue[value];
+  static final $core.List<ScheduleFrequency?> _byValue = $pb.ProtobufEnum.$_initByValueList(values, 4);
+  static ScheduleFrequency? valueOf($core.int value) =>  value < 0 || value >= _byValue.length ? null : _byValue[value];
 
-  const ScheduleFrequency._($core.int v, $core.String n) : super(v, n);
+  const ScheduleFrequency._(super.value, super.name);
 }
 
+/// Auto-save rule status
 class AutoSaveStatus extends $pb.ProtobufEnum {
-  static const AutoSaveStatus STATUS_UNKNOWN = AutoSaveStatus._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'STATUS_UNKNOWN');
-  static const AutoSaveStatus STATUS_ACTIVE = AutoSaveStatus._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'STATUS_ACTIVE');
-  static const AutoSaveStatus STATUS_PAUSED = AutoSaveStatus._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'STATUS_PAUSED');
-  static const AutoSaveStatus STATUS_COMPLETED = AutoSaveStatus._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'STATUS_COMPLETED');
-  static const AutoSaveStatus STATUS_CANCELLED = AutoSaveStatus._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'STATUS_CANCELLED');
+  static const AutoSaveStatus STATUS_UNKNOWN = AutoSaveStatus._(0, _omitEnumNames ? '' : 'STATUS_UNKNOWN');
+  static const AutoSaveStatus STATUS_ACTIVE = AutoSaveStatus._(1, _omitEnumNames ? '' : 'STATUS_ACTIVE');
+  static const AutoSaveStatus STATUS_PAUSED = AutoSaveStatus._(2, _omitEnumNames ? '' : 'STATUS_PAUSED');
+  static const AutoSaveStatus STATUS_COMPLETED = AutoSaveStatus._(3, _omitEnumNames ? '' : 'STATUS_COMPLETED');
+  static const AutoSaveStatus STATUS_CANCELLED = AutoSaveStatus._(4, _omitEnumNames ? '' : 'STATUS_CANCELLED');
 
   static const $core.List<AutoSaveStatus> values = <AutoSaveStatus> [
     STATUS_UNKNOWN,
@@ -64,16 +72,17 @@ class AutoSaveStatus extends $pb.ProtobufEnum {
     STATUS_CANCELLED,
   ];
 
-  static final $core.Map<$core.int, AutoSaveStatus> _byValue = $pb.ProtobufEnum.initByValue(values);
-  static AutoSaveStatus? valueOf($core.int value) => _byValue[value];
+  static final $core.List<AutoSaveStatus?> _byValue = $pb.ProtobufEnum.$_initByValueList(values, 4);
+  static AutoSaveStatus? valueOf($core.int value) =>  value < 0 || value >= _byValue.length ? null : _byValue[value];
 
-  const AutoSaveStatus._($core.int v, $core.String n) : super(v, n);
+  const AutoSaveStatus._(super.value, super.name);
 }
 
+/// Amount calculation type
 class AmountType extends $pb.ProtobufEnum {
-  static const AmountType AMOUNT_UNKNOWN = AmountType._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'AMOUNT_UNKNOWN');
-  static const AmountType AMOUNT_FIXED = AmountType._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'AMOUNT_FIXED');
-  static const AmountType AMOUNT_PERCENTAGE = AmountType._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'AMOUNT_PERCENTAGE');
+  static const AmountType AMOUNT_UNKNOWN = AmountType._(0, _omitEnumNames ? '' : 'AMOUNT_UNKNOWN');
+  static const AmountType AMOUNT_FIXED = AmountType._(1, _omitEnumNames ? '' : 'AMOUNT_FIXED');
+  static const AmountType AMOUNT_PERCENTAGE = AmountType._(2, _omitEnumNames ? '' : 'AMOUNT_PERCENTAGE');
 
   static const $core.List<AmountType> values = <AmountType> [
     AMOUNT_UNKNOWN,
@@ -81,9 +90,11 @@ class AmountType extends $pb.ProtobufEnum {
     AMOUNT_PERCENTAGE,
   ];
 
-  static final $core.Map<$core.int, AmountType> _byValue = $pb.ProtobufEnum.initByValue(values);
-  static AmountType? valueOf($core.int value) => _byValue[value];
+  static final $core.List<AmountType?> _byValue = $pb.ProtobufEnum.$_initByValueList(values, 2);
+  static AmountType? valueOf($core.int value) =>  value < 0 || value >= _byValue.length ? null : _byValue[value];
 
-  const AmountType._($core.int v, $core.String n) : super(v, n);
+  const AmountType._(super.value, super.name);
 }
 
+
+const $core.bool _omitEnumNames = $core.bool.fromEnvironment('protobuf.omit_enum_names');

@@ -342,6 +342,7 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String autoSaveRuleReceipt = '/auto-save/receipt';
   static const String autoSaveDetails = '/auto-save/details';
   static const String autoSaveTransactions = '/auto-save/transactions';
+  static const String autoSaveRulesList = '/auto-save/rules';
 
   // Crowdfund Routes
   static const String crowdfund = '/crowdfund';

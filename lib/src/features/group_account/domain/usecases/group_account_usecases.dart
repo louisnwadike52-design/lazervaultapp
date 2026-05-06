@@ -191,6 +191,7 @@ class CreateContribution extends UseCase<Contribution, CreateContributionParams>
       gracePeriodDays: params.gracePeriodDays,
       allowPartialPayments: params.allowPartialPayments,
       minimumBalance: params.minimumBalance,
+      autoPayoutEnabled: params.autoPayoutEnabled,
       metadata: params.metadata,
     );
   }
@@ -445,6 +446,7 @@ class CreateContributionParams {
   final int? gracePeriodDays;
   final bool allowPartialPayments;
   final double? minimumBalance;
+  final bool autoPayoutEnabled;
   final Map<String, dynamic>? metadata;
 
   CreateContributionParams({
@@ -466,6 +468,7 @@ class CreateContributionParams {
     this.gracePeriodDays,
     this.allowPartialPayments = true,
     this.minimumBalance,
+    this.autoPayoutEnabled = false,
     this.metadata,
   });
 }

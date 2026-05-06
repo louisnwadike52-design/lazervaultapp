@@ -57,6 +57,7 @@ abstract class GroupAccountRemoteDataSource {
     int? gracePeriodDays,
     bool allowPartialPayments = true,
     double? minimumBalance,
+    bool autoPayoutEnabled = false,
     Map<String, dynamic>? metadata,
   });
   Future<ContributionModel> updateContribution(ContributionModel contribution);

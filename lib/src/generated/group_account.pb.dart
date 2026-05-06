@@ -38,6 +38,7 @@ class GroupAccountMessage extends $pb.GeneratedMessage {
     $core.int? memberCount,
     $fixnum.Int64? totalRaised,
     $core.String? imageUrl,
+    $core.int? contributionCount,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -54,6 +55,7 @@ class GroupAccountMessage extends $pb.GeneratedMessage {
     if (memberCount != null) result.memberCount = memberCount;
     if (totalRaised != null) result.totalRaised = totalRaised;
     if (imageUrl != null) result.imageUrl = imageUrl;
+    if (contributionCount != null) result.contributionCount = contributionCount;
     return result;
   }
 
@@ -77,6 +79,7 @@ class GroupAccountMessage extends $pb.GeneratedMessage {
     ..a<$core.int>(12, _omitFieldNames ? '' : 'memberCount', $pb.PbFieldType.O3)
     ..a<$fixnum.Int64>(13, _omitFieldNames ? '' : 'totalRaised', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(14, _omitFieldNames ? '' : 'imageUrl')
+    ..a<$core.int>(15, _omitFieldNames ? '' : 'contributionCount', $pb.PbFieldType.O3)
     ..hasRequiredFields = false
   ;
 
@@ -214,6 +217,18 @@ class GroupAccountMessage extends $pb.GeneratedMessage {
   $core.bool hasImageUrl() => $_has(13);
   @$pb.TagNumber(14)
   void clearImageUrl() => $_clearField(14);
+
+  /// Denormalized count of (non-soft-deleted) contributions on this
+  /// group. Surfaced so list-groups callers (mobile "Goals" stat
+  /// tile) don't need the heavy `contributions` array preloaded.
+  @$pb.TagNumber(15)
+  $core.int get contributionCount => $_getIZ(14);
+  @$pb.TagNumber(15)
+  set contributionCount($core.int value) => $_setSignedInt32(14, value);
+  @$pb.TagNumber(15)
+  $core.bool hasContributionCount() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearContributionCount() => $_clearField(15);
 }
 
 class GroupMemberMessage extends $pb.GeneratedMessage {
@@ -413,6 +428,7 @@ class GroupMemberMessage extends $pb.GeneratedMessage {
   @$pb.TagNumber(13)
   void clearUserUsername() => $_clearField(13);
 
+  /// Propagated from auth SearchUsers: do not infer from masked email/phone strings.
   @$pb.TagNumber(14)
   $core.bool get emailMatchesSearchQuery => $_getBF(13);
   @$pb.TagNumber(14)
@@ -465,6 +481,7 @@ class ContributionMessage extends $pb.GeneratedMessage {
     $core.Iterable<PayoutScheduleMessage>? payoutSchedule,
     $core.Iterable<PayoutTransactionMessage>? payoutHistory,
     $core.Iterable<ContributionMemberMessage>? members,
+    $core.bool? autoPayoutEnabled,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -498,6 +515,7 @@ class ContributionMessage extends $pb.GeneratedMessage {
     if (payoutSchedule != null) result.payoutSchedule.addAll(payoutSchedule);
     if (payoutHistory != null) result.payoutHistory.addAll(payoutHistory);
     if (members != null) result.members.addAll(members);
+    if (autoPayoutEnabled != null) result.autoPayoutEnabled = autoPayoutEnabled;
     return result;
   }
 
@@ -538,6 +556,7 @@ class ContributionMessage extends $pb.GeneratedMessage {
     ..pc<PayoutScheduleMessage>(29, _omitFieldNames ? '' : 'payoutSchedule', $pb.PbFieldType.PM, subBuilder: PayoutScheduleMessage.create)
     ..pc<PayoutTransactionMessage>(30, _omitFieldNames ? '' : 'payoutHistory', $pb.PbFieldType.PM, subBuilder: PayoutTransactionMessage.create)
     ..pc<ContributionMemberMessage>(31, _omitFieldNames ? '' : 'members', $pb.PbFieldType.PM, subBuilder: ContributionMemberMessage.create)
+    ..aOB(32, _omitFieldNames ? '' : 'autoPayoutEnabled')
     ..hasRequiredFields = false
   ;
 
@@ -824,6 +843,18 @@ class ContributionMessage extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(31)
   $pb.PbList<ContributionMemberMessage> get members => $_getList(30);
+
+  /// Whether the platform fires the payout itself (auto) or the
+  /// creator must trigger it via TriggerManualPayout. Distinct from
+  /// auto_pay_enabled (field 23) which controls MEMBER-side auto-debit.
+  @$pb.TagNumber(32)
+  $core.bool get autoPayoutEnabled => $_getBF(31);
+  @$pb.TagNumber(32)
+  set autoPayoutEnabled($core.bool value) => $_setBool(31, value);
+  @$pb.TagNumber(32)
+  $core.bool hasAutoPayoutEnabled() => $_has(31);
+  @$pb.TagNumber(32)
+  void clearAutoPayoutEnabled() => $_clearField(32);
 }
 
 /// Member assigned to a contribution
@@ -1187,6 +1218,14 @@ class PayoutScheduleMessage extends $pb.GeneratedMessage {
     $1.Timestamp? receivedDate,
     $fixnum.Int64? actualAmount,
     $core.String? notes,
+    $core.String? contributionId,
+    $core.String? groupId,
+    $core.int? attempts,
+    $1.Timestamp? lastAttemptAt,
+    $1.Timestamp? nextAttemptAt,
+    $core.String? failureReason,
+    $fixnum.Int64? version,
+    $core.String? payoutTransactionId,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -1199,6 +1238,14 @@ class PayoutScheduleMessage extends $pb.GeneratedMessage {
     if (receivedDate != null) result.receivedDate = receivedDate;
     if (actualAmount != null) result.actualAmount = actualAmount;
     if (notes != null) result.notes = notes;
+    if (contributionId != null) result.contributionId = contributionId;
+    if (groupId != null) result.groupId = groupId;
+    if (attempts != null) result.attempts = attempts;
+    if (lastAttemptAt != null) result.lastAttemptAt = lastAttemptAt;
+    if (nextAttemptAt != null) result.nextAttemptAt = nextAttemptAt;
+    if (failureReason != null) result.failureReason = failureReason;
+    if (version != null) result.version = version;
+    if (payoutTransactionId != null) result.payoutTransactionId = payoutTransactionId;
     return result;
   }
 
@@ -1218,6 +1265,14 @@ class PayoutScheduleMessage extends $pb.GeneratedMessage {
     ..aOM<$1.Timestamp>(8, _omitFieldNames ? '' : 'receivedDate', subBuilder: $1.Timestamp.create)
     ..a<$fixnum.Int64>(9, _omitFieldNames ? '' : 'actualAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(10, _omitFieldNames ? '' : 'notes')
+    ..aOS(11, _omitFieldNames ? '' : 'contributionId')
+    ..aOS(12, _omitFieldNames ? '' : 'groupId')
+    ..a<$core.int>(13, _omitFieldNames ? '' : 'attempts', $pb.PbFieldType.O3)
+    ..aOM<$1.Timestamp>(14, _omitFieldNames ? '' : 'lastAttemptAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(15, _omitFieldNames ? '' : 'nextAttemptAt', subBuilder: $1.Timestamp.create)
+    ..aOS(16, _omitFieldNames ? '' : 'failureReason')
+    ..aInt64(17, _omitFieldNames ? '' : 'version')
+    ..aOS(18, _omitFieldNames ? '' : 'payoutTransactionId')
     ..hasRequiredFields = false
   ;
 
@@ -1331,6 +1386,82 @@ class PayoutScheduleMessage extends $pb.GeneratedMessage {
   $core.bool hasNotes() => $_has(9);
   @$pb.TagNumber(10)
   void clearNotes() => $_clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get contributionId => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set contributionId($core.String value) => $_setString(10, value);
+  @$pb.TagNumber(11)
+  $core.bool hasContributionId() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearContributionId() => $_clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get groupId => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set groupId($core.String value) => $_setString(11, value);
+  @$pb.TagNumber(12)
+  $core.bool hasGroupId() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearGroupId() => $_clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.int get attempts => $_getIZ(12);
+  @$pb.TagNumber(13)
+  set attempts($core.int value) => $_setSignedInt32(12, value);
+  @$pb.TagNumber(13)
+  $core.bool hasAttempts() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearAttempts() => $_clearField(13);
+
+  @$pb.TagNumber(14)
+  $1.Timestamp get lastAttemptAt => $_getN(13);
+  @$pb.TagNumber(14)
+  set lastAttemptAt($1.Timestamp value) => $_setField(14, value);
+  @$pb.TagNumber(14)
+  $core.bool hasLastAttemptAt() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearLastAttemptAt() => $_clearField(14);
+  @$pb.TagNumber(14)
+  $1.Timestamp ensureLastAttemptAt() => $_ensure(13);
+
+  @$pb.TagNumber(15)
+  $1.Timestamp get nextAttemptAt => $_getN(14);
+  @$pb.TagNumber(15)
+  set nextAttemptAt($1.Timestamp value) => $_setField(15, value);
+  @$pb.TagNumber(15)
+  $core.bool hasNextAttemptAt() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearNextAttemptAt() => $_clearField(15);
+  @$pb.TagNumber(15)
+  $1.Timestamp ensureNextAttemptAt() => $_ensure(14);
+
+  @$pb.TagNumber(16)
+  $core.String get failureReason => $_getSZ(15);
+  @$pb.TagNumber(16)
+  set failureReason($core.String value) => $_setString(15, value);
+  @$pb.TagNumber(16)
+  $core.bool hasFailureReason() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearFailureReason() => $_clearField(16);
+
+  @$pb.TagNumber(17)
+  $fixnum.Int64 get version => $_getI64(16);
+  @$pb.TagNumber(17)
+  set version($fixnum.Int64 value) => $_setInt64(16, value);
+  @$pb.TagNumber(17)
+  $core.bool hasVersion() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearVersion() => $_clearField(17);
+
+  @$pb.TagNumber(18)
+  $core.String get payoutTransactionId => $_getSZ(17);
+  @$pb.TagNumber(18)
+  set payoutTransactionId($core.String value) => $_setString(17, value);
+  @$pb.TagNumber(18)
+  $core.bool hasPayoutTransactionId() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearPayoutTransactionId() => $_clearField(18);
 }
 
 class PayoutTransactionMessage extends $pb.GeneratedMessage {
@@ -1831,6 +1962,1372 @@ class ContributionTranscriptMessage extends $pb.GeneratedMessage {
   $core.bool hasMemberContributions() => $_has(7);
   @$pb.TagNumber(8)
   void clearMemberContributions() => $_clearField(8);
+}
+
+class PayoutReceiverMessage extends $pb.GeneratedMessage {
+  factory PayoutReceiverMessage({
+    $core.String? id,
+    $core.String? contributionId,
+    $core.int? cycleIndex,
+    $core.String? recipientUserId,
+    $core.String? recipientAccountId,
+    $core.String? recipientName,
+    $core.String? recipientUsername,
+    $core.String? assignedByUserId,
+    $1.Timestamp? assignedAt,
+    $1.Timestamp? clearedAt,
+    $core.String? note,
+  }) {
+    final result = create();
+    if (id != null) result.id = id;
+    if (contributionId != null) result.contributionId = contributionId;
+    if (cycleIndex != null) result.cycleIndex = cycleIndex;
+    if (recipientUserId != null) result.recipientUserId = recipientUserId;
+    if (recipientAccountId != null) result.recipientAccountId = recipientAccountId;
+    if (recipientName != null) result.recipientName = recipientName;
+    if (recipientUsername != null) result.recipientUsername = recipientUsername;
+    if (assignedByUserId != null) result.assignedByUserId = assignedByUserId;
+    if (assignedAt != null) result.assignedAt = assignedAt;
+    if (clearedAt != null) result.clearedAt = clearedAt;
+    if (note != null) result.note = note;
+    return result;
+  }
+
+  PayoutReceiverMessage._();
+
+  factory PayoutReceiverMessage.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
+  factory PayoutReceiverMessage.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'PayoutReceiverMessage', package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'contributionId')
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'cycleIndex', $pb.PbFieldType.O3)
+    ..aOS(4, _omitFieldNames ? '' : 'recipientUserId')
+    ..aOS(5, _omitFieldNames ? '' : 'recipientAccountId')
+    ..aOS(6, _omitFieldNames ? '' : 'recipientName')
+    ..aOS(7, _omitFieldNames ? '' : 'recipientUsername')
+    ..aOS(8, _omitFieldNames ? '' : 'assignedByUserId')
+    ..aOM<$1.Timestamp>(9, _omitFieldNames ? '' : 'assignedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(10, _omitFieldNames ? '' : 'clearedAt', subBuilder: $1.Timestamp.create)
+    ..aOS(11, _omitFieldNames ? '' : 'note')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  PayoutReceiverMessage clone() => PayoutReceiverMessage()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  PayoutReceiverMessage copyWith(void Function(PayoutReceiverMessage) updates) => super.copyWith((message) => updates(message as PayoutReceiverMessage)) as PayoutReceiverMessage;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static PayoutReceiverMessage create() => PayoutReceiverMessage._();
+  @$core.override
+  PayoutReceiverMessage createEmptyInstance() => create();
+  static $pb.PbList<PayoutReceiverMessage> createRepeated() => $pb.PbList<PayoutReceiverMessage>();
+  @$core.pragma('dart2js:noInline')
+  static PayoutReceiverMessage getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<PayoutReceiverMessage>(create);
+  static PayoutReceiverMessage? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get contributionId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set contributionId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasContributionId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearContributionId() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get cycleIndex => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set cycleIndex($core.int value) => $_setSignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasCycleIndex() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCycleIndex() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get recipientUserId => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set recipientUserId($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasRecipientUserId() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearRecipientUserId() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get recipientAccountId => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set recipientAccountId($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasRecipientAccountId() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearRecipientAccountId() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get recipientName => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set recipientName($core.String value) => $_setString(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasRecipientName() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearRecipientName() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get recipientUsername => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set recipientUsername($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasRecipientUsername() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearRecipientUsername() => $_clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get assignedByUserId => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set assignedByUserId($core.String value) => $_setString(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasAssignedByUserId() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearAssignedByUserId() => $_clearField(8);
+
+  @$pb.TagNumber(9)
+  $1.Timestamp get assignedAt => $_getN(8);
+  @$pb.TagNumber(9)
+  set assignedAt($1.Timestamp value) => $_setField(9, value);
+  @$pb.TagNumber(9)
+  $core.bool hasAssignedAt() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearAssignedAt() => $_clearField(9);
+  @$pb.TagNumber(9)
+  $1.Timestamp ensureAssignedAt() => $_ensure(8);
+
+  @$pb.TagNumber(10)
+  $1.Timestamp get clearedAt => $_getN(9);
+  @$pb.TagNumber(10)
+  set clearedAt($1.Timestamp value) => $_setField(10, value);
+  @$pb.TagNumber(10)
+  $core.bool hasClearedAt() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearClearedAt() => $_clearField(10);
+  @$pb.TagNumber(10)
+  $1.Timestamp ensureClearedAt() => $_ensure(9);
+
+  @$pb.TagNumber(11)
+  $core.String get note => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set note($core.String value) => $_setString(10, value);
+  @$pb.TagNumber(11)
+  $core.bool hasNote() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearNote() => $_clearField(11);
+}
+
+class ScheduledPayoutMessage extends $pb.GeneratedMessage {
+  factory ScheduledPayoutMessage({
+    $core.String? id,
+    $core.String? contributionId,
+    $core.int? cycleIndex,
+    ScheduledPayoutStatus? status,
+    $1.Timestamp? scheduledFor,
+    PayoutMode? payoutMode,
+    $core.String? contributionType,
+    $fixnum.Int64? amountMinor,
+    $core.String? currency,
+    $core.String? recipientUserId,
+    $core.String? recipientAccountId,
+    $core.String? recipientName,
+    $core.String? idempotencyKey,
+    $core.int? attempts,
+    $1.Timestamp? lastAttemptedAt,
+    $core.String? lastError,
+    $1.Timestamp? firedAt,
+    $1.Timestamp? settledAt,
+    $core.String? payoutTransactionId,
+    $fixnum.Int64? version,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? updatedAt,
+  }) {
+    final result = create();
+    if (id != null) result.id = id;
+    if (contributionId != null) result.contributionId = contributionId;
+    if (cycleIndex != null) result.cycleIndex = cycleIndex;
+    if (status != null) result.status = status;
+    if (scheduledFor != null) result.scheduledFor = scheduledFor;
+    if (payoutMode != null) result.payoutMode = payoutMode;
+    if (contributionType != null) result.contributionType = contributionType;
+    if (amountMinor != null) result.amountMinor = amountMinor;
+    if (currency != null) result.currency = currency;
+    if (recipientUserId != null) result.recipientUserId = recipientUserId;
+    if (recipientAccountId != null) result.recipientAccountId = recipientAccountId;
+    if (recipientName != null) result.recipientName = recipientName;
+    if (idempotencyKey != null) result.idempotencyKey = idempotencyKey;
+    if (attempts != null) result.attempts = attempts;
+    if (lastAttemptedAt != null) result.lastAttemptedAt = lastAttemptedAt;
+    if (lastError != null) result.lastError = lastError;
+    if (firedAt != null) result.firedAt = firedAt;
+    if (settledAt != null) result.settledAt = settledAt;
+    if (payoutTransactionId != null) result.payoutTransactionId = payoutTransactionId;
+    if (version != null) result.version = version;
+    if (createdAt != null) result.createdAt = createdAt;
+    if (updatedAt != null) result.updatedAt = updatedAt;
+    return result;
+  }
+
+  ScheduledPayoutMessage._();
+
+  factory ScheduledPayoutMessage.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
+  factory ScheduledPayoutMessage.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ScheduledPayoutMessage', package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'contributionId')
+    ..a<$core.int>(3, _omitFieldNames ? '' : 'cycleIndex', $pb.PbFieldType.O3)
+    ..e<ScheduledPayoutStatus>(4, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: ScheduledPayoutStatus.SCHEDULED_PAYOUT_STATUS_UNSPECIFIED, valueOf: ScheduledPayoutStatus.valueOf, enumValues: ScheduledPayoutStatus.values)
+    ..aOM<$1.Timestamp>(5, _omitFieldNames ? '' : 'scheduledFor', subBuilder: $1.Timestamp.create)
+    ..e<PayoutMode>(6, _omitFieldNames ? '' : 'payoutMode', $pb.PbFieldType.OE, defaultOrMaker: PayoutMode.PAYOUT_MODE_UNSPECIFIED, valueOf: PayoutMode.valueOf, enumValues: PayoutMode.values)
+    ..aOS(7, _omitFieldNames ? '' : 'contributionType')
+    ..a<$fixnum.Int64>(8, _omitFieldNames ? '' : 'amountMinor', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(9, _omitFieldNames ? '' : 'currency')
+    ..aOS(10, _omitFieldNames ? '' : 'recipientUserId')
+    ..aOS(11, _omitFieldNames ? '' : 'recipientAccountId')
+    ..aOS(12, _omitFieldNames ? '' : 'recipientName')
+    ..aOS(13, _omitFieldNames ? '' : 'idempotencyKey')
+    ..a<$core.int>(14, _omitFieldNames ? '' : 'attempts', $pb.PbFieldType.O3)
+    ..aOM<$1.Timestamp>(15, _omitFieldNames ? '' : 'lastAttemptedAt', subBuilder: $1.Timestamp.create)
+    ..aOS(16, _omitFieldNames ? '' : 'lastError')
+    ..aOM<$1.Timestamp>(17, _omitFieldNames ? '' : 'firedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(18, _omitFieldNames ? '' : 'settledAt', subBuilder: $1.Timestamp.create)
+    ..aOS(19, _omitFieldNames ? '' : 'payoutTransactionId')
+    ..aInt64(20, _omitFieldNames ? '' : 'version')
+    ..aOM<$1.Timestamp>(21, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(22, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ScheduledPayoutMessage clone() => ScheduledPayoutMessage()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ScheduledPayoutMessage copyWith(void Function(ScheduledPayoutMessage) updates) => super.copyWith((message) => updates(message as ScheduledPayoutMessage)) as ScheduledPayoutMessage;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ScheduledPayoutMessage create() => ScheduledPayoutMessage._();
+  @$core.override
+  ScheduledPayoutMessage createEmptyInstance() => create();
+  static $pb.PbList<ScheduledPayoutMessage> createRepeated() => $pb.PbList<ScheduledPayoutMessage>();
+  @$core.pragma('dart2js:noInline')
+  static ScheduledPayoutMessage getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ScheduledPayoutMessage>(create);
+  static ScheduledPayoutMessage? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get contributionId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set contributionId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasContributionId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearContributionId() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get cycleIndex => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set cycleIndex($core.int value) => $_setSignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasCycleIndex() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCycleIndex() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  ScheduledPayoutStatus get status => $_getN(3);
+  @$pb.TagNumber(4)
+  set status(ScheduledPayoutStatus value) => $_setField(4, value);
+  @$pb.TagNumber(4)
+  $core.bool hasStatus() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearStatus() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $1.Timestamp get scheduledFor => $_getN(4);
+  @$pb.TagNumber(5)
+  set scheduledFor($1.Timestamp value) => $_setField(5, value);
+  @$pb.TagNumber(5)
+  $core.bool hasScheduledFor() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearScheduledFor() => $_clearField(5);
+  @$pb.TagNumber(5)
+  $1.Timestamp ensureScheduledFor() => $_ensure(4);
+
+  @$pb.TagNumber(6)
+  PayoutMode get payoutMode => $_getN(5);
+  @$pb.TagNumber(6)
+  set payoutMode(PayoutMode value) => $_setField(6, value);
+  @$pb.TagNumber(6)
+  $core.bool hasPayoutMode() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearPayoutMode() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get contributionType => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set contributionType($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasContributionType() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearContributionType() => $_clearField(7);
+
+  @$pb.TagNumber(8)
+  $fixnum.Int64 get amountMinor => $_getI64(7);
+  @$pb.TagNumber(8)
+  set amountMinor($fixnum.Int64 value) => $_setInt64(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasAmountMinor() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearAmountMinor() => $_clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get currency => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set currency($core.String value) => $_setString(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasCurrency() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearCurrency() => $_clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get recipientUserId => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set recipientUserId($core.String value) => $_setString(9, value);
+  @$pb.TagNumber(10)
+  $core.bool hasRecipientUserId() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearRecipientUserId() => $_clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get recipientAccountId => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set recipientAccountId($core.String value) => $_setString(10, value);
+  @$pb.TagNumber(11)
+  $core.bool hasRecipientAccountId() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearRecipientAccountId() => $_clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get recipientName => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set recipientName($core.String value) => $_setString(11, value);
+  @$pb.TagNumber(12)
+  $core.bool hasRecipientName() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearRecipientName() => $_clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.String get idempotencyKey => $_getSZ(12);
+  @$pb.TagNumber(13)
+  set idempotencyKey($core.String value) => $_setString(12, value);
+  @$pb.TagNumber(13)
+  $core.bool hasIdempotencyKey() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearIdempotencyKey() => $_clearField(13);
+
+  @$pb.TagNumber(14)
+  $core.int get attempts => $_getIZ(13);
+  @$pb.TagNumber(14)
+  set attempts($core.int value) => $_setSignedInt32(13, value);
+  @$pb.TagNumber(14)
+  $core.bool hasAttempts() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearAttempts() => $_clearField(14);
+
+  @$pb.TagNumber(15)
+  $1.Timestamp get lastAttemptedAt => $_getN(14);
+  @$pb.TagNumber(15)
+  set lastAttemptedAt($1.Timestamp value) => $_setField(15, value);
+  @$pb.TagNumber(15)
+  $core.bool hasLastAttemptedAt() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearLastAttemptedAt() => $_clearField(15);
+  @$pb.TagNumber(15)
+  $1.Timestamp ensureLastAttemptedAt() => $_ensure(14);
+
+  @$pb.TagNumber(16)
+  $core.String get lastError => $_getSZ(15);
+  @$pb.TagNumber(16)
+  set lastError($core.String value) => $_setString(15, value);
+  @$pb.TagNumber(16)
+  $core.bool hasLastError() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearLastError() => $_clearField(16);
+
+  @$pb.TagNumber(17)
+  $1.Timestamp get firedAt => $_getN(16);
+  @$pb.TagNumber(17)
+  set firedAt($1.Timestamp value) => $_setField(17, value);
+  @$pb.TagNumber(17)
+  $core.bool hasFiredAt() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearFiredAt() => $_clearField(17);
+  @$pb.TagNumber(17)
+  $1.Timestamp ensureFiredAt() => $_ensure(16);
+
+  @$pb.TagNumber(18)
+  $1.Timestamp get settledAt => $_getN(17);
+  @$pb.TagNumber(18)
+  set settledAt($1.Timestamp value) => $_setField(18, value);
+  @$pb.TagNumber(18)
+  $core.bool hasSettledAt() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearSettledAt() => $_clearField(18);
+  @$pb.TagNumber(18)
+  $1.Timestamp ensureSettledAt() => $_ensure(17);
+
+  @$pb.TagNumber(19)
+  $core.String get payoutTransactionId => $_getSZ(18);
+  @$pb.TagNumber(19)
+  set payoutTransactionId($core.String value) => $_setString(18, value);
+  @$pb.TagNumber(19)
+  $core.bool hasPayoutTransactionId() => $_has(18);
+  @$pb.TagNumber(19)
+  void clearPayoutTransactionId() => $_clearField(19);
+
+  @$pb.TagNumber(20)
+  $fixnum.Int64 get version => $_getI64(19);
+  @$pb.TagNumber(20)
+  set version($fixnum.Int64 value) => $_setInt64(19, value);
+  @$pb.TagNumber(20)
+  $core.bool hasVersion() => $_has(19);
+  @$pb.TagNumber(20)
+  void clearVersion() => $_clearField(20);
+
+  @$pb.TagNumber(21)
+  $1.Timestamp get createdAt => $_getN(20);
+  @$pb.TagNumber(21)
+  set createdAt($1.Timestamp value) => $_setField(21, value);
+  @$pb.TagNumber(21)
+  $core.bool hasCreatedAt() => $_has(20);
+  @$pb.TagNumber(21)
+  void clearCreatedAt() => $_clearField(21);
+  @$pb.TagNumber(21)
+  $1.Timestamp ensureCreatedAt() => $_ensure(20);
+
+  @$pb.TagNumber(22)
+  $1.Timestamp get updatedAt => $_getN(21);
+  @$pb.TagNumber(22)
+  set updatedAt($1.Timestamp value) => $_setField(22, value);
+  @$pb.TagNumber(22)
+  $core.bool hasUpdatedAt() => $_has(21);
+  @$pb.TagNumber(22)
+  void clearUpdatedAt() => $_clearField(22);
+  @$pb.TagNumber(22)
+  $1.Timestamp ensureUpdatedAt() => $_ensure(21);
+}
+
+class PayoutEventMessage extends $pb.GeneratedMessage {
+  factory PayoutEventMessage({
+    $core.String? id,
+    $core.String? payoutId,
+    $core.String? contributionId,
+    $core.int? cycleIndex,
+    $core.String? eventType,
+    $core.String? payload,
+    $core.String? actorUserId,
+    $1.Timestamp? occurredAt,
+  }) {
+    final result = create();
+    if (id != null) result.id = id;
+    if (payoutId != null) result.payoutId = payoutId;
+    if (contributionId != null) result.contributionId = contributionId;
+    if (cycleIndex != null) result.cycleIndex = cycleIndex;
+    if (eventType != null) result.eventType = eventType;
+    if (payload != null) result.payload = payload;
+    if (actorUserId != null) result.actorUserId = actorUserId;
+    if (occurredAt != null) result.occurredAt = occurredAt;
+    return result;
+  }
+
+  PayoutEventMessage._();
+
+  factory PayoutEventMessage.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
+  factory PayoutEventMessage.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'PayoutEventMessage', package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'id')
+    ..aOS(2, _omitFieldNames ? '' : 'payoutId')
+    ..aOS(3, _omitFieldNames ? '' : 'contributionId')
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'cycleIndex', $pb.PbFieldType.O3)
+    ..aOS(5, _omitFieldNames ? '' : 'eventType')
+    ..aOS(6, _omitFieldNames ? '' : 'payload')
+    ..aOS(7, _omitFieldNames ? '' : 'actorUserId')
+    ..aOM<$1.Timestamp>(8, _omitFieldNames ? '' : 'occurredAt', subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  PayoutEventMessage clone() => PayoutEventMessage()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  PayoutEventMessage copyWith(void Function(PayoutEventMessage) updates) => super.copyWith((message) => updates(message as PayoutEventMessage)) as PayoutEventMessage;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static PayoutEventMessage create() => PayoutEventMessage._();
+  @$core.override
+  PayoutEventMessage createEmptyInstance() => create();
+  static $pb.PbList<PayoutEventMessage> createRepeated() => $pb.PbList<PayoutEventMessage>();
+  @$core.pragma('dart2js:noInline')
+  static PayoutEventMessage getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<PayoutEventMessage>(create);
+  static PayoutEventMessage? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get payoutId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set payoutId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasPayoutId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPayoutId() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get contributionId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set contributionId($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasContributionId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearContributionId() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get cycleIndex => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set cycleIndex($core.int value) => $_setSignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasCycleIndex() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCycleIndex() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get eventType => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set eventType($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasEventType() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearEventType() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get payload => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set payload($core.String value) => $_setString(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasPayload() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearPayload() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get actorUserId => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set actorUserId($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasActorUserId() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearActorUserId() => $_clearField(7);
+
+  @$pb.TagNumber(8)
+  $1.Timestamp get occurredAt => $_getN(7);
+  @$pb.TagNumber(8)
+  set occurredAt($1.Timestamp value) => $_setField(8, value);
+  @$pb.TagNumber(8)
+  $core.bool hasOccurredAt() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearOccurredAt() => $_clearField(8);
+  @$pb.TagNumber(8)
+  $1.Timestamp ensureOccurredAt() => $_ensure(7);
+}
+
+class SetPayoutReceiverRequest extends $pb.GeneratedMessage {
+  factory SetPayoutReceiverRequest({
+    $core.String? contributionId,
+    $core.int? cycleIndex,
+    $core.String? recipientUserId,
+    $core.String? recipientAccountId,
+    $core.String? note,
+  }) {
+    final result = create();
+    if (contributionId != null) result.contributionId = contributionId;
+    if (cycleIndex != null) result.cycleIndex = cycleIndex;
+    if (recipientUserId != null) result.recipientUserId = recipientUserId;
+    if (recipientAccountId != null) result.recipientAccountId = recipientAccountId;
+    if (note != null) result.note = note;
+    return result;
+  }
+
+  SetPayoutReceiverRequest._();
+
+  factory SetPayoutReceiverRequest.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
+  factory SetPayoutReceiverRequest.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SetPayoutReceiverRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'contributionId')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'cycleIndex', $pb.PbFieldType.O3)
+    ..aOS(3, _omitFieldNames ? '' : 'recipientUserId')
+    ..aOS(4, _omitFieldNames ? '' : 'recipientAccountId')
+    ..aOS(5, _omitFieldNames ? '' : 'note')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SetPayoutReceiverRequest clone() => SetPayoutReceiverRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SetPayoutReceiverRequest copyWith(void Function(SetPayoutReceiverRequest) updates) => super.copyWith((message) => updates(message as SetPayoutReceiverRequest)) as SetPayoutReceiverRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SetPayoutReceiverRequest create() => SetPayoutReceiverRequest._();
+  @$core.override
+  SetPayoutReceiverRequest createEmptyInstance() => create();
+  static $pb.PbList<SetPayoutReceiverRequest> createRepeated() => $pb.PbList<SetPayoutReceiverRequest>();
+  @$core.pragma('dart2js:noInline')
+  static SetPayoutReceiverRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SetPayoutReceiverRequest>(create);
+  static SetPayoutReceiverRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get contributionId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set contributionId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasContributionId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearContributionId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get cycleIndex => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set cycleIndex($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasCycleIndex() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCycleIndex() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get recipientUserId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set recipientUserId($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasRecipientUserId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearRecipientUserId() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get recipientAccountId => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set recipientAccountId($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasRecipientAccountId() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearRecipientAccountId() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get note => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set note($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasNote() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearNote() => $_clearField(5);
+}
+
+class SetPayoutReceiverResponse extends $pb.GeneratedMessage {
+  factory SetPayoutReceiverResponse({
+    PayoutReceiverMessage? receiver,
+    ScheduledPayoutMessage? scheduledPayout,
+  }) {
+    final result = create();
+    if (receiver != null) result.receiver = receiver;
+    if (scheduledPayout != null) result.scheduledPayout = scheduledPayout;
+    return result;
+  }
+
+  SetPayoutReceiverResponse._();
+
+  factory SetPayoutReceiverResponse.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
+  factory SetPayoutReceiverResponse.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'SetPayoutReceiverResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'), createEmptyInstance: create)
+    ..aOM<PayoutReceiverMessage>(1, _omitFieldNames ? '' : 'receiver', subBuilder: PayoutReceiverMessage.create)
+    ..aOM<ScheduledPayoutMessage>(2, _omitFieldNames ? '' : 'scheduledPayout', subBuilder: ScheduledPayoutMessage.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SetPayoutReceiverResponse clone() => SetPayoutReceiverResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SetPayoutReceiverResponse copyWith(void Function(SetPayoutReceiverResponse) updates) => super.copyWith((message) => updates(message as SetPayoutReceiverResponse)) as SetPayoutReceiverResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SetPayoutReceiverResponse create() => SetPayoutReceiverResponse._();
+  @$core.override
+  SetPayoutReceiverResponse createEmptyInstance() => create();
+  static $pb.PbList<SetPayoutReceiverResponse> createRepeated() => $pb.PbList<SetPayoutReceiverResponse>();
+  @$core.pragma('dart2js:noInline')
+  static SetPayoutReceiverResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SetPayoutReceiverResponse>(create);
+  static SetPayoutReceiverResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  PayoutReceiverMessage get receiver => $_getN(0);
+  @$pb.TagNumber(1)
+  set receiver(PayoutReceiverMessage value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasReceiver() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearReceiver() => $_clearField(1);
+  @$pb.TagNumber(1)
+  PayoutReceiverMessage ensureReceiver() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  ScheduledPayoutMessage get scheduledPayout => $_getN(1);
+  @$pb.TagNumber(2)
+  set scheduledPayout(ScheduledPayoutMessage value) => $_setField(2, value);
+  @$pb.TagNumber(2)
+  $core.bool hasScheduledPayout() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearScheduledPayout() => $_clearField(2);
+  @$pb.TagNumber(2)
+  ScheduledPayoutMessage ensureScheduledPayout() => $_ensure(1);
+}
+
+class GetPayoutReceiverRequest extends $pb.GeneratedMessage {
+  factory GetPayoutReceiverRequest({
+    $core.String? contributionId,
+    $core.int? cycleIndex,
+  }) {
+    final result = create();
+    if (contributionId != null) result.contributionId = contributionId;
+    if (cycleIndex != null) result.cycleIndex = cycleIndex;
+    return result;
+  }
+
+  GetPayoutReceiverRequest._();
+
+  factory GetPayoutReceiverRequest.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
+  factory GetPayoutReceiverRequest.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetPayoutReceiverRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'contributionId')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'cycleIndex', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetPayoutReceiverRequest clone() => GetPayoutReceiverRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetPayoutReceiverRequest copyWith(void Function(GetPayoutReceiverRequest) updates) => super.copyWith((message) => updates(message as GetPayoutReceiverRequest)) as GetPayoutReceiverRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetPayoutReceiverRequest create() => GetPayoutReceiverRequest._();
+  @$core.override
+  GetPayoutReceiverRequest createEmptyInstance() => create();
+  static $pb.PbList<GetPayoutReceiverRequest> createRepeated() => $pb.PbList<GetPayoutReceiverRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetPayoutReceiverRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetPayoutReceiverRequest>(create);
+  static GetPayoutReceiverRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get contributionId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set contributionId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasContributionId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearContributionId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get cycleIndex => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set cycleIndex($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasCycleIndex() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCycleIndex() => $_clearField(2);
+}
+
+class GetPayoutReceiverResponse extends $pb.GeneratedMessage {
+  factory GetPayoutReceiverResponse({
+    PayoutReceiverMessage? receiver,
+    ScheduledPayoutMessage? scheduledPayout,
+  }) {
+    final result = create();
+    if (receiver != null) result.receiver = receiver;
+    if (scheduledPayout != null) result.scheduledPayout = scheduledPayout;
+    return result;
+  }
+
+  GetPayoutReceiverResponse._();
+
+  factory GetPayoutReceiverResponse.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
+  factory GetPayoutReceiverResponse.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetPayoutReceiverResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'), createEmptyInstance: create)
+    ..aOM<PayoutReceiverMessage>(1, _omitFieldNames ? '' : 'receiver', subBuilder: PayoutReceiverMessage.create)
+    ..aOM<ScheduledPayoutMessage>(2, _omitFieldNames ? '' : 'scheduledPayout', subBuilder: ScheduledPayoutMessage.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetPayoutReceiverResponse clone() => GetPayoutReceiverResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetPayoutReceiverResponse copyWith(void Function(GetPayoutReceiverResponse) updates) => super.copyWith((message) => updates(message as GetPayoutReceiverResponse)) as GetPayoutReceiverResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetPayoutReceiverResponse create() => GetPayoutReceiverResponse._();
+  @$core.override
+  GetPayoutReceiverResponse createEmptyInstance() => create();
+  static $pb.PbList<GetPayoutReceiverResponse> createRepeated() => $pb.PbList<GetPayoutReceiverResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetPayoutReceiverResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetPayoutReceiverResponse>(create);
+  static GetPayoutReceiverResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  PayoutReceiverMessage get receiver => $_getN(0);
+  @$pb.TagNumber(1)
+  set receiver(PayoutReceiverMessage value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasReceiver() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearReceiver() => $_clearField(1);
+  @$pb.TagNumber(1)
+  PayoutReceiverMessage ensureReceiver() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  ScheduledPayoutMessage get scheduledPayout => $_getN(1);
+  @$pb.TagNumber(2)
+  set scheduledPayout(ScheduledPayoutMessage value) => $_setField(2, value);
+  @$pb.TagNumber(2)
+  $core.bool hasScheduledPayout() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearScheduledPayout() => $_clearField(2);
+  @$pb.TagNumber(2)
+  ScheduledPayoutMessage ensureScheduledPayout() => $_ensure(1);
+}
+
+class ClearPayoutReceiverRequest extends $pb.GeneratedMessage {
+  factory ClearPayoutReceiverRequest({
+    $core.String? contributionId,
+    $core.int? cycleIndex,
+  }) {
+    final result = create();
+    if (contributionId != null) result.contributionId = contributionId;
+    if (cycleIndex != null) result.cycleIndex = cycleIndex;
+    return result;
+  }
+
+  ClearPayoutReceiverRequest._();
+
+  factory ClearPayoutReceiverRequest.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
+  factory ClearPayoutReceiverRequest.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ClearPayoutReceiverRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'contributionId')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'cycleIndex', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ClearPayoutReceiverRequest clone() => ClearPayoutReceiverRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ClearPayoutReceiverRequest copyWith(void Function(ClearPayoutReceiverRequest) updates) => super.copyWith((message) => updates(message as ClearPayoutReceiverRequest)) as ClearPayoutReceiverRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ClearPayoutReceiverRequest create() => ClearPayoutReceiverRequest._();
+  @$core.override
+  ClearPayoutReceiverRequest createEmptyInstance() => create();
+  static $pb.PbList<ClearPayoutReceiverRequest> createRepeated() => $pb.PbList<ClearPayoutReceiverRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ClearPayoutReceiverRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ClearPayoutReceiverRequest>(create);
+  static ClearPayoutReceiverRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get contributionId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set contributionId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasContributionId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearContributionId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get cycleIndex => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set cycleIndex($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasCycleIndex() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCycleIndex() => $_clearField(2);
+}
+
+class ClearPayoutReceiverResponse extends $pb.GeneratedMessage {
+  factory ClearPayoutReceiverResponse({
+    $core.bool? cleared,
+    ScheduledPayoutMessage? scheduledPayout,
+  }) {
+    final result = create();
+    if (cleared != null) result.cleared = cleared;
+    if (scheduledPayout != null) result.scheduledPayout = scheduledPayout;
+    return result;
+  }
+
+  ClearPayoutReceiverResponse._();
+
+  factory ClearPayoutReceiverResponse.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
+  factory ClearPayoutReceiverResponse.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ClearPayoutReceiverResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'), createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'cleared')
+    ..aOM<ScheduledPayoutMessage>(2, _omitFieldNames ? '' : 'scheduledPayout', subBuilder: ScheduledPayoutMessage.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ClearPayoutReceiverResponse clone() => ClearPayoutReceiverResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ClearPayoutReceiverResponse copyWith(void Function(ClearPayoutReceiverResponse) updates) => super.copyWith((message) => updates(message as ClearPayoutReceiverResponse)) as ClearPayoutReceiverResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ClearPayoutReceiverResponse create() => ClearPayoutReceiverResponse._();
+  @$core.override
+  ClearPayoutReceiverResponse createEmptyInstance() => create();
+  static $pb.PbList<ClearPayoutReceiverResponse> createRepeated() => $pb.PbList<ClearPayoutReceiverResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ClearPayoutReceiverResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ClearPayoutReceiverResponse>(create);
+  static ClearPayoutReceiverResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get cleared => $_getBF(0);
+  @$pb.TagNumber(1)
+  set cleared($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasCleared() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCleared() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  ScheduledPayoutMessage get scheduledPayout => $_getN(1);
+  @$pb.TagNumber(2)
+  set scheduledPayout(ScheduledPayoutMessage value) => $_setField(2, value);
+  @$pb.TagNumber(2)
+  $core.bool hasScheduledPayout() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearScheduledPayout() => $_clearField(2);
+  @$pb.TagNumber(2)
+  ScheduledPayoutMessage ensureScheduledPayout() => $_ensure(1);
+}
+
+class TriggerManualPayoutRequest extends $pb.GeneratedMessage {
+  factory TriggerManualPayoutRequest({
+    $core.String? contributionId,
+    $core.int? cycleIndex,
+  }) {
+    final result = create();
+    if (contributionId != null) result.contributionId = contributionId;
+    if (cycleIndex != null) result.cycleIndex = cycleIndex;
+    return result;
+  }
+
+  TriggerManualPayoutRequest._();
+
+  factory TriggerManualPayoutRequest.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
+  factory TriggerManualPayoutRequest.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'TriggerManualPayoutRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'contributionId')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'cycleIndex', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  TriggerManualPayoutRequest clone() => TriggerManualPayoutRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  TriggerManualPayoutRequest copyWith(void Function(TriggerManualPayoutRequest) updates) => super.copyWith((message) => updates(message as TriggerManualPayoutRequest)) as TriggerManualPayoutRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static TriggerManualPayoutRequest create() => TriggerManualPayoutRequest._();
+  @$core.override
+  TriggerManualPayoutRequest createEmptyInstance() => create();
+  static $pb.PbList<TriggerManualPayoutRequest> createRepeated() => $pb.PbList<TriggerManualPayoutRequest>();
+  @$core.pragma('dart2js:noInline')
+  static TriggerManualPayoutRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<TriggerManualPayoutRequest>(create);
+  static TriggerManualPayoutRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get contributionId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set contributionId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasContributionId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearContributionId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get cycleIndex => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set cycleIndex($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasCycleIndex() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCycleIndex() => $_clearField(2);
+}
+
+class TriggerManualPayoutResponse extends $pb.GeneratedMessage {
+  factory TriggerManualPayoutResponse({
+    ScheduledPayoutMessage? scheduledPayout,
+  }) {
+    final result = create();
+    if (scheduledPayout != null) result.scheduledPayout = scheduledPayout;
+    return result;
+  }
+
+  TriggerManualPayoutResponse._();
+
+  factory TriggerManualPayoutResponse.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
+  factory TriggerManualPayoutResponse.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'TriggerManualPayoutResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'), createEmptyInstance: create)
+    ..aOM<ScheduledPayoutMessage>(1, _omitFieldNames ? '' : 'scheduledPayout', subBuilder: ScheduledPayoutMessage.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  TriggerManualPayoutResponse clone() => TriggerManualPayoutResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  TriggerManualPayoutResponse copyWith(void Function(TriggerManualPayoutResponse) updates) => super.copyWith((message) => updates(message as TriggerManualPayoutResponse)) as TriggerManualPayoutResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static TriggerManualPayoutResponse create() => TriggerManualPayoutResponse._();
+  @$core.override
+  TriggerManualPayoutResponse createEmptyInstance() => create();
+  static $pb.PbList<TriggerManualPayoutResponse> createRepeated() => $pb.PbList<TriggerManualPayoutResponse>();
+  @$core.pragma('dart2js:noInline')
+  static TriggerManualPayoutResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<TriggerManualPayoutResponse>(create);
+  static TriggerManualPayoutResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  ScheduledPayoutMessage get scheduledPayout => $_getN(0);
+  @$pb.TagNumber(1)
+  set scheduledPayout(ScheduledPayoutMessage value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasScheduledPayout() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearScheduledPayout() => $_clearField(1);
+  @$pb.TagNumber(1)
+  ScheduledPayoutMessage ensureScheduledPayout() => $_ensure(0);
+}
+
+class ListScheduledPayoutsRequest extends $pb.GeneratedMessage {
+  factory ListScheduledPayoutsRequest({
+    $core.String? contributionId,
+    $core.String? groupId,
+    $core.Iterable<ScheduledPayoutStatus>? statuses,
+    $core.int? limit,
+    $core.int? offset,
+  }) {
+    final result = create();
+    if (contributionId != null) result.contributionId = contributionId;
+    if (groupId != null) result.groupId = groupId;
+    if (statuses != null) result.statuses.addAll(statuses);
+    if (limit != null) result.limit = limit;
+    if (offset != null) result.offset = offset;
+    return result;
+  }
+
+  ListScheduledPayoutsRequest._();
+
+  factory ListScheduledPayoutsRequest.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
+  factory ListScheduledPayoutsRequest.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ListScheduledPayoutsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'contributionId')
+    ..aOS(2, _omitFieldNames ? '' : 'groupId')
+    ..pc<ScheduledPayoutStatus>(3, _omitFieldNames ? '' : 'statuses', $pb.PbFieldType.KE, valueOf: ScheduledPayoutStatus.valueOf, enumValues: ScheduledPayoutStatus.values, defaultEnumValue: ScheduledPayoutStatus.SCHEDULED_PAYOUT_STATUS_UNSPECIFIED)
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'limit', $pb.PbFieldType.O3)
+    ..a<$core.int>(5, _omitFieldNames ? '' : 'offset', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListScheduledPayoutsRequest clone() => ListScheduledPayoutsRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListScheduledPayoutsRequest copyWith(void Function(ListScheduledPayoutsRequest) updates) => super.copyWith((message) => updates(message as ListScheduledPayoutsRequest)) as ListScheduledPayoutsRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ListScheduledPayoutsRequest create() => ListScheduledPayoutsRequest._();
+  @$core.override
+  ListScheduledPayoutsRequest createEmptyInstance() => create();
+  static $pb.PbList<ListScheduledPayoutsRequest> createRepeated() => $pb.PbList<ListScheduledPayoutsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ListScheduledPayoutsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ListScheduledPayoutsRequest>(create);
+  static ListScheduledPayoutsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get contributionId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set contributionId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasContributionId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearContributionId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get groupId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set groupId($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasGroupId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearGroupId() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $pb.PbList<ScheduledPayoutStatus> get statuses => $_getList(2);
+
+  @$pb.TagNumber(4)
+  $core.int get limit => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set limit($core.int value) => $_setSignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasLimit() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearLimit() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get offset => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set offset($core.int value) => $_setSignedInt32(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasOffset() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearOffset() => $_clearField(5);
+}
+
+class ListScheduledPayoutsResponse extends $pb.GeneratedMessage {
+  factory ListScheduledPayoutsResponse({
+    $core.Iterable<ScheduledPayoutMessage>? payouts,
+    $core.int? total,
+  }) {
+    final result = create();
+    if (payouts != null) result.payouts.addAll(payouts);
+    if (total != null) result.total = total;
+    return result;
+  }
+
+  ListScheduledPayoutsResponse._();
+
+  factory ListScheduledPayoutsResponse.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
+  factory ListScheduledPayoutsResponse.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ListScheduledPayoutsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'), createEmptyInstance: create)
+    ..pc<ScheduledPayoutMessage>(1, _omitFieldNames ? '' : 'payouts', $pb.PbFieldType.PM, subBuilder: ScheduledPayoutMessage.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListScheduledPayoutsResponse clone() => ListScheduledPayoutsResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  ListScheduledPayoutsResponse copyWith(void Function(ListScheduledPayoutsResponse) updates) => super.copyWith((message) => updates(message as ListScheduledPayoutsResponse)) as ListScheduledPayoutsResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static ListScheduledPayoutsResponse create() => ListScheduledPayoutsResponse._();
+  @$core.override
+  ListScheduledPayoutsResponse createEmptyInstance() => create();
+  static $pb.PbList<ListScheduledPayoutsResponse> createRepeated() => $pb.PbList<ListScheduledPayoutsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ListScheduledPayoutsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ListScheduledPayoutsResponse>(create);
+  static ListScheduledPayoutsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<ScheduledPayoutMessage> get payouts => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get total => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set total($core.int value) => $_setSignedInt32(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasTotal() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotal() => $_clearField(2);
+}
+
+class GetScheduledPayoutRequest extends $pb.GeneratedMessage {
+  factory GetScheduledPayoutRequest({
+    $core.String? payoutId,
+  }) {
+    final result = create();
+    if (payoutId != null) result.payoutId = payoutId;
+    return result;
+  }
+
+  GetScheduledPayoutRequest._();
+
+  factory GetScheduledPayoutRequest.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
+  factory GetScheduledPayoutRequest.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetScheduledPayoutRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'payoutId')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetScheduledPayoutRequest clone() => GetScheduledPayoutRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetScheduledPayoutRequest copyWith(void Function(GetScheduledPayoutRequest) updates) => super.copyWith((message) => updates(message as GetScheduledPayoutRequest)) as GetScheduledPayoutRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetScheduledPayoutRequest create() => GetScheduledPayoutRequest._();
+  @$core.override
+  GetScheduledPayoutRequest createEmptyInstance() => create();
+  static $pb.PbList<GetScheduledPayoutRequest> createRepeated() => $pb.PbList<GetScheduledPayoutRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetScheduledPayoutRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetScheduledPayoutRequest>(create);
+  static GetScheduledPayoutRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get payoutId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set payoutId($core.String value) => $_setString(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasPayoutId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPayoutId() => $_clearField(1);
+}
+
+class GetScheduledPayoutResponse extends $pb.GeneratedMessage {
+  factory GetScheduledPayoutResponse({
+    ScheduledPayoutMessage? payout,
+    PayoutReceiverMessage? receiver,
+    $core.Iterable<PayoutEventMessage>? events,
+  }) {
+    final result = create();
+    if (payout != null) result.payout = payout;
+    if (receiver != null) result.receiver = receiver;
+    if (events != null) result.events.addAll(events);
+    return result;
+  }
+
+  GetScheduledPayoutResponse._();
+
+  factory GetScheduledPayoutResponse.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
+  factory GetScheduledPayoutResponse.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetScheduledPayoutResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'), createEmptyInstance: create)
+    ..aOM<ScheduledPayoutMessage>(1, _omitFieldNames ? '' : 'payout', subBuilder: ScheduledPayoutMessage.create)
+    ..aOM<PayoutReceiverMessage>(2, _omitFieldNames ? '' : 'receiver', subBuilder: PayoutReceiverMessage.create)
+    ..pc<PayoutEventMessage>(3, _omitFieldNames ? '' : 'events', $pb.PbFieldType.PM, subBuilder: PayoutEventMessage.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetScheduledPayoutResponse clone() => GetScheduledPayoutResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetScheduledPayoutResponse copyWith(void Function(GetScheduledPayoutResponse) updates) => super.copyWith((message) => updates(message as GetScheduledPayoutResponse)) as GetScheduledPayoutResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetScheduledPayoutResponse create() => GetScheduledPayoutResponse._();
+  @$core.override
+  GetScheduledPayoutResponse createEmptyInstance() => create();
+  static $pb.PbList<GetScheduledPayoutResponse> createRepeated() => $pb.PbList<GetScheduledPayoutResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetScheduledPayoutResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetScheduledPayoutResponse>(create);
+  static GetScheduledPayoutResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  ScheduledPayoutMessage get payout => $_getN(0);
+  @$pb.TagNumber(1)
+  set payout(ScheduledPayoutMessage value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasPayout() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPayout() => $_clearField(1);
+  @$pb.TagNumber(1)
+  ScheduledPayoutMessage ensurePayout() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  PayoutReceiverMessage get receiver => $_getN(1);
+  @$pb.TagNumber(2)
+  set receiver(PayoutReceiverMessage value) => $_setField(2, value);
+  @$pb.TagNumber(2)
+  $core.bool hasReceiver() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearReceiver() => $_clearField(2);
+  @$pb.TagNumber(2)
+  PayoutReceiverMessage ensureReceiver() => $_ensure(1);
+
+  @$pb.TagNumber(3)
+  $pb.PbList<PayoutEventMessage> get events => $_getList(2);
 }
 
 class CreateGroupRequest extends $pb.GeneratedMessage {
@@ -3031,6 +4528,7 @@ class CreateContributionRequest extends $pb.GeneratedMessage {
     $core.bool? allowPartialPayments,
     $fixnum.Int64? minimumBalance,
     $core.String? metadata,
+    $core.bool? autoPayoutEnabled,
   }) {
     final result = create();
     if (groupId != null) result.groupId = groupId;
@@ -3051,6 +4549,7 @@ class CreateContributionRequest extends $pb.GeneratedMessage {
     if (allowPartialPayments != null) result.allowPartialPayments = allowPartialPayments;
     if (minimumBalance != null) result.minimumBalance = minimumBalance;
     if (metadata != null) result.metadata = metadata;
+    if (autoPayoutEnabled != null) result.autoPayoutEnabled = autoPayoutEnabled;
     return result;
   }
 
@@ -3078,6 +4577,7 @@ class CreateContributionRequest extends $pb.GeneratedMessage {
     ..aOB(16, _omitFieldNames ? '' : 'allowPartialPayments')
     ..a<$fixnum.Int64>(17, _omitFieldNames ? '' : 'minimumBalance', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(18, _omitFieldNames ? '' : 'metadata')
+    ..aOB(19, _omitFieldNames ? '' : 'autoPayoutEnabled')
     ..hasRequiredFields = false
   ;
 
@@ -3257,6 +4757,18 @@ class CreateContributionRequest extends $pb.GeneratedMessage {
   $core.bool hasMetadata() => $_has(17);
   @$pb.TagNumber(18)
   void clearMetadata() => $_clearField(18);
+
+  /// Drives the payout scheduler: when true, the platform fires the
+  /// payout automatically once a receiver is set. When false, the
+  /// creator must press the manual-trigger CTA.
+  @$pb.TagNumber(19)
+  $core.bool get autoPayoutEnabled => $_getBF(18);
+  @$pb.TagNumber(19)
+  set autoPayoutEnabled($core.bool value) => $_setBool(18, value);
+  @$pb.TagNumber(19)
+  $core.bool hasAutoPayoutEnabled() => $_has(18);
+  @$pb.TagNumber(19)
+  void clearAutoPayoutEnabled() => $_clearField(19);
 }
 
 class CreateContributionResponse extends $pb.GeneratedMessage {
@@ -3546,6 +5058,8 @@ class UpdateContributionRequest extends $pb.GeneratedMessage {
     $1.Timestamp? deadline,
     ContributionStatus? status,
     $core.String? metadata,
+    $core.bool? autoPayoutEnabled,
+    $core.bool? autoPayoutEnabledSet,
   }) {
     final result = create();
     if (contributionId != null) result.contributionId = contributionId;
@@ -3555,6 +5069,8 @@ class UpdateContributionRequest extends $pb.GeneratedMessage {
     if (deadline != null) result.deadline = deadline;
     if (status != null) result.status = status;
     if (metadata != null) result.metadata = metadata;
+    if (autoPayoutEnabled != null) result.autoPayoutEnabled = autoPayoutEnabled;
+    if (autoPayoutEnabledSet != null) result.autoPayoutEnabledSet = autoPayoutEnabledSet;
     return result;
   }
 
@@ -3571,6 +5087,8 @@ class UpdateContributionRequest extends $pb.GeneratedMessage {
     ..aOM<$1.Timestamp>(5, _omitFieldNames ? '' : 'deadline', subBuilder: $1.Timestamp.create)
     ..e<ContributionStatus>(6, _omitFieldNames ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: ContributionStatus.CONTRIBUTION_STATUS_UNSPECIFIED, valueOf: ContributionStatus.valueOf, enumValues: ContributionStatus.values)
     ..aOS(7, _omitFieldNames ? '' : 'metadata')
+    ..aOB(8, _omitFieldNames ? '' : 'autoPayoutEnabled')
+    ..aOB(9, _omitFieldNames ? '' : 'autoPayoutEnabledSet')
     ..hasRequiredFields = false
   ;
 
@@ -3655,6 +5173,28 @@ class UpdateContributionRequest extends $pb.GeneratedMessage {
   $core.bool hasMetadata() => $_has(6);
   @$pb.TagNumber(7)
   void clearMetadata() => $_clearField(7);
+
+  /// Optional toggle. Wrapped in a oneof-style explicit "set" flag so
+  /// a caller that omits the field doesn't accidentally flip it to
+  /// false. The handler treats auto_payout_enabled_set=false as
+  /// "leave the existing value alone".
+  @$pb.TagNumber(8)
+  $core.bool get autoPayoutEnabled => $_getBF(7);
+  @$pb.TagNumber(8)
+  set autoPayoutEnabled($core.bool value) => $_setBool(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasAutoPayoutEnabled() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearAutoPayoutEnabled() => $_clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.bool get autoPayoutEnabledSet => $_getBF(8);
+  @$pb.TagNumber(9)
+  set autoPayoutEnabledSet($core.bool value) => $_setBool(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasAutoPayoutEnabledSet() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearAutoPayoutEnabledSet() => $_clearField(9);
 }
 
 class UpdateContributionResponse extends $pb.GeneratedMessage {
@@ -4587,76 +6127,6 @@ class ProcessScheduledPaymentsResponse extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(2)
   $pb.PbList<ContributionPaymentMessage> get paymentsProcessed => $_getList(1);
-}
-
-class GetOverdueContributionsRequest extends $pb.GeneratedMessage {
-  factory GetOverdueContributionsRequest() => create();
-
-  GetOverdueContributionsRequest._();
-
-  factory GetOverdueContributionsRequest.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
-  factory GetOverdueContributionsRequest.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetOverdueContributionsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'), createEmptyInstance: create)
-    ..hasRequiredFields = false
-  ;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  GetOverdueContributionsRequest clone() => GetOverdueContributionsRequest()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  GetOverdueContributionsRequest copyWith(void Function(GetOverdueContributionsRequest) updates) => super.copyWith((message) => updates(message as GetOverdueContributionsRequest)) as GetOverdueContributionsRequest;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static GetOverdueContributionsRequest create() => GetOverdueContributionsRequest._();
-  @$core.override
-  GetOverdueContributionsRequest createEmptyInstance() => create();
-  static $pb.PbList<GetOverdueContributionsRequest> createRepeated() => $pb.PbList<GetOverdueContributionsRequest>();
-  @$core.pragma('dart2js:noInline')
-  static GetOverdueContributionsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetOverdueContributionsRequest>(create);
-  static GetOverdueContributionsRequest? _defaultInstance;
-}
-
-class GetOverdueContributionsResponse extends $pb.GeneratedMessage {
-  factory GetOverdueContributionsResponse({
-    $core.Iterable<ContributionMessage>? contributions,
-  }) {
-    final result = create();
-    if (contributions != null) result.contributions.addAll(contributions);
-    return result;
-  }
-
-  GetOverdueContributionsResponse._();
-
-  factory GetOverdueContributionsResponse.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
-  factory GetOverdueContributionsResponse.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetOverdueContributionsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'), createEmptyInstance: create)
-    ..pc<ContributionMessage>(1, _omitFieldNames ? '' : 'contributions', $pb.PbFieldType.PM, subBuilder: ContributionMessage.create)
-    ..hasRequiredFields = false
-  ;
-
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  GetOverdueContributionsResponse clone() => GetOverdueContributionsResponse()..mergeFromMessage(this);
-  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
-  GetOverdueContributionsResponse copyWith(void Function(GetOverdueContributionsResponse) updates) => super.copyWith((message) => updates(message as GetOverdueContributionsResponse)) as GetOverdueContributionsResponse;
-
-  @$core.override
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static GetOverdueContributionsResponse create() => GetOverdueContributionsResponse._();
-  @$core.override
-  GetOverdueContributionsResponse createEmptyInstance() => create();
-  static $pb.PbList<GetOverdueContributionsResponse> createRepeated() => $pb.PbList<GetOverdueContributionsResponse>();
-  @$core.pragma('dart2js:noInline')
-  static GetOverdueContributionsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetOverdueContributionsResponse>(create);
-  static GetOverdueContributionsResponse? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $pb.PbList<ContributionMessage> get contributions => $_getList(0);
 }
 
 class GetPayoutScheduleRequest extends $pb.GeneratedMessage {
@@ -5637,6 +7107,76 @@ class GetUserContributionStatsResponse extends $pb.GeneratedMessage {
   $core.bool hasAveragePayment() => $_has(3);
   @$pb.TagNumber(4)
   void clearAveragePayment() => $_clearField(4);
+}
+
+class GetOverdueContributionsRequest extends $pb.GeneratedMessage {
+  factory GetOverdueContributionsRequest() => create();
+
+  GetOverdueContributionsRequest._();
+
+  factory GetOverdueContributionsRequest.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
+  factory GetOverdueContributionsRequest.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetOverdueContributionsRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'), createEmptyInstance: create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetOverdueContributionsRequest clone() => GetOverdueContributionsRequest()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetOverdueContributionsRequest copyWith(void Function(GetOverdueContributionsRequest) updates) => super.copyWith((message) => updates(message as GetOverdueContributionsRequest)) as GetOverdueContributionsRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetOverdueContributionsRequest create() => GetOverdueContributionsRequest._();
+  @$core.override
+  GetOverdueContributionsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetOverdueContributionsRequest> createRepeated() => $pb.PbList<GetOverdueContributionsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetOverdueContributionsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetOverdueContributionsRequest>(create);
+  static GetOverdueContributionsRequest? _defaultInstance;
+}
+
+class GetOverdueContributionsResponse extends $pb.GeneratedMessage {
+  factory GetOverdueContributionsResponse({
+    $core.Iterable<ContributionMessage>? contributions,
+  }) {
+    final result = create();
+    if (contributions != null) result.contributions.addAll(contributions);
+    return result;
+  }
+
+  GetOverdueContributionsResponse._();
+
+  factory GetOverdueContributionsResponse.fromBuffer($core.List<$core.int> data, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(data, registry);
+  factory GetOverdueContributionsResponse.fromJson($core.String json, [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetOverdueContributionsResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'group_accounts'), createEmptyInstance: create)
+    ..pc<ContributionMessage>(1, _omitFieldNames ? '' : 'contributions', $pb.PbFieldType.PM, subBuilder: ContributionMessage.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetOverdueContributionsResponse clone() => GetOverdueContributionsResponse()..mergeFromMessage(this);
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  GetOverdueContributionsResponse copyWith(void Function(GetOverdueContributionsResponse) updates) => super.copyWith((message) => updates(message as GetOverdueContributionsResponse)) as GetOverdueContributionsResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetOverdueContributionsResponse create() => GetOverdueContributionsResponse._();
+  @$core.override
+  GetOverdueContributionsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetOverdueContributionsResponse> createRepeated() => $pb.PbList<GetOverdueContributionsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetOverdueContributionsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetOverdueContributionsResponse>(create);
+  static GetOverdueContributionsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<ContributionMessage> get contributions => $_getList(0);
 }
 
 class GetContributionAnalyticsRequest extends $pb.GeneratedMessage {

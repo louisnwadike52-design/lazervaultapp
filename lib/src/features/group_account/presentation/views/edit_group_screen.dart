@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:lazervault/core/utils/social_link_helpers.dart';
 import '../../domain/entities/group_entities.dart';
 import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
@@ -45,8 +46,12 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
     super.initState();
     _nameController = TextEditingController(text: widget.group.name);
     _descriptionController = TextEditingController(text: widget.group.description);
-    _whatsappLinkController = TextEditingController(text: widget.group.whatsappGroupLink ?? '');
-    _telegramLinkController = TextEditingController(text: widget.group.telegramGroupLink ?? '');
+    _whatsappLinkController = TextEditingController(
+      text: stripCanonicalPrefix(widget.group.whatsappGroupLink, whatsappLinkPrefix),
+    );
+    _telegramLinkController = TextEditingController(
+      text: stripCanonicalPrefix(widget.group.telegramGroupLink, telegramLinkPrefix),
+    );
     _selectedStatus = widget.group.status;
 
     _nameController.addListener(_onFieldChanged);
@@ -76,14 +81,21 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
   void _onWhatsappFocusChanged() {
     if (_whatsappFocus.hasFocus) return;
     setState(() {
-      _whatsappError = GroupValidators.whatsappLink(_whatsappLinkController.text);
+      // Validators expect the full URL; the controller only holds the
+      // suffix (the prefix lives in the InputDecoration), so reconstruct
+      // before validating.
+      _whatsappError = GroupValidators.whatsappLink(
+        buildSocialFullUrl(_whatsappLinkController.text, whatsappLinkPrefix),
+      );
     });
   }
 
   void _onTelegramFocusChanged() {
     if (_telegramFocus.hasFocus) return;
     setState(() {
-      _telegramError = GroupValidators.telegramLink(_telegramLinkController.text);
+      _telegramError = GroupValidators.telegramLink(
+        buildSocialFullUrl(_telegramLinkController.text, telegramLinkPrefix),
+      );
     });
   }
 
@@ -100,8 +112,8 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
   void _onFieldChanged() {
     final hasChanges = _nameController.text != widget.group.name ||
         _descriptionController.text != widget.group.description ||
-        _whatsappLinkController.text != (widget.group.whatsappGroupLink ?? '') ||
-        _telegramLinkController.text != (widget.group.telegramGroupLink ?? '') ||
+        _whatsappLinkController.text != stripCanonicalPrefix(widget.group.whatsappGroupLink, whatsappLinkPrefix) ||
+        _telegramLinkController.text != stripCanonicalPrefix(widget.group.telegramGroupLink, telegramLinkPrefix) ||
         _selectedStatus != widget.group.status;
 
     if (hasChanges != _hasChanges) {
@@ -533,22 +545,28 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
           controller: _whatsappLinkController,
           focusNode: _whatsappFocus,
           label: 'WhatsApp Group Link',
-          hint: 'https://chat.whatsapp.com/...',
+          hint: 'invite-code',
+          prefixText: whatsappLinkPrefix,
           icon: Icons.message,
           color: const Color(0xFF25D366),
           errorText: _whatsappError,
-          validator: GroupValidators.whatsappLink,
+          // Validator runs on the FormField raw value (suffix); rebuild
+          // the full URL before delegating to GroupValidators.
+          validator: (v) =>
+              GroupValidators.whatsappLink(buildSocialFullUrl(v ?? '', whatsappLinkPrefix)),
         ),
         SizedBox(height: 16.h),
         _buildLinkField(
           controller: _telegramLinkController,
           focusNode: _telegramFocus,
           label: 'Telegram Group Link',
-          hint: 'https://t.me/...',
+          hint: 'group-handle',
+          prefixText: telegramLinkPrefix,
           icon: Icons.send,
           color: const Color(0xFF0088CC),
           errorText: _telegramError,
-          validator: GroupValidators.telegramLink,
+          validator: (v) =>
+              GroupValidators.telegramLink(buildSocialFullUrl(v ?? '', telegramLinkPrefix)),
         ),
       ],
     );
@@ -563,6 +581,7 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
     FocusNode? focusNode,
     String? errorText,
     String? Function(String?)? validator,
+    String? prefixText,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -615,6 +634,15 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
               fontSize: 12.sp,
             ),
             counterText: '',
+            // Always-visible prefix (Material's prefixText hides when
+            // unfocused + empty). See create_contribution_bottom_sheet
+            // for the rationale.
+            prefix: prefixText != null
+                ? Text(
+                    prefixText,
+                    style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 14.sp),
+                  )
+                : null,
             prefixIcon: Icon(
               icon,
               color: color,
@@ -717,16 +745,19 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
       // Build metadata with external links
       final metadata = Map<String, dynamic>.from(widget.group.metadata ?? {});
 
-      // Update WhatsApp link
-      if (_whatsappLinkController.text.trim().isNotEmpty) {
-        metadata['whatsapp_group_link'] = _whatsappLinkController.text.trim();
+      // Update WhatsApp link — controller holds suffix only; rebuild
+      // the full URL using the canonical prefix.
+      final whatsappFull = buildSocialFullUrl(_whatsappLinkController.text, whatsappLinkPrefix);
+      if (whatsappFull != null) {
+        metadata['whatsapp_group_link'] = whatsappFull;
       } else {
         metadata.remove('whatsapp_group_link');
       }
 
       // Update Telegram link
-      if (_telegramLinkController.text.trim().isNotEmpty) {
-        metadata['telegram_group_link'] = _telegramLinkController.text.trim();
+      final telegramFull = buildSocialFullUrl(_telegramLinkController.text, telegramLinkPrefix);
+      if (telegramFull != null) {
+        metadata['telegram_group_link'] = telegramFull;
       } else {
         metadata.remove('telegram_group_link');
       }

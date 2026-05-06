@@ -20,6 +20,21 @@ class _GroupLeaderboardScreenState extends State<GroupLeaderboardScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   Timer? _tabDebounceTimer;
+  // Snapshot of the last good PublicGroupsLoaded payload. Used so the
+  // builder can keep rendering the list even when the shared cubit
+  // emits unrelated transitions (e.g. GroupAccountLoading triggered
+  // by the join flow on the public-group bottom sheet). Without this
+  // the leaderboard would flip to a spinner the moment the user
+  // tapped Join — and stay there because the join flow never re-emits
+  // PublicGroupsLoaded on its own.
+  PublicGroupsLoaded? _lastLoaded;
+  // Set of group IDs the user just joined from this leaderboard
+  // session. We hide them from the rendered list reactively so the
+  // user doesn't see "their own group" sitting in the public
+  // discovery feed after joining. The cubit invalidates the cache,
+  // so the next pull-to-refresh will re-fetch from the server with
+  // the canonical list.
+  final Set<String> _justJoined = <String>{};
 
   static const _tabs = [
     'Most Members',
@@ -106,6 +121,35 @@ class _GroupLeaderboardScreenState extends State<GroupLeaderboardScreen>
       ),
       body: BlocConsumer<GroupAccountCubit, GroupAccountState>(
         listener: (context, state) {
+          // Capture the latest good list snapshot so the builder can
+          // keep rendering it even when the shared cubit transitions
+          // through unrelated states (join flow, group-load, etc.).
+          //
+          // A FRESH (non-stale) PublicGroupsLoaded means the cubit
+          // round-tripped to the server. At that point any group in
+          // _justJoined that's still in the response represents a
+          // server-side re-list (rare — e.g. user was kicked back
+          // out post-join) and we'd be wrongly hiding it. Conversely
+          // a join that landed cleanly will be ABSENT from the
+          // server response, so clearing the local filter is a no-op
+          // for the common case. Either way, syncing on fresh data
+          // keeps the local cache from drifting forever.
+          if (state is PublicGroupsLoaded) {
+            _lastLoaded = state;
+            if (!state.isStale && _justJoined.isNotEmpty) {
+              _justJoined.clear();
+            }
+          }
+          // Reactively prune the just-joined group from the list.
+          // The cubit emits JoinPublicGroupSuccess after a successful
+          // join; we hide that group from the rendered list without
+          // a re-fetch so the user doesn't see "the group they just
+          // joined" still in the discover feed.
+          if (state is JoinPublicGroupSuccess) {
+            setState(() {
+              _justJoined.add(state.group.id);
+            });
+          }
           if (state is GroupAccountError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -120,7 +164,9 @@ class _GroupLeaderboardScreenState extends State<GroupLeaderboardScreen>
           }
         },
         builder: (context, state) {
-          if (state is GroupAccountLoading) {
+          // Cold-load spinner: only when we genuinely have no list
+          // yet AND the cubit signals it's working on one.
+          if (_lastLoaded == null && state is GroupAccountLoading) {
             return const Center(
               child: CircularProgressIndicator(
                 valueColor:
@@ -129,45 +175,63 @@ class _GroupLeaderboardScreenState extends State<GroupLeaderboardScreen>
             );
           }
 
-          if (state is GroupAccountError) {
+          // Cold-load error: only when no prior list to fall back to.
+          if (_lastLoaded == null && state is GroupAccountError) {
             return _buildErrorState(state.message);
           }
 
-          if (state is PublicGroupsLoaded) {
-            if (state.groups.isEmpty) {
-              return _buildEmptyState();
-            }
-            return Column(
-              children: [
-                if (state.isStale)
-                  const LinearProgressIndicator(
-                    minHeight: 2,
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-                    backgroundColor: Color(0xFF1F1F1F),
-                  ),
-                Expanded(
-                  child: RefreshIndicator(
-                    onRefresh: _onRefresh,
-                    color: const Color(0xFF3B82F6),
-                    backgroundColor: const Color(0xFF1F1F1F),
-                    child: ListView.builder(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 16.w, vertical: 12.h),
-                      itemCount: state.groups.length,
-                      itemBuilder: (context, index) {
-                        final group = state.groups[index];
-                        return _buildLeaderboardEntry(group, index + 1);
-                      },
-                    ),
+          // From here on we render the most recently observed list
+          // payload, regardless of what state the cubit is currently
+          // in. This is what keeps the leaderboard reactive when an
+          // unrelated flow (e.g. join) flips the cubit through
+          // GroupAccountLoading. The list updates only when:
+          //   * a fresh PublicGroupsLoaded lands (captured in
+          //     listener above), or
+          //   * the user just joined a group (added to _justJoined).
+          final loaded =
+              state is PublicGroupsLoaded ? state : _lastLoaded;
+          if (loaded == null) {
+            return _buildEmptyState();
+          }
+          // Apply the just-joined filter so the row disappears
+          // immediately after the bottom sheet dismisses, without
+          // waiting for a server round-trip.
+          final visibleGroups = _justJoined.isEmpty
+              ? loaded.groups
+              : loaded.groups
+                  .where((g) => !_justJoined.contains(g.id))
+                  .toList();
+          if (visibleGroups.isEmpty) {
+            return _buildEmptyState();
+          }
+          return Column(
+            children: [
+              if (loaded.isStale)
+                const LinearProgressIndicator(
+                  minHeight: 2,
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                  backgroundColor: Color(0xFF1F1F1F),
+                ),
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: _onRefresh,
+                  color: const Color(0xFF3B82F6),
+                  backgroundColor: const Color(0xFF1F1F1F),
+                  child: ListView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: 16.w, vertical: 12.h),
+                    itemCount: visibleGroups.length,
+                    itemBuilder: (context, index) {
+                      final group = visibleGroups[index];
+                      return _buildLeaderboardEntry(group, index + 1);
+                    },
                   ),
                 ),
-              ],
-            );
-          }
-
-          return _buildEmptyState();
+              ),
+            ],
+          );
         },
       ),
     );

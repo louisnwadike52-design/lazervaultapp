@@ -424,7 +424,7 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Active Rules',
+              'Rules',
               style: GoogleFonts.inter(
                 color: Colors.white,
                 fontSize: 18.sp,
@@ -433,7 +433,7 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
             ),
             if (_rules.isNotEmpty)
               TextButton(
-                onPressed: () => Get.toNamed(AppRoutes.autoSaveTransactions),
+                onPressed: () => Get.toNamed(AppRoutes.autoSaveRulesList),
                 child: Text(
                   'View All',
                   style: GoogleFonts.inter(

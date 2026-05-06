@@ -1,7 +1,12 @@
 import 'dart:math';
 import '../domain/entities/crowdfund_entities.dart';
 
-/// Rating result for a crowdfund donor
+/// Rating result for a crowdfund donor.
+///
+/// Used to ship as a purely-deterministic computation; now produced by
+/// the chat-agent-gateway's `/api/crowdfund/donor-rating` LLM endpoint.
+/// `summary` and `traits` are LLM-driven strings — empty when this
+/// instance was built from a deterministic fallback.
 class DonorRating {
   final double overallScore;
   final int starCount;
@@ -10,6 +15,8 @@ class DonorRating {
   final double engagementScore;
   final double earlySupportScore;
   final String label;
+  final String summary;
+  final List<String> traits;
 
   const DonorRating({
     required this.overallScore,
@@ -19,16 +26,20 @@ class DonorRating {
     required this.engagementScore,
     required this.earlySupportScore,
     required this.label,
+    this.summary = '',
+    this.traits = const <String>[],
   });
 
   static const DonorRating anonymous = DonorRating(
-    overallScore: 1.0,
-    starCount: 1,
+    overallScore: 2.0,
+    starCount: 2,
     generosityScore: 0,
     repeatSupportScore: 0,
     engagementScore: 0,
     earlySupportScore: 0,
-    label: 'Anonymous',
+    label: 'Anonymous patron',
+    summary: 'Quietly backed this campaign — every contribution counts.',
+    traits: <String>['Anonymous patron'],
   );
 
   static const DonorRating newDonor = DonorRating(
@@ -39,6 +50,8 @@ class DonorRating {
     engagementScore: 0,
     earlySupportScore: 0,
     label: 'New',
+    summary: 'Welcomed as a new supporter.',
+    traits: <String>['New supporter'],
   );
 }
 

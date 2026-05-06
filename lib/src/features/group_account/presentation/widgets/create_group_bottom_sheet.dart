@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
+import 'package:lazervault/core/utils/social_link_helpers.dart';
 import '../../domain/entities/group_entities.dart';
 import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
@@ -40,8 +41,20 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
     super.initState();
     _whatsappFocus.addListener(_onWhatsappFocusChanged);
     _telegramFocus.addListener(_onTelegramFocusChanged);
+    // Separate from the validation listeners above: this one fires
+    // on EVERY focus change (gain + loss) and rebuilds so the prefix
+    // Text can swap to its focus-aware color. Mirrors the
+    // create-contribution sheet, which user explicitly cited as
+    // "the prefix gets lighter when you click into the field".
+    _whatsappFocus.addListener(_onSocialFocusRebuild);
+    _telegramFocus.addListener(_onSocialFocusRebuild);
     _whatsappLinkController.addListener(_clearWhatsappErrorOnEdit);
     _telegramLinkController.addListener(_clearTelegramErrorOnEdit);
+  }
+
+  void _onSocialFocusRebuild() {
+    if (!mounted) return;
+    setState(() {});
   }
 
   @override
@@ -50,6 +63,8 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
     _descriptionController.dispose();
     _whatsappLinkController.removeListener(_clearWhatsappErrorOnEdit);
     _telegramLinkController.removeListener(_clearTelegramErrorOnEdit);
+    _whatsappFocus.removeListener(_onSocialFocusRebuild);
+    _telegramFocus.removeListener(_onSocialFocusRebuild);
     _whatsappLinkController.dispose();
     _telegramLinkController.dispose();
     _whatsappFocus.dispose();
@@ -60,14 +75,21 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
   void _onWhatsappFocusChanged() {
     if (_whatsappFocus.hasFocus) return;
     setState(() {
-      _whatsappError = GroupValidators.whatsappLink(_whatsappLinkController.text);
+      // Controller holds suffix only (the prefix is rendered as
+      // InputDecoration.prefixText); rebuild the full URL before
+      // delegating to the canonical validator.
+      _whatsappError = GroupValidators.whatsappLink(
+        buildSocialFullUrl(_whatsappLinkController.text, whatsappLinkPrefix),
+      );
     });
   }
 
   void _onTelegramFocusChanged() {
     if (_telegramFocus.hasFocus) return;
     setState(() {
-      _telegramError = GroupValidators.telegramLink(_telegramLinkController.text);
+      _telegramError = GroupValidators.telegramLink(
+        buildSocialFullUrl(_telegramLinkController.text, telegramLinkPrefix),
+      );
     });
   }
 
@@ -483,9 +505,13 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
                       // hide on type" behaviour: we set _whatsappError on
                       // focus loss, clear it as soon as the user starts
                       // typing again. Both gates the submit button.
-                      validator: GroupValidators.whatsappLink,
+                      // Validator runs against the raw FormField value
+                      // (suffix only). Reconstruct the full URL before
+                      // delegating so the canonical regex still applies.
+                      validator: (v) =>
+                          GroupValidators.whatsappLink(buildSocialFullUrl(v ?? '', whatsappLinkPrefix)),
                       decoration: InputDecoration(
-                        hintText: 'https://chat.whatsapp.com/...',
+                        hintText: 'invite-code',
                         hintStyle: GoogleFonts.inter(
                           color: Colors.grey[500],
                           fontSize: 14.sp,
@@ -494,6 +520,22 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
                           Icons.message,
                           color: const Color(0xFF25D366),
                           size: 20.sp,
+                        ),
+                        // Always-visible prefix even when unfocused + empty
+                        // (Material's prefixText hides in that state).
+                        // Focus-aware color: lighter (grey[200]) when the
+                        // field is focused so the active row reads
+                        // brighter, dimmer (grey[500]) when idle so the
+                        // prefix doesn't compete with the user's input.
+                        // Mirrors the create-contribution sheet pattern.
+                        prefix: Text(
+                          whatsappLinkPrefix,
+                          style: GoogleFonts.inter(
+                            color: _whatsappFocus.hasFocus
+                                ? Colors.grey[200]
+                                : Colors.grey[500],
+                            fontSize: 14.sp,
+                          ),
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12.r),
@@ -536,9 +578,10 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
                       inputFormatters: [
                         LengthLimitingTextInputFormatter(GroupValidators.linkMaxLength),
                       ],
-                      validator: GroupValidators.telegramLink,
+                      validator: (v) =>
+                          GroupValidators.telegramLink(buildSocialFullUrl(v ?? '', telegramLinkPrefix)),
                       decoration: InputDecoration(
-                        hintText: 'https://t.me/...',
+                        hintText: 'group-handle',
                         hintStyle: GoogleFonts.inter(
                           color: Colors.grey[500],
                           fontSize: 14.sp,
@@ -547,6 +590,15 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
                           Icons.send,
                           color: const Color(0xFF0088CC),
                           size: 20.sp,
+                        ),
+                        prefix: Text(
+                          telegramLinkPrefix,
+                          style: GoogleFonts.inter(
+                            color: _telegramFocus.hasFocus
+                                ? Colors.grey[200]
+                                : Colors.grey[500],
+                            fontSize: 14.sp,
+                          ),
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12.r),
@@ -661,12 +713,15 @@ class _CreateGroupBottomSheetState extends State<CreateGroupBottomSheet> {
       // Build metadata with external links
       final metadata = <String, dynamic>{};
 
-      if (_whatsappLinkController.text.trim().isNotEmpty) {
-        metadata['whatsapp_group_link'] = _whatsappLinkController.text.trim();
+      // Controllers hold suffix only; rebuild full URL with the
+      // canonical prefix that was rendered as InputDecoration.prefixText.
+      final whatsappFull = buildSocialFullUrl(_whatsappLinkController.text, whatsappLinkPrefix);
+      if (whatsappFull != null) {
+        metadata['whatsapp_group_link'] = whatsappFull;
       }
-
-      if (_telegramLinkController.text.trim().isNotEmpty) {
-        metadata['telegram_group_link'] = _telegramLinkController.text.trim();
+      final telegramFull = buildSocialFullUrl(_telegramLinkController.text, telegramLinkPrefix);
+      if (telegramFull != null) {
+        metadata['telegram_group_link'] = telegramFull;
       }
 
       context.read<GroupAccountCubit>().createNewGroup(

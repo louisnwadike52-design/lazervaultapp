@@ -203,7 +203,17 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
         request.email = email;
       }
 
-      final callOptions = await _callOptionsHelper.withAuth();
+      // 20s timeout: typical add-member finishes in <1s. Without an
+      // explicit deadline a wedged backend would leave the bottom
+      // sheet's loading spinner stuck forever — the BlocListener
+      // would never get a Success/Error to count toward the batch
+      // total. The DEADLINE_EXCEEDED hits the catch below and
+      // surfaces as GroupAccountError → bottom sheet pops with
+      // failure messaging.
+      final base = await _callOptionsHelper.withAuth();
+      final callOptions = base.mergedWith(
+        CallOptions(timeout: const Duration(seconds: 20)),
+      );
       final response = await _client.addMember(request, options: callOptions);
 
       return _mapMemberFromProto(response.member);
@@ -335,6 +345,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     int? gracePeriodDays,
     bool allowPartialPayments = true,
     double? minimumBalance,
+    bool autoPayoutEnabled = false,
     Map<String, dynamic>? metadata,
   }) async {
     try {
@@ -347,7 +358,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
         ..deadline = _dateTimeToTimestamp(deadline)
         ..type = _mapContributionTypeToProto(type)
         ..autoPayEnabled = autoPayEnabled
-        ..allowPartialPayments = allowPartialPayments;
+        ..allowPartialPayments = allowPartialPayments
+        ..autoPayoutEnabled = autoPayoutEnabled;
 
       if (frequency != null) {
         request.frequency = _mapFrequencyToProto(frequency);
@@ -397,7 +409,14 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
         ..title = contribution.title
         ..description = contribution.description
         ..targetAmount = _amountToInt64(contribution.targetAmount)
-        ..status = _mapContributionStatusToProto(contribution.status);
+        ..status = _mapContributionStatusToProto(contribution.status)
+        // Auto-payout flag is wrapped in a "_set" sentinel on the
+        // wire so the server can distinguish "client omitted this
+        // field" from "client wants false". We always send the
+        // explicit set=true here because the edit form is the only
+        // caller and it always carries an intent.
+        ..autoPayoutEnabled = contribution.autoPayoutEnabled
+        ..autoPayoutEnabledSet = true;
 
       // Include metadata if present
       if (contribution.metadata != null && contribution.metadata!.isNotEmpty) {
@@ -869,6 +888,13 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       memberCount: group.memberCount,
       totalRaised: _int64ToAmount(group.totalRaised),
       imageUrl: group.imageUrl.isNotEmpty ? group.imageUrl : null,
+      // Denormalized goal counter from migration 009 — list-groups
+      // doesn't preload the contributions array, so this field is the
+      // canonical source for the "Goals" stat tile on the My Groups
+      // list. Field 15 in the proto; absent on a stale client gets
+      // the proto default (0), which is also the safe fallback for a
+      // group that legitimately has zero contributions.
+      contributionCount: group.contributionCount,
     );
   }
 
@@ -934,6 +960,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       gracePeriodDays: contribution.hasGracePeriodDays() ? contribution.gracePeriodDays : null,
       allowPartialPayments: contribution.allowPartialPayments,
       minimumBalance: contribution.hasMinimumBalance() ? _int64ToAmount(contribution.minimumBalance) : null,
+      autoPayoutEnabled: contribution.autoPayoutEnabled,
       members: contribution.members.map((m) => _mapContributionMemberFromProto(m)).toList(),
     );
   }
@@ -1110,8 +1137,6 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     switch (type) {
       case pb_enum.ContributionType.CONTRIBUTION_TYPE_ONE_TIME:
         return ContributionType.oneTime;
-      case pb_enum.ContributionType.CONTRIBUTION_TYPE_RECURRING:
-        return ContributionType.oneTime; // recurring not in domain
       case pb_enum.ContributionType.CONTRIBUTION_TYPE_ROTATING_SAVINGS:
         return ContributionType.rotatingSavings;
       default:
@@ -1123,12 +1148,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     switch (type) {
       case ContributionType.oneTime:
         return pb_enum.ContributionType.CONTRIBUTION_TYPE_ONE_TIME;
-      case ContributionType.recurringGoal:
-        return pb_enum.ContributionType.CONTRIBUTION_TYPE_RECURRING;
       case ContributionType.rotatingSavings:
         return pb_enum.ContributionType.CONTRIBUTION_TYPE_ROTATING_SAVINGS;
-      case ContributionType.investmentPool:
-        return pb_enum.ContributionType.CONTRIBUTION_TYPE_ONE_TIME; // Map to one-time as fallback
     }
   }
 
@@ -1244,8 +1265,16 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
     switch (status) {
       case pb_enum.PayoutStatus.PAYOUT_STATUS_PENDING:
         return PayoutStatus.pending;
+      case pb_enum.PayoutStatus.PAYOUT_STATUS_PROCESSING:
+        return PayoutStatus.processing;
       case pb_enum.PayoutStatus.PAYOUT_STATUS_COMPLETED:
         return PayoutStatus.completed;
+      case pb_enum.PayoutStatus.PAYOUT_STATUS_FAILED:
+        return PayoutStatus.failed;
+      case pb_enum.PayoutStatus.PAYOUT_STATUS_CANCELLED:
+        return PayoutStatus.cancelled;
+      case pb_enum.PayoutStatus.PAYOUT_STATUS_MANUAL_REVIEW:
+        return PayoutStatus.manualReview;
       default:
         return PayoutStatus.pending;
     }

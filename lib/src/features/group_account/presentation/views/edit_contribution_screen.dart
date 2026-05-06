@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:lazervault/core/utils/social_link_helpers.dart';
 import '../../domain/entities/group_entities.dart';
 import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
@@ -32,6 +33,14 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
   late DateTime _deadline;
   late ContributionStatus _selectedStatus;
   late bool _autoPayEnabled;
+  // Auto-Payout (separate from auto-pay, which is member-side debit).
+  // Toggling this on/off determines whether the platform fires the
+  // payout automatically once a receiver is set, OR whether the
+  // creator must press the manual Trigger Payout CTA on the banner.
+  // Editable here so admins can flip auto → manual mid-flight to
+  // surface the Trigger Payout button on contribution details when
+  // they need to release funds early (e.g. before deadline).
+  late bool _autoPayoutEnabled;
   late bool _allowPartialPayments;
   late TextEditingController _gracePeriodController;
   late TextEditingController _penaltyAmountController;
@@ -51,11 +60,33 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
     _regularAmountController = TextEditingController(
       text: c.regularAmount != null ? (c.regularAmount! / 100).toStringAsFixed(0) : '',
     );
-    _whatsappLinkController = TextEditingController(text: c.whatsappGroupLink ?? '');
-    _telegramLinkController = TextEditingController(text: c.telegramGroupLink ?? '');
-    _deadline = c.deadline;
+    // Strip the canonical prefix so the controller holds only the
+    // suffix; the prefix is rendered as InputDecoration.prefixText so
+    // the user just types/edits what comes after the domain.
+    _whatsappLinkController = TextEditingController(
+      text: stripCanonicalPrefix(c.whatsappGroupLink, whatsappLinkPrefix),
+    );
+    _telegramLinkController = TextEditingController(
+      text: stripCanonicalPrefix(c.telegramGroupLink, telegramLinkPrefix),
+    );
+
+    // Normalize the loaded deadline to end-of-day local time. Existing
+    // rows often have midnight (`2026-04-28 00:00:00`) because the date
+    // picker historically returned that; the create flow now writes
+    // 23:59:59 and the picker callback below normalizes any subsequent
+    // pick to 23:59:59 too. Without this normalization, opening an old
+    // row and re-picking the same date would flip _deadline from
+    // midnight to 23:59:59 and trigger _onFieldChanged() — a phantom
+    // "has changes" prompt for an edit the user didn't make.
+    _deadline = DateTime(
+      c.deadline.year,
+      c.deadline.month,
+      c.deadline.day,
+      23, 59, 59, 999,
+    );
     _selectedStatus = c.status;
     _autoPayEnabled = c.autoPayEnabled;
+    _autoPayoutEnabled = c.autoPayoutEnabled;
     _allowPartialPayments = c.allowPartialPayments;
     _gracePeriodController = TextEditingController(
       text: c.gracePeriodDays?.toString() ?? '0',
@@ -91,14 +122,22 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
 
   void _onFieldChanged() {
     final c = widget.contribution;
+    // Compare deadlines by date (year+month+day) only — we normalize
+    // _deadline to end-of-day on load so the time component would
+    // otherwise always differ from a midnight-stored historical value.
+    final deadlineDateChanged =
+        _deadline.year != c.deadline.year ||
+        _deadline.month != c.deadline.month ||
+        _deadline.day != c.deadline.day;
     final hasChanges = _titleController.text != c.title ||
         _descriptionController.text != c.description ||
-        _deadline != c.deadline ||
+        deadlineDateChanged ||
         _selectedStatus != c.status ||
         _autoPayEnabled != c.autoPayEnabled ||
+        _autoPayoutEnabled != c.autoPayoutEnabled ||
         _allowPartialPayments != c.allowPartialPayments ||
-        _whatsappLinkController.text != (c.whatsappGroupLink ?? '') ||
-        _telegramLinkController.text != (c.telegramGroupLink ?? '');
+        _whatsappLinkController.text != stripCanonicalPrefix(c.whatsappGroupLink, whatsappLinkPrefix) ||
+        _telegramLinkController.text != stripCanonicalPrefix(c.telegramGroupLink, telegramLinkPrefix);
 
     if (hasChanges != _hasChanges) {
       setState(() {
@@ -548,13 +587,19 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
         TextFormField(
           controller: _whatsappLinkController,
           style: GoogleFonts.inter(color: Colors.white),
-          decoration: _inputDecoration(
-            'https://chat.whatsapp.com/...',
-          ).copyWith(
+          decoration: _inputDecoration('invite-code').copyWith(
             prefixIcon: Icon(
               Icons.message,
               color: const Color(0xFF25D366),
               size: 20.sp,
+            ),
+            // `prefix:` widget instead of `prefixText:` so the
+            // canonical URL prefix is visible even when the field is
+            // unfocused + empty (Material's prefixText hides in that
+            // state). User sees what the field is for at a glance.
+            prefix: Text(
+              whatsappLinkPrefix,
+              style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 16.sp),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
@@ -569,13 +614,15 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
         TextFormField(
           controller: _telegramLinkController,
           style: GoogleFonts.inter(color: Colors.white),
-          decoration: _inputDecoration(
-            'https://t.me/...',
-          ).copyWith(
+          decoration: _inputDecoration('group-handle').copyWith(
             prefixIcon: Icon(
               Icons.send,
               color: const Color(0xFF0088CC),
               size: 20.sp,
+            ),
+            prefix: Text(
+              telegramLinkPrefix,
+              style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 16.sp),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
@@ -629,6 +676,20 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
                 onChanged: (value) {
                   setState(() {
                     _allowPartialPayments = value;
+                  });
+                  _onFieldChanged();
+                },
+              ),
+              Divider(color: Colors.grey[800], height: 1),
+              _buildSettingToggle(
+                title: 'Auto-Payout',
+                subtitle: _autoPayoutEnabled
+                    ? 'Platform fires the payout automatically once a receiver is set'
+                    : 'Creator must press “Trigger Payout” on the contribution details page',
+                value: _autoPayoutEnabled,
+                onChanged: (value) {
+                  setState(() {
+                    _autoPayoutEnabled = value;
                   });
                   _onFieldChanged();
                 },
@@ -837,23 +898,15 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
         return Icons.flag;
       case ContributionType.rotatingSavings:
         return Icons.autorenew;
-      case ContributionType.investmentPool:
-        return Icons.trending_up;
-      case ContributionType.recurringGoal:
-        return Icons.repeat;
     }
   }
 
   String _getTypeLabel(ContributionType type) {
     switch (type) {
       case ContributionType.oneTime:
-        return 'One-Time Goal';
+        return 'One Time Goal';
       case ContributionType.rotatingSavings:
         return 'Rotating Savings (Ajo)';
-      case ContributionType.investmentPool:
-        return 'Investment Pool';
-      case ContributionType.recurringGoal:
-        return 'Recurring Goal';
     }
   }
 
@@ -946,11 +999,16 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
       },
     );
 
-    if (picked != null && picked != _deadline) {
-      setState(() {
-        _deadline = picked;
-      });
-      _onFieldChanged();
+    if (picked != null) {
+      // Normalize to end-of-day local time (showDatePicker returns 00:00).
+      // A contribution due "Apr 28" must remain valid until Apr 29 00:00.
+      final normalized = DateTime(picked.year, picked.month, picked.day, 23, 59, 59, 999);
+      if (normalized != _deadline) {
+        setState(() {
+          _deadline = normalized;
+        });
+        _onFieldChanged();
+      }
     }
   }
 
@@ -961,16 +1019,19 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
       // Build metadata with external links
       final metadata = Map<String, dynamic>.from(c.metadata ?? {});
 
-      // Update WhatsApp link
-      if (_whatsappLinkController.text.trim().isNotEmpty) {
-        metadata['whatsapp_group_link'] = _whatsappLinkController.text.trim();
+      // Update WhatsApp link — re-prepend the canonical prefix that
+      // the input decoration showed but didn't store in the controller.
+      final whatsappFull = buildSocialFullUrl(_whatsappLinkController.text, whatsappLinkPrefix);
+      if (whatsappFull != null) {
+        metadata['whatsapp_group_link'] = whatsappFull;
       } else {
         metadata.remove('whatsapp_group_link');
       }
 
       // Update Telegram link
-      if (_telegramLinkController.text.trim().isNotEmpty) {
-        metadata['telegram_group_link'] = _telegramLinkController.text.trim();
+      final telegramFull = buildSocialFullUrl(_telegramLinkController.text, telegramLinkPrefix);
+      if (telegramFull != null) {
+        metadata['telegram_group_link'] = telegramFull;
       } else {
         metadata.remove('telegram_group_link');
       }
@@ -981,6 +1042,7 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
         description: _descriptionController.text.trim(),
         deadline: _deadline,
         status: _selectedStatus,
+        autoPayoutEnabled: _autoPayoutEnabled,
         metadata: metadata,
       );
 

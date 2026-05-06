@@ -121,6 +121,19 @@ class AutoSaveRulesLoadedState extends AutoSaveState {
   final String? appliedSearch;
   final RuleSortOption? appliedSort;
   final DateTime lastRefreshed;
+  // Backend-aggregated statistics fetched alongside the rules list.
+  // Carries lifetime totals + best-performing rule so the analytics
+  // card stops re-aggregating client-side from the (paginated) rules
+  // array. Optional for back-compat with paths that only fetch rules.
+  final AutoSaveStatisticsEntity? statistics;
+  // Pagination state for infinite-scroll. hasMore is false when the
+  // backend has returned fewer rows than the requested page size.
+  final bool hasMore;
+  final bool isLoadingMore;
+  // Total rules in the user's account regardless of the active
+  // search/filter — used by the rule count subheader so it doesn't
+  // tick down when filters are applied.
+  final int totalCount;
 
   const AutoSaveRulesLoadedState({
     required this.rules,
@@ -129,7 +142,37 @@ class AutoSaveRulesLoadedState extends AutoSaveState {
     this.appliedSearch,
     this.appliedSort,
     required this.lastRefreshed,
+    this.statistics,
+    this.hasMore = false,
+    this.isLoadingMore = false,
+    this.totalCount = 0,
   });
+
+  AutoSaveRulesLoadedState copyWith({
+    List<AutoSaveRuleEntity>? rules,
+    Map<String, String>? accountNames,
+    AutoSaveStatus? appliedFilter,
+    String? appliedSearch,
+    RuleSortOption? appliedSort,
+    DateTime? lastRefreshed,
+    AutoSaveStatisticsEntity? statistics,
+    bool? hasMore,
+    bool? isLoadingMore,
+    int? totalCount,
+  }) {
+    return AutoSaveRulesLoadedState(
+      rules: rules ?? this.rules,
+      accountNames: accountNames ?? this.accountNames,
+      appliedFilter: appliedFilter ?? this.appliedFilter,
+      appliedSearch: appliedSearch ?? this.appliedSearch,
+      appliedSort: appliedSort ?? this.appliedSort,
+      lastRefreshed: lastRefreshed ?? this.lastRefreshed,
+      statistics: statistics ?? this.statistics,
+      hasMore: hasMore ?? this.hasMore,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      totalCount: totalCount ?? this.totalCount,
+    );
+  }
 
   @override
   List<Object?> get props => [
@@ -139,6 +182,10 @@ class AutoSaveRulesLoadedState extends AutoSaveState {
         appliedSearch,
         appliedSort,
         lastRefreshed,
+        statistics,
+        hasMore,
+        isLoadingMore,
+        totalCount,
       ];
 }
 

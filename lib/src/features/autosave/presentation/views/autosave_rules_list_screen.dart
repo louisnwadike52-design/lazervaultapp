@@ -28,11 +28,35 @@ class _AutoSaveRulesListScreenState extends State<AutoSaveRulesListScreen> {
   RuleSortOption _selectedSort = RuleSortOption.dateCreatedDesc;
   bool _selectionMode = false;
   Set<String> _selectedRuleIds = {};
+  // Infinite-scroll controller. We watch the position and trigger
+  // loadMoreRules() once the user gets within ~600px of the bottom
+  // edge so the spinner doesn't appear at the very last visible row.
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     context.read<AutoSaveCubit>().getRulesWithCache();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_onScroll)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final position = _scrollController.position;
+    final threshold = 600.0; // pixels from bottom
+    if (position.pixels >= position.maxScrollExtent - threshold) {
+      // Cubit guards against double-firing + has_more=false; the
+      // listener can fire on every scroll tick without harm.
+      context.read<AutoSaveCubit>().loadMoreRules();
+    }
   }
 
   void _toggleSelectionMode(String? ruleId) {
@@ -62,7 +86,12 @@ class _AutoSaveRulesListScreenState extends State<AutoSaveRulesListScreen> {
       arguments: rule,
     )?.then((_) {
       if (!mounted) return;
-      context.read<AutoSaveCubit>().getRulesWithCache(forceRefresh: true);
+      // Returning from the detail page — just re-emit the cached
+      // rules. A real refresh would briefly switch the BlocBuilder
+      // branch and flicker the empty state. The detail screen
+      // already updates the cubit cache in-place when it mutates
+      // (toggle / edit / delete), so the list stays correct.
+      context.read<AutoSaveCubit>().refreshFromCache();
     });
   }
 
@@ -72,7 +101,7 @@ class _AutoSaveRulesListScreenState extends State<AutoSaveRulesListScreen> {
       arguments: rule,
     )?.then((_) {
       if (!mounted) return;
-      context.read<AutoSaveCubit>().getRulesWithCache(forceRefresh: true);
+      context.read<AutoSaveCubit>().refreshFromCache();
     });
   }
 
@@ -209,6 +238,30 @@ class _AutoSaveRulesListScreenState extends State<AutoSaveRulesListScreen> {
     return counts;
   }
 
+  // Build a synthetic loaded state from the cached rules so the
+  // refresh-in-flight branch of the builder reuses _buildContent
+  // exactly. Mirrors what the cubit would emit if the in-flight
+  // request had already returned without any data changes.
+  AutoSaveRulesLoadedState _cachedLoadedState(
+      List<AutoSaveRuleEntity> cached) {
+    return AutoSaveRulesLoadedState(
+      rules: cached,
+      lastRefreshed: DateTime.now(),
+    );
+  }
+
+  // True when the loaded state has no rules AND no active
+  // filter/search — i.e. a brand-new user. We branch the empty
+  // state on this so the onboarding CTA shows for new users while
+  // an "adjust your filter" hint shows when the filter is the
+  // reason the list is empty.
+  bool _isUnfilteredEmpty(AutoSaveRulesLoadedState state) {
+    final hasFilter = state.appliedFilter != null;
+    final hasSearch =
+        state.appliedSearch != null && state.appliedSearch!.isNotEmpty;
+    return !hasFilter && !hasSearch;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -219,11 +272,29 @@ class _AutoSaveRulesListScreenState extends State<AutoSaveRulesListScreen> {
             _buildHeader(),
             Expanded(
               child: BlocConsumer<AutoSaveCubit, AutoSaveState>(
+                // Only repaint on states the screen actually renders.
+                // Without this, transient cubit emissions
+                // (AutoSaveRuleUpdated, optimistic toggle echoes,
+                // bulk-operation success) flip the BlocBuilder branch
+                // for one frame and we momentarily fall through to
+                // _buildEmptyState — the source of the
+                // "No Auto-Save Rules" flicker on back navigation.
+                buildWhen: (prev, next) =>
+                    next is AutoSaveRulesLoadingState ||
+                    next is AutoSaveRulesLoadedState ||
+                    next is AutoSaveError ||
+                    next is AutoSaveInitial,
                 listener: _handleStateChanges,
                 builder: (context, state) {
-                  if (state is AutoSaveRulesLoadingState &&
-                      state.cachedRules.isEmpty) {
-                    return const AutoSaveListShimmer();
+                  if (state is AutoSaveRulesLoadingState) {
+                    // Cold load (no cache yet) — full-screen shimmer.
+                    if (state.cachedRules.isEmpty) {
+                      return const AutoSaveListShimmer();
+                    }
+                    // Warm refresh — keep showing the cached list while
+                    // the network request resolves so navigating in/out
+                    // of detail doesn't briefly render the empty state.
+                    return _buildContent(_cachedLoadedState(state.cachedRules));
                   }
 
                   if (state is AutoSaveRulesLoadedState) {
@@ -234,7 +305,11 @@ class _AutoSaveRulesListScreenState extends State<AutoSaveRulesListScreen> {
                     return _buildErrorState(state.message);
                   }
 
-                  return _buildEmptyState();
+                  // First-mount fall-through (AutoSaveInitial). Show
+                  // the shimmer instead of the empty state — the cubit
+                  // is about to emit a Loading or Loaded state in the
+                  // initState() call below.
+                  return const AutoSaveListShimmer();
                 },
               ),
             ),
@@ -352,7 +427,12 @@ class _AutoSaveRulesListScreenState extends State<AutoSaveRulesListScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '${state.rules.length} rules',
+                // Rule count: prefer the backend's authoritative
+                // total (unaffected by the current view's filter)
+                // over the locally-loaded page size.
+                state.totalCount > 0 && state.totalCount > state.rules.length
+                    ? '${state.rules.length} of ${state.totalCount} rules'
+                    : '${state.rules.length} rules',
                 style: TextStyle(
                   color: const Color(0xFF9CA3AF),
                   fontSize: 12.sp,
@@ -371,22 +451,51 @@ class _AutoSaveRulesListScreenState extends State<AutoSaveRulesListScreen> {
 
         SizedBox(height: 8.h),
 
-        // Analytics card (only show when not in selection mode and has rules)
+        // Analytics card (only show when not in selection mode and has rules).
+        // Stats come from the backend's GetAutoSaveStatistics aggregate, not
+        // from re-summing the (paginated/filtered) rules array.
         if (!_selectionMode && state.rules.isNotEmpty)
-          AutoSaveAnalyticsCard(rules: state.rules),
+          AutoSaveAnalyticsCard(
+            rules: state.rules,
+            statistics: state.statistics,
+          ),
 
         // Rules list
         Expanded(
           child: state.rules.isEmpty
-              ? _buildEmptyStateForFilter(state.appliedFilter)
+              ? (_isUnfilteredEmpty(state)
+                  ? _buildEmptyState()
+                  : _buildEmptyStateForFilter(state.appliedFilter))
               : RefreshIndicator(
                   onRefresh: _handleRefresh,
                   color: const Color.fromARGB(255, 78, 3, 208),
                   backgroundColor: const Color(0xFF1F1F1F),
                   child: ListView.builder(
+                    controller: _scrollController,
                     padding: EdgeInsets.all(16.w),
-                    itemCount: state.rules.length,
+                    // +1 row at the tail when there's another page to
+                    // fetch — that row is the "loading more" spinner.
+                    itemCount:
+                        state.rules.length + (state.hasMore ? 1 : 0),
                     itemBuilder: (context, index) {
+                      if (index >= state.rules.length) {
+                        return Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16.h),
+                          child: Center(
+                            child: SizedBox(
+                              width: 22.w,
+                              height: 22.w,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor:
+                                    const AlwaysStoppedAnimation<Color>(
+                                  Color.fromARGB(255, 78, 3, 208),
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }
                       final rule = state.rules[index];
                       final accountName =
                           state.accountNames[rule.destinationAccountId];

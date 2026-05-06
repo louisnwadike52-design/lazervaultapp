@@ -46,6 +46,11 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
   int _myGroupsTabIndex = 0; // 0 = Private, 1 = Public
   final TextEditingController _myGroupsSearchController = TextEditingController();
   String _myGroupsSearchQuery = '';
+  // Scroll controller on the My Groups CustomScrollView so we can
+  // animate to the top after a new group is created (the cubit's
+  // optimistic update prepends the new row, so scrolling to offset 0
+  // lands the user on it).
+  final ScrollController _myGroupsScrollController = ScrollController();
 
   static const _sortOptions = {
     'most_members': 'Most Members',
@@ -81,6 +86,7 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
     _tabController.dispose();
     _searchController.dispose();
     _myGroupsSearchController.dispose();
+    _myGroupsScrollController.dispose();
     _debouncer.dispose();
     _leaderboardDebounceTimer?.cancel();
     super.dispose();
@@ -356,6 +362,40 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
           // needed. Triggering loadUserGroups() here would clobber the
           // optimistic update with a backend response that may not yet be
           // index-visible, making the new group disappear from the list.
+          //
+          // UX: switch to the My Groups top-tab and the matching
+          // Private/Public sub-tab for this group's visibility, then
+          // scroll to the top on the next frame so the freshly-created
+          // row (cubit prepended it) lands in view. Public + private
+          // both honor this — we don't want the user staring at the
+          // Public sub-tab when they just created a Private group.
+          final created = state.group;
+          final desiredSubTab =
+              created.visibility == GroupVisibility.public ? 1 : 0;
+          // Top tab → My Groups (0). Set first so the BlocBuilder
+          // rebuilds with the right context.
+          if (_tabController.index != 0) {
+            _tabController.animateTo(0);
+          }
+          if (_myGroupsTabIndex != desiredSubTab) {
+            setState(() {
+              _myGroupsTabIndex = desiredSubTab;
+            });
+          }
+          // Scroll-to-top after the rebuild so attached controllers
+          // see the new sliver geometry. Two post-frame callbacks
+          // because animateTo on the TabController also triggers
+          // rebuilds and we want both settled before scrolling.
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted || !_myGroupsScrollController.hasClients) return;
+              _myGroupsScrollController.animateTo(
+                0,
+                duration: const Duration(milliseconds: 350),
+                curve: Curves.easeOut,
+              );
+            });
+          });
         }
       },
       buildWhen: (previous, current) {
@@ -461,6 +501,12 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
       color: const Color.fromARGB(255, 78, 3, 208),
       backgroundColor: const Color(0xFF1F1F1F),
       child: CustomScrollView(
+        // Hooked so the post-create flow can animateTo(0) after the
+        // cubit prepends the new row. Bare CustomScrollView ignores
+        // the controller before slivers paint; that's why the post-
+        // frame callback in the GroupAccountGroupCreated handler
+        // double-defers to wait for hasClients=true.
+        controller: _myGroupsScrollController,
         slivers: [
           SliverPadding(
             padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 12.h),
@@ -669,8 +715,15 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
     final totalGroups = groups?.length ?? 0;
     final activeGroups =
         groups?.where((g) => g.status == GroupAccountStatus.active).length ?? 0;
+    // Goals tile reads the server-side denormalized counter rather
+    // than g.contributions.length — the list-groups endpoint
+    // intentionally does NOT preload the contributions array (perf),
+    // so the old expression always summed to 0 even when groups had
+    // contributions. The counter is kept in sync by service-layer
+    // hooks on contribution create/delete and was backfilled by
+    // migration 009.
     final totalContributions =
-        groups?.fold<int>(0, (sum, g) => sum + g.contributions.length) ?? 0;
+        groups?.fold<int>(0, (sum, g) => sum + g.contributionCount) ?? 0;
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),

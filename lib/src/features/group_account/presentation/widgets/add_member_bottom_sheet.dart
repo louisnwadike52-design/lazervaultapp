@@ -15,11 +15,19 @@ import 'contact_picker_bottom_sheet.dart';
 class AddMemberBottomSheet extends StatefulWidget {
   final GroupAccount group;
   final List<GroupMember> existingMembers;
+  /// Role of the operator opening the sheet. When not admin, the
+  /// admin role is hidden from the role picker (the server rejects
+  /// promote-to-admin from a moderator anyway; this just keeps the
+  /// UI honest). Defaults to **viewer** (least-privilege) — any
+  /// caller that forgets to pass this falls into the safest
+  /// configuration; the picker shows non-admin options only.
+  final GroupMemberRole currentUserRole;
 
   const AddMemberBottomSheet({
     super.key,
     required this.group,
     this.existingMembers = const [],
+    this.currentUserRole = GroupMemberRole.viewer,
   });
 
   @override
@@ -64,11 +72,8 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
   bool _showInviteUI = false;
 
   // Track add-attempt outcomes so the sheet always pops once every
-  // attempt has either succeeded or failed (no more "stuck open" state).
-  // Both counters together must reach _totalToAdd before the sheet pops.
-  int _addedCount = 0;
-  int _failedCount = 0;
-  int _totalToAdd = 0;
+  // _addMembers awaits Future.wait directly now; no listener-side
+  // counters required. Kept removed intentionally — see _addMembers.
 
   @override
   void initState() {
@@ -249,12 +254,38 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
     );
   }
 
-  void _addMembers() {
+  /// Resilient dismiss. Pops synchronously via Navigator.maybePop so
+  /// taps land in the same frame the user pressed. Wrapped in try/catch
+  /// because Flutter asserts `!_debugLocked` if the navigator is mid-
+  /// transition (e.g. an in-flight push triggered by a parent rebuild
+  /// from the cubit cascade); a swallowed pop is fine — the user can
+  /// retry, but in practice this almost never trips.
+  void _dismissSheet() {
+    if (!mounted) return;
+    try {
+      Navigator.of(context).maybePop();
+    } catch (_) {
+      // Navigator was locked. Try once more on the next microtask.
+      Future.microtask(() {
+        if (!mounted) return;
+        try {
+          Navigator.of(context).maybePop();
+        } catch (_) {/* give up; user can tap again */}
+      });
+    }
+  }
+
+  /// Add the selected members + pending invites. Linear async flow:
+  /// fire all cubit calls, await Future.wait, then pop with a snackbar.
+  /// No BlocListener counters; no race with the parent screen's
+  /// MemberAddedSuccess listener; no chance of "stuck open" if a single
+  /// emit gets lost or the parent re-emits state on the same tick.
+  Future<void> _addMembers() async {
     if (_selectedMembers.isEmpty && _pendingInvites.isEmpty) return;
 
     // Local dedup against the group's existing members. Even if the user
     // somehow selected a current member, refuse client-side so we don't
-    // even send the request (and don't risk counting it as failed).
+    // even send the request.
     final existingMemberUserIds = widget.group.members
         .map((m) => m.userId)
         .where((id) => id.isNotEmpty)
@@ -266,64 +297,74 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
     final total = selectedFiltered.length + _pendingInvites.length;
     if (total == 0) {
       // Everyone selected is already a member; close the sheet quietly.
-      Navigator.pop(context);
+      _dismissSheet();
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-      _addedCount = 0;
-      _failedCount = 0;
-      _totalToAdd = total;
-    });
+    setState(() => _isLoading = true);
 
     final cubit = context.read<GroupAccountCubit>();
+    final futures = <Future<bool>>[
+      for (final member in selectedFiltered)
+        cubit
+            .addMemberToGroupAccount(
+              groupId: widget.group.id,
+              userId: member.user.userId,
+              userName: member.user.fullName,
+              email: member.user.email,
+              profileImage: member.user.profilePicture,
+              username: member.user.username,
+              role: member.role,
+            )
+            .then((m) => m != null),
+      for (final invite in _pendingInvites)
+        cubit.inviteUserToGroup(
+          groupId: widget.group.id,
+          identifier: invite.email,
+          fullName: invite.fullName,
+          identifierType: UserSearchType.email,
+          role: invite.role,
+        ),
+    ];
 
-    for (final member in selectedFiltered) {
-      cubit.addMemberToGroupAccount(
-        groupId: widget.group.id,
-        userId: member.user.userId,
-        userName: member.user.fullName,
-        email: member.user.email,
-        profileImage: member.user.profilePicture,
-        username: member.user.username,
-        role: member.role,
-      );
-    }
+    final outcomes = await Future.wait(futures, eagerError: false);
+    final added = outcomes.where((ok) => ok).length;
+    final failed = outcomes.where((ok) => !ok).length;
 
-    for (final invite in _pendingInvites) {
-      cubit.inviteUserToGroup(
-        groupId: widget.group.id,
-        identifier: invite.email,
-        fullName: invite.fullName,
-        identifierType: UserSearchType.email,
-        role: invite.role,
-      );
-    }
-  }
-
-  /// Pop the sheet once every in-flight attempt has resolved (success or
-  /// failure). Never gets stuck: we count failures as terminal too. The
-  /// snackbar on the underlying screen tells the user how many landed.
-  void _maybePopAfterAddBatch() {
-    if (!_isLoading) return;
-    if (_addedCount + _failedCount < _totalToAdd) return;
-
-    setState(() => _isLoading = false);
     if (!mounted) return;
-    Navigator.pop(context, _addedCount > 0);
+    setState(() => _isLoading = false);
+
+    // Pop synchronously. The previous post-frame deferral was meant to
+    // dodge `_debugLocked` asserts but actually caused them: by the
+    // time the next frame ran, the parent's MemberAddedSuccess listener
+    // had fired loadGroupDetails (one per added member), and the
+    // resulting Loading→Loaded rebuilds left the navigator
+    // transitionable state churning. A sync pop in the same frame as
+    // the awaits resolved sidesteps that.
     final messenger = ScaffoldMessenger.maybeOf(context);
+    // The sheet is typed `showModalBottomSheet<GroupMember?>` so the
+    // pop result MUST be `GroupMember?`. Passing a bool here threw
+    // `type 'bool' is not a subtype of type 'GroupMember?'` inside
+    // _flushHistoryUpdates and left the navigator wedged in a locked
+    // state, which then made Cancel/X also no-op. Pop with no result —
+    // the parent's `.then((newMember){...})` doesn't branch on the
+    // value (the screen already updates reactively via the cubit's
+    // MemberAddedSuccess emit).
+    try {
+      Navigator.of(context, rootNavigator: false).maybePop();
+    } catch (_) {/* navigator locked; sheet will sit until next tap */}
+
     if (messenger == null) return;
-    if (_failedCount == 0) {
+    if (failed == 0) {
       messenger.showSnackBar(SnackBar(
-        content: Text(_totalToAdd == 1
+        content: Text(total == 1
             ? 'Member added successfully'
-            : '$_addedCount members added successfully'),
+            : '$added members added successfully'),
         backgroundColor: const Color(0xFF10B981),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
         behavior: SnackBarBehavior.floating,
       ));
-    } else if (_addedCount == 0) {
+    } else if (added == 0) {
       messenger.showSnackBar(SnackBar(
         content: Text('Could not add members. Please try again.'),
         backgroundColor: const Color(0xFFEF4444),
@@ -332,7 +373,7 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
       ));
     } else {
       messenger.showSnackBar(SnackBar(
-        content: Text('$_addedCount of $_totalToAdd added. $_failedCount failed.'),
+        content: Text('$added of $total added. $failed failed.'),
         backgroundColor: const Color(0xFFF59E0B),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
         behavior: SnackBarBehavior.floating,
@@ -340,22 +381,20 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
+    // Only listen for cross-cutting flashes that don't gate sheet
+    // dismissal — the add/invite flow is now `await`-driven (see
+    // _addMembers) so the sheet pops itself when its batch resolves.
+    // Errors from OTHER flows (e.g. a search call failing while the
+    // user has the sheet open) still surface here as a snackbar.
     return BlocListener<GroupAccountCubit, GroupAccountState>(
+      listenWhen: (prev, curr) =>
+          (curr is GroupAccountError && !_isLoading) ||
+          curr is UserAlreadyMember,
       listener: (context, state) {
-        if (state is MemberAddedSuccess || state is InviteSentSuccess) {
-          _addedCount++;
-          _maybePopAfterAddBatch();
-        } else if (state is GroupAccountError && _isLoading) {
-          // Treat each error as one terminal outcome of the in-flight
-          // batch. Don't reset _isLoading mid-batch (other calls may
-          // still be in flight) — pop is gated on _addedCount + _failedCount.
-          _failedCount++;
-          _maybePopAfterAddBatch();
-        } else if (state is GroupAccountError) {
-          // Outside of an active add batch (e.g. error from a different
-          // flow): just surface to the user without touching loading.
+        if (state is GroupAccountError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
@@ -467,7 +506,10 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
             ),
           ),
           GestureDetector(
-            onTap: () => Navigator.pop(context),
+            // maybePop instead of pop — won't assert if the navigator
+            // happens to be locked in a transition (e.g. another
+            // BlocListener fired a Navigator op the same frame).
+            onTap: _dismissSheet,
             child: Container(
               padding: EdgeInsets.all(8.w),
               decoration: BoxDecoration(
@@ -699,15 +741,12 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
       return _buildInviteUI();
     }
 
-    // Search results — filter out users that are already in the group OR
-    // already in the just-selected batch. Server still rechecks on submit
-    // (defense-in-depth) but doing it here means duplicates never even
-    // appear as tappable rows. Also keeps the count of search hits
-    // honest: "No users found" if the only match is already a member.
-    final visibleResults = _searchResults
-        .where((u) => !_isUserAlreadyMember(u) && !_isUserAlreadySelected(u))
-        .take(5)
-        .toList();
+    // Search results — show every match (capped at 5). Already-members
+    // and already-selected users render as disabled rows with a clear
+    // badge so the user sees *why* they can't be tapped. Server still
+    // rechecks on submit (defense-in-depth); the disabled tap on these
+    // rows just keeps the UI honest.
+    final visibleResults = _searchResults.take(5).toList();
     if (visibleResults.isNotEmpty) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -723,14 +762,6 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
           SizedBox(height: 12.h),
           ...visibleResults.map((user) => _buildUserResultCard(user)),
         ],
-      );
-    }
-    if (_searchResults.isNotEmpty && visibleResults.isEmpty) {
-      // Every match is already a member or already queued for add.
-      return _buildEmptyState(
-        icon: Icons.group_outlined,
-        title: 'Already in the group',
-        subtitle: 'These users are already members or queued to be added',
       );
     }
 
@@ -896,7 +927,7 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
                   if (isAlreadySelected) ...[
                     SizedBox(height: 6.h),
                     Text(
-                      'Selected',
+                      'Already added',
                       style: GoogleFonts.inter(
                         fontSize: 12.sp,
                         fontWeight: FontWeight.w500,
@@ -1174,10 +1205,14 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
               ),
             ),
             SizedBox(height: 16.h),
-            ...GroupMemberRole.values.map((role) => Padding(
-              padding: EdgeInsets.only(bottom: 8.h),
-              child: _buildRoleOptionInModal(role),
-            )),
+            ...GroupMemberRole.values
+                .where((role) =>
+                    role != GroupMemberRole.admin ||
+                    widget.currentUserRole == GroupMemberRole.admin)
+                .map((role) => Padding(
+                      padding: EdgeInsets.only(bottom: 8.h),
+                      child: _buildRoleOptionInModal(role),
+                    )),
             SizedBox(height: 8.h),
           ],
         ),
@@ -1287,8 +1322,11 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
                 // expects the sheet to close on tap; backend writes that
                 // already started will complete asynchronously and the
                 // group-details screen will reactively pick them up via
-                // the cubit's optimistic-append path.
-                onPressed: () => Navigator.pop(context),
+                // the cubit's optimistic-append path. _dismissSheet
+                // uses maybePop so a navigator that's mid-transition
+                // (because another BlocListener just popped or pushed)
+                // doesn't assert.
+                onPressed: _dismissSheet,
                 style: OutlinedButton.styleFrom(
                   side: BorderSide(color: Colors.grey[700]!),
                   padding: EdgeInsets.symmetric(vertical: 16.h),

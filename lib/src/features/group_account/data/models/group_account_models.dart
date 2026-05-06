@@ -64,6 +64,7 @@ class GroupAccountModel extends GroupAccount {
     super.memberCount,
     super.totalRaised,
     super.imageUrl,
+    super.contributionCount,
   });
 
   factory GroupAccountModel.fromJson(Map<String, dynamic> json) {
@@ -98,6 +99,7 @@ class GroupAccountModel extends GroupAccount {
           ? (json['totalRaised'] as num).toDouble()
           : 0.0,
       imageUrl: json['imageUrl'] as String?,
+      contributionCount: json['contributionCount'] as int? ?? 0,
     );
   }
 
@@ -117,6 +119,7 @@ class GroupAccountModel extends GroupAccount {
       'memberCount': memberCount,
       'totalRaised': totalRaised,
       'imageUrl': imageUrl,
+      'contributionCount': contributionCount,
     };
   }
 
@@ -136,6 +139,7 @@ class GroupAccountModel extends GroupAccount {
       memberCount: entity.memberCount,
       totalRaised: entity.totalRaised,
       imageUrl: entity.imageUrl,
+      contributionCount: entity.contributionCount,
     );
   }
 
@@ -155,6 +159,7 @@ class GroupAccountModel extends GroupAccount {
     int? memberCount,
     double? totalRaised,
     String? imageUrl,
+    int? contributionCount,
   }) {
     return GroupAccountModel(
       id: id ?? this.id,
@@ -171,6 +176,7 @@ class GroupAccountModel extends GroupAccount {
       memberCount: memberCount ?? this.memberCount,
       totalRaised: totalRaised ?? this.totalRaised,
       imageUrl: imageUrl ?? this.imageUrl,
+      contributionCount: contributionCount ?? this.contributionCount,
     );
   }
 }
@@ -329,6 +335,7 @@ class ContributionModel extends Contribution {
     super.gracePeriodDays,
     super.allowPartialPayments,
     super.minimumBalance,
+    super.autoPayoutEnabled,
     super.members,
   });
 
@@ -398,6 +405,7 @@ class ContributionModel extends Contribution {
       minimumBalance: json['minimumBalance'] != null
           ? (json['minimumBalance'] as num).toDouble()
           : null,
+      autoPayoutEnabled: json['autoPayoutEnabled'] as bool? ?? false,
       members: (json['members'] as List<dynamic>?)
               ?.map((x) => ContributionMemberModel.fromJson(x as Map<String, dynamic>))
               .toList() ??
@@ -437,6 +445,7 @@ class ContributionModel extends Contribution {
       'gracePeriodDays': gracePeriodDays,
       'allowPartialPayments': allowPartialPayments,
       'minimumBalance': minimumBalance,
+      'autoPayoutEnabled': autoPayoutEnabled,
       'members': members.map((x) => (x as ContributionMemberModel).toJson()).toList(),
     };
   }
@@ -474,6 +483,7 @@ class ContributionModel extends Contribution {
       gracePeriodDays: entity.gracePeriodDays,
       allowPartialPayments: entity.allowPartialPayments,
       minimumBalance: entity.minimumBalance,
+      autoPayoutEnabled: entity.autoPayoutEnabled,
     );
   }
 
@@ -510,6 +520,7 @@ class ContributionModel extends Contribution {
     int? gracePeriodDays,
     bool? allowPartialPayments,
     double? minimumBalance,
+    bool? autoPayoutEnabled,
   }) {
     return ContributionModel(
       id: id ?? this.id,
@@ -543,6 +554,7 @@ class ContributionModel extends Contribution {
       gracePeriodDays: gracePeriodDays ?? this.gracePeriodDays,
       allowPartialPayments: allowPartialPayments ?? this.allowPartialPayments,
       minimumBalance: minimumBalance ?? this.minimumBalance,
+      autoPayoutEnabled: autoPayoutEnabled ?? this.autoPayoutEnabled,
     );
   }
 }
