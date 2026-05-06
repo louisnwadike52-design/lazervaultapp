@@ -115,6 +115,42 @@ class DonorStarRating extends StatelessWidget {
               ),
             ],
           ),
+          if (rating.summary.isNotEmpty) ...[
+            SizedBox(height: 12.h),
+            Text(
+              rating.summary,
+              style: GoogleFonts.inter(
+                fontSize: 12.sp,
+                color: Colors.white.withValues(alpha: 0.85),
+                height: 1.45,
+              ),
+            ),
+          ],
+          if (rating.traits.isNotEmpty) ...[
+            SizedBox(height: 10.h),
+            Wrap(
+              spacing: 6.w,
+              runSpacing: 6.h,
+              children: rating.traits.map((t) => Container(
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF6366F1).withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(6.r),
+                  border: Border.all(
+                    color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Text(
+                  t,
+                  style: GoogleFonts.inter(
+                    fontSize: 10.sp,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF6366F1),
+                  ),
+                ),
+              )).toList(growable: false),
+            ),
+          ],
           SizedBox(height: 14.h),
           // Factor breakdown bars
           _buildFactorBar('Generosity', rating.generosityScore, const Color(0xFF6366F1)),

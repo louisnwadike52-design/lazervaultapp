@@ -322,10 +322,15 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
             ]);
 
             if (isClosed || gen != _detailGeneration) return;
+            final loadedDonations = results[0] as List<CrowdfundDonation>;
             emit(CrowdfundDetailsLoaded(
               crowdfund: crowdfund,
-              donations: results[0] as List<CrowdfundDonation>,
+              donations: loadedDonations,
               statistics: results[1] as CrowdfundStatistics?,
+              donationsPage: 1,
+              donationsPageSize: initialDonationPageSize,
+              hasMoreDonations:
+                  loadedDonations.length >= initialDonationPageSize,
             ));
           } else if (result.hasError) {
             emit(CrowdfundError(message: getUserFriendlyErrorMessage(result.error)));
@@ -349,10 +354,15 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
         ]);
 
         if (isClosed || gen != _detailGeneration) return;
+        final loadedDonations = results[1] as List<CrowdfundDonation>;
         emit(CrowdfundDetailsLoaded(
           crowdfund: results[0] as Crowdfund,
-          donations: results[1] as List<CrowdfundDonation>,
+          donations: loadedDonations,
           statistics: results[2] as CrowdfundStatistics?,
+          donationsPage: 1,
+          donationsPageSize: initialDonationPageSize,
+          hasMoreDonations:
+              loadedDonations.length >= initialDonationPageSize,
         ));
       }
     } catch (e) {
@@ -553,6 +563,72 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
     } catch (e) {
       if (isClosed) return;
       emit(CrowdfundError(message: getUserFriendlyErrorMessage(e, fallback: 'Donation failed. Please try again.')));
+    }
+  }
+
+  /// Append the next page of donations to the currently loaded
+  /// crowdfund detail. Used by the infinite-scroll list on the detail
+  /// screen — guards on `hasMoreDonations` and `isLoadingMoreDonations`
+  /// so a flurry of scroll events can't double-fire the request.
+  Future<void> loadMoreDonations() async {
+    final currentState = state;
+    if (currentState is! CrowdfundDetailsLoaded ||
+        currentState.isLoadingMoreDonations ||
+        !currentState.hasMoreDonations) {
+      return;
+    }
+
+    // Capture detail generation to drop stale appends if the user
+    // navigates to a different campaign mid-fetch.
+    final gen = _detailGeneration;
+    final crowdfundId = currentState.crowdfund.id;
+    final pageSize = currentState.donationsPageSize;
+    final nextPage = currentState.donationsPage + 1;
+
+    emit(currentState.copyWith(isLoadingMoreDonations: true));
+
+    try {
+      final more = await getCrowdfundDonationsUseCase(
+        crowdfundId: crowdfundId,
+        page: nextPage,
+        pageSize: pageSize,
+      );
+
+      if (isClosed || gen != _detailGeneration) return;
+
+      final latest = state;
+      if (latest is! CrowdfundDetailsLoaded ||
+          latest.crowdfund.id != crowdfundId) {
+        // Raced with a different details load — drop this result.
+        return;
+      }
+
+      // Dedup by donation id. A re-emitted contribution (e.g. retry on
+      // the producer side, or overlapping page boundaries when new
+      // donations arrive between requests) must not paint twice in the
+      // list. We preserve the existing order and only append truly new
+      // ids.
+      final seen = <String>{for (final d in latest.donations) d.id};
+      final fresh = <CrowdfundDonation>[];
+      for (final d in more) {
+        if (seen.add(d.id)) fresh.add(d);
+      }
+
+      emit(latest.copyWith(
+        donations: [...latest.donations, ...fresh],
+        donationsPage: nextPage,
+        // hasMore reflects what the *server* returned, not the dedup
+        // result — if the server gave us a full page, there are still
+        // more pages even if some rows happened to be duplicates.
+        hasMoreDonations: more.length >= pageSize,
+        isLoadingMoreDonations: false,
+      ));
+    } catch (e) {
+      if (isClosed || gen != _detailGeneration) return;
+      final latest = state;
+      if (latest is! CrowdfundDetailsLoaded) return;
+      // Keep what we have; flip the flag off so the user can retry.
+      emit(latest.copyWith(isLoadingMoreDonations: false));
     }
   }
 

@@ -193,6 +193,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
     int? gracePeriodDays,
     bool allowPartialPayments = true,
     double? minimumBalance,
+    bool autoPayoutEnabled = false,
     Map<String, dynamic>? metadata,
   }) async {
     try {
@@ -215,6 +216,7 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
         gracePeriodDays: gracePeriodDays,
         allowPartialPayments: allowPartialPayments,
         minimumBalance: minimumBalance,
+        autoPayoutEnabled: autoPayoutEnabled,
         metadata: metadata,
       );
       return contributionModel;

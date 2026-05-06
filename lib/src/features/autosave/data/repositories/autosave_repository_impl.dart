@@ -7,6 +7,8 @@ import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/src/features/autosave/data/models/autosave_rule_model.dart';
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart' as entity;
 import 'package:lazervault/src/features/autosave/domain/repositories/i_autosave_repository.dart';
+import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_state.dart'
+    show RuleSortOption;
 import 'package:lazervault/src/generated/autosave.pbgrpc.dart';
 import 'package:lazervault/src/generated/autosave.pb.dart' as autosave_pb;
 
@@ -151,6 +153,76 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
     } catch (e) {
       return Left(ServerFailure(
         message: 'An unexpected error occurred while getting auto-save rules.',
+        statusCode: 500,
+      ));
+    }
+  }
+
+  @override
+  Future<Either<Failure, AutoSavePagedResult>> getAutoSaveRulesPaged({
+    String? accountId,
+    entity.AutoSaveStatus? status,
+    String? triggerType,
+    String? search,
+    RuleSortOption sort = RuleSortOption.dateCreatedDesc,
+    int limit = 25,
+    int offset = 0,
+  }) async {
+    try {
+      final request = autosave_pb.GetAutoSaveRulesRequest()
+        ..limit = limit
+        ..offset = offset;
+      if (accountId != null && accountId.isNotEmpty) {
+        request.accountId = accountId;
+      }
+      if (status != null) {
+        request.status = _statusToProto(status);
+      }
+      if (triggerType != null && triggerType.isNotEmpty) {
+        request.triggerType = triggerType;
+      }
+      if (search != null && search.isNotEmpty) {
+        request.search = search;
+      }
+      final sortFields = _sortOptionToServer(sort);
+      request.sortBy = sortFields.$1;
+      request.sortDir = sortFields.$2;
+
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        final callOptions = await _callOptionsHelper.withAuth(
+          CallOptions(timeout: const Duration(seconds: 15)),
+        );
+        return await _autoSaveServiceClient.getAutoSaveRules(
+          request,
+          options: callOptions,
+        );
+      });
+
+      if (response.success) {
+        final rules = response.rules
+            .map((proto) => AutoSaveRuleModel.fromProto(proto))
+            .toList();
+        return Right(AutoSavePagedResult(
+          rules: rules,
+          total: response.total,
+          hasMore: response.hasMore,
+        ));
+      }
+      return Left(ServerFailure(
+        message: response.msg.isNotEmpty
+            ? response.msg
+            : 'Failed to get auto-save rules.',
+        statusCode: 400,
+      ));
+    } on GrpcError catch (e) {
+      return Left(ServerFailure(
+        message: e.message ?? 'Failed to get auto-save rules.',
+        statusCode: e.code,
+      ));
+    } catch (e) {
+      return Left(ServerFailure(
+        message:
+            'An unexpected error occurred while getting auto-save rules.',
         statusCode: 500,
       ));
     }
@@ -519,6 +591,31 @@ class AutoSaveRepositoryImpl implements IAutoSaveRepository {
         return autosave_pb.ScheduleFrequency.FREQUENCY_MONTHLY;
       default:
         return autosave_pb.ScheduleFrequency.FREQUENCY_UNKNOWN;
+    }
+  }
+
+  // Map the cubit's [RuleSortOption] enum onto the backend's
+  // (sort_by, sort_dir) string pair. The values must match the
+  // enumerated cases in repository.buildAutoSaveOrderClause on the
+  // server, otherwise the server falls back to created_at DESC.
+  static (String, String) _sortOptionToServer(RuleSortOption opt) {
+    switch (opt) {
+      case RuleSortOption.nameAsc:
+        return ('name', 'asc');
+      case RuleSortOption.nameDesc:
+        return ('name', 'desc');
+      case RuleSortOption.dateCreatedAsc:
+        return ('created_at', 'asc');
+      case RuleSortOption.dateCreatedDesc:
+        return ('created_at', 'desc');
+      case RuleSortOption.totalSavedAsc:
+        return ('total_saved', 'asc');
+      case RuleSortOption.totalSavedDesc:
+        return ('total_saved', 'desc');
+      case RuleSortOption.statusActive:
+        // No direct backend equivalent — caller layers a status
+        // filter on top, which is more accurate.
+        return ('created_at', 'desc');
     }
   }
 }

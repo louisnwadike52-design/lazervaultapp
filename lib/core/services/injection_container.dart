@@ -333,6 +333,7 @@ import 'package:lazervault/src/features/crypto/presentation/view/crypto_detail_s
 import 'package:lazervault/src/generated/crowdfund.pbgrpc.dart' as crowdfund_grpc;
 import 'package:lazervault/src/features/crowdfund/data/datasources/crowdfund_grpc_data_source.dart';
 import 'package:lazervault/src/features/crowdfund/data/repositories/crowdfund_repository_impl.dart';
+import 'package:lazervault/src/features/crowdfund/data/services/crowdfund_donor_rating_service.dart';
 import 'package:lazervault/src/features/crowdfund/data/services/crowdfund_pdf_service.dart';
 import 'package:lazervault/src/features/crowdfund/data/services/crowdfund_report_service.dart';
 import 'package:lazervault/src/features/crowdfund/data/services/crowdfund_share_service.dart';
@@ -511,6 +512,7 @@ import 'package:lazervault/src/features/ai_scan_to_pay/presentation/cubit/ai_sca
 import 'package:lazervault/src/features/group_account/data/datasources/group_account_remote_data_source.dart';
 import 'package:lazervault/src/features/group_account/data/datasources/group_account_grpc_data_source.dart';
 import 'package:lazervault/src/features/group_account/data/repositories/group_account_repository_impl.dart';
+import 'package:lazervault/src/features/group_account/data/services/payout_assignment_service.dart';
 import 'package:lazervault/src/features/group_account/domain/repositories/group_account_repository.dart';
 import 'package:lazervault/src/features/group_account/domain/usecases/group_account_usecases.dart';
 import 'package:lazervault/src/features/group_account/presentation/cubit/group_account_cubit.dart';
@@ -1744,6 +1746,19 @@ Future<void> init() async {
     () => CrowdfundShareService(),
   );
 
+  // Lazy AI donor-rating service. Posts to chat-agent-gateway only when
+  // the donor detail modal opens — never during the donations list paint.
+  serviceLocator.registerLazySingleton<CrowdfundDonorRatingService>(
+    () => CrowdfundDonorRatingService(
+      dio: serviceLocator<Dio>(),
+      baseUrl: dotenv.env['CHAT_GATEWAY_URL'] ?? 'http://10.0.2.2:3011',
+      getAccessToken: () async {
+        final token = await serviceLocator<SecureStorageService>().getAccessToken();
+        return token ?? '';
+      },
+    ),
+  );
+
   // Report Service (for AI-generated campaign reports)
   serviceLocator.registerLazySingleton<CrowdfundReportService>(
     () => CrowdfundReportService(
@@ -2558,6 +2573,16 @@ Future<void> init() async {
     ),
   );
 
+  // PayoutAssignmentService — wraps the receiver/manual-trigger RPCs.
+  // Reuses the same gRPC client + auth options helper the data source
+  // uses, so token refresh + interceptors are shared.
+  serviceLocator.registerLazySingleton<PayoutAssignmentService>(
+    () => PayoutAssignmentService(
+      client: serviceLocator<GroupAccountServiceClient>(),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+    ),
+  );
+
   // Repositories
   serviceLocator.registerLazySingleton<GroupAccountRepository>(
     () => GroupAccountRepositoryImpl(remoteDataSource: serviceLocator<GroupAccountRemoteDataSource>()),
@@ -2746,6 +2771,7 @@ Future<void> init() async {
     getAutoSaveTransactionsUseCase: serviceLocator<GetAutoSaveTransactionsUseCase>(),
     getAutoSaveStatisticsUseCase: serviceLocator<GetAutoSaveStatisticsUseCase>(),
     triggerAutoSaveUseCase: serviceLocator<TriggerAutoSaveUseCase>(),
+    autoSaveRepository: serviceLocator<IAutoSaveRepository>(),
   ));
 
 

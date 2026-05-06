@@ -230,6 +230,7 @@ import 'package:lazervault/src/features/autosave/presentation/views/autosave_rul
 import 'package:lazervault/src/features/autosave/presentation/views/autosave_rule_processing_screen.dart';
 import 'package:lazervault/src/features/autosave/presentation/views/autosave_rule_receipt_screen.dart';
 import 'package:lazervault/src/features/autosave/presentation/views/autosave_rule_details_screen.dart';
+import 'package:lazervault/src/features/autosave/presentation/views/autosave_rules_list_screen.dart';
 
 // Batch Transfer imports
 import 'package:lazervault/src/features/funds/cubit/batch_transfer_cubit.dart';
@@ -2177,6 +2178,14 @@ GetPage(
       page: () => BlocProvider(
         create: (_) => serviceLocator<AutoSaveCubit>(),
         child: const AutoSaveRuleDetailsScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.autoSaveRulesList,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<AutoSaveCubit>(),
+        child: const AutoSaveRulesListScreen(),
       ),
       transition: Transition.rightToLeft,
     ),

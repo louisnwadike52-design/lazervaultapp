@@ -28,17 +28,42 @@ class CrowdfundDetailsScreen extends StatefulWidget {
 }
 
 class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
-  bool _showAllDonors = false;
+  // Scroll controller drives the "load more donations" trigger. Anchored
+  // to the outer CustomScrollView so we can fire when the user reaches
+  // the bottom of the page rather than tracking a separate ListView.
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     // Data loading is triggered by the route's BlocProvider (..loadCrowdfundDetails())
     // Only reload if the cubit is in initial state (no data loaded yet)
     final state = context.read<CrowdfundCubit>().state;
     if (state is CrowdfundInitial) {
       context.read<CrowdfundCubit>().loadCrowdfundDetails(widget.crowdfundId);
     }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final position = _scrollController.position;
+    if (position.pixels < position.maxScrollExtent - 240) return;
+
+    final state = context.read<CrowdfundCubit>().state;
+    if (state is! CrowdfundDetailsLoaded ||
+        !state.hasMoreDonations ||
+        state.isLoadingMoreDonations) {
+      return;
+    }
+    context.read<CrowdfundCubit>().loadMoreDonations();
   }
 
   @override
@@ -97,19 +122,24 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
       return const Center(child: CircularProgressIndicator(color: Color(0xFF6366F1)));
     }
     if (state is CrowdfundDetailsLoaded) {
-      return _buildDetails(state.crowdfund, state.donations, state.statistics);
+      return _buildDetails(state);
     }
     return const SizedBox.shrink();
   }
 
-  Widget _buildDetails(
-    Crowdfund crowdfund,
-    List<CrowdfundDonation> donations,
-    CrowdfundStatistics? statistics,
-  ) {
-    final displayedDonations = _showAllDonors ? donations : donations.take(5).toList();
+  Widget _buildDetails(CrowdfundDetailsLoaded state) {
+    final crowdfund = state.crowdfund;
+    final donations = state.donations;
+    final statistics = state.statistics;
+    // Total donor count surface uses the server-maintained denormalized
+    // counter so the header doesn't lie when only the first page of
+    // donations is loaded.
+    final donorCount = crowdfund.donorCount > 0
+        ? crowdfund.donorCount
+        : donations.length;
 
     return CustomScrollView(
+      controller: _scrollController,
       slivers: [
         SliverAppBar(
           expandedHeight: crowdfund.imageUrl != null ? 180.h : 0,
@@ -281,23 +311,12 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                   ),
                 ],
                 SizedBox(height: 12.h),
-                // Donors section
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Donors (${donations.length})',
-                      style: GoogleFonts.inter(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w700),
-                    ),
-                    if (donations.length > 5)
-                      GestureDetector(
-                        onTap: () => setState(() => _showAllDonors = !_showAllDonors),
-                        child: Text(
-                          _showAllDonors ? 'Show less' : 'View all',
-                          style: GoogleFonts.inter(color: const Color(0xFF6366F1), fontSize: 13.sp, fontWeight: FontWeight.w600),
-                        ),
-                      ),
-                  ],
+                // Donors section. The header count uses the server-side
+                // donor count rather than the loaded page so it doesn't
+                // jump as more pages stream in.
+                Text(
+                  'Donors ($donorCount)',
+                  style: GoogleFonts.inter(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w700),
                 ),
                 SizedBox(height: 8.h),
                 if (donations.isEmpty)
@@ -315,11 +334,11 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                     ),
                   )
                 else
-                  ...displayedDonations.map((donation) => DonorCard(
+                  ...donations.map((donation) => DonorCard(
                         donation: donation,
-                        allDonations: donations,
                         crowdfund: crowdfund,
                       )),
+                _buildDonationsPaginationFooter(state),
                 SizedBox(height: 80.h), // FAB clearance
               ],
             ),
@@ -327,6 +346,67 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
         ),
       ],
     );
+  }
+
+  /// Renders the bottom of the donor list:
+  ///   - spinner while a `loadMoreDonations` round-trip is in flight,
+  ///   - an explicit "Load more" button so the user can recover if the
+  ///     scroll trigger doesn't fire on a short page (keyboard, fold),
+  ///   - nothing once we've reached the end.
+  Widget _buildDonationsPaginationFooter(CrowdfundDetailsLoaded state) {
+    if (state.donations.isEmpty) return const SizedBox.shrink();
+
+    if (state.isLoadingMoreDonations) {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 16.h),
+        child: const Center(
+          child: SizedBox(
+            width: 22,
+            height: 22,
+            child: CircularProgressIndicator(
+              color: Color(0xFF6366F1),
+              strokeWidth: 2,
+            ),
+          ),
+        ),
+      );
+    }
+    if (state.hasMoreDonations) {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 12.h),
+        child: Center(
+          child: TextButton(
+            onPressed: () =>
+                context.read<CrowdfundCubit>().loadMoreDonations(),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFF6366F1),
+            ),
+            child: Text(
+              'Load more',
+              style: GoogleFonts.inter(
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    if (state.donations.length >= state.donationsPageSize) {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 12.h),
+        child: Center(
+          child: Text(
+            "You've reached the end",
+            style: GoogleFonts.inter(
+              fontSize: 11.sp,
+              color: const Color(0xFF6B7280),
+            ),
+          ),
+        ),
+      );
+    }
+    return const SizedBox.shrink();
   }
 
   Widget _buildStat({

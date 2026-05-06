@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:lazervault/core/utils/social_link_helpers.dart';
 import 'package:lazervault/core/utils/user_search_query.dart';
 import '../../domain/entities/group_entities.dart';
 import '../../data/datasources/group_account_remote_data_source.dart';
@@ -13,6 +14,89 @@ import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
 import '../../../tag_pay/presentation/cubit/tag_pay_cubit.dart';
 import '../../../tag_pay/domain/entities/user_search_result_entity.dart';
+
+/// Normalize a deadline date to 23:59:59.999 in the user's local
+/// timezone. The date picker returns midnight (start-of-day), which
+/// would make a contribution "due Apr 28" tip overdue at 00:00 on Apr
+/// 28 — this pushes it to the END of Apr 28 so it stays valid all day.
+/// Server stores the timestamp verbatim (UTC over the wire).
+DateTime _endOfDay(DateTime date) =>
+    DateTime(date.year, date.month, date.day, 23, 59, 59, 999);
+
+/// Strips thousands separators ("," and any other non-digit/decimal
+/// characters apart from a single '.') so a controller text like
+/// "30,000.50" parses cleanly. Returns 0.0 on failure so callers can
+/// branch on `>0` without a separate null-check.
+double _parseAmount(String text) {
+  final cleaned = text.replaceAll(',', '').trim();
+  if (cleaned.isEmpty) return 0;
+  return double.tryParse(cleaned) ?? 0;
+}
+
+/// TextInputFormatter that auto-inserts thousands separators as the
+/// user types an amount. Kept inline (not in core/utils) because the
+/// behaviour is specific to amount-input UX and the implementation is
+/// small. Allows digits + at most one '.' + at most 2 fractional
+/// digits — same surface as the previous FilteringTextInputFormatter,
+/// just with the thousands separators on the integer portion.
+///
+/// The TextEditingValue's selection is placed at the end after each
+/// edit. Mid-string editing (cursor in the middle of "30,000") will
+/// snap to end on next keystroke; preserving exact cursor position
+/// across reformatting is a known sharp edge of this approach but
+/// acceptable for an amount field where typing is almost always
+/// linear / append-only.
+class _ThousandsAmountFormatter extends TextInputFormatter {
+  static final NumberFormat _fmt = NumberFormat.decimalPattern();
+
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    final raw = newValue.text;
+    if (raw.isEmpty) {
+      return newValue;
+    }
+
+    // Remove anything that isn't a digit or a '.'.
+    final cleaned = raw.replaceAll(RegExp(r'[^\d.]'), '');
+    if (cleaned.isEmpty) {
+      return const TextEditingValue(text: '');
+    }
+    // At most one '.'.
+    final dotCount = '.'.allMatches(cleaned).length;
+    if (dotCount > 1) return oldValue;
+
+    final parts = cleaned.split('.');
+    final intPart = parts[0];
+    final hasDecPoint = parts.length > 1;
+    String? decPart = hasDecPoint ? parts[1] : null;
+    if (decPart != null && decPart.length > 2) {
+      // Reject extra decimal places.
+      return oldValue;
+    }
+
+    String intFormatted;
+    if (intPart.isEmpty) {
+      intFormatted = '';
+    } else {
+      // Strip leading zeros so "00030" doesn't render "0,030".
+      final stripped = intPart.replaceFirst(RegExp(r'^0+'), '');
+      final n = int.tryParse(stripped.isEmpty ? '0' : stripped);
+      if (n == null) return oldValue;
+      intFormatted = _fmt.format(n);
+    }
+
+    final result = StringBuffer(intFormatted);
+    if (hasDecPoint) {
+      result.write('.');
+      if (decPart != null) result.write(decPart);
+    }
+    final out = result.toString();
+    return TextEditingValue(
+      text: out,
+      selection: TextSelection.collapsed(offset: out.length),
+    );
+  }
+}
 
 /// Create Contribution Bottom Sheet with carousel-style multi-step flow
 ///
@@ -59,14 +143,30 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
   final _minimumBalanceController = TextEditingController();
   final _whatsappLinkController = TextEditingController();
   final _telegramLinkController = TextEditingController();
+  // Focus nodes for the two social-link fields. The placeholder text
+  // ("invite-code" / "group-handle") is only shown while the field is
+  // focused — keeps the unfocused state clean (just the canonical
+  // prefix is visible) and avoids the appearance of a real value.
+  final FocusNode _whatsappLinkFocus = FocusNode();
+  final FocusNode _telegramLinkFocus = FocusNode();
 
   // Form values
   ContributionType _selectedType = ContributionType.oneTime;
   ContributionFrequency? _selectedFrequency;
-  DateTime _selectedDeadline = DateTime.now().add(const Duration(days: 30));
+  // Deadline is treated as end-of-day in the user's local timezone so a
+  // contribution due "Apr 28" stays valid until Apr 29 00:00 (instead of
+  // tipping overdue at 00:00 on Apr 28). The default is +30 days at
+  // 23:59:59 local. _endOfDay() applies the same normalization to any
+  // value the date picker returns.
+  DateTime _selectedDeadline = _endOfDay(DateTime.now().add(const Duration(days: 30)));
   DateTime? _selectedStartDate;
   bool _autoPayEnabled = false;
   bool _allowPartialPayments = true;
+  // Whether the platform should fire the payout automatically once a
+  // receiver is set (default OFF — creators have to opt in). Distinct
+  // from _autoPayEnabled which controls MEMBER-side auto-debit of
+  // contribution payments.
+  bool _autoPayoutEnabled = false;
   List<String> _rotationOrder = [];
 
   // Map temp IDs to original user IDs for backend submission
@@ -86,10 +186,22 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
   String? _errorBannerMessage;
   final Map<String, String> _fieldErrors = {};
 
-  // Page configuration - Simple approach with 4 or 5 pages based on type
+  // Page configuration - Simple approach with 5 pages.
+  //
+  // ROSCA: Type → Details → Schedule (frequency/amount/rotation order)
+  //        → Settings → Review.
+  // One-time: Type → Details → Members (non-ordered participant list)
+  //           → Settings → Review.
+  //
+  // Both flows now have a dedicated member-picker page; the difference
+  // is that ROSCA's drives a payout *rotation* (order matters), while
+  // one-time's just enrolls participants. The list of user IDs is sent
+  // through the same `memberRotationOrder` request field — server-side
+  // a one-time contribution treats it as "who participates", a ROSCA
+  // contribution treats it as "rotation sequence".
   List<String> get _pageNames {
     if (_selectedType == ContributionType.oneTime) {
-      return ['Type', 'Details', 'Settings', 'Review'];
+      return ['Type', 'Details', 'Members', 'Settings', 'Review'];
     }
     return ['Type', 'Details', 'Schedule', 'Settings', 'Review'];
   }
@@ -118,6 +230,17 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
 
     debugPrint('🔵 initState: _localGroupMembers count=${_localGroupMembers.length}');
     debugPrint('🔵 initState: _rotationOrder (deduplicated)=$_rotationOrder');
+
+    // Re-render the social-link fields when their focus changes so
+    // the placeholder hint reveals only while the user is typing.
+    // Wrapped in a single setState rather than two listeners so a
+    // double-rebuild doesn't happen on tab-traversal between fields.
+    _whatsappLinkFocus.addListener(_onSocialFocusChanged);
+    _telegramLinkFocus.addListener(_onSocialFocusChanged);
+  }
+
+  void _onSocialFocusChanged() {
+    if (mounted) setState(() {});
   }
 
   @override
@@ -133,6 +256,10 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
     _minimumBalanceController.dispose();
     _whatsappLinkController.dispose();
     _telegramLinkController.dispose();
+    _whatsappLinkFocus.removeListener(_onSocialFocusChanged);
+    _telegramLinkFocus.removeListener(_onSocialFocusChanged);
+    _whatsappLinkFocus.dispose();
+    _telegramLinkFocus.dispose();
     super.dispose();
   }
 
@@ -183,8 +310,10 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
           _setFieldError('description', 'Description is required');
           hasErrors = true;
         }
-        final amount = double.tryParse(_targetAmountController.text);
-        if (amount == null || amount <= 0) {
+        // _parseAmount strips thousands separators ("," etc) so the
+        // formatted controller text round-trips cleanly.
+        final amount = _parseAmount(_targetAmountController.text);
+        if (amount <= 0) {
           debugPrint('🔴 Validation failed: Target amount invalid (parsed: $amount)');
           _setFieldError('targetAmount', 'Please enter a valid amount');
           hasErrors = true;
@@ -197,10 +326,15 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
         debugPrint('🟢 Page 1 (Details) validation: PASS');
         return true;
 
-      case 2: // Schedule (for recurring) or Settings (for one-time)
+      case 2: // Schedule (for ROSCA) or Members (for one-time)
         if (_selectedType == ContributionType.oneTime) {
-          debugPrint('🟢 Page 2 (Settings for oneTime) validation: PASS');
-          return true; // Settings page - optional fields
+          // Members page — picking participants is optional at create
+          // time. Empty member list is allowed; the creator can add
+          // members from the contribution details page later. ROSCA's
+          // schedule page below has its own (frequency / regular
+          // amount) requirements.
+          debugPrint('🟢 Page 2 (Members for oneTime) validation: PASS');
+          return true;
         }
         // Schedule validation for recurring types
         debugPrint('🔵 Page 2 (Schedule) validation: frequency=$_selectedFrequency, regularAmount="${_regularAmountController.text}"');
@@ -211,11 +345,26 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
           _setFieldError('frequency', 'Please select a payment frequency');
           hasScheduleErrors = true;
         }
-        final regularAmount = double.tryParse(_regularAmountController.text);
-        if (regularAmount == null || regularAmount <= 0) {
+        final regularAmount = _parseAmount(_regularAmountController.text);
+        if (regularAmount <= 0) {
           debugPrint('🔴 Validation failed: Regular amount invalid (parsed: $regularAmount)');
           _setFieldError('regularAmount', 'Please enter a valid payment amount');
           hasScheduleErrors = true;
+        }
+
+        // ROSCA: rotation order is non-optional server-side. Without
+        // this client-side gate the user would advance through to
+        // submit and only see the failure as a generic "Failed to
+        // create contribution" snackbar mapping a 400 from
+        // CreateContribution. Surface inline so they fix it on the
+        // page they're already on.
+        if (_selectedType == ContributionType.rotatingSavings &&
+            _rotationOrder.isEmpty) {
+          debugPrint('🔴 Validation failed: ROSCA needs at least one rotation member');
+          hasScheduleErrors = true;
+          _showErrorBanner(
+              'Add at least one member to the payout rotation before continuing');
+          return false;
         }
 
         if (hasScheduleErrors) {
@@ -334,12 +483,32 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
 
   void _submitContribution() {
     final cubit = context.read<GroupAccountCubit>();
-    final targetAmount = double.tryParse(_targetAmountController.text) ?? 0;
-    final regularAmount = double.tryParse(_regularAmountController.text);
-    final penaltyAmount = double.tryParse(_penaltyAmountController.text);
+    // Parse via _parseAmount (strips thousands separators). Amounts
+    // are major units (₦/$); the gRPC data source converts to minor
+    // units before the network call.
+    final targetAmount = _parseAmount(_targetAmountController.text);
+    final regularRaw = _parseAmount(_regularAmountController.text);
+    final regularAmount = regularRaw > 0 ? regularRaw : null;
+    final penaltyRaw = _parseAmount(_penaltyAmountController.text);
+    final penaltyAmount = penaltyRaw > 0 ? penaltyRaw : null;
     final gracePeriodDays = int.tryParse(_gracePeriodController.text);
     final totalCycles = int.tryParse(_totalCyclesController.text);
-    final minimumBalance = double.tryParse(_minimumBalanceController.text);
+    final minimumBalanceRaw = _parseAmount(_minimumBalanceController.text);
+    final minimumBalance = minimumBalanceRaw > 0 ? minimumBalanceRaw : null;
+
+    // Min balance must NOT exceed the contribution's target amount.
+    // A min-balance higher than target is nonsensical: the trigger
+    // would never fire because the pot tops out at target. Caught
+    // here at submit time as a final safety net (chip page also
+    // shows the validation, see below).
+    if (_visibleOptionalFields.contains('minimumBalance') &&
+        minimumBalance != null &&
+        minimumBalance > targetAmount) {
+      _setFieldError('minimumBalance',
+          'Min balance ($minimumBalance) cannot exceed target amount ($targetAmount).');
+      _showErrorBanner('Min balance cannot exceed the contribution target.');
+      return;
+    }
 
     debugPrint('🔵 _submitContribution: cubit.currentUserId=${cubit.currentUserId}');
     debugPrint('🔵 _submitContribution: groupId=${widget.groupId}, type=${_selectedType}, frequency=$_selectedFrequency');
@@ -355,19 +524,42 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
       debugPrint('🔵 Backend rotation order: $backendRotationOrder');
     }
 
-    // Build metadata with external links
+    // Build metadata with external links. The controllers hold only
+    // the suffix because the input field bakes the canonical prefix
+    // into the InputDecoration; buildSocialFullUrl re-prepends it (and
+    // passes through any full URL the user may have pasted).
+    final whatsappFull = buildSocialFullUrl(_whatsappLinkController.text, whatsappLinkPrefix);
+    final telegramFull = buildSocialFullUrl(_telegramLinkController.text, telegramLinkPrefix);
     final Map<String, dynamic>? metadata;
-    if (_whatsappLinkController.text.trim().isNotEmpty ||
-        _telegramLinkController.text.trim().isNotEmpty) {
+    if (whatsappFull != null || telegramFull != null) {
       metadata = {};
-      if (_whatsappLinkController.text.trim().isNotEmpty) {
-        metadata!['whatsapp_group_link'] = _whatsappLinkController.text.trim();
-      }
-      if (_telegramLinkController.text.trim().isNotEmpty) {
-        metadata!['telegram_group_link'] = _telegramLinkController.text.trim();
-      }
+      if (whatsappFull != null) metadata['whatsapp_group_link'] = whatsappFull;
+      if (telegramFull != null) metadata['telegram_group_link'] = telegramFull;
     } else {
       metadata = null;
+    }
+
+    // ROSCA defaults: backend treats start_date + total_cycles as
+    // required for rotating_savings. Both are surfaced as OPTIONAL in
+    // the Flutter Add-More-Fields UI to keep the happy path simple,
+    // but every submit MUST carry sane values or the server returns
+    // 400 InvalidArgument. Industry-standard fallbacks:
+    //   * start_date  → NOW (the contribution starts the moment it's
+    //                  created — matches what most rotating-savings
+    //                  apps do, e.g. Esusu, M-Changa, Cashlet).
+    //   * total_cycles → number of designated members (one cycle per
+    //                  member so each receives exactly one payout).
+    //                  When the rotation list is empty (allowed for
+    //                  draft creation), fall back to 12 — a year of
+    //                  monthly payouts is the most common default.
+    DateTime? effectiveStartDate = _selectedStartDate;
+    int? effectiveTotalCycles = totalCycles;
+    if (_selectedType == ContributionType.rotatingSavings) {
+      effectiveStartDate ??= DateTime.now();
+      if (effectiveTotalCycles == null || effectiveTotalCycles <= 0) {
+        final memberCount = backendRotationOrder?.length ?? 0;
+        effectiveTotalCycles = memberCount > 0 ? memberCount : 12;
+      }
     }
 
     cubit.createNewContribution(
@@ -380,16 +572,33 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
       type: _selectedType,
       frequency: _selectedFrequency,
       regularAmount: regularAmount,
-      startDate: _selectedStartDate,
-      totalCycles: totalCycles,
+      startDate: effectiveStartDate,
+      totalCycles: effectiveTotalCycles,
       memberRotationOrder: backendRotationOrder,
       autoPayEnabled: _autoPayEnabled,
       penaltyAmount: _visibleOptionalFields.contains('penalty') ? penaltyAmount : null,
       gracePeriodDays: _visibleOptionalFields.contains('penalty') ? gracePeriodDays : null,
       allowPartialPayments: _allowPartialPayments,
       minimumBalance: _visibleOptionalFields.contains('minimumBalance') ? minimumBalance : null,
+      autoPayoutEnabled: _autoPayoutEnabled,
       metadata: metadata,
     );
+  }
+
+  // Resolves the start_date that WILL be sent to the server, including
+  // any auto-applied default. Used by the Review page so the operator
+  // can see exactly what's about to be persisted before they confirm.
+  DateTime _resolvedStartDate() {
+    return _selectedStartDate ?? DateTime.now();
+  }
+
+  // Resolves total_cycles with the same fallback chain submit uses,
+  // for parity with the Review page.
+  int _resolvedTotalCycles() {
+    final manual = int.tryParse(_totalCyclesController.text);
+    if (manual != null && manual > 0) return manual;
+    if (_rotationOrder.isNotEmpty) return _rotationOrder.length;
+    return 12;
   }
 
   @override
@@ -570,6 +779,7 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
       return [
         _buildTypeSelectionPage(),
         _buildBasicInfoPage(),
+        _buildMembersPage(),
         _buildSettingsPage(),
         _buildReviewPage(),
       ];
@@ -708,10 +918,6 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
         return Icons.flag_outlined;
       case ContributionType.rotatingSavings:
         return Icons.sync;
-      case ContributionType.investmentPool:
-        return Icons.trending_up;
-      case ContributionType.recurringGoal:
-        return Icons.repeat;
     }
   }
 
@@ -721,10 +927,6 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
         return const Color(0xFF3B82F6);
       case ContributionType.rotatingSavings:
         return const Color.fromARGB(255, 78, 3, 208);
-      case ContributionType.investmentPool:
-        return const Color(0xFF10B981);
-      case ContributionType.recurringGoal:
-        return const Color(0xFFF59E0B);
     }
   }
 
@@ -790,7 +992,7 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
           SizedBox(height: 8.h),
           _buildDatePicker(
             selectedDate: _selectedDeadline,
-            onDateSelected: (date) => setState(() => _selectedDeadline = date),
+            onDateSelected: (date) => setState(() => _selectedDeadline = _endOfDay(date)),
           ),
           SizedBox(height: 24.h),
 
@@ -821,14 +1023,22 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
           SizedBox(height: 16.h),
           _buildTextField(
             controller: _whatsappLinkController,
-            hint: 'https://chat.whatsapp.com/...',
+            // Hint reveals only while focused — keeps the unfocused
+            // state visually quiet (just the canonical prefix shows).
+            // _onSocialFocusChanged triggers setState on focus change
+            // so this conditional is re-evaluated.
+            hint: _whatsappLinkFocus.hasFocus ? 'invite-code' : '',
             prefixIcon: Icon(Icons.message, color: const Color(0xFF25D366), size: 18.sp),
+            prefixText: whatsappLinkPrefix,
+            focusNode: _whatsappLinkFocus,
           ),
           SizedBox(height: 12.h),
           _buildTextField(
             controller: _telegramLinkController,
-            hint: 'https://t.me/...',
+            hint: _telegramLinkFocus.hasFocus ? 'group-handle' : '',
             prefixIcon: Icon(Icons.send, color: const Color(0xFF0088CC), size: 18.sp),
+            prefixText: telegramLinkPrefix,
+            focusNode: _telegramLinkFocus,
           ),
 
           SizedBox(height: 40.h),
@@ -838,6 +1048,39 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
   }
 
   // ==================== PAGE 3: SCHEDULE (FOR RECURRING) ====================
+  // Members page (one-time only). For ROSCA the equivalent UI lives
+  // inside _buildSchedulePage as the rotation-order widget. We keep
+  // the two flows distinct because the framing differs ("rotation"
+  // vs "participants") even though the underlying data field
+  // (_rotationOrder + tempIdToOriginalId) is shared.
+  Widget _buildMembersPage() {
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(20.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Members',
+            style: GoogleFonts.inter(
+              fontSize: 24.sp,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            'Pick which group members participate in this contribution. '
+            'Only listed members can pay into it. You can edit the list '
+            'later from the contribution details page.',
+            style: GoogleFonts.inter(fontSize: 14.sp, color: Colors.grey[400]),
+          ),
+          SizedBox(height: 24.h),
+          _buildMembersListWidget(),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSchedulePage() {
     return SingleChildScrollView(
       padding: EdgeInsets.all(20.w),
@@ -1030,6 +1273,54 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
             onChanged: (value) => setState(() => _allowPartialPayments = value),
             icon: Icons.pie_chart_outline,
           ),
+          SizedBox(height: 12.h),
+          _buildSwitchTile(
+            title: 'Auto-Payout',
+            subtitle: isRotatingSavings
+                ? 'Cycle pot pays out automatically at each cycle close'
+                : 'Pay out automatically when this contribution closes',
+            value: _autoPayoutEnabled,
+            enabled: true,
+            onChanged: (value) => setState(() => _autoPayoutEnabled = value),
+            icon: Icons.outbox_outlined,
+          ),
+          // Heads-up notice when auto-payout is on. Mirrors the
+          // server-side behavior: the payout fires only once a
+          // receiver is set; the creator must designate one before
+          // the deadline (or after, in which case the act of setting
+          // triggers an immediate one-shot fire).
+          if (_autoPayoutEnabled) ...[
+            SizedBox(height: 8.h),
+            Container(
+              padding: EdgeInsets.all(12.w),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFB923C).withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10.r),
+                border: Border.all(
+                  color: const Color(0xFFFB923C).withValues(alpha: 0.35),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline,
+                      color: const Color(0xFFFB923C), size: 16.sp),
+                  SizedBox(width: 10.w),
+                  Expanded(
+                    child: Text(
+                      isRotatingSavings
+                          ? 'Set the cycle receiver from the contribution details page once members are added. Each cycle pays out automatically when its receiver is assigned.'
+                          : 'After members are added, set the payout receiver from the contribution details page. Auto-payout fires only once a receiver is assigned.',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFFFB923C),
+                        fontSize: 11.sp,
+                        height: 1.35,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
 
           SizedBox(height: 24.h),
 
@@ -1098,17 +1389,51 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
                 setState(() {
                   _visibleOptionalFields.remove('minimumBalance');
                   _minimumBalanceController.clear();
+                  _fieldErrors.remove('minimumBalance');
                 });
               },
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Minimum amount that must be collected before any payout can occur',
+                    'Minimum amount that must be collected before any payout can occur (cannot exceed the target amount)',
                     style: GoogleFonts.inter(fontSize: 12.sp, color: Colors.grey[500]),
                   ),
                   SizedBox(height: 8.h),
-                  _buildAmountField(controller: _minimumBalanceController, hint: '0.00'),
+                  _buildAmountField(
+                    controller: _minimumBalanceController,
+                    hint: '0.00',
+                    hasError: _fieldErrors.containsKey('minimumBalance'),
+                  ),
+                  _buildFieldError('minimumBalance'),
+                  // Live cross-field validation: as the user types, if
+                  // the value exceeds the current target amount, mark
+                  // the field error inline. setState driven by the
+                  // controllers' onChanged (the AmountField already
+                  // calls setState when hasError flips), and we re-
+                  // evaluate on every build so a target-amount edit
+                  // upstream reflects here too.
+                  Builder(builder: (_) {
+                    final target = _parseAmount(_targetAmountController.text);
+                    final minBal = _parseAmount(_minimumBalanceController.text);
+                    final invalid = minBal > 0 && target > 0 && minBal > target;
+                    final hasError = _fieldErrors.containsKey('minimumBalance');
+                    // Sync the error map so the input border + the
+                    // submit-time guard agree on state.
+                    if (invalid && !hasError) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (!mounted) return;
+                        _setFieldError('minimumBalance',
+                            'Cannot exceed target amount');
+                      });
+                    } else if (!invalid && hasError) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (!mounted) return;
+                        setState(() => _fieldErrors.remove('minimumBalance'));
+                      });
+                    }
+                    return const SizedBox.shrink();
+                  }),
                 ],
               ),
             ),
@@ -1126,8 +1451,8 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
       symbol: widget.currencySymbol,
       decimalDigits: 2,
     );
-    final targetAmount = double.tryParse(_targetAmountController.text) ?? 0;
-    final regularAmount = double.tryParse(_regularAmountController.text);
+    final targetAmount = _parseAmount(_targetAmountController.text);
+    final regularAmount = _parseAmount(_regularAmountController.text);
 
     return SingleChildScrollView(
       padding: EdgeInsets.all(20.w),
@@ -1187,10 +1512,48 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
           _buildReviewCard([
             _ReviewItem('Target Amount', currencyFormat.format(targetAmount)),
             _ReviewItem('Deadline', DateFormat('MMM dd, yyyy').format(_selectedDeadline)),
-            if (_selectedType != ContributionType.oneTime && regularAmount != null)
+            if (_selectedType != ContributionType.oneTime && regularAmount > 0)
               _ReviewItem('Regular Payment', currencyFormat.format(regularAmount)),
             if (_selectedFrequency != null)
               _ReviewItem('Frequency', _selectedFrequency!.displayName),
+            // ROSCA-specific schedule disclosure. The two
+            // server-required fields (start_date + total_cycles) are
+            // shown here even when the user didn't fill them in,
+            // because the submit path applies industry-standard
+            // defaults (start = now, cycles = #members or 12). The
+            // operator deserves to see exactly what's about to be
+            // persisted before they confirm.
+            if (_selectedType == ContributionType.rotatingSavings) ...[
+              _ReviewItem(
+                'Start Date',
+                _selectedStartDate == null
+                    ? 'Now (auto-applied)'
+                    : DateFormat('MMM dd, yyyy').format(_resolvedStartDate()),
+              ),
+              _ReviewItem(
+                'Total Cycles',
+                () {
+                  final manual = int.tryParse(_totalCyclesController.text);
+                  if (manual != null && manual > 0) {
+                    return manual.toString();
+                  }
+                  final resolved = _resolvedTotalCycles();
+                  if (_rotationOrder.isNotEmpty &&
+                      resolved == _rotationOrder.length) {
+                    return '$resolved (one cycle per member, auto-applied)';
+                  }
+                  return '$resolved (industry default, auto-applied)';
+                }(),
+              ),
+              if (_rotationOrder.isNotEmpty)
+                _ReviewItem('Members', '${_rotationOrder.length} in rotation'),
+            ],
+            // One-time members disclosure. ROSCA shows them above as
+            // "Members in rotation"; for one-time we show them here
+            // so the operator confirms participants before saving.
+            if (_selectedType == ContributionType.oneTime &&
+                _rotationOrder.isNotEmpty)
+              _ReviewItem('Members', '${_rotationOrder.length} participating'),
           ]),
           SizedBox(height: 16.h),
 
@@ -1200,12 +1563,12 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
             if (_visibleOptionalFields.contains('penalty'))
               _ReviewItem(
                 'Late Penalty',
-                '${currencyFormat.format(double.tryParse(_penaltyAmountController.text) ?? 0)} after ${_gracePeriodController.text.isEmpty ? '0' : _gracePeriodController.text} days',
+                '${currencyFormat.format(_parseAmount(_penaltyAmountController.text))} after ${_gracePeriodController.text.isEmpty ? '0' : _gracePeriodController.text} days',
               ),
             if (_visibleOptionalFields.contains('minimumBalance'))
               _ReviewItem(
                 'Min Balance',
-                currencyFormat.format(double.tryParse(_minimumBalanceController.text) ?? 0),
+                currencyFormat.format(_parseAmount(_minimumBalanceController.text)),
               ),
           ]),
 
@@ -1284,12 +1647,15 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
     int? maxLength,
     bool hasError = false,
     Widget? prefixIcon,
+    String? prefixText,
+    FocusNode? focusNode,
   }) {
     final errorColor = const Color(0xFFEF4444);
     final normalColor = const Color(0xFF2D2D2D);
 
     return TextField(
       controller: controller,
+      focusNode: focusNode,
       maxLines: maxLines,
       maxLength: maxLength,
       style: GoogleFonts.inter(fontSize: 16.sp, color: Colors.white),
@@ -1305,6 +1671,29 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
         counterText: '',
         prefixIcon: prefixIcon,
         prefixIconColor: Colors.grey[400],
+        // Render the prefix as a `prefix` widget rather than `prefixText`
+        // so it's ALWAYS visible — including when the field is unfocused
+        // AND empty. Material's prefixText hides in that state, which
+        // would leave the user staring at a blank field with no signal
+        // that it's the WhatsApp / Telegram link slot.
+        // Empty controller text still round-trips as "no value" through
+        // buildSocialFullUrl, so an empty field is NOT sent to the
+        // backend even though the prefix is rendered.
+        // Focus-aware prefix color: lighter (grey[200]) when the
+        // field is focused, dimmer (grey[500]) when idle. The
+        // _whatsappLinkFocus / _telegramLinkFocus listeners already
+        // call setState on focus change, so this rebuilds correctly.
+        prefix: prefixText != null
+            ? Text(
+                prefixText,
+                style: GoogleFonts.inter(
+                  fontSize: 16.sp,
+                  color: (focusNode?.hasFocus ?? false)
+                      ? Colors.grey[200]
+                      : Colors.grey[500],
+                ),
+              )
+            : null,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
           borderSide: BorderSide(color: hasError ? errorColor : normalColor),
@@ -1335,7 +1724,12 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
       controller: controller,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       style: GoogleFonts.inter(fontSize: 16.sp, color: Colors.white),
-      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))],
+      // _ThousandsAmountFormatter both filters (digits + at most one
+      // '.' + at most 2 fractional digits) AND inserts comma thousands
+      // separators on the integer portion as the user types. Replaces
+      // the previous FilteringTextInputFormatter — the regex still
+      // applied is now embedded in the formatter's accept logic.
+      inputFormatters: [_ThousandsAmountFormatter()],
       onChanged: (_) {
         // Clear error when user starts typing
         if (hasError) setState(() {});
@@ -1873,6 +2267,211 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
               );
             },
           ),
+        ],
+      ),
+    );
+  }
+
+  // Members list widget for one-time contributions. Mirrors the
+  // visual language of the rotation widget (header + rows + add
+  // button) but drops the drag handle + "payout #N" position label
+  // — order is meaningless for one-time, every listed member is just
+  // a participant. Reuses _rotationOrder + _localGroupMembers so the
+  // backend payload (memberRotationOrder) is the same shape ROSCA
+  // sends; the server treats it as an unordered participant set
+  // when the contribution_type is one_time.
+  Widget _buildMembersListWidget() {
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.group_outlined,
+                  color: const Color(0xFF6366F1), size: 18.sp),
+              SizedBox(width: 8.w),
+              Expanded(
+                child: Text(
+                  _rotationOrder.isEmpty
+                      ? 'No members yet — add at least one to continue'
+                      : '${_rotationOrder.length} member(s) participating',
+                  style: GoogleFonts.inter(
+                      fontSize: 12.sp, color: Colors.grey[400]),
+                ),
+              ),
+              GestureDetector(
+                onTap: _showAddMemberForRotation,
+                child: Container(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF6366F1).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(8.r),
+                    border: Border.all(
+                        color: const Color(0xFF6366F1).withValues(alpha: 0.5)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.person_add_alt_1,
+                          color: const Color(0xFF6366F1), size: 16.sp),
+                      SizedBox(width: 6.w),
+                      Text(
+                        'Add',
+                        style: GoogleFonts.inter(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF6366F1),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16.h),
+          if (_rotationOrder.isEmpty)
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 24.h),
+              child: Center(
+                child: Column(
+                  children: [
+                    Icon(Icons.person_off_outlined,
+                        color: Colors.grey[600], size: 32.sp),
+                    SizedBox(height: 12.h),
+                    Text(
+                      'Tap “Add” to invite members from this group',
+                      style: GoogleFonts.inter(
+                        fontSize: 13.sp,
+                        color: Colors.grey[500],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            // Plain ListView (no Reorderable) so the rows look like
+            // a participant roster rather than a sortable rotation.
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _rotationOrder.length,
+              itemBuilder: (context, index) {
+                final memberId = _rotationOrder[index];
+                GroupMember? foundMember;
+                try {
+                  foundMember =
+                      _localGroupMembers.firstWhere((m) => m.userId == memberId);
+                } catch (_) {
+                  try {
+                    foundMember =
+                        _localGroupMembers.firstWhere((m) => m.id == memberId);
+                  } catch (_) {
+                    foundMember = null;
+                  }
+                }
+                if (foundMember == null) {
+                  return SizedBox.shrink(key: ValueKey('empty_$index'));
+                }
+                final member = foundMember;
+                return Container(
+                  key: ValueKey('${memberId}_$index'),
+                  margin: EdgeInsets.only(bottom: 8.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2D2D2D),
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(color: const Color(0xFF3D3D3D)),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(12.w),
+                    child: Row(
+                      children: [
+                        // Avatar
+                        CircleAvatar(
+                          radius: 18.r,
+                          backgroundColor: const Color(0xFF4B5563),
+                          backgroundImage: (member.profileImage != null &&
+                                  member.profileImage!.isNotEmpty)
+                              ? NetworkImage(member.profileImage!)
+                              : null,
+                          child: (member.profileImage == null ||
+                                  member.profileImage!.isEmpty)
+                              ? Text(
+                                  member.userName.isNotEmpty
+                                      ? member.userName[0].toUpperCase()
+                                      : 'U',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : null,
+                        ),
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                member.userName.isNotEmpty
+                                    ? member.userName
+                                    : 'Unnamed member',
+                                style: GoogleFonts.inter(
+                                  fontSize: 15.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              if (member.email.isNotEmpty) ...[
+                                SizedBox(height: 2.h),
+                                Text(
+                                  member.email,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12.sp,
+                                    color: Colors.grey[500],
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                        // Remove button. Allows the creator to
+                        // un-enroll a member during creation. Once
+                        // the contribution is saved, the same
+                        // remove-flow lives on the contribution
+                        // details page.
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _rotationOrder.removeAt(index);
+                            });
+                          },
+                          child: Container(
+                            padding: EdgeInsets.all(6.w),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEF4444)
+                                  .withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(6.r),
+                            ),
+                            child: Icon(Icons.close,
+                                color: const Color(0xFFEF4444), size: 16.sp),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
         ],
       ),
     );

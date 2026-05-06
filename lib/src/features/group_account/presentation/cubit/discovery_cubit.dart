@@ -45,7 +45,6 @@ class DiscoveryCubit extends Cubit<DiscoveryState> {
             page: page,
             pageSize: pageSize,
             sortBy: 'trending',
-            visibility: CrowdfundVisibility.public,
           ),
           config: CacheConfig.trendingCrowdfunds,
           serializer: (crowdfunds) =>
@@ -70,7 +69,6 @@ class DiscoveryCubit extends Cubit<DiscoveryState> {
           page: page,
           pageSize: pageSize,
           sortBy: 'trending',
-          visibility: CrowdfundVisibility.public,
         );
         if (isClosed) return;
         emit(TrendingCrowdfundsLoaded(crowdfunds: crowdfunds));

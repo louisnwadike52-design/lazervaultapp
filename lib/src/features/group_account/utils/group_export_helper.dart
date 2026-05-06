@@ -421,10 +421,14 @@ class GroupExportHelper {
         return 'Processing';
       case PayoutStatus.completed:
         return 'Completed';
+      case PayoutStatus.failed:
+        return 'Failed';
       case PayoutStatus.overdue:
         return 'Overdue';
       case PayoutStatus.cancelled:
         return 'Cancelled';
+      case PayoutStatus.manualReview:
+        return 'Manual Review';
     }
   }
 
@@ -457,13 +461,9 @@ class GroupExportHelper {
   static String _getTypeLabel(ContributionType type) {
     switch (type) {
       case ContributionType.oneTime:
-        return 'One-Time Goal';
+        return 'One Time Goal';
       case ContributionType.rotatingSavings:
         return 'Rotating Savings';
-      case ContributionType.investmentPool:
-        return 'Investment Pool';
-      case ContributionType.recurringGoal:
-        return 'Recurring Goal';
     }
   }
 

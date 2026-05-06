@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -94,21 +96,59 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
     super.dispose();
   }
 
-  void _loadGroupMembers() async {
-    setState(() {
-      _isLoading = true;
-    });
+  Future<void> _loadGroupMembers() async {
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
 
     try {
-      // Get existing contribution members
+      // Existing contribution members (used to dedupe the Add-New
+      // search results so a user already in the contribution renders
+      // as "Already in contribution" rather than tappable).
       _existingMemberUserIds = widget.contribution.members
           .map((m) => m.userId)
+          .where((id) => id.isNotEmpty)
           .toSet();
 
-      // Get group members from the cubit
       final cubit = context.read<GroupAccountCubit>();
-      await cubit.loadGroupDetails(widget.contribution.groupId);
+
+      // Fast path: parent already has the group's members in cache.
+      // Avoids a second network round-trip while the dialog is opening
+      // (the parent screen mounts via loadGroupDetails on init).
+      var members = cubit.lastLoadedMembers;
+      if (members == null ||
+          cubit.lastLoadedGroup?.id != widget.contribution.groupId) {
+        // Cold path: parent's cache is empty or for a different group.
+        // Trigger a reload + await the cubit's stream until the matching
+        // GroupAccountGroupLoaded lands.
+        final completer = Completer<List<GroupMember>>();
+        late final StreamSubscription<GroupAccountState> sub;
+        sub = cubit.stream.listen((state) {
+          if (state is GroupAccountGroupLoaded &&
+              state.group.id == widget.contribution.groupId) {
+            if (!completer.isCompleted) completer.complete(state.members);
+          } else if (state is GroupAccountError) {
+            if (!completer.isCompleted) completer.completeError(state.message);
+          }
+        });
+        // Kick the cubit; it'll emit Loading → Loaded → ContributionLoaded.
+        unawaited(cubit.loadGroupDetails(widget.contribution.groupId));
+        try {
+          members = await completer.future.timeout(const Duration(seconds: 15));
+        } finally {
+          await sub.cancel();
+        }
+      }
+
+      if (!mounted) return;
+      setState(() {
+        _groupMembers = members ?? const <GroupMember>[];
+        _isLoading = false;
+      });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
@@ -187,37 +227,63 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
   }
 
   Future<void> _performSearch(String query) async {
+    // Snapshot the in-flight query so a stale debounce-fire (user kept
+    // typing) doesn't clobber the latest results. Each call captures
+    // its own query; we only commit results if it still matches the
+    // controller's current text after the await resolves.
+    final inFlightQuery = query;
     try {
+      // Use the SAME ProfileCubit + repository path that the recipient
+      // username search bottom sheet uses (the canonical app-wide
+      // profile search, backed by auth-service.SearchUsers gRPC).
+      // Resolving from serviceLocator here (not BlocProvider.of) so
+      // the cubit reaches us even when the dialog is mounted inside
+      // a tab whose BLoC scope doesn't include ProfileCubit.
       final cubit = serviceLocator<ProfileCubit>();
-      final results = await cubit.searchUsers(query);
+      // ignore: avoid_print
+      print('[AddMembersDialog] searchUsers("$inFlightQuery") starting');
+      final results = await cubit.searchUsers(inFlightQuery);
+      // ignore: avoid_print
+      print(
+          '[AddMembersDialog] searchUsers("$inFlightQuery") -> ${results.length} result(s)');
 
-      if (mounted) {
-        setState(() {
-          _searchResults = results;
-          _isSearching = false;
-          if (results.isEmpty) {
-            if (_isValidEmail(query)) {
-              _showInviteUI = true;
-              _fullNameController.clear();
-              _errorMessage = null;
-            } else {
-              _showInviteUI = false;
-              _errorMessage = 'No users found';
-            }
+      if (!mounted) return;
+      // Drop stale fires: if the user has kept typing past this query,
+      // a more recent _performSearch is already in flight. Letting the
+      // older fire commit would briefly flash old results into the UI.
+      if (_searchController.text.trim() != inFlightQuery.trim()) {
+        return;
+      }
+      setState(() {
+        _searchResults = results;
+        _isSearching = false;
+        if (results.isEmpty) {
+          if (_isValidEmail(inFlightQuery)) {
+            _showInviteUI = true;
+            _fullNameController.clear();
+            _errorMessage = null;
           } else {
             _showInviteUI = false;
-            _errorMessage = null;
+            _errorMessage = 'No users found';
           }
-        });
+        } else {
+          _showInviteUI = false;
+          _errorMessage = null;
+        }
+      });
+    } catch (e, st) {
+      // ignore: avoid_print
+      print('[AddMembersDialog] searchUsers("$inFlightQuery") FAILED: $e\n$st');
+      if (!mounted) return;
+      // Same staleness guard on the error path.
+      if (_searchController.text.trim() != inFlightQuery.trim()) {
+        return;
       }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _searchResults = [];
-          _isSearching = false;
-          _errorMessage = 'Failed to search users';
-        });
-      }
+      setState(() {
+        _searchResults = [];
+        _isSearching = false;
+        _errorMessage = 'Failed to search users';
+      });
     }
   }
 
@@ -1038,22 +1104,28 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
     final isAlreadyInContribution = _isUserAlreadyInContribution(user);
     final isAlreadySelected = _isUserAlreadySelected(user);
 
+    // Add-New tab is for users who are NOT yet in the group. Anyone
+    // already in the group should switch to the Group Members tab —
+    // adding them again here would be a no-op (the cubit would see
+    // them as a duplicate group_member). Disable tap and tint amber
+    // to match the "already in contribution" treatment.
+    final disabledForAdd =
+        isAlreadyInContribution || isAlreadySelected || isAlreadyInGroup;
+
     return GestureDetector(
-      onTap: (isAlreadyInContribution || isAlreadySelected)
-          ? null
-          : () => _selectNewUser(user),
+      onTap: disabledForAdd ? null : () => _selectNewUser(user),
       child: Container(
         margin: EdgeInsets.only(bottom: 8.h),
         padding: EdgeInsets.all(12.w),
         decoration: BoxDecoration(
-          color: isAlreadyInContribution
+          color: isAlreadyInContribution || isAlreadyInGroup
               ? const Color(0xFFF59E0B).withValues(alpha: 0.1)
               : isAlreadySelected
                   ? const Color(0xFF10B981).withValues(alpha: 0.1)
                   : const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(10.r),
           border: Border.all(
-            color: isAlreadyInContribution
+            color: isAlreadyInContribution || isAlreadyInGroup
                 ? const Color(0xFFF59E0B).withValues(alpha: 0.3)
                 : isAlreadySelected
                     ? const Color(0xFF10B981).withValues(alpha: 0.3)
@@ -1126,6 +1198,19 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
                     SizedBox(height: 4.h),
                     Text(
                       'Already in this contribution',
+                      style: GoogleFonts.inter(
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFFF59E0B),
+                      ),
+                    ),
+                  ] else if (isAlreadyInGroup) ...[
+                    // In-group users are added via the Group Members tab,
+                    // not Add New. Tap is disabled above; this hint
+                    // tells the operator where to go instead.
+                    SizedBox(height: 4.h),
+                    Text(
+                      'Already in group — use Group Members tab',
                       style: GoogleFonts.inter(
                         fontSize: 11.sp,
                         fontWeight: FontWeight.w500,

@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:uuid/uuid.dart';
 import '../../domain/entities/group_entities.dart';
+import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
@@ -640,125 +641,198 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
             );
           }
 
+          // Pick a default selection on first build only — prefer the
+          // PRIMARY account (the one the dashboard surfaces as
+          // active), falling back to the first account in the
+          // filtered list. AccountSummaryEntity doesn't carry a
+          // canonical usability flag at the entity level today;
+          // accounts-service rejects frozen/closed accounts at debit
+          // time with a clean error that the cubit surfaces, which
+          // is acceptable while a richer client-side flag isn't
+          // available. Subsequent rebuilds (e.g. balance refresh)
+          // keep the user's manual choice intact.
+          if (_selectedAccountId == null) {
+            final primary = filteredAccounts.firstWhere(
+              (a) => a.isPrimary,
+              orElse: () => filteredAccounts.first,
+            );
+            // setState during build is verboten, so defer to next frame.
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted) return;
+              setState(() {
+                _selectedAccountId = primary.id.toString();
+                _selectedAccountBalance = primary.balance;
+              });
+            });
+          }
+
+          // Resolve the currently-selected account for the compact
+          // tile. If the saved id is no longer in the filtered list
+          // (e.g. user changed contribution currency), reset it.
+          AccountSummaryEntity? selected;
+          for (final a in filteredAccounts) {
+            if (a.id.toString() == _selectedAccountId) {
+              selected = a;
+              break;
+            }
+          }
+          selected ??= filteredAccounts.first;
+          final selectedAcc = selected;
+          final amount =
+              double.tryParse(_amountController.text) ?? 0;
+          final hasEnough = amount <= selectedAcc.balance;
+
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Select Account',
-                style: GoogleFonts.inter(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-              SizedBox(height: 12.h),
-              ...filteredAccounts.map((account) {
-                final isSelected = _selectedAccountId == account.id.toString();
-                final hasEnoughBalance = (double.tryParse(_amountController.text) ?? 0) <= account.balance;
-
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedAccountId = account.id.toString();
-                      _selectedAccountBalance = account.balance;
-                    });
-                  },
-                  child: Container(
-                    margin: EdgeInsets.only(bottom: 12.h),
-                    padding: EdgeInsets.all(16.w),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1)
-                          : const Color(0xFF1F1F1F),
-                      border: Border.all(
-                        color: isSelected
-                            ? const Color.fromARGB(255, 78, 3, 208)
-                            : Colors.transparent,
-                        width: 2,
-                      ),
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 40.w,
-                          height: 40.w,
-                          decoration: BoxDecoration(
-                            color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(20.r),
-                          ),
-                          child: Icon(
-                            Icons.account_balance_wallet,
-                            color: const Color.fromARGB(255, 78, 3, 208),
-                            size: 20.sp,
-                          ),
-                        ),
-                        SizedBox(width: 12.w),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                account.accountType,
-                                style: GoogleFonts.inter(
-                                  fontSize: 14.sp,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              Row(
-                                children: [
-                                  Text(
-                                    '${account.currency} ${account.balance.toStringAsFixed(2)}',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 12.sp,
-                                      fontWeight: FontWeight.w400,
-                                      color: hasEnoughBalance
-                                          ? const Color(0xFF9CA3AF)
-                                          : const Color(0xFFEF4444),
-                                    ),
-                                  ),
-                                  if (!hasEnoughBalance &&
-                                      (double.tryParse(_amountController.text) ??
-                                              0) >
-                                          0) ...[
-                                    SizedBox(width: 8.w),
-                                    Container(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 6.w,
-                                        vertical: 2.h,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFEF4444)
-                                            .withValues(alpha: 0.2),
-                                        borderRadius: BorderRadius.circular(4.r),
-                                      ),
-                                      child: Text(
-                                        'Low Balance',
-                                        style: GoogleFonts.inter(
-                                          fontSize: 10.sp,
-                                          fontWeight: FontWeight.w500,
-                                          color: const Color(0xFFEF4444),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (isSelected)
-                          Icon(
-                            Icons.check_circle,
-                            color: const Color.fromARGB(255, 78, 3, 208),
-                            size: 24.sp,
-                          ),
-                      ],
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Pay From',
+                    style: GoogleFonts.inter(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
                     ),
                   ),
-                );
-              }),
+                  if (filteredAccounts.length > 1)
+                    Text(
+                      '${filteredAccounts.length} available',
+                      style: GoogleFonts.inter(
+                        fontSize: 11.sp,
+                        color: Colors.grey[500],
+                      ),
+                    ),
+                ],
+              ),
+              SizedBox(height: 12.h),
+              // Compact preselected tile. Tap opens the picker bottom
+              // sheet when there's more than one account; otherwise
+              // it's a static row showing the only choice.
+              GestureDetector(
+                onTap: filteredAccounts.length > 1
+                    ? () => _openAccountPicker(filteredAccounts)
+                    : null,
+                child: Container(
+                  padding: EdgeInsets.all(16.w),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1F1F1F),
+                    border: Border.all(
+                      color: const Color.fromARGB(255, 78, 3, 208)
+                          .withValues(alpha: 0.5),
+                      width: 1.2,
+                    ),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 40.w,
+                        height: 40.w,
+                        decoration: BoxDecoration(
+                          color: const Color.fromARGB(255, 78, 3, 208)
+                              .withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(20.r),
+                        ),
+                        child: Icon(
+                          Icons.account_balance_wallet,
+                          color: const Color.fromARGB(255, 78, 3, 208),
+                          size: 20.sp,
+                        ),
+                      ),
+                      SizedBox(width: 12.w),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    selectedAcc.accountType,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 14.sp,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                if (selectedAcc.isPrimary) ...[
+                                  SizedBox(width: 8.w),
+                                  Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 6.w,
+                                      vertical: 2.h,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF10B981)
+                                          .withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(4.r),
+                                    ),
+                                    child: Text(
+                                      'Primary',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 9.sp,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF10B981),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                            SizedBox(height: 2.h),
+                            Row(
+                              children: [
+                                Text(
+                                  '${selectedAcc.currency} ${selectedAcc.balance.toStringAsFixed(2)}',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.w400,
+                                    color: hasEnough
+                                        ? const Color(0xFF9CA3AF)
+                                        : const Color(0xFFEF4444),
+                                  ),
+                                ),
+                                if (!hasEnough && amount > 0) ...[
+                                  SizedBox(width: 8.w),
+                                  Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 6.w,
+                                      vertical: 2.h,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFEF4444)
+                                          .withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(4.r),
+                                    ),
+                                    child: Text(
+                                      'Low Balance',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 10.sp,
+                                        fontWeight: FontWeight.w500,
+                                        color: const Color(0xFFEF4444),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (filteredAccounts.length > 1)
+                        Icon(
+                          Icons.expand_more,
+                          color: Colors.grey[400],
+                          size: 24.sp,
+                        ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           );
         }
@@ -808,6 +882,197 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
         return const SizedBox.shrink();
       },
     );
+  }
+
+  // Opens the bottom-sheet picker so the user can switch from the
+  // preselected primary account to another funded one. Mirrors the
+  // dashboard's "switch active account" pattern. Filtered list is
+  // built by the caller; we just render + commit on tap.
+  bool _pickerOpen = false;
+  void _openAccountPicker(List<AccountSummaryEntity> accounts) {
+    // Re-entrancy guard. A double-tap while the sheet animation is
+    // still settling would otherwise stack two pickers and leave the
+    // app deadlocked under the modal barrier on dismiss.
+    if (_pickerOpen) return;
+    _pickerOpen = true;
+    final amount = double.tryParse(_amountController.text) ?? 0;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetCtx) {
+        // Note: the picker future's whenComplete (below the
+        // showModalBottomSheet call) clears _pickerOpen on dismiss
+        // so subsequent taps work.
+        return Container(
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[600],
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Pay From',
+                    style: GoogleFonts.inter(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 12.h),
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(sheetCtx).size.height * 0.55,
+                  ),
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: accounts.length,
+                    itemBuilder: (_, i) {
+                      final a = accounts[i];
+                      final isSelected =
+                          _selectedAccountId == a.id.toString();
+                      final ok = amount <= a.balance;
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _selectedAccountId = a.id.toString();
+                            _selectedAccountBalance = a.balance;
+                          });
+                          Navigator.of(sheetCtx).pop();
+                        },
+                        child: Container(
+                          margin: EdgeInsets.only(bottom: 8.h),
+                          padding: EdgeInsets.all(14.w),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? const Color.fromARGB(255, 78, 3, 208)
+                                    .withValues(alpha: 0.12)
+                                : const Color(0xFF0A0A0A),
+                            border: Border.all(
+                              color: isSelected
+                                  ? const Color.fromARGB(255, 78, 3, 208)
+                                  : const Color(0xFF2D2D2D),
+                              width: isSelected ? 1.5 : 1,
+                            ),
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 36.w,
+                                height: 36.w,
+                                decoration: BoxDecoration(
+                                  color: const Color.fromARGB(
+                                          255, 78, 3, 208)
+                                      .withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(18.r),
+                                ),
+                                child: Icon(
+                                  Icons.account_balance_wallet,
+                                  color: const Color.fromARGB(
+                                      255, 78, 3, 208),
+                                  size: 18.sp,
+                                ),
+                              ),
+                              SizedBox(width: 12.w),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Flexible(
+                                          child: Text(
+                                            a.accountType,
+                                            style: GoogleFonts.inter(
+                                              fontSize: 13.sp,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.white,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        if (a.isPrimary) ...[
+                                          SizedBox(width: 6.w),
+                                          Container(
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: 5.w,
+                                              vertical: 1.h,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF10B981)
+                                                  .withValues(alpha: 0.2),
+                                              borderRadius:
+                                                  BorderRadius.circular(3.r),
+                                            ),
+                                            child: Text(
+                                              'Primary',
+                                              style: GoogleFonts.inter(
+                                                fontSize: 9.sp,
+                                                fontWeight: FontWeight.w600,
+                                                color: const Color(0xFF10B981),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                    SizedBox(height: 2.h),
+                                    Text(
+                                      '${a.currency} ${a.balance.toStringAsFixed(2)}',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 11.sp,
+                                        color: ok
+                                            ? const Color(0xFF9CA3AF)
+                                            : const Color(0xFFEF4444),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (isSelected)
+                                Icon(
+                                  Icons.check_circle,
+                                  color: const Color.fromARGB(
+                                      255, 78, 3, 208),
+                                  size: 22.sp,
+                                ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                SizedBox(height: 8.h),
+              ],
+            ),
+          ),
+        );
+      },
+    ).whenComplete(() {
+      // Sheet is dismissed (tap-outside, swipe-down, or our own
+      // Navigator.pop on row select). Reset the re-entrancy guard
+      // so the next tap re-opens correctly.
+      if (mounted) _pickerOpen = false;
+    });
   }
 
   Widget _buildNotesSection() {

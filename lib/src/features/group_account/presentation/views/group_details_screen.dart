@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -17,6 +19,8 @@ import '../widgets/member_detail_dialog.dart';
 import '../views/group_account_report_screen.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../authentication/cubit/authentication_state.dart';
+import '../../../../../core/services/account_manager.dart';
+import '../../../../../core/services/injection_container.dart';
 
 class GroupDetailsScreen extends StatefulWidget {
   final String groupId;
@@ -34,12 +38,16 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   bool _isLeavingGroup = false;
+  final ScrollController _membersScrollController = ScrollController();
+  // Debounce so a Future.wait of N adds (each emitting MemberAddedSuccess)
+  // produces a single scroll animation instead of N stacked ones.
+  Timer? _scrollToMembersBottomDebounce;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    
+
     // Load group details if not already loaded
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<GroupAccountCubit>().loadGroupDetails(widget.groupId);
@@ -49,7 +57,27 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
   @override
   void dispose() {
     _tabController.dispose();
+    _membersScrollController.dispose();
+    _scrollToMembersBottomDebounce?.cancel();
     super.dispose();
+  }
+
+  /// After a successful member add, jump to the bottom of the members
+  /// list so the just-added row is in view. Debounced because
+  /// Future.wait fires one MemberAddedSuccess per added user; we only
+  /// want one final animation.
+  void _scrollMembersToBottom() {
+    _scrollToMembersBottomDebounce?.cancel();
+    _scrollToMembersBottomDebounce = Timer(const Duration(milliseconds: 250), () {
+      if (!mounted) return;
+      if (!_membersScrollController.hasClients) return;
+      final position = _membersScrollController.position;
+      _membersScrollController.animateTo(
+        position.maxScrollExtent,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeOut,
+      );
+    });
   }
 
   @override
@@ -98,6 +126,10 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
               // Reload group details to get updated members list
               // This is a single reload after successful member add
               context.read<GroupAccountCubit>().loadGroupDetails(widget.groupId);
+              // Auto-scroll the members list to the new bottom row.
+              // Debounced inside _scrollMembersToBottom so a Future.wait
+              // of N adds collapses to a single animation.
+              _scrollMembersToBottom();
             }
           },
           builder: (context, state) {
@@ -578,47 +610,62 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
               size: 24.sp,
             ),
             color: const Color(0xFF1F1F1F),
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 'share_report',
-                child: Row(
-                  children: [
-                    Icon(Icons.analytics, color: const Color.fromARGB(255, 78, 3, 208), size: 20.sp),
-                    SizedBox(width: 12.w),
-                    Text(
-                      'Generate Report',
-                      style: GoogleFonts.inter(color: Colors.white),
-                    ),
-                  ],
+            itemBuilder: (context) {
+              final currentUserId = context.read<GroupAccountCubit>().currentUserId;
+              final currentMember = currentUserId != null ? group.getMember(currentUserId) : null;
+              final canEditGroup = GroupRolePermissions.canMember(
+                  currentMember, GroupAction.editGroup);
+              // Only an actual ACTIVE member can leave; the original
+              // admin cannot leave their own group (they must transfer
+              // admin first or delete the group). Pending/removed
+              // members never see the option.
+              final canLeave = currentMember != null &&
+                  currentMember.status == GroupMemberStatus.active &&
+                  currentMember.userId != group.adminId;
+              return [
+                PopupMenuItem(
+                  value: 'share_report',
+                  child: Row(
+                    children: [
+                      Icon(Icons.analytics, color: const Color.fromARGB(255, 78, 3, 208), size: 20.sp),
+                      SizedBox(width: 12.w),
+                      Text(
+                        'Generate Report',
+                        style: GoogleFonts.inter(color: Colors.white),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              PopupMenuItem(
-                value: 'edit',
-                child: Row(
-                  children: [
-                    Icon(Icons.edit, color: Colors.white, size: 20.sp),
-                    SizedBox(width: 12.w),
-                    Text(
-                      'Edit Group',
-                      style: GoogleFonts.inter(color: Colors.white),
+                if (canEditGroup)
+                  PopupMenuItem(
+                    value: 'edit',
+                    child: Row(
+                      children: [
+                        Icon(Icons.edit, color: Colors.white, size: 20.sp),
+                        SizedBox(width: 12.w),
+                        Text(
+                          'Edit Group',
+                          style: GoogleFonts.inter(color: Colors.white),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: 'leave',
-                child: Row(
-                  children: [
-                    Icon(Icons.exit_to_app, color: Colors.red, size: 20.sp),
-                    SizedBox(width: 12.w),
-                    Text(
-                      'Leave Group',
-                      style: GoogleFonts.inter(color: Colors.red),
+                  ),
+                if (canLeave)
+                  PopupMenuItem(
+                    value: 'leave',
+                    child: Row(
+                      children: [
+                        Icon(Icons.exit_to_app, color: Colors.red, size: 20.sp),
+                        SizedBox(width: 12.w),
+                        Text(
+                          'Leave Group',
+                          style: GoogleFonts.inter(color: Colors.red),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-            ],
+                  ),
+              ];
+            },
             onSelected: (value) => _handleMenuAction(value, group),
           ),
         ],
@@ -951,9 +998,8 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
     final currentMember = currentUserId != null
         ? members.where((m) => m.userId == currentUserId).firstOrNull
         : null;
-    final canAddMembers = currentMember != null &&
-        (currentMember.role == GroupMemberRole.admin ||
-         currentMember.role == GroupMemberRole.moderator);
+    final canAddMembers =
+        GroupRolePermissions.canMember(currentMember, GroupAction.inviteMember);
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -963,6 +1009,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
       backgroundColor: const Color(0xFF1F1F1F),
       child: CustomScrollView(
         key: const PageStorageKey<String>('members'),
+        controller: _membersScrollController,
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           SliverToBoxAdapter(
@@ -1049,7 +1096,14 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
   }
 
   Widget _buildContributionsTab(List<Contribution> contributions, GroupAccount group, GroupMember? currentUserMember) {
-    final isAdmin = currentUserMember?.role == GroupMemberRole.admin;
+    // canMember combines role + status — a pending/inactive/removed
+    // member never passes even if their role would otherwise allow.
+    final canCreateContribution = GroupRolePermissions.canMember(
+        currentUserMember, GroupAction.createContribution);
+    // Keep the variable name `isAdmin` for the empty-state copy to
+    // avoid touching every reference; semantically it now means
+    // "can create contributions".
+    final isAdmin = canCreateContribution;
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -1104,12 +1158,21 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
                         final contribution = contributions[index];
+                        // Pass onPayment only if the current user's
+                        // group membership permits making contributions
+                        // RIGHT NOW (role + active status). The card
+                        // hides the button when onPayment is null.
+                        final canPay = GroupRolePermissions.canMember(
+                            currentUserMember,
+                            GroupAction.makeContribution);
                         return Padding(
                           padding: EdgeInsets.only(bottom: 12.h),
                           child: ContributionCard(
                             contribution: contribution,
                             onTap: () => _navigateToContributionDetails(contribution),
-                            onPayment: () => _navigateToMakePayment(contribution),
+                            onPayment: canPay
+                                ? () => _navigateToMakePayment(contribution)
+                                : null,
                           ),
                         );
                       },
@@ -1289,6 +1352,11 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
 
   void _showAddMemberBottomSheet(GroupAccount group, List<GroupMember> existingMembers) {
     final cubit = context.read<GroupAccountCubit>();
+    final currentUserId = cubit.currentUserId;
+    final currentMember = currentUserId != null
+        ? existingMembers.where((m) => m.userId == currentUserId).firstOrNull
+        : null;
+    final currentUserRole = currentMember?.role ?? GroupMemberRole.viewer;
 
     showModalBottomSheet<GroupMember?>(
       context: context,
@@ -1299,6 +1367,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
         child: AddMemberBottomSheet(
           group: group,
           existingMembers: existingMembers,
+          currentUserRole: currentUserRole,
         ),
       ),
     ).then((newMember) {
@@ -1317,17 +1386,38 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
   void _showCreateContributionBottomSheet(GroupAccount group) {
     final cubit = context.read<GroupAccountCubit>();
 
-    // Get user's currency from auth state
-    String userCurrency = 'NGN'; // Default
-    String currencySymbol = '₦';
-    final authState = context.read<AuthenticationCubit>().state;
-    if (authState is AuthenticationSuccess) {
-      final currency = authState.profile.user.currency;
-      if (currency != null && currency.isNotEmpty) {
-        userCurrency = currency.toUpperCase();
-        currencySymbol = _getCurrencySymbol(userCurrency);
+    // Currency precedence (most → least specific):
+    //   1. Currency of an existing contribution in this group (so all
+    //      contributions inside the group share a single currency)
+    //   2. Dashboard's active account currency — the account the user
+    //      has selected on the home carousel right now
+    //   3. User profile's locale currency
+    //   4. Hard fallback: NGN
+    //
+    // GroupAccount itself has no currency column — currency lives on
+    // each Contribution. Once a group has its first contribution, we
+    // pin all subsequent contributions to that currency so members
+    // don't end up with mixed-currency obligations in the same group.
+    String userCurrency = 'NGN';
+
+    if (group.contributions.isNotEmpty &&
+        group.contributions.first.currency.isNotEmpty) {
+      userCurrency = group.contributions.first.currency.toUpperCase();
+    } else {
+      final activeAccount = serviceLocator<AccountManager>().activeAccountDetails;
+      if (activeAccount != null && activeAccount.currency.isNotEmpty) {
+        userCurrency = activeAccount.currency.toUpperCase();
+      } else {
+        final authState = context.read<AuthenticationCubit>().state;
+        if (authState is AuthenticationSuccess) {
+          final currency = authState.profile.user.currency;
+          if (currency != null && currency.isNotEmpty) {
+            userCurrency = currency.toUpperCase();
+          }
+        }
       }
     }
+    final currencySymbol = _getCurrencySymbol(userCurrency);
 
     showModalBottomSheet(
       context: context,
@@ -1403,10 +1493,14 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
   }
 
   void _showChangeRoleDialog(GroupMember member, GroupAccount group) {
+    final currentUserId = context.read<GroupAccountCubit>().currentUserId;
+    final currentMember = currentUserId != null ? group.getMember(currentUserId) : null;
+    final currentUserRole = currentMember?.role ?? GroupMemberRole.viewer;
     showDialog(
       context: context,
       builder: (dialogContext) => ChangeRoleDialog(
         member: member,
+        currentUserRole: currentUserRole,
         onRoleSelected: (newRole) {
           context.read<GroupAccountCubit>().updateMemberRoleInGroup(
             groupId: group.id,

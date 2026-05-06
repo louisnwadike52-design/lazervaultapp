@@ -33,6 +33,16 @@ class GroupAccountStatus extends $pb.ProtobufEnum {
   const GroupAccountStatus._(super.value, super.name);
 }
 
+/// Role enum + canonical permission boundaries (enforced server-side):
+///
+///   ADMIN     — full control: edit group, delete group, manage payouts,
+///               update settings, and ALL moderator capabilities below.
+///   MODERATOR — day-to-day group management: invite/remove non-admin
+///               members, accept/reject join requests, edit non-financial
+///               group metadata. CANNOT delete the group, CANNOT change
+///               another member's role, CANNOT initiate payouts.
+///   MEMBER    — participate: contribute, view group + payment history.
+///   VIEWER    — read-only. Cannot contribute or modify anything.
 class GroupMemberRole extends $pb.ProtobufEnum {
   static const GroupMemberRole GROUP_MEMBER_ROLE_UNSPECIFIED = GroupMemberRole._(0, _omitEnumNames ? '' : 'GROUP_MEMBER_ROLE_UNSPECIFIED');
   static const GroupMemberRole GROUP_MEMBER_ROLE_ADMIN = GroupMemberRole._(1, _omitEnumNames ? '' : 'GROUP_MEMBER_ROLE_ADMIN');
@@ -78,13 +88,11 @@ class GroupMemberStatus extends $pb.ProtobufEnum {
 class ContributionType extends $pb.ProtobufEnum {
   static const ContributionType CONTRIBUTION_TYPE_UNSPECIFIED = ContributionType._(0, _omitEnumNames ? '' : 'CONTRIBUTION_TYPE_UNSPECIFIED');
   static const ContributionType CONTRIBUTION_TYPE_ONE_TIME = ContributionType._(1, _omitEnumNames ? '' : 'CONTRIBUTION_TYPE_ONE_TIME');
-  static const ContributionType CONTRIBUTION_TYPE_RECURRING = ContributionType._(2, _omitEnumNames ? '' : 'CONTRIBUTION_TYPE_RECURRING');
   static const ContributionType CONTRIBUTION_TYPE_ROTATING_SAVINGS = ContributionType._(3, _omitEnumNames ? '' : 'CONTRIBUTION_TYPE_ROTATING_SAVINGS');
 
   static const $core.List<ContributionType> values = <ContributionType> [
     CONTRIBUTION_TYPE_UNSPECIFIED,
     CONTRIBUTION_TYPE_ONE_TIME,
-    CONTRIBUTION_TYPE_RECURRING,
     CONTRIBUTION_TYPE_ROTATING_SAVINGS,
   ];
 
@@ -147,13 +155,17 @@ class PaymentStatus extends $pb.ProtobufEnum {
   static const PaymentStatus PAYMENT_STATUS_COMPLETED = PaymentStatus._(3, _omitEnumNames ? '' : 'PAYMENT_STATUS_COMPLETED');
   static const PaymentStatus PAYMENT_STATUS_FAILED = PaymentStatus._(4, _omitEnumNames ? '' : 'PAYMENT_STATUS_FAILED');
   static const PaymentStatus PAYMENT_STATUS_REFUNDED = PaymentStatus._(5, _omitEnumNames ? '' : 'PAYMENT_STATUS_REFUNDED');
-  /// Phase 2 (debit) returned an ambiguous error. Supervisor is verifying
-  /// with accounts-service. Money MAY have moved.
+  /// Phase 2 (debit) returned an ambiguous error. The supervisor is
+  /// verifying with accounts-service via LookupTransactionByReference.
+  /// The user's money MAY have moved — UI should show "we're verifying"
+  /// and refuse to start a fresh payment for this intent.
   static const PaymentStatus PAYMENT_STATUS_AWAITING_VERIFICATION = PaymentStatus._(6, _omitEnumNames ? '' : 'PAYMENT_STATUS_AWAITING_VERIFICATION');
-  /// Phase 3 failed AFTER successful debit. Rollback processor is issuing
-  /// the compensating credit. Money WILL be returned.
+  /// Phase 3 failed AFTER a successful debit. The rollback processor is
+  /// issuing the compensating credit. Money WILL be returned.
   static const PaymentStatus PAYMENT_STATUS_REFUNDING = PaymentStatus._(7, _omitEnumNames ? '' : 'PAYMENT_STATUS_REFUNDING');
-  /// Reconciliation exhausted retries. Operator action required.
+  /// Reconciliation exhausted automated retries. An operator must
+  /// intervene. Critical: the user is potentially out of pocket OR the
+  /// platform is potentially out of pocket — either way, do not assume.
   static const PaymentStatus PAYMENT_STATUS_MANUAL_REVIEW = PaymentStatus._(8, _omitEnumNames ? '' : 'PAYMENT_STATUS_MANUAL_REVIEW');
 
   static const $core.List<PaymentStatus> values = <PaymentStatus> [
@@ -179,15 +191,21 @@ class PayoutStatus extends $pb.ProtobufEnum {
   static const PayoutStatus PAYOUT_STATUS_PENDING = PayoutStatus._(1, _omitEnumNames ? '' : 'PAYOUT_STATUS_PENDING');
   static const PayoutStatus PAYOUT_STATUS_COMPLETED = PayoutStatus._(2, _omitEnumNames ? '' : 'PAYOUT_STATUS_COMPLETED');
   static const PayoutStatus PAYOUT_STATUS_CANCELLED = PayoutStatus._(3, _omitEnumNames ? '' : 'PAYOUT_STATUS_CANCELLED');
+  static const PayoutStatus PAYOUT_STATUS_PROCESSING = PayoutStatus._(4, _omitEnumNames ? '' : 'PAYOUT_STATUS_PROCESSING');
+  static const PayoutStatus PAYOUT_STATUS_FAILED = PayoutStatus._(5, _omitEnumNames ? '' : 'PAYOUT_STATUS_FAILED');
+  static const PayoutStatus PAYOUT_STATUS_MANUAL_REVIEW = PayoutStatus._(6, _omitEnumNames ? '' : 'PAYOUT_STATUS_MANUAL_REVIEW');
 
   static const $core.List<PayoutStatus> values = <PayoutStatus> [
     PAYOUT_STATUS_UNSPECIFIED,
     PAYOUT_STATUS_PENDING,
     PAYOUT_STATUS_COMPLETED,
     PAYOUT_STATUS_CANCELLED,
+    PAYOUT_STATUS_PROCESSING,
+    PAYOUT_STATUS_FAILED,
+    PAYOUT_STATUS_MANUAL_REVIEW,
   ];
 
-  static final $core.List<PayoutStatus?> _byValue = $pb.ProtobufEnum.$_initByValueList(values, 3);
+  static final $core.List<PayoutStatus?> _byValue = $pb.ProtobufEnum.$_initByValueList(values, 6);
   static PayoutStatus? valueOf($core.int value) =>  value < 0 || value >= _byValue.length ? null : _byValue[value];
 
   const PayoutStatus._(super.value, super.name);
@@ -231,6 +249,52 @@ class GroupVisibility extends $pb.ProtobufEnum {
   static GroupVisibility? valueOf($core.int value) =>  value < 0 || value >= _byValue.length ? null : _byValue[value];
 
   const GroupVisibility._(super.value, super.name);
+}
+
+class ScheduledPayoutStatus extends $pb.ProtobufEnum {
+  static const ScheduledPayoutStatus SCHEDULED_PAYOUT_STATUS_UNSPECIFIED = ScheduledPayoutStatus._(0, _omitEnumNames ? '' : 'SCHEDULED_PAYOUT_STATUS_UNSPECIFIED');
+  static const ScheduledPayoutStatus SCHEDULED_PAYOUT_STATUS_PENDING_RECEIVER = ScheduledPayoutStatus._(1, _omitEnumNames ? '' : 'SCHEDULED_PAYOUT_STATUS_PENDING_RECEIVER');
+  static const ScheduledPayoutStatus SCHEDULED_PAYOUT_STATUS_READY = ScheduledPayoutStatus._(2, _omitEnumNames ? '' : 'SCHEDULED_PAYOUT_STATUS_READY');
+  static const ScheduledPayoutStatus SCHEDULED_PAYOUT_STATUS_SCHEDULED = ScheduledPayoutStatus._(3, _omitEnumNames ? '' : 'SCHEDULED_PAYOUT_STATUS_SCHEDULED');
+  static const ScheduledPayoutStatus SCHEDULED_PAYOUT_STATUS_IN_FLIGHT = ScheduledPayoutStatus._(4, _omitEnumNames ? '' : 'SCHEDULED_PAYOUT_STATUS_IN_FLIGHT');
+  static const ScheduledPayoutStatus SCHEDULED_PAYOUT_STATUS_SETTLED = ScheduledPayoutStatus._(5, _omitEnumNames ? '' : 'SCHEDULED_PAYOUT_STATUS_SETTLED');
+  static const ScheduledPayoutStatus SCHEDULED_PAYOUT_STATUS_FAILED = ScheduledPayoutStatus._(6, _omitEnumNames ? '' : 'SCHEDULED_PAYOUT_STATUS_FAILED');
+  static const ScheduledPayoutStatus SCHEDULED_PAYOUT_STATUS_EXHAUSTED = ScheduledPayoutStatus._(7, _omitEnumNames ? '' : 'SCHEDULED_PAYOUT_STATUS_EXHAUSTED');
+  static const ScheduledPayoutStatus SCHEDULED_PAYOUT_STATUS_CANCELED = ScheduledPayoutStatus._(8, _omitEnumNames ? '' : 'SCHEDULED_PAYOUT_STATUS_CANCELED');
+
+  static const $core.List<ScheduledPayoutStatus> values = <ScheduledPayoutStatus> [
+    SCHEDULED_PAYOUT_STATUS_UNSPECIFIED,
+    SCHEDULED_PAYOUT_STATUS_PENDING_RECEIVER,
+    SCHEDULED_PAYOUT_STATUS_READY,
+    SCHEDULED_PAYOUT_STATUS_SCHEDULED,
+    SCHEDULED_PAYOUT_STATUS_IN_FLIGHT,
+    SCHEDULED_PAYOUT_STATUS_SETTLED,
+    SCHEDULED_PAYOUT_STATUS_FAILED,
+    SCHEDULED_PAYOUT_STATUS_EXHAUSTED,
+    SCHEDULED_PAYOUT_STATUS_CANCELED,
+  ];
+
+  static final $core.List<ScheduledPayoutStatus?> _byValue = $pb.ProtobufEnum.$_initByValueList(values, 8);
+  static ScheduledPayoutStatus? valueOf($core.int value) =>  value < 0 || value >= _byValue.length ? null : _byValue[value];
+
+  const ScheduledPayoutStatus._(super.value, super.name);
+}
+
+class PayoutMode extends $pb.ProtobufEnum {
+  static const PayoutMode PAYOUT_MODE_UNSPECIFIED = PayoutMode._(0, _omitEnumNames ? '' : 'PAYOUT_MODE_UNSPECIFIED');
+  static const PayoutMode PAYOUT_MODE_AUTO = PayoutMode._(1, _omitEnumNames ? '' : 'PAYOUT_MODE_AUTO');
+  static const PayoutMode PAYOUT_MODE_MANUAL = PayoutMode._(2, _omitEnumNames ? '' : 'PAYOUT_MODE_MANUAL');
+
+  static const $core.List<PayoutMode> values = <PayoutMode> [
+    PAYOUT_MODE_UNSPECIFIED,
+    PAYOUT_MODE_AUTO,
+    PAYOUT_MODE_MANUAL,
+  ];
+
+  static final $core.List<PayoutMode?> _byValue = $pb.ProtobufEnum.$_initByValueList(values, 2);
+  static PayoutMode? valueOf($core.int value) =>  value < 0 || value >= _byValue.length ? null : _byValue[value];
+
+  const PayoutMode._(super.value, super.name);
 }
 
 

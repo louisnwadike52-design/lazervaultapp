@@ -120,10 +120,6 @@ class GroupAccountServiceClient extends $grpc.Client {
     return $createUnaryCall(_$processScheduledPayments, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.GetOverdueContributionsResponse> getOverdueContributions($0.GetOverdueContributionsRequest request, {$grpc.CallOptions? options,}) {
-    return $createUnaryCall(_$getOverdueContributions, request, options: options);
-  }
-
   $grpc.ResponseFuture<$0.GetPayoutScheduleResponse> getPayoutSchedule($0.GetPayoutScheduleRequest request, {$grpc.CallOptions? options,}) {
     return $createUnaryCall(_$getPayoutSchedule, request, options: options);
   }
@@ -138,6 +134,31 @@ class GroupAccountServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.AdvancePayoutRotationResponse> advancePayoutRotation($0.AdvancePayoutRotationRequest request, {$grpc.CallOptions? options,}) {
     return $createUnaryCall(_$advancePayoutRotation, request, options: options);
+  }
+
+  /// Receiver assignment + scheduled-payout dispatch.
+  $grpc.ResponseFuture<$0.SetPayoutReceiverResponse> setPayoutReceiver($0.SetPayoutReceiverRequest request, {$grpc.CallOptions? options,}) {
+    return $createUnaryCall(_$setPayoutReceiver, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetPayoutReceiverResponse> getPayoutReceiver($0.GetPayoutReceiverRequest request, {$grpc.CallOptions? options,}) {
+    return $createUnaryCall(_$getPayoutReceiver, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.ClearPayoutReceiverResponse> clearPayoutReceiver($0.ClearPayoutReceiverRequest request, {$grpc.CallOptions? options,}) {
+    return $createUnaryCall(_$clearPayoutReceiver, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.TriggerManualPayoutResponse> triggerManualPayout($0.TriggerManualPayoutRequest request, {$grpc.CallOptions? options,}) {
+    return $createUnaryCall(_$triggerManualPayout, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.ListScheduledPayoutsResponse> listScheduledPayouts($0.ListScheduledPayoutsRequest request, {$grpc.CallOptions? options,}) {
+    return $createUnaryCall(_$listScheduledPayouts, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetScheduledPayoutResponse> getScheduledPayout($0.GetScheduledPayoutRequest request, {$grpc.CallOptions? options,}) {
+    return $createUnaryCall(_$getScheduledPayout, request, options: options);
   }
 
   $grpc.ResponseFuture<$0.GenerateReceiptResponse> generateReceipt($0.GenerateReceiptRequest request, {$grpc.CallOptions? options,}) {
@@ -158,6 +179,10 @@ class GroupAccountServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.GetUserContributionStatsResponse> getUserContributionStats($0.GetUserContributionStatsRequest request, {$grpc.CallOptions? options,}) {
     return $createUnaryCall(_$getUserContributionStats, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetOverdueContributionsResponse> getOverdueContributions($0.GetOverdueContributionsRequest request, {$grpc.CallOptions? options,}) {
+    return $createUnaryCall(_$getOverdueContributions, request, options: options);
   }
 
   $grpc.ResponseFuture<$0.GetContributionAnalyticsResponse> getContributionAnalytics($0.GetContributionAnalyticsRequest request, {$grpc.CallOptions? options,}) {
@@ -276,10 +301,6 @@ class GroupAccountServiceClient extends $grpc.Client {
       '/group_accounts.GroupAccountService/ProcessScheduledPayments',
       ($0.ProcessScheduledPaymentsRequest value) => value.writeToBuffer(),
       $0.ProcessScheduledPaymentsResponse.fromBuffer);
-  static final _$getOverdueContributions = $grpc.ClientMethod<$0.GetOverdueContributionsRequest, $0.GetOverdueContributionsResponse>(
-      '/group_accounts.GroupAccountService/GetOverdueContributions',
-      ($0.GetOverdueContributionsRequest value) => value.writeToBuffer(),
-      $0.GetOverdueContributionsResponse.fromBuffer);
   static final _$getPayoutSchedule = $grpc.ClientMethod<$0.GetPayoutScheduleRequest, $0.GetPayoutScheduleResponse>(
       '/group_accounts.GroupAccountService/GetPayoutSchedule',
       ($0.GetPayoutScheduleRequest value) => value.writeToBuffer(),
@@ -296,6 +317,30 @@ class GroupAccountServiceClient extends $grpc.Client {
       '/group_accounts.GroupAccountService/AdvancePayoutRotation',
       ($0.AdvancePayoutRotationRequest value) => value.writeToBuffer(),
       $0.AdvancePayoutRotationResponse.fromBuffer);
+  static final _$setPayoutReceiver = $grpc.ClientMethod<$0.SetPayoutReceiverRequest, $0.SetPayoutReceiverResponse>(
+      '/group_accounts.GroupAccountService/SetPayoutReceiver',
+      ($0.SetPayoutReceiverRequest value) => value.writeToBuffer(),
+      $0.SetPayoutReceiverResponse.fromBuffer);
+  static final _$getPayoutReceiver = $grpc.ClientMethod<$0.GetPayoutReceiverRequest, $0.GetPayoutReceiverResponse>(
+      '/group_accounts.GroupAccountService/GetPayoutReceiver',
+      ($0.GetPayoutReceiverRequest value) => value.writeToBuffer(),
+      $0.GetPayoutReceiverResponse.fromBuffer);
+  static final _$clearPayoutReceiver = $grpc.ClientMethod<$0.ClearPayoutReceiverRequest, $0.ClearPayoutReceiverResponse>(
+      '/group_accounts.GroupAccountService/ClearPayoutReceiver',
+      ($0.ClearPayoutReceiverRequest value) => value.writeToBuffer(),
+      $0.ClearPayoutReceiverResponse.fromBuffer);
+  static final _$triggerManualPayout = $grpc.ClientMethod<$0.TriggerManualPayoutRequest, $0.TriggerManualPayoutResponse>(
+      '/group_accounts.GroupAccountService/TriggerManualPayout',
+      ($0.TriggerManualPayoutRequest value) => value.writeToBuffer(),
+      $0.TriggerManualPayoutResponse.fromBuffer);
+  static final _$listScheduledPayouts = $grpc.ClientMethod<$0.ListScheduledPayoutsRequest, $0.ListScheduledPayoutsResponse>(
+      '/group_accounts.GroupAccountService/ListScheduledPayouts',
+      ($0.ListScheduledPayoutsRequest value) => value.writeToBuffer(),
+      $0.ListScheduledPayoutsResponse.fromBuffer);
+  static final _$getScheduledPayout = $grpc.ClientMethod<$0.GetScheduledPayoutRequest, $0.GetScheduledPayoutResponse>(
+      '/group_accounts.GroupAccountService/GetScheduledPayout',
+      ($0.GetScheduledPayoutRequest value) => value.writeToBuffer(),
+      $0.GetScheduledPayoutResponse.fromBuffer);
   static final _$generateReceipt = $grpc.ClientMethod<$0.GenerateReceiptRequest, $0.GenerateReceiptResponse>(
       '/group_accounts.GroupAccountService/GenerateReceipt',
       ($0.GenerateReceiptRequest value) => value.writeToBuffer(),
@@ -316,6 +361,10 @@ class GroupAccountServiceClient extends $grpc.Client {
       '/group_accounts.GroupAccountService/GetUserContributionStats',
       ($0.GetUserContributionStatsRequest value) => value.writeToBuffer(),
       $0.GetUserContributionStatsResponse.fromBuffer);
+  static final _$getOverdueContributions = $grpc.ClientMethod<$0.GetOverdueContributionsRequest, $0.GetOverdueContributionsResponse>(
+      '/group_accounts.GroupAccountService/GetOverdueContributions',
+      ($0.GetOverdueContributionsRequest value) => value.writeToBuffer(),
+      $0.GetOverdueContributionsResponse.fromBuffer);
   static final _$getContributionAnalytics = $grpc.ClientMethod<$0.GetContributionAnalyticsRequest, $0.GetContributionAnalyticsResponse>(
       '/group_accounts.GroupAccountService/GetContributionAnalytics',
       ($0.GetContributionAnalyticsRequest value) => value.writeToBuffer(),
@@ -501,13 +550,6 @@ abstract class GroupAccountServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.ProcessScheduledPaymentsRequest.fromBuffer(value),
         ($0.ProcessScheduledPaymentsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetOverdueContributionsRequest, $0.GetOverdueContributionsResponse>(
-        'GetOverdueContributions',
-        getOverdueContributions_Pre,
-        false,
-        false,
-        ($core.List<$core.int> value) => $0.GetOverdueContributionsRequest.fromBuffer(value),
-        ($0.GetOverdueContributionsResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.GetPayoutScheduleRequest, $0.GetPayoutScheduleResponse>(
         'GetPayoutSchedule',
         getPayoutSchedule_Pre,
@@ -536,6 +578,48 @@ abstract class GroupAccountServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.AdvancePayoutRotationRequest.fromBuffer(value),
         ($0.AdvancePayoutRotationResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.SetPayoutReceiverRequest, $0.SetPayoutReceiverResponse>(
+        'SetPayoutReceiver',
+        setPayoutReceiver_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.SetPayoutReceiverRequest.fromBuffer(value),
+        ($0.SetPayoutReceiverResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetPayoutReceiverRequest, $0.GetPayoutReceiverResponse>(
+        'GetPayoutReceiver',
+        getPayoutReceiver_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetPayoutReceiverRequest.fromBuffer(value),
+        ($0.GetPayoutReceiverResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ClearPayoutReceiverRequest, $0.ClearPayoutReceiverResponse>(
+        'ClearPayoutReceiver',
+        clearPayoutReceiver_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.ClearPayoutReceiverRequest.fromBuffer(value),
+        ($0.ClearPayoutReceiverResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.TriggerManualPayoutRequest, $0.TriggerManualPayoutResponse>(
+        'TriggerManualPayout',
+        triggerManualPayout_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.TriggerManualPayoutRequest.fromBuffer(value),
+        ($0.TriggerManualPayoutResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ListScheduledPayoutsRequest, $0.ListScheduledPayoutsResponse>(
+        'ListScheduledPayouts',
+        listScheduledPayouts_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.ListScheduledPayoutsRequest.fromBuffer(value),
+        ($0.ListScheduledPayoutsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetScheduledPayoutRequest, $0.GetScheduledPayoutResponse>(
+        'GetScheduledPayout',
+        getScheduledPayout_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetScheduledPayoutRequest.fromBuffer(value),
+        ($0.GetScheduledPayoutResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.GenerateReceiptRequest, $0.GenerateReceiptResponse>(
         'GenerateReceipt',
         generateReceipt_Pre,
@@ -571,6 +655,13 @@ abstract class GroupAccountServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.GetUserContributionStatsRequest.fromBuffer(value),
         ($0.GetUserContributionStatsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetOverdueContributionsRequest, $0.GetOverdueContributionsResponse>(
+        'GetOverdueContributions',
+        getOverdueContributions_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetOverdueContributionsRequest.fromBuffer(value),
+        ($0.GetOverdueContributionsResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.GetContributionAnalyticsRequest, $0.GetContributionAnalyticsResponse>(
         'GetContributionAnalytics',
         getContributionAnalytics_Pre,
@@ -747,12 +838,6 @@ abstract class GroupAccountServiceBase extends $grpc.Service {
 
   $async.Future<$0.ProcessScheduledPaymentsResponse> processScheduledPayments($grpc.ServiceCall call, $0.ProcessScheduledPaymentsRequest request);
 
-  $async.Future<$0.GetOverdueContributionsResponse> getOverdueContributions_Pre($grpc.ServiceCall $call, $async.Future<$0.GetOverdueContributionsRequest> $request) async {
-    return getOverdueContributions($call, await $request);
-  }
-
-  $async.Future<$0.GetOverdueContributionsResponse> getOverdueContributions($grpc.ServiceCall call, $0.GetOverdueContributionsRequest request);
-
   $async.Future<$0.GetPayoutScheduleResponse> getPayoutSchedule_Pre($grpc.ServiceCall $call, $async.Future<$0.GetPayoutScheduleRequest> $request) async {
     return getPayoutSchedule($call, await $request);
   }
@@ -776,6 +861,42 @@ abstract class GroupAccountServiceBase extends $grpc.Service {
   }
 
   $async.Future<$0.AdvancePayoutRotationResponse> advancePayoutRotation($grpc.ServiceCall call, $0.AdvancePayoutRotationRequest request);
+
+  $async.Future<$0.SetPayoutReceiverResponse> setPayoutReceiver_Pre($grpc.ServiceCall $call, $async.Future<$0.SetPayoutReceiverRequest> $request) async {
+    return setPayoutReceiver($call, await $request);
+  }
+
+  $async.Future<$0.SetPayoutReceiverResponse> setPayoutReceiver($grpc.ServiceCall call, $0.SetPayoutReceiverRequest request);
+
+  $async.Future<$0.GetPayoutReceiverResponse> getPayoutReceiver_Pre($grpc.ServiceCall $call, $async.Future<$0.GetPayoutReceiverRequest> $request) async {
+    return getPayoutReceiver($call, await $request);
+  }
+
+  $async.Future<$0.GetPayoutReceiverResponse> getPayoutReceiver($grpc.ServiceCall call, $0.GetPayoutReceiverRequest request);
+
+  $async.Future<$0.ClearPayoutReceiverResponse> clearPayoutReceiver_Pre($grpc.ServiceCall $call, $async.Future<$0.ClearPayoutReceiverRequest> $request) async {
+    return clearPayoutReceiver($call, await $request);
+  }
+
+  $async.Future<$0.ClearPayoutReceiverResponse> clearPayoutReceiver($grpc.ServiceCall call, $0.ClearPayoutReceiverRequest request);
+
+  $async.Future<$0.TriggerManualPayoutResponse> triggerManualPayout_Pre($grpc.ServiceCall $call, $async.Future<$0.TriggerManualPayoutRequest> $request) async {
+    return triggerManualPayout($call, await $request);
+  }
+
+  $async.Future<$0.TriggerManualPayoutResponse> triggerManualPayout($grpc.ServiceCall call, $0.TriggerManualPayoutRequest request);
+
+  $async.Future<$0.ListScheduledPayoutsResponse> listScheduledPayouts_Pre($grpc.ServiceCall $call, $async.Future<$0.ListScheduledPayoutsRequest> $request) async {
+    return listScheduledPayouts($call, await $request);
+  }
+
+  $async.Future<$0.ListScheduledPayoutsResponse> listScheduledPayouts($grpc.ServiceCall call, $0.ListScheduledPayoutsRequest request);
+
+  $async.Future<$0.GetScheduledPayoutResponse> getScheduledPayout_Pre($grpc.ServiceCall $call, $async.Future<$0.GetScheduledPayoutRequest> $request) async {
+    return getScheduledPayout($call, await $request);
+  }
+
+  $async.Future<$0.GetScheduledPayoutResponse> getScheduledPayout($grpc.ServiceCall call, $0.GetScheduledPayoutRequest request);
 
   $async.Future<$0.GenerateReceiptResponse> generateReceipt_Pre($grpc.ServiceCall $call, $async.Future<$0.GenerateReceiptRequest> $request) async {
     return generateReceipt($call, await $request);
@@ -806,6 +927,12 @@ abstract class GroupAccountServiceBase extends $grpc.Service {
   }
 
   $async.Future<$0.GetUserContributionStatsResponse> getUserContributionStats($grpc.ServiceCall call, $0.GetUserContributionStatsRequest request);
+
+  $async.Future<$0.GetOverdueContributionsResponse> getOverdueContributions_Pre($grpc.ServiceCall $call, $async.Future<$0.GetOverdueContributionsRequest> $request) async {
+    return getOverdueContributions($call, await $request);
+  }
+
+  $async.Future<$0.GetOverdueContributionsResponse> getOverdueContributions($grpc.ServiceCall call, $0.GetOverdueContributionsRequest request);
 
   $async.Future<$0.GetContributionAnalyticsResponse> getContributionAnalytics_Pre($grpc.ServiceCall $call, $async.Future<$0.GetContributionAnalyticsRequest> $request) async {
     return getContributionAnalytics($call, await $request);

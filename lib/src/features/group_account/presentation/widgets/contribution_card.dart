@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import '../../domain/entities/group_entities.dart';
 
 class ContributionCard extends StatelessWidget {
@@ -208,8 +209,12 @@ class ContributionCard extends StatelessWidget {
                   ),
                 ),
                 
-                // Payment button
-                if (!isCompleted) ...[
+                // Payment button — only rendered when the parent
+                // wires an onPayment callback. The parent uses the
+                // role-permission helper to decide whether the
+                // current user is allowed to contribute, so a
+                // viewer never sees the button at all.
+                if (!isCompleted && onPayment != null) ...[
                   SizedBox(width: 12.w),
                   ElevatedButton(
                     onPressed: onPayment,
@@ -388,14 +393,21 @@ class ContributionCard extends StatelessWidget {
     );
   }
 
+  // Render the contribution amount with thousands separators and at most
+  // 2 decimal places. The previous K/M abbreviation collapsed
+  // "30,000" → "30.0K" and "30,000,000" → "30.0M", which made it hard
+  // to verify the exact amount the user entered. Now: 30000 → "30,000"
+  // and 30000.5 → "30,000.50". Decimals are dropped when the value has
+  // no fractional remainder so whole-pot displays stay clean.
+  //
+  // Input is `double` in MAJOR units (the gRPC data source's
+  // _int64ToAmount already divided by 100 from minor → major).
   String _formatAmount(double amount) {
-    if (amount >= 1000000) {
-      return '${(amount / 1000000).toStringAsFixed(1)}M';
-    } else if (amount >= 1000) {
-      return '${(amount / 1000).toStringAsFixed(1)}K';
-    } else {
-      return amount.toStringAsFixed(2);
-    }
+    final hasFraction = amount != amount.truncateToDouble();
+    final fmt = NumberFormat.decimalPattern();
+    fmt.minimumFractionDigits = hasFraction ? 2 : 0;
+    fmt.maximumFractionDigits = 2;
+    return fmt.format(amount);
   }
 
   String _formatDeadline(DateTime deadline) {

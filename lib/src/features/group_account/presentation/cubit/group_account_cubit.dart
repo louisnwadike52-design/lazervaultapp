@@ -466,15 +466,37 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
   Future<void> updateGroupDetails(GroupAccount group) async {
     if (isClosed) return;
     final snapshot = _snapshotLoaded();
-    // Optimistic patch: show the new group payload immediately.
+    // Optimistic patch: show the new group payload immediately so the
+    // group-details screen behind any open bottom sheet reflects the
+    // edit while the network call is in flight.
     if (snapshot != null && snapshot.group.id == group.id) {
       _patchLoaded(group: group);
     }
+    // Explicit Loading state so callers (e.g. EditGroupBottomSheet)
+    // can render a button-level spinner. The optimistic _patchLoaded
+    // above ALSO emits GroupAccountGroupLoaded, so listeners that
+    // care about save state must filter via listenWhen — see the
+    // bottom sheet for the canonical pattern.
+    emit(const GroupAccountLoading(message: 'Updating group...'));
     try {
       await updateGroup(group);
       if (isClosed) return;
       // No reload — the local cache already reflects the change.
       await generateSocialLinkedReport(group: group);
+      if (isClosed) return;
+      // Re-emit the loaded snapshot first so any BlocBuilder reading
+      // group state goes back to the rendered tree (otherwise it
+      // stays stuck on Loading until something else emits Loaded).
+      if (_lastLoadedGroup != null && _lastLoadedGroup!.id == group.id &&
+          _lastLoadedMembers != null && _lastLoadedContributions != null) {
+        emit(GroupAccountGroupLoaded(
+          group: _lastLoadedGroup!,
+          members: _lastLoadedMembers!,
+          contributions: _lastLoadedContributions!,
+        ));
+      }
+      // Terminal success — bottom sheets listen for this to auto-close.
+      emit(const GroupAccountSuccess('Group updated successfully'));
     } catch (e) {
       if (isClosed) return;
       if (snapshot != null) _restoreSnapshot(snapshot);
@@ -513,7 +535,15 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     }
   }
 
-  Future<void> addMemberToGroupAccount({
+  /// Adds a member to a group.
+  ///
+  /// Returns the newly-created [GroupMember] on success, or `null` on
+  /// failure. The cubit still emits `MemberAddedSuccess` /
+  /// `GroupAccountError` so listeners that care about cross-cutting
+  /// effects (snackbars, parent reload) keep working — but callers
+  /// that need to know *this specific call's* outcome should await
+  /// the return value rather than racing the listener.
+  Future<GroupMember?> addMemberToGroupAccount({
     required String groupId,
     required String userId,
     required String userName,
@@ -522,7 +552,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     String? username,  // LazerTag username for user lookup
     GroupMemberRole role = GroupMemberRole.member,
   }) async {
-    if (isClosed) return;
+    if (isClosed) return null;
     // No GroupAccountLoading emit: the bottom sheet has its own button-
     // level loading state, and a global Loading would clobber the group-
     // details screen behind the sheet (regression to "Loading group
@@ -537,7 +567,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
         username: username,
         role: role,
       ));
-      if (isClosed) return;
+      if (isClosed) return newMember;
 
       // Optimistically append to the cached snapshot so the group-details
       // members list updates instantly when the bottom sheet pops. The
@@ -563,9 +593,11 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
         groupId: groupId,
         message: 'Member added successfully',
       ));
+      return newMember;
     } catch (e) {
-      if (isClosed) return;
+      if (isClosed) return null;
       emit(GroupAccountError('Failed to add member: ${e.toString()}'));
+      return null;
     }
   }
 
@@ -641,6 +673,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     int? gracePeriodDays,
     bool allowPartialPayments = true,
     double? minimumBalance,
+    bool autoPayoutEnabled = false,
     Map<String, dynamic>? metadata,
   }) async {
     if (isClosed) return;
@@ -669,6 +702,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
         gracePeriodDays: gracePeriodDays,
         allowPartialPayments: allowPartialPayments,
         minimumBalance: minimumBalance,
+        autoPayoutEnabled: autoPayoutEnabled,
         metadata: metadata,
       ));
       if (isClosed) return;
@@ -693,9 +727,16 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
         }
       }
 
-      emit(GroupAccountContributionCreated(contribution));
-      // Reload group details to show the new contribution with all data
+      // IMPORTANT: refresh the group's contribution list BEFORE emitting
+      // ContributionCreated. The bottom sheet listens to that event to
+      // dismiss; if we emit early, the sheet closes while the
+      // contributions tab is still showing the stale list — the user
+      // sees their new pot appear a beat later. Awaiting first means
+      // the loader on the Create CTA stays visible until the parent
+      // tab is fresh, then the sheet pops with the row already in view.
       await loadGroupDetails(groupId);
+      if (isClosed) return;
+      emit(GroupAccountContributionCreated(contribution));
 
       // Get group for auto-generated report
       final group = await getGroupById(groupId);
@@ -1235,14 +1276,18 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
   }
 
   /// Invite user to group (creates partial member with pending invite)
-  Future<void> inviteUserToGroup({
+  /// Invites someone (by email/phone) to a group. Returns `true` on
+  /// success, `false` on failure. State is still emitted for cross-
+  /// cutting listeners; the return value is for callers that need
+  /// per-call resolution without listener gymnastics.
+  Future<bool> inviteUserToGroup({
     required String groupId,
     required String identifier, // email or phone
     required String fullName,
     required UserSearchType identifierType,
     GroupMemberRole role = GroupMemberRole.member,
   }) async {
-    if (isClosed) return;
+    if (isClosed) return false;
     // No GroupAccountLoading emit (see addMemberToGroupAccount above).
     try {
       final invited = await addMemberToGroup(AddMemberParams(
@@ -1253,7 +1298,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
         role: role,
       ));
 
-      if (isClosed) return;
+      if (isClosed) return true;
 
       // Optimistic append, same pattern as addMemberToGroupAccount.
       if (_lastLoadedGroup != null && _lastLoadedGroup!.id == groupId &&
@@ -1276,9 +1321,11 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
         message: 'Invite sent to $fullName',
         identifier: identifier,
       ));
+      return true;
     } catch (e) {
-      if (isClosed) return;
+      if (isClosed) return false;
       emit(GroupAccountError('Failed to send invite: ${e.toString()}'));
+      return false;
     }
   }
 

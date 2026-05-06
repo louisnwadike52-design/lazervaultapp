@@ -69,14 +69,6 @@ class Step1TypeSelection extends StatelessWidget {
         icon = Icons.sync;
         iconColor = const Color(0xFF10B981);
         break;
-      case ContributionType.investmentPool:
-        icon = Icons.trending_up;
-        iconColor = const Color(0xFFF59E0B);
-        break;
-      case ContributionType.recurringGoal:
-        icon = Icons.repeat;
-        iconColor = const Color.fromARGB(255, 78, 3, 208);
-        break;
     }
 
     return GestureDetector(

@@ -121,10 +121,18 @@ message CreateAutoSaveRuleResponse {
     AutoSaveRule rule = 3;
 }
 
-// Get auto-save rules request
+// Get auto-save rules request. Server-side filter / sort / pagination
+// support so the All-Rules screen can scroll through hundreds of
+// rules without loading the full collection on every interaction.
 message GetAutoSaveRulesRequest {
     string account_id = 1;          // Optional: filter by account
     AutoSaveStatus status = 2;       // Optional: filter by status
+    string search = 3;               // Substring match (name + description)
+    string sort_by = 4;              // "created_at" | "name" | "total_saved" | "last_triggered_at"
+    string sort_dir = 5;             // "asc" | "desc"
+    int32 limit = 6;
+    int32 offset = 7;
+    string trigger_type = 8;
 }
 
 // Get auto-save rules response
@@ -132,6 +140,8 @@ message GetAutoSaveRulesResponse {
     bool success = 1;
     string msg = 2;
     repeated AutoSaveRule rules = 3;
+    int32 total = 4;
+    bool has_more = 5;
 }
 
 // Update auto-save rule request
@@ -243,6 +253,10 @@ message AutoSaveStatistics {
     int32 total_transactions = 6;
     double average_save_amount = 7;
     AutoSaveRule most_active_rule = 8;
+    AutoSaveRule top_rule_by_total_saved = 9;
+    int32 paused_rules_count = 10;
+    int32 completed_rules_count = 11;
+    int32 cancelled_rules_count = 12;
 }
 
 // Get auto-save statistics request

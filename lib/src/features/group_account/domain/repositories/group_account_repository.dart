@@ -59,6 +59,7 @@ abstract class GroupAccountRepository {
     int? gracePeriodDays,
     bool allowPartialPayments = true,
     double? minimumBalance,
+    bool autoPayoutEnabled = false,
     Map<String, dynamic>? metadata,
   });
   Future<Contribution> updateContribution(Contribution contribution);

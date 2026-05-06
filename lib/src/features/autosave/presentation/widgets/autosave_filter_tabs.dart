@@ -29,6 +29,8 @@ class AutoSaveFilterTabs extends StatelessWidget {
           _buildFilterChip('Paused', AutoSaveStatus.paused),
           SizedBox(width: 8.w),
           _buildFilterChip('Completed', AutoSaveStatus.completed),
+          SizedBox(width: 8.w),
+          _buildFilterChip('Cancelled', AutoSaveStatus.cancelled),
         ],
       ),
     );
