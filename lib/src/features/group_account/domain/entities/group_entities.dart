@@ -867,6 +867,14 @@ class ContributionMember extends Equatable {
   /// payment by cycle close). Surfaced for the "X members behind"
   /// indicators on the contribution screen.
   final int missedCycles;
+  /// Invite-first membership state. ACTIVE rows are full participants;
+  /// PENDING_INVITE rows are shadow placeholders waiting on group
+  /// invite acceptance and MUST be excluded from financial logic
+  /// (member counts, cycle progress, receiver picker).
+  final ContributionMembershipStatus membershipStatus;
+  /// Linked GroupInvitation row ID when membership is pending. Lets
+  /// the UI deep-link to the invite detail or surface "Invite Sent".
+  final String? linkedInvitationId;
 
   const ContributionMember({
     required this.id,
@@ -881,7 +889,14 @@ class ContributionMember extends Equatable {
     this.hasPaidCurrentCycle = false,
     this.cyclePaidAmount = 0,
     this.missedCycles = 0,
+    this.membershipStatus = ContributionMembershipStatus.active,
+    this.linkedInvitationId,
   });
+
+  /// Convenience for filtering member lists down to active
+  /// participants when computing financial roll-ups.
+  bool get isActiveParticipant =>
+      membershipStatus == ContributionMembershipStatus.active;
 
   @override
   List<Object?> get props => [
@@ -897,6 +912,8 @@ class ContributionMember extends Equatable {
         hasPaidCurrentCycle,
         cyclePaidAmount,
         missedCycles,
+        membershipStatus,
+        linkedInvitationId,
       ];
 
   ContributionMember copyWith({
@@ -912,6 +929,8 @@ class ContributionMember extends Equatable {
     bool? hasPaidCurrentCycle,
     double? cyclePaidAmount,
     int? missedCycles,
+    ContributionMembershipStatus? membershipStatus,
+    String? linkedInvitationId,
   }) {
     return ContributionMember(
       id: id ?? this.id,
@@ -926,6 +945,8 @@ class ContributionMember extends Equatable {
       hasPaidCurrentCycle: hasPaidCurrentCycle ?? this.hasPaidCurrentCycle,
       cyclePaidAmount: cyclePaidAmount ?? this.cyclePaidAmount,
       missedCycles: missedCycles ?? this.missedCycles,
+      membershipStatus: membershipStatus ?? this.membershipStatus,
+      linkedInvitationId: linkedInvitationId ?? this.linkedInvitationId,
     );
   }
 }
@@ -1724,6 +1745,112 @@ class MemberExitPreview {
     required this.memberHasReceivedPayout,
     required this.currentCycle,
   });
+}
+
+/// Lifecycle of a parent group invite. Mirrors the server's
+/// GroupInvitationStatus enum.
+enum GroupInvitationStatus {
+  pending,
+  accepted,
+  declined,
+  cancelled,
+  expired,
+  unknown;
+
+  static GroupInvitationStatus fromString(String? s) {
+    switch (s) {
+      case 'pending':
+        return GroupInvitationStatus.pending;
+      case 'accepted':
+        return GroupInvitationStatus.accepted;
+      case 'declined':
+        return GroupInvitationStatus.declined;
+      case 'cancelled':
+        return GroupInvitationStatus.cancelled;
+      case 'expired':
+        return GroupInvitationStatus.expired;
+      default:
+        return GroupInvitationStatus.unknown;
+    }
+  }
+
+  String get wireValue {
+    switch (this) {
+      case GroupInvitationStatus.pending:
+        return 'pending';
+      case GroupInvitationStatus.accepted:
+        return 'accepted';
+      case GroupInvitationStatus.declined:
+        return 'declined';
+      case GroupInvitationStatus.cancelled:
+        return 'cancelled';
+      case GroupInvitationStatus.expired:
+        return 'expired';
+      case GroupInvitationStatus.unknown:
+        return '';
+    }
+  }
+}
+
+/// Membership state for a contribution_members row. Drives the
+/// "Invite Sent" chip on shadow rows + every active-only filter the
+/// UI has to apply (member counts, cycle progress, receiver picker).
+enum ContributionMembershipStatus {
+  active,
+  pendingInvite,
+  declined;
+
+  static ContributionMembershipStatus fromString(String? s) {
+    switch (s) {
+      case 'pending_invite':
+        return ContributionMembershipStatus.pendingInvite;
+      case 'declined':
+        return ContributionMembershipStatus.declined;
+      case 'active':
+      default:
+        return ContributionMembershipStatus.active;
+    }
+  }
+}
+
+/// Domain mirror of GroupInvitationMessage. Drives the Flutter
+/// Invites tab + "Invite Sent" chips on member rosters.
+class GroupInvitation {
+  final String id;
+  final String groupId;
+  final String inviteeUserId;
+  final String inviterUserId;
+  final String role;
+  final GroupInvitationStatus status;
+  final DateTime invitedAt;
+  final DateTime? decidedAt;
+  final DateTime expiresAt;
+  final String message;
+  /// Group-side denormalised fields. Empty when not loaded.
+  final String groupName;
+  final String groupDescription;
+  final String inviterName;
+
+  const GroupInvitation({
+    required this.id,
+    required this.groupId,
+    required this.inviteeUserId,
+    required this.inviterUserId,
+    required this.role,
+    required this.status,
+    required this.invitedAt,
+    this.decidedAt,
+    required this.expiresAt,
+    this.message = '',
+    this.groupName = '',
+    this.groupDescription = '',
+    this.inviterName = '',
+  });
+
+  bool get isPending => status == GroupInvitationStatus.pending;
+  bool get isExpired =>
+      expiresAt.isBefore(DateTime.now()) ||
+      status == GroupInvitationStatus.expired;
 }
 
 /// Domain mirror of RemoveMemberFromContributionResponse.

@@ -82,6 +82,28 @@ abstract class GroupAccountRemoteDataSource {
     required String userId,
   });
 
+  // Invite-first membership (slice 5).
+  Future<GroupInvitation> inviteToGroup({
+    required String groupId,
+    required String inviteeUserId,
+    String? role,
+    String? message,
+  });
+  Future<GroupInvitation> respondToGroupInvite({
+    required String invitationId,
+    required bool accept,
+  });
+  Future<void> cancelGroupInvite({required String invitationId});
+  Future<List<GroupInvitation>> listMyInvitations({
+    List<GroupInvitationStatus>? statuses,
+    int limit = 50,
+  });
+  Future<List<GroupInvitation>> listGroupInvitations({
+    required String groupId,
+    List<GroupInvitationStatus>? statuses,
+    int limit = 100,
+  });
+
   Future<List<ContributionPaymentModel>> getContributionPayments(String contributionId);
   Future<ContributionPaymentModel> makeContributionPayment({
     required String contributionId,

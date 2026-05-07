@@ -223,6 +223,18 @@ message ContributionMemberMessage {
   // Surfaces missed_cycles to clients without a separate fetch — the
   // dashboard "Missed cycles" column reads this directly.
   uint32 missed_cycles = 12;
+  // Invite-first membership state. Values:
+  //   "active"         — fully participating member.
+  //   "pending_invite" — shadow row; user has been invited but not
+  //                       yet accepted the parent group invite.
+  //                       Excluded from financial logic.
+  //   "declined"       — invitee declined; row kept for audit only.
+  string membership_status = 13;
+  // Linked GroupInvitation row (when membership_status is
+  // 'pending_invite'). Empty for active members. Lets the dashboard
+  // and Flutter UI surface "Invite Sent" with a one-tap deep link
+  // to the invite detail.
+  string linked_invitation_id = 14;
 }
 
 message ContributionPaymentMessage {
@@ -638,6 +650,78 @@ message AddMembersToContributionRequest {
 message AddMembersToContributionResponse {
   ContributionMessage contribution = 1;
   repeated ContributionMemberMessage added_members = 2;
+}
+
+// =====================================================================
+// Invite-first membership (migration 015)
+// =====================================================================
+
+message GroupInvitationMessage {
+  string id = 1;
+  string group_id = 2;
+  string invitee_user_id = 3;
+  string inviter_user_id = 4;
+  string role = 5;          // admin | moderator | member | viewer
+  string status = 6;        // pending | accepted | declined | cancelled | expired
+  google.protobuf.Timestamp invited_at = 7;
+  google.protobuf.Timestamp decided_at = 8;
+  google.protobuf.Timestamp expires_at = 9;
+  string message = 10;
+  // Denormalised group-side fields populated by ListMyInvitations
+  // so the Flutter Invites tab can render the card without a follow-up
+  // group fetch. Empty when not loaded by the caller.
+  string group_name = 11;
+  string group_description = 12;
+  string inviter_name = 13;
+}
+
+message InviteToGroupRequest {
+  string group_id = 1;
+  string invitee_user_id = 2;
+  string role = 3;     // optional; defaults to 'member'
+  string message = 4;  // optional invite copy
+}
+
+message InviteToGroupResponse {
+  GroupInvitationMessage invitation = 1;
+}
+
+message RespondToGroupInviteRequest {
+  string invitation_id = 1;
+  bool accept = 2;
+}
+
+message RespondToGroupInviteResponse {
+  GroupInvitationMessage invitation = 1;
+}
+
+message CancelGroupInviteRequest {
+  string invitation_id = 1;
+}
+
+message CancelGroupInviteResponse {
+  bool success = 1;
+}
+
+message ListMyInvitationsRequest {
+  // Optional status filter. Empty means "all non-soft-deleted".
+  // Use ["pending"] to drive the badge / tab count.
+  repeated string statuses = 1;
+  uint32 limit = 2;
+}
+
+message ListMyInvitationsResponse {
+  repeated GroupInvitationMessage invitations = 1;
+}
+
+message ListGroupInvitationsRequest {
+  string group_id = 1;
+  repeated string statuses = 2;
+  uint32 limit = 3;
+}
+
+message ListGroupInvitationsResponse {
+  repeated GroupInvitationMessage invitations = 1;
 }
 
 message RemoveMemberFromContributionRequest {
@@ -1149,6 +1233,42 @@ service GroupAccountService {
   rpc PreviewMemberExit(PreviewMemberExitRequest) returns (PreviewMemberExitResponse) {
     option (google.api.http) = {
       get: "/v1/contributions/{contribution_id}/members/{member_user_id}/exit/preview"
+    };
+  }
+
+  // =====================================================================
+  // Invite-first membership (slice 2)
+  // =====================================================================
+
+  rpc InviteToGroup(InviteToGroupRequest) returns (InviteToGroupResponse) {
+    option (google.api.http) = {
+      post: "/v1/groups/{group_id}/invitations"
+      body: "*"
+    };
+  }
+
+  rpc RespondToGroupInvite(RespondToGroupInviteRequest) returns (RespondToGroupInviteResponse) {
+    option (google.api.http) = {
+      post: "/v1/invitations/{invitation_id}/respond"
+      body: "*"
+    };
+  }
+
+  rpc CancelGroupInvite(CancelGroupInviteRequest) returns (CancelGroupInviteResponse) {
+    option (google.api.http) = {
+      delete: "/v1/invitations/{invitation_id}"
+    };
+  }
+
+  rpc ListMyInvitations(ListMyInvitationsRequest) returns (ListMyInvitationsResponse) {
+    option (google.api.http) = {
+      get: "/v1/me/invitations"
+    };
+  }
+
+  rpc ListGroupInvitations(ListGroupInvitationsRequest) returns (ListGroupInvitationsResponse) {
+    option (google.api.http) = {
+      get: "/v1/groups/{group_id}/invitations"
     };
   }
 

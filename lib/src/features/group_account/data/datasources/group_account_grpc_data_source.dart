@@ -1018,7 +1018,125 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       hasPaidCurrentCycle: member.hasPaidCurrentCycle,
       cyclePaidAmount: _int64ToAmount(member.cyclePaidAmount),
       missedCycles: member.missedCycles,
+      membershipStatus:
+          ContributionMembershipStatus.fromString(member.membershipStatus),
+      linkedInvitationId:
+          member.linkedInvitationId.isNotEmpty ? member.linkedInvitationId : null,
     );
+  }
+
+  // =====================================================================
+  // Invite-first membership (slice 5)
+  // =====================================================================
+
+  /// Maps a proto GroupInvitationMessage to the domain entity. Wire
+  /// status string is parsed defensively — unknown enum values map
+  /// to GroupInvitationStatus.unknown so a server-side enum addition
+  /// doesn't crash older Flutter builds.
+  GroupInvitation _mapInvitationFromProto(pb.GroupInvitationMessage inv) {
+    return GroupInvitation(
+      id: inv.id,
+      groupId: inv.groupId,
+      inviteeUserId: inv.inviteeUserId,
+      inviterUserId: inv.inviterUserId,
+      role: inv.role,
+      status: GroupInvitationStatus.fromString(inv.status),
+      invitedAt: inv.hasInvitedAt()
+          ? _timestampToDateTime(inv.invitedAt)
+          : DateTime.now(),
+      decidedAt:
+          inv.hasDecidedAt() ? _timestampToDateTime(inv.decidedAt) : null,
+      expiresAt: inv.hasExpiresAt()
+          ? _timestampToDateTime(inv.expiresAt)
+          : DateTime.now().add(const Duration(days: 30)),
+      message: inv.message,
+      groupName: inv.groupName,
+      groupDescription: inv.groupDescription,
+      inviterName: inv.inviterName,
+    );
+  }
+
+  Future<GroupInvitation> inviteToGroup({
+    required String groupId,
+    required String inviteeUserId,
+    String? role,
+    String? message,
+  }) async {
+    try {
+      final req = pb.InviteToGroupRequest()
+        ..groupId = groupId
+        ..inviteeUserId = inviteeUserId;
+      if (role != null && role.isNotEmpty) req.role = role;
+      if (message != null && message.isNotEmpty) req.message = message;
+      final opts = await _callOptionsHelper.withAuth();
+      final resp = await _client.inviteToGroup(req, options: opts);
+      return _mapInvitationFromProto(resp.invitation);
+    } on GrpcError catch (e) {
+      throw Exception(friendlyGrpcError(e, 'Failed to send invitation'));
+    }
+  }
+
+  Future<GroupInvitation> respondToGroupInvite({
+    required String invitationId,
+    required bool accept,
+  }) async {
+    try {
+      final req = pb.RespondToGroupInviteRequest()
+        ..invitationId = invitationId
+        ..accept = accept;
+      final opts = await _callOptionsHelper.withAuth();
+      final resp = await _client.respondToGroupInvite(req, options: opts);
+      return _mapInvitationFromProto(resp.invitation);
+    } on GrpcError catch (e) {
+      throw Exception(friendlyGrpcError(e, 'Failed to respond to invitation'));
+    }
+  }
+
+  Future<void> cancelGroupInvite({required String invitationId}) async {
+    try {
+      final req = pb.CancelGroupInviteRequest()..invitationId = invitationId;
+      final opts = await _callOptionsHelper.withAuth();
+      await _client.cancelGroupInvite(req, options: opts);
+    } on GrpcError catch (e) {
+      throw Exception(friendlyGrpcError(e, 'Failed to cancel invitation'));
+    }
+  }
+
+  Future<List<GroupInvitation>> listMyInvitations({
+    List<GroupInvitationStatus>? statuses,
+    int limit = 50,
+  }) async {
+    try {
+      final req = pb.ListMyInvitationsRequest()..limit = limit;
+      if (statuses != null) {
+        req.statuses.addAll(statuses.map((s) => s.wireValue).where((s) => s.isNotEmpty));
+      }
+      final opts = await _callOptionsHelper.withAuth();
+      final resp = await _client.listMyInvitations(req, options: opts);
+      return resp.invitations.map(_mapInvitationFromProto).toList();
+    } on GrpcError catch (e) {
+      throw Exception(friendlyGrpcError(e, 'Failed to load invitations'));
+    }
+  }
+
+  Future<List<GroupInvitation>> listGroupInvitations({
+    required String groupId,
+    List<GroupInvitationStatus>? statuses,
+    int limit = 100,
+  }) async {
+    try {
+      final req = pb.ListGroupInvitationsRequest()
+        ..groupId = groupId
+        ..limit = limit;
+      if (statuses != null) {
+        req.statuses.addAll(statuses.map((s) => s.wireValue).where((s) => s.isNotEmpty));
+      }
+      final opts = await _callOptionsHelper.withAuth();
+      final resp = await _client.listGroupInvitations(req, options: opts);
+      return resp.invitations.map(_mapInvitationFromProto).toList();
+    } on GrpcError catch (e) {
+      throw Exception(friendlyGrpcError(e, 'Failed to load group invitations'));
+    }
   }
 
   ContributionPaymentModel _mapPaymentFromProto(pb.ContributionPaymentMessage payment) {

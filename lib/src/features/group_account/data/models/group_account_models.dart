@@ -574,6 +574,8 @@ class ContributionMemberModel extends ContributionMember {
     super.hasPaidCurrentCycle = false,
     super.cyclePaidAmount = 0,
     super.missedCycles = 0,
+    super.membershipStatus = ContributionMembershipStatus.active,
+    super.linkedInvitationId,
   });
 
   factory ContributionMemberModel.fromJson(Map<String, dynamic> json) {

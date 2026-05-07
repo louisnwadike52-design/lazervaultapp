@@ -1,23 +1,26 @@
 // Create Auto-Save Rule — multi-step wizard.
 //
-// Replaces the original 1000-line single-page form with a paged flow
-// so each decision lives on its own screen and the validation copy
-// can localise next to the input it complains about. The wizard
-// steps map 1:1 to the rule's mental model:
+// Visual standard: matches the contribution/joint-funds create flow
+// (`create_contribution_bottom_sheet.dart`, `step1_type_selection.dart`).
+// Key cues:
+//   • Cards are *elevated* (drop shadow w/ 0.3 alpha black, 8-12px blur)
+//     instead of relying on 1px borders to separate from the background.
+//   • Selected state stacks three visual layers: accent-tinted fill,
+//     2px accent stroke, accent-tinted shadow.
+//   • Trigger / preset cards put a 56×56 colored icon-badge on the
+//     left, title (16sp/700) + supporting copy (13sp/grey-400) to its right.
+//   • Progress bar is the same gradient-filled track + animated pill-dots
+//     used by the contribution wizard.
+//   • Bottom action bar is sticky with its own top shadow so it never
+//     appears to float on the same plane as the form below.
 //
-//   1. Basics                 — name + description
-//   2. Trigger Type           — On Deposit / Scheduled / Round Up cards
-//   3. Trigger Configuration  — only the knobs the picked trigger needs
-//                                 - Scheduled: frequency + day + time
-//                                 - Round Up:  round_up_to chips
-//                                 - On Deposit: explainer (% / fixed of incoming)
-//   4. Amount                 — fixed or percentage + value
-//   5. Accounts               — source + destination (same currency)
-//   6. Limits (optional)      — target / minimum / maximum
-//
-// On step 6 the user lands on the existing review screen which then
-// fires AutoSaveCubit.createRule. The wizard itself doesn't talk to
-// the cubit — it just collects and validates.
+// Steps:
+//   1. Basics                — name + description
+//   2. Trigger Type          — On Deposit / Scheduled / Round Up cards
+//   3. Trigger Configuration — only the knobs the picked trigger needs
+//   4. Amount                — fixed or percentage + value
+//   5. Accounts              — source + destination
+//   6. Limits (optional)     — target / minimum / maximum
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -32,15 +35,32 @@ import 'package:lazervault/src/features/account_cards_summary/cubit/account_card
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
 
-// ─── Theme constants ─────────────────────────────────────────────────
+// ─── Theme constants — aligned with the contribution flow palette ───
 const _bg = Color(0xFF0A0A0A);
 const _surface = Color(0xFF1F1F1F);
-const _border = Color(0xFF2D2D2D);
-const _accent = Color.fromARGB(255, 78, 3, 208);
-const _accentSoft = Color.fromARGB(255, 98, 33, 224);
+const _surfaceRaised = Color(0xFF252535); // slightly lifted card colour
+const _hairline = Color(0xFF2D2D2D);
+const _accent = Color(0xFF6366F1); // indigo — primary
+const _accentDeep = Color.fromARGB(255, 78, 3, 208);
+const _onDepositTint = Color(0xFF3B82F6); // blue — on-deposit
+const _scheduledTint = Color(0xFF10B981); // emerald — scheduled
+const _roundUpTint = Color(0xFFF59E0B); // amber — round-up
 const _textMuted = Color(0xFF9CA3AF);
-const _success = Color(0xFF10B981);
 const _danger = Color(0xFFEF4444);
+const _success = Color(0xFF10B981);
+
+// Reusable shadows so every elevated surface in this screen quotes the
+// same drop-shadow recipe — keeps the wizard feeling like one document.
+const _shadowSoft = BoxShadow(
+  color: Color(0x4D000000), // black @ 30%
+  blurRadius: 10,
+  offset: Offset(0, 3),
+);
+const _shadowMd = BoxShadow(
+  color: Color(0x66000000), // black @ 40%
+  blurRadius: 14,
+  offset: Offset(0, 6),
+);
 
 class CreateAutoSaveRuleScreen extends StatefulWidget {
   const CreateAutoSaveRuleScreen({super.key});
@@ -51,12 +71,11 @@ class CreateAutoSaveRuleScreen extends StatefulWidget {
 }
 
 class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
-  // ─── Wizard state ──────────────────────────────────────────────────
   static const int _totalSteps = 6;
   final PageController _pageController = PageController();
   int _currentStep = 0;
 
-  // ─── Form state ───────────────────────────────────────────────────
+  // Form state
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _amountController = TextEditingController();
@@ -69,15 +88,11 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
   AmountType _selectedAmountType = AmountType.fixed;
   ScheduleFrequency? _selectedFrequency;
   int? _selectedScheduleDay;
-  // Time defaults to 00:00 — explicit so the worker has *something*
-  // to arm even if the user blows past the picker.
   TimeOfDay _selectedTime = const TimeOfDay(hour: 0, minute: 0);
   int? _selectedRoundUpTo;
   String? _selectedSourceAccountId;
   String? _selectedDestinationAccountId;
 
-  // Per-step validation messages so the bottom action bar can show
-  // why "Continue" is disabled without throwing a snackbar at the user.
   String? _stepError;
 
   @override
@@ -88,7 +103,6 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
         .read<AccountCardsSummaryCubit>()
         .fetchAccountSummaries(userId: userId, accessToken: null);
 
-    // Duplicate-from path (existing feature). Pre-fill, jump to review.
     final args = Get.arguments;
     if (args is Map && args.containsKey('duplicateFrom')) {
       _populateFromDuplicate(args['duplicateFrom'] as AutoSaveRuleEntity);
@@ -144,7 +158,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
     super.dispose();
   }
 
-  // ─── Step orchestration ────────────────────────────────────────────
+  // ─── Step orchestration ──────────────────────────────────────────
 
   String? _validateCurrentStep() {
     switch (_currentStep) {
@@ -154,7 +168,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
         }
         return null;
       case 1:
-        return null; // trigger card always picks one
+        return null;
       case 2:
         if (_selectedTriggerType == TriggerType.scheduled) {
           if (_selectedFrequency == null) return 'Pick how often it should run';
@@ -185,7 +199,6 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
         }
         return null;
       case 5:
-        // Optional limits; cross-validate.
         if (_maximumPerSaveController.text.isNotEmpty) {
           final maxPer = double.tryParse(_maximumPerSaveController.text);
           if (maxPer == null || maxPer <= 0) return 'Max per save must be > 0';
@@ -221,8 +234,8 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
     setState(() => _currentStep++);
     _pageController.animateToPage(
       _currentStep,
-      duration: const Duration(milliseconds: 220),
-      curve: Curves.easeOut,
+      duration: const Duration(milliseconds: 260),
+      curve: Curves.easeOutCubic,
     );
     FocusScope.of(context).unfocus();
   }
@@ -238,8 +251,8 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
     });
     _pageController.animateToPage(
       _currentStep,
-      duration: const Duration(milliseconds: 220),
-      curve: Curves.easeOut,
+      duration: const Duration(milliseconds: 260),
+      curve: Curves.easeOutCubic,
     );
     FocusScope.of(context).unfocus();
   }
@@ -262,10 +275,6 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
       destName = '${dst.accountType} (****${dst.accountNumberLast4})';
     }
 
-    // Strip trigger-specific state that doesn't apply to the picked
-    // trigger. The user could have configured a frequency, then gone
-    // back and switched to Round Up — without this the review screen
-    // (and the cubit / proto) would carry orphaned state forward.
     final isScheduled = _selectedTriggerType == TriggerType.scheduled;
     final isRoundUp = _selectedTriggerType == TriggerType.roundUp;
 
@@ -298,7 +307,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
     );
   }
 
-  // ─── Build ─────────────────────────────────────────────────────────
+  // ─── Build ───────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -310,7 +319,9 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
             _Header(
               currentStep: _currentStep,
               totalSteps: _totalSteps,
-              stepLabel: _stepLabel(_currentStep),
+              titleHero: _stepHeroTitle(_currentStep),
+              titleHeroAccent: _stepHeroAccent(),
+              subtitle: _stepHeroSubtitle(_currentStep),
               onBack: _goBack,
             ),
             Expanded(
@@ -341,14 +352,23 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
     );
   }
 
-  String _stepLabel(int step) {
+  String _stepHeroTitle(int step) {
     switch (step) {
       case 0:
         return 'Name your rule';
       case 1:
         return 'Pick a trigger';
       case 2:
-        return _triggerConfigLabel();
+        switch (_selectedTriggerType) {
+          case TriggerType.scheduled:
+            return 'When should it run?';
+          case TriggerType.roundUp:
+            return 'Round up to…';
+          case TriggerType.onDeposit:
+            return 'On every deposit';
+          case TriggerType.unknown:
+            return 'Configure trigger';
+        }
       case 3:
         return 'Choose amount';
       case 4:
@@ -359,20 +379,54 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
     return '';
   }
 
-  String _triggerConfigLabel() {
-    switch (_selectedTriggerType) {
-      case TriggerType.scheduled:
-        return 'When should it run?';
-      case TriggerType.roundUp:
-        return 'Round up to…';
+  String _stepHeroSubtitle(int step) {
+    switch (step) {
+      case 0:
+        return 'A short, recognisable label and an optional note for yourself.';
+      case 1:
+        return 'Pick how the rule should fire. You can change this later.';
+      case 2:
+        switch (_selectedTriggerType) {
+          case TriggerType.scheduled:
+            return 'Daily, weekly, bi-weekly or monthly — at any time of day.';
+          case TriggerType.roundUp:
+            return 'Every spend rounds up to this multiple. The change is saved.';
+          case TriggerType.onDeposit:
+            return 'Every credit on your source account triggers a save.';
+          case TriggerType.unknown:
+            return '';
+        }
+      case 3:
+        return _selectedTriggerType == TriggerType.roundUp
+            ? 'Cap each round-up save with a per-fire ceiling.'
+            : 'Save a fixed amount or a percentage of incoming deposits.';
+      case 4:
+        return 'Money goes from the source to the destination. Pick a destination savings account.';
+      case 5:
+        return 'Goals and guardrails. Skip anything you don\'t need.';
+    }
+    return '';
+  }
+
+  Color _stepHeroAccent() {
+    if (_currentStep != 2) return _accent;
+    return _triggerColor(_selectedTriggerType);
+  }
+
+  Color _triggerColor(TriggerType t) {
+    switch (t) {
       case TriggerType.onDeposit:
-        return 'On every deposit';
+        return _onDepositTint;
+      case TriggerType.scheduled:
+        return _scheduledTint;
+      case TriggerType.roundUp:
+        return _roundUpTint;
       case TriggerType.unknown:
-        return 'Configure trigger';
+        return _accent;
     }
   }
 
-  // ─── Step 1: Basics ───────────────────────────────────────────────
+  // ─── Step 1: Basics ─────────────────────────────────────────────
 
   Widget _stepBasics() {
     return _StepBody(
@@ -381,6 +435,8 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
         children: [
           _LabeledField(
             label: 'Rule name',
+            counter:
+                '${_nameController.text.length}/60',
             child: _TextInput(
               controller: _nameController,
               hint: 'e.g. Save on Paycheck',
@@ -388,6 +444,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
               maxLength: 60,
               onChanged: (_) {
                 if (_stepError != null) setState(() => _stepError = null);
+                setState(() {}); // counter
               },
             ),
           ),
@@ -395,11 +452,14 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
           _LabeledField(
             label: 'Description',
             optional: true,
+            counter:
+                '${_descriptionController.text.length}/200',
             child: _TextInput(
               controller: _descriptionController,
               hint: 'A short note for yourself',
               maxLines: 3,
               maxLength: 200,
+              onChanged: (_) => setState(() {}),
             ),
           ),
         ],
@@ -407,7 +467,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
     );
   }
 
-  // ─── Step 2: Trigger type ─────────────────────────────────────────
+  // ─── Step 2: Trigger type ───────────────────────────────────────
 
   Widget _stepTriggerType() {
     return _StepBody(
@@ -415,34 +475,37 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _TriggerCard(
+            tint: _onDepositTint,
             icon: Icons.south_rounded,
             title: 'On Deposit',
             description:
-                'Save automatically every time money lands in your account.',
+                'Save every time money lands in your account. Pair with a fixed amount or a % of the deposit.',
             selected: _selectedTriggerType == TriggerType.onDeposit,
             onTap: () => setState(() {
               _selectedTriggerType = TriggerType.onDeposit;
               _stepError = null;
             }),
           ),
-          SizedBox(height: 12.h),
+          SizedBox(height: 14.h),
           _TriggerCard(
+            tint: _scheduledTint,
             icon: Icons.schedule_rounded,
             title: 'Scheduled',
             description:
-                'Save a fixed amount on a recurring cadence (daily, weekly, monthly).',
+                'Save a fixed amount on a recurring cadence — daily, weekly or monthly at any time of day.',
             selected: _selectedTriggerType == TriggerType.scheduled,
             onTap: () => setState(() {
               _selectedTriggerType = TriggerType.scheduled;
               _stepError = null;
             }),
           ),
-          SizedBox(height: 12.h),
+          SizedBox(height: 14.h),
           _TriggerCard(
+            tint: _roundUpTint,
             icon: Icons.trending_up_rounded,
             title: 'Round Up',
             description:
-                'Round every spend up to the nearest unit and pocket the change.',
+                'Round each spend up to the nearest unit and pocket the change. Great for passive saving.',
             selected: _selectedTriggerType == TriggerType.roundUp,
             onTap: () => setState(() {
               _selectedTriggerType = TriggerType.roundUp;
@@ -454,7 +517,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
     );
   }
 
-  // ─── Step 3: Trigger config (varies by trigger) ───────────────────
+  // ─── Step 3: Trigger config ─────────────────────────────────────
 
   Widget _stepTriggerConfig() {
     switch (_selectedTriggerType) {
@@ -474,14 +537,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            'Frequency',
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          _SectionTitle('Frequency'),
           SizedBox(height: 12.h),
           GridView.count(
             shrinkWrap: true,
@@ -489,7 +545,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
             crossAxisCount: 2,
             mainAxisSpacing: 12.h,
             crossAxisSpacing: 12.w,
-            childAspectRatio: 2.4,
+            childAspectRatio: 2.2,
             children: [
               _FrequencyTile(
                 label: 'Daily',
@@ -509,7 +565,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
                 selected: _selectedFrequency == ScheduleFrequency.weekly,
                 onTap: () => setState(() {
                   _selectedFrequency = ScheduleFrequency.weekly;
-                  _selectedScheduleDay = 1; // default Mon
+                  _selectedScheduleDay = 1;
                   _stepError = null;
                 }),
               ),
@@ -531,7 +587,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
                 selected: _selectedFrequency == ScheduleFrequency.monthly,
                 onTap: () => setState(() {
                   _selectedFrequency = ScheduleFrequency.monthly;
-                  _selectedScheduleDay = 1; // default 1st
+                  _selectedScheduleDay = 1;
                   _stepError = null;
                 }),
               ),
@@ -539,16 +595,11 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
           ),
           if (_selectedFrequency != null &&
               _needsScheduleDay(_selectedFrequency!)) ...[
-            SizedBox(height: 24.h),
-            Text(
+            SizedBox(height: 28.h),
+            _SectionTitle(
               _selectedFrequency == ScheduleFrequency.monthly
                   ? 'Day of month'
                   : 'Day of week',
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
-              ),
             ),
             SizedBox(height: 12.h),
             if (_selectedFrequency == ScheduleFrequency.monthly)
@@ -568,18 +619,11 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
                 }),
               ),
           ],
-          SizedBox(height: 24.h),
-          Text(
-            'Time of day',
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          SizedBox(height: 28.h),
+          _SectionTitle('Time of day'),
           SizedBox(height: 4.h),
           Text(
-            'Defaults to 00:00 — tap to change.',
+            'Defaults to 00:00 — tap the tile to change.',
             style: GoogleFonts.inter(color: _textMuted, fontSize: 12.sp),
           ),
           SizedBox(height: 12.h),
@@ -611,22 +655,16 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
 
   Widget _roundUpConfig() {
     final presets = const [50, 100, 500, 1000];
-    final isCustom = _selectedRoundUpTo != null && !presets.contains(_selectedRoundUpTo);
+    final isCustom =
+        _selectedRoundUpTo != null && !presets.contains(_selectedRoundUpTo);
     return _StepBody(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            'Pick a round-up unit',
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          _SectionTitle('Round up unit'),
           SizedBox(height: 4.h),
           Text(
-            'Every spend rounds up to the nearest multiple. The change is saved.',
+            'Every spend rounds up to the nearest multiple of this value.',
             style: GoogleFonts.inter(color: _textMuted, fontSize: 12.sp),
           ),
           SizedBox(height: 16.h),
@@ -646,6 +684,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
                 ),
               _RoundUpChip(
                 label: 'Custom',
+                icon: Icons.tune_rounded,
                 selected: isCustom,
                 onTap: () => setState(() {
                   _selectedRoundUpTo =
@@ -671,19 +710,28 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
               ),
             ),
           ],
-          SizedBox(height: 20.h),
-          _InfoCallout(
-            icon: Icons.lightbulb_outline_rounded,
-            text: _selectedRoundUpTo == null
-                ? 'Example: spend 870 with round-up 100 → save 30.'
-                : 'Example: spend 870 with round-up '
-                    '${_currencyLabel(_selectedRoundUpTo!.toDouble())} → save '
-                    '${_currencyLabel(((_selectedRoundUpTo! - (870 % _selectedRoundUpTo!)).toDouble()))}.',
-            tone: _accent,
+          SizedBox(height: 22.h),
+          _PreviewCard(
+            tint: _roundUpTint,
+            icon: Icons.calculate_outlined,
+            title: 'Example',
+            body: _roundUpExampleText(),
           ),
         ],
       ),
     );
+  }
+
+  String _roundUpExampleText() {
+    if (_selectedRoundUpTo == null) {
+      return 'Spend ${_currencyLabel(870)} with a round-up of '
+          '${_currencyLabel(100)} → save ${_currencyLabel(30)}.';
+    }
+    final unit = _selectedRoundUpTo!;
+    final delta = unit - (870 % unit);
+    return 'Spend ${_currencyLabel(870)} with a round-up of '
+        '${_currencyLabel(unit.toDouble())} → save '
+        '${_currencyLabel(delta.toDouble())}.';
   }
 
   Widget _onDepositConfig() {
@@ -691,27 +739,27 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _InfoCallout(
+          _PreviewCard(
+            tint: _onDepositTint,
             icon: Icons.south_rounded,
-            text:
-                'Whenever your source account is credited, the rule will save '
-                'either a fixed amount or a percentage of that deposit. You\'ll '
-                'pick which on the next step.',
-            tone: _accent,
+            title: 'How it works',
+            body:
+                'Whenever your source account is credited, the rule saves either a fixed amount or a percentage of that deposit. Pick the amount on the next step.',
           ),
-          SizedBox(height: 16.h),
-          _InfoCallout(
+          SizedBox(height: 14.h),
+          _PreviewCard(
+            tint: _success,
             icon: Icons.shield_outlined,
-            text: 'Auto-save deposits never trigger themselves — debits and '
-                'credits caused by your auto-save rules are filtered out.',
-            tone: _success,
+            title: 'Recursion-safe',
+            body:
+                'Saves caused by your own auto-save rules are filtered out, so the trigger can never fire itself.',
           ),
         ],
       ),
     );
   }
 
-  // ─── Step 4: Amount ────────────────────────────────────────────────
+  // ─── Step 4: Amount ─────────────────────────────────────────────
 
   Widget _stepAmount() {
     return _StepBody(
@@ -719,14 +767,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (_selectedTriggerType != TriggerType.roundUp) ...[
-            Text(
-              'Amount type',
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            _SectionTitle('Amount type'),
             SizedBox(height: 12.h),
             _SegmentedToggle(
               left: 'Fixed',
@@ -738,7 +779,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
                 _stepError = null;
               }),
             ),
-            SizedBox(height: 20.h),
+            SizedBox(height: 24.h),
           ],
           StreamBuilder<String>(
             stream: CurrencySymbols.currencySymbolStream,
@@ -747,16 +788,15 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
               final isPct = _selectedAmountType == AmountType.percentage &&
                   _selectedTriggerType != TriggerType.roundUp;
               final label = _selectedTriggerType == TriggerType.roundUp
-                  ? 'Save amount per round-up ($symbol)'
+                  ? 'Per-fire cap ($symbol)'
                   : (isPct ? 'Percentage of deposit' : 'Save amount ($symbol)');
               return _LabeledField(
                 label: label,
                 child: _TextInput(
                   controller: _amountController,
                   hint: isPct ? '10' : '50.00',
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(
                       RegExp(r'^\d*\.?\d{0,2}'),
@@ -766,12 +806,15 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
                     if (_stepError != null) setState(() => _stepError = null);
                   },
                   trailing: isPct
-                      ? Text(
-                          '%',
-                          style: GoogleFonts.inter(
-                            color: _textMuted,
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w600,
+                      ? Padding(
+                          padding: EdgeInsets.only(right: 16.w),
+                          child: Text(
+                            '%',
+                            style: GoogleFonts.inter(
+                              color: _textMuted,
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         )
                       : null,
@@ -781,12 +824,13 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
           ),
           if (_selectedTriggerType == TriggerType.roundUp) ...[
             SizedBox(height: 16.h),
-            _InfoCallout(
+            _PreviewCard(
+              tint: _textMuted,
               icon: Icons.info_outline_rounded,
-              text:
-                  'For round-up rules this is just a per-fire upper bound — the '
-                  'actual save is the rounding delta.',
-              tone: _textMuted,
+              title: 'Heads up',
+              body:
+                  'For round-up rules this is just a per-fire upper bound. '
+                  'The actual save is the rounding delta you configured.',
             ),
           ],
         ],
@@ -794,7 +838,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
     );
   }
 
-  // ─── Step 5: Accounts ──────────────────────────────────────────────
+  // ─── Step 5: Accounts ───────────────────────────────────────────
 
   Widget _stepAccounts() {
     return _StepBody(
@@ -802,27 +846,14 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
         builder: (context, state) {
           if (state is AccountCardsSummaryLoaded) {
             final all = state.accountSummaries;
-
-            // Hard-stop edge case: no accounts at all. Without
-            // accounts the rule can't be created, so we surface a
-            // friendly empty state with a CTA back to the dashboard
-            // instead of an unhelpful empty dropdown that blocks
-            // Continue forever.
             if (all.isEmpty) {
-              return _EmptyAccountsState(
-                onClose: () => Get.back(),
-              );
+              return _EmptyAccountsState(onClose: () => Get.back());
             }
 
-            // Source: any account. Destination: prefer savings.
             final dests = all.where((a) =>
                 a.accountType.toLowerCase().contains('saving') ||
                 a.accountType.toLowerCase().contains('money market')).toList();
 
-            // Default destination only when nothing's been picked AND
-            // the default would be valid (i.e. not the source). Skips
-            // the addPostFrameCallback when source already filled in
-            // so we don't auto-pick a clashing dest.
             if (_selectedDestinationAccountId == null && dests.isNotEmpty) {
               final firstDest = dests.first.id.toString();
               if (firstDest != _selectedSourceAccountId) {
@@ -845,9 +876,6 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
                     hint: 'Where to save from',
                     onChanged: (v) => setState(() {
                       _selectedSourceAccountId = v;
-                      // Auto-clear destination if it now equals source
-                      // so the user lands on a single recoverable
-                      // pick instead of seeing a blocking error.
                       if (v != null && v == _selectedDestinationAccountId) {
                         _selectedDestinationAccountId = null;
                       }
@@ -863,9 +891,6 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
                       ? 'You have no savings account yet — pick any other account.'
                       : null,
                   child: _AccountDropdown(
-                    // When the only candidates are the same as source,
-                    // exclude source from dropdown so the user can't
-                    // pick it twice.
                     accounts: (dests.isEmpty ? all : dests)
                         .where(
                             (a) => a.id.toString() != _selectedSourceAccountId)
@@ -898,7 +923,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
           }
           return Center(
             child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 40.h),
+              padding: EdgeInsets.symmetric(vertical: 60.h),
               child: const CircularProgressIndicator(
                 strokeWidth: 2,
                 valueColor: AlwaysStoppedAnimation<Color>(_accent),
@@ -910,20 +935,21 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
     );
   }
 
-  // ─── Step 6: Limits (optional) ─────────────────────────────────────
+  // ─── Step 6: Limits ────────────────────────────────────────────
 
   Widget _stepLimits() {
     return _StepBody(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _InfoCallout(
+          _PreviewCard(
+            tint: _textMuted,
             icon: Icons.tune_rounded,
-            text:
-                'Optional. Skip any field — the rule will still work without these.',
-            tone: _textMuted,
+            title: 'Optional',
+            body:
+                'Skip any field — the rule still works fine without these.',
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 18.h),
           _LabeledField(
             label: 'Target amount',
             optional: true,
@@ -931,7 +957,8 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
             child: _TextInput(
               controller: _targetAmountController,
               hint: '1,000.00',
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
               ],
@@ -945,7 +972,8 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
             child: _TextInput(
               controller: _minimumBalanceController,
               hint: '100.00',
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
               ],
@@ -959,7 +987,8 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
             child: _TextInput(
               controller: _maximumPerSaveController,
               hint: '500.00',
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
               ],
@@ -970,7 +999,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
     );
   }
 
-  // ─── Helpers ───────────────────────────────────────────────────────
+  // ─── Helpers ────────────────────────────────────────────────────
 
   bool _needsScheduleDay(ScheduleFrequency f) =>
       f == ScheduleFrequency.weekly ||
@@ -999,19 +1028,35 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
 class _Header extends StatelessWidget {
   final int currentStep;
   final int totalSteps;
-  final String stepLabel;
+  final String titleHero;
+  final Color titleHeroAccent;
+  final String subtitle;
   final VoidCallback onBack;
   const _Header({
     required this.currentStep,
     required this.totalSteps,
-    required this.stepLabel,
+    required this.titleHero,
+    required this.titleHeroAccent,
+    required this.subtitle,
     required this.onBack,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 8.h),
+    final width = MediaQuery.of(context).size.width;
+    final fillW = (width - 40.w) * ((currentStep + 1) / totalSteps);
+    return Container(
+      padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h),
+      decoration: const BoxDecoration(
+        color: _bg,
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x33000000),
+            blurRadius: 14,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1020,64 +1065,100 @@ class _Header extends StatelessWidget {
               GestureDetector(
                 onTap: onBack,
                 child: Container(
-                  width: 40.w,
-                  height: 40.w,
+                  width: 42.w,
+                  height: 42.w,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.06),
+                    color: _surface,
                     shape: BoxShape.circle,
+                    boxShadow: const [_shadowSoft],
                   ),
                   child: Icon(
                     currentStep == 0
                         ? Icons.close_rounded
                         : Icons.arrow_back_rounded,
                     color: Colors.white,
-                    size: 18.sp,
+                    size: 19.sp,
                   ),
                 ),
               ),
               SizedBox(width: 14.w),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Step ${currentStep + 1} of $totalSteps',
-                      style: GoogleFonts.inter(
-                        color: _textMuted,
-                        fontSize: 11.sp,
-                        fontWeight: FontWeight.w500,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    SizedBox(height: 2.h),
-                    Text(
-                      stepLabel,
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  'Step ${currentStep + 1} of $totalSteps',
+                  style: GoogleFonts.inter(
+                    color: _textMuted,
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.6,
+                  ),
                 ),
               ),
             ],
           ),
-          SizedBox(height: 16.h),
-          Row(
-            children: List.generate(totalSteps, (i) {
-              final filled = i <= currentStep;
-              return Expanded(
-                child: Container(
-                  margin: EdgeInsets.only(right: i == totalSteps - 1 ? 0 : 4.w),
-                  height: 4.h,
-                  decoration: BoxDecoration(
-                    color: filled ? _accent : Colors.white.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(2.r),
-                  ),
+          SizedBox(height: 14.h),
+          // Linear progress (gradient) + dot indicators below.
+          Stack(
+            children: [
+              Container(
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(2.r),
                 ),
-              );
-            }),
+              ),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 320),
+                curve: Curves.easeOutCubic,
+                height: 4.h,
+                width: fillW.clamp(0, width - 40.w),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: currentStep == totalSteps - 1
+                        ? const [_success, Color(0xFF059669)]
+                        : [titleHeroAccent, _accentDeep],
+                  ),
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10.h),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(
+              totalSteps,
+              (i) => AnimatedContainer(
+                duration: const Duration(milliseconds: 220),
+                width: i == currentStep ? 22.w : 7.w,
+                height: 7.h,
+                margin: EdgeInsets.symmetric(horizontal: 3.w),
+                decoration: BoxDecoration(
+                  color: i <= currentStep
+                      ? titleHeroAccent
+                      : Colors.white.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(4.r),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(height: 18.h),
+          Text(
+            titleHero,
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 24.sp,
+              fontWeight: FontWeight.w700,
+              height: 1.15,
+            ),
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            subtitle,
+            style: GoogleFonts.inter(
+              color: _textMuted,
+              fontSize: 13.sp,
+              height: 1.4,
+            ),
           ),
         ],
       ),
@@ -1092,7 +1173,7 @@ class _StepBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 24.h),
+      padding: EdgeInsets.fromLTRB(20.w, 18.h, 20.w, 28.h),
       child: child,
     );
   }
@@ -1116,10 +1197,18 @@ class _BottomActionBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final isLast = currentStep == totalSteps - 1;
     return Container(
-      padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 16.h),
+      padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 18.h),
       decoration: const BoxDecoration(
         color: _bg,
-        border: Border(top: BorderSide(color: _border, width: 1)),
+        boxShadow: [
+          // Cast a shadow UPWARD so the bar reads as floating above
+          // the form rather than sitting on the same plane.
+          BoxShadow(
+            color: Color(0x66000000),
+            blurRadius: 16,
+            offset: Offset(0, -6),
+          ),
+        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -1127,106 +1216,164 @@ class _BottomActionBar extends StatelessWidget {
           if (error != null) ...[
             Container(
               width: double.infinity,
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
               decoration: BoxDecoration(
-                color: _danger.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10.r),
-                border: Border.all(color: _danger.withValues(alpha: 0.3)),
+                color: _danger.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: _danger.withValues(alpha: 0.18),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Row(
                 children: [
-                  Icon(Icons.error_outline, color: _danger, size: 16.sp),
-                  SizedBox(width: 8.w),
+                  Icon(Icons.error_outline, color: _danger, size: 18.sp),
+                  SizedBox(width: 10.w),
                   Expanded(
                     child: Text(
                       error!,
                       style: GoogleFonts.inter(
                         color: _danger,
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w500,
+                        fontSize: 12.5.sp,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-            SizedBox(height: 12.h),
+            SizedBox(height: 14.h),
           ],
           Row(
             children: [
               Expanded(
-                child: OutlinedButton(
-                  onPressed: onBack,
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    side: const BorderSide(color: _border),
-                    padding: EdgeInsets.symmetric(vertical: 14.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                  ),
-                  child: Text(
-                    currentStep == 0 ? 'Cancel' : 'Back',
-                    style: GoogleFonts.inter(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                child: _SoftButton(
+                  label: currentStep == 0 ? 'Cancel' : 'Back',
+                  onTap: onBack,
                 ),
               ),
               SizedBox(width: 12.w),
               Expanded(
                 flex: 2,
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [_accent, _accentSoft],
-                    ),
-                    borderRadius: BorderRadius.circular(12.r),
-                    boxShadow: [
-                      BoxShadow(
-                        color: _accent.withValues(alpha: 0.3),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(12.r),
-                      onTap: onNext,
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(vertical: 14.h),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              isLast ? 'Review rule' : 'Continue',
-                              style: GoogleFonts.inter(
-                                color: Colors.white,
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            SizedBox(width: 6.w),
-                            Icon(
-                              isLast
-                                  ? Icons.check_rounded
-                                  : Icons.arrow_forward_rounded,
-                              color: Colors.white,
-                              size: 16.sp,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                child: _PrimaryButton(
+                  label: isLast ? 'Review rule' : 'Continue',
+                  icon: isLast
+                      ? Icons.check_rounded
+                      : Icons.arrow_forward_rounded,
+                  onTap: onNext,
                 ),
               ),
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _PrimaryButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final VoidCallback onTap;
+  const _PrimaryButton({
+    required this.label,
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [_accent, _accentDeep],
+        ),
+        borderRadius: BorderRadius.circular(14.r),
+        boxShadow: [
+          BoxShadow(
+            color: _accent.withValues(alpha: 0.45),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14.r),
+          onTap: onTap,
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 15.h),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  label,
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                Icon(icon, color: Colors.white, size: 18.sp),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SoftButton extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+  const _SoftButton({required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: _surface,
+      borderRadius: BorderRadius.circular(14.r),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14.r),
+        onTap: onTap,
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 15.h),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14.r),
+            boxShadow: const [_shadowSoft],
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            label,
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 15.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SectionTitle extends StatelessWidget {
+  final String text;
+  const _SectionTitle(this.text);
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: GoogleFonts.inter(
+        color: Colors.white,
+        fontSize: 15.sp,
+        fontWeight: FontWeight.w700,
       ),
     );
   }
@@ -1238,12 +1385,14 @@ class _LabeledField extends StatelessWidget {
   final bool optional;
   final String? badge;
   final String? help;
+  final String? counter;
   const _LabeledField({
     required this.label,
     required this.child,
     this.optional = false,
     this.badge,
     this.help,
+    this.counter,
   });
 
   @override
@@ -1258,7 +1407,7 @@ class _LabeledField extends StatelessWidget {
               style: GoogleFonts.inter(
                 color: Colors.white,
                 fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
               ),
             ),
             if (optional) ...[
@@ -1275,7 +1424,7 @@ class _LabeledField extends StatelessWidget {
             if (badge != null) ...[
               SizedBox(width: 8.w),
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                 decoration: BoxDecoration(
                   color: _success.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8.r),
@@ -1290,6 +1439,16 @@ class _LabeledField extends StatelessWidget {
                 ),
               ),
             ],
+            const Spacer(),
+            if (counter != null)
+              Text(
+                counter!,
+                style: GoogleFonts.inter(
+                  color: _textMuted,
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
           ],
         ),
         if (help != null) ...[
@@ -1299,7 +1458,7 @@ class _LabeledField extends StatelessWidget {
             style: GoogleFonts.inter(color: _textMuted, fontSize: 12.sp),
           ),
         ],
-        SizedBox(height: 8.h),
+        SizedBox(height: 10.h),
         child,
       ],
     );
@@ -1332,9 +1491,9 @@ class _TextInput extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: _surface,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: _border),
+        color: _surfaceRaised,
+        borderRadius: BorderRadius.circular(14.r),
+        boxShadow: const [_shadowSoft],
       ),
       child: TextField(
         controller: controller,
@@ -1344,21 +1503,28 @@ class _TextInput extends StatelessWidget {
         inputFormatters: inputFormatters,
         onChanged: onChanged,
         autofocus: autofocus,
-        style: GoogleFonts.inter(color: Colors.white, fontSize: 15.sp),
+        cursorColor: _accent,
+        style: GoogleFonts.inter(
+          color: Colors.white,
+          fontSize: 15.sp,
+          fontWeight: FontWeight.w500,
+        ),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: GoogleFonts.inter(color: _textMuted, fontSize: 15.sp),
+          hintStyle: GoogleFonts.inter(
+            color: const Color(0xFF6B7280),
+            fontSize: 15.sp,
+          ),
           counterText: '',
           border: InputBorder.none,
           enabledBorder: InputBorder.none,
-          focusedBorder: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
-          suffixIcon: trailing == null
-              ? null
-              : Padding(
-                  padding: EdgeInsets.only(right: 12.w),
-                  child: trailing,
-                ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14.r),
+            borderSide: const BorderSide(color: _accent, width: 1.5),
+          ),
+          contentPadding:
+              EdgeInsets.symmetric(horizontal: 16.w, vertical: 15.h),
+          suffixIcon: trailing,
           suffixIconConstraints: BoxConstraints(minWidth: 0.w, minHeight: 0.h),
         ),
       ),
@@ -1367,12 +1533,14 @@ class _TextInput extends StatelessWidget {
 }
 
 class _TriggerCard extends StatelessWidget {
+  final Color tint;
   final IconData icon;
   final String title;
   final String description;
   final bool selected;
   final VoidCallback onTap;
   const _TriggerCard({
+    required this.tint,
     required this.icon,
     required this.title,
     required this.description,
@@ -1385,34 +1553,39 @@ class _TriggerCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: EdgeInsets.all(16.w),
+        duration: const Duration(milliseconds: 180),
+        padding: EdgeInsets.all(18.w),
         decoration: BoxDecoration(
-          color: selected ? _accent.withValues(alpha: 0.12) : _surface,
-          borderRadius: BorderRadius.circular(14.r),
+          color: selected ? tint.withValues(alpha: 0.12) : _surface,
+          borderRadius: BorderRadius.circular(18.r),
           border: Border.all(
-            color: selected ? _accent : _border,
-            width: 1.5,
+            color: selected ? tint : Colors.transparent,
+            width: 2,
           ),
+          boxShadow: [
+            // Always elevated so it reads as a card; selected tier
+            // takes a stronger tinted halo.
+            if (!selected) _shadowSoft,
+            if (selected)
+              BoxShadow(
+                color: tint.withValues(alpha: 0.30),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
+              ),
+          ],
         ),
         child: Row(
           children: [
             Container(
-              width: 44.w,
-              height: 44.w,
+              width: 56.w,
+              height: 56.w,
               decoration: BoxDecoration(
-                color: selected
-                    ? _accent.withValues(alpha: 0.2)
-                    : Colors.white.withValues(alpha: 0.04),
-                borderRadius: BorderRadius.circular(12.r),
+                color: tint.withValues(alpha: selected ? 0.28 : 0.16),
+                borderRadius: BorderRadius.circular(16.r),
               ),
-              child: Icon(
-                icon,
-                color: selected ? _accent : _textMuted,
-                size: 22.sp,
-              ),
+              child: Icon(icon, color: tint, size: 28.sp),
             ),
-            SizedBox(width: 14.w),
+            SizedBox(width: 16.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1421,33 +1594,43 @@ class _TriggerCard extends StatelessWidget {
                     title,
                     style: GoogleFonts.inter(
                       color: Colors.white,
-                      fontSize: 15.sp,
+                      fontSize: 16.sp,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  SizedBox(height: 4.h),
+                  SizedBox(height: 5.h),
                   Text(
                     description,
                     style: GoogleFonts.inter(
                       color: _textMuted,
-                      fontSize: 12.sp,
-                      height: 1.35,
+                      fontSize: 12.5.sp,
+                      height: 1.4,
                     ),
                   ),
                 ],
               ),
             ),
             SizedBox(width: 8.w),
-            Container(
-              width: 22.w,
-              height: 22.w,
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              width: 24.w,
+              height: 24.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: selected ? _accent : Colors.transparent,
+                color: selected ? tint : Colors.transparent,
                 border: Border.all(
-                  color: selected ? _accent : _border,
+                  color: selected ? tint : _hairline,
                   width: 2,
                 ),
+                boxShadow: selected
+                    ? [
+                        BoxShadow(
+                          color: tint.withValues(alpha: 0.5),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
+                    : null,
               ),
               child: selected
                   ? Icon(Icons.check_rounded, color: Colors.white, size: 14.sp)
@@ -1479,20 +1662,37 @@ class _FrequencyTile extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+        duration: const Duration(milliseconds: 180),
+        padding: EdgeInsets.all(14.w),
         decoration: BoxDecoration(
-          color: selected ? _accent.withValues(alpha: 0.12) : _surface,
-          borderRadius: BorderRadius.circular(12.r),
+          color: selected ? _accent.withValues(alpha: 0.14) : _surface,
+          borderRadius: BorderRadius.circular(14.r),
           border: Border.all(
-            color: selected ? _accent : _border,
-            width: 1.5,
+            color: selected ? _accent : Colors.transparent,
+            width: 2,
           ),
+          boxShadow: selected
+              ? [
+                  BoxShadow(
+                    color: _accent.withValues(alpha: 0.28),
+                    blurRadius: 14,
+                    offset: const Offset(0, 6),
+                  ),
+                ]
+              : const [_shadowSoft],
         ),
         child: Row(
           children: [
-            Icon(icon, color: selected ? _accent : _textMuted, size: 18.sp),
-            SizedBox(width: 10.w),
+            Container(
+              width: 36.w,
+              height: 36.w,
+              decoration: BoxDecoration(
+                color: _accent.withValues(alpha: selected ? 0.25 : 0.15),
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+              child: Icon(icon, color: _accent, size: 18.sp),
+            ),
+            SizedBox(width: 12.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1502,7 +1702,7 @@ class _FrequencyTile extends StatelessWidget {
                     label,
                     style: GoogleFonts.inter(
                       color: Colors.white,
-                      fontSize: 13.sp,
+                      fontSize: 13.5.sp,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -1511,7 +1711,7 @@ class _FrequencyTile extends StatelessWidget {
                     hint,
                     style: GoogleFonts.inter(
                       color: _textMuted,
-                      fontSize: 10.sp,
+                      fontSize: 10.5.sp,
                     ),
                   ),
                 ],
@@ -1525,43 +1725,60 @@ class _FrequencyTile extends StatelessWidget {
 }
 
 class _WeekDayPicker extends StatelessWidget {
-  final int selectedDay; // 1=Mon … 7=Sun (matches scheduler conventions)
+  final int selectedDay; // 1=Mon … 7=Sun (backend mod-7 keeps both 7 and 0 → Sun)
   final ValueChanged<int> onChanged;
   const _WeekDayPicker({required this.selectedDay, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
     const labels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-    return Row(
-      children: List.generate(7, (i) {
-        final day = i + 1;
-        final selected = day == selectedDay;
-        return Expanded(
-          child: Padding(
-            padding: EdgeInsets.only(right: i == 6 ? 0 : 6.w),
-            child: GestureDetector(
-              onTap: () => onChanged(day),
-              child: Container(
-                height: 44.h,
-                decoration: BoxDecoration(
-                  color: selected ? _accent : _surface,
-                  borderRadius: BorderRadius.circular(10.r),
-                  border: Border.all(color: selected ? _accent : _border),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  labels[i],
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w700,
+    return Container(
+      padding: EdgeInsets.all(8.w),
+      decoration: BoxDecoration(
+        color: _surface,
+        borderRadius: BorderRadius.circular(14.r),
+        boxShadow: const [_shadowSoft],
+      ),
+      child: Row(
+        children: List.generate(7, (i) {
+          final day = i + 1;
+          final selected = day == selectedDay;
+          return Expanded(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 3.w),
+              child: GestureDetector(
+                onTap: () => onChanged(day),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 160),
+                  height: 42.h,
+                  decoration: BoxDecoration(
+                    color: selected ? _accent : Colors.transparent,
+                    borderRadius: BorderRadius.circular(10.r),
+                    boxShadow: selected
+                        ? [
+                            BoxShadow(
+                              color: _accent.withValues(alpha: 0.45),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ]
+                        : null,
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    labels[i],
+                    style: GoogleFonts.inter(
+                      color: selected ? Colors.white : _textMuted,
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        );
-      }),
+          );
+        }),
+      ),
     );
   }
 }
@@ -1573,36 +1790,53 @@ class _MonthDayPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 7,
-      mainAxisSpacing: 6.h,
-      crossAxisSpacing: 6.w,
-      childAspectRatio: 1,
-      children: List.generate(31, (i) {
-        final day = i + 1;
-        final selected = day == selectedDay;
-        return GestureDetector(
-          onTap: () => onChanged(day),
-          child: Container(
-            decoration: BoxDecoration(
-              color: selected ? _accent : _surface,
-              borderRadius: BorderRadius.circular(8.r),
-              border: Border.all(color: selected ? _accent : _border),
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              '$day',
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w600,
+    return Container(
+      padding: EdgeInsets.all(10.w),
+      decoration: BoxDecoration(
+        color: _surface,
+        borderRadius: BorderRadius.circular(14.r),
+        boxShadow: const [_shadowSoft],
+      ),
+      child: GridView.count(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        crossAxisCount: 7,
+        mainAxisSpacing: 6.h,
+        crossAxisSpacing: 6.w,
+        childAspectRatio: 1,
+        children: List.generate(31, (i) {
+          final day = i + 1;
+          final selected = day == selectedDay;
+          return GestureDetector(
+            onTap: () => onChanged(day),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 160),
+              decoration: BoxDecoration(
+                color: selected ? _accent : Colors.transparent,
+                borderRadius: BorderRadius.circular(8.r),
+                boxShadow: selected
+                    ? [
+                        BoxShadow(
+                          color: _accent.withValues(alpha: 0.45),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ]
+                    : null,
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                '$day',
+                style: GoogleFonts.inter(
+                  color: selected ? Colors.white : _textMuted,
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
-          ),
-        );
-      }),
+          );
+        }),
+      ),
     );
   }
 }
@@ -1614,32 +1848,89 @@ class _TimePickerTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final label =
-        '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+    final hh = time.hour.toString().padLeft(2, '0');
+    final mm = time.minute.toString().padLeft(2, '0');
     return GestureDetector(
       onTap: onPick,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+        padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 16.h),
         decoration: BoxDecoration(
-          color: _surface,
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: _border),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [_surfaceRaised, _surface],
+          ),
+          borderRadius: BorderRadius.circular(16.r),
+          boxShadow: const [_shadowMd],
         ),
         child: Row(
           children: [
-            Icon(Icons.access_time_rounded, color: _accent, size: 20.sp),
-            SizedBox(width: 12.w),
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 22.sp,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1.5,
+            Container(
+              width: 44.w,
+              height: 44.w,
+              decoration: BoxDecoration(
+                color: _accent.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Icon(Icons.access_time_rounded, color: _accent, size: 22.sp),
+            ),
+            SizedBox(width: 14.w),
+            RichText(
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: hh,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 28.sp,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                  TextSpan(
+                    text: ':',
+                    style: GoogleFonts.inter(
+                      color: _accent,
+                      fontSize: 28.sp,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                  TextSpan(
+                    text: mm,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 28.sp,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                ],
               ),
             ),
             const Spacer(),
-            Icon(Icons.edit_rounded, color: _textMuted, size: 16.sp),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.edit_rounded, color: _textMuted, size: 14.sp),
+                  SizedBox(width: 6.w),
+                  Text(
+                    'Change',
+                    style: GoogleFonts.inter(
+                      color: _textMuted,
+                      fontSize: 11.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -1649,10 +1940,12 @@ class _TimePickerTile extends StatelessWidget {
 
 class _RoundUpChip extends StatelessWidget {
   final String label;
+  final IconData? icon;
   final bool selected;
   final VoidCallback onTap;
   const _RoundUpChip({
     required this.label,
+    this.icon,
     required this.selected,
     required this.onTap,
   });
@@ -1662,23 +1955,41 @@ class _RoundUpChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+        duration: const Duration(milliseconds: 160),
+        padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 12.h),
         decoration: BoxDecoration(
-          color: selected ? _accent : _surface,
-          borderRadius: BorderRadius.circular(20.r),
-          border: Border.all(
-            color: selected ? _accent : _border,
-            width: 1.5,
-          ),
+          color: selected ? _roundUpTint : _surface,
+          borderRadius: BorderRadius.circular(22.r),
+          boxShadow: selected
+              ? [
+                  BoxShadow(
+                    color: _roundUpTint.withValues(alpha: 0.45),
+                    blurRadius: 12,
+                    offset: const Offset(0, 5),
+                  ),
+                ]
+              : const [_shadowSoft],
         ),
-        child: Text(
-          label,
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 13.sp,
-            fontWeight: FontWeight.w700,
-          ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(
+                icon,
+                size: 14.sp,
+                color: selected ? Colors.white : _textMuted,
+              ),
+              SizedBox(width: 6.w),
+            ],
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 13.5.sp,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -1700,11 +2011,11 @@ class _SegmentedToggle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(4.w),
+      padding: EdgeInsets.all(5.w),
       decoration: BoxDecoration(
         color: _surface,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: _border),
+        borderRadius: BorderRadius.circular(14.r),
+        boxShadow: const [_shadowSoft],
       ),
       child: Row(
         children: [
@@ -1718,19 +2029,30 @@ class _SegmentedToggle extends StatelessWidget {
   Widget _segment(String label, bool active, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: 10.h),
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        padding: EdgeInsets.symmetric(vertical: 11.h),
         decoration: BoxDecoration(
           color: active ? _accent : Colors.transparent,
-          borderRadius: BorderRadius.circular(8.r),
+          borderRadius: BorderRadius.circular(10.r),
+          boxShadow: active
+              ? [
+                  BoxShadow(
+                    color: _accent.withValues(alpha: 0.45),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
         ),
         alignment: Alignment.center,
         child: Text(
           label,
           style: GoogleFonts.inter(
-            color: Colors.white,
+            color: active ? Colors.white : _textMuted,
             fontSize: 13.sp,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
@@ -1739,7 +2061,7 @@ class _SegmentedToggle extends StatelessWidget {
 }
 
 class _AccountDropdown extends StatelessWidget {
-  final List<dynamic> accounts; // AccountSummaryEntity-shaped items
+  final List<dynamic> accounts;
   final String? valueId;
   final String hint;
   final ValueChanged<String?> onChanged;
@@ -1753,11 +2075,11 @@ class _AccountDropdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 4.h),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
       decoration: BoxDecoration(
-        color: _surface,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: _border),
+        color: _surfaceRaised,
+        borderRadius: BorderRadius.circular(14.r),
+        boxShadow: const [_shadowSoft],
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
@@ -1767,8 +2089,9 @@ class _AccountDropdown extends StatelessWidget {
             hint,
             style: GoogleFonts.inter(color: _textMuted, fontSize: 14.sp),
           ),
-          dropdownColor: _surface,
-          icon: const Icon(Icons.arrow_drop_down_rounded, color: _accent),
+          dropdownColor: _surfaceRaised,
+          icon: Icon(Icons.keyboard_arrow_down_rounded,
+              color: _accent, size: 22.sp),
           items: accounts.map<DropdownMenuItem<String>>((a) {
             final id = a.id.toString();
             final label = '${a.accountType} (****${a.accountNumberLast4})';
@@ -1779,7 +2102,7 @@ class _AccountDropdown extends StatelessWidget {
                 style: GoogleFonts.inter(
                   color: Colors.white,
                   fontSize: 14.sp,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             );
@@ -1791,59 +2114,121 @@ class _AccountDropdown extends StatelessWidget {
   }
 }
 
+class _PreviewCard extends StatelessWidget {
+  final Color tint;
+  final IconData icon;
+  final String title;
+  final String body;
+  const _PreviewCard({
+    required this.tint,
+    required this.icon,
+    required this.title,
+    required this.body,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: _surface,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border(
+          left: BorderSide(color: tint, width: 3),
+        ),
+        boxShadow: const [_shadowSoft],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 38.w,
+            height: 38.w,
+            decoration: BoxDecoration(
+              color: tint.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(10.r),
+            ),
+            child: Icon(icon, color: tint, size: 19.sp),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 13.5.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 5.h),
+                Text(
+                  body,
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFFD1D5DB),
+                    fontSize: 12.5.sp,
+                    height: 1.45,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _EmptyAccountsState extends StatelessWidget {
   final VoidCallback onClose;
   const _EmptyAccountsState({required this.onClose});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 24.h),
+    return Container(
+      padding: EdgeInsets.all(28.w),
+      margin: EdgeInsets.symmetric(vertical: 12.h),
+      decoration: BoxDecoration(
+        color: _surface,
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: const [_shadowMd],
+      ),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.account_balance_wallet_outlined,
-              color: _textMuted, size: 56.sp),
+          Container(
+            width: 72.w,
+            height: 72.w,
+            decoration: BoxDecoration(
+              color: _accent.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.account_balance_wallet_outlined,
+                color: _accent, size: 32.sp),
+          ),
           SizedBox(height: 16.h),
           Text(
             'No accounts yet',
             style: GoogleFonts.inter(
               color: Colors.white,
-              fontSize: 16.sp,
+              fontSize: 17.sp,
               fontWeight: FontWeight.w700,
             ),
           ),
           SizedBox(height: 8.h),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24.w),
-            child: Text(
-              'Auto-save needs at least one source and one destination account. '
-              'Open an account from the dashboard, then come back.',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                color: _textMuted,
-                fontSize: 13.sp,
-                height: 1.4,
-              ),
+          Text(
+            'Auto-save needs at least one source and one destination account. '
+            'Open an account from the dashboard, then come back.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              color: _textMuted,
+              fontSize: 13.sp,
+              height: 1.4,
             ),
           ),
-          SizedBox(height: 20.h),
-          OutlinedButton.icon(
-            onPressed: onClose,
-            icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
-            label: Text(
-              'Back to dashboard',
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 13.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: _border),
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-            ),
-          ),
+          SizedBox(height: 18.h),
+          _SoftButton(label: 'Back to dashboard', onTap: onClose),
         ],
       ),
     );
@@ -1860,87 +2245,43 @@ class _AccountsLoadErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 24.h),
+    return Container(
+      padding: EdgeInsets.all(28.w),
+      margin: EdgeInsets.symmetric(vertical: 12.h),
+      decoration: BoxDecoration(
+        color: _surface,
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: _danger.withValues(alpha: 0.3)),
+        boxShadow: const [_shadowMd],
+      ),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.cloud_off_rounded, color: _danger, size: 48.sp),
-          SizedBox(height: 12.h),
+          Container(
+            width: 60.w,
+            height: 60.w,
+            decoration: BoxDecoration(
+              color: _danger.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.cloud_off_rounded, color: _danger, size: 28.sp),
+          ),
+          SizedBox(height: 14.h),
           Text(
             'Couldn\'t load your accounts',
             style: GoogleFonts.inter(
               color: Colors.white,
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w600,
+              fontSize: 15.sp,
+              fontWeight: FontWeight.w700,
             ),
           ),
           SizedBox(height: 6.h),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24.w),
-            child: Text(
-              message,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(color: _textMuted, fontSize: 12.sp),
-            ),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(color: _textMuted, fontSize: 12.sp),
           ),
           SizedBox(height: 16.h),
-          OutlinedButton.icon(
-            onPressed: onRetry,
-            icon: const Icon(Icons.refresh_rounded, color: Colors.white),
-            label: Text(
-              'Try again',
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 13.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: _border),
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _InfoCallout extends StatelessWidget {
-  final IconData icon;
-  final String text;
-  final Color tone;
-  const _InfoCallout({
-    required this.icon,
-    required this.text,
-    required this.tone,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(12.w),
-      decoration: BoxDecoration(
-        color: tone.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(color: tone.withValues(alpha: 0.25)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: tone, size: 18.sp),
-          SizedBox(width: 10.w),
-          Expanded(
-            child: Text(
-              text,
-              style: GoogleFonts.inter(
-                color: Colors.white.withValues(alpha: 0.85),
-                fontSize: 12.sp,
-                height: 1.4,
-              ),
-            ),
-          ),
+          _SoftButton(label: 'Try again', onTap: onRetry),
         ],
       ),
     );

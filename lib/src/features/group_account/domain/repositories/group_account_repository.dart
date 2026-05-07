@@ -84,6 +84,28 @@ abstract class GroupAccountRepository {
     required String userId,
   });
 
+  // Invite-first membership.
+  Future<GroupInvitation> inviteToGroup({
+    required String groupId,
+    required String inviteeUserId,
+    String? role,
+    String? message,
+  });
+  Future<GroupInvitation> respondToGroupInvite({
+    required String invitationId,
+    required bool accept,
+  });
+  Future<void> cancelGroupInvite({required String invitationId});
+  Future<List<GroupInvitation>> listMyInvitations({
+    List<GroupInvitationStatus>? statuses,
+    int limit = 50,
+  });
+  Future<List<GroupInvitation>> listGroupInvitations({
+    required String groupId,
+    List<GroupInvitationStatus>? statuses,
+    int limit = 100,
+  });
+
   // Payment methods
   Future<List<ContributionPayment>> getContributionPayments(String contributionId);
   Future<ContributionPayment> makeContributionPayment({
