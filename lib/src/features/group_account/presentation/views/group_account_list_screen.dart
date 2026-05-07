@@ -11,7 +11,9 @@ import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
 import '../widgets/group_card.dart';
 import '../widgets/create_group_bottom_sheet.dart';
+import '../widgets/invite_card.dart';
 import '../widgets/public_group_detail_bottom_sheet.dart';
+import '../../domain/entities/group_entities.dart';
 import '../../../presentation/views/dashboard/dashboard_screen.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../authentication/cubit/authentication_state.dart';
@@ -73,10 +75,17 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    // 4 tabs: My Groups / Discover / Invites / Leaderboard. Invites
+    // sits between Discover and Leaderboard so the badge is visible
+    // without scrolling and the LTR reading order is "what I have
+    // now → what's available → what's pending → who's leading".
+    _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(_onTabChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeUserIdIfAuthenticated();
+      // Eagerly fetch pending invites so the tab badge is right on
+      // first paint without the user having to switch tabs.
+      context.read<GroupAccountCubit>().loadMyInvitations();
     });
   }
 
@@ -105,6 +114,10 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
         cubit.loadPublicGroups(sortBy: _selectedSort);
         break;
       case 2:
+        // Invites tab — refresh on each visit so the list is current.
+        cubit.loadMyInvitations();
+        break;
+      case 3:
         // Leaderboard tab - load leaderboard
         cubit.loadPublicGroups(
             sortBy: _leaderboardSortValues[_leaderboardTabIndex]);
@@ -187,6 +200,7 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
                 children: [
                   _buildMyGroupsTab(),
                   _buildDiscoverTab(),
+                  _buildInvitesTab(),
                   _buildLeaderboardTab(),
                 ],
               ),
@@ -297,6 +311,51 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
                 SizedBox(width: 6.w),
                 Text('Discover'),
               ],
+            ),
+          ),
+          // Invites tab. Badge shows pending count so users notice
+          // a fresh invite without switching tabs. The badge is
+          // computed from the cubit's GroupAccountMyInvitationsLoaded
+          // state — we read the latest emit via BlocBuilder.
+          Tab(
+            child: BlocBuilder<GroupAccountCubit, GroupAccountState>(
+              buildWhen: (prev, curr) =>
+                  curr is GroupAccountMyInvitationsLoaded ||
+                  curr is GroupAccountInvitationResponded ||
+                  curr is GroupAccountInvitationCancelled,
+              builder: (ctx, state) {
+                int pending = 0;
+                if (state is GroupAccountMyInvitationsLoaded) {
+                  pending = state.pendingCount;
+                }
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.mail_outline, size: 16.sp),
+                    SizedBox(width: 6.w),
+                    Text('Invites'),
+                    if (pending > 0) ...[
+                      SizedBox(width: 6.w),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 6.w, vertical: 1.h),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEF4444),
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                        child: Text(
+                          '$pending',
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 10.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                );
+              },
             ),
           ),
           Tab(
@@ -1456,6 +1515,135 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
         ),
       ],
     );
+  }
+
+  // ===========================================================================
+  // INVITES TAB
+  // ===========================================================================
+
+  /// Renders the user's pending group invitations. Each card calls
+  /// the cubit's respondToInvitation; per-card `_busy` set tracks
+  /// in-flight taps so a slow gRPC doesn't lock the whole list.
+  Widget _buildInvitesTab() {
+    return BlocConsumer<GroupAccountCubit, GroupAccountState>(
+      listenWhen: (prev, curr) =>
+          curr is GroupAccountInvitationResponded ||
+          curr is GroupAccountError,
+      listener: (ctx, state) {
+        if (state is GroupAccountInvitationResponded) {
+          final group = state.invitation.groupName.isNotEmpty
+              ? state.invitation.groupName
+              : 'group';
+          final msg = state.accepted
+              ? 'You joined $group'
+              : 'You declined the invitation';
+          ScaffoldMessenger.of(ctx).showSnackBar(
+            SnackBar(
+              content: Text(msg),
+              backgroundColor: state.accepted
+                  ? const Color(0xFF10B981)
+                  : Colors.grey[800],
+            ),
+          );
+          if (mounted) setState(() => _busyInvitations.clear());
+        } else if (state is GroupAccountError) {
+          if (mounted) setState(() => _busyInvitations.clear());
+        }
+      },
+      buildWhen: (prev, curr) =>
+          curr is GroupAccountMyInvitationsLoaded ||
+          curr is GroupAccountLoading ||
+          curr is GroupAccountError,
+      builder: (ctx, state) {
+        if (state is GroupAccountLoading && (state.message ?? '').contains('invit')) {
+          return const Center(
+            child: CircularProgressIndicator(color: Color(0xFF6366F1)),
+          );
+        }
+        List<GroupInvitation> invites = const [];
+        if (state is GroupAccountMyInvitationsLoaded) {
+          invites = state.invitations
+              .where((i) => i.status == GroupInvitationStatus.pending)
+              .toList();
+        }
+        if (invites.isEmpty) {
+          return RefreshIndicator(
+            color: const Color(0xFF6366F1),
+            backgroundColor: const Color(0xFF1F1F1F),
+            onRefresh: () async =>
+                ctx.read<GroupAccountCubit>().loadMyInvitations(),
+            child: ListView(
+              children: [
+                SizedBox(height: 80.h),
+                Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(32.w),
+                    child: Column(
+                      children: [
+                        Icon(Icons.mail_outline,
+                            color: Colors.grey[700], size: 36.sp),
+                        SizedBox(height: 12.h),
+                        Text(
+                          'No pending invites',
+                          style: GoogleFonts.inter(
+                            color: Colors.grey[400],
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        SizedBox(height: 6.h),
+                        Text(
+                          'When someone invites you to a group, you\'ll see it here.',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.inter(
+                            color: Colors.grey[600],
+                            fontSize: 12.sp,
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+        return RefreshIndicator(
+          color: const Color(0xFF6366F1),
+          backgroundColor: const Color(0xFF1F1F1F),
+          onRefresh: () async =>
+              ctx.read<GroupAccountCubit>().loadMyInvitations(),
+          child: ListView.builder(
+            padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 80.h),
+            itemCount: invites.length,
+            itemBuilder: (_, i) {
+              final inv = invites[i];
+              return InviteCard(
+                invitation: inv,
+                busy: _busyInvitations.contains(inv.id),
+                onAccept: () => _handleInviteResponse(inv, accept: true),
+                onDecline: () => _handleInviteResponse(inv, accept: false),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  /// Per-card busy set so an in-flight tap doesn't lock the whole
+  /// list. Cleared in the BlocListener after the cubit emits the
+  /// success / error state.
+  final Set<String> _busyInvitations = <String>{};
+
+  void _handleInviteResponse(GroupInvitation inv, {required bool accept}) {
+    if (_busyInvitations.contains(inv.id)) return;
+    setState(() => _busyInvitations.add(inv.id));
+    context.read<GroupAccountCubit>().respondToInvitation(
+          invitationId: inv.id,
+          accept: accept,
+        );
   }
 
   // ===========================================================================
