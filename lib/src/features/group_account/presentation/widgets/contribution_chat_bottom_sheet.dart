@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
@@ -80,24 +81,46 @@ class ContributionChatBottomSheet extends StatefulWidget {
 
 class _ContributionChatBottomSheetState
     extends State<ContributionChatBottomSheet> {
-  // Real backend integration. Two bases because chat splits across
-  // services:
+  // Two bases because chat splits across services:
   //
-  //   _financialBase (8016) — financial-gateway, proxies gRPC for
-  //       message send + list. Same path the rest of the contribution
-  //       flow takes.
-  //   _mediaBase     (8011) — group-accounts HTTP server. Hosts the
-  //       multipart upload endpoint (gRPC isn't a great fit for
-  //       multipart uploads) and serves local-FS files in dev. In
-  //       prod, uploads still go through this base; the upload
-  //       response carries an absolute CDN URL pointing at GCS.
+  //   financialBase — financial-gateway, proxies gRPC for message
+  //       send + list. Same path the rest of the contribution flow
+  //       takes (port 8016 by default).
+  //   mediaBase     — group-accounts HTTP server. Hosts the multipart
+  //       upload endpoint (gRPC isn't a great fit for multipart) and
+  //       serves local-FS files in dev (port 8011 by default). In
+  //       prod the upload response carries an absolute CDN URL
+  //       pointing at GCS, so the consumer doesn't need this base
+  //       to read media back.
   //
-  // Both addresses use 10.0.2.2 (the Android emulator's host alias)
-  // to reach the developer's laptop.
-  static const String _financialBase = 'http://10.0.2.2:8016';
-  static const String _mediaBase = 'http://10.0.2.2:8011';
+  // Both bases are dotenv-driven with Android-emulator defaults so
+  // the same build works for an iOS simulator (FINANCIAL_GATEWAY_HTTP=
+  // http://localhost:8016), a real device (LAN IP), or a deployed
+  // env (full https URLs). Falling back to 10.0.2.2 keeps the typical
+  // ./start_all_local_no_docker.sh workflow zero-config.
+  late final String _financialBase = _resolveBase(
+      keys: const ['FINANCIAL_GATEWAY_HTTP', 'FINANCIAL_HTTP_URL'],
+      fallback: 'http://10.0.2.2:8016');
+  late final String _mediaBase = _resolveBase(
+      keys: const ['GROUP_ACCOUNTS_HTTP', 'GROUP_ACCOUNTS_HTTP_URL'],
+      fallback: 'http://10.0.2.2:8011');
+
+  String _resolveBase({required List<String> keys, required String fallback}) {
+    for (final k in keys) {
+      final v = dotenv.maybeGet(k);
+      if (v != null && v.trim().isNotEmpty) {
+        return v.trim().replaceAll(RegExp(r'/$'), '');
+      }
+    }
+    return fallback;
+  }
 
   final List<_ChatMessage> _messages = [];
+  // Pending bubbles for media that's still uploading. Keyed by a
+  // synthesized client id so we can swap them for the real server-
+  // issued message once the round-trip completes — gives users an
+  // instant local preview instead of waiting for the next poll.
+  final List<_PendingBubble> _pending = [];
   final TextEditingController _composer = TextEditingController();
   final ScrollController _scroll = ScrollController();
   Timer? _pollTimer;
@@ -105,17 +128,22 @@ class _ContributionChatBottomSheetState
   bool _initialLoading = true;
   String? _error;
   bool _sending = false;
+  // Banner text shown above the composer when the last media op
+  // failed. Distinct from _error which gates the whole timeline.
+  String? _composerBanner;
 
   @override
   void initState() {
     super.initState();
     _composer.addListener(() => setState(() {}));
     _initialFetch();
-    // Polling keeps the timeline live without a WebSocket. 5s is a
-    // sane balance: snappy enough for casual chat, light enough on
-    // the gateway. Switch to WS later by replacing the timer with
-    // a stream subscription.
-    _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) => _pollDelta());
+    // 2s polling keeps the timeline near-real-time for active chat.
+    // The cursor (`since`) means the gateway only sends NEW messages
+    // each tick, so the cost is one cheap round-trip with usually an
+    // empty payload. Will be replaced with WS once the contribution
+    // chat backend exposes a stream channel.
+    _pollTimer = Timer.periodic(
+        const Duration(seconds: 2), (_) => _pollDelta());
   }
 
   @override
@@ -298,30 +326,88 @@ class _ContributionChatBottomSheetState
 
   Future<void> _sendImage() async {
     if (_sending) return;
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 80, // re-encode to keep upload small
+      maxWidth: 1600,
+    );
+    if (picked == null) return;
+
+    // Push an optimistic bubble first so the user sees their image
+    // immediately. The bubble carries the local file path (rendered
+    // via Image.file in _buildPendingBubble) and a uploading flag.
+    // On success we drop it; the server-issued message will arrive
+    // either via the send response or the next poll tick.
+    final pending = _PendingBubble(
+      clientId: 'pending-${DateTime.now().microsecondsSinceEpoch}',
+      kind: _MessageKind.image,
+      localPath: picked.path,
+      sentAt: DateTime.now(),
+    );
+    setState(() {
+      _pending.add(pending);
+      _sending = true;
+      _composerBanner = null;
+    });
+    _autoscroll();
+
     try {
-      final picker = ImagePicker();
-      final picked = await picker.pickImage(
-        source: ImageSource.gallery,
-        imageQuality: 80, // re-encode to keep upload small
-        maxWidth: 1600,
-      );
-      if (picked == null) return;
-      setState(() => _sending = true);
       final uploaded = await _uploadMedia(
         file: File(picked.path),
         kind: 'image',
       );
-      // Now persist the message with the returned URL.
       await _sendMessageWithKind(
         kind: 'image',
         body: '',
         mediaUrl: uploaded.url,
       );
+      if (mounted) setState(() => _pending.remove(pending));
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Image send failed: $e')),
+      // Mark the pending bubble as failed so the user sees what didn't
+      // go and can retry. Don't auto-remove — the failed marker is
+      // the audit trail until they tap retry or dismiss.
+      setState(() {
+        pending.failed = true;
+        pending.errorMessage = '$e';
+        _composerBanner = 'Image send failed. Tap the bubble to retry.';
+      });
+    } finally {
+      if (mounted) setState(() => _sending = false);
+    }
+  }
+
+  /// Re-runs the upload + send for a pending bubble whose previous
+  /// attempt failed. Called when the user taps the failure marker.
+  Future<void> _retryPending(_PendingBubble p) async {
+    if (p.localPath == null || _sending) return;
+    setState(() {
+      p.failed = false;
+      p.errorMessage = null;
+      _sending = true;
+      _composerBanner = null;
+    });
+    try {
+      final uploaded = await _uploadMedia(
+        file: File(p.localPath!),
+        kind: p.kind == _MessageKind.image ? 'image' : 'voice',
+        durationMs: p.durationMs,
       );
+      await _sendMessageWithKind(
+        kind: p.kind == _MessageKind.image ? 'image' : 'voice',
+        body: '',
+        mediaUrl: uploaded.url,
+        durationMs: uploaded.durationMs > 0 ? uploaded.durationMs : p.durationMs,
+      );
+      if (mounted) setState(() => _pending.remove(p));
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        p.failed = true;
+        p.errorMessage = '$e';
+        _composerBanner = 'Send failed. Tap the bubble to retry.';
+      });
     } finally {
       if (mounted) setState(() => _sending = false);
     }
@@ -384,8 +470,25 @@ class _ContributionChatBottomSheetState
       } catch (_) {}
       return;
     }
+
+    // Optimistic bubble — same pattern as _sendImage. Voice carries
+    // both the local path (so the user can scrub their own recording
+    // immediately while the upload is in flight) and the duration.
+    final pending = _PendingBubble(
+      clientId: 'pending-${DateTime.now().microsecondsSinceEpoch}',
+      kind: _MessageKind.voice,
+      localPath: path,
+      durationMs: ms,
+      sentAt: DateTime.now(),
+    );
+    setState(() {
+      _pending.add(pending);
+      _sending = true;
+      _composerBanner = null;
+    });
+    _autoscroll();
+
     try {
-      setState(() => _sending = true);
       final uploaded =
           await _uploadMedia(file: File(path), kind: 'voice', durationMs: ms);
       await _sendMessageWithKind(
@@ -394,17 +497,21 @@ class _ContributionChatBottomSheetState
         mediaUrl: uploaded.url,
         durationMs: uploaded.durationMs > 0 ? uploaded.durationMs : ms,
       );
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Voice send failed: $e')),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _sending = false);
+      if (mounted) setState(() => _pending.remove(pending));
+      // Local recording is no longer needed once it's persisted.
       try {
         await File(path).delete();
       } catch (_) {}
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        pending.failed = true;
+        pending.errorMessage = '$e';
+        _composerBanner = 'Voice send failed. Tap the bubble to retry.';
+      });
+      // Keep the file on disk so retry can re-upload it.
+    } finally {
+      if (mounted) setState(() => _sending = false);
     }
   }
 
@@ -470,16 +577,35 @@ class _ContributionChatBottomSheetState
     });
   }
 
-  // Chat surface palette. The header + composer sit on the existing
-  // `_chrome` color so they read as part of the app shell, while the
-  // timeline drops to `_canvas` — a deeper near-black with a faint
-  // blue lift. The contrast makes bubbles pop the way WhatsApp /
-  // Telegram do, and is consistent with the rest of LazerVault's
-  // dark theme (background 0x0A0A0A, card 0x1F1F1F).
+  // Chat surface palette. Modeled on industry chat-app dark themes
+  // (WhatsApp dark, Telegram dark) so the contrast feels familiar:
+  //
+  //   _chrome      — header + composer chrome. Sits on top of the
+  //                  app shell at the same elevation as bottom sheets
+  //                  elsewhere, so the close button + composer read as
+  //                  the same visual layer as the rest of LazerVault.
+  //   _canvas      — message-list background. Deeper near-black with
+  //                  a faint blue lift, the same tone WhatsApp uses
+  //                  in dark mode (#0B141A).
+  //   _bubbleMe    — outgoing bubble. LazerVault indigo at slightly
+  //                  deeper saturation than the brand 500 so it
+  //                  reads cleanly against _canvas without competing
+  //                  with primary CTAs elsewhere on the screen.
+  //   _bubbleOther — incoming bubble. Cool slate that pairs with
+  //                  _canvas, the same hue used by Telegram's
+  //                  incoming bubbles. White text reads softly against
+  //                  it without the harsh contrast of pure dark gray.
   static const Color _chrome = Color(0xFF1A1F24);
   static const Color _canvas = Color(0xFF0B141A);
-  static const Color _bubbleMe = Color(0xFF6366F1);
-  static const Color _bubbleOther = Color(0xFF202C33);
+  static const Color _bubbleMe = Color(0xFF4F46E5);
+  static const Color _bubbleOther = Color(0xFF1F2C34);
+  // Subtle accent on the outgoing bubble for play buttons / waveform
+  // active fill. Lighter than _bubbleMe so it pops on top of the
+  // bubble fill.
+  static const Color _accentMe = Color(0xFFA5B4FC);
+  // Status-meta colors for timestamps + sender labels.
+  static const Color _metaMe = Color(0xCFFFFFFF);
+  static const Color _metaOther = Color(0xFF9FB3C2);
 
   @override
   Widget build(BuildContext context) {
@@ -610,7 +736,7 @@ class _ContributionChatBottomSheetState
         ),
       );
     }
-    if (_messages.isEmpty) {
+    if (_messages.isEmpty && _pending.isEmpty) {
       return Center(
         child: Padding(
           padding: EdgeInsets.all(32.w),
@@ -643,11 +769,19 @@ class _ContributionChatBottomSheetState
         ),
       );
     }
+    final total = _messages.length + _pending.length;
     return ListView.builder(
       controller: _scroll,
       padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 8.h),
-      itemCount: _messages.length,
-      itemBuilder: (_, i) => _buildBubble(_messages[i]),
+      itemCount: total,
+      itemBuilder: (_, i) {
+        if (i < _messages.length) return _buildBubble(_messages[i]);
+        // Pending bubbles render after the persisted timeline, in
+        // the order they were started — so the optimistic preview
+        // appears at the bottom (where the user expects their
+        // outgoing message to land).
+        return _buildPendingBubble(_pending[i - _messages.length]);
+      },
     );
   }
 
@@ -699,9 +833,9 @@ class _ContributionChatBottomSheetState
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.inter(
-                        color: Colors.grey[300],
+                        color: _accentMe,
                         fontSize: 10.sp,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     SizedBox(height: 3.h),
@@ -711,7 +845,7 @@ class _ContributionChatBottomSheetState
                   Text(
                     _formatTime(m.sentAt),
                     style: GoogleFonts.inter(
-                      color: textColor.withValues(alpha: 0.6),
+                      color: isMe ? _metaMe : _metaOther,
                       fontSize: 9.sp,
                     ),
                   ),
@@ -722,6 +856,120 @@ class _ContributionChatBottomSheetState
         ),
       ),
     );
+  }
+
+  /// Renders an optimistic local-only bubble for media that's still
+  /// uploading or just failed. Visually identical to a real outgoing
+  /// bubble, but with an opacity/spinner overlay while in flight and
+  /// a tap-to-retry treatment when failed. As soon as the server
+  /// round-trip succeeds the parent state removes this from _pending
+  /// and the canonical bubble takes over.
+  Widget _buildPendingBubble(_PendingBubble p) {
+    final tailSize = 6.w;
+    final maxBubbleWidth = MediaQuery.of(context).size.width * 0.78;
+    return Container(
+      margin: EdgeInsets.only(bottom: 6.h, left: 40.w),
+      child: Align(
+        alignment: Alignment.centerRight,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: maxBubbleWidth),
+          child: GestureDetector(
+            onTap: p.failed ? () => _retryPending(p) : null,
+            child: CustomPaint(
+              painter: _BubblePainter(
+                color: p.failed
+                    ? const Color(0xFF7F1D1D)
+                    : _bubbleMe.withValues(alpha: 0.7),
+                isMe: true,
+                tailSize: tailSize,
+                radius: 14.r,
+              ),
+              child: Padding(
+                padding:
+                    EdgeInsets.fromLTRB(12.w, 8.h, 12.w + tailSize, 8.h),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildPendingContent(p),
+                    SizedBox(height: 4.h),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (p.failed) ...[
+                          Icon(Icons.refresh,
+                              color: Colors.white, size: 12.sp),
+                          SizedBox(width: 4.w),
+                          Text(
+                            'Tap to retry',
+                            style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 9.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ] else ...[
+                          SizedBox(
+                            width: 10.w,
+                            height: 10.w,
+                            child: const CircularProgressIndicator(
+                              strokeWidth: 1.5,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white),
+                            ),
+                          ),
+                          SizedBox(width: 6.w),
+                          Text(
+                            'Sending…',
+                            style: GoogleFonts.inter(
+                              color: _metaMe,
+                              fontSize: 9.sp,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPendingContent(_PendingBubble p) {
+    if (p.kind == _MessageKind.image && p.localPath != null) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(8.r),
+        child: Image.file(
+          File(p.localPath!),
+          width: 220.w,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => Container(
+            width: 220.w,
+            height: 140.h,
+            color: Colors.black.withValues(alpha: 0.3),
+            child: Icon(Icons.broken_image, color: Colors.white, size: 32.sp),
+          ),
+        ),
+      );
+    }
+    if (p.kind == _MessageKind.voice) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.mic, color: Colors.white, size: 18.sp),
+          SizedBox(width: 6.w),
+          Text(
+            'Voice note · ${((p.durationMs ?? 0) / 1000).round()}s',
+            style: GoogleFonts.inter(color: Colors.white, fontSize: 12.sp),
+          ),
+        ],
+      );
+    }
+    return const SizedBox.shrink();
   }
 
   Widget _buildMessageContent(_ChatMessage m, Color textColor) {
@@ -841,6 +1089,39 @@ class _ContributionChatBottomSheetState
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (_composerBanner != null)
+              Container(
+                margin: EdgeInsets.only(bottom: 8.h),
+                padding:
+                    EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF7F1D1D).withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(8.r),
+                  border: Border.all(
+                      color: const Color(0xFFEF4444).withValues(alpha: 0.4)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.error_outline,
+                        color: const Color(0xFFFCA5A5), size: 14.sp),
+                    SizedBox(width: 8.w),
+                    Expanded(
+                      child: Text(
+                        _composerBanner!,
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFFFEE2E2),
+                          fontSize: 11.sp,
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => setState(() => _composerBanner = null),
+                      child: Icon(Icons.close,
+                          color: const Color(0xFFFCA5A5), size: 14.sp),
+                    ),
+                  ],
+                ),
+              ),
             if (_recording)
               Container(
                 margin: EdgeInsets.only(bottom: 6.h),
@@ -1005,6 +1286,35 @@ class _ChatMessage {
 }
 
 enum _MessageKind { text, voice, image }
+
+/// Local-only bubble shown for media that is uploading or just
+/// failed. Lives in `_pending` (parallel to `_messages`) so we can
+/// render an instant preview while the multipart round-trip is in
+/// flight, and surface a tap-to-retry treatment when it errors.
+///
+/// Removed when the round-trip succeeds — the parent state then
+/// relies on the canonical message returned by send (and any later
+/// poll tick) for display. We deliberately don't try to merge the
+/// two paths into one model: pending bubbles need a local file path
+/// that real messages don't (and shouldn't) carry.
+class _PendingBubble {
+  final String clientId;
+  final _MessageKind kind;
+  final String? localPath;
+  final int? durationMs;
+  final DateTime sentAt;
+  bool failed;
+  String? errorMessage;
+
+  _PendingBubble({
+    required this.clientId,
+    required this.kind,
+    required this.sentAt,
+    this.localPath,
+    this.durationMs,
+  })  : failed = false,
+        errorMessage = null;
+}
 
 /// Paints a chat bubble background with an asymmetric "tail" protruding
 /// at the bottom on the side belonging to the sender. The tail mimics
