@@ -356,17 +356,25 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
 
     if (messenger == null) return;
     if (failed == 0) {
+      // Backend now creates a pending GroupInvitation rather than an
+      // active member row when the target user isn't already in the
+      // group. The screen-level cubit doesn't surface the
+      // active-vs-invited split (the backend response shape is the
+      // same), so the snackbar uses neutral copy that's accurate for
+      // both paths. The detailed "Invite Sent" / "Member added"
+      // disambiguation is shown on the member list itself via the
+      // membership_status badge per row.
       messenger.showSnackBar(SnackBar(
         content: Text(total == 1
-            ? 'Member added successfully'
-            : '$added members added successfully'),
+            ? 'Invite sent'
+            : '$added invites sent'),
         backgroundColor: const Color(0xFF10B981),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
         behavior: SnackBarBehavior.floating,
       ));
     } else if (added == 0) {
       messenger.showSnackBar(SnackBar(
-        content: Text('Could not add members. Please try again.'),
+        content: Text('Could not send invites. Please try again.'),
         backgroundColor: const Color(0xFFEF4444),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
         behavior: SnackBarBehavior.floating,
@@ -487,7 +495,7 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Add Members',
+                  'Invite Members',
                   style: GoogleFonts.inter(
                     fontSize: 20.sp,
                     fontWeight: FontWeight.w700,
@@ -496,9 +504,9 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  'Invite people to ${widget.group.name}',
+                  'They\'ll get an invite to ${widget.group.name}; they appear as members once accepted.',
                   style: GoogleFonts.inter(
-                    fontSize: 14.sp,
+                    fontSize: 13.sp,
                     color: Colors.white.withValues(alpha: 0.8),
                   ),
                 ),
@@ -1299,10 +1307,10 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
     final totalCount = _selectedMembers.length + _pendingInvites.length;
     final canAdd = totalCount > 0;
     final buttonText = totalCount == 0
-        ? 'Add Members'
+        ? 'Send Invites'
         : totalCount == 1
-            ? 'Add Member'
-            : 'Add $totalCount Members';
+            ? 'Send Invite'
+            : 'Send $totalCount Invites';
 
     return Container(
       padding: EdgeInsets.all(20.w),

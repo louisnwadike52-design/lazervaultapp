@@ -88,9 +88,17 @@ class _SelectPayoutReceiverBottomSheetState
   }
 
   List<ContributionMember> get _filteredMembers {
+    // Active-only filter: pending_invite shadows haven't accepted
+    // the parent group invite, so they MUST NOT be selectable as
+    // receivers — the backend payout_assignment_service rejects
+    // them too, but filtering here saves the round-trip and makes
+    // the picker honest about who's eligible.
+    final activeMembers = widget.contribution.members
+        .where((m) => m.isActiveParticipant)
+        .toList();
     final q = _searchController.text.trim().toLowerCase();
-    if (q.isEmpty) return widget.contribution.members;
-    return widget.contribution.members.where((m) {
+    if (q.isEmpty) return activeMembers;
+    return activeMembers.where((m) {
       return m.userName.toLowerCase().contains(q) ||
           m.email.toLowerCase().contains(q);
     }).toList();
