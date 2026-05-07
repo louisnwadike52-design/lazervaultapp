@@ -156,27 +156,7 @@ class ContributionCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      'Target',
-                      style: GoogleFonts.inter(
-                        fontSize: 11.sp,
-                        color: Colors.grey[500],
-                      ),
-                    ),
-                    SizedBox(height: 2.h),
-                    Text(
-                      '${contribution.currency} ${_formatAmount(contribution.targetAmount)}',
-                      style: GoogleFonts.inter(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.grey[300],
-                      ),
-                    ),
-                  ],
-                ),
+                _buildTargetColumn(),
               ],
             ),
             
@@ -402,6 +382,60 @@ class ContributionCard extends StatelessWidget {
   //
   // Input is `double` in MAJOR units (the gRPC data source's
   // _int64ToAmount already divided by 100 from minor → major).
+  /// Right-side amount column. For ROSCA we explicitly label the value
+  /// as "Cycle pot" and show the per-member share underneath, because
+  /// ROSCA's `target_amount` IS per-member × member_count by design
+  /// — labelling it "Target" makes a 10-member circle at ₦40k each
+  /// look like a ₦400k goal, which reads as a 10× exaggeration even
+  /// though the math is the standard ESUSU pot. For one-time
+  /// contributions the original "Target" label is the right framing.
+  Widget _buildTargetColumn() {
+    final isRosca = contribution.type == ContributionType.rotatingSavings;
+    final memberCount = contribution.members.length;
+    final perMember = contribution.regularAmount;
+
+    final label = isRosca ? 'Cycle pot' : 'Target';
+    final amount =
+        '${contribution.currency} ${_formatAmount(contribution.targetAmount)}';
+    String? subtext;
+    if (isRosca && perMember != null && perMember > 0 && memberCount > 0) {
+      subtext =
+          '$memberCount × ${contribution.currency} ${_formatAmount(perMember)}';
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 11.sp,
+            color: Colors.grey[500],
+          ),
+        ),
+        SizedBox(height: 2.h),
+        Text(
+          amount,
+          style: GoogleFonts.inter(
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w700,
+            color: Colors.grey[300],
+          ),
+        ),
+        if (subtext != null) ...[
+          SizedBox(height: 2.h),
+          Text(
+            subtext,
+            style: GoogleFonts.inter(
+              fontSize: 10.sp,
+              color: Colors.grey[500],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
   String _formatAmount(double amount) {
     final hasFraction = amount != amount.truncateToDouble();
     final fmt = NumberFormat.decimalPattern();

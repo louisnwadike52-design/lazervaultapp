@@ -832,7 +832,9 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                 ),
               ),
               Text(
-                'of ${contribution.currency} ${_fmtAmount(contribution.targetAmount)}',
+                contribution.type == ContributionType.rotatingSavings
+                    ? 'of ${contribution.currency} ${_fmtAmount(contribution.targetAmount)} pot'
+                    : 'of ${contribution.currency} ${_fmtAmount(contribution.targetAmount)}',
                 style: GoogleFonts.inter(
                   fontSize: 11.sp,
                   color: Colors.white.withValues(alpha: 0.8),
