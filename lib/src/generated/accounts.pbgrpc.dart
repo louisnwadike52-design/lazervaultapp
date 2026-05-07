@@ -229,6 +229,13 @@ class AccountsServiceClient extends $grpc.Client {
       ($0.UpdateTransactionStatusRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
           $0.UpdateTransactionStatusResponse.fromBuffer(value));
+  static final _$lookupTransactionByReference = $grpc.ClientMethod<
+          $0.LookupTransactionByReferenceRequest,
+          $0.LookupTransactionByReferenceResponse>(
+      '/accounts.AccountsService/LookupTransactionByReference',
+      ($0.LookupTransactionByReferenceRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.LookupTransactionByReferenceResponse.fromBuffer(value));
   static final _$createAutoSave =
       $grpc.ClientMethod<$0.CreateAutoSaveRequest, $0.CreateAutoSaveResponse>(
           '/accounts.AccountsService/CreateAutoSave',
@@ -704,6 +711,14 @@ class AccountsServiceClient extends $grpc.Client {
       updateTransactionStatus($0.UpdateTransactionStatusRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$updateTransactionStatus, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$0.LookupTransactionByReferenceResponse>
+      lookupTransactionByReference(
+          $0.LookupTransactionByReferenceRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$lookupTransactionByReference, request,
         options: options);
   }
 
@@ -1285,6 +1300,16 @@ abstract class AccountsServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.UpdateTransactionStatusRequest.fromBuffer(value),
         ($0.UpdateTransactionStatusResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.LookupTransactionByReferenceRequest,
+            $0.LookupTransactionByReferenceResponse>(
+        'LookupTransactionByReference',
+        lookupTransactionByReference_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.LookupTransactionByReferenceRequest.fromBuffer(value),
+        ($0.LookupTransactionByReferenceResponse value) =>
+            value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.CreateAutoSaveRequest,
             $0.CreateAutoSaveResponse>(
         'CreateAutoSave',
@@ -1863,6 +1888,12 @@ abstract class AccountsServiceBase extends $grpc.Service {
     return updateTransactionStatus(call, await request);
   }
 
+  $async.Future<$0.LookupTransactionByReferenceResponse>
+      lookupTransactionByReference_Pre($grpc.ServiceCall call,
+          $async.Future<$0.LookupTransactionByReferenceRequest> request) async {
+    return lookupTransactionByReference(call, await request);
+  }
+
   $async.Future<$0.CreateAutoSaveResponse> createAutoSave_Pre(
       $grpc.ServiceCall call,
       $async.Future<$0.CreateAutoSaveRequest> request) async {
@@ -2180,6 +2211,9 @@ abstract class AccountsServiceBase extends $grpc.Service {
       $grpc.ServiceCall call, $0.GetExpenseTimeSeriesRequest request);
   $async.Future<$0.UpdateTransactionStatusResponse> updateTransactionStatus(
       $grpc.ServiceCall call, $0.UpdateTransactionStatusRequest request);
+  $async.Future<$0.LookupTransactionByReferenceResponse>
+      lookupTransactionByReference($grpc.ServiceCall call,
+          $0.LookupTransactionByReferenceRequest request);
   $async.Future<$0.CreateAutoSaveResponse> createAutoSave(
       $grpc.ServiceCall call, $0.CreateAutoSaveRequest request);
   $async.Future<$0.GetAutoSavesResponse> getAutoSaves(

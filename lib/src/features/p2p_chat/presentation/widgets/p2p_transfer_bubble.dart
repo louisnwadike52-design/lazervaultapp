@@ -230,6 +230,11 @@ class P2PTransferBubble extends StatelessWidget {
 
     final ref = _cleanTransferRef;
     final canSendAgain = _canSendAgain;
+    final showReceipt = transferStatus == null ||
+        transferStatus.isEmpty ||
+        transferStatus == 'completed' ||
+        transferStatus == 'success';
+    final hasActions = showReceipt || canSendAgain;
 
     showModalBottomSheet(
       context: context,
@@ -340,85 +345,67 @@ class P2PTransferBubble extends StatelessWidget {
               'Date',
               DateFormat('MMM d, yyyy \'at\' HH:mm').format(message.createdAt),
             ),
-            SizedBox(height: 24.h),
-            // View Receipt button — for all completed transfers
-            if (transferStatus == null ||
-                transferStatus.isEmpty ||
-                transferStatus == 'completed' ||
-                transferStatus == 'success')
-              Padding(
-                padding: EdgeInsets.only(bottom: 12.h),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 48.h,
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.of(ctx).pop();
-                      Get.toNamed(
-                        AppRoutes.transferProof,
-                        arguments: <String, dynamic>{
-                          'amount': message.transferAmountMajor ?? 0,
-                          'currency': currency,
-                          'reference': ref ?? '',
-                          'recipientName': isSent ? _displayName : 'You',
-                          'senderName': isSent ? 'You' : _displayName,
-                          'timestamp': message.createdAt,
-                          'status': statusLabel.toLowerCase(),
-                          'type': isSent ? 'debit' : 'credit',
-                        },
-                      );
-                    },
-                    icon: Icon(Icons.receipt_long, size: 18.w),
-                    label: Text(
-                      'View Receipt',
-                      style: GoogleFonts.inter(
-                        fontSize: 15.sp,
-                        fontWeight: FontWeight.w600,
+            if (hasActions) SizedBox(height: 28.h),
+            // Action buttons — View Receipt + Send Again side by side.
+            // Dismissal is handled by tap-outside / swipe-down (sheet defaults).
+            if (hasActions)
+              Row(
+                children: [
+                  if (showReceipt)
+                    Expanded(
+                      child: SizedBox(
+                        height: 52.h,
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            Navigator.of(ctx).pop();
+                            Get.toNamed(
+                              AppRoutes.transferProof,
+                              arguments: <String, dynamic>{
+                                'amount': message.transferAmountMajor ?? 0,
+                                'currency': currency,
+                                'reference': ref ?? '',
+                                'recipientName':
+                                    isSent ? _displayName : 'You',
+                                'senderName': isSent ? 'You' : _displayName,
+                                'timestamp': message.createdAt,
+                                'status': statusLabel.toLowerCase(),
+                                'type': isSent ? 'debit' : 'credit',
+                              },
+                            );
+                          },
+                          icon: Icon(Icons.receipt_long_outlined, size: 18.w),
+                          label: Text(
+                            'View Receipt',
+                            style: GoogleFonts.inter(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            backgroundColor: const Color(0xFF2D2D2D),
+                            side: const BorderSide(color: Color(0xFF3A3A3A)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14.r),
+                            ),
+                            padding: EdgeInsets.symmetric(horizontal: 8.w),
+                          ),
+                        ),
                       ),
                     ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF10B981),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
+                  if (showReceipt && canSendAgain) SizedBox(width: 12.w),
+                  if (canSendAgain)
+                    Expanded(
+                      child: _SendAgainButton(
+                        otherUserId: otherUserId!,
+                        otherUserName: _displayName,
+                        transferAmount: message.transferAmount,
+                        transferCurrency: message.transferCurrency,
+                        onDismiss: () => Navigator.of(ctx).pop(),
                       ),
-                      elevation: 0,
                     ),
-                  ),
-                ),
+                ],
               ),
-            // Send Again button — only for completed transfers the current user sent
-            if (canSendAgain)
-              _SendAgainButton(
-                otherUserId: otherUserId!,
-                otherUserName: _displayName,
-                transferAmount: message.transferAmount,
-                transferCurrency: message.transferCurrency,
-                onDismiss: () => Navigator.of(ctx).pop(),
-              ),
-            if (canSendAgain) SizedBox(height: 12.h),
-            // Close button
-            SizedBox(
-              width: double.infinity,
-              height: 48.h,
-              child: TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                style: TextButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                    side: const BorderSide(color: Color(0xFF2D2D2D)),
-                  ),
-                ),
-                child: Text(
-                  'Close',
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFF9CA3AF),
-                    fontSize: 15.sp,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ),
           ],
         ),
       ),
@@ -644,23 +631,23 @@ class _SendAgainButtonState extends State<_SendAgainButton> {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      height: 48.h,
+      height: 52.h,
       child: ElevatedButton.icon(
         onPressed: _isLoading ? null : _onTap,
         icon: _isLoading
             ? SizedBox(
-                width: 18.w,
-                height: 18.w,
+                width: 16.w,
+                height: 16.w,
                 child: const CircularProgressIndicator(
                   strokeWidth: 2,
                   color: Colors.white,
                 ),
               )
-            : Icon(Icons.replay, size: 18.w),
+            : Icon(Icons.send_rounded, size: 18.w),
         label: Text(
           _isLoading ? 'Loading...' : 'Send Again',
           style: GoogleFonts.inter(
-            fontSize: 15.sp,
+            fontSize: 14.sp,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -668,9 +655,10 @@ class _SendAgainButtonState extends State<_SendAgainButton> {
           backgroundColor: const Color(0xFF3B82F6),
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.r),
+            borderRadius: BorderRadius.circular(14.r),
           ),
           elevation: 0,
+          padding: EdgeInsets.symmetric(horizontal: 8.w),
           disabledBackgroundColor: const Color(0xFF3B82F6).withOpacity(0.6),
         ),
       ),

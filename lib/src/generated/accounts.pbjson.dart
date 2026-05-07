@@ -284,11 +284,12 @@ const UpdateBalanceRequest$json = const {
     const {'1': 'reference', '3': 4, '4': 1, '5': 9, '10': 'reference'},
     const {'1': 'description', '3': 5, '4': 1, '5': 9, '10': 'description'},
     const {'1': 'category', '3': 6, '4': 1, '5': 9, '10': 'category'},
+    const {'1': 'reactive', '3': 7, '4': 1, '5': 8, '10': 'reactive'},
   ],
 };
 
 /// Descriptor for `UpdateBalanceRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateBalanceRequestDescriptor = $convert.base64Decode('ChRVcGRhdGVCYWxhbmNlUmVxdWVzdBIdCgphY2NvdW50X2lkGAEgASgJUglhY2NvdW50SWQSFgoGYW1vdW50GAIgASgBUgZhbW91bnQSHAoJb3BlcmF0aW9uGAMgASgJUglvcGVyYXRpb24SHAoJcmVmZXJlbmNlGAQgASgJUglyZWZlcmVuY2USIAoLZGVzY3JpcHRpb24YBSABKAlSC2Rlc2NyaXB0aW9uEhoKCGNhdGVnb3J5GAYgASgJUghjYXRlZ29yeQ==');
+final $typed_data.Uint8List updateBalanceRequestDescriptor = $convert.base64Decode('ChRVcGRhdGVCYWxhbmNlUmVxdWVzdBIdCgphY2NvdW50X2lkGAEgASgJUglhY2NvdW50SWQSFgoGYW1vdW50GAIgASgBUgZhbW91bnQSHAoJb3BlcmF0aW9uGAMgASgJUglvcGVyYXRpb24SHAoJcmVmZXJlbmNlGAQgASgJUglyZWZlcmVuY2USIAoLZGVzY3JpcHRpb24YBSABKAlSC2Rlc2NyaXB0aW9uEhoKCGNhdGVnb3J5GAYgASgJUghjYXRlZ29yeRIaCghyZWFjdGl2ZRgHIAEoCFIIcmVhY3RpdmU=');
 @$core.Deprecated('Use updateBalanceResponseDescriptor instead')
 const UpdateBalanceResponse$json = const {
   '1': 'UpdateBalanceResponse',
@@ -893,6 +894,27 @@ const UpdateTransactionStatusResponse$json = const {
 
 /// Descriptor for `UpdateTransactionStatusResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List updateTransactionStatusResponseDescriptor = $convert.base64Decode('Ch9VcGRhdGVUcmFuc2FjdGlvblN0YXR1c1Jlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
+@$core.Deprecated('Use lookupTransactionByReferenceRequestDescriptor instead')
+const LookupTransactionByReferenceRequest$json = const {
+  '1': 'LookupTransactionByReferenceRequest',
+  '2': const [
+    const {'1': 'reference', '3': 1, '4': 1, '5': 9, '10': 'reference'},
+  ],
+};
+
+/// Descriptor for `LookupTransactionByReferenceRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List lookupTransactionByReferenceRequestDescriptor = $convert.base64Decode('CiNMb29rdXBUcmFuc2FjdGlvbkJ5UmVmZXJlbmNlUmVxdWVzdBIcCglyZWZlcmVuY2UYASABKAlSCXJlZmVyZW5jZQ==');
+@$core.Deprecated('Use lookupTransactionByReferenceResponseDescriptor instead')
+const LookupTransactionByReferenceResponse$json = const {
+  '1': 'LookupTransactionByReferenceResponse',
+  '2': const [
+    const {'1': 'found', '3': 1, '4': 1, '5': 8, '10': 'found'},
+    const {'1': 'transaction', '3': 2, '4': 1, '5': 11, '6': '.accounts.Transaction', '10': 'transaction'},
+  ],
+};
+
+/// Descriptor for `LookupTransactionByReferenceResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List lookupTransactionByReferenceResponseDescriptor = $convert.base64Decode('CiRMb29rdXBUcmFuc2FjdGlvbkJ5UmVmZXJlbmNlUmVzcG9uc2USFAoFZm91bmQYASABKAhSBWZvdW5kEjcKC3RyYW5zYWN0aW9uGAIgASgLMhUuYWNjb3VudHMuVHJhbnNhY3Rpb25SC3RyYW5zYWN0aW9u');
 @$core.Deprecated('Use getTransactionHistoryRequestDescriptor instead')
 const GetTransactionHistoryRequest$json = const {
   '1': 'GetTransactionHistoryRequest',
@@ -1137,11 +1159,12 @@ const DebitBalanceRequest$json = const {
     const {'1': 'hold_id', '3': 12, '4': 1, '5': 9, '10': 'holdId'},
     const {'1': 'counterparty_name', '3': 13, '4': 1, '5': 9, '10': 'counterpartyName'},
     const {'1': 'counterparty_account', '3': 14, '4': 1, '5': 9, '10': 'counterpartyAccount'},
+    const {'1': 'reactive', '3': 15, '4': 1, '5': 8, '10': 'reactive'},
   ],
 };
 
 /// Descriptor for `DebitBalanceRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List debitBalanceRequestDescriptor = $convert.base64Decode('ChNEZWJpdEJhbGFuY2VSZXF1ZXN0Eh0KCmFjY291bnRfaWQYASABKAlSCWFjY291bnRJZBIXCgd1c2VyX2lkGAIgASgJUgZ1c2VySWQSFgoGYW1vdW50GAMgASgDUgZhbW91bnQSGgoIY3VycmVuY3kYBCABKAlSCGN1cnJlbmN5EhwKCXJlZmVyZW5jZRgFIAEoCVIJcmVmZXJlbmNlEhIKBHR5cGUYBiABKAlSBHR5cGUSIAoLZGVzY3JpcHRpb24YByABKAlSC2Rlc2NyaXB0aW9uEhoKCG1ldGFkYXRhGAggASgJUghtZXRhZGF0YRIhCgxzZXJ2aWNlX25hbWUYCSABKAlSC3NlcnZpY2VOYW1lEicKD2lkZW1wb3RlbmN5X2tleRgKIAEoCVIOaWRlbXBvdGVuY3lLZXkSIQoMcmVxdWlyZV9ob2xkGAsgASgIUgtyZXF1aXJlSG9sZBIXCgdob2xkX2lkGAwgASgJUgZob2xkSWQSKwoRY291bnRlcnBhcnR5X25hbWUYDSABKAlSEGNvdW50ZXJwYXJ0eU5hbWUSMQoUY291bnRlcnBhcnR5X2FjY291bnQYDiABKAlSE2NvdW50ZXJwYXJ0eUFjY291bnQ=');
+final $typed_data.Uint8List debitBalanceRequestDescriptor = $convert.base64Decode('ChNEZWJpdEJhbGFuY2VSZXF1ZXN0Eh0KCmFjY291bnRfaWQYASABKAlSCWFjY291bnRJZBIXCgd1c2VyX2lkGAIgASgJUgZ1c2VySWQSFgoGYW1vdW50GAMgASgDUgZhbW91bnQSGgoIY3VycmVuY3kYBCABKAlSCGN1cnJlbmN5EhwKCXJlZmVyZW5jZRgFIAEoCVIJcmVmZXJlbmNlEhIKBHR5cGUYBiABKAlSBHR5cGUSIAoLZGVzY3JpcHRpb24YByABKAlSC2Rlc2NyaXB0aW9uEhoKCG1ldGFkYXRhGAggASgJUghtZXRhZGF0YRIhCgxzZXJ2aWNlX25hbWUYCSABKAlSC3NlcnZpY2VOYW1lEicKD2lkZW1wb3RlbmN5X2tleRgKIAEoCVIOaWRlbXBvdGVuY3lLZXkSIQoMcmVxdWlyZV9ob2xkGAsgASgIUgtyZXF1aXJlSG9sZBIXCgdob2xkX2lkGAwgASgJUgZob2xkSWQSKwoRY291bnRlcnBhcnR5X25hbWUYDSABKAlSEGNvdW50ZXJwYXJ0eU5hbWUSMQoUY291bnRlcnBhcnR5X2FjY291bnQYDiABKAlSE2NvdW50ZXJwYXJ0eUFjY291bnQSGgoIcmVhY3RpdmUYDyABKAhSCHJlYWN0aXZl');
 @$core.Deprecated('Use debitBalanceResponseDescriptor instead')
 const DebitBalanceResponse$json = const {
   '1': 'DebitBalanceResponse',
@@ -1239,11 +1262,12 @@ const CaptureHoldRequest$json = const {
     const {'1': 'service_name', '3': 2, '4': 1, '5': 9, '10': 'serviceName'},
     const {'1': 'description', '3': 3, '4': 1, '5': 9, '10': 'description'},
     const {'1': 'metadata', '3': 4, '4': 1, '5': 9, '10': 'metadata'},
+    const {'1': 'actual_amount', '3': 5, '4': 1, '5': 1, '10': 'actualAmount'},
   ],
 };
 
 /// Descriptor for `CaptureHoldRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List captureHoldRequestDescriptor = $convert.base64Decode('ChJDYXB0dXJlSG9sZFJlcXVlc3QSFwoHaG9sZF9pZBgBIAEoCVIGaG9sZElkEiEKDHNlcnZpY2VfbmFtZRgCIAEoCVILc2VydmljZU5hbWUSIAoLZGVzY3JpcHRpb24YAyABKAlSC2Rlc2NyaXB0aW9uEhoKCG1ldGFkYXRhGAQgASgJUghtZXRhZGF0YQ==');
+final $typed_data.Uint8List captureHoldRequestDescriptor = $convert.base64Decode('ChJDYXB0dXJlSG9sZFJlcXVlc3QSFwoHaG9sZF9pZBgBIAEoCVIGaG9sZElkEiEKDHNlcnZpY2VfbmFtZRgCIAEoCVILc2VydmljZU5hbWUSIAoLZGVzY3JpcHRpb24YAyABKAlSC2Rlc2NyaXB0aW9uEhoKCG1ldGFkYXRhGAQgASgJUghtZXRhZGF0YRIjCg1hY3R1YWxfYW1vdW50GAUgASgBUgxhY3R1YWxBbW91bnQ=');
 @$core.Deprecated('Use captureHoldResponseDescriptor instead')
 const CaptureHoldResponse$json = const {
   '1': 'CaptureHoldResponse',
@@ -1253,11 +1277,14 @@ const CaptureHoldResponse$json = const {
     const {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
     const {'1': 'transaction_id', '3': 4, '4': 1, '5': 9, '10': 'transactionId'},
     const {'1': 'new_balance', '3': 5, '4': 1, '5': 3, '10': 'newBalance'},
+    const {'1': 'captured_amount', '3': 6, '4': 1, '5': 1, '10': 'capturedAmount'},
+    const {'1': 'overage_amount', '3': 7, '4': 1, '5': 1, '10': 'overageAmount'},
+    const {'1': 'refund_amount', '3': 8, '4': 1, '5': 1, '10': 'refundAmount'},
   ],
 };
 
 /// Descriptor for `CaptureHoldResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List captureHoldResponseDescriptor = $convert.base64Decode('ChNDYXB0dXJlSG9sZFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSHQoKZXJyb3JfY29kZRgCIAEoCVIJZXJyb3JDb2RlEiMKDWVycm9yX21lc3NhZ2UYAyABKAlSDGVycm9yTWVzc2FnZRIlCg50cmFuc2FjdGlvbl9pZBgEIAEoCVINdHJhbnNhY3Rpb25JZBIfCgtuZXdfYmFsYW5jZRgFIAEoA1IKbmV3QmFsYW5jZQ==');
+final $typed_data.Uint8List captureHoldResponseDescriptor = $convert.base64Decode('ChNDYXB0dXJlSG9sZFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSHQoKZXJyb3JfY29kZRgCIAEoCVIJZXJyb3JDb2RlEiMKDWVycm9yX21lc3NhZ2UYAyABKAlSDGVycm9yTWVzc2FnZRIlCg50cmFuc2FjdGlvbl9pZBgEIAEoCVINdHJhbnNhY3Rpb25JZBIfCgtuZXdfYmFsYW5jZRgFIAEoA1IKbmV3QmFsYW5jZRInCg9jYXB0dXJlZF9hbW91bnQYBiABKAFSDmNhcHR1cmVkQW1vdW50EiUKDm92ZXJhZ2VfYW1vdW50GAcgASgBUg1vdmVyYWdlQW1vdW50EiMKDXJlZnVuZF9hbW91bnQYCCABKAFSDHJlZnVuZEFtb3VudA==');
 @$core.Deprecated('Use releaseHoldRequestDescriptor instead')
 const ReleaseHoldRequest$json = const {
   '1': 'ReleaseHoldRequest',

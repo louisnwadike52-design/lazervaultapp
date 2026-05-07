@@ -1929,6 +1929,7 @@ class UpdateBalanceRequest extends $pb.GeneratedMessage {
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reference')
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
     ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category')
+    ..aOB(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reactive')
     ..hasRequiredFields = false
   ;
 
@@ -1940,6 +1941,7 @@ class UpdateBalanceRequest extends $pb.GeneratedMessage {
     $core.String? reference,
     $core.String? description,
     $core.String? category,
+    $core.bool? reactive,
   }) {
     final _result = create();
     if (accountId != null) {
@@ -1959,6 +1961,9 @@ class UpdateBalanceRequest extends $pb.GeneratedMessage {
     }
     if (category != null) {
       _result.category = category;
+    }
+    if (reactive != null) {
+      _result.reactive = reactive;
     }
     return _result;
   }
@@ -2036,6 +2041,15 @@ class UpdateBalanceRequest extends $pb.GeneratedMessage {
   $core.bool hasCategory() => $_has(5);
   @$pb.TagNumber(6)
   void clearCategory() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.bool get reactive => $_getBF(6);
+  @$pb.TagNumber(7)
+  set reactive($core.bool v) { $_setBool(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasReactive() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearReactive() => clearField(7);
 }
 
 class UpdateBalanceResponse extends $pb.GeneratedMessage {
@@ -6319,6 +6333,116 @@ class UpdateTransactionStatusResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(2);
 }
 
+class LookupTransactionByReferenceRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'LookupTransactionByReferenceRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reference')
+    ..hasRequiredFields = false
+  ;
+
+  LookupTransactionByReferenceRequest._() : super();
+  factory LookupTransactionByReferenceRequest({
+    $core.String? reference,
+  }) {
+    final _result = create();
+    if (reference != null) {
+      _result.reference = reference;
+    }
+    return _result;
+  }
+  factory LookupTransactionByReferenceRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory LookupTransactionByReferenceRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  LookupTransactionByReferenceRequest clone() => LookupTransactionByReferenceRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  LookupTransactionByReferenceRequest copyWith(void Function(LookupTransactionByReferenceRequest) updates) => super.copyWith((message) => updates(message as LookupTransactionByReferenceRequest)) as LookupTransactionByReferenceRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static LookupTransactionByReferenceRequest create() => LookupTransactionByReferenceRequest._();
+  LookupTransactionByReferenceRequest createEmptyInstance() => create();
+  static $pb.PbList<LookupTransactionByReferenceRequest> createRepeated() => $pb.PbList<LookupTransactionByReferenceRequest>();
+  @$core.pragma('dart2js:noInline')
+  static LookupTransactionByReferenceRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<LookupTransactionByReferenceRequest>(create);
+  static LookupTransactionByReferenceRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get reference => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set reference($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasReference() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearReference() => clearField(1);
+}
+
+class LookupTransactionByReferenceResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'LookupTransactionByReferenceResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'found')
+    ..aOM<Transaction>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transaction', subBuilder: Transaction.create)
+    ..hasRequiredFields = false
+  ;
+
+  LookupTransactionByReferenceResponse._() : super();
+  factory LookupTransactionByReferenceResponse({
+    $core.bool? found,
+    Transaction? transaction,
+  }) {
+    final _result = create();
+    if (found != null) {
+      _result.found = found;
+    }
+    if (transaction != null) {
+      _result.transaction = transaction;
+    }
+    return _result;
+  }
+  factory LookupTransactionByReferenceResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory LookupTransactionByReferenceResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  LookupTransactionByReferenceResponse clone() => LookupTransactionByReferenceResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  LookupTransactionByReferenceResponse copyWith(void Function(LookupTransactionByReferenceResponse) updates) => super.copyWith((message) => updates(message as LookupTransactionByReferenceResponse)) as LookupTransactionByReferenceResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static LookupTransactionByReferenceResponse create() => LookupTransactionByReferenceResponse._();
+  LookupTransactionByReferenceResponse createEmptyInstance() => create();
+  static $pb.PbList<LookupTransactionByReferenceResponse> createRepeated() => $pb.PbList<LookupTransactionByReferenceResponse>();
+  @$core.pragma('dart2js:noInline')
+  static LookupTransactionByReferenceResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<LookupTransactionByReferenceResponse>(create);
+  static LookupTransactionByReferenceResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get found => $_getBF(0);
+  @$pb.TagNumber(1)
+  set found($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasFound() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFound() => clearField(1);
+
+  @$pb.TagNumber(2)
+  Transaction get transaction => $_getN(1);
+  @$pb.TagNumber(2)
+  set transaction(Transaction v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTransaction() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTransaction() => clearField(2);
+  @$pb.TagNumber(2)
+  Transaction ensureTransaction() => $_ensure(1);
+}
+
 class GetTransactionHistoryRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTransactionHistoryRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountId')
@@ -7984,6 +8108,7 @@ class DebitBalanceRequest extends $pb.GeneratedMessage {
     ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'holdId')
     ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'counterpartyName')
     ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'counterpartyAccount')
+    ..aOB(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reactive')
     ..hasRequiredFields = false
   ;
 
@@ -8003,6 +8128,7 @@ class DebitBalanceRequest extends $pb.GeneratedMessage {
     $core.String? holdId,
     $core.String? counterpartyName,
     $core.String? counterpartyAccount,
+    $core.bool? reactive,
   }) {
     final _result = create();
     if (accountId != null) {
@@ -8046,6 +8172,9 @@ class DebitBalanceRequest extends $pb.GeneratedMessage {
     }
     if (counterpartyAccount != null) {
       _result.counterpartyAccount = counterpartyAccount;
+    }
+    if (reactive != null) {
+      _result.reactive = reactive;
     }
     return _result;
   }
@@ -8195,6 +8324,15 @@ class DebitBalanceRequest extends $pb.GeneratedMessage {
   $core.bool hasCounterpartyAccount() => $_has(13);
   @$pb.TagNumber(14)
   void clearCounterpartyAccount() => clearField(14);
+
+  @$pb.TagNumber(15)
+  $core.bool get reactive => $_getBF(14);
+  @$pb.TagNumber(15)
+  set reactive($core.bool v) { $_setBool(14, v); }
+  @$pb.TagNumber(15)
+  $core.bool hasReactive() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearReactive() => clearField(15);
 }
 
 class DebitBalanceResponse extends $pb.GeneratedMessage {
@@ -8984,6 +9122,7 @@ class CaptureHoldRequest extends $pb.GeneratedMessage {
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'serviceName')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'metadata')
+    ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'actualAmount', $pb.PbFieldType.OD)
     ..hasRequiredFields = false
   ;
 
@@ -8993,6 +9132,7 @@ class CaptureHoldRequest extends $pb.GeneratedMessage {
     $core.String? serviceName,
     $core.String? description,
     $core.String? metadata,
+    $core.double? actualAmount,
   }) {
     final _result = create();
     if (holdId != null) {
@@ -9006,6 +9146,9 @@ class CaptureHoldRequest extends $pb.GeneratedMessage {
     }
     if (metadata != null) {
       _result.metadata = metadata;
+    }
+    if (actualAmount != null) {
+      _result.actualAmount = actualAmount;
     }
     return _result;
   }
@@ -9065,6 +9208,15 @@ class CaptureHoldRequest extends $pb.GeneratedMessage {
   $core.bool hasMetadata() => $_has(3);
   @$pb.TagNumber(4)
   void clearMetadata() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.double get actualAmount => $_getN(4);
+  @$pb.TagNumber(5)
+  set actualAmount($core.double v) { $_setDouble(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasActualAmount() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearActualAmount() => clearField(5);
 }
 
 class CaptureHoldResponse extends $pb.GeneratedMessage {
@@ -9074,6 +9226,9 @@ class CaptureHoldResponse extends $pb.GeneratedMessage {
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorMessage')
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionId')
     ..aInt64(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'newBalance')
+    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'capturedAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'overageAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refundAmount', $pb.PbFieldType.OD)
     ..hasRequiredFields = false
   ;
 
@@ -9084,6 +9239,9 @@ class CaptureHoldResponse extends $pb.GeneratedMessage {
     $core.String? errorMessage,
     $core.String? transactionId,
     $fixnum.Int64? newBalance,
+    $core.double? capturedAmount,
+    $core.double? overageAmount,
+    $core.double? refundAmount,
   }) {
     final _result = create();
     if (success != null) {
@@ -9100,6 +9258,15 @@ class CaptureHoldResponse extends $pb.GeneratedMessage {
     }
     if (newBalance != null) {
       _result.newBalance = newBalance;
+    }
+    if (capturedAmount != null) {
+      _result.capturedAmount = capturedAmount;
+    }
+    if (overageAmount != null) {
+      _result.overageAmount = overageAmount;
+    }
+    if (refundAmount != null) {
+      _result.refundAmount = refundAmount;
     }
     return _result;
   }
@@ -9168,6 +9335,33 @@ class CaptureHoldResponse extends $pb.GeneratedMessage {
   $core.bool hasNewBalance() => $_has(4);
   @$pb.TagNumber(5)
   void clearNewBalance() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.double get capturedAmount => $_getN(5);
+  @$pb.TagNumber(6)
+  set capturedAmount($core.double v) { $_setDouble(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasCapturedAmount() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearCapturedAmount() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.double get overageAmount => $_getN(6);
+  @$pb.TagNumber(7)
+  set overageAmount($core.double v) { $_setDouble(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasOverageAmount() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearOverageAmount() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.double get refundAmount => $_getN(7);
+  @$pb.TagNumber(8)
+  set refundAmount($core.double v) { $_setDouble(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasRefundAmount() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearRefundAmount() => clearField(8);
 }
 
 class ReleaseHoldRequest extends $pb.GeneratedMessage {
