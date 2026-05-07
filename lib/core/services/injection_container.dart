@@ -2618,6 +2618,12 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton(() => GetContributionActivityLogs(serviceLocator<GroupAccountRepository>()));
   serviceLocator.registerLazySingleton(() => RemoveMemberFromContribution(serviceLocator<GroupAccountRepository>()));
   serviceLocator.registerLazySingleton(() => PreviewMemberExit(serviceLocator<GroupAccountRepository>()));
+  // Invite-first membership use cases (slice 5).
+  serviceLocator.registerLazySingleton(() => InviteToGroup(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => RespondToGroupInvite(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => CancelGroupInvite(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => ListMyInvitations(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => ListGroupInvitations(serviceLocator<GroupAccountRepository>()));
   serviceLocator.registerLazySingleton(() => ListPublicGroups(serviceLocator<GroupAccountRepository>()));
   serviceLocator.registerLazySingleton(() => GetPublicGroup(serviceLocator<GroupAccountRepository>()));
   serviceLocator.registerLazySingleton(() => JoinPublicGroup(serviceLocator<GroupAccountRepository>()));
@@ -2653,6 +2659,11 @@ Future<void> init() async {
     getContributionActivityLogs: serviceLocator<GetContributionActivityLogs>(),
     removeMemberFromContribution: serviceLocator<RemoveMemberFromContribution>(),
     previewMemberExit: serviceLocator<PreviewMemberExit>(),
+    inviteToGroup: serviceLocator<InviteToGroup>(),
+    respondToGroupInvite: serviceLocator<RespondToGroupInvite>(),
+    cancelGroupInvite: serviceLocator<CancelGroupInvite>(),
+    listMyInvitations: serviceLocator<ListMyInvitations>(),
+    listGroupInvitations: serviceLocator<ListGroupInvitations>(),
     listPublicGroups: serviceLocator<ListPublicGroups>(),
     getPublicGroup: serviceLocator<GetPublicGroup>(),
     joinPublicGroup: serviceLocator<JoinPublicGroup>(),

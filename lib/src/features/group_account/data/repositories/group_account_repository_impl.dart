@@ -466,4 +466,58 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
       throw Exception('Failed to join public group: $e');
     }
   }
-} 
+
+  // Invite-first membership pass-through.
+
+  @override
+  Future<GroupInvitation> inviteToGroup({
+    required String groupId,
+    required String inviteeUserId,
+    String? role,
+    String? message,
+  }) {
+    return remoteDataSource.inviteToGroup(
+      groupId: groupId,
+      inviteeUserId: inviteeUserId,
+      role: role,
+      message: message,
+    );
+  }
+
+  @override
+  Future<GroupInvitation> respondToGroupInvite({
+    required String invitationId,
+    required bool accept,
+  }) {
+    return remoteDataSource.respondToGroupInvite(
+      invitationId: invitationId,
+      accept: accept,
+    );
+  }
+
+  @override
+  Future<void> cancelGroupInvite({required String invitationId}) {
+    return remoteDataSource.cancelGroupInvite(invitationId: invitationId);
+  }
+
+  @override
+  Future<List<GroupInvitation>> listMyInvitations({
+    List<GroupInvitationStatus>? statuses,
+    int limit = 50,
+  }) {
+    return remoteDataSource.listMyInvitations(statuses: statuses, limit: limit);
+  }
+
+  @override
+  Future<List<GroupInvitation>> listGroupInvitations({
+    required String groupId,
+    List<GroupInvitationStatus>? statuses,
+    int limit = 100,
+  }) {
+    return remoteDataSource.listGroupInvitations(
+      groupId: groupId,
+      statuses: statuses,
+      limit: limit,
+    );
+  }
+}

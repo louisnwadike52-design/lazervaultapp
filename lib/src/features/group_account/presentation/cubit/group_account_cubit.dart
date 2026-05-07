@@ -40,6 +40,12 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
   final GetContributionActivityLogs? getContributionActivityLogs;
   final RemoveMemberFromContribution? removeMemberFromContribution;
   final PreviewMemberExit? previewMemberExit;
+  // Invite-first membership use cases (slice 5).
+  final InviteToGroup? inviteToGroup;
+  final RespondToGroupInvite? respondToGroupInvite;
+  final CancelGroupInvite? cancelGroupInvite;
+  final ListMyInvitations? listMyInvitations;
+  final ListGroupInvitations? listGroupInvitations;
   final ListPublicGroups? listPublicGroups;
   final GetPublicGroup? getPublicGroup;
   final JoinPublicGroup? joinPublicGroup;
@@ -154,6 +160,11 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     this.getContributionActivityLogs,
     this.removeMemberFromContribution,
     this.previewMemberExit,
+    this.inviteToGroup,
+    this.respondToGroupInvite,
+    this.cancelGroupInvite,
+    this.listMyInvitations,
+    this.listGroupInvitations,
     this.listPublicGroups,
     this.getPublicGroup,
     this.joinPublicGroup,
@@ -1853,6 +1864,135 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       } else {
         emit(GroupAccountError('Failed to join group: $errorMsg'));
       }
+    }
+  }
+
+  // =====================================================================
+  // Invite-first membership (slice 5)
+  // =====================================================================
+
+  /// Loads invitations where the current user is the invitee. Used by
+  /// the Invites tab on group_account_list_screen + a badge counter
+  /// elsewhere. Statuses param defaults to [pending] so the tab only
+  /// shows live invites; pass null/[] for the full history.
+  Future<void> loadMyInvitations({
+    List<GroupInvitationStatus>? statuses,
+    int limit = 50,
+  }) async {
+    if (isClosed) return;
+    if (listMyInvitations == null) return;
+    try {
+      final list = await listMyInvitations!(ListMyInvitationsParams(
+        statuses: statuses ?? [GroupInvitationStatus.pending],
+        limit: limit,
+      ));
+      if (isClosed) return;
+      emit(GroupAccountMyInvitationsLoaded(list));
+    } catch (e) {
+      if (isClosed) return;
+      emit(GroupAccountError('Failed to load invitations: $e'));
+    }
+  }
+
+  /// User accepts or declines an invitation. Reloads my-invitations
+  /// AND my-groups (acceptance materialises a new active membership)
+  /// so every screen that depends on the lists picks up the change.
+  Future<GroupInvitation?> respondToInvitation({
+    required String invitationId,
+    required bool accept,
+  }) async {
+    if (isClosed) return null;
+    if (respondToGroupInvite == null) return null;
+    try {
+      final result = await respondToGroupInvite!(RespondToGroupInviteParams(
+        invitationId: invitationId,
+        accept: accept,
+      ));
+      if (isClosed) return result;
+      emit(GroupAccountInvitationResponded(
+        invitation: result,
+        accepted: accept,
+      ));
+      // Refresh both surfaces. Best-effort — ignore failures so the
+      // ack-state stays stable for the listener that just consumed it.
+      await loadMyInvitations();
+      if (accept) {
+        await loadUserGroups();
+      }
+      return result;
+    } catch (e) {
+      if (isClosed) return null;
+      emit(GroupAccountError(
+          accept ? 'Failed to accept invite: $e' : 'Failed to decline invite: $e'));
+      return null;
+    }
+  }
+
+  /// Admin / inviter cancels a pending invite.
+  Future<void> cancelInvitation(String invitationId) async {
+    if (isClosed) return;
+    if (cancelGroupInvite == null) return;
+    try {
+      await cancelGroupInvite!(invitationId);
+      if (isClosed) return;
+      emit(GroupAccountInvitationCancelled(invitationId));
+    } catch (e) {
+      if (isClosed) return;
+      emit(GroupAccountError('Failed to cancel invitation: $e'));
+    }
+  }
+
+  /// Admin invites a user to a group. Drives the new "Invite member"
+  /// success path on the add-member sheet — UI flips its copy from
+  /// "Member added" to "Invite sent" via this state.
+  Future<GroupInvitation?> sendGroupInvite({
+    required String groupId,
+    required String inviteeUserId,
+    String? role,
+    String? message,
+  }) async {
+    if (isClosed) return null;
+    if (inviteToGroup == null) return null;
+    try {
+      final inv = await inviteToGroup!(InviteToGroupParams(
+        groupId: groupId,
+        inviteeUserId: inviteeUserId,
+        role: role,
+        message: message,
+      ));
+      if (isClosed) return inv;
+      emit(GroupAccountInvitationCreated(inv));
+      return inv;
+    } catch (e) {
+      if (isClosed) return null;
+      emit(GroupAccountError('Failed to send invite: $e'));
+      return null;
+    }
+  }
+
+  /// Loads invites for a single group. Drives the Members tab "Invites
+  /// Sent" subsection so admins see who's still pending.
+  Future<void> loadGroupInvitations({
+    required String groupId,
+    List<GroupInvitationStatus>? statuses,
+    int limit = 100,
+  }) async {
+    if (isClosed) return;
+    if (listGroupInvitations == null) return;
+    try {
+      final list = await listGroupInvitations!(ListGroupInvitationsParams(
+        groupId: groupId,
+        statuses: statuses,
+        limit: limit,
+      ));
+      if (isClosed) return;
+      emit(GroupAccountGroupInvitationsLoaded(
+        groupId: groupId,
+        invitations: list,
+      ));
+    } catch (e) {
+      if (isClosed) return;
+      emit(GroupAccountError('Failed to load group invitations: $e'));
     }
   }
 }

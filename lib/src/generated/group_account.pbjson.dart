@@ -416,6 +416,8 @@ const ContributionMemberMessage$json = {
     {'1': 'has_paid_current_cycle', '3': 10, '4': 1, '5': 8, '10': 'hasPaidCurrentCycle'},
     {'1': 'cycle_paid_amount', '3': 11, '4': 1, '5': 4, '10': 'cyclePaidAmount'},
     {'1': 'missed_cycles', '3': 12, '4': 1, '5': 13, '10': 'missedCycles'},
+    {'1': 'membership_status', '3': 13, '4': 1, '5': 9, '10': 'membershipStatus'},
+    {'1': 'linked_invitation_id', '3': 14, '4': 1, '5': 9, '10': 'linkedInvitationId'},
   ],
 };
 
@@ -429,7 +431,8 @@ final $typed_data.Uint8List contributionMemberMessageDescriptor = $convert.base6
     '90YWxQYWlkEicKD2V4cGVjdGVkX2Ftb3VudBgJIAEoBFIOZXhwZWN0ZWRBbW91bnQSMwoWaGFz'
     'X3BhaWRfY3VycmVudF9jeWNsZRgKIAEoCFITaGFzUGFpZEN1cnJlbnRDeWNsZRIqChFjeWNsZV'
     '9wYWlkX2Ftb3VudBgLIAEoBFIPY3ljbGVQYWlkQW1vdW50EiMKDW1pc3NlZF9jeWNsZXMYDCAB'
-    'KA1SDG1pc3NlZEN5Y2xlcw==');
+    'KA1SDG1pc3NlZEN5Y2xlcxIrChFtZW1iZXJzaGlwX3N0YXR1cxgNIAEoCVIQbWVtYmVyc2hpcF'
+    'N0YXR1cxIwChRsaW5rZWRfaW52aXRhdGlvbl9pZBgOIAEoCVISbGlua2VkSW52aXRhdGlvbklk');
 
 @$core.Deprecated('Use contributionPaymentMessageDescriptor instead')
 const ContributionPaymentMessage$json = {
@@ -1384,6 +1387,176 @@ final $typed_data.Uint8List addMembersToContributionResponseDescriptor = $conver
     'syIy5ncm91cF9hY2NvdW50cy5Db250cmlidXRpb25NZXNzYWdlUgxjb250cmlidXRpb24STgoN'
     'YWRkZWRfbWVtYmVycxgCIAMoCzIpLmdyb3VwX2FjY291bnRzLkNvbnRyaWJ1dGlvbk1lbWJlck'
     '1lc3NhZ2VSDGFkZGVkTWVtYmVycw==');
+
+@$core.Deprecated('Use groupInvitationMessageDescriptor instead')
+const GroupInvitationMessage$json = {
+  '1': 'GroupInvitationMessage',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'group_id', '3': 2, '4': 1, '5': 9, '10': 'groupId'},
+    {'1': 'invitee_user_id', '3': 3, '4': 1, '5': 9, '10': 'inviteeUserId'},
+    {'1': 'inviter_user_id', '3': 4, '4': 1, '5': 9, '10': 'inviterUserId'},
+    {'1': 'role', '3': 5, '4': 1, '5': 9, '10': 'role'},
+    {'1': 'status', '3': 6, '4': 1, '5': 9, '10': 'status'},
+    {'1': 'invited_at', '3': 7, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'invitedAt'},
+    {'1': 'decided_at', '3': 8, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'decidedAt'},
+    {'1': 'expires_at', '3': 9, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'expiresAt'},
+    {'1': 'message', '3': 10, '4': 1, '5': 9, '10': 'message'},
+    {'1': 'group_name', '3': 11, '4': 1, '5': 9, '10': 'groupName'},
+    {'1': 'group_description', '3': 12, '4': 1, '5': 9, '10': 'groupDescription'},
+    {'1': 'inviter_name', '3': 13, '4': 1, '5': 9, '10': 'inviterName'},
+  ],
+};
+
+/// Descriptor for `GroupInvitationMessage`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List groupInvitationMessageDescriptor = $convert.base64Decode(
+    'ChZHcm91cEludml0YXRpb25NZXNzYWdlEg4KAmlkGAEgASgJUgJpZBIZCghncm91cF9pZBgCIA'
+    'EoCVIHZ3JvdXBJZBImCg9pbnZpdGVlX3VzZXJfaWQYAyABKAlSDWludml0ZWVVc2VySWQSJgoP'
+    'aW52aXRlcl91c2VyX2lkGAQgASgJUg1pbnZpdGVyVXNlcklkEhIKBHJvbGUYBSABKAlSBHJvbG'
+    'USFgoGc3RhdHVzGAYgASgJUgZzdGF0dXMSOQoKaW52aXRlZF9hdBgHIAEoCzIaLmdvb2dsZS5w'
+    'cm90b2J1Zi5UaW1lc3RhbXBSCWludml0ZWRBdBI5CgpkZWNpZGVkX2F0GAggASgLMhouZ29vZ2'
+    'xlLnByb3RvYnVmLlRpbWVzdGFtcFIJZGVjaWRlZEF0EjkKCmV4cGlyZXNfYXQYCSABKAsyGi5n'
+    'b29nbGUucHJvdG9idWYuVGltZXN0YW1wUglleHBpcmVzQXQSGAoHbWVzc2FnZRgKIAEoCVIHbW'
+    'Vzc2FnZRIdCgpncm91cF9uYW1lGAsgASgJUglncm91cE5hbWUSKwoRZ3JvdXBfZGVzY3JpcHRp'
+    'b24YDCABKAlSEGdyb3VwRGVzY3JpcHRpb24SIQoMaW52aXRlcl9uYW1lGA0gASgJUgtpbnZpdG'
+    'VyTmFtZQ==');
+
+@$core.Deprecated('Use inviteToGroupRequestDescriptor instead')
+const InviteToGroupRequest$json = {
+  '1': 'InviteToGroupRequest',
+  '2': [
+    {'1': 'group_id', '3': 1, '4': 1, '5': 9, '10': 'groupId'},
+    {'1': 'invitee_user_id', '3': 2, '4': 1, '5': 9, '10': 'inviteeUserId'},
+    {'1': 'role', '3': 3, '4': 1, '5': 9, '10': 'role'},
+    {'1': 'message', '3': 4, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `InviteToGroupRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List inviteToGroupRequestDescriptor = $convert.base64Decode(
+    'ChRJbnZpdGVUb0dyb3VwUmVxdWVzdBIZCghncm91cF9pZBgBIAEoCVIHZ3JvdXBJZBImCg9pbn'
+    'ZpdGVlX3VzZXJfaWQYAiABKAlSDWludml0ZWVVc2VySWQSEgoEcm9sZRgDIAEoCVIEcm9sZRIY'
+    'CgdtZXNzYWdlGAQgASgJUgdtZXNzYWdl');
+
+@$core.Deprecated('Use inviteToGroupResponseDescriptor instead')
+const InviteToGroupResponse$json = {
+  '1': 'InviteToGroupResponse',
+  '2': [
+    {'1': 'invitation', '3': 1, '4': 1, '5': 11, '6': '.group_accounts.GroupInvitationMessage', '10': 'invitation'},
+  ],
+};
+
+/// Descriptor for `InviteToGroupResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List inviteToGroupResponseDescriptor = $convert.base64Decode(
+    'ChVJbnZpdGVUb0dyb3VwUmVzcG9uc2USRgoKaW52aXRhdGlvbhgBIAEoCzImLmdyb3VwX2FjY2'
+    '91bnRzLkdyb3VwSW52aXRhdGlvbk1lc3NhZ2VSCmludml0YXRpb24=');
+
+@$core.Deprecated('Use respondToGroupInviteRequestDescriptor instead')
+const RespondToGroupInviteRequest$json = {
+  '1': 'RespondToGroupInviteRequest',
+  '2': [
+    {'1': 'invitation_id', '3': 1, '4': 1, '5': 9, '10': 'invitationId'},
+    {'1': 'accept', '3': 2, '4': 1, '5': 8, '10': 'accept'},
+  ],
+};
+
+/// Descriptor for `RespondToGroupInviteRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List respondToGroupInviteRequestDescriptor = $convert.base64Decode(
+    'ChtSZXNwb25kVG9Hcm91cEludml0ZVJlcXVlc3QSIwoNaW52aXRhdGlvbl9pZBgBIAEoCVIMaW'
+    '52aXRhdGlvbklkEhYKBmFjY2VwdBgCIAEoCFIGYWNjZXB0');
+
+@$core.Deprecated('Use respondToGroupInviteResponseDescriptor instead')
+const RespondToGroupInviteResponse$json = {
+  '1': 'RespondToGroupInviteResponse',
+  '2': [
+    {'1': 'invitation', '3': 1, '4': 1, '5': 11, '6': '.group_accounts.GroupInvitationMessage', '10': 'invitation'},
+  ],
+};
+
+/// Descriptor for `RespondToGroupInviteResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List respondToGroupInviteResponseDescriptor = $convert.base64Decode(
+    'ChxSZXNwb25kVG9Hcm91cEludml0ZVJlc3BvbnNlEkYKCmludml0YXRpb24YASABKAsyJi5ncm'
+    '91cF9hY2NvdW50cy5Hcm91cEludml0YXRpb25NZXNzYWdlUgppbnZpdGF0aW9u');
+
+@$core.Deprecated('Use cancelGroupInviteRequestDescriptor instead')
+const CancelGroupInviteRequest$json = {
+  '1': 'CancelGroupInviteRequest',
+  '2': [
+    {'1': 'invitation_id', '3': 1, '4': 1, '5': 9, '10': 'invitationId'},
+  ],
+};
+
+/// Descriptor for `CancelGroupInviteRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List cancelGroupInviteRequestDescriptor = $convert.base64Decode(
+    'ChhDYW5jZWxHcm91cEludml0ZVJlcXVlc3QSIwoNaW52aXRhdGlvbl9pZBgBIAEoCVIMaW52aX'
+    'RhdGlvbklk');
+
+@$core.Deprecated('Use cancelGroupInviteResponseDescriptor instead')
+const CancelGroupInviteResponse$json = {
+  '1': 'CancelGroupInviteResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+  ],
+};
+
+/// Descriptor for `CancelGroupInviteResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List cancelGroupInviteResponseDescriptor = $convert.base64Decode(
+    'ChlDYW5jZWxHcm91cEludml0ZVJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3M=');
+
+@$core.Deprecated('Use listMyInvitationsRequestDescriptor instead')
+const ListMyInvitationsRequest$json = {
+  '1': 'ListMyInvitationsRequest',
+  '2': [
+    {'1': 'statuses', '3': 1, '4': 3, '5': 9, '10': 'statuses'},
+    {'1': 'limit', '3': 2, '4': 1, '5': 13, '10': 'limit'},
+  ],
+};
+
+/// Descriptor for `ListMyInvitationsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List listMyInvitationsRequestDescriptor = $convert.base64Decode(
+    'ChhMaXN0TXlJbnZpdGF0aW9uc1JlcXVlc3QSGgoIc3RhdHVzZXMYASADKAlSCHN0YXR1c2VzEh'
+    'QKBWxpbWl0GAIgASgNUgVsaW1pdA==');
+
+@$core.Deprecated('Use listMyInvitationsResponseDescriptor instead')
+const ListMyInvitationsResponse$json = {
+  '1': 'ListMyInvitationsResponse',
+  '2': [
+    {'1': 'invitations', '3': 1, '4': 3, '5': 11, '6': '.group_accounts.GroupInvitationMessage', '10': 'invitations'},
+  ],
+};
+
+/// Descriptor for `ListMyInvitationsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List listMyInvitationsResponseDescriptor = $convert.base64Decode(
+    'ChlMaXN0TXlJbnZpdGF0aW9uc1Jlc3BvbnNlEkgKC2ludml0YXRpb25zGAEgAygLMiYuZ3JvdX'
+    'BfYWNjb3VudHMuR3JvdXBJbnZpdGF0aW9uTWVzc2FnZVILaW52aXRhdGlvbnM=');
+
+@$core.Deprecated('Use listGroupInvitationsRequestDescriptor instead')
+const ListGroupInvitationsRequest$json = {
+  '1': 'ListGroupInvitationsRequest',
+  '2': [
+    {'1': 'group_id', '3': 1, '4': 1, '5': 9, '10': 'groupId'},
+    {'1': 'statuses', '3': 2, '4': 3, '5': 9, '10': 'statuses'},
+    {'1': 'limit', '3': 3, '4': 1, '5': 13, '10': 'limit'},
+  ],
+};
+
+/// Descriptor for `ListGroupInvitationsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List listGroupInvitationsRequestDescriptor = $convert.base64Decode(
+    'ChtMaXN0R3JvdXBJbnZpdGF0aW9uc1JlcXVlc3QSGQoIZ3JvdXBfaWQYASABKAlSB2dyb3VwSW'
+    'QSGgoIc3RhdHVzZXMYAiADKAlSCHN0YXR1c2VzEhQKBWxpbWl0GAMgASgNUgVsaW1pdA==');
+
+@$core.Deprecated('Use listGroupInvitationsResponseDescriptor instead')
+const ListGroupInvitationsResponse$json = {
+  '1': 'ListGroupInvitationsResponse',
+  '2': [
+    {'1': 'invitations', '3': 1, '4': 3, '5': 11, '6': '.group_accounts.GroupInvitationMessage', '10': 'invitations'},
+  ],
+};
+
+/// Descriptor for `ListGroupInvitationsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List listGroupInvitationsResponseDescriptor = $convert.base64Decode(
+    'ChxMaXN0R3JvdXBJbnZpdGF0aW9uc1Jlc3BvbnNlEkgKC2ludml0YXRpb25zGAEgAygLMiYuZ3'
+    'JvdXBfYWNjb3VudHMuR3JvdXBJbnZpdGF0aW9uTWVzc2FnZVILaW52aXRhdGlvbnM=');
 
 @$core.Deprecated('Use removeMemberFromContributionRequestDescriptor instead')
 const RemoveMemberFromContributionRequest$json = {

@@ -100,6 +100,26 @@ class GroupAccountServiceClient extends $grpc.Client {
     return $createUnaryCall(_$previewMemberExit, request, options: options);
   }
 
+  $grpc.ResponseFuture<$0.InviteToGroupResponse> inviteToGroup($0.InviteToGroupRequest request, {$grpc.CallOptions? options,}) {
+    return $createUnaryCall(_$inviteToGroup, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.RespondToGroupInviteResponse> respondToGroupInvite($0.RespondToGroupInviteRequest request, {$grpc.CallOptions? options,}) {
+    return $createUnaryCall(_$respondToGroupInvite, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.CancelGroupInviteResponse> cancelGroupInvite($0.CancelGroupInviteRequest request, {$grpc.CallOptions? options,}) {
+    return $createUnaryCall(_$cancelGroupInvite, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.ListMyInvitationsResponse> listMyInvitations($0.ListMyInvitationsRequest request, {$grpc.CallOptions? options,}) {
+    return $createUnaryCall(_$listMyInvitations, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.ListGroupInvitationsResponse> listGroupInvitations($0.ListGroupInvitationsRequest request, {$grpc.CallOptions? options,}) {
+    return $createUnaryCall(_$listGroupInvitations, request, options: options);
+  }
+
   $grpc.ResponseFuture<$0.RemoveMemberFromContributionResponse> removeMemberFromContribution($0.RemoveMemberFromContributionRequest request, {$grpc.CallOptions? options,}) {
     return $createUnaryCall(_$removeMemberFromContribution, request, options: options);
   }
@@ -298,6 +318,26 @@ class GroupAccountServiceClient extends $grpc.Client {
       '/group_accounts.GroupAccountService/PreviewMemberExit',
       ($0.PreviewMemberExitRequest value) => value.writeToBuffer(),
       $0.PreviewMemberExitResponse.fromBuffer);
+  static final _$inviteToGroup = $grpc.ClientMethod<$0.InviteToGroupRequest, $0.InviteToGroupResponse>(
+      '/group_accounts.GroupAccountService/InviteToGroup',
+      ($0.InviteToGroupRequest value) => value.writeToBuffer(),
+      $0.InviteToGroupResponse.fromBuffer);
+  static final _$respondToGroupInvite = $grpc.ClientMethod<$0.RespondToGroupInviteRequest, $0.RespondToGroupInviteResponse>(
+      '/group_accounts.GroupAccountService/RespondToGroupInvite',
+      ($0.RespondToGroupInviteRequest value) => value.writeToBuffer(),
+      $0.RespondToGroupInviteResponse.fromBuffer);
+  static final _$cancelGroupInvite = $grpc.ClientMethod<$0.CancelGroupInviteRequest, $0.CancelGroupInviteResponse>(
+      '/group_accounts.GroupAccountService/CancelGroupInvite',
+      ($0.CancelGroupInviteRequest value) => value.writeToBuffer(),
+      $0.CancelGroupInviteResponse.fromBuffer);
+  static final _$listMyInvitations = $grpc.ClientMethod<$0.ListMyInvitationsRequest, $0.ListMyInvitationsResponse>(
+      '/group_accounts.GroupAccountService/ListMyInvitations',
+      ($0.ListMyInvitationsRequest value) => value.writeToBuffer(),
+      $0.ListMyInvitationsResponse.fromBuffer);
+  static final _$listGroupInvitations = $grpc.ClientMethod<$0.ListGroupInvitationsRequest, $0.ListGroupInvitationsResponse>(
+      '/group_accounts.GroupAccountService/ListGroupInvitations',
+      ($0.ListGroupInvitationsRequest value) => value.writeToBuffer(),
+      $0.ListGroupInvitationsResponse.fromBuffer);
   static final _$removeMemberFromContribution = $grpc.ClientMethod<$0.RemoveMemberFromContributionRequest, $0.RemoveMemberFromContributionResponse>(
       '/group_accounts.GroupAccountService/RemoveMemberFromContribution',
       ($0.RemoveMemberFromContributionRequest value) => value.writeToBuffer(),
@@ -544,6 +584,41 @@ abstract class GroupAccountServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.PreviewMemberExitRequest.fromBuffer(value),
         ($0.PreviewMemberExitResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.InviteToGroupRequest, $0.InviteToGroupResponse>(
+        'InviteToGroup',
+        inviteToGroup_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.InviteToGroupRequest.fromBuffer(value),
+        ($0.InviteToGroupResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.RespondToGroupInviteRequest, $0.RespondToGroupInviteResponse>(
+        'RespondToGroupInvite',
+        respondToGroupInvite_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.RespondToGroupInviteRequest.fromBuffer(value),
+        ($0.RespondToGroupInviteResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.CancelGroupInviteRequest, $0.CancelGroupInviteResponse>(
+        'CancelGroupInvite',
+        cancelGroupInvite_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.CancelGroupInviteRequest.fromBuffer(value),
+        ($0.CancelGroupInviteResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ListMyInvitationsRequest, $0.ListMyInvitationsResponse>(
+        'ListMyInvitations',
+        listMyInvitations_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.ListMyInvitationsRequest.fromBuffer(value),
+        ($0.ListMyInvitationsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ListGroupInvitationsRequest, $0.ListGroupInvitationsResponse>(
+        'ListGroupInvitations',
+        listGroupInvitations_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.ListGroupInvitationsRequest.fromBuffer(value),
+        ($0.ListGroupInvitationsResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.RemoveMemberFromContributionRequest, $0.RemoveMemberFromContributionResponse>(
         'RemoveMemberFromContribution',
         removeMemberFromContribution_Pre,
@@ -857,6 +932,36 @@ abstract class GroupAccountServiceBase extends $grpc.Service {
   }
 
   $async.Future<$0.PreviewMemberExitResponse> previewMemberExit($grpc.ServiceCall call, $0.PreviewMemberExitRequest request);
+
+  $async.Future<$0.InviteToGroupResponse> inviteToGroup_Pre($grpc.ServiceCall $call, $async.Future<$0.InviteToGroupRequest> $request) async {
+    return inviteToGroup($call, await $request);
+  }
+
+  $async.Future<$0.InviteToGroupResponse> inviteToGroup($grpc.ServiceCall call, $0.InviteToGroupRequest request);
+
+  $async.Future<$0.RespondToGroupInviteResponse> respondToGroupInvite_Pre($grpc.ServiceCall $call, $async.Future<$0.RespondToGroupInviteRequest> $request) async {
+    return respondToGroupInvite($call, await $request);
+  }
+
+  $async.Future<$0.RespondToGroupInviteResponse> respondToGroupInvite($grpc.ServiceCall call, $0.RespondToGroupInviteRequest request);
+
+  $async.Future<$0.CancelGroupInviteResponse> cancelGroupInvite_Pre($grpc.ServiceCall $call, $async.Future<$0.CancelGroupInviteRequest> $request) async {
+    return cancelGroupInvite($call, await $request);
+  }
+
+  $async.Future<$0.CancelGroupInviteResponse> cancelGroupInvite($grpc.ServiceCall call, $0.CancelGroupInviteRequest request);
+
+  $async.Future<$0.ListMyInvitationsResponse> listMyInvitations_Pre($grpc.ServiceCall $call, $async.Future<$0.ListMyInvitationsRequest> $request) async {
+    return listMyInvitations($call, await $request);
+  }
+
+  $async.Future<$0.ListMyInvitationsResponse> listMyInvitations($grpc.ServiceCall call, $0.ListMyInvitationsRequest request);
+
+  $async.Future<$0.ListGroupInvitationsResponse> listGroupInvitations_Pre($grpc.ServiceCall $call, $async.Future<$0.ListGroupInvitationsRequest> $request) async {
+    return listGroupInvitations($call, await $request);
+  }
+
+  $async.Future<$0.ListGroupInvitationsResponse> listGroupInvitations($grpc.ServiceCall call, $0.ListGroupInvitationsRequest request);
 
   $async.Future<$0.RemoveMemberFromContributionResponse> removeMemberFromContribution_Pre($grpc.ServiceCall $call, $async.Future<$0.RemoveMemberFromContributionRequest> $request) async {
     return removeMemberFromContribution($call, await $request);

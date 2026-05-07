@@ -480,3 +480,61 @@ class JoinPublicGroupSuccess extends GroupAccountState {
   List<Object?> get props => [group, message];
 }
 
+
+
+// =====================================================================
+// Invite-first membership states (slice 5)
+// =====================================================================
+
+class GroupAccountMyInvitationsLoaded extends GroupAccountState {
+  final List<GroupInvitation> invitations;
+  const GroupAccountMyInvitationsLoaded(this.invitations);
+
+  @override
+  List<Object?> get props => [invitations];
+
+  /// Convenience for the Invites-tab badge — count rows that still
+  /// need the user's decision.
+  int get pendingCount =>
+      invitations.where((i) => i.status == GroupInvitationStatus.pending).length;
+}
+
+class GroupAccountInvitationResponded extends GroupAccountState {
+  final GroupInvitation invitation;
+  /// True if the user accepted; false if they declined. Drives the
+  /// success-snackbar copy without the listener having to inspect
+  /// the invitation status.
+  final bool accepted;
+  const GroupAccountInvitationResponded({
+    required this.invitation,
+    required this.accepted,
+  });
+
+  @override
+  List<Object?> get props => [invitation, accepted];
+}
+
+class GroupAccountInvitationCancelled extends GroupAccountState {
+  final String invitationId;
+  const GroupAccountInvitationCancelled(this.invitationId);
+  @override
+  List<Object?> get props => [invitationId];
+}
+
+class GroupAccountInvitationCreated extends GroupAccountState {
+  final GroupInvitation invitation;
+  const GroupAccountInvitationCreated(this.invitation);
+  @override
+  List<Object?> get props => [invitation];
+}
+
+class GroupAccountGroupInvitationsLoaded extends GroupAccountState {
+  final String groupId;
+  final List<GroupInvitation> invitations;
+  const GroupAccountGroupInvitationsLoaded({
+    required this.groupId,
+    required this.invitations,
+  });
+  @override
+  List<Object?> get props => [groupId, invitations];
+}
