@@ -171,7 +171,10 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
     setState(() {
       _selectAll = !_selectAll;
       if (_selectAll) {
-        _selectedMemberIds = _groupMembers.map((m) => m.id).toSet();
+        _selectedMemberIds = _groupMembers
+            .where((m) => !_existingMemberUserIds.contains(m.userId))
+            .map((m) => m.id)
+            .toSet();
       } else {
         _selectedMemberIds.clear();
       }
@@ -591,10 +594,10 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
       listener: (context, state) {
         if (state is GroupAccountGroupLoaded) {
           setState(() {
-            // Filter out members already in the contribution
-            _groupMembers = state.members
-                .where((m) => !_existingMemberUserIds.contains(m.userId))
-                .toList();
+            // Show all group members. Members already in this contribution
+            // render as a disabled "Already in contribution" tile so the
+            // user can see they're accounted for without re-adding them.
+            _groupMembers = state.members.toList();
             _isLoading = false;
           });
         } else if (state is ContributionMembersAdded) {
@@ -703,105 +706,117 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
   }
 
   Widget _buildGroupMemberItem(GroupMember member) {
-    final isSelected = _selectedMemberIds.contains(member.id);
+    final isAlreadyAdded = _existingMemberUserIds.contains(member.userId);
+    final isSelected = !isAlreadyAdded && _selectedMemberIds.contains(member.id);
 
-    return GestureDetector(
-      onTap: () => _toggleMember(member.id),
-      onLongPress: () => _showMemberDetails(member),
-      child: Container(
-        margin: EdgeInsets.only(bottom: 8.h),
-        padding: EdgeInsets.all(12.w),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1)
-              : const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(
+    return Opacity(
+      opacity: isAlreadyAdded ? 0.5 : 1.0,
+      child: GestureDetector(
+        onTap: isAlreadyAdded ? null : () => _toggleMember(member.id),
+        onLongPress: () => _showMemberDetails(member),
+        child: Container(
+          margin: EdgeInsets.only(bottom: 8.h),
+          padding: EdgeInsets.all(12.w),
+          decoration: BoxDecoration(
             color: isSelected
-                ? const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3)
-                : Colors.transparent,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 20.w,
-              height: 20.w,
-              decoration: BoxDecoration(
-                color: isSelected ? const Color.fromARGB(255, 78, 3, 208) : Colors.transparent,
-                border: Border.all(
-                  color: isSelected ? const Color.fromARGB(255, 78, 3, 208) : Colors.grey[600]!,
-                ),
-                borderRadius: BorderRadius.circular(4.r),
-              ),
-              child: isSelected
-                  ? Icon(Icons.check, color: Colors.white, size: 14.sp)
-                  : null,
+                ? const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1)
+                : const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(
+              color: isSelected
+                  ? const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3)
+                  : Colors.transparent,
             ),
-            SizedBox(width: 12.w),
-            CircleAvatar(
-              radius: 18.r,
-              backgroundColor: const Color.fromARGB(255, 78, 3, 208),
-              backgroundImage: member.profileImage != null
-                  ? NetworkImage(member.profileImage!)
-                  : null,
-              child: member.profileImage == null
-                  ? Text(
-                      _getInitials(member),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 20.w,
+                height: 20.w,
+                decoration: BoxDecoration(
+                  color: isSelected ? const Color.fromARGB(255, 78, 3, 208) : Colors.transparent,
+                  border: Border.all(
+                    color: isSelected ? const Color.fromARGB(255, 78, 3, 208) : Colors.grey[600]!,
+                  ),
+                  borderRadius: BorderRadius.circular(4.r),
+                ),
+                child: isSelected
+                    ? Icon(Icons.check, color: Colors.white, size: 14.sp)
+                    : null,
+              ),
+              SizedBox(width: 12.w),
+              CircleAvatar(
+                radius: 18.r,
+                backgroundColor: const Color.fromARGB(255, 78, 3, 208),
+                backgroundImage: member.profileImage != null
+                    ? NetworkImage(member.profileImage!)
+                    : null,
+                child: member.profileImage == null
+                    ? Text(
+                        _getInitials(member),
+                        style: GoogleFonts.inter(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      )
+                    : null,
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _getDisplayName(member),
                       style: GoogleFonts.inter(
-                        fontSize: 12.sp,
+                        fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
                       ),
-                    )
-                  : null,
-            ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _getDisplayName(member),
-                    style: GoogleFonts.inter(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
                     ),
-                  ),
-                  if (member.email.isNotEmpty)
-                    Text(
-                      member.email,
-                      style: GoogleFonts.inter(
-                        fontSize: 12.sp,
-                        color: Colors.grey[400],
+                    if (isAlreadyAdded)
+                      Text(
+                        'Already in contribution',
+                        style: GoogleFonts.inter(
+                          fontSize: 12.sp,
+                          color: const Color(0xFFFB923C),
+                        ),
+                      )
+                    else if (member.email.isNotEmpty)
+                      Text(
+                        member.email,
+                        style: GoogleFonts.inter(
+                          fontSize: 12.sp,
+                          color: Colors.grey[400],
+                        ),
+                      )
+                    else if (member.userUsername != null && member.userUsername!.isNotEmpty)
+                      Text(
+                        '@${member.userUsername}',
+                        style: GoogleFonts.inter(
+                          fontSize: 12.sp,
+                          color: const Color.fromARGB(255, 78, 3, 208),
+                        ),
+                      )
+                    else
+                      Text(
+                        member.role.displayName,
+                        style: GoogleFonts.inter(
+                          fontSize: 12.sp,
+                          color: Colors.grey[400],
+                        ),
                       ),
-                    )
-                  else if (member.userUsername != null && member.userUsername!.isNotEmpty)
-                    Text(
-                      '@${member.userUsername}',
-                      style: GoogleFonts.inter(
-                        fontSize: 12.sp,
-                        color: const Color.fromARGB(255, 78, 3, 208),
-                      ),
-                    )
-                  else
-                    Text(
-                      member.role.displayName,
-                      style: GoogleFonts.inter(
-                        fontSize: 12.sp,
-                        color: Colors.grey[400],
-                      ),
-                    ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            Icon(
-              Icons.info_outline,
-              color: Colors.grey[500],
-              size: 18.sp,
-            ),
-          ],
+              Icon(
+                Icons.info_outline,
+                color: Colors.grey[500],
+                size: 18.sp,
+              ),
+            ],
+          ),
         ),
       ),
     );

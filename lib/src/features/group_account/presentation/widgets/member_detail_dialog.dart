@@ -16,6 +16,7 @@ class MemberDetailDialog extends StatelessWidget {
   final Contribution? contribution;
   final VoidCallback? onChangeRole;
   final VoidCallback? onRemoveMember;
+  final VoidCallback? onCancelInvite;
 
   const MemberDetailDialog({
     super.key,
@@ -27,6 +28,7 @@ class MemberDetailDialog extends StatelessWidget {
     this.contribution,
     this.onChangeRole,
     this.onRemoveMember,
+    this.onCancelInvite,
   });
 
   /// Whether the current user can change THIS member's role.
@@ -67,8 +69,25 @@ class MemberDetailDialog extends StatelessWidget {
     return true;
   }
 
+  /// Whether the current user can cancel THIS pending invite.
+  /// Mirrors the server-side rule in invitationService.Cancel: the
+  /// original inviter or any active admin/moderator may pull the invite.
+  bool get _canCancelInvite {
+    if (!member.isPendingInvite) return false;
+    if (member.linkedInvitationId == null) return false;
+    if (onCancelInvite == null) return false;
+    final currentMember = group.getMember(currentUserId);
+    if (currentMember == null) return false;
+    if (currentMember.status != GroupMemberStatus.active) return false;
+    return GroupRolePermissions.canMember(currentMember, GroupAction.inviteMember);
+  }
+
   /// Show the management section iff at least one action is available.
-  bool get _canManageMember => _canChangeRole || _canRemoveMember;
+  /// For pending invites, only "Cancel Invite" is meaningful — Change
+  /// Role / Remove Member don't apply until the user has joined.
+  bool get _canManageMember =>
+      _canCancelInvite ||
+      (!member.isPendingInvite && (_canChangeRole || _canRemoveMember));
 
   /// Check if this member is the original group admin
   bool get _isGroupAdmin => member.userId == group.adminId;
@@ -344,7 +363,7 @@ class MemberDetailDialog extends StatelessWidget {
               value: member.phoneNumber!,
             ),
           ],
-          if (member.isPartial) ...[
+          if (member.isPendingInvite) ...[
             SizedBox(height: 12.h),
             Container(
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
@@ -355,14 +374,14 @@ class MemberDetailDialog extends StatelessWidget {
               child: Row(
                 children: [
                   Icon(
-                    Icons.hourglass_empty,
+                    Icons.mail_outline,
                     color: const Color(0xFFFB923C),
                     size: 16.sp,
                   ),
                   SizedBox(width: 8.w),
                   Expanded(
                     child: Text(
-                      'Pending invite - waiting to accept',
+                      'Invite Sent — waiting for the user to accept',
                       style: GoogleFonts.inter(
                         fontSize: 12.sp,
                         color: const Color(0xFFFB923C),
@@ -545,35 +564,49 @@ class MemberDetailDialog extends StatelessWidget {
             ),
           ),
           SizedBox(height: 12.h),
-          Row(
-            children: [
-              if (_canChangeRole)
-                Expanded(
-                  child: _buildActionButton(
-                    icon: Icons.admin_panel_settings,
-                    label: 'Change Role',
-                    color: const Color(0xFFFB923C),
-                    onTap: () {
-                      Navigator.pop(context);
-                      onChangeRole?.call();
-                    },
+          if (_canCancelInvite)
+            // Pending-invite branch: Change Role / Remove are not
+            // meaningful before acceptance, so we surface a single
+            // full-width "Cancel Invite" CTA instead.
+            _buildActionButton(
+              icon: Icons.cancel_outlined,
+              label: 'Cancel Invite',
+              color: const Color(0xFFEF4444),
+              onTap: () {
+                Navigator.pop(context);
+                onCancelInvite?.call();
+              },
+            )
+          else
+            Row(
+              children: [
+                if (_canChangeRole)
+                  Expanded(
+                    child: _buildActionButton(
+                      icon: Icons.admin_panel_settings,
+                      label: 'Change Role',
+                      color: const Color(0xFFFB923C),
+                      onTap: () {
+                        Navigator.pop(context);
+                        onChangeRole?.call();
+                      },
+                    ),
                   ),
-                ),
-              if (_canChangeRole && _canRemoveMember) SizedBox(width: 12.w),
-              if (_canRemoveMember)
-                Expanded(
-                  child: _buildActionButton(
-                    icon: Icons.person_remove,
-                    label: 'Remove',
-                    color: const Color(0xFFEF4444),
-                    onTap: () {
-                      Navigator.pop(context);
-                      onRemoveMember?.call();
-                    },
+                if (_canChangeRole && _canRemoveMember) SizedBox(width: 12.w),
+                if (_canRemoveMember)
+                  Expanded(
+                    child: _buildActionButton(
+                      icon: Icons.person_remove,
+                      label: 'Remove',
+                      color: const Color(0xFFEF4444),
+                      onTap: () {
+                        Navigator.pop(context);
+                        onRemoveMember?.call();
+                      },
+                    ),
                   ),
-                ),
-            ],
-          ),
+              ],
+            ),
         ],
       ),
     );

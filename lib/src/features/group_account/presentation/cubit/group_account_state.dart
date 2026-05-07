@@ -538,3 +538,56 @@ class GroupAccountGroupInvitationsLoaded extends GroupAccountState {
   @override
   List<Object?> get props => [groupId, invitations];
 }
+
+// =============================================================
+// Cycle history states.
+// =============================================================
+
+class ContributionCyclesLoading extends GroupAccountState {
+  final String contributionId;
+  const ContributionCyclesLoading({required this.contributionId});
+  @override
+  List<Object?> get props => [contributionId];
+}
+
+class ContributionCyclesLoaded extends GroupAccountState {
+  final String contributionId;
+  final List<ContributionCycle> cycles;
+  final int total;
+  const ContributionCyclesLoaded({
+    required this.contributionId,
+    required this.cycles,
+    required this.total,
+  });
+  @override
+  List<Object?> get props => [contributionId, cycles, total];
+}
+
+class ContributionCycleDetailsLoading extends GroupAccountState {
+  final String contributionId;
+  final int cycleIndex;
+  const ContributionCycleDetailsLoading({
+    required this.contributionId,
+    required this.cycleIndex,
+  });
+  @override
+  List<Object?> get props => [contributionId, cycleIndex];
+}
+
+class ContributionCycleDetailsLoaded extends GroupAccountState {
+  final ContributionCycleDetails details;
+  const ContributionCycleDetailsLoaded({required this.details});
+  @override
+  List<Object?> get props => [details];
+}
+
+class ContributionRestarted extends GroupAccountState {
+  final Contribution contribution;
+  final String message;
+  const ContributionRestarted({
+    required this.contribution,
+    this.message = 'Contribution restarted',
+  });
+  @override
+  List<Object?> get props => [contribution, message];
+}

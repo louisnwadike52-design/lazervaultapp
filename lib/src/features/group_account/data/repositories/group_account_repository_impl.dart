@@ -287,6 +287,75 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
   }
 
   @override
+  Future<int> removeContributionShadow({
+    required String contributionId,
+    required String userId,
+  }) async {
+    try {
+      return await remoteDataSource.removeContributionShadow(
+        contributionId: contributionId,
+        userId: userId,
+      );
+    } catch (e) {
+      throw Exception('Failed to clear declined invite: $e');
+    }
+  }
+
+  @override
+  Future<({List<ContributionCycle> cycles, int total})>
+      listContributionCycles({
+    required String contributionId,
+    bool includeInProgress = true,
+    int page = 1,
+    int pageSize = 50,
+  }) async {
+    try {
+      return await remoteDataSource.listContributionCycles(
+        contributionId: contributionId,
+        includeInProgress: includeInProgress,
+        page: page,
+        pageSize: pageSize,
+      );
+    } catch (e) {
+      throw Exception('Failed to load cycles: $e');
+    }
+  }
+
+  @override
+  Future<ContributionCycleDetails> getContributionCycleDetails({
+    required String contributionId,
+    int cycleIndex = 0,
+  }) async {
+    try {
+      return await remoteDataSource.getContributionCycleDetails(
+        contributionId: contributionId,
+        cycleIndex: cycleIndex,
+      );
+    } catch (e) {
+      throw Exception('Failed to load cycle details: $e');
+    }
+  }
+
+  @override
+  Future<Contribution> restartContribution({
+    required String contributionId,
+    double? newTargetAmount,
+    DateTime? newDeadline,
+    String reason = '',
+  }) async {
+    try {
+      return await remoteDataSource.restartContribution(
+        contributionId: contributionId,
+        newTargetAmount: newTargetAmount,
+        newDeadline: newDeadline,
+        reason: reason,
+      );
+    } catch (e) {
+      throw Exception('Failed to restart contribution: $e');
+    }
+  }
+
+  @override
   Future<MemberExitPreview> previewMemberExit({
     required String contributionId,
     required String userId,

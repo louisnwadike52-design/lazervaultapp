@@ -2617,7 +2617,12 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton(() => GetGroupActivityLogs(serviceLocator<GroupAccountRepository>()));
   serviceLocator.registerLazySingleton(() => GetContributionActivityLogs(serviceLocator<GroupAccountRepository>()));
   serviceLocator.registerLazySingleton(() => RemoveMemberFromContribution(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => RemoveContributionShadow(serviceLocator<GroupAccountRepository>()));
   serviceLocator.registerLazySingleton(() => PreviewMemberExit(serviceLocator<GroupAccountRepository>()));
+  // Cycle history use cases.
+  serviceLocator.registerLazySingleton(() => ListContributionCycles(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => GetContributionCycleDetails(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => RestartContribution(serviceLocator<GroupAccountRepository>()));
   // Invite-first membership use cases (slice 5).
   serviceLocator.registerLazySingleton(() => InviteToGroup(serviceLocator<GroupAccountRepository>()));
   serviceLocator.registerLazySingleton(() => RespondToGroupInvite(serviceLocator<GroupAccountRepository>()));
@@ -2658,7 +2663,11 @@ Future<void> init() async {
     getGroupActivityLogs: serviceLocator<GetGroupActivityLogs>(),
     getContributionActivityLogs: serviceLocator<GetContributionActivityLogs>(),
     removeMemberFromContribution: serviceLocator<RemoveMemberFromContribution>(),
+    removeContributionShadow: serviceLocator<RemoveContributionShadow>(),
     previewMemberExit: serviceLocator<PreviewMemberExit>(),
+    listContributionCycles: serviceLocator<ListContributionCycles>(),
+    getContributionCycleDetails: serviceLocator<GetContributionCycleDetails>(),
+    restartContribution: serviceLocator<RestartContribution>(),
     inviteToGroup: serviceLocator<InviteToGroup>(),
     respondToGroupInvite: serviceLocator<RespondToGroupInvite>(),
     cancelGroupInvite: serviceLocator<CancelGroupInvite>(),

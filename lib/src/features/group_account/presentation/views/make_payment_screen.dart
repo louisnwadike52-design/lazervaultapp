@@ -849,42 +849,109 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
             );
           }
 
-          // Pick a default selection on first build only — prefer the
-          // PRIMARY account (the one the dashboard surfaces as
-          // active), falling back to the first account in the
-          // filtered list. AccountSummaryEntity doesn't carry a
-          // canonical usability flag at the entity level today;
-          // accounts-service rejects frozen/closed accounts at debit
-          // time with a clean error that the cubit surfaces, which
-          // is acceptable while a richer client-side flag isn't
-          // available. Subsequent rebuilds (e.g. balance refresh)
-          // keep the user's manual choice intact.
-          if (_selectedAccountId == null) {
-            final primary = filteredAccounts.firstWhere(
-              (a) => a.isPrimary,
-              orElse: () => filteredAccounts.first,
+          // Edge case: user has currency-matched accounts but ZERO
+          // personal accounts. Without surfacing this explicitly the
+          // picker auto-selects a non-personal account that's then
+          // non-tappable in the bottom sheet — silent lockout. Show a
+          // dedicated empty state instead so the user knows to set up
+          // a personal account before retrying.
+          final personalAccounts = filteredAccounts
+              .where((a) => a.isPersonalAccount)
+              .toList();
+          if (personalAccounts.isEmpty) {
+            return Container(
+              padding: EdgeInsets.all(20.w),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1F1F1F),
+                borderRadius: BorderRadius.circular(16.r),
+                border: Border.all(
+                  color: const Color(0xFFFB923C).withValues(alpha: 0.3),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.lock_outline,
+                        color: const Color(0xFFFB923C),
+                        size: 20.sp,
+                      ),
+                      SizedBox(width: 8.w),
+                      Text(
+                        'Personal account required',
+                        style: GoogleFonts.inter(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    'Contribution payments must come from your personal '
+                    '$contributionCurrency account. Add or activate one to '
+                    'continue.',
+                    style: GoogleFonts.inter(
+                      fontSize: 12.sp,
+                      color: Colors.grey[400],
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
             );
-            // setState during build is verboten, so defer to next frame.
+          }
+
+          // Contribution payments must come from the user's personal
+          // account — joint/business/etc. funds can't fund an
+          // individual contribution stake. Default-select the first
+          // personal account.
+          if (_selectedAccountId == null) {
+            final personal = personalAccounts.firstWhere(
+              (a) => a.isPrimary,
+              orElse: () => personalAccounts.first,
+            );
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (!mounted) return;
               setState(() {
-                _selectedAccountId = primary.id.toString();
-                _selectedAccountBalance = primary.balance;
+                _selectedAccountId = personal.id.toString();
+                _selectedAccountBalance = personal.balance;
               });
             });
           }
 
           // Resolve the currently-selected account for the compact
           // tile. If the saved id is no longer in the filtered list
-          // (e.g. user changed contribution currency), reset it.
+          // (e.g. user changed contribution currency) OR points to a
+          // non-personal account (stale from a previous flow that
+          // allowed it), reset to a personal account.
           AccountSummaryEntity? selected;
-          for (final a in filteredAccounts) {
+          for (final a in personalAccounts) {
             if (a.id.toString() == _selectedAccountId) {
               selected = a;
               break;
             }
           }
-          selected ??= filteredAccounts.first;
+          if (selected == null) {
+            // Auto-correct: pick a personal account on the next frame
+            // so the compact tile + picker stay in sync.
+            final fallback = personalAccounts.firstWhere(
+              (a) => a.isPrimary,
+              orElse: () => personalAccounts.first,
+            );
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted) return;
+              if (_selectedAccountId == fallback.id.toString()) return;
+              setState(() {
+                _selectedAccountId = fallback.id.toString();
+                _selectedAccountBalance = fallback.balance;
+              });
+            });
+            selected = fallback;
+          }
           final selectedAcc = selected;
           final amount =
               double.tryParse(_amountController.text) ?? 0;
@@ -1156,113 +1223,137 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
                       final isSelected =
                           _selectedAccountId == a.id.toString();
                       final ok = amount <= a.balance;
-                      return GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _selectedAccountId = a.id.toString();
-                            _selectedAccountBalance = a.balance;
-                          });
-                          Navigator.of(sheetCtx).pop();
-                        },
-                        child: Container(
-                          margin: EdgeInsets.only(bottom: 8.h),
-                          padding: EdgeInsets.all(14.w),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? const Color.fromARGB(255, 78, 3, 208)
-                                    .withValues(alpha: 0.12)
-                                : const Color(0xFF0A0A0A),
-                            border: Border.all(
+                      // Contribution payments are restricted to the
+                      // user's personal account. Non-personal accounts
+                      // stay visible so the user understands the
+                      // constraint, but they're rendered dimmed and
+                      // un-tappable.
+                      final isPersonal = a.isPersonalAccount;
+                      return Opacity(
+                        opacity: isPersonal ? 1.0 : 0.45,
+                        child: GestureDetector(
+                          onTap: isPersonal
+                              ? () {
+                                  setState(() {
+                                    _selectedAccountId = a.id.toString();
+                                    _selectedAccountBalance = a.balance;
+                                  });
+                                  Navigator.of(sheetCtx).pop();
+                                }
+                              : null,
+                          child: Container(
+                            margin: EdgeInsets.only(bottom: 8.h),
+                            padding: EdgeInsets.all(14.w),
+                            decoration: BoxDecoration(
                               color: isSelected
                                   ? const Color.fromARGB(255, 78, 3, 208)
-                                  : const Color(0xFF2D2D2D),
-                              width: isSelected ? 1.5 : 1,
-                            ),
-                            borderRadius: BorderRadius.circular(12.r),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 36.w,
-                                height: 36.w,
-                                decoration: BoxDecoration(
-                                  color: const Color.fromARGB(
-                                          255, 78, 3, 208)
-                                      .withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(18.r),
-                                ),
-                                child: Icon(
-                                  Icons.account_balance_wallet,
-                                  color: const Color.fromARGB(
-                                      255, 78, 3, 208),
-                                  size: 18.sp,
-                                ),
+                                      .withValues(alpha: 0.12)
+                                  : const Color(0xFF0A0A0A),
+                              border: Border.all(
+                                color: isSelected
+                                    ? const Color.fromARGB(255, 78, 3, 208)
+                                    : const Color(0xFF2D2D2D),
+                                width: isSelected ? 1.5 : 1,
                               ),
-                              SizedBox(width: 12.w),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Flexible(
-                                          child: Text(
-                                            a.accountType,
-                                            style: GoogleFonts.inter(
-                                              fontSize: 13.sp,
-                                              fontWeight: FontWeight.w600,
-                                              color: Colors.white,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        if (a.isPrimary) ...[
-                                          SizedBox(width: 6.w),
-                                          Container(
-                                            padding: EdgeInsets.symmetric(
-                                              horizontal: 5.w,
-                                              vertical: 1.h,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xFF10B981)
-                                                  .withValues(alpha: 0.2),
-                                              borderRadius:
-                                                  BorderRadius.circular(3.r),
-                                            ),
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 36.w,
+                                  height: 36.w,
+                                  decoration: BoxDecoration(
+                                    color: const Color.fromARGB(
+                                            255, 78, 3, 208)
+                                        .withValues(alpha: 0.2),
+                                    borderRadius:
+                                        BorderRadius.circular(18.r),
+                                  ),
+                                  child: Icon(
+                                    isPersonal
+                                        ? Icons.account_balance_wallet
+                                        : Icons.lock_outline,
+                                    color: const Color.fromARGB(
+                                        255, 78, 3, 208),
+                                    size: 18.sp,
+                                  ),
+                                ),
+                                SizedBox(width: 12.w),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Flexible(
                                             child: Text(
-                                              'Primary',
+                                              a.accountType,
                                               style: GoogleFonts.inter(
-                                                fontSize: 9.sp,
+                                                fontSize: 13.sp,
                                                 fontWeight: FontWeight.w600,
-                                                color: const Color(0xFF10B981),
+                                                color: Colors.white,
+                                              ),
+                                              overflow:
+                                                  TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          if (a.isPrimary) ...[
+                                            SizedBox(width: 6.w),
+                                            Container(
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal: 5.w,
+                                                vertical: 1.h,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color:
+                                                    const Color(0xFF10B981)
+                                                        .withValues(
+                                                            alpha: 0.2),
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                        3.r),
+                                              ),
+                                              child: Text(
+                                                'Primary',
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 9.sp,
+                                                  fontWeight:
+                                                      FontWeight.w600,
+                                                  color: const Color(
+                                                      0xFF10B981),
+                                                ),
                                               ),
                                             ),
-                                          ),
+                                          ],
                                         ],
-                                      ],
-                                    ),
-                                    SizedBox(height: 2.h),
-                                    Text(
-                                      '${a.currency} ${a.balance.toStringAsFixed(2)}',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 11.sp,
-                                        color: ok
-                                            ? const Color(0xFF9CA3AF)
-                                            : const Color(0xFFEF4444),
                                       ),
-                                    ),
-                                  ],
+                                      SizedBox(height: 2.h),
+                                      Text(
+                                        isPersonal
+                                            ? '${a.currency} ${a.balance.toStringAsFixed(2)}'
+                                            : 'Personal account required',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 11.sp,
+                                          color: !isPersonal
+                                              ? const Color(0xFFFB923C)
+                                              : ok
+                                                  ? const Color(0xFF9CA3AF)
+                                                  : const Color(0xFFEF4444),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              if (isSelected)
-                                Icon(
-                                  Icons.check_circle,
-                                  color: const Color.fromARGB(
-                                      255, 78, 3, 208),
-                                  size: 22.sp,
-                                ),
-                            ],
+                                if (isSelected && isPersonal)
+                                  Icon(
+                                    Icons.check_circle,
+                                    color: const Color.fromARGB(
+                                        255, 78, 3, 208),
+                                    size: 22.sp,
+                                  ),
+                              ],
+                            ),
                           ),
                         ),
                       );
