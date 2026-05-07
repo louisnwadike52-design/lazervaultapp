@@ -414,6 +414,8 @@ const ContributionMemberMessage$json = {
     {'1': 'total_paid', '3': 8, '4': 1, '5': 4, '10': 'totalPaid'},
     {'1': 'expected_amount', '3': 9, '4': 1, '5': 4, '10': 'expectedAmount'},
     {'1': 'has_paid_current_cycle', '3': 10, '4': 1, '5': 8, '10': 'hasPaidCurrentCycle'},
+    {'1': 'cycle_paid_amount', '3': 11, '4': 1, '5': 4, '10': 'cyclePaidAmount'},
+    {'1': 'missed_cycles', '3': 12, '4': 1, '5': 13, '10': 'missedCycles'},
   ],
 };
 
@@ -425,7 +427,9 @@ final $typed_data.Uint8List contributionMemberMessageDescriptor = $convert.base6
     '9maWxlX2ltYWdlGAYgASgJUgxwcm9maWxlSW1hZ2USNwoJam9pbmVkX2F0GAcgASgLMhouZ29v'
     'Z2xlLnByb3RvYnVmLlRpbWVzdGFtcFIIam9pbmVkQXQSHQoKdG90YWxfcGFpZBgIIAEoBFIJdG'
     '90YWxQYWlkEicKD2V4cGVjdGVkX2Ftb3VudBgJIAEoBFIOZXhwZWN0ZWRBbW91bnQSMwoWaGFz'
-    'X3BhaWRfY3VycmVudF9jeWNsZRgKIAEoCFITaGFzUGFpZEN1cnJlbnRDeWNsZQ==');
+    'X3BhaWRfY3VycmVudF9jeWNsZRgKIAEoCFITaGFzUGFpZEN1cnJlbnRDeWNsZRIqChFjeWNsZV'
+    '9wYWlkX2Ftb3VudBgLIAEoBFIPY3ljbGVQYWlkQW1vdW50EiMKDW1pc3NlZF9jeWNsZXMYDCAB'
+    'KA1SDG1pc3NlZEN5Y2xlcw==');
 
 @$core.Deprecated('Use contributionPaymentMessageDescriptor instead')
 const ContributionPaymentMessage$json = {
