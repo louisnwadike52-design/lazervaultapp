@@ -488,19 +488,58 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
   }
 
   @override
-  Future<void> removeMemberFromContribution({
+  Future<MemberExitResult> removeMemberFromContribution({
     required String contributionId,
     required String userId,
   }) async {
     try {
       final request = pb.RemoveMemberFromContributionRequest()
         ..contributionId = contributionId
-        ..memberUserId = userId;  // Pass string directly (UUID)
+        ..memberUserId = userId;
 
       final callOptions = await _callOptionsHelper.withAuth();
-      await _client.removeMemberFromContribution(request, options: callOptions);
+      final resp = await _client.removeMemberFromContribution(request,
+          options: callOptions);
+      // Server returns minor units (kobo). Convert to major units —
+      // same conversion the rest of this data source applies on the
+      // read path so the UI layer always sees major units.
+      return MemberExitResult(
+        success: resp.success,
+        refundAmount: _int64ToAmount(resp.refundAmount),
+        forfeitedAmount: _int64ToAmount(resp.forfeitedAmount),
+        refundStatus: resp.refundStatus,
+        removalReason: resp.removalReason,
+      );
     } on GrpcError catch (e) {
       throw Exception(friendlyGrpcError(e, 'Failed to remove member from contribution'));
+    }
+  }
+
+  @override
+  Future<MemberExitPreview> previewMemberExit({
+    required String contributionId,
+    required String userId,
+  }) async {
+    try {
+      final request = pb.PreviewMemberExitRequest()
+        ..contributionId = contributionId
+        ..memberUserId = userId;
+      final callOptions = await _callOptionsHelper.withAuth();
+      final resp =
+          await _client.previewMemberExit(request, options: callOptions);
+      return MemberExitPreview(
+        exitAllowed: resp.exitAllowed,
+        blockedReason: resp.blockedReason,
+        removalReason: resp.removalReason,
+        refundAmount: _int64ToAmount(resp.refundAmount),
+        forfeitedAmount: _int64ToAmount(resp.forfeitedAmount),
+        currency: resp.currency,
+        memberHasReceivedPayout: resp.memberHasReceivedPayout,
+        currentCycle: resp.currentCycle,
+      );
+    } on GrpcError catch (e) {
+      throw Exception(
+          friendlyGrpcError(e, 'Failed to preview member exit'));
     }
   }
 

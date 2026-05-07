@@ -71,7 +71,15 @@ abstract class GroupAccountRepository {
     required List<String> memberUserIds,
   });
   Future<List<ContributionMember>> getContributionMembers(String contributionId);
-  Future<void> removeMemberFromContribution({
+  Future<MemberExitResult> removeMemberFromContribution({
+    required String contributionId,
+    required String userId,
+  });
+
+  /// Non-side-effecting preview of what [removeMemberFromContribution]
+  /// would do — drives the confirmation modal. UI passes the result
+  /// straight through to the user.
+  Future<MemberExitPreview> previewMemberExit({
     required String contributionId,
     required String userId,
   });

@@ -639,6 +639,45 @@ message RemoveMemberFromContributionRequest {
 
 message RemoveMemberFromContributionResponse {
   bool success = 1;
+  // Saga disposition. Lets the dashboard show a one-line summary
+  // ("Refunded ₦X · Forfeited ₦Y · …") without re-fetching the row.
+  // amounts in MINOR units (kobo).
+  uint64 refund_amount = 2;
+  uint64 forfeited_amount = 3;
+  string refund_status = 4;   // MemberRefundStatus enum value
+  string removal_reason = 5;  // human-readable saga decision label
+}
+
+// PreviewMemberExit lets the caller see the refund / forfeit
+// breakdown BEFORE actually triggering the exit. Used by Flutter +
+// admin to render a confirmation dialog. The values returned reflect
+// the live state at preview time; if the cycle advances or further
+// payments land between preview and exit, the saga recomputes.
+message PreviewMemberExitRequest {
+  string contribution_id = 1;
+  string member_user_id = 2;
+}
+
+message PreviewMemberExitResponse {
+  // True if exit is allowed right now. False means the contribution
+  // is in a terminal state that blocks exits (e.g. one-time settled).
+  bool exit_allowed = 1;
+  // Reason for the blocked state when exit_allowed = false.
+  string blocked_reason = 2;
+  // Saga decision label that would apply.
+  string removal_reason = 3;
+  // Refund and forfeit amounts in MINOR units (kobo).
+  uint64 refund_amount = 4;
+  uint64 forfeited_amount = 5;
+  // Currency for the amounts above.
+  string currency = 6;
+  // True if the member has already received a payout in this
+  // contribution (their share is settled). Drives copy on the
+  // confirmation dialog.
+  bool member_has_received_payout = 7;
+  // For ROSCA: cycle index used to compute the refund window.
+  // 0 for one-time / non-applicable.
+  uint32 current_cycle = 8;
 }
 
 message GetContributionMembersRequest {
@@ -751,6 +790,43 @@ message GenerateTranscriptRequest {
 
 message GenerateTranscriptResponse {
   ContributionTranscriptMessage transcript = 1;
+}
+
+// ContributionMessage = a single chat message in a per-contribution
+// chat. Kind is one of: "text", "voice", "image". Text messages
+// carry body; voice/image carry media_url and (for voice) duration_ms.
+message ContributionMessageProto {
+  string id = 1;
+  string contribution_id = 2;
+  string sender_id = 3;
+  string sender_name = 4;
+  string kind = 5;        // text | voice | image
+  string body = 6;        // text content (text kind only)
+  string media_url = 7;   // CDN/asset URL (voice/image)
+  int32 duration_ms = 8;  // voice note duration
+  string created_at = 9;  // RFC3339
+}
+
+message SendContributionMessageRequest {
+  string contribution_id = 1;
+  string kind = 2;        // text | voice | image
+  string body = 3;
+  string media_url = 4;
+  int32 duration_ms = 5;
+}
+
+message SendContributionMessageResponse {
+  ContributionMessageProto message = 1;
+}
+
+message ListContributionMessagesRequest {
+  string contribution_id = 1;
+  string since_rfc3339 = 2; // optional: only return messages newer than this
+  int32 limit = 3;          // default 100, max 500
+}
+
+message ListContributionMessagesResponse {
+  repeated ContributionMessageProto messages = 1;
 }
 
 message GetGroupStatisticsRequest {
@@ -1062,6 +1138,12 @@ service GroupAccountService {
     };
   }
 
+  rpc PreviewMemberExit(PreviewMemberExitRequest) returns (PreviewMemberExitResponse) {
+    option (google.api.http) = {
+      get: "/v1/contributions/{contribution_id}/members/{member_user_id}/exit/preview"
+    };
+  }
+
   rpc RemoveMemberFromContribution(RemoveMemberFromContributionRequest) returns (RemoveMemberFromContributionResponse) {
     option (google.api.http) = {
       delete: "/v1/contributions/{contribution_id}/members/{member_user_id}"
@@ -1184,6 +1266,24 @@ service GroupAccountService {
     option (google.api.http) = {
       post: "/v1/contributions/{contribution_id}/transcript"
       body: "*"
+    };
+  }
+
+  // Per-contribution chat: send a message + list recent messages.
+  // Persistent storage in `contribution_messages`. Polling-based
+  // delivery for now (Flutter polls on a 5s tick while the chat
+  // bottom sheet is open). WebSocket fanout can be layered on later
+  // without changing the schema or these RPCs.
+  rpc SendContributionMessage(SendContributionMessageRequest) returns (SendContributionMessageResponse) {
+    option (google.api.http) = {
+      post: "/v1/contributions/{contribution_id}/messages"
+      body: "*"
+    };
+  }
+
+  rpc ListContributionMessages(ListContributionMessagesRequest) returns (ListContributionMessagesResponse) {
+    option (google.api.http) = {
+      get: "/v1/contributions/{contribution_id}/messages"
     };
   }
 

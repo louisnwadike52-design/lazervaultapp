@@ -2617,6 +2617,7 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton(() => GetGroupActivityLogs(serviceLocator<GroupAccountRepository>()));
   serviceLocator.registerLazySingleton(() => GetContributionActivityLogs(serviceLocator<GroupAccountRepository>()));
   serviceLocator.registerLazySingleton(() => RemoveMemberFromContribution(serviceLocator<GroupAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => PreviewMemberExit(serviceLocator<GroupAccountRepository>()));
   serviceLocator.registerLazySingleton(() => ListPublicGroups(serviceLocator<GroupAccountRepository>()));
   serviceLocator.registerLazySingleton(() => GetPublicGroup(serviceLocator<GroupAccountRepository>()));
   serviceLocator.registerLazySingleton(() => JoinPublicGroup(serviceLocator<GroupAccountRepository>()));
@@ -2651,6 +2652,7 @@ Future<void> init() async {
     getGroupActivityLogs: serviceLocator<GetGroupActivityLogs>(),
     getContributionActivityLogs: serviceLocator<GetContributionActivityLogs>(),
     removeMemberFromContribution: serviceLocator<RemoveMemberFromContribution>(),
+    previewMemberExit: serviceLocator<PreviewMemberExit>(),
     listPublicGroups: serviceLocator<ListPublicGroups>(),
     getPublicGroup: serviceLocator<GetPublicGroup>(),
     joinPublicGroup: serviceLocator<JoinPublicGroup>(),

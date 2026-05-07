@@ -272,17 +272,32 @@ class GroupAccountRepositoryImpl implements GroupAccountRepository {
   }
 
   @override
-  Future<void> removeMemberFromContribution({
+  Future<MemberExitResult> removeMemberFromContribution({
     required String contributionId,
     required String userId,
   }) async {
     try {
-      await remoteDataSource.removeMemberFromContribution(
+      return await remoteDataSource.removeMemberFromContribution(
         contributionId: contributionId,
         userId: userId,
       );
     } catch (e) {
       throw Exception('Failed to remove member from contribution: $e');
+    }
+  }
+
+  @override
+  Future<MemberExitPreview> previewMemberExit({
+    required String contributionId,
+    required String userId,
+  }) async {
+    try {
+      return await remoteDataSource.previewMemberExit(
+        contributionId: contributionId,
+        userId: userId,
+      );
+    } catch (e) {
+      throw Exception('Failed to preview member exit: $e');
     }
   }
 

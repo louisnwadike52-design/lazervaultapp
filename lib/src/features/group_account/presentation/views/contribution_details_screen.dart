@@ -18,6 +18,7 @@ import '../widgets/add_members_to_contribution_dialog.dart';
 import '../widgets/payout_receiver_banner.dart';
 import 'contribution_payment_confirmation_screen.dart';
 import '../widgets/contribution_chat_bottom_sheet.dart';
+import '../widgets/exit_contribution_bottom_sheet.dart';
 import 'contribution_history_screen.dart';
 import 'edit_contribution_screen.dart';
 
@@ -1689,89 +1690,41 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     );
   }
 
+  // Both _confirmRemoveContributionMember (admin removes someone)
+  // and _confirmLeaveContribution (member leaves themselves) hand
+  // off to ExitContributionBottomSheet, which handles the
+  // PreviewMemberExit → confirmation → RemoveMember flow with the
+  // refund / forfeit breakdown surfaced inline. The previous
+  // AlertDialog stub didn't show the user any of the saga's
+  // disposition before they hit Remove / Leave.
   void _confirmRemoveContributionMember(
       ContributionMember member, Contribution contribution) {
-    showDialog(
-      context: context,
-      builder: (dialogCtx) => AlertDialog(
-        backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-        title: Text('Remove ${member.userName}?',
-            style: GoogleFonts.inter(
-                color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600)),
-        content: Text(
-          'They will no longer be able to pay into this contribution. '
-          'If they were designated as the payout receiver, the assignment is cleared automatically.',
-          style: GoogleFonts.inter(color: Colors.grey[300], fontSize: 13.sp),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogCtx).pop(),
-            child: Text('Cancel',
-                style: GoogleFonts.inter(color: Colors.grey[400])),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(dialogCtx).pop();
-              context.read<GroupAccountCubit>().removeMemberFromContributionAccount(
-                    contributionId: contribution.id,
-                    groupId: contribution.groupId,
-                    userId: member.userId,
-                  );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFEF4444),
-              foregroundColor: Colors.white,
-              shape:
-                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
-            ),
-            child: const Text('Remove'),
-          ),
-        ],
-      ),
+    ExitContributionBottomSheet.show(
+      context,
+      contributionId: contribution.id,
+      groupId: contribution.groupId,
+      memberUserId: member.userId,
+      memberDisplayName:
+          member.userName.isNotEmpty ? member.userName : 'this member',
+      actorIsSelf: false,
     );
   }
 
   void _confirmLeaveContribution(Contribution contribution, String myUserId) {
-    showDialog(
-      context: context,
-      builder: (dialogCtx) => AlertDialog(
-        backgroundColor: const Color(0xFF1F1F1F),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-        title: Text('Leave this contribution?',
-            style: GoogleFonts.inter(
-                color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600)),
-        content: Text(
-          'You will stop being a participant. Past payments stay on record. You can be re-added by an admin later.',
-          style: GoogleFonts.inter(color: Colors.grey[300], fontSize: 13.sp),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogCtx).pop(),
-            child: Text('Cancel',
-                style: GoogleFonts.inter(color: Colors.grey[400])),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(dialogCtx).pop();
-              context.read<GroupAccountCubit>().removeMemberFromContributionAccount(
-                    contributionId: contribution.id,
-                    groupId: contribution.groupId,
-                    userId: myUserId,
-                  );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFEF4444),
-              foregroundColor: Colors.white,
-              shape:
-                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
-            ),
-            child: const Text('Leave'),
-          ),
-        ],
-      ),
+    final myMember = contribution.members
+        .where((m) => m.userId == myUserId)
+        .map<ContributionMember?>((m) => m)
+        .firstWhere((m) => true, orElse: () => null);
+    ExitContributionBottomSheet.show(
+      context,
+      contributionId: contribution.id,
+      groupId: contribution.groupId,
+      memberUserId: myUserId,
+      memberDisplayName: myMember?.userName ?? 'You',
+      actorIsSelf: true,
     );
   }
+
 
   Widget _buildStatCard({
     required String title,

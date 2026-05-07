@@ -1060,4 +1060,9 @@ class PayoutTransactionModel extends PayoutTransaction {
       metadata: metadata ?? this.metadata,
     );
   }
-} 
+}
+
+// MemberExitPreview / MemberExitResult are domain entities, defined
+// in domain/entities/group_entities.dart and used directly by the
+// data source — no data-model wrapper needed since the shape is a
+// simple value type with no JSON / extra logic. 

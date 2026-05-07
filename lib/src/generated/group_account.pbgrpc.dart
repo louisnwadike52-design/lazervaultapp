@@ -96,6 +96,10 @@ class GroupAccountServiceClient extends $grpc.Client {
     return $createUnaryCall(_$addMembersToContribution, request, options: options);
   }
 
+  $grpc.ResponseFuture<$0.PreviewMemberExitResponse> previewMemberExit($0.PreviewMemberExitRequest request, {$grpc.CallOptions? options,}) {
+    return $createUnaryCall(_$previewMemberExit, request, options: options);
+  }
+
   $grpc.ResponseFuture<$0.RemoveMemberFromContributionResponse> removeMemberFromContribution($0.RemoveMemberFromContributionRequest request, {$grpc.CallOptions? options,}) {
     return $createUnaryCall(_$removeMemberFromContribution, request, options: options);
   }
@@ -171,6 +175,19 @@ class GroupAccountServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.GenerateTranscriptResponse> generateTranscript($0.GenerateTranscriptRequest request, {$grpc.CallOptions? options,}) {
     return $createUnaryCall(_$generateTranscript, request, options: options);
+  }
+
+  /// Per-contribution chat: send a message + list recent messages.
+  /// Persistent storage in `contribution_messages`. Polling-based
+  /// delivery for now (Flutter polls on a 5s tick while the chat
+  /// bottom sheet is open). WebSocket fanout can be layered on later
+  /// without changing the schema or these RPCs.
+  $grpc.ResponseFuture<$0.SendContributionMessageResponse> sendContributionMessage($0.SendContributionMessageRequest request, {$grpc.CallOptions? options,}) {
+    return $createUnaryCall(_$sendContributionMessage, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.ListContributionMessagesResponse> listContributionMessages($0.ListContributionMessagesRequest request, {$grpc.CallOptions? options,}) {
+    return $createUnaryCall(_$listContributionMessages, request, options: options);
   }
 
   $grpc.ResponseFuture<$0.GetGroupStatisticsResponse> getGroupStatistics($0.GetGroupStatisticsRequest request, {$grpc.CallOptions? options,}) {
@@ -277,6 +294,10 @@ class GroupAccountServiceClient extends $grpc.Client {
       '/group_accounts.GroupAccountService/AddMembersToContribution',
       ($0.AddMembersToContributionRequest value) => value.writeToBuffer(),
       $0.AddMembersToContributionResponse.fromBuffer);
+  static final _$previewMemberExit = $grpc.ClientMethod<$0.PreviewMemberExitRequest, $0.PreviewMemberExitResponse>(
+      '/group_accounts.GroupAccountService/PreviewMemberExit',
+      ($0.PreviewMemberExitRequest value) => value.writeToBuffer(),
+      $0.PreviewMemberExitResponse.fromBuffer);
   static final _$removeMemberFromContribution = $grpc.ClientMethod<$0.RemoveMemberFromContributionRequest, $0.RemoveMemberFromContributionResponse>(
       '/group_accounts.GroupAccountService/RemoveMemberFromContribution',
       ($0.RemoveMemberFromContributionRequest value) => value.writeToBuffer(),
@@ -353,6 +374,14 @@ class GroupAccountServiceClient extends $grpc.Client {
       '/group_accounts.GroupAccountService/GenerateTranscript',
       ($0.GenerateTranscriptRequest value) => value.writeToBuffer(),
       $0.GenerateTranscriptResponse.fromBuffer);
+  static final _$sendContributionMessage = $grpc.ClientMethod<$0.SendContributionMessageRequest, $0.SendContributionMessageResponse>(
+      '/group_accounts.GroupAccountService/SendContributionMessage',
+      ($0.SendContributionMessageRequest value) => value.writeToBuffer(),
+      $0.SendContributionMessageResponse.fromBuffer);
+  static final _$listContributionMessages = $grpc.ClientMethod<$0.ListContributionMessagesRequest, $0.ListContributionMessagesResponse>(
+      '/group_accounts.GroupAccountService/ListContributionMessages',
+      ($0.ListContributionMessagesRequest value) => value.writeToBuffer(),
+      $0.ListContributionMessagesResponse.fromBuffer);
   static final _$getGroupStatistics = $grpc.ClientMethod<$0.GetGroupStatisticsRequest, $0.GetGroupStatisticsResponse>(
       '/group_accounts.GroupAccountService/GetGroupStatistics',
       ($0.GetGroupStatisticsRequest value) => value.writeToBuffer(),
@@ -508,6 +537,13 @@ abstract class GroupAccountServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.AddMembersToContributionRequest.fromBuffer(value),
         ($0.AddMembersToContributionResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.PreviewMemberExitRequest, $0.PreviewMemberExitResponse>(
+        'PreviewMemberExit',
+        previewMemberExit_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.PreviewMemberExitRequest.fromBuffer(value),
+        ($0.PreviewMemberExitResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.RemoveMemberFromContributionRequest, $0.RemoveMemberFromContributionResponse>(
         'RemoveMemberFromContribution',
         removeMemberFromContribution_Pre,
@@ -641,6 +677,20 @@ abstract class GroupAccountServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.GenerateTranscriptRequest.fromBuffer(value),
         ($0.GenerateTranscriptResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.SendContributionMessageRequest, $0.SendContributionMessageResponse>(
+        'SendContributionMessage',
+        sendContributionMessage_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.SendContributionMessageRequest.fromBuffer(value),
+        ($0.SendContributionMessageResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ListContributionMessagesRequest, $0.ListContributionMessagesResponse>(
+        'ListContributionMessages',
+        listContributionMessages_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.ListContributionMessagesRequest.fromBuffer(value),
+        ($0.ListContributionMessagesResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.GetGroupStatisticsRequest, $0.GetGroupStatisticsResponse>(
         'GetGroupStatistics',
         getGroupStatistics_Pre,
@@ -802,6 +852,12 @@ abstract class GroupAccountServiceBase extends $grpc.Service {
 
   $async.Future<$0.AddMembersToContributionResponse> addMembersToContribution($grpc.ServiceCall call, $0.AddMembersToContributionRequest request);
 
+  $async.Future<$0.PreviewMemberExitResponse> previewMemberExit_Pre($grpc.ServiceCall $call, $async.Future<$0.PreviewMemberExitRequest> $request) async {
+    return previewMemberExit($call, await $request);
+  }
+
+  $async.Future<$0.PreviewMemberExitResponse> previewMemberExit($grpc.ServiceCall call, $0.PreviewMemberExitRequest request);
+
   $async.Future<$0.RemoveMemberFromContributionResponse> removeMemberFromContribution_Pre($grpc.ServiceCall $call, $async.Future<$0.RemoveMemberFromContributionRequest> $request) async {
     return removeMemberFromContribution($call, await $request);
   }
@@ -915,6 +971,18 @@ abstract class GroupAccountServiceBase extends $grpc.Service {
   }
 
   $async.Future<$0.GenerateTranscriptResponse> generateTranscript($grpc.ServiceCall call, $0.GenerateTranscriptRequest request);
+
+  $async.Future<$0.SendContributionMessageResponse> sendContributionMessage_Pre($grpc.ServiceCall $call, $async.Future<$0.SendContributionMessageRequest> $request) async {
+    return sendContributionMessage($call, await $request);
+  }
+
+  $async.Future<$0.SendContributionMessageResponse> sendContributionMessage($grpc.ServiceCall call, $0.SendContributionMessageRequest request);
+
+  $async.Future<$0.ListContributionMessagesResponse> listContributionMessages_Pre($grpc.ServiceCall $call, $async.Future<$0.ListContributionMessagesRequest> $request) async {
+    return listContributionMessages($call, await $request);
+  }
+
+  $async.Future<$0.ListContributionMessagesResponse> listContributionMessages($grpc.ServiceCall call, $0.ListContributionMessagesRequest request);
 
   $async.Future<$0.GetGroupStatisticsResponse> getGroupStatistics_Pre($grpc.ServiceCall $call, $async.Future<$0.GetGroupStatisticsRequest> $request) async {
     return getGroupStatistics($call, await $request);

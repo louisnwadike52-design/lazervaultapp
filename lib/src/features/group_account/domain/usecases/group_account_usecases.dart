@@ -245,14 +245,30 @@ class GetContributionMembers extends UseCase<List<ContributionMember>, String> {
   }
 }
 
-class RemoveMemberFromContribution extends UseCase<void, RemoveMemberFromContributionParams> {
+class RemoveMemberFromContribution
+    extends UseCase<MemberExitResult, RemoveMemberFromContributionParams> {
   final GroupAccountRepository repository;
 
   RemoveMemberFromContribution(this.repository);
 
   @override
-  Future<void> call(RemoveMemberFromContributionParams params) {
+  Future<MemberExitResult> call(RemoveMemberFromContributionParams params) {
     return repository.removeMemberFromContribution(
+      contributionId: params.contributionId,
+      userId: params.userId,
+    );
+  }
+}
+
+class PreviewMemberExit
+    extends UseCase<MemberExitPreview, RemoveMemberFromContributionParams> {
+  final GroupAccountRepository repository;
+
+  PreviewMemberExit(this.repository);
+
+  @override
+  Future<MemberExitPreview> call(RemoveMemberFromContributionParams params) {
+    return repository.previewMemberExit(
       contributionId: params.contributionId,
       userId: params.userId,
     );

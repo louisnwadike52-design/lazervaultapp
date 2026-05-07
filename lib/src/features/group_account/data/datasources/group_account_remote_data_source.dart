@@ -69,7 +69,15 @@ abstract class GroupAccountRemoteDataSource {
     required List<String> memberUserIds,
   });
   Future<List<ContributionMemberModel>> getContributionMembers(String contributionId);
-  Future<void> removeMemberFromContribution({
+  Future<MemberExitResult> removeMemberFromContribution({
+    required String contributionId,
+    required String userId,
+  });
+
+  /// Side-effect-free preview of what [removeMemberFromContribution]
+  /// would do. Drives the confirmation UI so the user sees the
+  /// refund / forfeit breakdown before committing.
+  Future<MemberExitPreview> previewMemberExit({
     required String contributionId,
     required String userId,
   });
