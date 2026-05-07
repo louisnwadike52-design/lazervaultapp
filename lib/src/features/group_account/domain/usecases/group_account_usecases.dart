@@ -260,6 +260,21 @@ class RemoveMemberFromContribution
   }
 }
 
+class RemoveContributionShadow
+    extends UseCase<int, RemoveMemberFromContributionParams> {
+  final GroupAccountRepository repository;
+
+  RemoveContributionShadow(this.repository);
+
+  @override
+  Future<int> call(RemoveMemberFromContributionParams params) {
+    return repository.removeContributionShadow(
+      contributionId: params.contributionId,
+      userId: params.userId,
+    );
+  }
+}
+
 class PreviewMemberExit
     extends UseCase<MemberExitPreview, RemoveMemberFromContributionParams> {
   final GroupAccountRepository repository;
@@ -707,6 +722,96 @@ class ListGroupInvitations extends UseCase<List<GroupInvitation>, ListGroupInvit
       groupId: p.groupId,
       statuses: p.statuses,
       limit: p.limit,
+    );
+  }
+}
+
+// =============================================================
+// Cycle history use cases.
+// =============================================================
+
+class ListContributionCyclesParams {
+  final String contributionId;
+  final bool includeInProgress;
+  final int page;
+  final int pageSize;
+
+  const ListContributionCyclesParams({
+    required this.contributionId,
+    this.includeInProgress = true,
+    this.page = 1,
+    this.pageSize = 50,
+  });
+}
+
+class ListContributionCycles extends UseCase<
+    ({List<ContributionCycle> cycles, int total}),
+    ListContributionCyclesParams> {
+  final GroupAccountRepository repository;
+  ListContributionCycles(this.repository);
+
+  @override
+  Future<({List<ContributionCycle> cycles, int total})> call(
+      ListContributionCyclesParams p) {
+    return repository.listContributionCycles(
+      contributionId: p.contributionId,
+      includeInProgress: p.includeInProgress,
+      page: p.page,
+      pageSize: p.pageSize,
+    );
+  }
+}
+
+class GetContributionCycleDetailsParams {
+  final String contributionId;
+  final int cycleIndex;
+
+  const GetContributionCycleDetailsParams({
+    required this.contributionId,
+    this.cycleIndex = 0,
+  });
+}
+
+class GetContributionCycleDetails extends UseCase<ContributionCycleDetails,
+    GetContributionCycleDetailsParams> {
+  final GroupAccountRepository repository;
+  GetContributionCycleDetails(this.repository);
+
+  @override
+  Future<ContributionCycleDetails> call(
+      GetContributionCycleDetailsParams p) {
+    return repository.getContributionCycleDetails(
+      contributionId: p.contributionId,
+      cycleIndex: p.cycleIndex,
+    );
+  }
+}
+
+class RestartContributionParams {
+  final String contributionId;
+  final double? newTargetAmount;
+  final DateTime? newDeadline;
+  final String reason;
+
+  const RestartContributionParams({
+    required this.contributionId,
+    this.newTargetAmount,
+    this.newDeadline,
+    this.reason = '',
+  });
+}
+
+class RestartContribution extends UseCase<Contribution, RestartContributionParams> {
+  final GroupAccountRepository repository;
+  RestartContribution(this.repository);
+
+  @override
+  Future<Contribution> call(RestartContributionParams p) {
+    return repository.restartContribution(
+      contributionId: p.contributionId,
+      newTargetAmount: p.newTargetAmount,
+      newDeadline: p.newDeadline,
+      reason: p.reason,
     );
   }
 }

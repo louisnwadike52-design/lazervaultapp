@@ -385,6 +385,27 @@ class GroupMember extends Equatable {
     this.phoneMatchesSearchQueryExact = false,
   });
 
+  /// True when this row is a synthetic shadow for a pending group
+  /// invitation rather than a fully-joined member. Drives the
+  /// "Invite Sent" badge + admin "Cancel invite" CTA. Server signals
+  /// it via `status=pending` (translated from `inactive + isPartial`
+  /// in the gRPC mapper) or via the `permissions.invitation_status`
+  /// field, both of which collapse to this single getter.
+  bool get isPendingInvite =>
+      status == GroupMemberStatus.pending ||
+      (isPartial &&
+          permissions != null &&
+          (permissions!['invitation_status'] == 'pending' ||
+              permissions!['invitation_id'] != null));
+
+  /// The linked invitation id (when pending), so admin actions like
+  /// "Cancel invite" can target the underlying GroupInvitation.
+  String? get linkedInvitationId {
+    if (permissions == null) return null;
+    final v = permissions!['invitation_id'];
+    return v is String && v.isNotEmpty ? v : null;
+  }
+
   @override
   List<Object?> get props => [
         id,
@@ -897,6 +918,12 @@ class ContributionMember extends Equatable {
   /// participants when computing financial roll-ups.
   bool get isActiveParticipant =>
       membershipStatus == ContributionMembershipStatus.active;
+
+  /// True when this is a shadow row tracking a pending parent group
+  /// invitation. UI uses this to render "Invite Sent" instead of
+  /// payment progress.
+  bool get isPendingInvite =>
+      membershipStatus == ContributionMembershipStatus.pendingInvite;
 
   @override
   List<Object?> get props => [
@@ -1869,4 +1896,183 @@ class MemberExitResult {
     required this.refundStatus,
     required this.removalReason,
   });
+}
+// =============================================================
+// Cycle history entities.
+// =============================================================
+
+/// Lifecycle of a contribution cycle. Mirrors the server-side enum
+/// in models.ContributionCycleStatus.
+enum ContributionCycleStatus {
+  /// The currently-active cycle. Only one per contribution at a
+  /// time. Live counters drive its rendering until close.
+  inProgress,
+
+  /// Cycle closed with a successful payout (ROSCA) or goal-reached
+  /// (one-time).
+  closedSettled,
+
+  /// Cycle closed without a successful payout — recipient declined,
+  /// retries exhausted, etc. Pot may carry forward.
+  closedFailed,
+
+  /// Cycle stopped by admin action (e.g. early restart of a one-time
+  /// before target reached).
+  closedCancelled,
+}
+
+ContributionCycleStatus contributionCycleStatusFromString(String? raw) {
+  switch (raw) {
+    case 'closed_settled':
+      return ContributionCycleStatus.closedSettled;
+    case 'closed_failed':
+      return ContributionCycleStatus.closedFailed;
+    case 'closed_cancelled':
+      return ContributionCycleStatus.closedCancelled;
+    case 'in_progress':
+    default:
+      return ContributionCycleStatus.inProgress;
+  }
+}
+
+/// Frozen-at-close summary of one cycle. Drives the history list
+/// row and the bottom-sheet header. Amounts are MAJOR units (the
+/// gRPC datasource converts from minor units at the boundary, same
+/// pattern other monetary values use in this app).
+class ContributionCycle extends Equatable {
+  final String id;
+  final String contributionId;
+  final int cycleIndex;
+  final ContributionCycleStatus status;
+  final DateTime startedAt;
+  final DateTime? endedAt;
+  final double targetAmount;
+  final double raisedAmount;
+  final double deficitAmount;
+  final String? payoutTransactionId;
+  final String? receiverUserId;
+  final String receiverName;
+  final int paymentCount;
+  final int membersCount;
+  final int pendingMembersCount;
+  final int partialMembersCount;
+  final String closeReason;
+  final String currency;
+
+  const ContributionCycle({
+    required this.id,
+    required this.contributionId,
+    required this.cycleIndex,
+    required this.status,
+    required this.startedAt,
+    this.endedAt,
+    required this.targetAmount,
+    required this.raisedAmount,
+    this.deficitAmount = 0,
+    this.payoutTransactionId,
+    this.receiverUserId,
+    this.receiverName = '',
+    this.paymentCount = 0,
+    this.membersCount = 0,
+    this.pendingMembersCount = 0,
+    this.partialMembersCount = 0,
+    this.closeReason = '',
+    this.currency = '',
+  });
+
+  bool get isLive => status == ContributionCycleStatus.inProgress;
+  bool get isSettled => status == ContributionCycleStatus.closedSettled;
+  bool get isFailed => status == ContributionCycleStatus.closedFailed;
+  bool get isCancelled =>
+      status == ContributionCycleStatus.closedCancelled;
+
+  double get progressPercent =>
+      targetAmount > 0 ? (raisedAmount / targetAmount * 100).clamp(0.0, 999.0) : 0.0;
+
+  @override
+  List<Object?> get props => [
+        id,
+        contributionId,
+        cycleIndex,
+        status,
+        startedAt,
+        endedAt,
+        targetAmount,
+        raisedAmount,
+        deficitAmount,
+        payoutTransactionId,
+        receiverUserId,
+        receiverName,
+        paymentCount,
+        membersCount,
+        pendingMembersCount,
+        partialMembersCount,
+        closeReason,
+        currency,
+      ];
+}
+
+/// Per-member snapshot for one cycle. Drives the Members tab in the
+/// cycle-details bottom sheet.
+class ContributionCycleMemberSnapshot extends Equatable {
+  final String userId;
+  final String userName;
+  final String email;
+  final double expectedAmount;
+  final double paidAmount;
+  final bool hasPaid;
+  final bool wasReceiver;
+  final int missedCyclesAtClose;
+  final String statusAtClose;
+  final DateTime? joinedAt;
+
+  const ContributionCycleMemberSnapshot({
+    required this.userId,
+    required this.userName,
+    this.email = '',
+    this.expectedAmount = 0,
+    this.paidAmount = 0,
+    this.hasPaid = false,
+    this.wasReceiver = false,
+    this.missedCyclesAtClose = 0,
+    this.statusAtClose = 'active',
+    this.joinedAt,
+  });
+
+  /// Helpers for the UI's filter chips on the Members tab.
+  bool get isPartial =>
+      !hasPaid && paidAmount > 0 && paidAmount < expectedAmount;
+  bool get isPending => !hasPaid && paidAmount == 0;
+  bool get isFullyPaid => hasPaid;
+
+  @override
+  List<Object?> get props => [
+        userId,
+        userName,
+        email,
+        expectedAmount,
+        paidAmount,
+        hasPaid,
+        wasReceiver,
+        missedCyclesAtClose,
+        statusAtClose,
+        joinedAt,
+      ];
+}
+
+/// Bundled payload for the cycle-details bottom sheet — one round
+/// trip populates every tab.
+class ContributionCycleDetails extends Equatable {
+  final ContributionCycle summary;
+  final List<ContributionCycleMemberSnapshot> members;
+  final List<ContributionPayment> payments;
+
+  const ContributionCycleDetails({
+    required this.summary,
+    this.members = const [],
+    this.payments = const [],
+  });
+
+  @override
+  List<Object?> get props => [summary, members, payments];
 }

@@ -1,4 +1,10 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
+import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../domain/entities/group_entities.dart';
@@ -193,6 +199,203 @@ class GroupAccountReportService {
       text: text,
       subject: report.title,
     ));
+  }
+
+  /// Native share with the report attached as a PDF file.
+  ///
+  /// Renders the report into a PDF in the app's temp directory and hands
+  /// the file to the OS share sheet so the user can route it through any
+  /// installed app (mail, drive, messengers, etc.). Replaces the legacy
+  /// platform-specific share buttons.
+  Future<void> shareAsFile(
+    GroupAccountReport report, {
+    String? groupUrl,
+    String? groupName,
+  }) async {
+    final pdfBytes = await _buildReportPdf(
+      report,
+      groupUrl: groupUrl,
+      groupName: groupName,
+    );
+
+    final tempDir = await getTemporaryDirectory();
+    final safeTitle = _sanitizeFilename(report.title.isNotEmpty
+        ? report.title
+        : (groupName ?? 'group-report'));
+    final stamp = DateFormat('yyyyMMdd-HHmmss').format(report.generatedAt);
+    final file = File('${tempDir.path}/$safeTitle-$stamp.pdf');
+    await file.writeAsBytes(pdfBytes, flush: true);
+
+    final caption = _buildShareText(
+      report.sharingText['general'] ?? report.summary,
+      groupUrl,
+    );
+
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(file.path, mimeType: 'application/pdf')],
+        text: caption,
+        subject: report.title,
+      ),
+    );
+  }
+
+  Future<List<int>> _buildReportPdf(
+    GroupAccountReport report, {
+    String? groupUrl,
+    String? groupName,
+  }) async {
+    final doc = pw.Document(
+      title: report.title,
+      author: groupName,
+      creator: 'LazerVault',
+    );
+
+    final accent = PdfColor.fromInt(0xFF4E03D0);
+    final muted = PdfColor.fromInt(0xFF6B7280);
+    final dateFormatter = DateFormat('MMM d, yyyy • h:mm a');
+
+    doc.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.fromLTRB(36, 40, 36, 40),
+        build: (context) => [
+          pw.Text(
+            report.title,
+            style: pw.TextStyle(
+              fontSize: 22,
+              fontWeight: pw.FontWeight.bold,
+              color: accent,
+            ),
+          ),
+          pw.SizedBox(height: 4),
+          pw.Text(
+            'Generated ${dateFormatter.format(report.generatedAt.toLocal())}',
+            style: pw.TextStyle(fontSize: 10, color: muted),
+          ),
+          if (groupName != null && groupName.isNotEmpty) ...[
+            pw.SizedBox(height: 2),
+            pw.Text(
+              groupName,
+              style: pw.TextStyle(fontSize: 10, color: muted),
+            ),
+          ],
+          pw.SizedBox(height: 18),
+          if (report.summary.isNotEmpty) ...[
+            _pdfSectionHeading('Summary', accent),
+            pw.SizedBox(height: 6),
+            pw.Text(report.summary, style: const pw.TextStyle(fontSize: 12)),
+            pw.SizedBox(height: 14),
+          ],
+          if (report.impactStory.isNotEmpty) ...[
+            _pdfSectionHeading('Impact', accent),
+            pw.SizedBox(height: 6),
+            pw.Text(report.impactStory,
+                style: const pw.TextStyle(fontSize: 12)),
+            pw.SizedBox(height: 14),
+          ],
+          if (report.contributorHighlights.isNotEmpty) ...[
+            _pdfSectionHeading('Contributor Highlights', accent),
+            pw.SizedBox(height: 6),
+            ..._pdfBulletList(report.contributorHighlights, accent),
+            pw.SizedBox(height: 14),
+          ],
+          if (report.milestones.isNotEmpty) ...[
+            _pdfSectionHeading('Milestones', accent),
+            pw.SizedBox(height: 6),
+            ..._pdfBulletList(
+              report.milestones
+                  .map((m) {
+                    final title = (m['title'] ?? m['name'] ?? '').toString();
+                    final desc = (m['description'] ?? '').toString();
+                    if (desc.isEmpty) return title;
+                    return '$title — $desc';
+                  })
+                  .where((s) => s.isNotEmpty)
+                  .toList(),
+              accent,
+            ),
+            pw.SizedBox(height: 14),
+          ],
+          if (report.callToAction.isNotEmpty) ...[
+            _pdfSectionHeading('Call to Action', accent),
+            pw.SizedBox(height: 6),
+            pw.Text(report.callToAction,
+                style: const pw.TextStyle(fontSize: 12)),
+            pw.SizedBox(height: 14),
+          ],
+          if (groupUrl != null && groupUrl.isNotEmpty) ...[
+            pw.SizedBox(height: 6),
+            pw.UrlLink(
+              destination: groupUrl,
+              child: pw.Text(
+                groupUrl,
+                style: pw.TextStyle(
+                  fontSize: 11,
+                  color: accent,
+                  decoration: pw.TextDecoration.underline,
+                ),
+              ),
+            ),
+          ],
+          if (report.hashtags.isNotEmpty) ...[
+            pw.SizedBox(height: 12),
+            pw.Text(
+              report.hashtags.map((h) => '#$h').join(' '),
+              style: pw.TextStyle(fontSize: 11, color: muted),
+            ),
+          ],
+        ],
+      ),
+    );
+
+    return doc.save();
+  }
+
+  pw.Widget _pdfSectionHeading(String label, PdfColor accent) {
+    return pw.Text(
+      label.toUpperCase(),
+      style: pw.TextStyle(
+        fontSize: 11,
+        fontWeight: pw.FontWeight.bold,
+        color: accent,
+        letterSpacing: 1.2,
+      ),
+    );
+  }
+
+  List<pw.Widget> _pdfBulletList(List<String> items, PdfColor accent) {
+    return [
+      for (final item in items)
+        pw.Padding(
+          padding: const pw.EdgeInsets.only(bottom: 4),
+          child: pw.Row(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Container(
+                margin: const pw.EdgeInsets.only(top: 5, right: 6),
+                width: 4,
+                height: 4,
+                decoration: pw.BoxDecoration(
+                  color: accent,
+                  shape: pw.BoxShape.circle,
+                ),
+              ),
+              pw.Expanded(
+                child: pw.Text(item, style: const pw.TextStyle(fontSize: 12)),
+              ),
+            ],
+          ),
+        ),
+    ];
+  }
+
+  String _sanitizeFilename(String input) {
+    final sanitized = input
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9]+'), '-')
+        .replaceAll(RegExp(r'^-+|-+$'), '');
+    return sanitized.isEmpty ? 'group-report' : sanitized;
   }
 
   /// Copy report text to clipboard

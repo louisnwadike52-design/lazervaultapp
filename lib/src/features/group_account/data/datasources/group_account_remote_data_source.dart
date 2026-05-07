@@ -74,6 +74,16 @@ abstract class GroupAccountRemoteDataSource {
     required String userId,
   });
 
+  /// Hard-deletes a declined contribution_members shadow row so the
+  /// user can be re-invited cleanly. Returns the number of rows
+  /// removed (0 means there was nothing to clear). Active rows are
+  /// rejected server-side; use [removeMemberFromContribution] for
+  /// those.
+  Future<int> removeContributionShadow({
+    required String contributionId,
+    required String userId,
+  });
+
   /// Side-effect-free preview of what [removeMemberFromContribution]
   /// would do. Drives the confirmation UI so the user sees the
   /// refund / forfeit breakdown before committing.
@@ -169,6 +179,25 @@ abstract class GroupAccountRemoteDataSource {
   });
   Future<PublicGroupDetailModel> getPublicGroup(String groupId);
   Future<GroupAccountModel> joinPublicGroup(String groupId);
+
+  // Cycle history.
+  Future<({List<ContributionCycle> cycles, int total})>
+      listContributionCycles({
+    required String contributionId,
+    bool includeInProgress = true,
+    int page = 1,
+    int pageSize = 50,
+  });
+  Future<ContributionCycleDetails> getContributionCycleDetails({
+    required String contributionId,
+    int cycleIndex = 0,
+  });
+  Future<Contribution> restartContribution({
+    required String contributionId,
+    double? newTargetAmount,
+    DateTime? newDeadline,
+    String reason = '',
+  });
 }
 
 // Activity Log Entry Model

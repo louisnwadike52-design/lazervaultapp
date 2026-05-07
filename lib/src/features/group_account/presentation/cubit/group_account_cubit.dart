@@ -39,7 +39,12 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
   final GetGroupActivityLogs? getGroupActivityLogs;
   final GetContributionActivityLogs? getContributionActivityLogs;
   final RemoveMemberFromContribution? removeMemberFromContribution;
+  final RemoveContributionShadow? removeContributionShadow;
   final PreviewMemberExit? previewMemberExit;
+  // Cycle history.
+  final ListContributionCycles? listContributionCycles;
+  final GetContributionCycleDetails? getContributionCycleDetails;
+  final RestartContribution? restartContribution;
   // Invite-first membership use cases (slice 5).
   final InviteToGroup? inviteToGroup;
   final RespondToGroupInvite? respondToGroupInvite;
@@ -159,7 +164,11 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     this.getGroupActivityLogs,
     this.getContributionActivityLogs,
     this.removeMemberFromContribution,
+    this.removeContributionShadow,
     this.previewMemberExit,
+    this.listContributionCycles,
+    this.getContributionCycleDetails,
+    this.restartContribution,
     this.inviteToGroup,
     this.respondToGroupInvite,
     this.cancelGroupInvite,
@@ -815,6 +824,23 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     if (isClosed) return;
     emit(const GroupAccountLoading(message: 'Adding members to contribution...'));
     try {
+      // Pre-clear any declined shadow rows so a re-invite isn't
+      // blocked by AddMembersToContribution's dedup. The DELETE is a
+      // no-op when no declined row exists, and active rows are
+      // protected server-side.
+      if (removeContributionShadow != null) {
+        for (final uid in memberUserIds) {
+          try {
+            await removeContributionShadow!(RemoveMemberFromContributionParams(
+              contributionId: contributionId,
+              userId: uid,
+            ));
+          } catch (_) {
+            // Best-effort — fall through to the add and let the
+            // server's existing dedup decide.
+          }
+        }
+      }
       final members = await addMembersToContribution(AddMembersToContributionParams(
         contributionId: contributionId,
         memberUserIds: memberUserIds,
@@ -1446,6 +1472,48 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     }
   }
 
+  /// Re-invite a user who previously declined the contribution. The
+  /// declined shadow row blocks AddMembersToContribution's dedup, so
+  /// we hard-delete it via [removeContributionShadow] first, then
+  /// fall through to the normal add-members path which mints a fresh
+  /// invite. No-op when the use case isn't wired (still surfaces a
+  /// friendly error so the UI can degrade).
+  Future<void> reinviteContributionMember({
+    required String contributionId,
+    required String groupId,
+    required String userId,
+  }) async {
+    if (isClosed) return;
+    if (removeContributionShadow == null) {
+      emit(const GroupAccountError('Re-invite not available'));
+      return;
+    }
+    emit(const GroupAccountLoading(message: 'Re-inviting member...'));
+    try {
+      // Phase 1: clear the declined shadow row. If the row was
+      // already deleted (race or stale UI), removed_count = 0 — fine,
+      // we still proceed with the add to mint the new invite.
+      await removeContributionShadow!(RemoveMemberFromContributionParams(
+        contributionId: contributionId,
+        userId: userId,
+      ));
+      if (isClosed) return;
+      // Phase 2: re-issue the invite via the canonical add path.
+      // Server creates a brand-new GroupInvitation + a fresh
+      // pending_invite shadow row.
+      await addMembersToContribution(AddMembersToContributionParams(
+        contributionId: contributionId,
+        memberUserIds: [userId],
+      ));
+      if (isClosed) return;
+      emit(const GroupAccountSuccess('Invite resent'));
+      await loadGroupDetails(groupId);
+    } catch (e) {
+      if (isClosed) return;
+      emit(GroupAccountError('Failed to re-invite: ${e.toString()}'));
+    }
+  }
+
   /// Non-side-effecting peek at the saga's decision. Returns null on
   /// failure; the cubit does NOT emit on this path because a preview
   /// is always called inline from a bottom-sheet that owns its own
@@ -1736,6 +1804,32 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     }
   }
 
+  /// Share the report as a PDF attachment via the OS share sheet.
+  Future<void> shareReportAsFile(
+    GroupAccountReport report, {
+    String? groupUrl,
+    String? groupName,
+  }) async {
+    if (isClosed) return;
+    if (reportService == null) {
+      emit(const GroupAccountReportShareError('Report service not available'));
+      return;
+    }
+
+    try {
+      await reportService!.shareAsFile(
+        report,
+        groupUrl: groupUrl,
+        groupName: groupName,
+      );
+      if (isClosed) return;
+      emit(const GroupAccountReportShared(message: 'Report shared'));
+    } catch (e) {
+      if (isClosed) return;
+      emit(GroupAccountReportShareError('Failed to share: ${e.toString()}'));
+    }
+  }
+
   /// Get shareable text for clipboard
   String? getShareableText(GroupAccountReport report, String? groupUrl) {
     if (reportService == null) return null;
@@ -1993,6 +2087,117 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     } catch (e) {
       if (isClosed) return;
       emit(GroupAccountError('Failed to load group invitations: $e'));
+    }
+  }
+
+  // =============================================================
+  // Cycle history
+  // =============================================================
+
+  /// Loads the cycle list for a contribution. The server includes the
+  /// live cycle synthesized from current state when no frozen row
+  /// exists yet, so the UI never has to special-case the "first cycle
+  /// hasn't closed" state.
+  Future<void> loadContributionCycles({
+    required String contributionId,
+    bool includeInProgress = true,
+    int page = 1,
+    int pageSize = 50,
+  }) async {
+    if (isClosed) return;
+    if (listContributionCycles == null) {
+      emit(const GroupAccountError('Cycle history not available'));
+      return;
+    }
+    emit(ContributionCyclesLoading(contributionId: contributionId));
+    try {
+      final result = await listContributionCycles!(
+        ListContributionCyclesParams(
+          contributionId: contributionId,
+          includeInProgress: includeInProgress,
+          page: page,
+          pageSize: pageSize,
+        ),
+      );
+      if (isClosed) return;
+      emit(ContributionCyclesLoaded(
+        contributionId: contributionId,
+        cycles: result.cycles,
+        total: result.total,
+      ));
+    } catch (e) {
+      if (isClosed) return;
+      emit(GroupAccountError('Failed to load cycles: $e'));
+    }
+  }
+
+  /// Loads the per-cycle detail bundle (summary + member snapshot +
+  /// payments). Used by the cycle-details bottom sheet.
+  Future<void> loadContributionCycleDetails({
+    required String contributionId,
+    int cycleIndex = 0,
+  }) async {
+    if (isClosed) return;
+    if (getContributionCycleDetails == null) {
+      emit(const GroupAccountError('Cycle history not available'));
+      return;
+    }
+    emit(ContributionCycleDetailsLoading(
+      contributionId: contributionId,
+      cycleIndex: cycleIndex,
+    ));
+    try {
+      final details = await getContributionCycleDetails!(
+        GetContributionCycleDetailsParams(
+          contributionId: contributionId,
+          cycleIndex: cycleIndex,
+        ),
+      );
+      if (isClosed) return;
+      emit(ContributionCycleDetailsLoaded(details: details));
+    } catch (e) {
+      if (isClosed) return;
+      emit(GroupAccountError('Failed to load cycle details: $e'));
+    }
+  }
+
+  /// Restarts a one-time contribution: closes the current cycle into
+  /// history + opens a fresh one with the same members. Admin only.
+  Future<Contribution?> restartContributionAccount({
+    required String contributionId,
+    required String groupId,
+    double? newTargetAmount,
+    DateTime? newDeadline,
+    String reason = '',
+  }) async {
+    if (isClosed) return null;
+    if (restartContribution == null) {
+      emit(const GroupAccountError('Restart not available'));
+      return null;
+    }
+    emit(const GroupAccountLoading(message: 'Restarting contribution...'));
+    try {
+      final updated = await restartContribution!(
+        RestartContributionParams(
+          contributionId: contributionId,
+          newTargetAmount: newTargetAmount,
+          newDeadline: newDeadline,
+          reason: reason,
+        ),
+      );
+      if (isClosed) return updated;
+      emit(ContributionRestarted(
+        contribution: updated,
+        message: 'Contribution restarted; new cycle started',
+      ));
+      // Refresh group so the contribution list reflects the bumped
+      // current_cycle + zeroed current_amount.
+      await loadGroupDetails(groupId);
+      return updated;
+    } catch (e) {
+      if (isClosed) return null;
+      emit(GroupAccountError('Failed to restart contribution: $e'));
+      return null;
     }
   }
 }

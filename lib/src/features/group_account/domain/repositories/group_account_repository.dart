@@ -76,6 +76,33 @@ abstract class GroupAccountRepository {
     required String userId,
   });
 
+  /// Hard-deletes a declined contribution_members shadow row so a
+  /// previously-rejected user can be re-invited cleanly. Returns the
+  /// number of rows removed (0 = nothing to clear).
+  Future<int> removeContributionShadow({
+    required String contributionId,
+    required String userId,
+  });
+
+  // Cycle history.
+  Future<({List<ContributionCycle> cycles, int total})>
+      listContributionCycles({
+    required String contributionId,
+    bool includeInProgress = true,
+    int page = 1,
+    int pageSize = 50,
+  });
+  Future<ContributionCycleDetails> getContributionCycleDetails({
+    required String contributionId,
+    int cycleIndex = 0,
+  });
+  Future<Contribution> restartContribution({
+    required String contributionId,
+    double? newTargetAmount,
+    DateTime? newDeadline,
+    String reason = '',
+  });
+
   /// Non-side-effecting preview of what [removeMemberFromContribution]
   /// would do — drives the confirmation modal. UI passes the result
   /// straight through to the user.

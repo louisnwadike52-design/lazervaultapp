@@ -42,6 +42,13 @@ enum GroupMemberStatus {
   GROUP_MEMBER_STATUS_INACTIVE = 2;
   GROUP_MEMBER_STATUS_SUSPENDED = 3;
   GROUP_MEMBER_STATUS_REMOVED = 4;
+  // Synthesized for shadow rows that represent a pending group
+  // invitation. The user is not yet a real group_members row — the
+  // server materializes a transient GroupMember from the live
+  // GroupInvitation so the canonical member-list response carries
+  // the "Invite Sent" state. Clients render an Invite Sent badge
+  // and gate role/remove actions off until the invite is accepted.
+  GROUP_MEMBER_STATUS_PENDING = 5;
 }
 
 enum ContributionType {
@@ -740,6 +747,23 @@ message RemoveMemberFromContributionResponse {
   string removal_reason = 5;  // human-readable saga decision label
 }
 
+// Hard-deletes a contribution_members shadow row in a TERMINAL
+// state (declined / expired / cancelled invite). Required to
+// re-invite a user after they've previously declined: the existing
+// declined shadow row blocks AddMembersToContribution's
+// duplicate-detection. Active rows are NEVER touched by this RPC —
+// removing a real member still goes through RemoveMemberFromContribution
+// with its full refund saga.
+message RemoveContributionShadowRequest {
+  string contribution_id = 1;
+  string member_user_id = 2;
+}
+
+message RemoveContributionShadowResponse {
+  bool success = 1;
+  int32 removed_count = 2;
+}
+
 // PreviewMemberExit lets the caller see the refund / forfeit
 // breakdown BEFORE actually triggering the exit. Used by Flutter +
 // admin to render a confirmation dialog. The values returned reflect
@@ -882,6 +906,113 @@ message GenerateTranscriptRequest {
 
 message GenerateTranscriptResponse {
   ContributionTranscriptMessage transcript = 1;
+}
+
+// =============================================================
+// Cycle history messages.
+// =============================================================
+
+// ContributionCycleSummary is one row in the history list. Status
+// is the lifecycle string ("in_progress" | "closed_settled" |
+// "closed_failed" | "closed_cancelled"). Amounts are MINOR units
+// (kobo for NGN) — same convention used elsewhere in this proto.
+message ContributionCycleSummary {
+  string id = 1;
+  string contribution_id = 2;
+  int32 cycle_index = 3;
+  string status = 4;
+  google.protobuf.Timestamp started_at = 5;
+  google.protobuf.Timestamp ended_at = 6;          // null while in_progress
+  uint64 target_amount = 7;
+  uint64 raised_amount = 8;
+  uint64 deficit_amount = 9;
+  string payout_transaction_id = 10;               // empty for one-time / failed
+  string receiver_user_id = 11;
+  string receiver_name = 12;
+  int32 payment_count = 13;
+  int32 members_count = 14;
+  int32 pending_members_count = 15;
+  int32 partial_members_count = 16;
+  string close_reason = 17;
+  string currency = 18;
+}
+
+// ContributionCycleMemberSnapshot is the per-member, per-cycle
+// frozen record. Shown on the cycle-details bottom sheet's Members
+// tab. status_at_close mirrors contribution_members.membership_status
+// at the moment the cycle closed.
+message ContributionCycleMemberSnapshot {
+  string user_id = 1;
+  string user_name = 2;
+  string email = 3;
+  uint64 expected_amount = 4;
+  uint64 paid_amount = 5;
+  bool has_paid = 6;
+  bool was_receiver = 7;
+  int32 missed_cycles_at_close = 8;
+  string status_at_close = 9;
+  google.protobuf.Timestamp joined_at = 10;
+}
+
+// ContributionCycleDetails = the full bottom-sheet payload. Bundles
+// the summary + snapshot members + payments scoped to that cycle so
+// the UI does ONE round-trip to populate every tab.
+message ContributionCycleDetails {
+  ContributionCycleSummary summary = 1;
+  repeated ContributionCycleMemberSnapshot members = 2;
+  repeated ContributionPaymentMessage payments = 3;
+}
+
+message ListContributionCyclesRequest {
+  string contribution_id = 1;
+  // When true, the live (in_progress) cycle is included in the
+  // response; the history screen renders it pinned at the top with
+  // a "Live" pill. Most flows want this on.
+  bool include_in_progress = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+message ListContributionCyclesResponse {
+  repeated ContributionCycleSummary cycles = 1;
+  int32 total_count = 2;
+  int32 current_page = 3;
+  int32 total_pages = 4;
+  int32 items_per_page = 5;
+}
+
+message GetContributionCycleDetailsRequest {
+  string contribution_id = 1;
+  // 0 selects the live cycle (matches the contribution's current
+  // current_cycle pointer). Any positive value pulls a frozen
+  // historical row.
+  int32 cycle_index = 2;
+}
+
+message GetContributionCycleDetailsResponse {
+  ContributionCycleDetails details = 1;
+}
+
+// RestartContribution closes the current cycle of a one-time
+// contribution and opens a fresh one with the same members and
+// settings. Used after a one-time goal is reached so the group can
+// keep saving toward a new target without losing the roster. Admin
+// only. ROSCA contributions auto-rotate via advancePayoutRotationCore
+// and don't go through this RPC.
+message RestartContributionRequest {
+  string contribution_id = 1;
+  // Optional new target for the next cycle. 0 keeps the existing
+  // target_amount.
+  uint64 new_target_amount = 2;
+  // Optional new deadline. Empty keeps the existing deadline.
+  google.protobuf.Timestamp new_deadline = 3;
+  string reason = 4;
+}
+
+message RestartContributionResponse {
+  ContributionMessage contribution = 1;
+  int32 cycles_completed = 2;
+  int32 new_current_cycle = 3;
 }
 
 // ContributionMessage = a single chat message in a per-contribution
@@ -1272,6 +1403,12 @@ service GroupAccountService {
     };
   }
 
+  rpc RemoveContributionShadow(RemoveContributionShadowRequest) returns (RemoveContributionShadowResponse) {
+    option (google.api.http) = {
+      delete: "/v1/contributions/{contribution_id}/shadow-members/{member_user_id}"
+    };
+  }
+
   rpc RemoveMemberFromContribution(RemoveMemberFromContributionRequest) returns (RemoveMemberFromContributionResponse) {
     option (google.api.http) = {
       delete: "/v1/contributions/{contribution_id}/members/{member_user_id}"
@@ -1393,6 +1530,33 @@ service GroupAccountService {
   rpc GenerateTranscript(GenerateTranscriptRequest) returns (GenerateTranscriptResponse) {
     option (google.api.http) = {
       post: "/v1/contributions/{contribution_id}/transcript"
+      body: "*"
+    };
+  }
+
+  // Cycle history. Each cycle of a contribution (ROSCA rotation or
+  // a one-time fresh-start) is frozen at close into
+  // contribution_cycles + contribution_cycle_members. These RPCs
+  // surface that frozen state to the Flutter cycle-history screen,
+  // the cycle-details bottom sheet, and the admin dashboard cycles
+  // tab. RestartContribution lets an admin close the current cycle
+  // of a one-time contribution and start a fresh one with the same
+  // members + settings (canonical "fresh start" path).
+  rpc ListContributionCycles(ListContributionCyclesRequest) returns (ListContributionCyclesResponse) {
+    option (google.api.http) = {
+      get: "/v1/contributions/{contribution_id}/cycles"
+    };
+  }
+
+  rpc GetContributionCycleDetails(GetContributionCycleDetailsRequest) returns (GetContributionCycleDetailsResponse) {
+    option (google.api.http) = {
+      get: "/v1/contributions/{contribution_id}/cycles/{cycle_index}"
+    };
+  }
+
+  rpc RestartContribution(RestartContributionRequest) returns (RestartContributionResponse) {
+    option (google.api.http) = {
+      post: "/v1/contributions/{contribution_id}/restart"
       body: "*"
     };
   }

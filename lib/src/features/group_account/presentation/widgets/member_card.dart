@@ -129,7 +129,7 @@ class MemberCard extends StatelessWidget {
                       _buildRoleBadge(member.role),
                       SizedBox(width: 8.w),
                       _buildStatusBadge(member.status),
-                      if (member.isPartial) ...[
+                      if (member.isPendingInvite) ...[
                         SizedBox(width: 8.w),
                         _buildInviteBadge(),
                       ],
@@ -305,7 +305,7 @@ class MemberCard extends StatelessWidget {
           ),
           SizedBox(width: 4.w),
           Text(
-            'Invited',
+            'Invite Sent',
             style: GoogleFonts.inter(
               fontSize: 10.sp,
               fontWeight: FontWeight.w600,

@@ -13,13 +13,14 @@ import '../../../../../core/types/app_routes.dart';
 import '../../domain/entities/group_entities.dart';
 import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
+import '../widgets/contribution_type_badge.dart';
 import '../widgets/payment_history_card.dart';
 import '../widgets/add_members_to_contribution_dialog.dart';
 import '../widgets/payout_receiver_banner.dart';
 import 'contribution_payment_confirmation_screen.dart';
 import '../widgets/contribution_chat_bottom_sheet.dart';
 import '../widgets/exit_contribution_bottom_sheet.dart';
-import 'contribution_history_screen.dart';
+import 'contribution_cycles_history_screen.dart';
 import 'edit_contribution_screen.dart';
 
 class ContributionDetailsScreen extends StatefulWidget {
@@ -73,9 +74,16 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
+    if (state == AppLifecycleState.resumed && mounted) {
       // Refresh payments when app resumes (e.g., returning from payment screen)
       _refreshPayments();
+      // Also re-sync group state so pending-invite shadow rows get
+      // promoted to active (or removed on decline/expire) without
+      // requiring a manual pull-to-refresh.
+      final groupId = _currentContribution?.groupId ?? widget.contribution?.groupId;
+      if (groupId != null && groupId.isNotEmpty) {
+        context.read<GroupAccountCubit>().loadGroupDetails(groupId);
+      }
     }
   }
 
@@ -330,6 +338,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
         // when tapped. Wraps to two rows on narrow screens.
         _buildStatusChipsRow(contribution, isCreator, isMember, isAdmin),
         if (contribution.hasExternalLinks) _buildExternalLinksSection(contribution),
+        SizedBox(height: 8.h),
         _buildTabBar(),
         Expanded(
           child: TabBarView(
@@ -694,60 +703,73 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
               size: 24.sp,
             ),
             color: const Color(0xFF1F1F1F),
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 'share',
-                child: Row(
-                  children: [
-                    Icon(Icons.share, color: Colors.white, size: 20.sp),
-                    SizedBox(width: 12.w),
-                    Text(
-                      'Share',
-                      style: GoogleFonts.inter(color: Colors.white),
-                    ),
-                  ],
+            itemBuilder: (context) {
+              // Edit is admin-only. The creator owns the contribution
+              // (contribution.createdBy) — server-side editContribution
+              // is also admin-gated, so this just keeps the affordance
+              // honest.
+              final currentUserId =
+                  context.read<GroupAccountCubit>().currentUserId;
+              final canEditContribution = currentUserId != null &&
+                  contribution.createdBy == currentUserId;
+              return [
+                PopupMenuItem(
+                  value: 'share',
+                  child: Row(
+                    children: [
+                      Icon(Icons.share, color: Colors.white, size: 20.sp),
+                      SizedBox(width: 12.w),
+                      Text(
+                        'Share',
+                        style: GoogleFonts.inter(color: Colors.white),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              PopupMenuItem(
-                value: 'edit',
-                child: Row(
-                  children: [
-                    Icon(Icons.edit, color: Colors.white, size: 20.sp),
-                    SizedBox(width: 12.w),
-                    Text(
-                      'Edit',
-                      style: GoogleFonts.inter(color: Colors.white),
+                if (canEditContribution)
+                  PopupMenuItem(
+                    value: 'edit',
+                    child: Row(
+                      children: [
+                        Icon(Icons.edit, color: Colors.white, size: 20.sp),
+                        SizedBox(width: 12.w),
+                        Text(
+                          'Edit',
+                          style: GoogleFonts.inter(color: Colors.white),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
+                PopupMenuItem(
+                  value: 'transcript',
+                  child: Row(
+                    children: [
+                      Icon(Icons.receipt_long,
+                          color: Colors.white, size: 20.sp),
+                      SizedBox(width: 12.w),
+                      Text(
+                        'Get Transcript',
+                        style: GoogleFonts.inter(color: Colors.white),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              PopupMenuItem(
-                value: 'transcript',
-                child: Row(
-                  children: [
-                    Icon(Icons.receipt_long, color: Colors.white, size: 20.sp),
-                    SizedBox(width: 12.w),
-                    Text(
-                      'Get Transcript',
-                      style: GoogleFonts.inter(color: Colors.white),
-                    ),
-                  ],
+                PopupMenuItem(
+                  value: 'history',
+                  child: Row(
+                    children: [
+                      Icon(Icons.timeline,
+                          color: Colors.white, size: 20.sp),
+                      SizedBox(width: 12.w),
+                      Text(
+                        'View Cycles History',
+                        style: GoogleFonts.inter(color: Colors.white),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              PopupMenuItem(
-                value: 'history',
-                child: Row(
-                  children: [
-                    Icon(Icons.history, color: Colors.white, size: 20.sp),
-                    SizedBox(width: 12.w),
-                    Text(
-                      'View history',
-                      style: GoogleFonts.inter(color: Colors.white),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+              ];
+            },
             onSelected: (value) => _handleMenuAction(value, contribution),
           ),
         ],
@@ -1163,6 +1185,15 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
               ),
             ),
           ),
+          SizedBox(height: 12.h),
+          // Type badge — surfaces ROSCA vs one-time at the top of the
+          // overview so the user knows which payout model this
+          // contribution follows. Width is intrinsic; the label
+          // ellipsis-clips inside the badge if the row is squeezed.
+          Align(
+            alignment: Alignment.centerLeft,
+            child: ContributionTypeBadge(type: contribution.type),
+          ),
         ],
       ),
     );
@@ -1196,6 +1227,13 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       return _buildEmptyPayments();
     }
 
+    // Only the payer should be able to drill into a payment's
+    // details (transaction id, status timeline, retry path, etc.).
+    // Other group members see the row but it isn't tappable — privacy
+    // boundary on what would otherwise leak transaction-level data.
+    final myUserId =
+        context.read<GroupAccountCubit>().currentUserId;
+
     return RefreshIndicator(
       onRefresh: _refreshPayments,
       backgroundColor: const Color(0xFF1F1F1F),
@@ -1205,11 +1243,13 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
         itemCount: allPayments.length,
         itemBuilder: (context, index) {
           final payment = allPayments[index];
+          final isMine =
+              myUserId != null && payment.userId == myUserId;
           return Padding(
             padding: EdgeInsets.only(bottom: 12.h),
             child: PaymentHistoryCard(
               payment: payment,
-              onTap: () => _showPaymentDetails(payment),
+              onTap: isMine ? () => _showPaymentDetails(payment) : null,
             ),
           );
         },
@@ -1252,8 +1292,16 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       userPayments.putIfAbsent(payment.userId, () => []).add(payment);
     }
 
-    // Get all contribution members (assigned members).
-    final contributionMembers = contribution.members;
+    // Get all contribution members (assigned members). Declined
+    // shadow rows are kept server-side for audit but hidden from the
+    // default roster view — re-adding the user via the add-members
+    // sheet auto-clears the declined shadow first (cubit pre-clears
+    // before AddMembersToContribution), so a fresh invite re-issues
+    // cleanly without the user noticing the prior decline.
+    final contributionMembers = contribution.members
+        .where((m) =>
+            m.membershipStatus != ContributionMembershipStatus.declined)
+        .toList();
     final hasMembers = contributionMembers.isNotEmpty || userPayments.isNotEmpty;
 
     // ContributionMember doesn't carry user_username — that field
@@ -1461,6 +1509,10 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     // legitimately be true when expected is later set, but if
     // totalPaid == 0 we know nothing has actually moved.
     final showCurrentCycle = hasPaidCurrentCycle && totalPaid > 0;
+    // Pending invite shadow rows: show "Invite Sent" instead of any
+    // paid/current pill, since payment progress is meaningless until
+    // the invite is accepted.
+    final isPendingInvite = member?.isPendingInvite ?? false;
 
     return GestureDetector(
       onTap: () => _showMemberDetails(
@@ -1519,7 +1571,35 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (isPaid) ...[
+                      if (isPendingInvite) ...[
+                        SizedBox(width: 8.w),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 6.w, vertical: 2.h),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFB923C)
+                                .withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(4.r),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.mail_outline,
+                                  size: 10.sp,
+                                  color: const Color(0xFFFB923C)),
+                              SizedBox(width: 3.w),
+                              Text(
+                                'Invite Sent',
+                                style: GoogleFonts.inter(
+                                  fontSize: 10.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFFFB923C),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ] else if (isPaid) ...[
                         SizedBox(width: 8.w),
                         Container(
                           padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
@@ -1866,15 +1946,15 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
         _openTranscriptSheet(contribution);
         break;
       case 'history':
-        // Wrap with BlocProvider.value so the history screen can read
-        // the same GroupAccountCubit instance for cycle metadata + the
-        // payments use case. Without this, Get.to would push onto a
-        // separate Navigator without inherited providers.
+        // Wrap with BlocProvider.value so the cycles screen and any
+        // bottom sheets it opens read the same GroupAccountCubit
+        // instance (cycle list + per-cycle details RPCs).
         final histCubit = context.read<GroupAccountCubit>();
         Get.to(
           () => BlocProvider<GroupAccountCubit>.value(
             value: histCubit,
-            child: ContributionHistoryScreen(contribution: contribution),
+            child: ContributionCyclesHistoryScreen(
+                contribution: contribution),
           ),
         );
         break;

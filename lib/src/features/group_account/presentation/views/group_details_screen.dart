@@ -35,7 +35,7 @@ class GroupDetailsScreen extends StatefulWidget {
 }
 
 class _GroupDetailsScreenState extends State<GroupDetailsScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late TabController _tabController;
   bool _isLeavingGroup = false;
   final ScrollController _membersScrollController = ScrollController();
@@ -47,6 +47,7 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    WidgetsBinding.instance.addObserver(this);
 
     // Load group details if not already loaded
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -56,10 +57,23 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _tabController.dispose();
     _membersScrollController.dispose();
     _scrollToMembersBottomDebounce?.cancel();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // Foreground-resume refresh: when the user comes back to the
+    // group screen (typical flow: tap push notif → accept invite →
+    // return to inviter app), silently re-sync so pending-invite
+    // shadow rows promote to active without manual pull-to-refresh.
+    if (state == AppLifecycleState.resumed && mounted) {
+      context.read<GroupAccountCubit>().loadGroupDetails(widget.groupId);
+    }
   }
 
   /// After a successful member add, jump to the bottom of the members
@@ -613,8 +627,15 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
             itemBuilder: (context) {
               final currentUserId = context.read<GroupAccountCubit>().currentUserId;
               final currentMember = currentUserId != null ? group.getMember(currentUserId) : null;
-              final canEditGroup = GroupRolePermissions.canMember(
-                  currentMember, GroupAction.editGroup);
+              // Edit is admin-only — moderators can manage members but
+              // can't reshape the group itself. Identify admin via the
+              // creator id (group.adminId) plus the role table; either
+              // signal qualifies.
+              final isAdmin = currentMember != null &&
+                  currentMember.status == GroupMemberStatus.active &&
+                  (currentMember.role == GroupMemberRole.admin ||
+                      currentMember.userId == group.adminId);
+              final canEditGroup = isAdmin;
               // Only an actual ACTIVE member can leave; the original
               // admin cannot leave their own group (they must transfer
               // admin first or delete the group). Pending/removed
@@ -1488,6 +1509,54 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
         contributions: contributions,
         onChangeRole: () => _showChangeRoleDialog(member, group),
         onRemoveMember: () => _showRemoveMemberConfirmation(member, group),
+        onCancelInvite: () => _confirmCancelInvite(member),
+      ),
+    );
+  }
+
+  /// Confirms admin intent before pulling a pending group invite.
+  /// The cubit fans out cancelGroupInvite + a foreground refresh so
+  /// the shadow row disappears from the members list immediately.
+  void _confirmCancelInvite(GroupMember member) {
+    final invitationId = member.linkedInvitationId;
+    if (invitationId == null) return;
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        title: Text('Cancel invite?',
+            style: GoogleFonts.inter(color: Colors.white)),
+        content: Text(
+          'The pending invitation will be revoked. The user can be re-invited later.',
+          style: GoogleFonts.inter(color: Colors.grey[400], fontSize: 13.sp),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text('Keep Invite',
+                style: GoogleFonts.inter(color: Colors.grey[400])),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.of(dialogContext).pop();
+              await context
+                  .read<GroupAccountCubit>()
+                  .cancelInvitation(invitationId);
+              if (!mounted) return;
+              context
+                  .read<GroupAccountCubit>()
+                  .loadGroupDetails(widget.groupId);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Cancel Invite'),
+          ),
+        ],
       ),
     );
   }

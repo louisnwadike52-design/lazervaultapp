@@ -136,11 +136,15 @@ class PaymentHistoryCard extends StatelessWidget {
                     color: Colors.grey[500],
                   ),
                   SizedBox(width: 4.w),
-                  Text(
-                    'ID: ${payment.transactionId}',
-                    style: GoogleFonts.inter(
-                      fontSize: 10.sp,
-                      color: Colors.grey[500],
+                  Expanded(
+                    child: Text(
+                      'ID: ${payment.transactionId}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontSize: 10.sp,
+                        color: Colors.grey[500],
+                      ),
                     ),
                   ),
                 ],

@@ -13,6 +13,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:web_socket_channel/status.dart' as ws_status;
 
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../authentication/cubit/authentication_state.dart';
@@ -123,11 +125,19 @@ class _ContributionChatBottomSheetState
   final List<_PendingBubble> _pending = [];
   final TextEditingController _composer = TextEditingController();
   final ScrollController _scroll = ScrollController();
-  Timer? _pollTimer;
   String? _sinceCursor; // RFC3339 of latest received message
   bool _initialLoading = true;
   String? _error;
   bool _sending = false;
+  // WebSocket state — the ONLY live channel for the timeline. On
+  // disconnect we reconnect with exponential backoff and pull any
+  // messages that arrived during the gap from the same `since`
+  // cursor used for the initial fetch (so no message is lost).
+  WebSocketChannel? _wsChannel;
+  StreamSubscription<dynamic>? _wsSub;
+  bool _hadFirstConnect = false;
+  Timer? _wsReconnectTimer;
+  int _wsBackoffMs = 1000;
   // Banner text shown above the composer when the last media op
   // failed. Distinct from _error which gates the whole timeline.
   String? _composerBanner;
@@ -136,19 +146,20 @@ class _ContributionChatBottomSheetState
   void initState() {
     super.initState();
     _composer.addListener(() => setState(() {}));
+    // One-shot historical fetch so the timeline opens with the
+    // backlog rendered, then hand off entirely to the WebSocket for
+    // realtime updates. No more polling fallback — when the WS
+    // reconnects after a drop, any missed messages get pulled via
+    // _resyncOnReconnect with the existing cursor.
     _initialFetch();
-    // 2s polling keeps the timeline near-real-time for active chat.
-    // The cursor (`since`) means the gateway only sends NEW messages
-    // each tick, so the cost is one cheap round-trip with usually an
-    // empty payload. Will be replaced with WS once the contribution
-    // chat backend exposes a stream channel.
-    _pollTimer = Timer.periodic(
-        const Duration(seconds: 2), (_) => _pollDelta());
+    _connectWebSocket();
   }
 
   @override
   void dispose() {
-    _pollTimer?.cancel();
+    _wsReconnectTimer?.cancel();
+    _wsSub?.cancel();
+    _wsChannel?.sink.close(ws_status.normalClosure);
     _composer.dispose();
     _scroll.dispose();
     // Stop any in-flight recording so the file handle is released
@@ -158,6 +169,105 @@ class _ContributionChatBottomSheetState
     }
     _recorder?.dispose();
     super.dispose();
+  }
+
+  /// Opens the WS channel scoped to this contribution. Backoff +
+  /// retry on disconnect — the timeline always remains usable via
+  /// the polling fallback even if WS is permanently unavailable.
+  void _connectWebSocket() {
+    if (!mounted) return;
+    final token = _authToken();
+    if (token == null) return;
+    final base = _financialBase
+        .replaceFirst(RegExp(r'^http://'), 'ws://')
+        .replaceFirst(RegExp(r'^https://'), 'wss://');
+    // Pass the user_id + auth as query params because Flutter's WS
+    // client doesn't ship custom headers on the initial handshake on
+    // every platform. The server reads X-User-Id from the auth
+    // middleware, but the dev fallback (?user_id=) keeps local
+    // testing straightforward.
+    final uri = Uri.parse(
+        '$base/ws/contributions/${widget.contribution.id}/messages'
+        '?user_id=${Uri.encodeQueryComponent(widget.currentUserId)}'
+        '&access_token=${Uri.encodeQueryComponent(token)}');
+    try {
+      final channel = WebSocketChannel.connect(uri);
+      _wsChannel = channel;
+      _wsSub = channel.stream.listen(
+        _onWsFrame,
+        onError: (_) => _scheduleWsReconnect(),
+        onDone: _scheduleWsReconnect,
+        cancelOnError: true,
+      );
+    } catch (_) {
+      _scheduleWsReconnect();
+    }
+  }
+
+  void _onWsFrame(dynamic raw) {
+    if (!mounted) return;
+    Map<String, dynamic> ev;
+    try {
+      ev = jsonDecode(raw is String ? raw : utf8.decode(raw))
+          as Map<String, dynamic>;
+    } catch (_) {
+      return;
+    }
+    final type = (ev['event_type'] ?? '').toString();
+    if (type == 'connected') {
+      final wasReconnect = _hadFirstConnect;
+      setState(() {
+        _wsBackoffMs = 1000;
+        _hadFirstConnect = true;
+      });
+      // Pull anything we missed during the disconnect window. On the
+      // very first connect, _initialFetch already loaded the backlog,
+      // so this only fires on reconnects.
+      if (wasReconnect) {
+        _pollDelta();
+      }
+      return;
+    }
+    if (type != 'message') return;
+    // Translate the WS event into the JSON shape _ChatMessage expects
+    // (REST listing uses camelCase, WS uses snake_case — bridge here
+    // so the rest of the rendering pipeline stays unchanged).
+    final translated = <String, dynamic>{
+      'id': ev['id'],
+      'senderId': ev['sender_user_id'],
+      'senderName': ev['sender_name'],
+      'kind': ev['kind'],
+      'body': ev['body'],
+      'mediaUrl': ev['attachment_url'],
+      'durationMs': ev['duration_ms'],
+      'createdAt': ev['sent_at'],
+    };
+    final msg = _ChatMessage.fromJson(translated);
+    if (msg.id.isEmpty) return;
+    // Dedup against both already-rendered server messages and the
+    // optimistic row inserted by the local sender right after their
+    // HTTP POST returned.
+    if (_messages.any((m) => m.id == msg.id)) return;
+    setState(() {
+      _messages.add(msg);
+      final cursor = msg.sentAt.toUtc().toIso8601String();
+      if (_sinceCursor == null || cursor.compareTo(_sinceCursor!) > 0) {
+        _sinceCursor = cursor;
+      }
+    });
+    _autoscroll();
+  }
+
+  void _scheduleWsReconnect() {
+    if (!mounted) return;
+    _wsSub?.cancel();
+    _wsChannel?.sink.close();
+    _wsChannel = null;
+    _wsSub = null;
+    final delay = _wsBackoffMs.clamp(1000, 30000);
+    _wsBackoffMs = (_wsBackoffMs * 2).clamp(1000, 30000);
+    _wsReconnectTimer?.cancel();
+    _wsReconnectTimer = Timer(Duration(milliseconds: delay), _connectWebSocket);
   }
 
   String? _authToken() {

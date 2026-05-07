@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/group_entities.dart';
+import 'contribution_type_badge.dart';
 
 class ContributionCard extends StatelessWidget {
   final Contribution contribution;
@@ -66,6 +67,15 @@ class ContributionCard extends StatelessWidget {
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
+                      ),
+                      SizedBox(height: 8.h),
+                      // Surface the contribution type so a glance at
+                      // the list distinguishes rotating-savings cycles
+                      // from one-time goals — they have different
+                      // payout semantics.
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: ContributionTypeBadge(type: contribution.type),
                       ),
                     ],
                   ),

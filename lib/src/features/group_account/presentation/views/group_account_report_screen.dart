@@ -5,7 +5,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
-import '../widgets/share_group_report_bottom_sheet.dart';
 
 /// Screen displaying AI-generated group account report with swipeable cards
 class GroupAccountReportScreen extends StatelessWidget {
@@ -118,9 +117,17 @@ class _GroupAccountReportContentState extends State<_GroupAccountReportContent> 
             return _LoadingView(message: state.message);
           }
 
-          if (state is GroupAccountError) {
+          // The cubit emits GroupAccountReportShareError on report
+          // generation failure (not GroupAccountError). Without this
+          // branch the screen stays stuck on the "Preparing report..."
+          // fallback while the snackbar shows the error.
+          if (state is GroupAccountError ||
+              state is GroupAccountReportShareError) {
+            final errorMessage = state is GroupAccountError
+                ? state.message
+                : (state as GroupAccountReportShareError).message;
             return _ErrorView(
-              message: state.message,
+              message: errorMessage,
               onRetry: () => context.read<GroupAccountCubit>().generateReport(
                     group: widget.group,
                     contributions: widget.contributions,
@@ -142,7 +149,7 @@ class _GroupAccountReportContentState extends State<_GroupAccountReportContent> 
                 HapticFeedback.lightImpact();
                 setState(() => _currentPage = index);
               },
-              onShare: () => _showShareSheet(context, state.report),
+              onShare: () => _shareReport(context, state.report),
               onCopy: () => _copyToClipboard(context, state.report),
               onClose: () => Navigator.of(context).pop(),
             );
@@ -155,15 +162,15 @@ class _GroupAccountReportContentState extends State<_GroupAccountReportContent> 
     );
   }
 
-  void _showShareSheet(BuildContext context, GroupAccountReport report) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => ShareGroupReportBottomSheet(
-        report: report,
-        groupUrl: widget.groupUrl,
-      ),
-    );
+  void _shareReport(BuildContext context, GroupAccountReport report) {
+    // Hand the report to the OS share sheet as a PDF attachment so the
+    // user can route it through any installed app. Replaces the legacy
+    // platform-specific share buttons (WhatsApp/Facebook/Telegram/X).
+    context.read<GroupAccountCubit>().shareReportAsFile(
+          report,
+          groupUrl: widget.groupUrl,
+          groupName: widget.group.name,
+        );
   }
 
   void _copyToClipboard(BuildContext context, GroupAccountReport report) {
@@ -190,39 +197,51 @@ class _LoadingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color.fromARGB(255, 78, 3, 208), Color.fromARGB(255, 78, 3, 208)],
+    // SizedBox.expand forces the gradient backdrop to fill the screen.
+    // A bare Container with only a decoration sizes to its child, which
+    // produced the half-width purple bug (gradient only painted behind
+    // the centered Column).
+    return SizedBox.expand(
+      child: DecoratedBox(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color.fromARGB(255, 78, 3, 208),
+              Color.fromARGB(255, 78, 3, 208),
+            ],
+          ),
         ),
-      ),
-      child: SafeArea(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-            ),
-            SizedBox(height: 24.h),
-            Text(
-              message ?? 'Generating AI report...',
-              style: GoogleFonts.inter(
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w500,
-                color: Colors.white,
+        child: SafeArea(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
               ),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              'This may take a moment',
-              style: GoogleFonts.inter(
-                color: Colors.white.withValues(alpha: 0.7),
-                fontSize: 13.sp,
+              SizedBox(height: 24.h),
+              Text(
+                message ?? 'Generating AI report...',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white,
+                ),
               ),
-            ),
-          ],
+              SizedBox(height: 8.h),
+              Text(
+                'This may take a moment',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  color: Colors.white.withValues(alpha: 0.7),
+                  fontSize: 13.sp,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -242,14 +261,15 @@ class _ErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xFF0A0A0A),
-      child: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.all(24.w),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
+    return SizedBox.expand(
+      child: ColoredBox(
+        color: const Color(0xFF0A0A0A),
+        child: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.all(24.w),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
               const Icon(
                 Icons.error_outline,
                 size: 64,
@@ -305,7 +325,8 @@ class _ErrorView extends StatelessWidget {
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 }
 

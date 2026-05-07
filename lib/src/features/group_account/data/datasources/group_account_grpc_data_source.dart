@@ -516,6 +516,140 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
   }
 
   @override
+  Future<int> removeContributionShadow({
+    required String contributionId,
+    required String userId,
+  }) async {
+    try {
+      final request = pb.RemoveContributionShadowRequest()
+        ..contributionId = contributionId
+        ..memberUserId = userId;
+
+      final callOptions = await _callOptionsHelper.withAuth();
+      final resp = await _client.removeContributionShadow(request,
+          options: callOptions);
+      return resp.removedCount;
+    } on GrpcError catch (e) {
+      throw Exception(friendlyGrpcError(e, 'Failed to clear declined invite'));
+    }
+  }
+
+  @override
+  Future<({List<ContributionCycle> cycles, int total})> listContributionCycles({
+    required String contributionId,
+    bool includeInProgress = true,
+    int page = 1,
+    int pageSize = 50,
+  }) async {
+    try {
+      final request = pb.ListContributionCyclesRequest()
+        ..contributionId = contributionId
+        ..includeInProgress = includeInProgress
+        ..page = page
+        ..pageSize = pageSize;
+      final callOptions = await _callOptionsHelper.withAuth();
+      final resp = await _client.listContributionCycles(request,
+          options: callOptions);
+      final cycles = resp.cycles.map(_mapCycleSummaryFromProto).toList();
+      return (cycles: cycles, total: resp.totalCount);
+    } on GrpcError catch (e) {
+      throw Exception(friendlyGrpcError(e, 'Failed to load cycles'));
+    }
+  }
+
+  @override
+  Future<ContributionCycleDetails> getContributionCycleDetails({
+    required String contributionId,
+    int cycleIndex = 0,
+  }) async {
+    try {
+      final request = pb.GetContributionCycleDetailsRequest()
+        ..contributionId = contributionId
+        ..cycleIndex = cycleIndex;
+      final callOptions = await _callOptionsHelper.withAuth();
+      final resp = await _client.getContributionCycleDetails(request,
+          options: callOptions);
+      final d = resp.details;
+      return ContributionCycleDetails(
+        summary: _mapCycleSummaryFromProto(d.summary),
+        members:
+            d.members.map(_mapCycleMemberSnapshotFromProto).toList(),
+        payments: d.payments.map((p) => _mapPaymentFromProto(p)).toList(),
+      );
+    } on GrpcError catch (e) {
+      throw Exception(friendlyGrpcError(e, 'Failed to load cycle details'));
+    }
+  }
+
+  @override
+  Future<Contribution> restartContribution({
+    required String contributionId,
+    double? newTargetAmount,
+    DateTime? newDeadline,
+    String reason = '',
+  }) async {
+    try {
+      final request = pb.RestartContributionRequest()
+        ..contributionId = contributionId
+        ..reason = reason;
+      if (newTargetAmount != null && newTargetAmount > 0) {
+        request.newTargetAmount = _amountToInt64(newTargetAmount);
+      }
+      if (newDeadline != null) {
+        request.newDeadline = $pb_timestamp.Timestamp.fromDateTime(newDeadline.toUtc());
+      }
+      final callOptions = await _callOptionsHelper.withAuth();
+      final resp = await _client.restartContribution(request,
+          options: callOptions);
+      return _mapContributionFromProto(resp.contribution);
+    } on GrpcError catch (e) {
+      throw Exception(friendlyGrpcError(e, 'Failed to restart contribution'));
+    }
+  }
+
+  ContributionCycle _mapCycleSummaryFromProto(
+      pb.ContributionCycleSummary s) {
+    return ContributionCycle(
+      id: s.id,
+      contributionId: s.contributionId,
+      cycleIndex: s.cycleIndex,
+      status: contributionCycleStatusFromString(s.status),
+      startedAt: _timestampToDateTime(s.startedAt),
+      endedAt: s.hasEndedAt() ? _timestampToDateTime(s.endedAt) : null,
+      targetAmount: _int64ToAmount(s.targetAmount),
+      raisedAmount: _int64ToAmount(s.raisedAmount),
+      deficitAmount: _int64ToAmount(s.deficitAmount),
+      payoutTransactionId:
+          s.payoutTransactionId.isNotEmpty ? s.payoutTransactionId : null,
+      receiverUserId:
+          s.receiverUserId.isNotEmpty ? s.receiverUserId : null,
+      receiverName: s.receiverName,
+      paymentCount: s.paymentCount,
+      membersCount: s.membersCount,
+      pendingMembersCount: s.pendingMembersCount,
+      partialMembersCount: s.partialMembersCount,
+      closeReason: s.closeReason,
+      currency: s.currency,
+    );
+  }
+
+  ContributionCycleMemberSnapshot _mapCycleMemberSnapshotFromProto(
+      pb.ContributionCycleMemberSnapshot m) {
+    return ContributionCycleMemberSnapshot(
+      userId: m.userId,
+      userName: m.userName,
+      email: m.email,
+      expectedAmount: _int64ToAmount(m.expectedAmount),
+      paidAmount: _int64ToAmount(m.paidAmount),
+      hasPaid: m.hasPaid,
+      wasReceiver: m.wasReceiver,
+      missedCyclesAtClose: m.missedCyclesAtClose,
+      statusAtClose: m.statusAtClose,
+      joinedAt: m.hasJoinedAt() ? _timestampToDateTime(m.joinedAt) : null,
+    );
+  }
+
+  @override
   Future<MemberExitPreview> previewMemberExit({
     required String contributionId,
     required String userId,
@@ -959,6 +1093,15 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
   }
 
   GroupMemberModel _mapMemberFromProto(pb.GroupMemberMessage member) {
+    // The server returns pending invitees as shadow rows with
+    // status=inactive + is_partial=true (no GROUP_MEMBER_STATUS_PENDING
+    // proto value yet — would need a regen). Translate that combination
+    // into the Flutter-side `pending` status so UI gates like
+    // `isPendingInvite` light up without a proto change.
+    var status = _mapMemberStatusFromProto(member.status);
+    if (member.isPartial && status == GroupMemberStatus.inactive) {
+      status = GroupMemberStatus.pending;
+    }
     return GroupMemberModel(
       id: member.id,
       userId: member.userId,
@@ -967,7 +1110,7 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       profileImage: member.profileImage.isNotEmpty ? member.profileImage : null,
       role: _mapRoleFromProto(member.role),
       joinedAt: _timestampToDateTime(member.joinedAt),
-      status: _mapMemberStatusFromProto(member.status),
+      status: status,
       phoneNumber: member.phoneNumber.isNotEmpty ? member.phoneNumber : null,
       isPartial: member.isPartial,
       userUsername: member.userUsername.isNotEmpty ? member.userUsername : null,
@@ -1299,6 +1442,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
         return GroupMemberStatus.inactive;
       case pb_enum.GroupMemberStatus.GROUP_MEMBER_STATUS_REMOVED:
         return GroupMemberStatus.removed;
+      case pb_enum.GroupMemberStatus.GROUP_MEMBER_STATUS_PENDING:
+        return GroupMemberStatus.pending;
       default:
         return GroupMemberStatus.active;
     }

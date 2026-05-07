@@ -275,6 +275,13 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
       ),
       child: TabBar(
         controller: _tabController,
+        // Four icon+label tabs ("My Groups", "Discover", "Invites",
+        // "Leaderboard") don't fit on narrow phones at equal width —
+        // "Leaderboard" overflows. Scroll the strip horizontally with
+        // breathing room between tabs so every label is reachable on
+        // any device width.
+        isScrollable: true,
+        tabAlignment: TabAlignment.start,
         indicatorSize: TabBarIndicatorSize.tab,
         indicator: BoxDecoration(
           color: const Color.fromARGB(255, 78, 3, 208),
@@ -291,7 +298,7 @@ class _GroupAccountListScreenState extends State<GroupAccountListScreen>
           fontWeight: FontWeight.w400,
         ),
         dividerColor: Colors.transparent,
-        labelPadding: EdgeInsets.zero,
+        labelPadding: EdgeInsets.symmetric(horizontal: 14.w),
         tabs: [
           Tab(
             child: Row(
