@@ -637,6 +637,29 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
     return 12;
   }
 
+  /// Source of the resolved total-cycles value. Drives the Review
+  /// page copy so the operator sees whether they explicitly chose the
+  /// number of cycles or whether the server-side default kicked in.
+  /// Mirrors the server's resolution chain in
+  /// group_account_service.go:790–814.
+  _TotalCyclesSource _resolvedTotalCyclesSource() {
+    final manual = int.tryParse(_totalCyclesController.text);
+    if (manual != null && manual > 0) return _TotalCyclesSource.manual;
+    if (_rotationOrder.isNotEmpty) return _TotalCyclesSource.fromRotation;
+    return _TotalCyclesSource.industryDefault;
+  }
+
+  /// Lifetime rotation-end date based on the EXACT values the create
+  /// RPC will see (resolved start + resolved total_cycles + frequency).
+  /// Returns null if frequency is unset, since the calculation is
+  /// undefined without a cycle period.
+  DateTime? _resolvedRotationEnd() {
+    final freq = _selectedFrequency;
+    if (freq == null) return null;
+    return _addFrequency(
+        _resolvedStartDate(), freq, _resolvedTotalCycles());
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -1625,16 +1648,32 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
               _ReviewItem(
                 'Total Cycles',
                 () {
-                  final manual = int.tryParse(_totalCyclesController.text);
-                  if (manual != null && manual > 0) {
-                    return manual.toString();
-                  }
+                  final src = _resolvedTotalCyclesSource();
                   final resolved = _resolvedTotalCycles();
-                  if (_rotationOrder.isNotEmpty &&
-                      resolved == _rotationOrder.length) {
-                    return '$resolved (one cycle per member, auto-applied)';
+                  switch (src) {
+                    case _TotalCyclesSource.manual:
+                      return resolved.toString();
+                    case _TotalCyclesSource.fromRotation:
+                      return '$resolved (one cycle per member, auto-applied)';
+                    case _TotalCyclesSource.industryDefault:
+                      return '$resolved (industry default, auto-applied)';
                   }
-                  return '$resolved (industry default, auto-applied)';
+                }(),
+              ),
+              // Rotation Ends derived from the EXACT values the create
+              // RPC will see (resolved start + resolved cycles +
+              // frequency). Lives here on the Review slide rather than
+              // on the Details slide so it reflects the final cycle
+              // count even when the operator didn't fill in
+              // total_cycles. If frequency hasn't been picked yet the
+              // calculation is undefined; surface that state instead
+              // of guessing.
+              _ReviewItem(
+                'Rotation Ends',
+                () {
+                  final end = _resolvedRotationEnd();
+                  if (end == null) return 'Set a payment frequency';
+                  return DateFormat('MMM dd, yyyy').format(end);
                 }(),
               ),
               if (_rotationOrder.isNotEmpty)
@@ -1824,22 +1863,6 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
     return _addFrequency(start, freq, 1);
   }
 
-  /// Lifetime end = start + total_cycles × frequency. Used for preview
-  /// copy ("rotation finishes ..."), NOT for the create RPC's deadline.
-  DateTime? _computeRoscaLifetimeEnd() {
-    if (_selectedType != ContributionType.rotatingSavings) return null;
-    final freq = _selectedFrequency;
-    if (freq == null) return null;
-    final start = _selectedStartDate ?? DateTime.now();
-    final cyclesText = _totalCyclesController.text.trim();
-    int cycles = int.tryParse(cyclesText) ?? 0;
-    if (cycles <= 0) {
-      cycles = _rotationOrder.length;
-    }
-    if (cycles <= 0) return null;
-    return _addFrequency(start, freq, cycles);
-  }
-
   // Backwards-compat alias kept for existing call sites.
   DateTime? _computeRoscaDeadline() => _computeRoscaCycleOneDeadline();
 
@@ -1862,7 +1885,6 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
 
   Widget _buildRoscaDeadlinePreview() {
     final cycleOne = _computeRoscaCycleOneDeadline();
-    final lifetime = _computeRoscaLifetimeEnd();
     String body;
     if (cycleOne == null) {
       body =
@@ -1873,12 +1895,14 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
       final startLabel = _selectedStartDate != null
           ? DateFormat('MMM dd').format(_selectedStartDate!)
           : 'today';
+      // Cycle 1 only on this slide; the lifetime end ("Rotation Ends")
+      // moves to the Review slide where the operator confirms the
+      // resolved start_date + total_cycles values that will be
+      // persisted. Showing it here would imply a single deadline for
+      // the whole contribution, which is misleading once the user
+      // hasn't yet entered total_cycles on the Schedule step.
       body =
           'Cycle 1 ends $cycleOneStr (one $freqLabel from $startLabel). Each subsequent cycle ends one $freqLabel later.';
-      if (lifetime != null && lifetime != cycleOne) {
-        body +=
-            ' Rotation finishes ${DateFormat('MMM dd, yyyy').format(lifetime)}.';
-      }
     }
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
@@ -2968,6 +2992,11 @@ class _ReviewItem {
   final String value;
   const _ReviewItem(this.label, this.value);
 }
+
+/// Where the resolved total_cycles came from. Drives review-page
+/// disclosure copy so the operator knows whether they explicitly set
+/// the cycle count or whether a fallback kicked in.
+enum _TotalCyclesSource { manual, fromRotation, industryDefault }
 
 /// Add member sheet for contribution creation flow with search-on-type
 /// Uses the same user search service as TagPay and Transfer flows
