@@ -270,7 +270,7 @@ class _SelectPayoutReceiverBottomSheetState
                       GoogleFonts.inter(color: Colors.white, fontSize: 14.sp),
                   maxLength: 200,
                   decoration: InputDecoration(
-                    hintText: 'Note (optional) — visible to admins',
+                    hintText: 'Note (optional). Visible to admins',
                     hintStyle: GoogleFonts.inter(
                       color: Colors.grey[600],
                       fontSize: 13.sp,

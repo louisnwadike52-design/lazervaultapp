@@ -17,6 +17,8 @@ import '../widgets/payment_history_card.dart';
 import '../widgets/add_members_to_contribution_dialog.dart';
 import '../widgets/payout_receiver_banner.dart';
 import 'contribution_payment_confirmation_screen.dart';
+import '../widgets/contribution_chat_bottom_sheet.dart';
+import 'contribution_history_screen.dart';
 import 'edit_contribution_screen.dart';
 
 class ContributionDetailsScreen extends StatefulWidget {
@@ -316,15 +318,13 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           // without the user pulling-to-refresh.
           onStateChanged: _loadContributionDetails,
         ),
-        // Auto-debit notice: surfaced whenever auto_pay_enabled is on, so
-        // every member sees up-front that the worker WILL pull funds if
-        // they don't pay manually before the deadline / cycle close.
-        // Cleared once the user has paid for the current cycle (the
-        // worker also skips them via HasPaidCurrentCycle on the backend
-        // so there is no double-charge — see overdue_scheduler.go:590).
-        if (contribution.autoPayEnabled) _buildAutoDebitBanner(contribution),
+        // Status chips row: auto-debit + role rendered side-by-side.
+        // Each chip is borderless, uses elevation, and opens a styled
+        // dialog with the full detail when tapped. Reduces vertical
+        // space at the top of the screen so the tab bar lands within
+        // the viewport on standard phones.
+        _buildStatusChipsRow(contribution, isCreator, isMember),
         if (contribution.hasExternalLinks) _buildExternalLinksSection(contribution),
-        _buildUserPermissionsBanner(contribution, isCreator, isMember),
         _buildTabBar(),
         Expanded(
           child: TabBarView(
@@ -340,125 +340,151 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     );
   }
 
-  Widget _buildUserPermissionsBanner(Contribution contribution, bool isCreator, bool isMember) {
-    // Determine user's role in this contribution
-    String roleLabel;
-    Color roleColor;
-    IconData roleIcon;
-    List<String> permissions;
+  /// Renders the auto-debit + role chips side-by-side. Each chip is a
+  /// borderless elevated tile that opens a detail dialog on tap. When
+  /// auto-debit is off, the role chip takes the full width.
+  Widget _buildStatusChipsRow(Contribution contribution, bool isCreator, bool isMember) {
+    final cubit = context.read<GroupAccountCubit>();
+    final currentUserId = cubit.currentUserId;
+    final me = currentUserId == null
+        ? null
+        : contribution.members
+            .where((m) => m.userId == currentUserId)
+            .cast<ContributionMember?>()
+            .firstOrNull;
 
-    if (isCreator) {
-      roleLabel = 'Creator';
-      roleColor = const Color(0xFFEF4444); // Red
-      roleIcon = Icons.star;
-      permissions = [
-        'Edit contribution',
-        'Add members',
-        'View all payments',
-        'Delete contribution',
-      ];
-    } else if (isMember) {
-      roleLabel = 'Member';
-      roleColor = const Color(0xFF10B981); // Green
-      roleIcon = Icons.person;
-      permissions = [
-        'Make payments',
-        'View payments',
-        'Download receipts',
-      ];
-    } else {
-      roleLabel = 'Viewer';
-      roleColor = const Color(0xFF3B82F6); // Blue
-      roleIcon = Icons.visibility;
-      permissions = [
-        'View contribution',
-        'Request to join',
-      ];
+    // Auto-debit visibility mirrors _buildAutoDebitBanner's gates:
+    // contribution must have auto_pay enabled AND the current user
+    // must actually be a contribution member (group admins viewing
+    // shouldn't see "you'll be charged" copy).
+    final showAutoDebit = contribution.autoPayEnabled && me != null;
+
+    final roleChip = _StatusChip(
+      icon: _roleIcon(isCreator, isMember),
+      iconColor: _roleColor(isCreator, isMember),
+      label: 'Role',
+      value: _roleLabel(isCreator, isMember),
+      onTap: () => _showRoleDialog(contribution, isCreator, isMember),
+    );
+
+    if (!showAutoDebit) {
+      return Padding(
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
+        child: roleChip,
+      );
     }
 
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-      padding: EdgeInsets.all(12.w),
-      decoration: BoxDecoration(
-        color: roleColor.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: roleColor.withValues(alpha: 0.3),
-          width: 1,
-        ),
-      ),
+    final hasPaid = me.hasPaidCurrentCycle;
+    final autoDebitChip = _StatusChip(
+      icon: hasPaid ? Icons.check_circle : Icons.bolt,
+      iconColor: hasPaid ? const Color(0xFF10B981) : const Color(0xFFFB923C),
+      label: 'Auto-debit',
+      value: hasPaid ? 'Covered' : 'On',
+      onTap: () => _showAutoDebitDialog(contribution, hasPaid: hasPaid),
+    );
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
       child: Row(
         children: [
-          Container(
-            padding: EdgeInsets.all(8.w),
-            decoration: BoxDecoration(
-              color: roleColor.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(8.r),
-            ),
-            child: Icon(
-              roleIcon,
-              color: roleColor,
-              size: 18.sp,
-            ),
+          Expanded(child: autoDebitChip),
+          SizedBox(width: 10.w),
+          Expanded(child: roleChip),
+        ],
+      ),
+    );
+  }
+
+  String _roleLabel(bool isCreator, bool isMember) =>
+      isCreator ? 'Creator' : isMember ? 'Member' : 'Viewer';
+
+  Color _roleColor(bool isCreator, bool isMember) => isCreator
+      ? const Color(0xFFEF4444)
+      : isMember
+          ? const Color(0xFF10B981)
+          : const Color(0xFF3B82F6);
+
+  IconData _roleIcon(bool isCreator, bool isMember) =>
+      isCreator ? Icons.star : isMember ? Icons.person : Icons.visibility;
+
+  void _showRoleDialog(Contribution contribution, bool isCreator, bool isMember) {
+    final permissions = isCreator
+        ? const ['Edit contribution', 'Add members', 'View all payments', 'Delete contribution']
+        : isMember
+            ? const ['Make payments', 'View payments', 'Download receipts']
+            : const ['View contribution', 'Request to join'];
+    final color = _roleColor(isCreator, isMember);
+    final icon = _roleIcon(isCreator, isMember);
+    final label = _roleLabel(isCreator, isMember);
+
+    showDialog(
+      context: context,
+      useRootNavigator: false,
+      builder: (dialogCtx) => _StatusDetailDialog(
+        accent: color,
+        icon: icon,
+        title: 'You\'re a $label',
+        sections: [
+          _DialogSection(
+            heading: 'Your role',
+            body:
+                'This describes the actions you can take on this contribution.',
           ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      'Your Role: ',
-                      style: GoogleFonts.inter(
-                        fontSize: 12.sp,
-                        color: Colors.grey[400],
-                      ),
-                    ),
-                    Text(
-                      roleLabel,
-                      style: GoogleFonts.inter(
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w700,
-                        color: roleColor,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 4.h),
-                Wrap(
-                  spacing: 4.w,
-                  runSpacing: 4.h,
-                  children: permissions.take(3).map((p) => Text(
-                    '• $p',
-                    style: GoogleFonts.inter(
-                      fontSize: 10.sp,
-                      color: Colors.white.withValues(alpha: 0.8),
-                    ),
-                  )).toList(),
-                ),
-              ],
-            ),
+          _DialogSection(
+            heading: 'Permissions',
+            bullets: permissions,
           ),
-          if (!isMember && !isCreator)
-            GestureDetector(
-              onTap: () => _showJoinContributionDialog(contribution),
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-                decoration: BoxDecoration(
-                  color: roleColor,
-                  borderRadius: BorderRadius.circular(6.r),
-                ),
-                child: Text(
-                  'Join',
-                  style: GoogleFonts.inter(
-                    fontSize: 11.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
+        ],
+        primaryAction: !isMember && !isCreator
+            ? _DialogAction(
+                label: 'Request to join',
+                onTap: () {
+                  Navigator.of(dialogCtx, rootNavigator: false).pop();
+                  _showJoinContributionDialog(contribution);
+                },
+              )
+            : null,
+      ),
+    );
+  }
+
+  void _showAutoDebitDialog(Contribution contribution, {required bool hasPaid}) {
+    final due = contribution.nextPaymentDate;
+    final dueLabel = due != null
+        ? DateFormat('MMM dd, yyyy').format(due)
+        : 'the next cycle close';
+    final amountLabel = contribution.regularAmount != null && contribution.regularAmount! > 0
+        ? '${contribution.currency} ${_fmtAmount(contribution.regularAmount!)}'
+        : null;
+
+    final accent = hasPaid ? const Color(0xFF10B981) : const Color(0xFFFB923C);
+    final title = hasPaid ? 'You\'re covered' : 'Auto-debit is on';
+
+    final body = hasPaid
+        ? 'You\'ve already paid for this cycle, so no auto-charge will run for you.'
+        : amountLabel != null
+            ? 'If you don\'t pay $amountLabel manually before $dueLabel, we\'ll auto-debit it from your account.'
+            : 'If you don\'t pay manually before $dueLabel, we\'ll auto-debit your account.';
+
+    showDialog(
+      context: context,
+      useRootNavigator: false,
+      builder: (_) => _StatusDetailDialog(
+        accent: accent,
+        icon: hasPaid ? Icons.check_circle : Icons.bolt,
+        title: title,
+        sections: [
+          _DialogSection(heading: 'How it works', body: body),
+          _DialogSection(
+            heading: 'When does it fire?',
+            body:
+                'The auto-charge worker runs after the deadline of each cycle. It only attempts to debit members who have not paid manually.',
+          ),
+          _DialogSection(
+            heading: 'Failure handling',
+            body:
+                'If the auto-debit fails (e.g. insufficient balance, frozen account), both you and the contribution creator are notified. The worker retries a configured number of times before escalating to manual review.',
+          ),
         ],
       ),
     );
@@ -576,6 +602,27 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
               ],
             ),
           ),
+          IconButton(
+            tooltip: 'Chat',
+            icon: Icon(Icons.chat_bubble_outline,
+                color: Colors.white, size: 22.sp),
+            onPressed: () {
+              final cubit = context.read<GroupAccountCubit>();
+              final me = cubit.currentUserId;
+              if (me == null) return;
+              final myName = contribution.members
+                      .where((m) => m.userId == me)
+                      .map((m) => m.userName)
+                      .followedBy(['You'])
+                      .first;
+              ContributionChatBottomSheet.show(
+                context,
+                contribution: contribution,
+                currentUserId: me,
+                currentUserName: myName,
+              );
+            },
+          ),
           PopupMenuButton<String>(
             icon: Icon(
               Icons.more_vert,
@@ -623,6 +670,19 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                   ],
                 ),
               ),
+              PopupMenuItem(
+                value: 'history',
+                child: Row(
+                  children: [
+                    Icon(Icons.history, color: Colors.white, size: 20.sp),
+                    SizedBox(width: 12.w),
+                    Text(
+                      'View history',
+                      style: GoogleFonts.inter(color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
             ],
             onSelected: (value) => _handleMenuAction(value, contribution),
           ),
@@ -639,12 +699,14 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   // 30,000 reads as "30,000" not "30.0M" and not "30000.00".
   Widget _buildContributionSummary(Contribution contribution) {
     final progressPercentage = contribution.progressPercentage;
-    final isCompleted = contribution.isCompleted;
-    final isOverdue = contribution.isOverdue;
 
+    // Mirrors the compact stat-row treatment from group_details_screen
+    // (_buildGroupOverview): three-up KPI row, progress bar, totals
+    // line. Same gradient + radius + spacing so the two pages feel
+    // visually continuous as the user navigates from group → contribution.
     return Container(
-      margin: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 12.h),
-      padding: EdgeInsets.all(16.w),
+      margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -654,50 +716,43 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
             const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.8),
           ],
         ),
-        borderRadius: BorderRadius.circular(20.r),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
             color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Status pill on its own row — the description was redundant
-          // (the header banner already shows it) and ate vertical
-          // space without adding info.
           Row(
-            mainAxisAlignment: MainAxisAlignment.end,
             children: [
+              _buildContribStat(
+                title: 'Raised',
+                value: '${contribution.currency} ${_fmtAmount(contribution.currentAmount)}',
+                icon: Icons.account_balance_wallet,
+              ),
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-                decoration: BoxDecoration(
-                  color: isCompleted
-                      ? const Color(0xFF10B981).withValues(alpha: 0.2)
-                      : isOverdue
-                          ? const Color(0xFFEF4444).withValues(alpha: 0.2)
-                          : Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(10.r),
-                ),
-                child: Text(
-                  isCompleted
-                      ? 'Completed'
-                      : isOverdue
-                          ? 'Overdue'
-                          : 'Active',
-                  style: GoogleFonts.inter(
-                    fontSize: 10.sp,
-                    fontWeight: FontWeight.w600,
-                    color: isCompleted
-                        ? const Color(0xFF10B981)
-                        : isOverdue
-                            ? const Color(0xFFEF4444)
-                            : Colors.white,
-                  ),
-                ),
+                width: 1,
+                height: 32.h,
+                color: Colors.white.withValues(alpha: 0.2),
+              ),
+              _buildContribStat(
+                title: 'Payments',
+                value: contribution.payments.length.toString(),
+                icon: Icons.receipt_long,
+              ),
+              Container(
+                width: 1,
+                height: 32.h,
+                color: Colors.white.withValues(alpha: 0.2),
+              ),
+              _buildContribStat(
+                title: 'Progress',
+                value: '${progressPercentage.toStringAsFixed(0)}%',
+                icon: Icons.trending_up,
               ),
             ],
           ),
@@ -705,111 +760,117 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Raised',
-                    style: GoogleFonts.inter(
-                      fontSize: 11.sp,
-                      color: Colors.white.withValues(alpha: 0.8),
-                    ),
-                  ),
-                  SizedBox(height: 2.h),
-                  Text(
-                    '${contribution.currency} ${_fmtAmount(contribution.currentAmount)}',
-                    style: GoogleFonts.inter(
-                      fontSize: 20.sp,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    'Target',
-                    style: GoogleFonts.inter(
-                      fontSize: 11.sp,
-                      color: Colors.white.withValues(alpha: 0.8),
-                    ),
-                  ),
-                  SizedBox(height: 2.h),
-                  Text(
-                    '${contribution.currency} ${_fmtAmount(contribution.targetAmount)}',
-                    style: GoogleFonts.inter(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white.withValues(alpha: 0.8),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          SizedBox(height: 12.h),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
               Text(
-                'Progress',
+                '${contribution.currency} ${_fmtAmount(contribution.currentAmount)}',
+                style: GoogleFonts.inter(
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+              Text(
+                'of ${contribution.currency} ${_fmtAmount(contribution.targetAmount)}',
                 style: GoogleFonts.inter(
                   fontSize: 11.sp,
                   color: Colors.white.withValues(alpha: 0.8),
                 ),
               ),
-              Text(
-                '${progressPercentage.toStringAsFixed(0)}%',
-                style: GoogleFonts.inter(
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-              ),
             ],
           ),
-          SizedBox(height: 6.h),
+          SizedBox(height: 4.h),
           Container(
-            height: 6.h,
+            height: 5.h,
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(4.r),
+              borderRadius: BorderRadius.circular(3.r),
             ),
             child: Stack(
               children: [
                 FractionallySizedBox(
-                  widthFactor: progressPercentage / 100,
+                  widthFactor: (progressPercentage / 100).clamp(0.0, 1.0),
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(4.r),
+                      borderRadius: BorderRadius.circular(3.r),
                     ),
                   ),
                 ),
               ],
             ),
           ),
-          SizedBox(height: 10.h),
+          SizedBox(height: 6.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Deadline: ${DateFormat('MMM dd, yyyy').format(contribution.deadline)}',
+                'Due ${DateFormat('MMM d, yyyy').format(contribution.deadline)}',
                 style: GoogleFonts.inter(
-                  fontSize: 11.sp,
-                  color: Colors.white.withValues(alpha: 0.8),
+                  fontSize: 10.sp,
+                  color: Colors.white.withValues(alpha: 0.75),
                 ),
               ),
               Text(
-                '${contribution.payments.length} payment${contribution.payments.length == 1 ? '' : 's'}',
+                contribution.isCompleted
+                    ? 'Completed'
+                    : contribution.isOverdue
+                        ? 'Overdue'
+                        : 'Active',
                 style: GoogleFonts.inter(
-                  fontSize: 11.sp,
-                  color: Colors.white.withValues(alpha: 0.8),
+                  fontSize: 10.sp,
+                  fontWeight: FontWeight.w600,
+                  color: contribution.isCompleted
+                      ? const Color(0xFF10B981)
+                      : contribution.isOverdue
+                          ? const Color(0xFFEF4444)
+                          : Colors.white,
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Same shape as group_details_screen's _buildOverviewStat — kept
+  // private to this file rather than extracted to a shared util,
+  // because the two screens have diverged enough that pulling them
+  // into one helper would force one of the stat icons to stay mismatched.
+  Widget _buildContribStat({
+    required String title,
+    required String value,
+    required IconData icon,
+  }) {
+    return Expanded(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: Colors.white.withValues(alpha: 0.8), size: 14.sp),
+              SizedBox(width: 4.w),
+              Flexible(
+                child: Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 2.h),
+          Text(
+            title,
+            style: GoogleFonts.inter(
+              fontSize: 10.sp,
+              color: Colors.white.withValues(alpha: 0.8),
+            ),
           ),
         ],
       ),
@@ -825,94 +886,6 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     fmt.minimumFractionDigits = hasFraction ? 2 : 0;
     fmt.maximumFractionDigits = 2;
     return fmt.format(amount);
-  }
-
-  Widget _buildAutoDebitBanner(Contribution contribution) {
-    final cubit = context.read<GroupAccountCubit>();
-    final currentUserId = cubit.currentUserId;
-    if (currentUserId == null) return const SizedBox.shrink();
-
-    // Only contribution members are subject to auto-debit. A group admin
-    // viewing the contribution who isn't a member doesn't need this
-    // banner — surfacing it would imply THEY get charged, which is
-    // wrong. Members get the actionable copy; non-members see nothing.
-    final me = contribution.members
-        .where((m) => m.userId == currentUserId)
-        .cast<ContributionMember?>()
-        .firstOrNull;
-    if (me == null) return const SizedBox.shrink();
-
-    final hasPaid = me.hasPaidCurrentCycle;
-
-    final due = contribution.nextPaymentDate;
-    final dueLabel = due != null
-        ? DateFormat('MMM dd, yyyy').format(due)
-        : 'the next cycle close';
-
-    final amountLabel = contribution.regularAmount != null && contribution.regularAmount! > 0
-        ? '${contribution.currency} ${_fmtAmount(contribution.regularAmount!)}'
-        : null;
-
-    final title = hasPaid ? 'Auto-debit on (you\'re covered)' : 'Auto-debit is on';
-    final body = hasPaid
-        ? 'You\'ve already paid this cycle, so no auto-debit will run for you.'
-        : amountLabel != null
-            ? 'If you don\'t pay $amountLabel manually before $dueLabel, we\'ll auto-debit it from your account.'
-            : 'If you don\'t pay manually before $dueLabel, we\'ll auto-debit your account.';
-
-    final accent = hasPaid ? const Color(0xFF10B981) : const Color(0xFFFB923C);
-
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-      padding: EdgeInsets.all(14.w),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: accent.withValues(alpha: 0.4)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: EdgeInsets.all(8.w),
-            decoration: BoxDecoration(
-              color: accent.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(8.r),
-            ),
-            child: Icon(
-              hasPaid ? Icons.check_circle : Icons.bolt,
-              color: accent,
-              size: 18.sp,
-            ),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  body,
-                  style: GoogleFonts.inter(
-                    color: Colors.grey[400],
-                    fontSize: 12.sp,
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   Widget _buildExternalLinksSection(Contribution contribution) {
@@ -1874,6 +1847,19 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       case 'transcript':
         _openTranscriptSheet(contribution);
         break;
+      case 'history':
+        // Wrap with BlocProvider.value so the history screen can read
+        // the same GroupAccountCubit instance for cycle metadata + the
+        // payments use case. Without this, Get.to would push onto a
+        // separate Navigator without inherited providers.
+        final histCubit = context.read<GroupAccountCubit>();
+        Get.to(
+          () => BlocProvider<GroupAccountCubit>.value(
+            value: histCubit,
+            child: ContributionHistoryScreen(contribution: contribution),
+          ),
+        );
+        break;
     }
   }
 
@@ -2209,7 +2195,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
 
   String _buildTranscriptText(ContributionTranscript transcript, Contribution contribution) {
     final lines = <String>[
-      'Transcript — ${contribution.title}',
+      'Transcript: ${contribution.title}',
       'Generated: ${DateFormat('yyyy-MM-dd HH:mm').format(transcript.generatedAt)}',
       'Total raised: ${transcript.currency} ${_fmtAmount(transcript.totalAmount)}',
       'Payments: ${transcript.payments.length}',
@@ -2854,7 +2840,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       // Share the payment details
       await SharePlus.instance.share(ShareParams(
         text: shareText,
-        subject: 'Payment Receipt - ${_currentContribution?.title ?? 'Contribution'}',
+        subject: 'Payment Receipt for ${_currentContribution?.title ?? 'Contribution'}',
       ));
       
       // Show success message
@@ -3571,5 +3557,464 @@ class _ContributionMemberDetailsSheet extends StatelessWidget {
     final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
                     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
+  }
+}
+
+// _StatusChip is a borderless elevated tile used by the contribution-
+// details "status row" (auto-debit + role). Designed as a compact,
+// horizontally-scaled chip the user taps to see full detail in a
+// dialog. Uses Material elevation rather than a border to set the
+// chip apart from its background.
+class _StatusChip extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String label;
+  final String value;
+  final VoidCallback onTap;
+
+  const _StatusChip({
+    required this.icon,
+    required this.iconColor,
+    required this.label,
+    required this.value,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: const Color(0xFF1F1F1F),
+      elevation: 3,
+      shadowColor: Colors.black.withValues(alpha: 0.5),
+      borderRadius: BorderRadius.circular(12.r),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12.r),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+          child: Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(6.w),
+                decoration: BoxDecoration(
+                  color: iconColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(6.r),
+                ),
+                child: Icon(icon, color: iconColor, size: 14.sp),
+              ),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      label,
+                      style: GoogleFonts.inter(
+                        color: Colors.grey[500],
+                        fontSize: 10.sp,
+                      ),
+                    ),
+                    SizedBox(height: 1.h),
+                    Text(
+                      value,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        color: iconColor,
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right, color: Colors.grey[600], size: 16.sp),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// _StatusDetailDialog is the modal opened by tapping a _StatusChip.
+// Sections render as heading + body or heading + bullet list. An
+// optional primaryAction renders as a CTA at the bottom.
+class _StatusDetailDialog extends StatelessWidget {
+  final Color accent;
+  final IconData icon;
+  final String title;
+  final List<_DialogSection> sections;
+  final _DialogAction? primaryAction;
+
+  const _StatusDetailDialog({
+    required this.accent,
+    required this.icon,
+    required this.title,
+    required this.sections,
+    this.primaryAction,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: const Color(0xFF1F1F1F),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+      insetPadding: EdgeInsets.symmetric(horizontal: 20.w),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: 420.w),
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 16.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(10.w),
+                    decoration: BoxDecoration(
+                      color: accent.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: Icon(icon, color: accent, size: 22.sp),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 17.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: Icon(Icons.close, color: Colors.grey[400], size: 20.sp),
+                    padding: EdgeInsets.zero,
+                    constraints: BoxConstraints(minWidth: 32.w, minHeight: 32.w),
+                    tooltip: 'Close',
+                  ),
+                ],
+              ),
+              SizedBox(height: 16.h),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      for (int i = 0; i < sections.length; i++) ...[
+                        if (i > 0) SizedBox(height: 14.h),
+                        _renderSection(sections[i], accent),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+              if (primaryAction != null) ...[
+                SizedBox(height: 20.h),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: primaryAction!.onTap,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: accent,
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.r),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      primaryAction!.label,
+                      style: GoogleFonts.inter(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _renderSection(_DialogSection s, Color accent) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          s.heading,
+          style: GoogleFonts.inter(
+            color: accent,
+            fontSize: 11.sp,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.4,
+          ),
+        ),
+        SizedBox(height: 6.h),
+        if (s.body != null)
+          Text(
+            s.body!,
+            style: GoogleFonts.inter(
+              color: Colors.grey[300],
+              fontSize: 13.sp,
+              height: 1.45,
+            ),
+          ),
+        if (s.bullets != null)
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: s.bullets!
+                .map(
+                  (b) => Padding(
+                    padding: EdgeInsets.only(bottom: 4.h),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          margin: EdgeInsets.only(top: 6.h, right: 8.w),
+                          width: 4.w,
+                          height: 4.w,
+                          decoration: BoxDecoration(
+                            color: accent,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            b,
+                            style: GoogleFonts.inter(
+                              color: Colors.grey[300],
+                              fontSize: 13.sp,
+                              height: 1.4,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+                .toList(),
+          ),
+      ],
+    );
+  }
+}
+
+class _DialogSection {
+  final String heading;
+  final String? body;
+  final List<String>? bullets;
+
+  const _DialogSection({required this.heading, this.body, this.bullets});
+}
+
+class _DialogAction {
+  final String label;
+  final VoidCallback onTap;
+
+  const _DialogAction({required this.label, required this.onTap});
+}
+
+// _CompactInfoBanner is a generic collapsible info row used by the
+// auto-debit notice. Default state shows icon + title only (~32px tall);
+// expanding reveals the body copy. The body is rendered inline rather
+// than in a separate scroll region so the user keeps their place when
+// dismissing.
+class _CompactInfoBanner extends StatefulWidget {
+  final IconData icon;
+  final Color accent;
+  final String title;
+  final String body;
+
+  const _CompactInfoBanner({
+    required this.icon,
+    required this.accent,
+    required this.title,
+    required this.body,
+  });
+
+  @override
+  State<_CompactInfoBanner> createState() => _CompactInfoBannerState();
+}
+
+class _CompactInfoBannerState extends State<_CompactInfoBanner> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(color: widget.accent.withValues(alpha: 0.4)),
+      ),
+      child: Column(
+        children: [
+          InkWell(
+            onTap: () => setState(() => _expanded = !_expanded),
+            borderRadius: BorderRadius.circular(8.r),
+            child: Row(
+              children: [
+                Icon(widget.icon, color: widget.accent, size: 14.sp),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: Text(
+                    widget.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                Icon(
+                  _expanded ? Icons.expand_less : Icons.expand_more,
+                  color: Colors.grey[500],
+                  size: 16.sp,
+                ),
+              ],
+            ),
+          ),
+          if (_expanded) ...[
+            SizedBox(height: 6.h),
+            Text(
+              widget.body,
+              style: GoogleFonts.inter(
+                color: Colors.grey[400],
+                fontSize: 11.sp,
+                height: 1.4,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+// _CompactRoleBanner is a single-row collapsed role chip with a chevron.
+// Default state is ~36px tall (icon + role label + Join CTA / chevron),
+// expanding inline to show the permissions list when tapped. Replaces
+// the previous always-expanded banner that consumed ~110px regardless
+// of whether the user cared about the permission detail.
+class _CompactRoleBanner extends StatefulWidget {
+  final String roleLabel;
+  final Color roleColor;
+  final IconData roleIcon;
+  final List<String> permissions;
+  final bool showJoinCta;
+  final VoidCallback onJoin;
+
+  const _CompactRoleBanner({
+    required this.roleLabel,
+    required this.roleColor,
+    required this.roleIcon,
+    required this.permissions,
+    required this.showJoinCta,
+    required this.onJoin,
+  });
+
+  @override
+  State<_CompactRoleBanner> createState() => _CompactRoleBannerState();
+}
+
+class _CompactRoleBannerState extends State<_CompactRoleBanner> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+      decoration: BoxDecoration(
+        color: widget.roleColor.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(color: widget.roleColor.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        children: [
+          InkWell(
+            onTap: () => setState(() => _expanded = !_expanded),
+            borderRadius: BorderRadius.circular(8.r),
+            child: Row(
+              children: [
+                Icon(widget.roleIcon, color: widget.roleColor, size: 14.sp),
+                SizedBox(width: 8.w),
+                Text(
+                  'Role: ',
+                  style: GoogleFonts.inter(
+                    fontSize: 11.sp,
+                    color: Colors.grey[400],
+                  ),
+                ),
+                Text(
+                  widget.roleLabel,
+                  style: GoogleFonts.inter(
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w700,
+                    color: widget.roleColor,
+                  ),
+                ),
+                const Spacer(),
+                if (widget.showJoinCta)
+                  GestureDetector(
+                    onTap: widget.onJoin,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                      decoration: BoxDecoration(
+                        color: widget.roleColor,
+                        borderRadius: BorderRadius.circular(6.r),
+                      ),
+                      child: Text(
+                        'Join',
+                        style: GoogleFonts.inter(
+                          fontSize: 10.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  Icon(
+                    _expanded ? Icons.expand_less : Icons.expand_more,
+                    color: Colors.grey[500],
+                    size: 16.sp,
+                  ),
+              ],
+            ),
+          ),
+          if (_expanded) ...[
+            SizedBox(height: 6.h),
+            Wrap(
+              spacing: 6.w,
+              runSpacing: 4.h,
+              children: widget.permissions
+                  .map((p) => Text(
+                        '• $p',
+                        style: GoogleFonts.inter(
+                          fontSize: 10.sp,
+                          color: Colors.white.withValues(alpha: 0.8),
+                        ),
+                      ))
+                  .toList(),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 } 

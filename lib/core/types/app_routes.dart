@@ -287,7 +287,8 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String makePayment = '/group-account/make-payment';
   static const String paymentReceipt = '/group-account/payment-receipt';
   static const String contributionTranscript = '/group-account/contribution-transcript';
-  
+  static const String contributionHistory = '/group-account/contribution-history';
+
   // Insurance Routes
   static const String insurance = '/insurance';
   static const String insuranceDetails = '/insurance/details';

@@ -486,8 +486,30 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
     // Parse via _parseAmount (strips thousands separators). Amounts
     // are major units (₦/$); the gRPC data source converts to minor
     // units before the network call.
-    final targetAmount = _parseAmount(_targetAmountController.text);
-    final regularRaw = _parseAmount(_regularAmountController.text);
+    var targetAmount = _parseAmount(_targetAmountController.text);
+    var regularRaw = _parseAmount(_regularAmountController.text);
+
+    // ROSCA: page 1's "Amount per member per cycle" field writes to
+    // _targetAmountController, and we mirror keystrokes into
+    // _regularAmountController via the page 1 onChanged. Here we
+    // canonicalise both so the API receives:
+    //   regular_amount = the per-member share
+    //   target_amount  = per-member × member_count (= pot per cycle)
+    // The backend MakePayment validator rejects any payment ≠
+    // regular_amount, so the per-member field is the source of truth.
+    if (_selectedType == ContributionType.rotatingSavings) {
+      final perMember = targetAmount > 0 ? targetAmount : regularRaw;
+      regularRaw = perMember;
+      final memberCount = _rotationOrder.length;
+      if (memberCount > 0) {
+        targetAmount = perMember * memberCount;
+      } else {
+        // No rotation members yet (defensive — page 2 validation
+        // already forbids this). Fall back to the per-member value
+        // so the API call doesn't fail with 0 target.
+        targetAmount = perMember;
+      }
+    }
     final regularAmount = regularRaw > 0 ? regularRaw : null;
     final penaltyRaw = _parseAmount(_penaltyAmountController.text);
     final penaltyAmount = penaltyRaw > 0 ? penaltyRaw : null;
@@ -562,13 +584,27 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
       }
     }
 
+    // For ROSCA, the lifetime deadline is auto-derived from the
+    // schedule (start_date + total_cycles × frequency_period). Page 1's
+    // deadline picker is hidden for ROSCA, so _selectedDeadline holds
+    // the default-future stub which would mismatch the actual cycle
+    // schedule. Recompute here so the contribution row stores a
+    // deadline aligned with the final cycle.
+    DateTime effectiveDeadline = _selectedDeadline;
+    if (_selectedType == ContributionType.rotatingSavings) {
+      final derived = _computeRoscaDeadline();
+      if (derived != null) {
+        effectiveDeadline = derived;
+      }
+    }
+
     cubit.createNewContribution(
       groupId: widget.groupId,
       title: _titleController.text.trim(),
       description: _descriptionController.text.trim(),
       targetAmount: targetAmount,
       currency: widget.currency,
-      deadline: _selectedDeadline,
+      deadline: effectiveDeadline,
       type: _selectedType,
       frequency: _selectedFrequency,
       regularAmount: regularAmount,
@@ -978,23 +1014,68 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
           SizedBox(height: 20.h),
 
           // Required: Target Amount (with currency prefix)
-          _buildFieldLabel('Target Amount', required: true),
+          // ROSCA: same field but reframed as the per-member fixed share.
+          // The value is also mirrored into _regularAmountController on
+          // each keystroke so page 2 (Schedule) can keep its hidden
+          // regular_amount in sync, and the actual contribution target
+          // is derived at submit time as (perMember × memberCount).
+          _buildFieldLabel(
+            _selectedType == ContributionType.rotatingSavings
+                ? 'Amount per member per cycle'
+                : 'Target Amount',
+            required: true,
+          ),
           SizedBox(height: 8.h),
           _buildAmountField(
             controller: _targetAmountController,
+            hint: _selectedType == ContributionType.rotatingSavings
+                ? 'Each member pays this each cycle'
+                : null,
             hasError: _fieldErrors.containsKey('targetAmount'),
+            onChanged: _selectedType == ContributionType.rotatingSavings
+                ? (val) {
+                    // Keep regular_amount aligned so the Schedule page
+                    // (which hides the field for ROSCA) carries the
+                    // right value when the user advances or reviews.
+                    _regularAmountController.text = val;
+                    setState(() {});
+                  }
+                : null,
           ),
           _buildFieldError('targetAmount'),
+          if (_selectedType == ContributionType.rotatingSavings) ...[
+            SizedBox(height: 6.h),
+            _buildRoscaTargetPreview(),
+          ],
           SizedBox(height: 20.h),
 
-          // Required: Target Date
-          _buildFieldLabel('Target Date', required: true),
-          SizedBox(height: 8.h),
-          _buildDatePicker(
-            selectedDate: _selectedDeadline,
-            onDateSelected: (date) => setState(() => _selectedDeadline = _endOfDay(date)),
-          ),
-          SizedBox(height: 24.h),
+          // Required: Target Date — only meaningful for one-time
+          // contributions. For ROSCA each cycle has its own deadline
+          // derived from start_date + frequency × cycle_index, so
+          // surfacing a single "Target Date" here is misleading. The
+          // contribution-level deadline for ROSCA is computed at
+          // submit time as start_date + (total_cycles × frequency_period).
+          if (_selectedType != ContributionType.rotatingSavings) ...[
+            _buildFieldLabel('Target Date', required: true),
+            SizedBox(height: 8.h),
+            // Deadline picker chains into a time picker so the operator can
+            // pin the exact moment funds stop being accepted. Skipping the
+            // time step defaults to 00:00 local (midnight on the selected
+            // day), matching the previous _endOfDay convention but giving
+            // operators full control when they need it.
+            _buildDatePicker(
+              selectedDate: _selectedDeadline,
+              includeTime: true,
+              onDateSelected: (date) => setState(() => _selectedDeadline = date),
+            ),
+            SizedBox(height: 24.h),
+          ] else ...[
+            // For ROSCA, surface the schedule-derived deadline as a
+            // read-only preview so the user understands when the goal
+            // ends without having to tap into page 2.
+            _buildRoscaDeadlinePreview(),
+            SizedBox(height: 24.h),
+          ],
 
           // Optional: Social Media Links
           Row(
@@ -1109,16 +1190,22 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
           _buildFieldError('frequency'),
           SizedBox(height: 20.h),
 
-          // Required: Regular Amount
-          _buildFieldLabel('Regular Payment Amount', required: true),
-          SizedBox(height: 8.h),
-          _buildAmountField(
-            controller: _regularAmountController,
-            hint: 'Amount per payment cycle',
-            hasError: _fieldErrors.containsKey('regularAmount'),
-          ),
-          _buildFieldError('regularAmount'),
-          SizedBox(height: 24.h),
+          // Regular Amount: only shown for non-ROSCA recurring contributions.
+          // For ROSCA, the per-member share is already captured on
+          // page 1 ("Amount per member per cycle"); showing the field
+          // again here would invite mismatched values and force the
+          // user to type the same number twice.
+          if (_selectedType != ContributionType.rotatingSavings) ...[
+            _buildFieldLabel('Regular Payment Amount', required: true),
+            SizedBox(height: 8.h),
+            _buildAmountField(
+              controller: _regularAmountController,
+              hint: 'Amount per payment cycle',
+              hasError: _fieldErrors.containsKey('regularAmount'),
+            ),
+            _buildFieldError('regularAmount'),
+            SizedBox(height: 24.h),
+          ],
 
           // Rotation Order (for rotating savings)
           if (_selectedType == ContributionType.rotatingSavings) ...[
@@ -1511,7 +1598,12 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
           // Summary cards
           _buildReviewCard([
             _ReviewItem('Target Amount', currencyFormat.format(targetAmount)),
-            _ReviewItem('Deadline', DateFormat('MMM dd, yyyy').format(_selectedDeadline)),
+            _ReviewItem(
+              'Deadline',
+              (_selectedDeadline.hour == 0 && _selectedDeadline.minute == 0)
+                  ? '${DateFormat('MMM dd, yyyy').format(_selectedDeadline)} (midnight)'
+                  : DateFormat('MMM dd, yyyy h:mm a').format(_selectedDeadline),
+            ),
             if (_selectedType != ContributionType.oneTime && regularAmount > 0)
               _ReviewItem('Regular Payment', currencyFormat.format(regularAmount)),
             if (_selectedFrequency != null)
@@ -1711,14 +1803,172 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
     );
   }
 
+  /// Computes cycle 1's deadline for a ROSCA contribution: the END of
+  /// the FIRST cycle = start_date + 1 × frequency_period. This is the
+  /// value we send as `deadline` on the create RPC (and what the
+  /// backend wires into NextPaymentDate). Subsequent cycles' deadlines
+  /// are advanced by the worker after each settled payout.
+  ///
+  /// Defaults:
+  ///   * start_date unset → NOW (creation time).
+  ///   * frequency unset  → null (caller renders a "set schedule" hint).
+  ///
+  /// The lifetime end (final cycle deadline = start + total_cycles ×
+  /// freq) is also exposed via _computeRoscaLifetimeEnd for preview
+  /// copy that summarises the whole rotation.
+  DateTime? _computeRoscaCycleOneDeadline() {
+    if (_selectedType != ContributionType.rotatingSavings) return null;
+    final freq = _selectedFrequency;
+    if (freq == null) return null;
+    final start = _selectedStartDate ?? DateTime.now();
+    return _addFrequency(start, freq, 1);
+  }
+
+  /// Lifetime end = start + total_cycles × frequency. Used for preview
+  /// copy ("rotation finishes ..."), NOT for the create RPC's deadline.
+  DateTime? _computeRoscaLifetimeEnd() {
+    if (_selectedType != ContributionType.rotatingSavings) return null;
+    final freq = _selectedFrequency;
+    if (freq == null) return null;
+    final start = _selectedStartDate ?? DateTime.now();
+    final cyclesText = _totalCyclesController.text.trim();
+    int cycles = int.tryParse(cyclesText) ?? 0;
+    if (cycles <= 0) {
+      cycles = _rotationOrder.length;
+    }
+    if (cycles <= 0) return null;
+    return _addFrequency(start, freq, cycles);
+  }
+
+  // Backwards-compat alias kept for existing call sites.
+  DateTime? _computeRoscaDeadline() => _computeRoscaCycleOneDeadline();
+
+  DateTime _addFrequency(DateTime start, ContributionFrequency f, int n) {
+    switch (f) {
+      case ContributionFrequency.daily:
+        return start.add(Duration(days: n));
+      case ContributionFrequency.weekly:
+        return start.add(Duration(days: 7 * n));
+      case ContributionFrequency.biWeekly:
+        return start.add(Duration(days: 14 * n));
+      case ContributionFrequency.monthly:
+        return DateTime(start.year, start.month + n, start.day,
+            start.hour, start.minute, start.second);
+      case ContributionFrequency.quarterly:
+        return DateTime(start.year, start.month + 3 * n, start.day,
+            start.hour, start.minute, start.second);
+    }
+  }
+
+  Widget _buildRoscaDeadlinePreview() {
+    final cycleOne = _computeRoscaCycleOneDeadline();
+    final lifetime = _computeRoscaLifetimeEnd();
+    String body;
+    if (cycleOne == null) {
+      body =
+          'Cycle deadlines are derived from the payment schedule on the next step. Each cycle\'s pot must land before the cycle ends.';
+    } else {
+      final cycleOneStr = DateFormat('MMM dd, yyyy').format(cycleOne);
+      final freqLabel = _frequencyLabel(_selectedFrequency);
+      final startLabel = _selectedStartDate != null
+          ? DateFormat('MMM dd').format(_selectedStartDate!)
+          : 'today';
+      body =
+          'Cycle 1 ends $cycleOneStr (one $freqLabel from $startLabel). Each subsequent cycle ends one $freqLabel later.';
+      if (lifetime != null && lifetime != cycleOne) {
+        body +=
+            ' Rotation finishes ${DateFormat('MMM dd, yyyy').format(lifetime)}.';
+      }
+    }
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.event, color: Colors.grey[400], size: 18.sp),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Text(
+              body,
+              style: GoogleFonts.inter(
+                color: Colors.grey[300],
+                fontSize: 12.sp,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _frequencyLabel(ContributionFrequency? f) {
+    switch (f) {
+      case ContributionFrequency.daily:
+        return 'day';
+      case ContributionFrequency.weekly:
+        return 'week';
+      case ContributionFrequency.biWeekly:
+        return 'two weeks';
+      case ContributionFrequency.monthly:
+        return 'month';
+      case ContributionFrequency.quarterly:
+        return 'quarter';
+      case null:
+        return 'cycle';
+    }
+  }
+
+  /// Live ROSCA target preview rendered under the per-member amount
+  /// field on page 1. Multiplies the entered per-member amount by the
+  /// current rotation length (or 1 if the user hasn't built the rotation
+  /// yet) and surfaces the projected pot per cycle. Helps the creator
+  /// reason about the total before reaching the Members step.
+  Widget _buildRoscaTargetPreview() {
+    final perMember = _parseAmount(_targetAmountController.text);
+    final memberCount = _rotationOrder.length;
+    if (perMember <= 0) {
+      return Text(
+        'Each member pays this fixed share each cycle. The pot scales with how many members you add.',
+        style: GoogleFonts.inter(fontSize: 11.sp, color: Colors.grey[500]),
+      );
+    }
+    if (memberCount == 0) {
+      return Text(
+        'Pot per cycle will be ${widget.currencySymbol}${_formatPreviewAmount(perMember)} '
+        'multiplied by the number of members you add on the next step.',
+        style: GoogleFonts.inter(fontSize: 11.sp, color: Colors.grey[500]),
+      );
+    }
+    final pot = perMember * memberCount;
+    return Text(
+      'Pot per cycle: ${widget.currencySymbol}${_formatPreviewAmount(pot)} '
+      '($memberCount × ${widget.currencySymbol}${_formatPreviewAmount(perMember)}).',
+      style: GoogleFonts.inter(fontSize: 11.sp, color: Colors.grey[400]),
+    );
+  }
+
+  String _formatPreviewAmount(double v) {
+    final fmt = NumberFormat.decimalPattern();
+    fmt.minimumFractionDigits = v == v.truncateToDouble() ? 0 : 2;
+    fmt.maximumFractionDigits = 2;
+    return fmt.format(v);
+  }
+
   Widget _buildAmountField({
     required TextEditingController controller,
-    String hint = '0.00',
+    String? hint,
     bool hasError = false,
     bool showCurrencyPrefix = true,
+    ValueChanged<String>? onChanged,
   }) {
     final errorColor = const Color(0xFFEF4444);
     final normalColor = const Color(0xFF2D2D2D);
+    final effectiveHint = hint ?? '0.00';
 
     return TextField(
       controller: controller,
@@ -1727,15 +1977,16 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
       // _ThousandsAmountFormatter both filters (digits + at most one
       // '.' + at most 2 fractional digits) AND inserts comma thousands
       // separators on the integer portion as the user types. Replaces
-      // the previous FilteringTextInputFormatter — the regex still
+      // the previous FilteringTextInputFormatter; the regex still
       // applied is now embedded in the formatter's accept logic.
       inputFormatters: [_ThousandsAmountFormatter()],
-      onChanged: (_) {
+      onChanged: (val) {
         // Clear error when user starts typing
         if (hasError) setState(() {});
+        if (onChanged != null) onChanged(val);
       },
       decoration: InputDecoration(
-        hintText: hint,
+        hintText: effectiveHint,
         hintStyle: GoogleFonts.inter(fontSize: 16.sp, color: Colors.grey[600]),
         filled: true,
         fillColor: hasError ? errorColor.withValues(alpha: 0.1) : const Color(0xFF1F1F1F),
@@ -1817,7 +2068,15 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
   Widget _buildDatePicker({
     required DateTime selectedDate,
     required ValueChanged<DateTime> onDateSelected,
+    bool includeTime = false,
   }) {
+    final hasMeaningfulTime = selectedDate.hour != 0 || selectedDate.minute != 0;
+    final label = includeTime
+        ? (hasMeaningfulTime
+            ? DateFormat('MMM dd, yyyy h:mm a').format(selectedDate)
+            : '${DateFormat('MMM dd, yyyy').format(selectedDate)}  ·  set time')
+        : DateFormat('MMM dd, yyyy').format(selectedDate);
+
     return GestureDetector(
       onTap: () async {
         final date = await showDatePicker(
@@ -1837,7 +2096,45 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
             );
           },
         );
-        if (date != null) onDateSelected(date);
+        if (date == null) return;
+
+        // For deadline-style fields: chain into a time picker so the user
+        // can pick an exact moment. Cancelling the time step leaves the
+        // time at 00:00 local (midnight), which is the safe default for
+        // "due by end of day" semantics — matching the legacy
+        // _endOfDay() behaviour the caller can re-apply if it prefers.
+        if (!includeTime) {
+          onDateSelected(date);
+          return;
+        }
+
+        if (!mounted) return;
+        final time = await showTimePicker(
+          context: context,
+          initialTime: hasMeaningfulTime
+              ? TimeOfDay(hour: selectedDate.hour, minute: selectedDate.minute)
+              : const TimeOfDay(hour: 0, minute: 0),
+          builder: (context, child) {
+            return Theme(
+              data: Theme.of(context).copyWith(
+                colorScheme: const ColorScheme.dark(
+                  primary: Color(0xFF6366F1),
+                  surface: Color(0xFF1F1F1F),
+                ),
+              ),
+              child: child!,
+            );
+          },
+        );
+
+        // User cancelled the time picker → keep midnight local (00:00).
+        // Avoids silently inheriting `selectedDate.hour/minute` which
+        // could be a stale midnight from a previous selection.
+        final hh = time?.hour ?? 0;
+        final mm = time?.minute ?? 0;
+        onDateSelected(
+          DateTime(date.year, date.month, date.day, hh, mm),
+        );
       },
       child: Container(
         padding: EdgeInsets.all(16.w),
@@ -1847,13 +2144,20 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
         ),
         child: Row(
           children: [
-            Icon(Icons.calendar_today, color: Colors.grey[400], size: 20.sp),
-            SizedBox(width: 12.w),
-            Text(
-              DateFormat('MMM dd, yyyy').format(selectedDate),
-              style: GoogleFonts.inter(fontSize: 16.sp, color: Colors.white),
+            Icon(
+              includeTime ? Icons.event : Icons.calendar_today,
+              color: Colors.grey[400],
+              size: 20.sp,
             ),
-            const Spacer(),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.inter(fontSize: 16.sp, color: Colors.white),
+              ),
+            ),
             Icon(Icons.keyboard_arrow_down, color: Colors.grey[400]),
           ],
         ),
@@ -2298,7 +2602,7 @@ class _CreateContributionBottomSheetState extends State<CreateContributionBottom
               Expanded(
                 child: Text(
                   _rotationOrder.isEmpty
-                      ? 'No members yet — add at least one to continue'
+                      ? 'No members yet. Add at least one to continue'
                       : '${_rotationOrder.length} member(s) participating',
                   style: GoogleFonts.inter(
                       fontSize: 12.sp, color: Colors.grey[400]),

@@ -282,18 +282,16 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
   }
 
   String _resolveRecipientName(String userId) {
-    final m = widget.contribution.members.firstWhere(
-      (mb) => mb.userId == userId,
-      orElse: () => ContributionMember(
-        id: '',
-        contributionId: widget.contribution.id,
-        userId: userId,
-        userName: '(unknown member)',
-        email: '',
-        joinedAt: DateTime.now(),
-      ),
-    );
-    return m.userName;
+    // The members list is statically typed as List<ContributionMember>
+    // but at runtime can be reified as List<ContributionMemberModel>
+    // (the data-layer subclass). Dart's strict subtype check then
+    // rejects an orElse: () => ContributionMember(...) lambda because
+    // it returns the parent type. Using a manual walk + null fallback
+    // sidesteps the issue without forcing a cast.
+    for (final mb in widget.contribution.members) {
+      if (mb.userId == userId) return mb.userName;
+    }
+    return '(unknown member)';
   }
 
   String _formatAmount(num value) {
@@ -420,7 +418,7 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
           SizedBox(height: 6.h),
           Text(
             pastDeadline
-                ? 'The contribution closed on ${_formatDate(deadline)} but no receiver is set. Pick the member who should receive the payout — once set, payout fires either automatically or via a manual trigger.'
+                ? 'The contribution closed on ${_formatDate(deadline)} but no receiver is set. Pick the member who should receive the payout. Once set, payout fires either automatically or via a manual trigger.'
                 : 'Pick the member who will receive the payout when this closes on ${_formatDate(deadline)}. Whoever is set here gets paid by auto-payout or by a manual trigger from an admin.',
             style: GoogleFonts.inter(color: Colors.grey[300], fontSize: 12.sp),
           ),
@@ -599,7 +597,7 @@ class PayoutReceiverBannerState extends State<PayoutReceiverBanner> {
             Icon(Icons.error_outline,
                 color: const Color(0xFFEF4444), size: 18.sp),
             SizedBox(width: 8.w),
-            Text('Payout failed — will retry',
+            Text('Payout failed. Will retry',
                 style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 13.sp,

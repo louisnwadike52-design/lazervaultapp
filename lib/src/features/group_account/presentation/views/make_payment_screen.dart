@@ -79,15 +79,41 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
     return _pendingIdempotencyKey!;
   }
 
+  /// True for ROSCA / esusu contributions where every member pays a
+  /// fixed per-cycle amount. UI surfaces (amount field, quick chips,
+  /// helper copy) treat these specially: the amount is locked to
+  /// regularAmount and quick amounts are hidden because there is no
+  /// "pay what you can" option.
+  bool get _isRotatingSavings =>
+      widget.contribution?.type == ContributionType.rotatingSavings;
+
+  /// The fixed per-member-per-cycle amount for ROSCA. Returns null
+  /// when the contribution is one-time or when regularAmount is unset.
+  double? get _fixedRoscaAmount {
+    if (!_isRotatingSavings) return null;
+    final amt = widget.contribution?.regularAmount;
+    if (amt == null || amt <= 0) return null;
+    return amt;
+  }
+
   @override
   void initState() {
     super.initState();
     if (widget.contribution != null) {
-      // Pre-fill suggested amount (remaining balance)
-      final remaining =
-          widget.contribution!.targetAmount - widget.contribution!.currentAmount;
-      if (remaining > 0) {
-        _amountController.text = remaining.toStringAsFixed(2);
+      final fixed = _fixedRoscaAmount;
+      if (fixed != null) {
+        // ROSCA: lock to the per-member amount. Backend rejects any
+        // mismatch, so prefilling the exact amount is both correct and
+        // user-friendly (one tap to pay your share).
+        _amountController.text = fixed.toStringAsFixed(2);
+      } else {
+        // One-time: prefill remaining balance as a suggestion. Field
+        // stays editable so members can pay any portion they can afford.
+        final remaining = widget.contribution!.targetAmount -
+            widget.contribution!.currentAmount;
+        if (remaining > 0) {
+          _amountController.text = remaining.toStringAsFixed(2);
+        }
       }
     }
 
@@ -445,6 +471,11 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
         TextFormField(
           controller: _amountController,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          // ROSCA: amount is the per-member fixed share. Locking the
+          // field at the UI layer matches the backend enforcement and
+          // makes the contract obvious to the user.
+          readOnly: _isRotatingSavings,
+          enabled: !_isRotatingSavings,
           style: GoogleFonts.inter(
             fontSize: 24.sp,
             fontWeight: FontWeight.w700,
@@ -469,8 +500,17 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
                 ),
               ),
             ),
+            suffixIcon: _isRotatingSavings
+                ? Padding(
+                    padding: EdgeInsets.all(16.w),
+                    child: Icon(Icons.lock_outline,
+                        color: Colors.grey[500], size: 18.sp),
+                  )
+                : null,
             filled: true,
-            fillColor: const Color(0xFF1F1F1F),
+            fillColor: _isRotatingSavings
+                ? const Color(0xFF181818)
+                : const Color(0xFF1F1F1F),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
               borderSide: BorderSide(
@@ -486,6 +526,10 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
                     ? const Color(0xFFEF4444)
                     : const Color(0xFF2D2D2D),
               ),
+            ),
+            disabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
@@ -508,6 +552,25 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
             return null;
           },
         ),
+        if (_isRotatingSavings) ...[
+          SizedBox(height: 8.h),
+          Row(
+            children: [
+              Icon(Icons.info_outline,
+                  color: Colors.grey[500], size: 14.sp),
+              SizedBox(width: 6.w),
+              Expanded(
+                child: Text(
+                  'Esusu contributions are a fixed share per cycle. Everyone pays the same amount.',
+                  style: GoogleFonts.inter(
+                    fontSize: 11.sp,
+                    color: Colors.grey[500],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
         if (_hasInsufficientBalance) ...[
           SizedBox(height: 8.h),
           Row(
@@ -528,7 +591,9 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
             ],
           ),
         ],
-        if (widget.contribution != null) ...[
+        // Quick amounts only apply to one-time contributions (variable
+        // payments). ROSCA is fixed per cycle so chips would be misleading.
+        if (widget.contribution != null && !_isRotatingSavings) ...[
           SizedBox(height: 12.h),
           _buildQuickAmountButtons(),
         ],
