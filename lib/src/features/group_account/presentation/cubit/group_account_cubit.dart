@@ -39,6 +39,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
   final GetGroupActivityLogs? getGroupActivityLogs;
   final GetContributionActivityLogs? getContributionActivityLogs;
   final RemoveMemberFromContribution? removeMemberFromContribution;
+  final PreviewMemberExit? previewMemberExit;
   final ListPublicGroups? listPublicGroups;
   final GetPublicGroup? getPublicGroup;
   final JoinPublicGroup? joinPublicGroup;
@@ -152,6 +153,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     this.getGroupActivityLogs,
     this.getContributionActivityLogs,
     this.removeMemberFromContribution,
+    this.previewMemberExit,
     this.listPublicGroups,
     this.getPublicGroup,
     this.joinPublicGroup,
@@ -1395,32 +1397,78 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     }
   }
 
-  // Remove member from contribution
-  Future<void> removeMemberFromContributionAccount({
+  // Remove member from contribution. Returns the saga decision so
+  // the caller (bottom sheet / dialog) can show a refund-confirmed
+  // toast instead of a generic "removed" message.
+  //
+  // Returns null on failure; emits GroupAccountError with the reason
+  // (e.g. "exit blocked: contribution settled") so the listener can
+  // surface that to the user without re-decoding the exception.
+  Future<MemberExitResult?> removeMemberFromContributionAccount({
     required String contributionId,
     required String groupId,
     required String userId,
   }) async {
-    if (isClosed) return;
+    if (isClosed) return null;
     if (removeMemberFromContribution == null) {
       emit(const GroupAccountError('Remove member not available'));
-      return;
+      return null;
     }
 
     emit(const GroupAccountLoading(message: 'Removing member...'));
     try {
-      await removeMemberFromContribution!(RemoveMemberFromContributionParams(
+      final result = await removeMemberFromContribution!(
+          RemoveMemberFromContributionParams(
         contributionId: contributionId,
         userId: userId,
       ));
-      if (isClosed) return;
-      emit(const GroupAccountSuccess('Member removed from contribution'));
-      // Reload group details
+      if (isClosed) return result;
+      emit(GroupAccountSuccess(_describeExitResult(result)));
+      // Reload group details so member list, current_amount, and
+      // any cycle state derived from membership all refresh.
       await loadGroupDetails(groupId);
+      return result;
     } catch (e) {
-      if (isClosed) return;
+      if (isClosed) return null;
       emit(GroupAccountError('Failed to remove member: ${e.toString()}'));
+      return null;
     }
+  }
+
+  /// Non-side-effecting peek at the saga's decision. Returns null on
+  /// failure; the cubit does NOT emit on this path because a preview
+  /// is always called inline from a bottom-sheet that owns its own
+  /// loading state — letting the cubit emit Loading would race with
+  /// other cubit consumers (the contribution detail screen).
+  Future<MemberExitPreview?> previewMemberExitForContribution({
+    required String contributionId,
+    required String userId,
+  }) async {
+    if (isClosed) return null;
+    if (previewMemberExit == null) return null;
+    try {
+      return await previewMemberExit!(RemoveMemberFromContributionParams(
+        contributionId: contributionId,
+        userId: userId,
+      ));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String _describeExitResult(MemberExitResult r) {
+    if (r.refundAmount > 0) {
+      final amt = r.refundAmount.toStringAsFixed(2);
+      switch (r.refundStatus) {
+        case 'completed':
+          return 'Member removed. Refunded $amt.';
+        case 'pending':
+          return 'Member removed. Refund of $amt is pending — we\'ll retry the credit shortly.';
+        case 'failed':
+          return 'Member removed. Refund of $amt failed; ops has been notified.';
+      }
+    }
+    return 'Member removed from contribution';
   }
 
   // Report generation methods

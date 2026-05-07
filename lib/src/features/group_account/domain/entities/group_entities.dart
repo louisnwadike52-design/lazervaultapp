@@ -1671,3 +1671,57 @@ extension GroupVisibilityExtension on GroupVisibility {
     }
   }
 }
+
+/// Domain mirror of PreviewMemberExitResponse. Drives the
+/// confirmation modal so the user sees the refund / forfeit
+/// breakdown before committing. Amounts are in MAJOR units already.
+class MemberExitPreview {
+  /// True if the saga can proceed. False means the contribution is
+  /// in a terminal state (e.g. one-time settled — funds disbursed)
+  /// and the actual exit RPC would reject.
+  final bool exitAllowed;
+  /// Server-provided text when [exitAllowed] is false.
+  final String blockedReason;
+  /// Saga decision label, e.g. "self_leave_rosca_pre_payout".
+  final String removalReason;
+  /// Credit the member will receive on exit.
+  final double refundAmount;
+  /// Money the member forfeits (already paid out to other
+  /// recipients in historical ROSCA cycles).
+  final double forfeitedAmount;
+  final String currency;
+  /// True when the member already received a payout. Refund is 0;
+  /// UI shows "your share is already settled".
+  final bool memberHasReceivedPayout;
+  /// Cycle index used to compute the refund window. 0 for one-time.
+  final int currentCycle;
+
+  const MemberExitPreview({
+    required this.exitAllowed,
+    required this.blockedReason,
+    required this.removalReason,
+    required this.refundAmount,
+    required this.forfeitedAmount,
+    required this.currency,
+    required this.memberHasReceivedPayout,
+    required this.currentCycle,
+  });
+}
+
+/// Domain mirror of RemoveMemberFromContributionResponse.
+class MemberExitResult {
+  final bool success;
+  final double refundAmount;
+  final double forfeitedAmount;
+  /// One of "none", "pending", "completed", "failed".
+  final String refundStatus;
+  final String removalReason;
+
+  const MemberExitResult({
+    required this.success,
+    required this.refundAmount,
+    required this.forfeitedAmount,
+    required this.refundStatus,
+    required this.removalReason,
+  });
+}

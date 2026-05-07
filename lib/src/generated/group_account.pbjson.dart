@@ -1401,13 +1401,58 @@ const RemoveMemberFromContributionResponse$json = {
   '1': 'RemoveMemberFromContributionResponse',
   '2': [
     {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'refund_amount', '3': 2, '4': 1, '5': 4, '10': 'refundAmount'},
+    {'1': 'forfeited_amount', '3': 3, '4': 1, '5': 4, '10': 'forfeitedAmount'},
+    {'1': 'refund_status', '3': 4, '4': 1, '5': 9, '10': 'refundStatus'},
+    {'1': 'removal_reason', '3': 5, '4': 1, '5': 9, '10': 'removalReason'},
   ],
 };
 
 /// Descriptor for `RemoveMemberFromContributionResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List removeMemberFromContributionResponseDescriptor = $convert.base64Decode(
     'CiRSZW1vdmVNZW1iZXJGcm9tQ29udHJpYnV0aW9uUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCF'
-    'IHc3VjY2Vzcw==');
+    'IHc3VjY2VzcxIjCg1yZWZ1bmRfYW1vdW50GAIgASgEUgxyZWZ1bmRBbW91bnQSKQoQZm9yZmVp'
+    'dGVkX2Ftb3VudBgDIAEoBFIPZm9yZmVpdGVkQW1vdW50EiMKDXJlZnVuZF9zdGF0dXMYBCABKA'
+    'lSDHJlZnVuZFN0YXR1cxIlCg5yZW1vdmFsX3JlYXNvbhgFIAEoCVINcmVtb3ZhbFJlYXNvbg==');
+
+@$core.Deprecated('Use previewMemberExitRequestDescriptor instead')
+const PreviewMemberExitRequest$json = {
+  '1': 'PreviewMemberExitRequest',
+  '2': [
+    {'1': 'contribution_id', '3': 1, '4': 1, '5': 9, '10': 'contributionId'},
+    {'1': 'member_user_id', '3': 2, '4': 1, '5': 9, '10': 'memberUserId'},
+  ],
+};
+
+/// Descriptor for `PreviewMemberExitRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List previewMemberExitRequestDescriptor = $convert.base64Decode(
+    'ChhQcmV2aWV3TWVtYmVyRXhpdFJlcXVlc3QSJwoPY29udHJpYnV0aW9uX2lkGAEgASgJUg5jb2'
+    '50cmlidXRpb25JZBIkCg5tZW1iZXJfdXNlcl9pZBgCIAEoCVIMbWVtYmVyVXNlcklk');
+
+@$core.Deprecated('Use previewMemberExitResponseDescriptor instead')
+const PreviewMemberExitResponse$json = {
+  '1': 'PreviewMemberExitResponse',
+  '2': [
+    {'1': 'exit_allowed', '3': 1, '4': 1, '5': 8, '10': 'exitAllowed'},
+    {'1': 'blocked_reason', '3': 2, '4': 1, '5': 9, '10': 'blockedReason'},
+    {'1': 'removal_reason', '3': 3, '4': 1, '5': 9, '10': 'removalReason'},
+    {'1': 'refund_amount', '3': 4, '4': 1, '5': 4, '10': 'refundAmount'},
+    {'1': 'forfeited_amount', '3': 5, '4': 1, '5': 4, '10': 'forfeitedAmount'},
+    {'1': 'currency', '3': 6, '4': 1, '5': 9, '10': 'currency'},
+    {'1': 'member_has_received_payout', '3': 7, '4': 1, '5': 8, '10': 'memberHasReceivedPayout'},
+    {'1': 'current_cycle', '3': 8, '4': 1, '5': 13, '10': 'currentCycle'},
+  ],
+};
+
+/// Descriptor for `PreviewMemberExitResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List previewMemberExitResponseDescriptor = $convert.base64Decode(
+    'ChlQcmV2aWV3TWVtYmVyRXhpdFJlc3BvbnNlEiEKDGV4aXRfYWxsb3dlZBgBIAEoCFILZXhpdE'
+    'FsbG93ZWQSJQoOYmxvY2tlZF9yZWFzb24YAiABKAlSDWJsb2NrZWRSZWFzb24SJQoOcmVtb3Zh'
+    'bF9yZWFzb24YAyABKAlSDXJlbW92YWxSZWFzb24SIwoNcmVmdW5kX2Ftb3VudBgEIAEoBFIMcm'
+    'VmdW5kQW1vdW50EikKEGZvcmZlaXRlZF9hbW91bnQYBSABKARSD2ZvcmZlaXRlZEFtb3VudBIa'
+    'CghjdXJyZW5jeRgGIAEoCVIIY3VycmVuY3kSOwoabWVtYmVyX2hhc19yZWNlaXZlZF9wYXlvdX'
+    'QYByABKAhSF21lbWJlckhhc1JlY2VpdmVkUGF5b3V0EiMKDWN1cnJlbnRfY3ljbGUYCCABKA1S'
+    'DGN1cnJlbnRDeWNsZQ==');
 
 @$core.Deprecated('Use getContributionMembersRequestDescriptor instead')
 const GetContributionMembersRequest$json = {
@@ -1749,6 +1794,92 @@ const GenerateTranscriptResponse$json = {
 final $typed_data.Uint8List generateTranscriptResponseDescriptor = $convert.base64Decode(
     'ChpHZW5lcmF0ZVRyYW5zY3JpcHRSZXNwb25zZRJNCgp0cmFuc2NyaXB0GAEgASgLMi0uZ3JvdX'
     'BfYWNjb3VudHMuQ29udHJpYnV0aW9uVHJhbnNjcmlwdE1lc3NhZ2VSCnRyYW5zY3JpcHQ=');
+
+@$core.Deprecated('Use contributionMessageProtoDescriptor instead')
+const ContributionMessageProto$json = {
+  '1': 'ContributionMessageProto',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    {'1': 'contribution_id', '3': 2, '4': 1, '5': 9, '10': 'contributionId'},
+    {'1': 'sender_id', '3': 3, '4': 1, '5': 9, '10': 'senderId'},
+    {'1': 'sender_name', '3': 4, '4': 1, '5': 9, '10': 'senderName'},
+    {'1': 'kind', '3': 5, '4': 1, '5': 9, '10': 'kind'},
+    {'1': 'body', '3': 6, '4': 1, '5': 9, '10': 'body'},
+    {'1': 'media_url', '3': 7, '4': 1, '5': 9, '10': 'mediaUrl'},
+    {'1': 'duration_ms', '3': 8, '4': 1, '5': 5, '10': 'durationMs'},
+    {'1': 'created_at', '3': 9, '4': 1, '5': 9, '10': 'createdAt'},
+  ],
+};
+
+/// Descriptor for `ContributionMessageProto`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List contributionMessageProtoDescriptor = $convert.base64Decode(
+    'ChhDb250cmlidXRpb25NZXNzYWdlUHJvdG8SDgoCaWQYASABKAlSAmlkEicKD2NvbnRyaWJ1dG'
+    'lvbl9pZBgCIAEoCVIOY29udHJpYnV0aW9uSWQSGwoJc2VuZGVyX2lkGAMgASgJUghzZW5kZXJJ'
+    'ZBIfCgtzZW5kZXJfbmFtZRgEIAEoCVIKc2VuZGVyTmFtZRISCgRraW5kGAUgASgJUgRraW5kEh'
+    'IKBGJvZHkYBiABKAlSBGJvZHkSGwoJbWVkaWFfdXJsGAcgASgJUghtZWRpYVVybBIfCgtkdXJh'
+    'dGlvbl9tcxgIIAEoBVIKZHVyYXRpb25NcxIdCgpjcmVhdGVkX2F0GAkgASgJUgljcmVhdGVkQX'
+    'Q=');
+
+@$core.Deprecated('Use sendContributionMessageRequestDescriptor instead')
+const SendContributionMessageRequest$json = {
+  '1': 'SendContributionMessageRequest',
+  '2': [
+    {'1': 'contribution_id', '3': 1, '4': 1, '5': 9, '10': 'contributionId'},
+    {'1': 'kind', '3': 2, '4': 1, '5': 9, '10': 'kind'},
+    {'1': 'body', '3': 3, '4': 1, '5': 9, '10': 'body'},
+    {'1': 'media_url', '3': 4, '4': 1, '5': 9, '10': 'mediaUrl'},
+    {'1': 'duration_ms', '3': 5, '4': 1, '5': 5, '10': 'durationMs'},
+  ],
+};
+
+/// Descriptor for `SendContributionMessageRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List sendContributionMessageRequestDescriptor = $convert.base64Decode(
+    'Ch5TZW5kQ29udHJpYnV0aW9uTWVzc2FnZVJlcXVlc3QSJwoPY29udHJpYnV0aW9uX2lkGAEgAS'
+    'gJUg5jb250cmlidXRpb25JZBISCgRraW5kGAIgASgJUgRraW5kEhIKBGJvZHkYAyABKAlSBGJv'
+    'ZHkSGwoJbWVkaWFfdXJsGAQgASgJUghtZWRpYVVybBIfCgtkdXJhdGlvbl9tcxgFIAEoBVIKZH'
+    'VyYXRpb25Ncw==');
+
+@$core.Deprecated('Use sendContributionMessageResponseDescriptor instead')
+const SendContributionMessageResponse$json = {
+  '1': 'SendContributionMessageResponse',
+  '2': [
+    {'1': 'message', '3': 1, '4': 1, '5': 11, '6': '.group_accounts.ContributionMessageProto', '10': 'message'},
+  ],
+};
+
+/// Descriptor for `SendContributionMessageResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List sendContributionMessageResponseDescriptor = $convert.base64Decode(
+    'Ch9TZW5kQ29udHJpYnV0aW9uTWVzc2FnZVJlc3BvbnNlEkIKB21lc3NhZ2UYASABKAsyKC5ncm'
+    '91cF9hY2NvdW50cy5Db250cmlidXRpb25NZXNzYWdlUHJvdG9SB21lc3NhZ2U=');
+
+@$core.Deprecated('Use listContributionMessagesRequestDescriptor instead')
+const ListContributionMessagesRequest$json = {
+  '1': 'ListContributionMessagesRequest',
+  '2': [
+    {'1': 'contribution_id', '3': 1, '4': 1, '5': 9, '10': 'contributionId'},
+    {'1': 'since_rfc3339', '3': 2, '4': 1, '5': 9, '10': 'sinceRfc3339'},
+    {'1': 'limit', '3': 3, '4': 1, '5': 5, '10': 'limit'},
+  ],
+};
+
+/// Descriptor for `ListContributionMessagesRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List listContributionMessagesRequestDescriptor = $convert.base64Decode(
+    'Ch9MaXN0Q29udHJpYnV0aW9uTWVzc2FnZXNSZXF1ZXN0EicKD2NvbnRyaWJ1dGlvbl9pZBgBIA'
+    'EoCVIOY29udHJpYnV0aW9uSWQSIwoNc2luY2VfcmZjMzMzORgCIAEoCVIMc2luY2VSZmMzMzM5'
+    'EhQKBWxpbWl0GAMgASgFUgVsaW1pdA==');
+
+@$core.Deprecated('Use listContributionMessagesResponseDescriptor instead')
+const ListContributionMessagesResponse$json = {
+  '1': 'ListContributionMessagesResponse',
+  '2': [
+    {'1': 'messages', '3': 1, '4': 3, '5': 11, '6': '.group_accounts.ContributionMessageProto', '10': 'messages'},
+  ],
+};
+
+/// Descriptor for `ListContributionMessagesResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List listContributionMessagesResponseDescriptor = $convert.base64Decode(
+    'CiBMaXN0Q29udHJpYnV0aW9uTWVzc2FnZXNSZXNwb25zZRJECghtZXNzYWdlcxgBIAMoCzIoLm'
+    'dyb3VwX2FjY291bnRzLkNvbnRyaWJ1dGlvbk1lc3NhZ2VQcm90b1IIbWVzc2FnZXM=');
 
 @$core.Deprecated('Use getGroupStatisticsRequestDescriptor instead')
 const GetGroupStatisticsRequest$json = {
