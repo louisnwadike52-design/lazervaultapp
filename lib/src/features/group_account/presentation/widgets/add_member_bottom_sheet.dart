@@ -1244,7 +1244,7 @@ class _AddMemberBottomSheetState extends State<AddMemberBottomSheet> {
         break;
       case GroupMemberRole.viewer:
         color = const Color(0xFF6B7280);
-        description = 'Read-only access — cannot contribute';
+        description = 'Read only access. Cannot contribute';
         icon = Icons.visibility;
         break;
     }

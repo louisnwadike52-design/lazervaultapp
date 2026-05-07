@@ -1210,7 +1210,7 @@ class _AddMembersToContributionDialogState extends State<AddMembersToContributio
                     // tells the operator where to go instead.
                     SizedBox(height: 4.h),
                     Text(
-                      'Already in group — use Group Members tab',
+                      'Already in group. Use Group Members tab',
                       style: GoogleFonts.inter(
                         fontSize: 11.sp,
                         fontWeight: FontWeight.w500,
