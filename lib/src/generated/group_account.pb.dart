@@ -870,6 +870,8 @@ class ContributionMemberMessage extends $pb.GeneratedMessage {
     $fixnum.Int64? totalPaid,
     $fixnum.Int64? expectedAmount,
     $core.bool? hasPaidCurrentCycle,
+    $fixnum.Int64? cyclePaidAmount,
+    $core.int? missedCycles,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -882,6 +884,8 @@ class ContributionMemberMessage extends $pb.GeneratedMessage {
     if (totalPaid != null) result.totalPaid = totalPaid;
     if (expectedAmount != null) result.expectedAmount = expectedAmount;
     if (hasPaidCurrentCycle != null) result.hasPaidCurrentCycle = hasPaidCurrentCycle;
+    if (cyclePaidAmount != null) result.cyclePaidAmount = cyclePaidAmount;
+    if (missedCycles != null) result.missedCycles = missedCycles;
     return result;
   }
 
@@ -901,6 +905,8 @@ class ContributionMemberMessage extends $pb.GeneratedMessage {
     ..a<$fixnum.Int64>(8, _omitFieldNames ? '' : 'totalPaid', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..a<$fixnum.Int64>(9, _omitFieldNames ? '' : 'expectedAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOB(10, _omitFieldNames ? '' : 'hasPaidCurrentCycle')
+    ..a<$fixnum.Int64>(11, _omitFieldNames ? '' : 'cyclePaidAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$core.int>(12, _omitFieldNames ? '' : 'missedCycles', $pb.PbFieldType.OU3)
     ..hasRequiredFields = false
   ;
 
@@ -1012,6 +1018,30 @@ class ContributionMemberMessage extends $pb.GeneratedMessage {
   $core.bool hasHasPaidCurrentCycle() => $_has(9);
   @$pb.TagNumber(10)
   void clearHasPaidCurrentCycle() => $_clearField(10);
+
+  /// Cumulative completed payments since the current cycle started.
+  /// Lets ROSCA + allow_partial_payments members spread the per-cycle
+  /// share across multiple smaller payments. Reset to 0 on cycle
+  /// advance. Always 0 for one-time contributions.
+  @$pb.TagNumber(11)
+  $fixnum.Int64 get cyclePaidAmount => $_getI64(10);
+  @$pb.TagNumber(11)
+  set cyclePaidAmount($fixnum.Int64 value) => $_setInt64(10, value);
+  @$pb.TagNumber(11)
+  $core.bool hasCyclePaidAmount() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearCyclePaidAmount() => $_clearField(11);
+
+  /// Surfaces missed_cycles to clients without a separate fetch — the
+  /// dashboard "Missed cycles" column reads this directly.
+  @$pb.TagNumber(12)
+  $core.int get missedCycles => $_getIZ(11);
+  @$pb.TagNumber(12)
+  set missedCycles($core.int value) => $_setUnsignedInt32(11, value);
+  @$pb.TagNumber(12)
+  $core.bool hasMissedCycles() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearMissedCycles() => $_clearField(12);
 }
 
 class ContributionPaymentMessage extends $pb.GeneratedMessage {

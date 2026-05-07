@@ -215,6 +215,14 @@ message ContributionMemberMessage {
   uint64 total_paid = 8;
   uint64 expected_amount = 9;
   bool has_paid_current_cycle = 10;
+  // Cumulative completed payments since the current cycle started.
+  // Lets ROSCA + allow_partial_payments members spread the per-cycle
+  // share across multiple smaller payments. Reset to 0 on cycle
+  // advance. Always 0 for one-time contributions.
+  uint64 cycle_paid_amount = 11;
+  // Surfaces missed_cycles to clients without a separate fetch — the
+  // dashboard "Missed cycles" column reads this directly.
+  uint32 missed_cycles = 12;
 }
 
 message ContributionPaymentMessage {

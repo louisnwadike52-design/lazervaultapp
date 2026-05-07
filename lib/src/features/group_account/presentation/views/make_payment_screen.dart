@@ -96,16 +96,61 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
     return amt;
   }
 
+  /// Looks up the current user's per-cycle bookkeeping. Used to drive
+  /// partial-payment UI when ROSCA + allow_partial_payments=true:
+  /// remainder = regularAmount - cycle_paid_amount, prefilling the
+  /// remainder lets the member pay what's left in one tap, but they
+  /// can also enter a smaller amount to spread the share further.
+  ContributionMember? get _myMember {
+    final me = context.read<GroupAccountCubit>().currentUserId;
+    if (me == null || widget.contribution == null) return null;
+    for (final m in widget.contribution!.members) {
+      if (m.userId == me) return m;
+    }
+    return null;
+  }
+
+  /// True when the contribution allows splitting the cycle share into
+  /// multiple smaller payments. Drives the field-lock + helper copy:
+  /// when true the amount field is editable down to the remainder.
+  bool get _allowsPartial {
+    final c = widget.contribution;
+    if (c == null) return false;
+    if (c.type == ContributionType.rotatingSavings) {
+      return c.allowPartialPayments;
+    }
+    // One-time partial is gated separately; out of scope for the
+    // ROSCA-specific cycle-progress UI on this screen.
+    return false;
+  }
+
+  /// Remainder owed THIS cycle for ROSCA partial-payment members.
+  /// Returns null when the contribution isn't ROSCA-with-partials,
+  /// or when the cycle is already fully covered.
+  double? get _cycleRemainder {
+    final fixed = _fixedRoscaAmount;
+    if (fixed == null || !_allowsPartial) return null;
+    final paid = _myMember?.cyclePaidAmount ?? 0;
+    final remainder = fixed - paid;
+    if (remainder <= 0) return null;
+    return remainder;
+  }
+
   @override
   void initState() {
     super.initState();
     if (widget.contribution != null) {
       final fixed = _fixedRoscaAmount;
       if (fixed != null) {
-        // ROSCA: lock to the per-member amount. Backend rejects any
-        // mismatch, so prefilling the exact amount is both correct and
-        // user-friendly (one tap to pay your share).
-        _amountController.text = fixed.toStringAsFixed(2);
+        // ROSCA prefill order:
+        //   1. allow_partial=true and member already paid in part →
+        //      prefill the REMAINDER so the next payment closes the
+        //      cycle. The member can edit down for another partial.
+        //   2. allow_partial=false (or first payment of the cycle) →
+        //      prefill the full per-member share.
+        final remainder = _cycleRemainder;
+        final prefill = remainder ?? fixed;
+        _amountController.text = prefill.toStringAsFixed(2);
       } else {
         // One-time: prefill remaining balance as a suggestion. Field
         // stays editable so members can pay any portion they can afford.
@@ -468,14 +513,19 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
           ),
         ),
         SizedBox(height: 12.h),
+        if (_isRotatingSavings && _allowsPartial && _myMember != null)
+          _buildCycleProgressBanner(),
         TextFormField(
           controller: _amountController,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          // ROSCA: amount is the per-member fixed share. Locking the
-          // field at the UI layer matches the backend enforcement and
-          // makes the contract obvious to the user.
-          readOnly: _isRotatingSavings,
-          enabled: !_isRotatingSavings,
+          // Lock rules:
+          //   ROSCA + allow_partial=false: locked to per-member share
+          //     (backend rejects any deviation).
+          //   ROSCA + allow_partial=true: editable within
+          //     [0, remainder] so the member can chunk their share.
+          //   One-time: editable.
+          readOnly: _isRotatingSavings && !_allowsPartial,
+          enabled: !(_isRotatingSavings && !_allowsPartial),
           style: GoogleFonts.inter(
             fontSize: 24.sp,
             fontWeight: FontWeight.w700,
@@ -500,7 +550,7 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
                 ),
               ),
             ),
-            suffixIcon: _isRotatingSavings
+            suffixIcon: (_isRotatingSavings && !_allowsPartial)
                 ? Padding(
                     padding: EdgeInsets.all(16.w),
                     child: Icon(Icons.lock_outline,
@@ -598,6 +648,99 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
           _buildQuickAmountButtons(),
         ],
       ],
+    );
+  }
+
+  /// Cycle-progress banner above the amount field for ROSCA +
+  /// allow_partial_payments members. Shows "X paid of Y this cycle"
+  /// with a progress bar so the user can see how much of their cycle
+  /// share is still owed before they pay another partial.
+  Widget _buildCycleProgressBanner() {
+    final fixed = _fixedRoscaAmount!;
+    final paid = _myMember!.cyclePaidAmount;
+    final remainder = (fixed - paid).clamp(0.0, fixed);
+    final progress = fixed > 0 ? (paid / fixed).clamp(0.0, 1.0) : 0.0;
+    final currency = widget.contribution?.currency ?? 'NGN';
+    final fullyCovered = remainder <= 0;
+
+    String fmt(double v) =>
+        v.toStringAsFixed(v == v.truncateToDouble() ? 0 : 2);
+
+    return Container(
+      margin: EdgeInsets.only(bottom: 12.h),
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: fullyCovered
+              ? const Color(0xFF10B981).withValues(alpha: 0.4)
+              : const Color(0xFF6366F1).withValues(alpha: 0.3),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                fullyCovered ? Icons.check_circle : Icons.donut_large,
+                color: fullyCovered
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFF6366F1),
+                size: 16.sp,
+              ),
+              SizedBox(width: 8.w),
+              Expanded(
+                child: Text(
+                  fullyCovered
+                      ? 'Cycle fully paid'
+                      : 'Cycle paid: $currency ${fmt(paid)} of $currency ${fmt(fixed)}',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              if (!fullyCovered)
+                Text(
+                  '$currency ${fmt(remainder)} left',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF6366F1),
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+            ],
+          ),
+          SizedBox(height: 8.h),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(2.r),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 4.h,
+              backgroundColor: const Color(0xFF2D2D2D),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                fullyCovered
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFF6366F1),
+              ),
+            ),
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            fullyCovered
+                ? 'No more payments needed for this cycle.'
+                : 'Pay any amount up to $currency ${fmt(remainder)} to chip away at this cycle\'s share. The cycle closes once the cumulative reaches $currency ${fmt(fixed)}.',
+            style: GoogleFonts.inter(
+              color: Colors.grey[400],
+              fontSize: 11.sp,
+              height: 1.4,
+            ),
+          ),
+        ],
+      ),
     );
   }
 

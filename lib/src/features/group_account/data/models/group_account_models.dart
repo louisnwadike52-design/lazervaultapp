@@ -572,6 +572,8 @@ class ContributionMemberModel extends ContributionMember {
     super.totalPaid = 0,
     super.expectedAmount = 0,
     super.hasPaidCurrentCycle = false,
+    super.cyclePaidAmount = 0,
+    super.missedCycles = 0,
   });
 
   factory ContributionMemberModel.fromJson(Map<String, dynamic> json) {
@@ -586,6 +588,8 @@ class ContributionMemberModel extends ContributionMember {
       totalPaid: (json['totalPaid'] as num?)?.toDouble() ?? 0,
       expectedAmount: (json['expectedAmount'] as num?)?.toDouble() ?? 0,
       hasPaidCurrentCycle: json['hasPaidCurrentCycle'] as bool? ?? false,
+      cyclePaidAmount: (json['cyclePaidAmount'] as num?)?.toDouble() ?? 0,
+      missedCycles: (json['missedCycles'] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -601,6 +605,8 @@ class ContributionMemberModel extends ContributionMember {
       'totalPaid': totalPaid,
       'expectedAmount': expectedAmount,
       'hasPaidCurrentCycle': hasPaidCurrentCycle,
+      'cyclePaidAmount': cyclePaidAmount,
+      'missedCycles': missedCycles,
     };
   }
 }

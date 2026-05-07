@@ -857,6 +857,16 @@ class ContributionMember extends Equatable {
   final double totalPaid;
   final double expectedAmount;
   final bool hasPaidCurrentCycle;
+  /// Cumulative completed payments for the CURRENT cycle. ROSCA +
+  /// allow_partial_payments members can pay their share in chunks;
+  /// has_paid_current_cycle stays false until cumulative reaches
+  /// regular_amount. Reset to 0 on cycle advance. Always 0 for
+  /// one-time contributions.
+  final double cyclePaidAmount;
+  /// Number of cycles this member's row has missed (no completed
+  /// payment by cycle close). Surfaced for the "X members behind"
+  /// indicators on the contribution screen.
+  final int missedCycles;
 
   const ContributionMember({
     required this.id,
@@ -869,6 +879,8 @@ class ContributionMember extends Equatable {
     this.totalPaid = 0,
     this.expectedAmount = 0,
     this.hasPaidCurrentCycle = false,
+    this.cyclePaidAmount = 0,
+    this.missedCycles = 0,
   });
 
   @override
@@ -883,6 +895,8 @@ class ContributionMember extends Equatable {
         totalPaid,
         expectedAmount,
         hasPaidCurrentCycle,
+        cyclePaidAmount,
+        missedCycles,
       ];
 
   ContributionMember copyWith({
@@ -896,6 +910,8 @@ class ContributionMember extends Equatable {
     double? totalPaid,
     double? expectedAmount,
     bool? hasPaidCurrentCycle,
+    double? cyclePaidAmount,
+    int? missedCycles,
   }) {
     return ContributionMember(
       id: id ?? this.id,
@@ -908,6 +924,8 @@ class ContributionMember extends Equatable {
       totalPaid: totalPaid ?? this.totalPaid,
       expectedAmount: expectedAmount ?? this.expectedAmount,
       hasPaidCurrentCycle: hasPaidCurrentCycle ?? this.hasPaidCurrentCycle,
+      cyclePaidAmount: cyclePaidAmount ?? this.cyclePaidAmount,
+      missedCycles: missedCycles ?? this.missedCycles,
     );
   }
 }

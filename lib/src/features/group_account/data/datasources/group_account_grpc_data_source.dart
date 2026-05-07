@@ -1016,6 +1016,8 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       totalPaid: _int64ToAmount(member.totalPaid),
       expectedAmount: _int64ToAmount(member.expectedAmount),
       hasPaidCurrentCycle: member.hasPaidCurrentCycle,
+      cyclePaidAmount: _int64ToAmount(member.cyclePaidAmount),
+      missedCycles: member.missedCycles,
     );
   }
 
