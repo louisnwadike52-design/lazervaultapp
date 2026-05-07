@@ -838,13 +838,25 @@ class GroupAccountGrpcDataSource implements GroupAccountRemoteDataSource {
       final callOptions = await _callOptionsHelper.withAuth();
       final response = await _client.getGroupStatistics(request, options: callOptions);
 
+      // Amount fields come back from the gRPC server as MINOR units
+      // (kobo). Every other read path on this data source converts to
+      // major units via _int64ToAmount so the UI/cubit always sees a
+      // consistent shape — apply the same here.
+      //
+      // Previous regression: the values were passed straight through
+      // as Int64, which made any consumer of these stats render 100x
+      // the actual amount (₦4,000,000 instead of ₦40,000). The path
+      // wasn't bitten because the only consumer was an unused fire-
+      // and-forget cubit method, but the latent inconsistency tripped
+      // up the partial-payments slice when audit screens started
+      // sourcing these values.
       return {
         'memberCount': response.memberCount,
         'totalContributions': response.totalContributions,
         'completedContributions': response.completedContributions,
         'activeContributions': response.activeContributions,
-        'totalTargetAmount': response.totalTargetAmount,
-        'totalCurrentAmount': response.totalCurrentAmount,
+        'totalTargetAmount': _int64ToAmount(response.totalTargetAmount),
+        'totalCurrentAmount': _int64ToAmount(response.totalCurrentAmount),
         'completionRate': response.completionRate,
       };
     } on GrpcError catch (e) {
