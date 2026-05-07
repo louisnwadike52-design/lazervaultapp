@@ -262,6 +262,105 @@ class CryptoServiceClient extends $grpc.Client {
       ($12.GetReconciliationLogsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
           $12.GetReconciliationLogsResponse.fromBuffer(value));
+  static final _$getSpreadConfig = $grpc.ClientMethod<
+          $12.GetSpreadConfigRequest, $12.GetSpreadConfigResponse>(
+      '/pb.CryptoService/GetSpreadConfig',
+      ($12.GetSpreadConfigRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.GetSpreadConfigResponse.fromBuffer(value));
+  static final _$updateSpreadConfig = $grpc.ClientMethod<
+          $12.UpdateSpreadConfigRequest, $12.UpdateSpreadConfigResponse>(
+      '/pb.CryptoService/UpdateSpreadConfig',
+      ($12.UpdateSpreadConfigRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.UpdateSpreadConfigResponse.fromBuffer(value));
+  static final _$getFeeConfig =
+      $grpc.ClientMethod<$12.GetFeeConfigRequest, $12.GetFeeConfigResponse>(
+          '/pb.CryptoService/GetFeeConfig',
+          ($12.GetFeeConfigRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $12.GetFeeConfigResponse.fromBuffer(value));
+  static final _$updateFeeConfig = $grpc.ClientMethod<
+          $12.UpdateFeeConfigRequest, $12.UpdateFeeConfigResponse>(
+      '/pb.CryptoService/UpdateFeeConfig',
+      ($12.UpdateFeeConfigRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.UpdateFeeConfigResponse.fromBuffer(value));
+  static final _$getWalletReconciliations = $grpc.ClientMethod<
+          $12.GetWalletReconciliationsRequest,
+          $12.GetWalletReconciliationsResponse>(
+      '/pb.CryptoService/GetWalletReconciliations',
+      ($12.GetWalletReconciliationsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.GetWalletReconciliationsResponse.fromBuffer(value));
+  static final _$triggerWalletReconciliation = $grpc.ClientMethod<
+          $12.TriggerWalletReconciliationRequest,
+          $12.TriggerWalletReconciliationResponse>(
+      '/pb.CryptoService/TriggerWalletReconciliation',
+      ($12.TriggerWalletReconciliationRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.TriggerWalletReconciliationResponse.fromBuffer(value));
+  static final _$getSettlements =
+      $grpc.ClientMethod<$12.GetSettlementsRequest, $12.GetSettlementsResponse>(
+          '/pb.CryptoService/GetSettlements',
+          ($12.GetSettlementsRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $12.GetSettlementsResponse.fromBuffer(value));
+  static final _$markSettlementsPaid = $grpc.ClientMethod<
+          $12.MarkSettlementsPaidRequest, $12.MarkSettlementsPaidResponse>(
+      '/pb.CryptoService/MarkSettlementsPaid',
+      ($12.MarkSettlementsPaidRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.MarkSettlementsPaidResponse.fromBuffer(value));
+  static final _$getTransactionDetail = $grpc.ClientMethod<
+          $12.GetTransactionDetailRequest, $12.GetTransactionDetailResponse>(
+      '/pb.CryptoService/GetTransactionDetail',
+      ($12.GetTransactionDetailRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.GetTransactionDetailResponse.fromBuffer(value));
+  static final _$retryTransaction = $grpc.ClientMethod<
+          $12.RetryTransactionRequest, $12.RetryTransactionResponse>(
+      '/pb.CryptoService/RetryTransaction',
+      ($12.RetryTransactionRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.RetryTransactionResponse.fromBuffer(value));
+  static final _$reverseTransaction = $grpc.ClientMethod<
+          $12.ReverseTransactionRequest, $12.ReverseTransactionResponse>(
+      '/pb.CryptoService/ReverseTransaction',
+      ($12.ReverseTransactionRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.ReverseTransactionResponse.fromBuffer(value));
+  static final _$getUserCryptoAuditTrail = $grpc.ClientMethod<
+          $12.GetUserCryptoAuditTrailRequest,
+          $12.GetUserCryptoAuditTrailResponse>(
+      '/pb.CryptoService/GetUserCryptoAuditTrail',
+      ($12.GetUserCryptoAuditTrailRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.GetUserCryptoAuditTrailResponse.fromBuffer(value));
+  static final _$setTradingSuspension = $grpc.ClientMethod<
+          $12.SetTradingSuspensionRequest, $12.SetTradingSuspensionResponse>(
+      '/pb.CryptoService/SetTradingSuspension',
+      ($12.SetTradingSuspensionRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.SetTradingSuspensionResponse.fromBuffer(value));
+  static final _$getTradingSuspension = $grpc.ClientMethod<
+          $12.GetTradingSuspensionRequest, $12.GetTradingSuspensionResponse>(
+      '/pb.CryptoService/GetTradingSuspension',
+      ($12.GetTradingSuspensionRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.GetTradingSuspensionResponse.fromBuffer(value));
+  static final _$setUserCryptoFreeze = $grpc.ClientMethod<
+          $12.SetUserCryptoFreezeRequest, $12.SetUserCryptoFreezeResponse>(
+      '/pb.CryptoService/SetUserCryptoFreeze',
+      ($12.SetUserCryptoFreezeRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.SetUserCryptoFreezeResponse.fromBuffer(value));
+  static final _$getUserCryptoFreeze = $grpc.ClientMethod<
+          $12.GetUserCryptoFreezeRequest, $12.GetUserCryptoFreezeResponse>(
+      '/pb.CryptoService/GetUserCryptoFreeze',
+      ($12.GetUserCryptoFreezeRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.GetUserCryptoFreezeResponse.fromBuffer(value));
 
   CryptoServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -515,6 +614,106 @@ class CryptoServiceClient extends $grpc.Client {
       $12.GetReconciliationLogsRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getReconciliationLogs, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.GetSpreadConfigResponse> getSpreadConfig(
+      $12.GetSpreadConfigRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getSpreadConfig, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.UpdateSpreadConfigResponse> updateSpreadConfig(
+      $12.UpdateSpreadConfigRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$updateSpreadConfig, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.GetFeeConfigResponse> getFeeConfig(
+      $12.GetFeeConfigRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getFeeConfig, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.UpdateFeeConfigResponse> updateFeeConfig(
+      $12.UpdateFeeConfigRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$updateFeeConfig, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.GetWalletReconciliationsResponse>
+      getWalletReconciliations($12.GetWalletReconciliationsRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getWalletReconciliations, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$12.TriggerWalletReconciliationResponse>
+      triggerWalletReconciliation(
+          $12.TriggerWalletReconciliationRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$triggerWalletReconciliation, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$12.GetSettlementsResponse> getSettlements(
+      $12.GetSettlementsRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getSettlements, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.MarkSettlementsPaidResponse> markSettlementsPaid(
+      $12.MarkSettlementsPaidRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$markSettlementsPaid, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.GetTransactionDetailResponse> getTransactionDetail(
+      $12.GetTransactionDetailRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getTransactionDetail, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.RetryTransactionResponse> retryTransaction(
+      $12.RetryTransactionRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$retryTransaction, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.ReverseTransactionResponse> reverseTransaction(
+      $12.ReverseTransactionRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$reverseTransaction, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.GetUserCryptoAuditTrailResponse>
+      getUserCryptoAuditTrail($12.GetUserCryptoAuditTrailRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getUserCryptoAuditTrail, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$12.SetTradingSuspensionResponse> setTradingSuspension(
+      $12.SetTradingSuspensionRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$setTradingSuspension, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.GetTradingSuspensionResponse> getTradingSuspension(
+      $12.GetTradingSuspensionRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getTradingSuspension, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.SetUserCryptoFreezeResponse> setUserCryptoFreeze(
+      $12.SetUserCryptoFreezeRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$setUserCryptoFreeze, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.GetUserCryptoFreezeResponse> getUserCryptoFreeze(
+      $12.GetUserCryptoFreezeRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getUserCryptoFreeze, request, options: options);
   }
 }
 
@@ -889,6 +1088,151 @@ abstract class CryptoServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $12.GetReconciliationLogsRequest.fromBuffer(value),
         ($12.GetReconciliationLogsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.GetSpreadConfigRequest,
+            $12.GetSpreadConfigResponse>(
+        'GetSpreadConfig',
+        getSpreadConfig_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.GetSpreadConfigRequest.fromBuffer(value),
+        ($12.GetSpreadConfigResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.UpdateSpreadConfigRequest,
+            $12.UpdateSpreadConfigResponse>(
+        'UpdateSpreadConfig',
+        updateSpreadConfig_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.UpdateSpreadConfigRequest.fromBuffer(value),
+        ($12.UpdateSpreadConfigResponse value) => value.writeToBuffer()));
+    $addMethod(
+        $grpc.ServiceMethod<$12.GetFeeConfigRequest, $12.GetFeeConfigResponse>(
+            'GetFeeConfig',
+            getFeeConfig_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $12.GetFeeConfigRequest.fromBuffer(value),
+            ($12.GetFeeConfigResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.UpdateFeeConfigRequest,
+            $12.UpdateFeeConfigResponse>(
+        'UpdateFeeConfig',
+        updateFeeConfig_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.UpdateFeeConfigRequest.fromBuffer(value),
+        ($12.UpdateFeeConfigResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.GetWalletReconciliationsRequest,
+            $12.GetWalletReconciliationsResponse>(
+        'GetWalletReconciliations',
+        getWalletReconciliations_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.GetWalletReconciliationsRequest.fromBuffer(value),
+        ($12.GetWalletReconciliationsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.TriggerWalletReconciliationRequest,
+            $12.TriggerWalletReconciliationResponse>(
+        'TriggerWalletReconciliation',
+        triggerWalletReconciliation_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.TriggerWalletReconciliationRequest.fromBuffer(value),
+        ($12.TriggerWalletReconciliationResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.GetSettlementsRequest,
+            $12.GetSettlementsResponse>(
+        'GetSettlements',
+        getSettlements_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.GetSettlementsRequest.fromBuffer(value),
+        ($12.GetSettlementsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.MarkSettlementsPaidRequest,
+            $12.MarkSettlementsPaidResponse>(
+        'MarkSettlementsPaid',
+        markSettlementsPaid_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.MarkSettlementsPaidRequest.fromBuffer(value),
+        ($12.MarkSettlementsPaidResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.GetTransactionDetailRequest,
+            $12.GetTransactionDetailResponse>(
+        'GetTransactionDetail',
+        getTransactionDetail_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.GetTransactionDetailRequest.fromBuffer(value),
+        ($12.GetTransactionDetailResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.RetryTransactionRequest,
+            $12.RetryTransactionResponse>(
+        'RetryTransaction',
+        retryTransaction_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.RetryTransactionRequest.fromBuffer(value),
+        ($12.RetryTransactionResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.ReverseTransactionRequest,
+            $12.ReverseTransactionResponse>(
+        'ReverseTransaction',
+        reverseTransaction_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.ReverseTransactionRequest.fromBuffer(value),
+        ($12.ReverseTransactionResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.GetUserCryptoAuditTrailRequest,
+            $12.GetUserCryptoAuditTrailResponse>(
+        'GetUserCryptoAuditTrail',
+        getUserCryptoAuditTrail_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.GetUserCryptoAuditTrailRequest.fromBuffer(value),
+        ($12.GetUserCryptoAuditTrailResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.SetTradingSuspensionRequest,
+            $12.SetTradingSuspensionResponse>(
+        'SetTradingSuspension',
+        setTradingSuspension_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.SetTradingSuspensionRequest.fromBuffer(value),
+        ($12.SetTradingSuspensionResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.GetTradingSuspensionRequest,
+            $12.GetTradingSuspensionResponse>(
+        'GetTradingSuspension',
+        getTradingSuspension_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.GetTradingSuspensionRequest.fromBuffer(value),
+        ($12.GetTradingSuspensionResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.SetUserCryptoFreezeRequest,
+            $12.SetUserCryptoFreezeResponse>(
+        'SetUserCryptoFreeze',
+        setUserCryptoFreeze_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.SetUserCryptoFreezeRequest.fromBuffer(value),
+        ($12.SetUserCryptoFreezeResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.GetUserCryptoFreezeRequest,
+            $12.GetUserCryptoFreezeResponse>(
+        'GetUserCryptoFreeze',
+        getUserCryptoFreeze_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.GetUserCryptoFreezeRequest.fromBuffer(value),
+        ($12.GetUserCryptoFreezeResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$12.GetCryptosResponse> getCryptos_Pre($grpc.ServiceCall call,
@@ -1133,6 +1477,102 @@ abstract class CryptoServiceBase extends $grpc.Service {
     return getReconciliationLogs(call, await request);
   }
 
+  $async.Future<$12.GetSpreadConfigResponse> getSpreadConfig_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.GetSpreadConfigRequest> request) async {
+    return getSpreadConfig(call, await request);
+  }
+
+  $async.Future<$12.UpdateSpreadConfigResponse> updateSpreadConfig_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.UpdateSpreadConfigRequest> request) async {
+    return updateSpreadConfig(call, await request);
+  }
+
+  $async.Future<$12.GetFeeConfigResponse> getFeeConfig_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.GetFeeConfigRequest> request) async {
+    return getFeeConfig(call, await request);
+  }
+
+  $async.Future<$12.UpdateFeeConfigResponse> updateFeeConfig_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.UpdateFeeConfigRequest> request) async {
+    return updateFeeConfig(call, await request);
+  }
+
+  $async.Future<$12.GetWalletReconciliationsResponse>
+      getWalletReconciliations_Pre($grpc.ServiceCall call,
+          $async.Future<$12.GetWalletReconciliationsRequest> request) async {
+    return getWalletReconciliations(call, await request);
+  }
+
+  $async.Future<$12.TriggerWalletReconciliationResponse>
+      triggerWalletReconciliation_Pre($grpc.ServiceCall call,
+          $async.Future<$12.TriggerWalletReconciliationRequest> request) async {
+    return triggerWalletReconciliation(call, await request);
+  }
+
+  $async.Future<$12.GetSettlementsResponse> getSettlements_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.GetSettlementsRequest> request) async {
+    return getSettlements(call, await request);
+  }
+
+  $async.Future<$12.MarkSettlementsPaidResponse> markSettlementsPaid_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.MarkSettlementsPaidRequest> request) async {
+    return markSettlementsPaid(call, await request);
+  }
+
+  $async.Future<$12.GetTransactionDetailResponse> getTransactionDetail_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.GetTransactionDetailRequest> request) async {
+    return getTransactionDetail(call, await request);
+  }
+
+  $async.Future<$12.RetryTransactionResponse> retryTransaction_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.RetryTransactionRequest> request) async {
+    return retryTransaction(call, await request);
+  }
+
+  $async.Future<$12.ReverseTransactionResponse> reverseTransaction_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.ReverseTransactionRequest> request) async {
+    return reverseTransaction(call, await request);
+  }
+
+  $async.Future<$12.GetUserCryptoAuditTrailResponse>
+      getUserCryptoAuditTrail_Pre($grpc.ServiceCall call,
+          $async.Future<$12.GetUserCryptoAuditTrailRequest> request) async {
+    return getUserCryptoAuditTrail(call, await request);
+  }
+
+  $async.Future<$12.SetTradingSuspensionResponse> setTradingSuspension_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.SetTradingSuspensionRequest> request) async {
+    return setTradingSuspension(call, await request);
+  }
+
+  $async.Future<$12.GetTradingSuspensionResponse> getTradingSuspension_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.GetTradingSuspensionRequest> request) async {
+    return getTradingSuspension(call, await request);
+  }
+
+  $async.Future<$12.SetUserCryptoFreezeResponse> setUserCryptoFreeze_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.SetUserCryptoFreezeRequest> request) async {
+    return setUserCryptoFreeze(call, await request);
+  }
+
+  $async.Future<$12.GetUserCryptoFreezeResponse> getUserCryptoFreeze_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.GetUserCryptoFreezeRequest> request) async {
+    return getUserCryptoFreeze(call, await request);
+  }
+
   $async.Future<$12.GetCryptosResponse> getCryptos(
       $grpc.ServiceCall call, $12.GetCryptosRequest request);
   $async.Future<$12.GetCryptoByIdResponse> getCryptoById(
@@ -1217,4 +1657,37 @@ abstract class CryptoServiceBase extends $grpc.Service {
       $grpc.ServiceCall call, $12.RunReconciliationRequest request);
   $async.Future<$12.GetReconciliationLogsResponse> getReconciliationLogs(
       $grpc.ServiceCall call, $12.GetReconciliationLogsRequest request);
+  $async.Future<$12.GetSpreadConfigResponse> getSpreadConfig(
+      $grpc.ServiceCall call, $12.GetSpreadConfigRequest request);
+  $async.Future<$12.UpdateSpreadConfigResponse> updateSpreadConfig(
+      $grpc.ServiceCall call, $12.UpdateSpreadConfigRequest request);
+  $async.Future<$12.GetFeeConfigResponse> getFeeConfig(
+      $grpc.ServiceCall call, $12.GetFeeConfigRequest request);
+  $async.Future<$12.UpdateFeeConfigResponse> updateFeeConfig(
+      $grpc.ServiceCall call, $12.UpdateFeeConfigRequest request);
+  $async.Future<$12.GetWalletReconciliationsResponse> getWalletReconciliations(
+      $grpc.ServiceCall call, $12.GetWalletReconciliationsRequest request);
+  $async.Future<$12.TriggerWalletReconciliationResponse>
+      triggerWalletReconciliation($grpc.ServiceCall call,
+          $12.TriggerWalletReconciliationRequest request);
+  $async.Future<$12.GetSettlementsResponse> getSettlements(
+      $grpc.ServiceCall call, $12.GetSettlementsRequest request);
+  $async.Future<$12.MarkSettlementsPaidResponse> markSettlementsPaid(
+      $grpc.ServiceCall call, $12.MarkSettlementsPaidRequest request);
+  $async.Future<$12.GetTransactionDetailResponse> getTransactionDetail(
+      $grpc.ServiceCall call, $12.GetTransactionDetailRequest request);
+  $async.Future<$12.RetryTransactionResponse> retryTransaction(
+      $grpc.ServiceCall call, $12.RetryTransactionRequest request);
+  $async.Future<$12.ReverseTransactionResponse> reverseTransaction(
+      $grpc.ServiceCall call, $12.ReverseTransactionRequest request);
+  $async.Future<$12.GetUserCryptoAuditTrailResponse> getUserCryptoAuditTrail(
+      $grpc.ServiceCall call, $12.GetUserCryptoAuditTrailRequest request);
+  $async.Future<$12.SetTradingSuspensionResponse> setTradingSuspension(
+      $grpc.ServiceCall call, $12.SetTradingSuspensionRequest request);
+  $async.Future<$12.GetTradingSuspensionResponse> getTradingSuspension(
+      $grpc.ServiceCall call, $12.GetTradingSuspensionRequest request);
+  $async.Future<$12.SetUserCryptoFreezeResponse> setUserCryptoFreeze(
+      $grpc.ServiceCall call, $12.SetUserCryptoFreezeRequest request);
+  $async.Future<$12.GetUserCryptoFreezeResponse> getUserCryptoFreeze(
+      $grpc.ServiceCall call, $12.GetUserCryptoFreezeRequest request);
 }

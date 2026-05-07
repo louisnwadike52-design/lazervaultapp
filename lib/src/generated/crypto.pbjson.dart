@@ -409,11 +409,12 @@ const BuyCryptoRequest$json = const {
     const {'1': 'fiat_currency', '3': 4, '4': 1, '5': 9, '10': 'fiatCurrency'},
     const {'1': 'transaction_pin', '3': 5, '4': 1, '5': 9, '10': 'transactionPin'},
     const {'1': 'idempotency_key', '3': 6, '4': 1, '5': 9, '10': 'idempotencyKey'},
+    const {'1': 'wallet_id', '3': 7, '4': 1, '5': 9, '10': 'walletId'},
   ],
 };
 
 /// Descriptor for `BuyCryptoRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List buyCryptoRequestDescriptor = $convert.base64Decode('ChBCdXlDcnlwdG9SZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZBIbCgljcnlwdG9faWQYAiABKAlSCGNyeXB0b0lkEh8KC2ZpYXRfYW1vdW50GAMgASgBUgpmaWF0QW1vdW50EiMKDWZpYXRfY3VycmVuY3kYBCABKAlSDGZpYXRDdXJyZW5jeRInCg90cmFuc2FjdGlvbl9waW4YBSABKAlSDnRyYW5zYWN0aW9uUGluEicKD2lkZW1wb3RlbmN5X2tleRgGIAEoCVIOaWRlbXBvdGVuY3lLZXk=');
+final $typed_data.Uint8List buyCryptoRequestDescriptor = $convert.base64Decode('ChBCdXlDcnlwdG9SZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZBIbCgljcnlwdG9faWQYAiABKAlSCGNyeXB0b0lkEh8KC2ZpYXRfYW1vdW50GAMgASgBUgpmaWF0QW1vdW50EiMKDWZpYXRfY3VycmVuY3kYBCABKAlSDGZpYXRDdXJyZW5jeRInCg90cmFuc2FjdGlvbl9waW4YBSABKAlSDnRyYW5zYWN0aW9uUGluEicKD2lkZW1wb3RlbmN5X2tleRgGIAEoCVIOaWRlbXBvdGVuY3lLZXkSGwoJd2FsbGV0X2lkGAcgASgJUgh3YWxsZXRJZA==');
 @$core.Deprecated('Use buyCryptoResponseDescriptor instead')
 const BuyCryptoResponse$json = const {
   '1': 'BuyCryptoResponse',
@@ -426,11 +427,15 @@ const BuyCryptoResponse$json = const {
     const {'1': 'fee', '3': 6, '4': 1, '5': 1, '10': 'fee'},
     const {'1': 'exchange_rate', '3': 7, '4': 1, '5': 1, '10': 'exchangeRate'},
     const {'1': 'net_amount', '3': 8, '4': 1, '5': 1, '10': 'netAmount'},
+    const {'1': 'wallet_id', '3': 9, '4': 1, '5': 9, '10': 'walletId'},
+    const {'1': 'provider_rate', '3': 10, '4': 1, '5': 1, '10': 'providerRate'},
+    const {'1': 'quoted_rate', '3': 11, '4': 1, '5': 1, '10': 'quotedRate'},
+    const {'1': 'spread_amount', '3': 12, '4': 1, '5': 1, '10': 'spreadAmount'},
   ],
 };
 
 /// Descriptor for `BuyCryptoResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List buyCryptoResponseDescriptor = $convert.base64Decode('ChFCdXlDcnlwdG9SZXNwb25zZRIlCg50cmFuc2FjdGlvbl9pZBgBIAEoCVINdHJhbnNhY3Rpb25JZBIbCgljcnlwdG9faWQYAiABKAlSCGNyeXB0b0lkEiMKDWNyeXB0b19hbW91bnQYAyABKAFSDGNyeXB0b0Ftb3VudBIfCgtmaWF0X2Ftb3VudBgEIAEoAVIKZmlhdEFtb3VudBIWCgZzdGF0dXMYBSABKAlSBnN0YXR1cxIQCgNmZWUYBiABKAFSA2ZlZRIjCg1leGNoYW5nZV9yYXRlGAcgASgBUgxleGNoYW5nZVJhdGUSHQoKbmV0X2Ftb3VudBgIIAEoAVIJbmV0QW1vdW50');
+final $typed_data.Uint8List buyCryptoResponseDescriptor = $convert.base64Decode('ChFCdXlDcnlwdG9SZXNwb25zZRIlCg50cmFuc2FjdGlvbl9pZBgBIAEoCVINdHJhbnNhY3Rpb25JZBIbCgljcnlwdG9faWQYAiABKAlSCGNyeXB0b0lkEiMKDWNyeXB0b19hbW91bnQYAyABKAFSDGNyeXB0b0Ftb3VudBIfCgtmaWF0X2Ftb3VudBgEIAEoAVIKZmlhdEFtb3VudBIWCgZzdGF0dXMYBSABKAlSBnN0YXR1cxIQCgNmZWUYBiABKAFSA2ZlZRIjCg1leGNoYW5nZV9yYXRlGAcgASgBUgxleGNoYW5nZVJhdGUSHQoKbmV0X2Ftb3VudBgIIAEoAVIJbmV0QW1vdW50EhsKCXdhbGxldF9pZBgJIAEoCVIId2FsbGV0SWQSIwoNcHJvdmlkZXJfcmF0ZRgKIAEoAVIMcHJvdmlkZXJSYXRlEh8KC3F1b3RlZF9yYXRlGAsgASgBUgpxdW90ZWRSYXRlEiMKDXNwcmVhZF9hbW91bnQYDCABKAFSDHNwcmVhZEFtb3VudA==');
 @$core.Deprecated('Use sellCryptoRequestDescriptor instead')
 const SellCryptoRequest$json = const {
   '1': 'SellCryptoRequest',
@@ -441,11 +446,12 @@ const SellCryptoRequest$json = const {
     const {'1': 'fiat_currency', '3': 4, '4': 1, '5': 9, '10': 'fiatCurrency'},
     const {'1': 'transaction_pin', '3': 5, '4': 1, '5': 9, '10': 'transactionPin'},
     const {'1': 'idempotency_key', '3': 6, '4': 1, '5': 9, '10': 'idempotencyKey'},
+    const {'1': 'wallet_id', '3': 7, '4': 1, '5': 9, '10': 'walletId'},
   ],
 };
 
 /// Descriptor for `SellCryptoRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List sellCryptoRequestDescriptor = $convert.base64Decode('ChFTZWxsQ3J5cHRvUmVxdWVzdBIXCgd1c2VyX2lkGAEgASgJUgZ1c2VySWQSGwoJY3J5cHRvX2lkGAIgASgJUghjcnlwdG9JZBIjCg1jcnlwdG9fYW1vdW50GAMgASgBUgxjcnlwdG9BbW91bnQSIwoNZmlhdF9jdXJyZW5jeRgEIAEoCVIMZmlhdEN1cnJlbmN5EicKD3RyYW5zYWN0aW9uX3BpbhgFIAEoCVIOdHJhbnNhY3Rpb25QaW4SJwoPaWRlbXBvdGVuY3lfa2V5GAYgASgJUg5pZGVtcG90ZW5jeUtleQ==');
+final $typed_data.Uint8List sellCryptoRequestDescriptor = $convert.base64Decode('ChFTZWxsQ3J5cHRvUmVxdWVzdBIXCgd1c2VyX2lkGAEgASgJUgZ1c2VySWQSGwoJY3J5cHRvX2lkGAIgASgJUghjcnlwdG9JZBIjCg1jcnlwdG9fYW1vdW50GAMgASgBUgxjcnlwdG9BbW91bnQSIwoNZmlhdF9jdXJyZW5jeRgEIAEoCVIMZmlhdEN1cnJlbmN5EicKD3RyYW5zYWN0aW9uX3BpbhgFIAEoCVIOdHJhbnNhY3Rpb25QaW4SJwoPaWRlbXBvdGVuY3lfa2V5GAYgASgJUg5pZGVtcG90ZW5jeUtleRIbCgl3YWxsZXRfaWQYByABKAlSCHdhbGxldElk');
 @$core.Deprecated('Use sellCryptoResponseDescriptor instead')
 const SellCryptoResponse$json = const {
   '1': 'SellCryptoResponse',
@@ -458,11 +464,15 @@ const SellCryptoResponse$json = const {
     const {'1': 'fee', '3': 6, '4': 1, '5': 1, '10': 'fee'},
     const {'1': 'exchange_rate', '3': 7, '4': 1, '5': 1, '10': 'exchangeRate'},
     const {'1': 'net_amount', '3': 8, '4': 1, '5': 1, '10': 'netAmount'},
+    const {'1': 'wallet_id', '3': 9, '4': 1, '5': 9, '10': 'walletId'},
+    const {'1': 'provider_rate', '3': 10, '4': 1, '5': 1, '10': 'providerRate'},
+    const {'1': 'quoted_rate', '3': 11, '4': 1, '5': 1, '10': 'quotedRate'},
+    const {'1': 'spread_amount', '3': 12, '4': 1, '5': 1, '10': 'spreadAmount'},
   ],
 };
 
 /// Descriptor for `SellCryptoResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List sellCryptoResponseDescriptor = $convert.base64Decode('ChJTZWxsQ3J5cHRvUmVzcG9uc2USJQoOdHJhbnNhY3Rpb25faWQYASABKAlSDXRyYW5zYWN0aW9uSWQSGwoJY3J5cHRvX2lkGAIgASgJUghjcnlwdG9JZBIfCgtmaWF0X2Ftb3VudBgDIAEoAVIKZmlhdEFtb3VudBIjCg1jcnlwdG9fYW1vdW50GAQgASgBUgxjcnlwdG9BbW91bnQSFgoGc3RhdHVzGAUgASgJUgZzdGF0dXMSEAoDZmVlGAYgASgBUgNmZWUSIwoNZXhjaGFuZ2VfcmF0ZRgHIAEoAVIMZXhjaGFuZ2VSYXRlEh0KCm5ldF9hbW91bnQYCCABKAFSCW5ldEFtb3VudA==');
+final $typed_data.Uint8List sellCryptoResponseDescriptor = $convert.base64Decode('ChJTZWxsQ3J5cHRvUmVzcG9uc2USJQoOdHJhbnNhY3Rpb25faWQYASABKAlSDXRyYW5zYWN0aW9uSWQSGwoJY3J5cHRvX2lkGAIgASgJUghjcnlwdG9JZBIfCgtmaWF0X2Ftb3VudBgDIAEoAVIKZmlhdEFtb3VudBIjCg1jcnlwdG9fYW1vdW50GAQgASgBUgxjcnlwdG9BbW91bnQSFgoGc3RhdHVzGAUgASgJUgZzdGF0dXMSEAoDZmVlGAYgASgBUgNmZWUSIwoNZXhjaGFuZ2VfcmF0ZRgHIAEoAVIMZXhjaGFuZ2VSYXRlEh0KCm5ldF9hbW91bnQYCCABKAFSCW5ldEFtb3VudBIbCgl3YWxsZXRfaWQYCSABKAlSCHdhbGxldElkEiMKDXByb3ZpZGVyX3JhdGUYCiABKAFSDHByb3ZpZGVyUmF0ZRIfCgtxdW90ZWRfcmF0ZRgLIAEoAVIKcXVvdGVkUmF0ZRIjCg1zcHJlYWRfYW1vdW50GAwgASgBUgxzcHJlYWRBbW91bnQ=');
 @$core.Deprecated('Use convertCryptoRequestDescriptor instead')
 const ConvertCryptoRequest$json = const {
   '1': 'ConvertCryptoRequest',
@@ -1221,6 +1231,222 @@ const GetReconciliationLogsResponse$json = const {
 
 /// Descriptor for `GetReconciliationLogsResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getReconciliationLogsResponseDescriptor = $convert.base64Decode('Ch1HZXRSZWNvbmNpbGlhdGlvbkxvZ3NSZXNwb25zZRIsCgRsb2dzGAEgAygLMhgucGIuUmVjb25jaWxpYXRpb25SZXN1bHRSBGxvZ3M=');
+@$core.Deprecated('Use sagaStepDetailDescriptor instead')
+const SagaStepDetail$json = const {
+  '1': 'SagaStepDetail',
+  '2': const [
+    const {'1': 'name', '3': 1, '4': 1, '5': 9, '10': 'name'},
+    const {'1': 'status', '3': 2, '4': 1, '5': 9, '10': 'status'},
+    const {'1': 'started_at', '3': 3, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'startedAt'},
+    const {'1': 'completed_at', '3': 4, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'completedAt'},
+    const {'1': 'error', '3': 5, '4': 1, '5': 9, '10': 'error'},
+  ],
+};
+
+/// Descriptor for `SagaStepDetail`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List sagaStepDetailDescriptor = $convert.base64Decode('Cg5TYWdhU3RlcERldGFpbBISCgRuYW1lGAEgASgJUgRuYW1lEhYKBnN0YXR1cxgCIAEoCVIGc3RhdHVzEjkKCnN0YXJ0ZWRfYXQYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUglzdGFydGVkQXQSPQoMY29tcGxldGVkX2F0GAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFILY29tcGxldGVkQXQSFAoFZXJyb3IYBSABKAlSBWVycm9y');
+@$core.Deprecated('Use getTransactionDetailRequestDescriptor instead')
+const GetTransactionDetailRequest$json = const {
+  '1': 'GetTransactionDetailRequest',
+  '2': const [
+    const {'1': 'transaction_id', '3': 1, '4': 1, '5': 9, '10': 'transactionId'},
+  ],
+};
+
+/// Descriptor for `GetTransactionDetailRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getTransactionDetailRequestDescriptor = $convert.base64Decode('ChtHZXRUcmFuc2FjdGlvbkRldGFpbFJlcXVlc3QSJQoOdHJhbnNhY3Rpb25faWQYASABKAlSDXRyYW5zYWN0aW9uSWQ=');
+@$core.Deprecated('Use getTransactionDetailResponseDescriptor instead')
+const GetTransactionDetailResponse$json = const {
+  '1': 'GetTransactionDetailResponse',
+  '2': const [
+    const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    const {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'account_id', '3': 3, '4': 1, '5': 9, '10': 'accountId'},
+    const {'1': 'type', '3': 4, '4': 1, '5': 9, '10': 'type'},
+    const {'1': 'crypto_id', '3': 5, '4': 1, '5': 9, '10': 'cryptoId'},
+    const {'1': 'crypto_symbol', '3': 6, '4': 1, '5': 9, '10': 'cryptoSymbol'},
+    const {'1': 'amount', '3': 7, '4': 1, '5': 1, '10': 'amount'},
+    const {'1': 'fiat_value', '3': 8, '4': 1, '5': 1, '10': 'fiatValue'},
+    const {'1': 'fiat_currency', '3': 9, '4': 1, '5': 9, '10': 'fiatCurrency'},
+    const {'1': 'fee', '3': 10, '4': 1, '5': 1, '10': 'fee'},
+    const {'1': 'exchange_rate', '3': 11, '4': 1, '5': 1, '10': 'exchangeRate'},
+    const {'1': 'status', '3': 12, '4': 1, '5': 9, '10': 'status'},
+    const {'1': 'saga_id', '3': 13, '4': 1, '5': 9, '10': 'sagaId'},
+    const {'1': 'hold_id', '3': 14, '4': 1, '5': 9, '10': 'holdId'},
+    const {'1': 'provider_order_id', '3': 15, '4': 1, '5': 9, '10': 'providerOrderId'},
+    const {'1': 'idempotency_key', '3': 16, '4': 1, '5': 9, '10': 'idempotencyKey'},
+    const {'1': 'saga_steps', '3': 17, '4': 3, '5': 11, '6': '.pb.SagaStepDetail', '10': 'sagaSteps'},
+    const {'1': 'created_at', '3': 18, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    const {'1': 'updated_at', '3': 19, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
+  ],
+};
+
+/// Descriptor for `GetTransactionDetailResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getTransactionDetailResponseDescriptor = $convert.base64Decode('ChxHZXRUcmFuc2FjdGlvbkRldGFpbFJlc3BvbnNlEg4KAmlkGAEgASgJUgJpZBIXCgd1c2VyX2lkGAIgASgJUgZ1c2VySWQSHQoKYWNjb3VudF9pZBgDIAEoCVIJYWNjb3VudElkEhIKBHR5cGUYBCABKAlSBHR5cGUSGwoJY3J5cHRvX2lkGAUgASgJUghjcnlwdG9JZBIjCg1jcnlwdG9fc3ltYm9sGAYgASgJUgxjcnlwdG9TeW1ib2wSFgoGYW1vdW50GAcgASgBUgZhbW91bnQSHQoKZmlhdF92YWx1ZRgIIAEoAVIJZmlhdFZhbHVlEiMKDWZpYXRfY3VycmVuY3kYCSABKAlSDGZpYXRDdXJyZW5jeRIQCgNmZWUYCiABKAFSA2ZlZRIjCg1leGNoYW5nZV9yYXRlGAsgASgBUgxleGNoYW5nZVJhdGUSFgoGc3RhdHVzGAwgASgJUgZzdGF0dXMSFwoHc2FnYV9pZBgNIAEoCVIGc2FnYUlkEhcKB2hvbGRfaWQYDiABKAlSBmhvbGRJZBIqChFwcm92aWRlcl9vcmRlcl9pZBgPIAEoCVIPcHJvdmlkZXJPcmRlcklkEicKD2lkZW1wb3RlbmN5X2tleRgQIAEoCVIOaWRlbXBvdGVuY3lLZXkSMQoKc2FnYV9zdGVwcxgRIAMoCzISLnBiLlNhZ2FTdGVwRGV0YWlsUglzYWdhU3RlcHMSOQoKY3JlYXRlZF9hdBgSIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCWNyZWF0ZWRBdBI5Cgp1cGRhdGVkX2F0GBMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIJdXBkYXRlZEF0');
+@$core.Deprecated('Use retryTransactionRequestDescriptor instead')
+const RetryTransactionRequest$json = const {
+  '1': 'RetryTransactionRequest',
+  '2': const [
+    const {'1': 'transaction_id', '3': 1, '4': 1, '5': 9, '10': 'transactionId'},
+    const {'1': 'admin_user_id', '3': 2, '4': 1, '5': 9, '10': 'adminUserId'},
+    const {'1': 'reason', '3': 3, '4': 1, '5': 9, '10': 'reason'},
+  ],
+};
+
+/// Descriptor for `RetryTransactionRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List retryTransactionRequestDescriptor = $convert.base64Decode('ChdSZXRyeVRyYW5zYWN0aW9uUmVxdWVzdBIlCg50cmFuc2FjdGlvbl9pZBgBIAEoCVINdHJhbnNhY3Rpb25JZBIiCg1hZG1pbl91c2VyX2lkGAIgASgJUgthZG1pblVzZXJJZBIWCgZyZWFzb24YAyABKAlSBnJlYXNvbg==');
+@$core.Deprecated('Use retryTransactionResponseDescriptor instead')
+const RetryTransactionResponse$json = const {
+  '1': 'RetryTransactionResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    const {'1': 'new_saga_id', '3': 3, '4': 1, '5': 9, '10': 'newSagaId'},
+  ],
+};
+
+/// Descriptor for `RetryTransactionResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List retryTransactionResponseDescriptor = $convert.base64Decode('ChhSZXRyeVRyYW5zYWN0aW9uUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdlEh4KC25ld19zYWdhX2lkGAMgASgJUgluZXdTYWdhSWQ=');
+@$core.Deprecated('Use reverseTransactionRequestDescriptor instead')
+const ReverseTransactionRequest$json = const {
+  '1': 'ReverseTransactionRequest',
+  '2': const [
+    const {'1': 'transaction_id', '3': 1, '4': 1, '5': 9, '10': 'transactionId'},
+    const {'1': 'admin_user_id', '3': 2, '4': 1, '5': 9, '10': 'adminUserId'},
+    const {'1': 'reason', '3': 3, '4': 1, '5': 9, '10': 'reason'},
+  ],
+};
+
+/// Descriptor for `ReverseTransactionRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List reverseTransactionRequestDescriptor = $convert.base64Decode('ChlSZXZlcnNlVHJhbnNhY3Rpb25SZXF1ZXN0EiUKDnRyYW5zYWN0aW9uX2lkGAEgASgJUg10cmFuc2FjdGlvbklkEiIKDWFkbWluX3VzZXJfaWQYAiABKAlSC2FkbWluVXNlcklkEhYKBnJlYXNvbhgDIAEoCVIGcmVhc29u');
+@$core.Deprecated('Use reverseTransactionResponseDescriptor instead')
+const ReverseTransactionResponse$json = const {
+  '1': 'ReverseTransactionResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    const {'1': 'reversal_reference', '3': 3, '4': 1, '5': 9, '10': 'reversalReference'},
+  ],
+};
+
+/// Descriptor for `ReverseTransactionResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List reverseTransactionResponseDescriptor = $convert.base64Decode('ChpSZXZlcnNlVHJhbnNhY3Rpb25SZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USLQoScmV2ZXJzYWxfcmVmZXJlbmNlGAMgASgJUhFyZXZlcnNhbFJlZmVyZW5jZQ==');
+@$core.Deprecated('Use getUserCryptoAuditTrailRequestDescriptor instead')
+const GetUserCryptoAuditTrailRequest$json = const {
+  '1': 'GetUserCryptoAuditTrailRequest',
+  '2': const [
+    const {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'page', '3': 2, '4': 1, '5': 5, '10': 'page'},
+    const {'1': 'per_page', '3': 3, '4': 1, '5': 5, '10': 'perPage'},
+    const {'1': 'type_filter', '3': 4, '4': 1, '5': 9, '10': 'typeFilter'},
+    const {'1': 'status_filter', '3': 5, '4': 1, '5': 9, '10': 'statusFilter'},
+  ],
+};
+
+/// Descriptor for `GetUserCryptoAuditTrailRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getUserCryptoAuditTrailRequestDescriptor = $convert.base64Decode('Ch5HZXRVc2VyQ3J5cHRvQXVkaXRUcmFpbFJlcXVlc3QSFwoHdXNlcl9pZBgBIAEoCVIGdXNlcklkEhIKBHBhZ2UYAiABKAVSBHBhZ2USGQoIcGVyX3BhZ2UYAyABKAVSB3BlclBhZ2USHwoLdHlwZV9maWx0ZXIYBCABKAlSCnR5cGVGaWx0ZXISIwoNc3RhdHVzX2ZpbHRlchgFIAEoCVIMc3RhdHVzRmlsdGVy');
+@$core.Deprecated('Use getUserCryptoAuditTrailResponseDescriptor instead')
+const GetUserCryptoAuditTrailResponse$json = const {
+  '1': 'GetUserCryptoAuditTrailResponse',
+  '2': const [
+    const {'1': 'transactions', '3': 1, '4': 3, '5': 11, '6': '.pb.CryptoTransaction', '10': 'transactions'},
+    const {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.pb.CryptoPaginationInfo', '10': 'pagination'},
+  ],
+};
+
+/// Descriptor for `GetUserCryptoAuditTrailResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getUserCryptoAuditTrailResponseDescriptor = $convert.base64Decode('Ch9HZXRVc2VyQ3J5cHRvQXVkaXRUcmFpbFJlc3BvbnNlEjkKDHRyYW5zYWN0aW9ucxgBIAMoCzIVLnBiLkNyeXB0b1RyYW5zYWN0aW9uUgx0cmFuc2FjdGlvbnMSOAoKcGFnaW5hdGlvbhgCIAEoCzIYLnBiLkNyeXB0b1BhZ2luYXRpb25JbmZvUgpwYWdpbmF0aW9u');
+@$core.Deprecated('Use setTradingSuspensionRequestDescriptor instead')
+const SetTradingSuspensionRequest$json = const {
+  '1': 'SetTradingSuspensionRequest',
+  '2': const [
+    const {'1': 'is_suspended', '3': 1, '4': 1, '5': 8, '10': 'isSuspended'},
+    const {'1': 'admin_user_id', '3': 2, '4': 1, '5': 9, '10': 'adminUserId'},
+    const {'1': 'reason', '3': 3, '4': 1, '5': 9, '10': 'reason'},
+  ],
+};
+
+/// Descriptor for `SetTradingSuspensionRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List setTradingSuspensionRequestDescriptor = $convert.base64Decode('ChtTZXRUcmFkaW5nU3VzcGVuc2lvblJlcXVlc3QSIQoMaXNfc3VzcGVuZGVkGAEgASgIUgtpc1N1c3BlbmRlZBIiCg1hZG1pbl91c2VyX2lkGAIgASgJUgthZG1pblVzZXJJZBIWCgZyZWFzb24YAyABKAlSBnJlYXNvbg==');
+@$core.Deprecated('Use setTradingSuspensionResponseDescriptor instead')
+const SetTradingSuspensionResponse$json = const {
+  '1': 'SetTradingSuspensionResponse',
+  '2': const [
+    const {'1': 'is_suspended', '3': 1, '4': 1, '5': 8, '10': 'isSuspended'},
+    const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `SetTradingSuspensionResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List setTradingSuspensionResponseDescriptor = $convert.base64Decode('ChxTZXRUcmFkaW5nU3VzcGVuc2lvblJlc3BvbnNlEiEKDGlzX3N1c3BlbmRlZBgBIAEoCFILaXNTdXNwZW5kZWQSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZQ==');
+@$core.Deprecated('Use getTradingSuspensionRequestDescriptor instead')
+const GetTradingSuspensionRequest$json = const {
+  '1': 'GetTradingSuspensionRequest',
+};
+
+/// Descriptor for `GetTradingSuspensionRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getTradingSuspensionRequestDescriptor = $convert.base64Decode('ChtHZXRUcmFkaW5nU3VzcGVuc2lvblJlcXVlc3Q=');
+@$core.Deprecated('Use getTradingSuspensionResponseDescriptor instead')
+const GetTradingSuspensionResponse$json = const {
+  '1': 'GetTradingSuspensionResponse',
+  '2': const [
+    const {'1': 'is_suspended', '3': 1, '4': 1, '5': 8, '10': 'isSuspended'},
+    const {'1': 'suspended_by', '3': 2, '4': 1, '5': 9, '10': 'suspendedBy'},
+    const {'1': 'reason', '3': 3, '4': 1, '5': 9, '10': 'reason'},
+    const {'1': 'suspended_at', '3': 4, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'suspendedAt'},
+  ],
+};
+
+/// Descriptor for `GetTradingSuspensionResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getTradingSuspensionResponseDescriptor = $convert.base64Decode('ChxHZXRUcmFkaW5nU3VzcGVuc2lvblJlc3BvbnNlEiEKDGlzX3N1c3BlbmRlZBgBIAEoCFILaXNTdXNwZW5kZWQSIQoMc3VzcGVuZGVkX2J5GAIgASgJUgtzdXNwZW5kZWRCeRIWCgZyZWFzb24YAyABKAlSBnJlYXNvbhI9CgxzdXNwZW5kZWRfYXQYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgtzdXNwZW5kZWRBdA==');
+@$core.Deprecated('Use setUserCryptoFreezeRequestDescriptor instead')
+const SetUserCryptoFreezeRequest$json = const {
+  '1': 'SetUserCryptoFreezeRequest',
+  '2': const [
+    const {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'is_frozen', '3': 2, '4': 1, '5': 8, '10': 'isFrozen'},
+    const {'1': 'admin_user_id', '3': 3, '4': 1, '5': 9, '10': 'adminUserId'},
+    const {'1': 'reason', '3': 4, '4': 1, '5': 9, '10': 'reason'},
+  ],
+};
+
+/// Descriptor for `SetUserCryptoFreezeRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List setUserCryptoFreezeRequestDescriptor = $convert.base64Decode('ChpTZXRVc2VyQ3J5cHRvRnJlZXplUmVxdWVzdBIXCgd1c2VyX2lkGAEgASgJUgZ1c2VySWQSGwoJaXNfZnJvemVuGAIgASgIUghpc0Zyb3plbhIiCg1hZG1pbl91c2VyX2lkGAMgASgJUgthZG1pblVzZXJJZBIWCgZyZWFzb24YBCABKAlSBnJlYXNvbg==');
+@$core.Deprecated('Use setUserCryptoFreezeResponseDescriptor instead')
+const SetUserCryptoFreezeResponse$json = const {
+  '1': 'SetUserCryptoFreezeResponse',
+  '2': const [
+    const {'1': 'is_frozen', '3': 1, '4': 1, '5': 8, '10': 'isFrozen'},
+    const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `SetUserCryptoFreezeResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List setUserCryptoFreezeResponseDescriptor = $convert.base64Decode('ChtTZXRVc2VyQ3J5cHRvRnJlZXplUmVzcG9uc2USGwoJaXNfZnJvemVuGAEgASgIUghpc0Zyb3plbhIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
+@$core.Deprecated('Use getUserCryptoFreezeRequestDescriptor instead')
+const GetUserCryptoFreezeRequest$json = const {
+  '1': 'GetUserCryptoFreezeRequest',
+  '2': const [
+    const {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+  ],
+};
+
+/// Descriptor for `GetUserCryptoFreezeRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getUserCryptoFreezeRequestDescriptor = $convert.base64Decode('ChpHZXRVc2VyQ3J5cHRvRnJlZXplUmVxdWVzdBIXCgd1c2VyX2lkGAEgASgJUgZ1c2VySWQ=');
+@$core.Deprecated('Use getUserCryptoFreezeResponseDescriptor instead')
+const GetUserCryptoFreezeResponse$json = const {
+  '1': 'GetUserCryptoFreezeResponse',
+  '2': const [
+    const {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'is_frozen', '3': 2, '4': 1, '5': 8, '10': 'isFrozen'},
+    const {'1': 'frozen_by', '3': 3, '4': 1, '5': 9, '10': 'frozenBy'},
+    const {'1': 'reason', '3': 4, '4': 1, '5': 9, '10': 'reason'},
+    const {'1': 'frozen_at', '3': 5, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'frozenAt'},
+  ],
+};
+
+/// Descriptor for `GetUserCryptoFreezeResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getUserCryptoFreezeResponseDescriptor = $convert.base64Decode('ChtHZXRVc2VyQ3J5cHRvRnJlZXplUmVzcG9uc2USFwoHdXNlcl9pZBgBIAEoCVIGdXNlcklkEhsKCWlzX2Zyb3plbhgCIAEoCFIIaXNGcm96ZW4SGwoJZnJvemVuX2J5GAMgASgJUghmcm96ZW5CeRIWCgZyZWFzb24YBCABKAlSBnJlYXNvbhI3Cglmcm96ZW5fYXQYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUghmcm96ZW5BdA==');
 @$core.Deprecated('Use cryptoPaginationInfoDescriptor instead')
 const CryptoPaginationInfo$json = const {
   '1': 'CryptoPaginationInfo',
@@ -1259,3 +1485,296 @@ const GetSupportedAssetsResponse$json = const {
 
 /// Descriptor for `GetSupportedAssetsResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getSupportedAssetsResponseDescriptor = $convert.base64Decode('ChpHZXRTdXBwb3J0ZWRBc3NldHNSZXNwb25zZRIpCgZhc3NldHMYASADKAsyES5wYi5DcnlwdG9NZXNzYWdlUgZhc3NldHMSOAoKcGFnaW5hdGlvbhgCIAEoCzIYLnBiLkNyeXB0b1BhZ2luYXRpb25JbmZvUgpwYWdpbmF0aW9u');
+@$core.Deprecated('Use getSpreadConfigRequestDescriptor instead')
+const GetSpreadConfigRequest$json = const {
+  '1': 'GetSpreadConfigRequest',
+  '2': const [
+    const {'1': 'provider', '3': 1, '4': 1, '5': 9, '10': 'provider'},
+    const {'1': 'crypto_symbol', '3': 2, '4': 1, '5': 9, '10': 'cryptoSymbol'},
+    const {'1': 'fiat_currency', '3': 3, '4': 1, '5': 9, '10': 'fiatCurrency'},
+  ],
+};
+
+/// Descriptor for `GetSpreadConfigRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getSpreadConfigRequestDescriptor = $convert.base64Decode('ChZHZXRTcHJlYWRDb25maWdSZXF1ZXN0EhoKCHByb3ZpZGVyGAEgASgJUghwcm92aWRlchIjCg1jcnlwdG9fc3ltYm9sGAIgASgJUgxjcnlwdG9TeW1ib2wSIwoNZmlhdF9jdXJyZW5jeRgDIAEoCVIMZmlhdEN1cnJlbmN5');
+@$core.Deprecated('Use spreadConfigEntryDescriptor instead')
+const SpreadConfigEntry$json = const {
+  '1': 'SpreadConfigEntry',
+  '2': const [
+    const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    const {'1': 'provider', '3': 2, '4': 1, '5': 9, '10': 'provider'},
+    const {'1': 'crypto_symbol', '3': 3, '4': 1, '5': 9, '10': 'cryptoSymbol'},
+    const {'1': 'fiat_currency', '3': 4, '4': 1, '5': 9, '10': 'fiatCurrency'},
+    const {'1': 'buy_spread_bps', '3': 5, '4': 1, '5': 5, '10': 'buySpreadBps'},
+    const {'1': 'sell_spread_bps', '3': 6, '4': 1, '5': 5, '10': 'sellSpreadBps'},
+    const {'1': 'min_spread_amount', '3': 7, '4': 1, '5': 1, '10': 'minSpreadAmount'},
+    const {'1': 'max_spread_amount', '3': 8, '4': 1, '5': 1, '10': 'maxSpreadAmount'},
+    const {'1': 'is_active', '3': 9, '4': 1, '5': 8, '10': 'isActive'},
+    const {'1': 'notes', '3': 10, '4': 1, '5': 9, '10': 'notes'},
+    const {'1': 'created_by', '3': 11, '4': 1, '5': 9, '10': 'createdBy'},
+    const {'1': 'updated_by', '3': 12, '4': 1, '5': 9, '10': 'updatedBy'},
+  ],
+};
+
+/// Descriptor for `SpreadConfigEntry`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List spreadConfigEntryDescriptor = $convert.base64Decode('ChFTcHJlYWRDb25maWdFbnRyeRIOCgJpZBgBIAEoCVICaWQSGgoIcHJvdmlkZXIYAiABKAlSCHByb3ZpZGVyEiMKDWNyeXB0b19zeW1ib2wYAyABKAlSDGNyeXB0b1N5bWJvbBIjCg1maWF0X2N1cnJlbmN5GAQgASgJUgxmaWF0Q3VycmVuY3kSJAoOYnV5X3NwcmVhZF9icHMYBSABKAVSDGJ1eVNwcmVhZEJwcxImCg9zZWxsX3NwcmVhZF9icHMYBiABKAVSDXNlbGxTcHJlYWRCcHMSKgoRbWluX3NwcmVhZF9hbW91bnQYByABKAFSD21pblNwcmVhZEFtb3VudBIqChFtYXhfc3ByZWFkX2Ftb3VudBgIIAEoAVIPbWF4U3ByZWFkQW1vdW50EhsKCWlzX2FjdGl2ZRgJIAEoCFIIaXNBY3RpdmUSFAoFbm90ZXMYCiABKAlSBW5vdGVzEh0KCmNyZWF0ZWRfYnkYCyABKAlSCWNyZWF0ZWRCeRIdCgp1cGRhdGVkX2J5GAwgASgJUgl1cGRhdGVkQnk=');
+@$core.Deprecated('Use getSpreadConfigResponseDescriptor instead')
+const GetSpreadConfigResponse$json = const {
+  '1': 'GetSpreadConfigResponse',
+  '2': const [
+    const {'1': 'configs', '3': 1, '4': 3, '5': 11, '6': '.pb.SpreadConfigEntry', '10': 'configs'},
+  ],
+};
+
+/// Descriptor for `GetSpreadConfigResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getSpreadConfigResponseDescriptor = $convert.base64Decode('ChdHZXRTcHJlYWRDb25maWdSZXNwb25zZRIvCgdjb25maWdzGAEgAygLMhUucGIuU3ByZWFkQ29uZmlnRW50cnlSB2NvbmZpZ3M=');
+@$core.Deprecated('Use updateSpreadConfigRequestDescriptor instead')
+const UpdateSpreadConfigRequest$json = const {
+  '1': 'UpdateSpreadConfigRequest',
+  '2': const [
+    const {'1': 'provider', '3': 1, '4': 1, '5': 9, '10': 'provider'},
+    const {'1': 'crypto_symbol', '3': 2, '4': 1, '5': 9, '10': 'cryptoSymbol'},
+    const {'1': 'fiat_currency', '3': 3, '4': 1, '5': 9, '10': 'fiatCurrency'},
+    const {'1': 'buy_spread_bps', '3': 4, '4': 1, '5': 5, '10': 'buySpreadBps'},
+    const {'1': 'sell_spread_bps', '3': 5, '4': 1, '5': 5, '10': 'sellSpreadBps'},
+    const {'1': 'min_spread_amount', '3': 6, '4': 1, '5': 1, '10': 'minSpreadAmount'},
+    const {'1': 'max_spread_amount', '3': 7, '4': 1, '5': 1, '10': 'maxSpreadAmount'},
+    const {'1': 'is_active', '3': 8, '4': 1, '5': 8, '10': 'isActive'},
+    const {'1': 'notes', '3': 9, '4': 1, '5': 9, '10': 'notes'},
+    const {'1': 'updated_by', '3': 10, '4': 1, '5': 9, '10': 'updatedBy'},
+  ],
+};
+
+/// Descriptor for `UpdateSpreadConfigRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List updateSpreadConfigRequestDescriptor = $convert.base64Decode('ChlVcGRhdGVTcHJlYWRDb25maWdSZXF1ZXN0EhoKCHByb3ZpZGVyGAEgASgJUghwcm92aWRlchIjCg1jcnlwdG9fc3ltYm9sGAIgASgJUgxjcnlwdG9TeW1ib2wSIwoNZmlhdF9jdXJyZW5jeRgDIAEoCVIMZmlhdEN1cnJlbmN5EiQKDmJ1eV9zcHJlYWRfYnBzGAQgASgFUgxidXlTcHJlYWRCcHMSJgoPc2VsbF9zcHJlYWRfYnBzGAUgASgFUg1zZWxsU3ByZWFkQnBzEioKEW1pbl9zcHJlYWRfYW1vdW50GAYgASgBUg9taW5TcHJlYWRBbW91bnQSKgoRbWF4X3NwcmVhZF9hbW91bnQYByABKAFSD21heFNwcmVhZEFtb3VudBIbCglpc19hY3RpdmUYCCABKAhSCGlzQWN0aXZlEhQKBW5vdGVzGAkgASgJUgVub3RlcxIdCgp1cGRhdGVkX2J5GAogASgJUgl1cGRhdGVkQnk=');
+@$core.Deprecated('Use updateSpreadConfigResponseDescriptor instead')
+const UpdateSpreadConfigResponse$json = const {
+  '1': 'UpdateSpreadConfigResponse',
+  '2': const [
+    const {'1': 'config', '3': 1, '4': 1, '5': 11, '6': '.pb.SpreadConfigEntry', '10': 'config'},
+  ],
+};
+
+/// Descriptor for `UpdateSpreadConfigResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List updateSpreadConfigResponseDescriptor = $convert.base64Decode('ChpVcGRhdGVTcHJlYWRDb25maWdSZXNwb25zZRItCgZjb25maWcYASABKAsyFS5wYi5TcHJlYWRDb25maWdFbnRyeVIGY29uZmln');
+@$core.Deprecated('Use getFeeConfigRequestDescriptor instead')
+const GetFeeConfigRequest$json = const {
+  '1': 'GetFeeConfigRequest',
+  '2': const [
+    const {'1': 'provider', '3': 1, '4': 1, '5': 9, '10': 'provider'},
+    const {'1': 'crypto_symbol', '3': 2, '4': 1, '5': 9, '10': 'cryptoSymbol'},
+    const {'1': 'fiat_currency', '3': 3, '4': 1, '5': 9, '10': 'fiatCurrency'},
+  ],
+};
+
+/// Descriptor for `GetFeeConfigRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getFeeConfigRequestDescriptor = $convert.base64Decode('ChNHZXRGZWVDb25maWdSZXF1ZXN0EhoKCHByb3ZpZGVyGAEgASgJUghwcm92aWRlchIjCg1jcnlwdG9fc3ltYm9sGAIgASgJUgxjcnlwdG9TeW1ib2wSIwoNZmlhdF9jdXJyZW5jeRgDIAEoCVIMZmlhdEN1cnJlbmN5');
+@$core.Deprecated('Use feeConfigEntryDescriptor instead')
+const FeeConfigEntry$json = const {
+  '1': 'FeeConfigEntry',
+  '2': const [
+    const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    const {'1': 'provider', '3': 2, '4': 1, '5': 9, '10': 'provider'},
+    const {'1': 'crypto_symbol', '3': 3, '4': 1, '5': 9, '10': 'cryptoSymbol'},
+    const {'1': 'fiat_currency', '3': 4, '4': 1, '5': 9, '10': 'fiatCurrency'},
+    const {'1': 'flat_fee', '3': 5, '4': 1, '5': 1, '10': 'flatFee'},
+    const {'1': 'percentage_bps', '3': 6, '4': 1, '5': 5, '10': 'percentageBps'},
+    const {'1': 'min_fee', '3': 7, '4': 1, '5': 1, '10': 'minFee'},
+    const {'1': 'max_fee', '3': 8, '4': 1, '5': 1, '10': 'maxFee'},
+    const {'1': 'is_active', '3': 9, '4': 1, '5': 8, '10': 'isActive'},
+    const {'1': 'notes', '3': 10, '4': 1, '5': 9, '10': 'notes'},
+    const {'1': 'created_by', '3': 11, '4': 1, '5': 9, '10': 'createdBy'},
+    const {'1': 'updated_by', '3': 12, '4': 1, '5': 9, '10': 'updatedBy'},
+  ],
+};
+
+/// Descriptor for `FeeConfigEntry`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List feeConfigEntryDescriptor = $convert.base64Decode('Cg5GZWVDb25maWdFbnRyeRIOCgJpZBgBIAEoCVICaWQSGgoIcHJvdmlkZXIYAiABKAlSCHByb3ZpZGVyEiMKDWNyeXB0b19zeW1ib2wYAyABKAlSDGNyeXB0b1N5bWJvbBIjCg1maWF0X2N1cnJlbmN5GAQgASgJUgxmaWF0Q3VycmVuY3kSGQoIZmxhdF9mZWUYBSABKAFSB2ZsYXRGZWUSJQoOcGVyY2VudGFnZV9icHMYBiABKAVSDXBlcmNlbnRhZ2VCcHMSFwoHbWluX2ZlZRgHIAEoAVIGbWluRmVlEhcKB21heF9mZWUYCCABKAFSBm1heEZlZRIbCglpc19hY3RpdmUYCSABKAhSCGlzQWN0aXZlEhQKBW5vdGVzGAogASgJUgVub3RlcxIdCgpjcmVhdGVkX2J5GAsgASgJUgljcmVhdGVkQnkSHQoKdXBkYXRlZF9ieRgMIAEoCVIJdXBkYXRlZEJ5');
+@$core.Deprecated('Use getFeeConfigResponseDescriptor instead')
+const GetFeeConfigResponse$json = const {
+  '1': 'GetFeeConfigResponse',
+  '2': const [
+    const {'1': 'configs', '3': 1, '4': 3, '5': 11, '6': '.pb.FeeConfigEntry', '10': 'configs'},
+  ],
+};
+
+/// Descriptor for `GetFeeConfigResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getFeeConfigResponseDescriptor = $convert.base64Decode('ChRHZXRGZWVDb25maWdSZXNwb25zZRIsCgdjb25maWdzGAEgAygLMhIucGIuRmVlQ29uZmlnRW50cnlSB2NvbmZpZ3M=');
+@$core.Deprecated('Use updateFeeConfigRequestDescriptor instead')
+const UpdateFeeConfigRequest$json = const {
+  '1': 'UpdateFeeConfigRequest',
+  '2': const [
+    const {'1': 'provider', '3': 1, '4': 1, '5': 9, '10': 'provider'},
+    const {'1': 'crypto_symbol', '3': 2, '4': 1, '5': 9, '10': 'cryptoSymbol'},
+    const {'1': 'fiat_currency', '3': 3, '4': 1, '5': 9, '10': 'fiatCurrency'},
+    const {'1': 'flat_fee', '3': 4, '4': 1, '5': 1, '10': 'flatFee'},
+    const {'1': 'percentage_bps', '3': 5, '4': 1, '5': 5, '10': 'percentageBps'},
+    const {'1': 'min_fee', '3': 6, '4': 1, '5': 1, '10': 'minFee'},
+    const {'1': 'max_fee', '3': 7, '4': 1, '5': 1, '10': 'maxFee'},
+    const {'1': 'is_active', '3': 8, '4': 1, '5': 8, '10': 'isActive'},
+    const {'1': 'notes', '3': 9, '4': 1, '5': 9, '10': 'notes'},
+    const {'1': 'updated_by', '3': 10, '4': 1, '5': 9, '10': 'updatedBy'},
+  ],
+};
+
+/// Descriptor for `UpdateFeeConfigRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List updateFeeConfigRequestDescriptor = $convert.base64Decode('ChZVcGRhdGVGZWVDb25maWdSZXF1ZXN0EhoKCHByb3ZpZGVyGAEgASgJUghwcm92aWRlchIjCg1jcnlwdG9fc3ltYm9sGAIgASgJUgxjcnlwdG9TeW1ib2wSIwoNZmlhdF9jdXJyZW5jeRgDIAEoCVIMZmlhdEN1cnJlbmN5EhkKCGZsYXRfZmVlGAQgASgBUgdmbGF0RmVlEiUKDnBlcmNlbnRhZ2VfYnBzGAUgASgFUg1wZXJjZW50YWdlQnBzEhcKB21pbl9mZWUYBiABKAFSBm1pbkZlZRIXCgdtYXhfZmVlGAcgASgBUgZtYXhGZWUSGwoJaXNfYWN0aXZlGAggASgIUghpc0FjdGl2ZRIUCgVub3RlcxgJIAEoCVIFbm90ZXMSHQoKdXBkYXRlZF9ieRgKIAEoCVIJdXBkYXRlZEJ5');
+@$core.Deprecated('Use updateFeeConfigResponseDescriptor instead')
+const UpdateFeeConfigResponse$json = const {
+  '1': 'UpdateFeeConfigResponse',
+  '2': const [
+    const {'1': 'config', '3': 1, '4': 1, '5': 11, '6': '.pb.FeeConfigEntry', '10': 'config'},
+  ],
+};
+
+/// Descriptor for `UpdateFeeConfigResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List updateFeeConfigResponseDescriptor = $convert.base64Decode('ChdVcGRhdGVGZWVDb25maWdSZXNwb25zZRIqCgZjb25maWcYASABKAsyEi5wYi5GZWVDb25maWdFbnRyeVIGY29uZmln');
+@$core.Deprecated('Use getWalletReconciliationsRequestDescriptor instead')
+const GetWalletReconciliationsRequest$json = const {
+  '1': 'GetWalletReconciliationsRequest',
+  '2': const [
+    const {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'wallet_id', '3': 2, '4': 1, '5': 9, '10': 'walletId'},
+    const {'1': 'requires_attention', '3': 3, '4': 1, '5': 8, '10': 'requiresAttention'},
+    const {'1': 'limit', '3': 4, '4': 1, '5': 5, '10': 'limit'},
+    const {'1': 'offset', '3': 5, '4': 1, '5': 5, '10': 'offset'},
+  ],
+};
+
+/// Descriptor for `GetWalletReconciliationsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getWalletReconciliationsRequestDescriptor = $convert.base64Decode('Ch9HZXRXYWxsZXRSZWNvbmNpbGlhdGlvbnNSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZBIbCgl3YWxsZXRfaWQYAiABKAlSCHdhbGxldElkEi0KEnJlcXVpcmVzX2F0dGVudGlvbhgDIAEoCFIRcmVxdWlyZXNBdHRlbnRpb24SFAoFbGltaXQYBCABKAVSBWxpbWl0EhYKBm9mZnNldBgFIAEoBVIGb2Zmc2V0');
+@$core.Deprecated('Use walletReconciliationEntryDescriptor instead')
+const WalletReconciliationEntry$json = const {
+  '1': 'WalletReconciliationEntry',
+  '2': const [
+    const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    const {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'wallet_id', '3': 3, '4': 1, '5': 9, '10': 'walletId'},
+    const {'1': 'crypto_symbol', '3': 4, '4': 1, '5': 9, '10': 'cryptoSymbol'},
+    const {'1': 'local_balance', '3': 5, '4': 1, '5': 1, '10': 'localBalance'},
+    const {'1': 'provider_balance', '3': 6, '4': 1, '5': 1, '10': 'providerBalance'},
+    const {'1': 'drift_amount', '3': 7, '4': 1, '5': 1, '10': 'driftAmount'},
+    const {'1': 'drift_percentage', '3': 8, '4': 1, '5': 1, '10': 'driftPercentage'},
+    const {'1': 'drift_direction', '3': 9, '4': 1, '5': 9, '10': 'driftDirection'},
+    const {'1': 'auto_corrected', '3': 10, '4': 1, '5': 8, '10': 'autoCorrected'},
+    const {'1': 'requires_attention', '3': 11, '4': 1, '5': 8, '10': 'requiresAttention'},
+    const {'1': 'triggered_by', '3': 12, '4': 1, '5': 9, '10': 'triggeredBy'},
+    const {'1': 'note', '3': 13, '4': 1, '5': 9, '10': 'note'},
+    const {'1': 'created_at', '3': 14, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+  ],
+};
+
+/// Descriptor for `WalletReconciliationEntry`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List walletReconciliationEntryDescriptor = $convert.base64Decode('ChlXYWxsZXRSZWNvbmNpbGlhdGlvbkVudHJ5Eg4KAmlkGAEgASgJUgJpZBIXCgd1c2VyX2lkGAIgASgJUgZ1c2VySWQSGwoJd2FsbGV0X2lkGAMgASgJUgh3YWxsZXRJZBIjCg1jcnlwdG9fc3ltYm9sGAQgASgJUgxjcnlwdG9TeW1ib2wSIwoNbG9jYWxfYmFsYW5jZRgFIAEoAVIMbG9jYWxCYWxhbmNlEikKEHByb3ZpZGVyX2JhbGFuY2UYBiABKAFSD3Byb3ZpZGVyQmFsYW5jZRIhCgxkcmlmdF9hbW91bnQYByABKAFSC2RyaWZ0QW1vdW50EikKEGRyaWZ0X3BlcmNlbnRhZ2UYCCABKAFSD2RyaWZ0UGVyY2VudGFnZRInCg9kcmlmdF9kaXJlY3Rpb24YCSABKAlSDmRyaWZ0RGlyZWN0aW9uEiUKDmF1dG9fY29ycmVjdGVkGAogASgIUg1hdXRvQ29ycmVjdGVkEi0KEnJlcXVpcmVzX2F0dGVudGlvbhgLIAEoCFIRcmVxdWlyZXNBdHRlbnRpb24SIQoMdHJpZ2dlcmVkX2J5GAwgASgJUgt0cmlnZ2VyZWRCeRISCgRub3RlGA0gASgJUgRub3RlEjkKCmNyZWF0ZWRfYXQYDiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgljcmVhdGVkQXQ=');
+@$core.Deprecated('Use getWalletReconciliationsResponseDescriptor instead')
+const GetWalletReconciliationsResponse$json = const {
+  '1': 'GetWalletReconciliationsResponse',
+  '2': const [
+    const {'1': 'reconciliations', '3': 1, '4': 3, '5': 11, '6': '.pb.WalletReconciliationEntry', '10': 'reconciliations'},
+    const {'1': 'total_count', '3': 2, '4': 1, '5': 5, '10': 'totalCount'},
+  ],
+};
+
+/// Descriptor for `GetWalletReconciliationsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getWalletReconciliationsResponseDescriptor = $convert.base64Decode('CiBHZXRXYWxsZXRSZWNvbmNpbGlhdGlvbnNSZXNwb25zZRJHCg9yZWNvbmNpbGlhdGlvbnMYASADKAsyHS5wYi5XYWxsZXRSZWNvbmNpbGlhdGlvbkVudHJ5Ug9yZWNvbmNpbGlhdGlvbnMSHwoLdG90YWxfY291bnQYAiABKAVSCnRvdGFsQ291bnQ=');
+@$core.Deprecated('Use triggerWalletReconciliationRequestDescriptor instead')
+const TriggerWalletReconciliationRequest$json = const {
+  '1': 'TriggerWalletReconciliationRequest',
+  '2': const [
+    const {'1': 'wallet_id', '3': 1, '4': 1, '5': 9, '10': 'walletId'},
+    const {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'all_users', '3': 3, '4': 1, '5': 8, '10': 'allUsers'},
+    const {'1': 'triggered_by', '3': 4, '4': 1, '5': 9, '10': 'triggeredBy'},
+  ],
+};
+
+/// Descriptor for `TriggerWalletReconciliationRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List triggerWalletReconciliationRequestDescriptor = $convert.base64Decode('CiJUcmlnZ2VyV2FsbGV0UmVjb25jaWxpYXRpb25SZXF1ZXN0EhsKCXdhbGxldF9pZBgBIAEoCVIId2FsbGV0SWQSFwoHdXNlcl9pZBgCIAEoCVIGdXNlcklkEhsKCWFsbF91c2VycxgDIAEoCFIIYWxsVXNlcnMSIQoMdHJpZ2dlcmVkX2J5GAQgASgJUgt0cmlnZ2VyZWRCeQ==');
+@$core.Deprecated('Use triggerWalletReconciliationResponseDescriptor instead')
+const TriggerWalletReconciliationResponse$json = const {
+  '1': 'TriggerWalletReconciliationResponse',
+  '2': const [
+    const {'1': 'wallets_checked', '3': 1, '4': 1, '5': 5, '10': 'walletsChecked'},
+    const {'1': 'drifts_found', '3': 2, '4': 1, '5': 5, '10': 'driftsFound'},
+    const {'1': 'auto_corrected', '3': 3, '4': 1, '5': 5, '10': 'autoCorrected'},
+    const {'1': 'flagged', '3': 4, '4': 1, '5': 5, '10': 'flagged'},
+    const {'1': 'status', '3': 5, '4': 1, '5': 9, '10': 'status'},
+    const {'1': 'message', '3': 6, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `TriggerWalletReconciliationResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List triggerWalletReconciliationResponseDescriptor = $convert.base64Decode('CiNUcmlnZ2VyV2FsbGV0UmVjb25jaWxpYXRpb25SZXNwb25zZRInCg93YWxsZXRzX2NoZWNrZWQYASABKAVSDndhbGxldHNDaGVja2VkEiEKDGRyaWZ0c19mb3VuZBgCIAEoBVILZHJpZnRzRm91bmQSJQoOYXV0b19jb3JyZWN0ZWQYAyABKAVSDWF1dG9Db3JyZWN0ZWQSGAoHZmxhZ2dlZBgEIAEoBVIHZmxhZ2dlZBIWCgZzdGF0dXMYBSABKAlSBnN0YXR1cxIYCgdtZXNzYWdlGAYgASgJUgdtZXNzYWdl');
+@$core.Deprecated('Use getSettlementsRequestDescriptor instead')
+const GetSettlementsRequest$json = const {
+  '1': 'GetSettlementsRequest',
+  '2': const [
+    const {'1': 'fiat_currency', '3': 1, '4': 1, '5': 9, '10': 'fiatCurrency'},
+    const {'1': 'status', '3': 2, '4': 1, '5': 9, '10': 'status'},
+    const {'1': 'page', '3': 3, '4': 1, '5': 5, '10': 'page'},
+    const {'1': 'per_page', '3': 4, '4': 1, '5': 5, '10': 'perPage'},
+  ],
+};
+
+/// Descriptor for `GetSettlementsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getSettlementsRequestDescriptor = $convert.base64Decode('ChVHZXRTZXR0bGVtZW50c1JlcXVlc3QSIwoNZmlhdF9jdXJyZW5jeRgBIAEoCVIMZmlhdEN1cnJlbmN5EhYKBnN0YXR1cxgCIAEoCVIGc3RhdHVzEhIKBHBhZ2UYAyABKAVSBHBhZ2USGQoIcGVyX3BhZ2UYBCABKAVSB3BlclBhZ2U=');
+@$core.Deprecated('Use settlementEntryDescriptor instead')
+const SettlementEntry$json = const {
+  '1': 'SettlementEntry',
+  '2': const [
+    const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    const {'1': 'transaction_id', '3': 2, '4': 1, '5': 9, '10': 'transactionId'},
+    const {'1': 'user_id', '3': 3, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'side', '3': 4, '4': 1, '5': 9, '10': 'side'},
+    const {'1': 'crypto_symbol', '3': 5, '4': 1, '5': 9, '10': 'cryptoSymbol'},
+    const {'1': 'fiat_currency', '3': 6, '4': 1, '5': 9, '10': 'fiatCurrency'},
+    const {'1': 'user_fiat_amount', '3': 7, '4': 1, '5': 1, '10': 'userFiatAmount'},
+    const {'1': 'provider_fiat_amount', '3': 8, '4': 1, '5': 1, '10': 'providerFiatAmount'},
+    const {'1': 'spread_amount', '3': 9, '4': 1, '5': 1, '10': 'spreadAmount'},
+    const {'1': 'spread_bps', '3': 10, '4': 1, '5': 5, '10': 'spreadBps'},
+    const {'1': 'transaction_fee', '3': 11, '4': 1, '5': 1, '10': 'transactionFee'},
+    const {'1': 'provider_rate', '3': 12, '4': 1, '5': 1, '10': 'providerRate'},
+    const {'1': 'quoted_rate', '3': 13, '4': 1, '5': 1, '10': 'quotedRate'},
+    const {'1': 'crypto_amount', '3': 14, '4': 1, '5': 1, '10': 'cryptoAmount'},
+    const {'1': 'provider_order_id', '3': 15, '4': 1, '5': 9, '10': 'providerOrderId'},
+    const {'1': 'status', '3': 16, '4': 1, '5': 9, '10': 'status'},
+    const {'1': 'created_at', '3': 17, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+  ],
+};
+
+/// Descriptor for `SettlementEntry`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List settlementEntryDescriptor = $convert.base64Decode('Cg9TZXR0bGVtZW50RW50cnkSDgoCaWQYASABKAlSAmlkEiUKDnRyYW5zYWN0aW9uX2lkGAIgASgJUg10cmFuc2FjdGlvbklkEhcKB3VzZXJfaWQYAyABKAlSBnVzZXJJZBISCgRzaWRlGAQgASgJUgRzaWRlEiMKDWNyeXB0b19zeW1ib2wYBSABKAlSDGNyeXB0b1N5bWJvbBIjCg1maWF0X2N1cnJlbmN5GAYgASgJUgxmaWF0Q3VycmVuY3kSKAoQdXNlcl9maWF0X2Ftb3VudBgHIAEoAVIOdXNlckZpYXRBbW91bnQSMAoUcHJvdmlkZXJfZmlhdF9hbW91bnQYCCABKAFSEnByb3ZpZGVyRmlhdEFtb3VudBIjCg1zcHJlYWRfYW1vdW50GAkgASgBUgxzcHJlYWRBbW91bnQSHQoKc3ByZWFkX2JwcxgKIAEoBVIJc3ByZWFkQnBzEicKD3RyYW5zYWN0aW9uX2ZlZRgLIAEoAVIOdHJhbnNhY3Rpb25GZWUSIwoNcHJvdmlkZXJfcmF0ZRgMIAEoAVIMcHJvdmlkZXJSYXRlEh8KC3F1b3RlZF9yYXRlGA0gASgBUgpxdW90ZWRSYXRlEiMKDWNyeXB0b19hbW91bnQYDiABKAFSDGNyeXB0b0Ftb3VudBIqChFwcm92aWRlcl9vcmRlcl9pZBgPIAEoCVIPcHJvdmlkZXJPcmRlcklkEhYKBnN0YXR1cxgQIAEoCVIGc3RhdHVzEjkKCmNyZWF0ZWRfYXQYESABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgljcmVhdGVkQXQ=');
+@$core.Deprecated('Use getSettlementsResponseDescriptor instead')
+const GetSettlementsResponse$json = const {
+  '1': 'GetSettlementsResponse',
+  '2': const [
+    const {'1': 'settlements', '3': 1, '4': 3, '5': 11, '6': '.pb.SettlementEntry', '10': 'settlements'},
+    const {'1': 'total_count', '3': 2, '4': 1, '5': 5, '10': 'totalCount'},
+    const {'1': 'total_spread', '3': 3, '4': 1, '5': 1, '10': 'totalSpread'},
+  ],
+};
+
+/// Descriptor for `GetSettlementsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getSettlementsResponseDescriptor = $convert.base64Decode('ChZHZXRTZXR0bGVtZW50c1Jlc3BvbnNlEjUKC3NldHRsZW1lbnRzGAEgAygLMhMucGIuU2V0dGxlbWVudEVudHJ5UgtzZXR0bGVtZW50cxIfCgt0b3RhbF9jb3VudBgCIAEoBVIKdG90YWxDb3VudBIhCgx0b3RhbF9zcHJlYWQYAyABKAFSC3RvdGFsU3ByZWFk');
+@$core.Deprecated('Use markSettlementsPaidRequestDescriptor instead')
+const MarkSettlementsPaidRequest$json = const {
+  '1': 'MarkSettlementsPaidRequest',
+  '2': const [
+    const {'1': 'settlement_ids', '3': 1, '4': 3, '5': 9, '10': 'settlementIds'},
+    const {'1': 'paid_by', '3': 2, '4': 1, '5': 9, '10': 'paidBy'},
+  ],
+};
+
+/// Descriptor for `MarkSettlementsPaidRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List markSettlementsPaidRequestDescriptor = $convert.base64Decode('ChpNYXJrU2V0dGxlbWVudHNQYWlkUmVxdWVzdBIlCg5zZXR0bGVtZW50X2lkcxgBIAMoCVINc2V0dGxlbWVudElkcxIXCgdwYWlkX2J5GAIgASgJUgZwYWlkQnk=');
+@$core.Deprecated('Use markSettlementsPaidResponseDescriptor instead')
+const MarkSettlementsPaidResponse$json = const {
+  '1': 'MarkSettlementsPaidResponse',
+  '2': const [
+    const {'1': 'marked_count', '3': 1, '4': 1, '5': 5, '10': 'markedCount'},
+    const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `MarkSettlementsPaidResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List markSettlementsPaidResponseDescriptor = $convert.base64Decode('ChtNYXJrU2V0dGxlbWVudHNQYWlkUmVzcG9uc2USIQoMbWFya2VkX2NvdW50GAEgASgFUgttYXJrZWRDb3VudBIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
