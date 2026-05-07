@@ -311,6 +311,11 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
               ? (contribution.currentCycle ?? 1)
               : 0,
           isAdmin: isAdmin,
+          // SCHEDULED state is rendered as a compact chip in the
+          // status row below; the banner only owns the actionable /
+          // exceptional states (pending, ready, in_flight, failed,
+          // exhausted, settled).
+          hideScheduled: true,
           // After a manual trigger settles, the saga creates a new
           // payout_transaction + zeros current_amount on the
           // contribution. Refreshing the contribution details here
@@ -318,12 +323,11 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           // without the user pulling-to-refresh.
           onStateChanged: _loadContributionDetails,
         ),
-        // Status chips row: auto-debit + role rendered side-by-side.
-        // Each chip is borderless, uses elevation, and opens a styled
-        // dialog with the full detail when tapped. Reduces vertical
-        // space at the top of the screen so the tab bar lands within
-        // the viewport on standard phones.
-        _buildStatusChipsRow(contribution, isCreator, isMember),
+        // Status chips row: auto-debit + auto-payout (when scheduled)
+        // + role rendered side-by-side. Each chip is borderless, uses
+        // elevation, and opens a styled dialog with the full detail
+        // when tapped. Wraps to two rows on narrow screens.
+        _buildStatusChipsRow(contribution, isCreator, isMember, isAdmin),
         if (contribution.hasExternalLinks) _buildExternalLinksSection(contribution),
         _buildTabBar(),
         Expanded(
@@ -340,10 +344,28 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     );
   }
 
-  /// Renders the auto-debit + role chips side-by-side. Each chip is a
-  /// borderless elevated tile that opens a detail dialog on tap. When
-  /// auto-debit is off, the role chip takes the full width.
-  Widget _buildStatusChipsRow(Contribution contribution, bool isCreator, bool isMember) {
+  /// Renders the auto-debit + auto-payout (when scheduled) + role
+  /// chips side-by-side. Each chip is a borderless elevated tile that
+  /// opens a detail dialog on tap.
+  ///
+  /// Layout strategy: the row uses LayoutBuilder so the chips stay
+  /// readable when the screen is narrow or when all three chips are
+  /// visible at once.
+  ///   - If each chip would get >= ~110.w on one row, render in a
+  ///     single Row with Expanded children.
+  ///   - Otherwise wrap to two-per-row using Wrap. This avoids the
+  ///     classic "RenderFlex overflow" message when three chips share
+  ///     a 320-pt screen.
+  ///
+  /// The auto-payout chip self-fetches the receiver state and
+  /// collapses to nothing unless status == SCHEDULED, so it only
+  /// takes a row slot when there's something to surface.
+  Widget _buildStatusChipsRow(
+    Contribution contribution,
+    bool isCreator,
+    bool isMember,
+    bool isAdmin,
+  ) {
     final cubit = context.read<GroupAccountCubit>();
     final currentUserId = cubit.currentUserId;
     final me = currentUserId == null
@@ -358,6 +380,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     // must actually be a contribution member (group admins viewing
     // shouldn't see "you'll be charged" copy).
     final showAutoDebit = contribution.autoPayEnabled && me != null;
+    final showAutoPayout = contribution.autoPayoutEnabled;
 
     final roleChip = _StatusChip(
       icon: _roleIcon(isCreator, isMember),
@@ -367,30 +390,80 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       onTap: () => _showRoleDialog(contribution, isCreator, isMember),
     );
 
-    if (!showAutoDebit) {
+    final chips = <Widget>[];
+    if (showAutoDebit) {
+      final hasPaid = me.hasPaidCurrentCycle;
+      chips.add(_StatusChip(
+        icon: hasPaid ? Icons.check_circle : Icons.bolt,
+        iconColor:
+            hasPaid ? const Color(0xFF10B981) : const Color(0xFFFB923C),
+        label: 'Auto-debit',
+        value: hasPaid ? 'Covered' : 'On',
+        onTap: () => _showAutoDebitDialog(contribution, hasPaid: hasPaid),
+      ));
+    }
+    if (showAutoPayout) {
+      // The chip itself decides whether to render based on the live
+      // payout-receiver status. We always include it in the layout
+      // candidates; if backend says we're not in SCHEDULED, the chip
+      // returns SizedBox.shrink() and the wrap collapses cleanly.
+      chips.add(AutoPayoutScheduledChip(
+        contribution: contribution,
+        cycleIndex: contribution.type == ContributionType.rotatingSavings
+            ? (contribution.currentCycle ?? 1)
+            : 0,
+        isAdmin: isAdmin,
+        onReceiverChanged: _loadContributionDetails,
+      ));
+    }
+    chips.add(roleChip);
+
+    if (chips.length == 1) {
       return Padding(
         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
-        child: roleChip,
+        child: chips.first,
       );
     }
 
-    final hasPaid = me.hasPaidCurrentCycle;
-    final autoDebitChip = _StatusChip(
-      icon: hasPaid ? Icons.check_circle : Icons.bolt,
-      iconColor: hasPaid ? const Color(0xFF10B981) : const Color(0xFFFB923C),
-      label: 'Auto-debit',
-      value: hasPaid ? 'Covered' : 'On',
-      onTap: () => _showAutoDebitDialog(contribution, hasPaid: hasPaid),
-    );
-
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
-      child: Row(
-        children: [
-          Expanded(child: autoDebitChip),
-          SizedBox(width: 10.w),
-          Expanded(child: roleChip),
-        ],
+      child: LayoutBuilder(
+        builder: (ctx, constraints) {
+          final spacing = 10.w;
+          // Minimum width per chip to keep the value text legible.
+          // Below this we wrap to two-per-row to avoid clipping the
+          // chevron + value + label stack.
+          const minChipWidth = 130.0;
+          final perChipSingleRow =
+              (constraints.maxWidth - spacing * (chips.length - 1)) /
+                  chips.length;
+          if (perChipSingleRow >= minChipWidth) {
+            return Row(
+              children: [
+                for (int i = 0; i < chips.length; i++) ...[
+                  if (i > 0) SizedBox(width: spacing),
+                  Expanded(child: chips[i]),
+                ],
+              ],
+            );
+          }
+          // Fallback: two-per-row Wrap. Width is half-row minus
+          // spacing; if there's an odd chip out it takes full row.
+          final twoPerRow = (constraints.maxWidth - spacing) / 2;
+          return Wrap(
+            spacing: spacing,
+            runSpacing: 8.h,
+            children: [
+              for (final c in chips)
+                SizedBox(
+                  width: chips.length.isOdd && c == chips.last
+                      ? constraints.maxWidth
+                      : twoPerRow,
+                  child: c,
+                ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -475,16 +548,6 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
         title: title,
         sections: [
           _DialogSection(heading: 'How it works', body: body),
-          _DialogSection(
-            heading: 'When does it fire?',
-            body:
-                'The auto-charge worker runs after the deadline of each cycle. It only attempts to debit members who have not paid manually.',
-          ),
-          _DialogSection(
-            heading: 'Failure handling',
-            body:
-                'If the auto-debit fails (e.g. insufficient balance, frozen account), both you and the contribution creator are notified. The worker retries a configured number of times before escalating to manual review.',
-          ),
         ],
       ),
     );

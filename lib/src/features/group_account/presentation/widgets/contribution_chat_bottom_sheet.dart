@@ -470,18 +470,35 @@ class _ContributionChatBottomSheetState
     });
   }
 
+  // Chat surface palette. The header + composer sit on the existing
+  // `_chrome` color so they read as part of the app shell, while the
+  // timeline drops to `_canvas` — a deeper near-black with a faint
+  // blue lift. The contrast makes bubbles pop the way WhatsApp /
+  // Telegram do, and is consistent with the rest of LazerVault's
+  // dark theme (background 0x0A0A0A, card 0x1F1F1F).
+  static const Color _chrome = Color(0xFF1A1F24);
+  static const Color _canvas = Color(0xFF0B141A);
+  static const Color _bubbleMe = Color(0xFF6366F1);
+  static const Color _bubbleOther = Color(0xFF202C33);
+
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
+        color: _chrome,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
       child: Column(
         children: [
           _buildHeader(),
-          const Divider(color: Color(0xFF2D2D2D), height: 1),
-          Expanded(child: _buildMessageList()),
+          Container(height: 1, color: const Color(0xFF2D2D2D)),
+          Expanded(
+            child: Container(
+              color: _canvas,
+              child: _buildMessageList(),
+            ),
+          ),
+          Container(height: 1, color: const Color(0xFF2D2D2D)),
           _buildComposer(),
         ],
       ),
@@ -636,43 +653,72 @@ class _ContributionChatBottomSheetState
 
   Widget _buildBubble(_ChatMessage m) {
     final isMe = m.senderId == widget.currentUserId;
-    final bubbleColor = isMe ? const Color(0xFF6366F1) : const Color(0xFF2D2D2D);
-    final textColor = Colors.white;
-    return Align(
-      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        constraints: BoxConstraints(maxWidth: 280.w),
-        margin: EdgeInsets.only(bottom: 8.h),
-        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-        decoration: BoxDecoration(
-          color: bubbleColor,
-          borderRadius: BorderRadius.circular(14.r),
-        ),
-        child: Column(
-          crossAxisAlignment:
-              isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-          children: [
-            if (!isMe) ...[
-              Text(
-                m.senderName,
-                style: GoogleFonts.inter(
-                  color: Colors.grey[300],
-                  fontSize: 10.sp,
-                  fontWeight: FontWeight.w600,
-                ),
+    final bubbleColor = isMe ? _bubbleMe : _bubbleOther;
+    const textColor = Colors.white;
+    final tailSize = 6.w;
+    // Cap bubble width to keep the timeline scannable on wide phones.
+    // 78% of the screen leaves ~12% inset for the opposite side, which
+    // matches the visual rhythm of WhatsApp / Telegram / iMessage.
+    final maxBubbleWidth = MediaQuery.of(context).size.width * 0.78;
+    return Container(
+      margin: EdgeInsets.only(
+        bottom: 6.h,
+        // Outer margin pushes the bubble to "their" side; the tail
+        // hangs off the inner side via the painter below.
+        left: isMe ? 40.w : 0,
+        right: isMe ? 0 : 40.w,
+      ),
+      child: Align(
+        alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: maxBubbleWidth),
+          child: CustomPaint(
+            painter: _BubblePainter(
+              color: bubbleColor,
+              isMe: isMe,
+              tailSize: tailSize,
+              radius: 14.r,
+            ),
+            // Inset the content away from the tail side so the text
+            // never overlaps the protrusion.
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                isMe ? 12.w : 12.w + tailSize,
+                8.h,
+                isMe ? 12.w + tailSize : 12.w,
+                8.h,
               ),
-              SizedBox(height: 3.h),
-            ],
-            _buildMessageContent(m, textColor),
-            SizedBox(height: 3.h),
-            Text(
-              _formatTime(m.sentAt),
-              style: GoogleFonts.inter(
-                color: textColor.withValues(alpha: 0.6),
-                fontSize: 9.sp,
+              child: Column(
+                crossAxisAlignment:
+                    isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (!isMe) ...[
+                    Text(
+                      m.senderName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        color: Colors.grey[300],
+                        fontSize: 10.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: 3.h),
+                  ],
+                  _buildMessageContent(m, textColor),
+                  SizedBox(height: 3.h),
+                  Text(
+                    _formatTime(m.sentAt),
+                    style: GoogleFonts.inter(
+                      color: textColor.withValues(alpha: 0.6),
+                      fontSize: 9.sp,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -959,6 +1005,94 @@ class _ChatMessage {
 }
 
 enum _MessageKind { text, voice, image }
+
+/// Paints a chat bubble background with an asymmetric "tail" protruding
+/// at the bottom on the side belonging to the sender. The tail mimics
+/// the speech-bubble pointer used by WhatsApp / iMessage / Telegram.
+///
+/// Geometry:
+///   - The main rounded rect occupies the full width minus `tailSize`,
+///     leaving a margin on the tail side for the triangular pointer.
+///   - The tail is a small triangle anchored at the bottom corner of
+///     the bubble, jutting outward toward the avatar / edge of the
+///     screen.
+///   - All four corners have radius `radius` except the tail-side
+///     bottom corner, which is squared (`tailCornerRadius` = 2) so the
+///     tail flows naturally out of the body.
+class _BubblePainter extends CustomPainter {
+  final Color color;
+  final bool isMe;
+  final double tailSize;
+  final double radius;
+
+  const _BubblePainter({
+    required this.color,
+    required this.isMe,
+    required this.tailSize,
+    required this.radius,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill
+      ..isAntiAlias = true;
+
+    final w = size.width;
+    final h = size.height;
+    const tailCornerRadius = 2.0;
+
+    if (isMe) {
+      // Body: occupy left/center, leave `tailSize` on the right edge.
+      final body = Rect.fromLTWH(0, 0, w - tailSize, h);
+      final rect = RRect.fromRectAndCorners(
+        body,
+        topLeft: Radius.circular(radius),
+        topRight: Radius.circular(radius),
+        bottomLeft: Radius.circular(radius),
+        bottomRight: const Radius.circular(tailCornerRadius),
+      );
+      canvas.drawRRect(rect, paint);
+
+      // Tail: small right-leaning triangle anchored at body's
+      // bottom-right edge. Sits below the rect so it appears as a
+      // single connected shape.
+      final tail = Path()
+        ..moveTo(w - tailSize, h - tailSize - 2)
+        ..lineTo(w, h)
+        ..lineTo(w - tailSize, h)
+        ..close();
+      canvas.drawPath(tail, paint);
+    } else {
+      // Mirrored: leave `tailSize` on the left edge.
+      final body = Rect.fromLTWH(tailSize, 0, w - tailSize, h);
+      final rect = RRect.fromRectAndCorners(
+        body,
+        topLeft: Radius.circular(radius),
+        topRight: Radius.circular(radius),
+        bottomLeft: const Radius.circular(tailCornerRadius),
+        bottomRight: Radius.circular(radius),
+      );
+      canvas.drawRRect(rect, paint);
+
+      final tail = Path()
+        ..moveTo(tailSize, h - tailSize - 2)
+        ..lineTo(0, h)
+        ..lineTo(tailSize, h)
+        ..close();
+      canvas.drawPath(tail, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _BubblePainter old) {
+    return old.color != color ||
+        old.isMe != isMe ||
+        old.tailSize != tailSize ||
+        old.radius != radius;
+  }
+}
 
 /// Voice-note bubble with play/pause + waveform-stub progress bar.
 /// Uses just_audio for streaming playback. Each bubble owns its own
