@@ -98,6 +98,7 @@ abstract class CrowdfundRepository {
     required String crowdfundId,
     required double amount,
     required String transactionPin,
+    required String transactionId,
     String? destinationAccountId,
     String? destinationAccountType,
   });

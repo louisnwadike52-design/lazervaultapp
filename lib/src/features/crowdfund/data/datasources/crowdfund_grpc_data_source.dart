@@ -389,6 +389,7 @@ class CrowdfundGrpcDataSource {
     required String crowdfundId,
     required double amount,
     required String transactionPin,
+    required String transactionId,
     String? destinationAccountId,
     String? destinationAccountType,
   }) async {
@@ -396,7 +397,8 @@ class CrowdfundGrpcDataSource {
       final request = pb.WithdrawFromCrowdfundRequest()
         ..crowdfundId = crowdfundId
         ..amount = _amountToInt64(amount)
-        ..transactionPin = transactionPin;
+        ..transactionPin = transactionPin
+        ..transactionId = transactionId;
 
       if (destinationAccountId != null) {
         request.destinationAccountId = destinationAccountId;

@@ -86,10 +86,14 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
           'crowdfunds:${statusFilter ?? ''}:${categoryFilter ?? ''}:$myCrowdfundsOnly:$page';
 
       if (_cacheManager != null) {
-        // Avoid Loading flicker when we already have a list rendered.
-        if (state is! CrowdfundLoaded) {
-          emit(const CrowdfundLoading(message: 'Loading crowdfunds...'));
-        }
+        // Don't pre-emit CrowdfundLoading. The SWR stream will yield
+        // cached data on the first iteration when there's a hit (no
+        // spinner needed); on a cold miss the screen renders its
+        // last-good cache or the shimmer placeholder while the
+        // network fetch resolves. Pre-emitting Loading caused every
+        // refresh / tab switch / filter change to flash the shimmer
+        // even when fresh data was already on screen.
+        bool emittedAnything = false;
 
         await for (final result in _cacheManager!.get<List<Crowdfund>>(
           key: cacheKey,
@@ -109,6 +113,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
         )) {
           if (isClosed || gen != _listGeneration) return;
           if (result.hasData) {
+            emittedAnything = true;
             emit(CrowdfundLoaded(
               crowdfunds: result.data!,
               totalCount: result.data!.length,
@@ -117,7 +122,14 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
               hasMore: result.data!.length >= pageSize,
             ));
           } else if (result.hasError) {
-            emit(CrowdfundError(message: getUserFriendlyErrorMessage(result.error)));
+            // Suppress the error if we've already emitted cached data
+            // (the screen is showing the cached list while the
+            // background revalidation failed). Pull-to-refresh is the
+            // user's recovery path.
+            if (!emittedAnything) {
+              emit(CrowdfundError(
+                  message: getUserFriendlyErrorMessage(result.error)));
+            }
           }
         }
       } else {
@@ -629,9 +641,16 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
         // Receipt generation optional
       }
 
-      // Invalidate detail and search caches after donation
+      // Invalidate every cache surface that just went stale: the
+      // crowdfund row's donor count + currentAmount changed; the
+      // first donations page now has a new top entry; the donor's
+      // own My Donations list grew by one; search results may
+      // reorder as denormalized counters shift.
       await _cacheManager?.invalidatePattern('crowdfund_detail:');
+      await _cacheManager?.invalidatePattern('crowdfund_donations_p1:');
       await _cacheManager?.invalidatePattern('crowdfund_search:');
+      await _cacheManager?.invalidatePattern('crowdfunds:');
+      await _cacheManager?.invalidatePattern('user_donations:');
 
       if (isClosed) return;
       emit(DonationCompleted(
@@ -983,6 +1002,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
     required String crowdfundId,
     required double amount,
     required String transactionPin,
+    required String transactionId,
     String? destinationAccountId,
     String? destinationAccountType,
   }) async {
@@ -995,11 +1015,17 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
         crowdfundId: crowdfundId,
         amount: amount,
         transactionPin: transactionPin,
+        transactionId: transactionId,
         destinationAccountId: destinationAccountId,
         destinationAccountType: destinationAccountType,
       );
 
       if (isClosed) return;
+      // Withdrawal moved money — invalidate every cache that just
+      // went stale so the campaign details / list / my-campaigns
+      // surfaces all return the new currentAmount on next read.
+      await _cacheManager?.invalidatePattern('crowdfund_detail:');
+      await _cacheManager?.invalidatePattern('crowdfunds:');
       emit(WithdrawalCompleted(result));
     } catch (e) {
       if (isClosed) return;

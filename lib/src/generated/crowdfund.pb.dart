@@ -3084,6 +3084,7 @@ class WithdrawFromCrowdfundRequest extends $pb.GeneratedMessage {
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionPin')
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'destinationAccountId')
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'destinationAccountType')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionId')
     ..hasRequiredFields = false
   ;
 
@@ -3094,6 +3095,7 @@ class WithdrawFromCrowdfundRequest extends $pb.GeneratedMessage {
     $core.String? transactionPin,
     $core.String? destinationAccountId,
     $core.String? destinationAccountType,
+    $core.String? transactionId,
   }) {
     final _result = create();
     if (crowdfundId != null) {
@@ -3110,6 +3112,9 @@ class WithdrawFromCrowdfundRequest extends $pb.GeneratedMessage {
     }
     if (destinationAccountType != null) {
       _result.destinationAccountType = destinationAccountType;
+    }
+    if (transactionId != null) {
+      _result.transactionId = transactionId;
     }
     return _result;
   }
@@ -3178,6 +3183,15 @@ class WithdrawFromCrowdfundRequest extends $pb.GeneratedMessage {
   $core.bool hasDestinationAccountType() => $_has(4);
   @$pb.TagNumber(5)
   void clearDestinationAccountType() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get transactionId => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set transactionId($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasTransactionId() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearTransactionId() => clearField(6);
 }
 
 class WithdrawFromCrowdfundResponse extends $pb.GeneratedMessage {

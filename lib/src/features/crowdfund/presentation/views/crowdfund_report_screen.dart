@@ -191,36 +191,43 @@ class _LoadingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF7C3AED), Color(0xFF4F46E5)],
+    // SizedBox.expand so the gradient Container fills the whole
+    // viewport. Without it the Container shrinks to the Column's
+    // intrinsic width and the right half of the screen renders the
+    // raw Scaffold background.
+    return SizedBox.expand(
+      child: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF7C3AED), Color(0xFF4F46E5)],
+          ),
         ),
-      ),
-      child: SafeArea(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              message ?? 'Generating AI report...',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Colors.white,
-                  ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'This may take a moment',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.7),
-                  ),
-            ),
-          ],
+        child: SafeArea(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                message ?? 'Generating AI report...',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: Colors.white,
+                    ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'This may take a moment',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.white.withValues(alpha: 0.7),
+                    ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -240,19 +247,21 @@ class _ErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xFF0A0A0A),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.error_outline,
-                size: 64,
-                color: Color(0xFF9CA3AF),
-              ),
+    return SizedBox.expand(
+      child: Container(
+        color: const Color(0xFF0A0A0A),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.error_outline,
+                  size: 64,
+                  color: Color(0xFF9CA3AF),
+                ),
               const SizedBox(height: 24),
               Text(
                 'Report Generation Failed',
@@ -283,14 +292,15 @@ class _ErrorView extends StatelessWidget {
                 label: const Text('Try Again'),
               ),
               const SizedBox(height: 12),
-              TextButton(
-                onPressed: onClose,
-                child: const Text(
-                  'Go Back',
-                  style: TextStyle(color: Color(0xFF9CA3AF)),
+                TextButton(
+                  onPressed: onClose,
+                  child: const Text(
+                    'Go Back',
+                    style: TextStyle(color: Color(0xFF9CA3AF)),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

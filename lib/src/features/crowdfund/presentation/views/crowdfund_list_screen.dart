@@ -29,6 +29,13 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
 
   static const _filters = ['All', 'Active', 'Completed', 'Cancelled'];
 
+  /// Last successful CrowdfundLoaded snapshot — used to keep the list
+  /// painted across transient Loading / Error transitions so a refresh
+  /// or filter change never collapses to the shimmer when we already
+  /// have cached data on screen.
+  CrowdfundLoaded? _lastBrowse;
+  UserDonationsLoaded? _lastFunded;
+
   @override
   void initState() {
     super.initState();
@@ -401,91 +408,109 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
 
   Widget _buildBrowseAllTab() {
     return BlocBuilder<CrowdfundCubit, CrowdfundState>(
+      // Only repaint when the cubit emits a state this tab cares
+      // about. Sibling cubit operations (donations, leaderboard,
+      // statistics) don't drive a rebuild.
+      buildWhen: (prev, curr) =>
+          curr is CrowdfundLoaded ||
+          curr is CrowdfundLoading ||
+          curr is CrowdfundError ||
+          curr is CrowdfundInitial,
       builder: (context, state) {
-        if (state is CrowdfundLoading) {
-          return _buildCampaignListShimmer();
+        // Cache the most recent good snapshot so transient Loading /
+        // Error states don't collapse to the shimmer.
+        if (state is CrowdfundLoaded) {
+          _lastBrowse = state;
         }
-
-        if (state is CrowdfundError) {
+        // Render priority:
+        //   1. Live Loaded → render it.
+        //   2. Live Error AND no cache → error state.
+        //   3. Anything else with a cache → render the cache (paint
+        //      stays stable across refresh / filter / tab change).
+        //   4. No cache yet → shimmer.
+        final render =
+            state is CrowdfundLoaded ? state : _lastBrowse;
+        if (state is CrowdfundError && render == null) {
           return _buildErrorState(state.message);
         }
-
-        if (state is CrowdfundLoaded) {
-          if (state.crowdfunds.isEmpty) {
-            return _buildEmptyState(
-              icon: Icons.campaign_outlined,
-              title: _getEmptyTitle(isBrowse: true),
-              subtitle: _getEmptySubtitle(isBrowse: true),
-            );
-          }
-          final itemCount = state.crowdfunds.length +
-              (state.isLoadingMore || state.hasMore ? 1 : 0);
-          return RefreshIndicator(
-            onRefresh: _onRefresh,
-            color: const Color(0xFF4E03D0),
-            backgroundColor: const Color(0xFF1F1F1F),
-            child: ListView.builder(
-              controller: _browseScrollController,
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-              itemCount: itemCount,
-              itemBuilder: (context, index) {
-                if (index >= state.crowdfunds.length) {
-                  return Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16.h),
-                    child: Center(
-                      child: state.isLoadingMore
-                          ? const CircularProgressIndicator(
-                              color: Color(0xFF4E03D0),
-                              strokeWidth: 2,
-                            )
-                          : const SizedBox.shrink(),
-                    ),
-                  );
-                }
-                return CrowdfundCard(
-                  crowdfund: state.crowdfunds[index],
-                  onTap: () {
-                    Get.toNamed(
-                      AppRoutes.crowdfundDetails,
-                      arguments: state.crowdfunds[index].id,
-                    );
-                  },
-                );
-              },
-            ),
+        if (render == null) {
+          return _buildCampaignListShimmer();
+        }
+        if (render.crowdfunds.isEmpty) {
+          return _buildEmptyState(
+            icon: Icons.campaign_outlined,
+            title: _getEmptyTitle(isBrowse: true),
+            subtitle: _getEmptySubtitle(isBrowse: true),
           );
         }
-
-        return _buildCampaignListShimmer();
+        final itemCount = render.crowdfunds.length +
+            (render.isLoadingMore || render.hasMore ? 1 : 0);
+        return RefreshIndicator(
+          onRefresh: _onRefresh,
+          color: const Color(0xFF4E03D0),
+          backgroundColor: const Color(0xFF1F1F1F),
+          child: ListView.builder(
+            controller: _browseScrollController,
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+            itemCount: itemCount,
+            itemBuilder: (context, index) {
+              if (index >= render.crowdfunds.length) {
+                return Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16.h),
+                  child: Center(
+                    child: render.isLoadingMore
+                        ? const CircularProgressIndicator(
+                            color: Color(0xFF4E03D0),
+                            strokeWidth: 2,
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                );
+              }
+              return CrowdfundCard(
+                crowdfund: render.crowdfunds[index],
+                onTap: () {
+                  Get.toNamed(
+                    AppRoutes.crowdfundDetails,
+                    arguments: render.crowdfunds[index].id,
+                  );
+                },
+              );
+            },
+          ),
+        );
       },
     );
   }
 
   Widget _buildMyFundedTab() {
     return BlocBuilder<CrowdfundCubit, CrowdfundState>(
+      buildWhen: (prev, curr) =>
+          curr is UserDonationsLoaded ||
+          curr is CrowdfundLoading ||
+          curr is CrowdfundError ||
+          curr is CrowdfundInitial,
       builder: (context, state) {
-        if (state is CrowdfundLoading) {
-          return _buildCampaignListShimmer();
+        if (state is UserDonationsLoaded) {
+          _lastFunded = state;
         }
-
-        if (state is CrowdfundError) {
+        final render =
+            state is UserDonationsLoaded ? state : _lastFunded;
+        if (state is CrowdfundError && render == null) {
           return _buildErrorState(state.message);
         }
-
-        if (state is UserDonationsLoaded) {
-          if (state.donations.isEmpty) {
-            return _buildEmptyState(
-              icon: Icons.volunteer_activism,
-              title: 'No funded campaigns yet',
-              subtitle: 'Donate to a campaign to see it here!',
-            );
-          }
-          return _buildFundedCampaignsList(state);
+        if (render == null) {
+          return _buildCampaignListShimmer();
         }
-
-        // Default: show shimmer while _onTabChanged triggers loadUserDonations
-        return _buildCampaignListShimmer();
+        if (render.donations.isEmpty) {
+          return _buildEmptyState(
+            icon: Icons.volunteer_activism,
+            title: 'No funded campaigns yet',
+            subtitle: 'Donate to a campaign to see it here!',
+          );
+        }
+        return _buildFundedCampaignsList(render);
       },
     );
   }

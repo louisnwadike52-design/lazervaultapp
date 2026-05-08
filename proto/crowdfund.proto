@@ -312,6 +312,10 @@ message WithdrawFromCrowdfundRequest {
   // If neither is set, funds go to user's primary account
   string destination_account_id = 4;    // Optional: specific account UUID
   string destination_account_type = 5;  // Optional: "personal", "savings", or "investment"
+  // Same string the client used at PIN-mint time. Auth-service token
+  // validator uses (token, user_id, transaction_id) — both sides MUST
+  // agree exactly.
+  string transaction_id = 6;
 }
 
 message WithdrawFromCrowdfundResponse {

@@ -547,11 +547,12 @@ const WithdrawFromCrowdfundRequest$json = const {
     const {'1': 'transaction_pin', '3': 3, '4': 1, '5': 9, '10': 'transactionPin'},
     const {'1': 'destination_account_id', '3': 4, '4': 1, '5': 9, '10': 'destinationAccountId'},
     const {'1': 'destination_account_type', '3': 5, '4': 1, '5': 9, '10': 'destinationAccountType'},
+    const {'1': 'transaction_id', '3': 6, '4': 1, '5': 9, '10': 'transactionId'},
   ],
 };
 
 /// Descriptor for `WithdrawFromCrowdfundRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List withdrawFromCrowdfundRequestDescriptor = $convert.base64Decode('ChxXaXRoZHJhd0Zyb21Dcm93ZGZ1bmRSZXF1ZXN0EiEKDGNyb3dkZnVuZF9pZBgBIAEoCVILY3Jvd2RmdW5kSWQSFgoGYW1vdW50GAIgASgEUgZhbW91bnQSJwoPdHJhbnNhY3Rpb25fcGluGAMgASgJUg50cmFuc2FjdGlvblBpbhI0ChZkZXN0aW5hdGlvbl9hY2NvdW50X2lkGAQgASgJUhRkZXN0aW5hdGlvbkFjY291bnRJZBI4ChhkZXN0aW5hdGlvbl9hY2NvdW50X3R5cGUYBSABKAlSFmRlc3RpbmF0aW9uQWNjb3VudFR5cGU=');
+final $typed_data.Uint8List withdrawFromCrowdfundRequestDescriptor = $convert.base64Decode('ChxXaXRoZHJhd0Zyb21Dcm93ZGZ1bmRSZXF1ZXN0EiEKDGNyb3dkZnVuZF9pZBgBIAEoCVILY3Jvd2RmdW5kSWQSFgoGYW1vdW50GAIgASgEUgZhbW91bnQSJwoPdHJhbnNhY3Rpb25fcGluGAMgASgJUg50cmFuc2FjdGlvblBpbhI0ChZkZXN0aW5hdGlvbl9hY2NvdW50X2lkGAQgASgJUhRkZXN0aW5hdGlvbkFjY291bnRJZBI4ChhkZXN0aW5hdGlvbl9hY2NvdW50X3R5cGUYBSABKAlSFmRlc3RpbmF0aW9uQWNjb3VudFR5cGUSJQoOdHJhbnNhY3Rpb25faWQYBiABKAlSDXRyYW5zYWN0aW9uSWQ=');
 @$core.Deprecated('Use withdrawFromCrowdfundResponseDescriptor instead')
 const WithdrawFromCrowdfundResponse$json = const {
   '1': 'WithdrawFromCrowdfundResponse',

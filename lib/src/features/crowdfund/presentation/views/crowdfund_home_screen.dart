@@ -572,10 +572,12 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
 
   Widget _buildLeaderboardPreview(BuildContext context) {
     return BlocProvider(
-      // Always pull at least 5 so the preview can render 3+ items even
-      // if the backend returns fewer than the limit. The leaderboard
-      // route renders the full list with sort tabs.
-      create: (_) => serviceLocator<LeaderboardCubit>()..loadLeaderboard(limit: 5),
+      // Cap the preview at 3 entries to match the My Campaigns / My
+      // Donations / Active Campaigns sections — the home page is a
+      // teaser surface, not a full list. Tap "View All" to drill
+      // into the dedicated leaderboard route, which renders the
+      // full list with sort tabs.
+      create: (_) => serviceLocator<LeaderboardCubit>()..loadLeaderboard(limit: 3),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -628,8 +630,14 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
                 );
               }
               if (state is LeaderboardLoaded && state.entries.isNotEmpty) {
+                // Defensive cap — even if the cache or backend returns
+                // more than the requested limit, never render more than
+                // 3 rows in this preview slot.
                 return Column(
-                  children: state.entries.map(_buildLeaderboardItem).toList(),
+                  children: state.entries
+                      .take(3)
+                      .map(_buildLeaderboardItem)
+                      .toList(),
                 );
               }
               if (state is LeaderboardError) {

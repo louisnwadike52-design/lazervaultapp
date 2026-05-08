@@ -11,12 +11,20 @@ import 'donor_star_rating.dart';
 class DonorCard extends StatefulWidget {
   final CrowdfundDonation donation;
   final Crowdfund? crowdfund;
+  /// Optional pool of all donations loaded for this campaign on the
+  /// current screen. When provided, the donor-detail modal
+  /// aggregates the same donor's contributions across this list to
+  /// surface real `totalDonated` / `contributionCount` metrics into
+  /// the AI rating call. When null, the modal falls back to the
+  /// single tapped donation's amount (older behaviour).
+  final List<CrowdfundDonation>? allDonations;
   final VoidCallback? onTap;
 
   const DonorCard({
     super.key,
     required this.donation,
     this.crowdfund,
+    this.allDonations,
     this.onTap,
   });
 
@@ -39,12 +47,8 @@ class _DonorCardState extends State<DonorCard> {
         padding: EdgeInsets.all(12.w),
         margin: EdgeInsets.only(bottom: 8.h),
         decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F), // Card background
+          color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(
-            color: const Color(0xFF2D2D2D), // Border color
-            width: 1,
-          ),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -211,12 +215,8 @@ class _DonorCardState extends State<DonorCard> {
         Container(
           padding: EdgeInsets.all(10.w),
           decoration: BoxDecoration(
-            color: const Color(0xFF0A0A0A), // Dark background
+            color: const Color(0xFF0A0A0A),
             borderRadius: BorderRadius.circular(8.r),
-            border: Border.all(
-              color: const Color(0xFF2D2D2D),
-              width: 1,
-            ),
           ),
           child: Text(
             displayMessage,
@@ -251,9 +251,13 @@ class _DonorCardState extends State<DonorCard> {
 
   String _formatDate(DateTime date) {
     final now = DateTime.now();
-    final difference = now.difference(date);
+    // Clamp to absolute value so a clock-skew or
+    // future-dated record never surfaces as "-55m ago".
+    final difference = now.difference(date).abs();
 
-    if (difference.inMinutes < 60) {
+    if (difference.inSeconds < 60) {
+      return 'Just now';
+    } else if (difference.inMinutes < 60) {
       return '${difference.inMinutes}m ago';
     } else if (difference.inHours < 24) {
       return '${difference.inHours}h ago';
@@ -273,6 +277,7 @@ class _DonorCardState extends State<DonorCard> {
       builder: (_) => DonorDetailDialog(
         donation: widget.donation,
         crowdfund: crowdfund,
+        allDonations: widget.allDonations,
       ),
     );
   }
@@ -287,11 +292,18 @@ class _DonorCardState extends State<DonorCard> {
 class DonorDetailDialog extends StatefulWidget {
   final CrowdfundDonation donation;
   final Crowdfund crowdfund;
+  /// Pool of all donations on the current campaign — used to
+  /// aggregate the same donor's full contribution history before
+  /// asking the LLM for a rating. Without it the rating sees
+  /// `contributionCount: 1, totalDonated: <single donation>` which
+  /// understates repeat donors.
+  final List<CrowdfundDonation>? allDonations;
 
   const DonorDetailDialog({
     super.key,
     required this.donation,
     required this.crowdfund,
+    this.allDonations,
   });
 
   @override
@@ -347,15 +359,29 @@ class _DonorDetailDialogState extends State<DonorDetailDialog> {
           .inDays
           .clamp(0, 100000);
 
+      // Aggregate the donor's contributions from the pool the parent
+      // screen passed down. When the pool is missing we fall back to
+      // the single tapped donation — accurate enough that the LLM
+      // still produces a sensible rating, just narrower in scope.
+      double aggregatedTotal = donation.amount;
+      int aggregatedCount = 1;
+      bool aggregatedHasMessage =
+          donation.message != null && donation.message!.trim().isNotEmpty;
+      final pool = widget.allDonations;
+      if (pool != null && pool.isNotEmpty) {
+        final donorRows = pool.where((d) => d.donor.userId == donation.donor.userId);
+        if (donorRows.isNotEmpty) {
+          aggregatedTotal = donorRows.fold<double>(0.0, (s, d) => s + d.amount);
+          aggregatedCount = donorRows.length;
+          aggregatedHasMessage = donorRows.any(
+              (d) => d.message != null && d.message!.trim().isNotEmpty);
+        }
+      }
+
       final metrics = DonorRatingMetrics(
-        // We only know about the donation row the user tapped on. The
-        // backend's `crowdfund_donor_stats` has the full per-donor
-        // aggregate; surfacing it through a dedicated endpoint is a
-        // future refinement. The LLM is intentionally tolerant of this.
-        totalDonated: donation.amount,
-        contributionCount: 1,
-        hasMessage:
-            donation.message != null && donation.message!.trim().isNotEmpty,
+        totalDonated: aggregatedTotal,
+        contributionCount: aggregatedCount,
+        hasMessage: aggregatedHasMessage,
         isAnonymous: donation.isAnonymous,
         isCreator: donation.donor.isCreator,
         daysSinceFirstDonation: daysSince,
@@ -403,7 +429,8 @@ class _DonorDetailDialogState extends State<DonorDetailDialog> {
 
   String _formatDate(DateTime date) {
     final now = DateTime.now();
-    final difference = now.difference(date);
+    final difference = now.difference(date).abs();
+    if (difference.inSeconds < 60) return 'Just now';
     if (difference.inMinutes < 60) return '${difference.inMinutes}m ago';
     if (difference.inHours < 24) return '${difference.inHours}h ago';
     if (difference.inDays < 7) return '${difference.inDays}d ago';
@@ -524,8 +551,13 @@ class _DonorDetailDialogState extends State<DonorDetailDialog> {
                     : null),
           ),
           SizedBox(height: 12.h),
+          // Names can be long; clamp to 2 lines + ellipsis so the
+          // header height stays bounded.
           Text(
             isAnonymous ? 'Anonymous Donor' : donor.displayName,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             style: GoogleFonts.inter(
               fontSize: 18.sp,
               fontWeight: FontWeight.w700,
@@ -595,9 +627,6 @@ class _DonorDetailDialogState extends State<DonorDetailDialog> {
         decoration: BoxDecoration(
           color: const Color(0xFF2D2D2D),
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(
-            color: const Color(0xFFEF4444).withValues(alpha: 0.4),
-          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -670,18 +699,28 @@ class _DonorDetailDialogState extends State<DonorDetailDialog> {
           SizedBox(height: 6.h),
           Text(
             label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: GoogleFonts.inter(
               fontSize: 10.sp,
               color: Colors.grey[500],
             ),
           ),
           SizedBox(height: 2.h),
-          Text(
-            value,
-            style: GoogleFonts.inter(
-              fontSize: 13.sp,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
+          // FittedBox + maxLines so a long value (currency + big
+          // amount, or a long "X days ago" date) shrinks-to-fit
+          // instead of overflowing the modal column.
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              value,
+              maxLines: 1,
+              style: GoogleFonts.inter(
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
             ),
           ),
         ],
