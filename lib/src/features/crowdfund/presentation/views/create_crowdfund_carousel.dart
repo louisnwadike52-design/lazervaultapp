@@ -1,5 +1,6 @@
 import 'dart:developer' as developer;
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,6 +11,7 @@ import '../cubit/crowdfund_cubit.dart';
 import '../cubit/crowdfund_state.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../authentication/cubit/authentication_state.dart';
+import '../../data/services/crowdfund_image_upload_service.dart';
 import '../widgets/create_crowdfund_steps/basic_info_step.dart';
 import '../widgets/create_crowdfund_steps/funding_goal_step.dart';
 import '../widgets/create_crowdfund_steps/story_media_step.dart';
@@ -38,7 +40,16 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
   int _currentPage = 0;
   final int _totalPages = 6;
   bool _isProcessing = false;
-  bool _isImageUploading = false;
+
+  /// Picked-but-not-yet-uploaded local file. Only set when the user
+  /// chose Gallery / Camera; null when they pasted a URL or didn't
+  /// select an image. The actual upload happens on submit (the
+  /// server returns a predicted URL fast and writes in a goroutine,
+  /// so this doesn't add user-perceived latency).
+  File? _pickedImageFile;
+
+  final CrowdfundImageUploadService _uploadService =
+      CrowdfundImageUploadService();
 
   final List<String> _pageNames = [
     'Basic Info',
@@ -134,11 +145,9 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
         isValid = _validateFundingGoal();
         break;
       case 2:
-        if (_isImageUploading) {
-          _showErrorSnackBar('Please wait for the image to finish uploading');
-          return;
-        }
-        isValid = true; // Story and media are optional
+        // Image is uploaded at submit time, not on pick — no per-step
+        // gate needed. Story is optional.
+        isValid = true;
         break;
       case 3:
         isValid = true; // Category and deadline are pre-selected
@@ -221,11 +230,6 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
   }
 
   Future<void> _proceedToCreateCrowdfund() async {
-    if (_isImageUploading) {
-      _showErrorSnackBar('Please wait for the image to finish uploading');
-      return;
-    }
-
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is! AuthenticationSuccess) {
       _showErrorSnackBar('Please log in to create a campaign');
@@ -238,13 +242,38 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
       _isProcessing = true;
     });
 
-    // No modal dialog — the inline spinner on the Create Campaign CTA is
-    // the only progress affordance until we navigate to the campaign.
-
     developer.log('CreateCrowdfund: Starting creation process', name: 'Crowdfund');
     developer.log('User authenticated: ${authState.profile.user.username ?? 'unknown'}', name: 'Crowdfund');
 
-    // Prepare metadata with social links
+    // Resolve the final image URL.
+    //   1. If the user picked a local file: upload now. The server
+    //      returns the predicted URL fast (HTTP 202) and continues
+    //      writing in a goroutine, so the create call doesn't block
+    //      on disk / GCS latency.
+    //   2. If the user typed a URL: pass it through unchanged.
+    //   3. If neither: send null (no image).
+    String? imageUrl;
+    final pickedFile = _pickedImageFile;
+    if (pickedFile != null) {
+      try {
+        imageUrl = await _uploadService.uploadImage(pickedFile);
+      } on ImageUploadException catch (e) {
+        if (!mounted) return;
+        setState(() => _isProcessing = false);
+        _showErrorSnackBar(e.message);
+        return;
+      } catch (_) {
+        if (!mounted) return;
+        setState(() => _isProcessing = false);
+        _showErrorSnackBar('Could not upload image. Please try again.');
+        return;
+      }
+    } else {
+      imageUrl = _getValidImageUrl();
+    }
+
+    if (!mounted) return;
+
     Map<String, dynamic> metadata = {};
     if (_socialLinks.isNotEmpty) {
       metadata['social_links'] = jsonEncode(_socialLinks);
@@ -258,7 +287,7 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
           currency: _selectedCurrency,
           deadline: _selectedDeadline,
           category: _selectedCategory,
-          imageUrl: _getValidImageUrl(),
+          imageUrl: imageUrl,
           metadata: metadata.isNotEmpty ? metadata : null,
         );
   }
@@ -396,14 +425,17 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
                   StoryMediaStep(
                     storyController: _storyController,
                     imageUrlController: _imageUrlController,
-                    onImagePicked: (path) {
+                    onLocalFilePicked: (file) {
                       setState(() {
-                        // Image picked, state updated in controller
+                        _pickedImageFile = file;
                       });
                     },
-                    onUploadStateChanged: (isUploading) {
+                    onImageUrlChanged: (_) {
                       setState(() {
-                        _isImageUploading = isUploading;
+                        // URL paste path: clear any picked file so
+                        // _proceedToCreateCrowdfund takes the URL
+                        // straight through.
+                        _pickedImageFile = null;
                       });
                     },
                   ),

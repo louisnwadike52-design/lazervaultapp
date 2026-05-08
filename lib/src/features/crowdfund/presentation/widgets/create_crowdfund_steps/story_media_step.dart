@@ -5,20 +5,26 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../../data/services/crowdfund_image_upload_service.dart';
-
 class StoryMediaStep extends StatefulWidget {
   final TextEditingController storyController;
   final TextEditingController imageUrlController;
-  final Function(String)? onImagePicked;
-  final ValueChanged<bool>? onUploadStateChanged;
+  // Called when the user picks a local file. The carousel keeps the
+  // File reference so it can upload at create time — uploading on
+  // pick wastes bandwidth when the user backs out / changes image
+  // and slows the per-step navigation. The upload happens in the
+  // background after the user submits the create form, with the
+  // server returning a predicted URL immediately.
+  final ValueChanged<File?>? onLocalFilePicked;
+  // Called when the user types a URL (no upload needed, the URL is
+  // used directly on the campaign). The empty string means cleared.
+  final ValueChanged<String>? onImageUrlChanged;
 
   const StoryMediaStep({
     super.key,
     required this.storyController,
     required this.imageUrlController,
-    this.onImagePicked,
-    this.onUploadStateChanged,
+    this.onLocalFilePicked,
+    this.onImageUrlChanged,
   });
 
   @override
@@ -27,25 +33,17 @@ class StoryMediaStep extends StatefulWidget {
 
 class _StoryMediaStepState extends State<StoryMediaStep> {
   final ImagePicker _imagePicker = ImagePicker();
-  final CrowdfundImageUploadService _uploadService =
-      CrowdfundImageUploadService();
   File? _selectedImage;
   bool _isImageFromFile = false;
-  bool _isUploading = false;
-  double _uploadProgress = 0;
-  String? _uploadError;
 
-  void _setUploading(bool uploading) {
-    _isUploading = uploading;
-    widget.onUploadStateChanged?.call(uploading);
-  }
-
-  // ─── Image Picking & Upload ──────────────────────────────────
+  // ─── Image Picking ──────────────────────────────────────────
+  // Picking only stores the File for preview. The actual upload
+  // happens at the very end of the create flow (carousel handles
+  // it on submit) so we don't waste bandwidth when the user backs
+  // out and don't make every step navigation depend on a network
+  // round-trip.
 
   Future<void> _pickImage(ImageSource source) async {
-    // Prevent picking while an upload is already in progress
-    if (_isUploading) return;
-
     try {
       final XFile? pickedFile = await _imagePicker.pickImage(
         source: source,
@@ -59,7 +57,9 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
 
       final file = File(pickedFile.path);
 
-      // Quick client-side size check before showing upload UI
+      // Client-side size + non-empty check. Anything that survives
+      // this also passes the server-side validator at submit time
+      // (10 MB cap, magic-byte content-type sniff).
       final fileSize = await file.length();
       if (fileSize > 10 * 1024 * 1024) {
         _showErrorSnackBar(
@@ -74,119 +74,33 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
       setState(() {
         _selectedImage = file;
         _isImageFromFile = true;
-        _setUploading(true);
-        _uploadProgress = 0;
-        _uploadError = null;
+        // Clear any previously-typed URL — the new picked file
+        // wins and will be uploaded at submit.
+        widget.imageUrlController.clear();
       });
 
-      try {
-        _simulateProgress();
-        final imageUrl = await _uploadService.uploadImage(file);
-
-        if (!mounted) return;
-        setState(() {
-          _setUploading(false);
-          _uploadProgress = 1.0;
-          widget.imageUrlController.text = imageUrl;
-        });
-
-        widget.onImagePicked?.call(imageUrl);
-      } on ImageUploadException catch (e) {
-        if (!mounted) return;
-        setState(() {
-          _setUploading(false);
-          _uploadProgress = 0;
-          _uploadError = e.message;
-        });
-        _showErrorSnackBar(e.message);
-      } catch (e) {
-        if (!mounted) return;
-        setState(() {
-          _setUploading(false);
-          _uploadProgress = 0;
-          _uploadError = 'Upload failed. Please try again.';
-        });
-        _showErrorSnackBar('Upload failed. Please try again.');
-      }
+      // Bubble the File up to the carousel; carousel uploads at
+      // submit time and writes the resulting URL onto the create
+      // request.
+      widget.onLocalFilePicked?.call(file);
+      widget.onImageUrlChanged?.call('');
     } on PlatformException catch (e) {
-      // Camera/gallery permission denied or hardware unavailable
       if (e.code == 'camera_access_denied' ||
           e.code == 'photo_access_denied') {
         _showErrorSnackBar(
             'Permission denied. Please allow access in Settings.');
       } else {
-        _showErrorSnackBar('Could not access ${source == ImageSource.camera ? "camera" : "gallery"}.');
+        _showErrorSnackBar(
+            'Could not access ${source == ImageSource.camera ? "camera" : "gallery"}.');
       }
-    } catch (e) {
+    } catch (_) {
       _showErrorSnackBar('Failed to pick image.');
     }
-  }
-
-  /// Retry the upload with the same file after a failure.
-  Future<void> _retryUpload() async {
-    final file = _selectedImage;
-    if (file == null || !file.existsSync()) {
-      setState(() {
-        _selectedImage = null;
-        _isImageFromFile = false;
-        _uploadError = null;
-      });
-      _showErrorSnackBar('File no longer available. Please pick a new image.');
-      return;
-    }
-
-    setState(() {
-      _setUploading(true);
-      _uploadProgress = 0;
-      _uploadError = null;
-    });
-
-    try {
-      _simulateProgress();
-      final imageUrl = await _uploadService.uploadImage(file);
-
-      if (!mounted) return;
-      setState(() {
-        _setUploading(false);
-        _uploadProgress = 1.0;
-        widget.imageUrlController.text = imageUrl;
-      });
-
-      widget.onImagePicked?.call(imageUrl);
-    } catch (e) {
-      if (!mounted) return;
-      final msg =
-          e is ImageUploadException ? e.message : 'Upload failed. Please try again.';
-      setState(() {
-        _setUploading(false);
-        _uploadProgress = 0;
-        _uploadError = msg;
-      });
-      _showErrorSnackBar(msg);
-    }
-  }
-
-  void _simulateProgress() {
-    Future.delayed(const Duration(milliseconds: 200), () {
-      if (!mounted || !_isUploading) return;
-      setState(() => _uploadProgress = 0.3);
-      Future.delayed(const Duration(milliseconds: 400), () {
-        if (!mounted || !_isUploading) return;
-        setState(() => _uploadProgress = 0.6);
-        Future.delayed(const Duration(milliseconds: 300), () {
-          if (!mounted || !_isUploading) return;
-          setState(() => _uploadProgress = 0.8);
-        });
-      });
-    });
   }
 
   // ─── Image Source Selection ──────────────────────────────────
 
   void _showImageSourceBottomSheet() {
-    // Don't allow picking while uploading
-    if (_isUploading) return;
-
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1F1F1F),
@@ -242,8 +156,8 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
                 setState(() {
                   _isImageFromFile = false;
                   _selectedImage = null;
-                  _uploadError = null;
                 });
+                widget.onLocalFilePicked?.call(null);
                 _showUrlDialog();
               },
             ),
@@ -327,9 +241,9 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
                   widget.imageUrlController.text = url;
                   _selectedImage = null;
                   _isImageFromFile = false;
-                  _uploadError = null;
                 });
-                widget.onImagePicked?.call(url);
+                widget.onLocalFilePicked?.call(null);
+                widget.onImageUrlChanged?.call(url);
                 Navigator.pop(dialogContext);
               },
               child: Text(
@@ -347,11 +261,10 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
     setState(() {
       _selectedImage = null;
       _isImageFromFile = false;
-      _setUploading(false);
-      _uploadProgress = 0;
-      _uploadError = null;
       widget.imageUrlController.clear();
     });
+    widget.onLocalFilePicked?.call(null);
+    widget.onImageUrlChanged?.call('');
   }
 
   void _showErrorSnackBar(String message) {
@@ -442,21 +355,22 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
           _buildLabel('Campaign Image'),
           SizedBox(height: 8.h),
 
-          // Image preview or placeholder
-          if (_isUploading) ...[
-            _buildUploadingPreview(),
-          ] else if (_uploadError != null && _selectedImage != null) ...[
-            _buildUploadFailedPreview(),
+          // Image preview or placeholder.
+          // Two source cases:
+          //   - Picked local file: render Image.file (no network).
+          //   - URL typed in: render Image.network with retry.
+          // The actual upload (for local files) happens on submit.
+          if (_isImageFromFile && _selectedImage != null) ...[
+            _buildLocalFilePreview(),
           ] else if (widget.imageUrlController.text.isNotEmpty) ...[
             _buildNetworkImagePreview(),
           ] else ...[
             _buildImagePickerPlaceholder(),
           ],
 
-          // Remove button — show when we have an image (uploading, uploaded, or URL)
-          if (!_isUploading &&
-              _uploadError == null &&
-              (widget.imageUrlController.text.isNotEmpty)) ...[
+          // Remove button — show whenever an image is set
+          if (_selectedImage != null ||
+              widget.imageUrlController.text.isNotEmpty) ...[
             SizedBox(height: 12.h),
             TextButton.icon(
               onPressed: _removeImage,
@@ -522,194 +436,70 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
 
   // ─── Image Preview Widgets ──────────────────────────────────
 
-  Widget _buildUploadingPreview() {
+  /// Preview of a picked local file. The file is uploaded at submit
+  /// time by the carousel — this preview shows the raw on-device
+  /// image without any network round-trip.
+  Widget _buildLocalFilePreview() {
     return ClipRRect(
       borderRadius: BorderRadius.circular(16.r),
       child: Stack(
         children: [
-          // Show local file as dimmed background
-          if (_selectedImage != null)
-            Image.file(
-              _selectedImage!,
-              width: double.infinity,
-              height: 200.h,
-              fit: BoxFit.cover,
-              color: Colors.black.withValues(alpha: 0.5),
-              colorBlendMode: BlendMode.darken,
-              errorBuilder: (_, __, ___) => Container(
-                width: double.infinity,
-                height: 200.h,
-                color: const Color(0xFF1A1A3E),
-              ),
-            )
-          else
-            Container(
+          Image.file(
+            _selectedImage!,
+            width: double.infinity,
+            height: 200.h,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => Container(
               width: double.infinity,
               height: 200.h,
               color: const Color(0xFF1A1A3E),
-            ),
-          // Upload progress overlay
-          Positioned.fill(
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: 60.w,
-                    height: 60.w,
-                    child: CircularProgressIndicator(
-                      value:
-                          _uploadProgress > 0 ? _uploadProgress : null,
-                      color: const Color(0xFF4E03D0),
-                      strokeWidth: 3,
-                    ),
-                  ),
-                  SizedBox(height: 12.h),
-                  Text(
-                    'Uploading image...',
-                    style: GoogleFonts.inter(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.white,
-                    ),
-                  ),
-                  if (_uploadProgress > 0) ...[
-                    SizedBox(height: 4.h),
-                    Text(
-                      '${(_uploadProgress * 100).toInt()}%',
-                      style: GoogleFonts.inter(
-                        fontSize: 12.sp,
-                        color: const Color(0xFF9CA3AF),
-                      ),
-                    ),
-                  ],
-                ],
+              child: Center(
+                child: Icon(Icons.broken_image,
+                    color: Colors.grey[600], size: 36.sp),
               ),
             ),
           ),
-          // Cancel button during upload
+          // "Selected" badge so the user knows the file is queued
+          // and will be uploaded when they submit.
           Positioned(
             top: 8,
-            right: 8,
-            child: InkWell(
-              onTap: _removeImage,
-              child: Container(
-                padding: EdgeInsets.all(8.w),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.6),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.close,
-                  color: Colors.white,
-                  size: 18.sp,
-                ),
+            left: 8,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFF4E03D0).withValues(alpha: 0.9),
+                borderRadius: BorderRadius.circular(12.r),
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Shows the failed upload state with retry / re-pick options.
-  Widget _buildUploadFailedPreview() {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16.r),
-      child: Stack(
-        children: [
-          if (_selectedImage != null)
-            Image.file(
-              _selectedImage!,
-              width: double.infinity,
-              height: 200.h,
-              fit: BoxFit.cover,
-              color: Colors.black.withValues(alpha: 0.6),
-              colorBlendMode: BlendMode.darken,
-              errorBuilder: (_, __, ___) => Container(
-                width: double.infinity,
-                height: 200.h,
-                color: const Color(0xFF1A1A3E),
-              ),
-            )
-          else
-            Container(
-              width: double.infinity,
-              height: 200.h,
-              color: const Color(0xFF1A1A3E),
-            ),
-          // Error overlay with retry
-          Positioned.fill(
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.cloud_off,
-                      size: 36.sp, color: const Color(0xFFEF4444)),
-                  SizedBox(height: 8.h),
+                  Icon(Icons.image, size: 12.sp, color: Colors.white),
+                  SizedBox(width: 4.w),
                   Text(
-                    'Upload failed',
+                    'Selected',
                     style: GoogleFonts.inter(
-                      fontSize: 14.sp,
+                      fontSize: 10.sp,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
                     ),
                   ),
-                  SizedBox(height: 4.h),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 24.w),
-                    child: Text(
-                      _uploadError ?? '',
-                      style: GoogleFonts.inter(
-                        fontSize: 11.sp,
-                        color: const Color(0xFF9CA3AF),
-                      ),
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  SizedBox(height: 12.h),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildSmallButton(
-                        label: 'Retry',
-                        icon: Icons.refresh,
-                        onTap: _retryUpload,
-                      ),
-                      SizedBox(width: 12.w),
-                      _buildSmallButton(
-                        label: 'Pick New',
-                        icon: Icons.image,
-                        onTap: () {
-                          _removeImage();
-                          _showImageSourceBottomSheet();
-                        },
-                      ),
-                    ],
-                  ),
                 ],
               ),
             ),
           ),
-          // Dismiss button
+          // Edit / change button
           Positioned(
             top: 8,
             right: 8,
             child: InkWell(
-              onTap: _removeImage,
+              onTap: _showImageSourceBottomSheet,
               child: Container(
                 padding: EdgeInsets.all(8.w),
                 decoration: BoxDecoration(
                   color: Colors.black.withValues(alpha: 0.6),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  Icons.close,
-                  color: Colors.white,
-                  size: 18.sp,
-                ),
+                child: Icon(Icons.edit, color: Colors.white, size: 18.sp),
               ),
             ),
           ),
@@ -718,39 +508,6 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
     );
   }
 
-  Widget _buildSmallButton({
-    required String label,
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
-        decoration: BoxDecoration(
-          color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
-          borderRadius: BorderRadius.circular(20.r),
-          border: Border.all(
-              color: const Color(0xFF4E03D0).withValues(alpha: 0.5)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 14.sp, color: const Color(0xFF4E03D0)),
-            SizedBox(width: 4.w),
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF4E03D0),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _buildImagePickerPlaceholder() {
     return InkWell(
@@ -899,36 +656,10 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
               ),
             ),
           ),
-          // Upload success badge
-          if (_isImageFromFile)
-            Positioned(
-              top: 8,
-              left: 8,
-              child: Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.9),
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.cloud_done,
-                        size: 12.sp, color: Colors.white),
-                    SizedBox(width: 4.w),
-                    Text(
-                      'Uploaded',
-                      style: GoogleFonts.inter(
-                        fontSize: 10.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+          // No "Uploaded" badge here — this preview only renders
+          // user-typed URLs now. Uploads from picked files render
+          // through _buildLocalFilePreview during the create flow,
+          // and the campaign list shows the network image post-create.
         ],
       ),
     );

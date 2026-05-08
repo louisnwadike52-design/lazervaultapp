@@ -8,13 +8,13 @@ import 'package:share_plus/share_plus.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import '../../../../../core/services/injection_container.dart';
+import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../data/services/crowdfund_share_service.dart';
 import '../../domain/entities/crowdfund_entities.dart';
 import '../cubit/crowdfund_cubit.dart';
 import '../cubit/crowdfund_state.dart';
-import '../widgets/creator_profile_card.dart';
 import '../widgets/donor_card.dart';
-import '../widgets/progress_indicator_widget.dart';
+import '../widgets/withdraw_funds_sheet.dart';
 import 'crowdfund_report_screen.dart';
 import 'donation_payment_screen.dart';
 
@@ -281,6 +281,77 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
             icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: _exitToCrowdfundHome,
           ),
+          // Creator avatar + name + username, immediately to the
+          // right of the back arrow. Replaces the old in-body
+          // CreatorProfileCard so the screen reclaims the space.
+          titleSpacing: 0,
+          title: GestureDetector(
+            onTap: () => _showCreatorDetailsDialog(crowdfund.creator),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 16.r,
+                  backgroundColor:
+                      const Color(0xFF4E03D0).withValues(alpha: 0.2),
+                  backgroundImage: crowdfund.creator.profilePicture != null
+                      ? NetworkImage(crowdfund.creator.profilePicture!)
+                      : null,
+                  child: crowdfund.creator.profilePicture == null
+                      ? Text(
+                          crowdfund.creator.initials,
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFF4E03D0),
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        )
+                      : null,
+                ),
+                SizedBox(width: 10.w),
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              '${crowdfund.creator.firstName} ${crowdfund.creator.lastName}'
+                                  .trim(),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                          if (crowdfund.creator.verified) ...[
+                            SizedBox(width: 4.w),
+                            Icon(Icons.verified,
+                                color: const Color(0xFF10B981),
+                                size: 12.sp),
+                          ],
+                        ],
+                      ),
+                      if (crowdfund.creator.username.isNotEmpty)
+                        Text(
+                          '@${crowdfund.creator.username}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFF9CA3AF),
+                            fontSize: 11.sp,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
           actions: [
             PopupMenuButton<String>(
               icon: const Icon(Icons.more_vert, color: Colors.white),
@@ -299,9 +370,17 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
                   case 'copy_code':
                     _copyCrowdfundCode(crowdfund);
                     break;
+                  case 'withdraw':
+                    _showWithdrawSheet(crowdfund);
+                    break;
                 }
               },
               itemBuilder: (_) => [
+                if (_isCampaignCreator(crowdfund) && crowdfund.currentAmount > 0)
+                  _menuItem(
+                      value: 'withdraw',
+                      icon: Icons.account_balance_wallet,
+                      label: 'Withdraw funds'),
                 _menuItem(value: 'report', icon: Icons.auto_awesome, label: 'AI Report'),
                 _menuItem(value: 'share', icon: Icons.share, label: 'Share'),
                 _menuItem(value: 'copy_code', icon: Icons.content_copy, label: 'Copy code'),
@@ -342,134 +421,63 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
                   style: GoogleFonts.inter(color: Colors.white, fontSize: 20.sp, fontWeight: FontWeight.w700),
                 ),
                 SizedBox(height: 8.h),
-                // Status + category + code badges
+                // Status + category badges. The crowdfund_code is
+                // already surfaced via the share-link card below
+                // and the 3-dot "Copy code" menu item, so we don't
+                // duplicate it here.
                 Wrap(
                   spacing: 6.w,
                   runSpacing: 6.h,
                   children: [
                     _buildStatusPill(crowdfund),
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(6.r),
+                    if (crowdfund.category.trim().isNotEmpty)
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(6.r),
+                        ),
+                        child: Text(
+                          // Title-case the category for display so
+                          // backend casing inconsistency ("medical"
+                          // vs "Medical") doesn't leak into the UI.
+                          _formatCategory(crowdfund.category),
+                          style: GoogleFonts.inter(
+                              color: const Color(0xFF4E03D0),
+                              fontSize: 11.sp,
+                              fontWeight: FontWeight.w600),
+                        ),
                       ),
-                      child: Text(
-                        crowdfund.category,
-                        style: GoogleFonts.inter(color: const Color(0xFF4E03D0), fontSize: 11.sp, fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.05),
-                        borderRadius: BorderRadius.circular(6.r),
-                      ),
-                      child: Text(
-                        crowdfund.crowdfundCode,
-                        style: TextStyle(color: const Color(0xFF4E03D0), fontSize: 11.sp, fontWeight: FontWeight.w600, fontFamily: 'monospace'),
-                      ),
-                    ),
                   ],
                 ),
                 SizedBox(height: 12.h),
-                // Creator profile
-                CreatorProfileCard(
-                  creator: crowdfund.creator,
-                  showFullDetails: false,
-                  onTap: () => _showCreatorDetailsDialog(crowdfund.creator),
-                ),
-                SizedBox(height: 12.h),
-                // Progress section (compact)
-                Container(
-                  padding: EdgeInsets.all(12.w),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF1A1A3E), Color(0xFF0A0E27)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Raised', style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 10.sp)),
-                              Text(
-                                '${crowdfund.currency} ${crowdfund.currentAmount.toStringAsFixed(2)}',
-                                style: GoogleFonts.inter(color: const Color(0xFF4E03D0), fontSize: 18.sp, fontWeight: FontWeight.w700),
-                              ),
-                            ],
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text('Goal', style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 10.sp)),
-                              Text(
-                                '${crowdfund.currency} ${crowdfund.targetAmount.toStringAsFixed(2)}',
-                                style: GoogleFonts.inter(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w600),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 8.h),
-                      CrowdfundProgressIndicator(progressPercentage: crowdfund.progressPercentage, showMilestones: true),
-                      SizedBox(height: 8.h),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          _buildStat(icon: Icons.people, label: 'Donors', value: crowdfund.donorCount.toString()),
-                          if (crowdfund.hasDeadline)
-                            _buildStat(
-                              icon: Icons.access_time,
-                              label: 'Days Left',
-                              value: crowdfund.daysRemaining.toString(),
-                              isWarning: crowdfund.daysRemaining < 7,
-                            ),
-                          if (crowdfund.donorCount > 0)
-                            _buildStat(
-                              icon: Icons.analytics,
-                              label: 'Avg',
-                              value: '${crowdfund.currency} ${crowdfund.averageDonation.toStringAsFixed(0)}',
-                            ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 12.h),
+                // Hero summary — same visual language as the
+                // contribution_details_screen `_buildContributionSummary`
+                // (purple gradient + halo + 3-stat strip + progress
+                // bar with amount-of-target). Keeps the two flows
+                // visually continuous.
+                _buildSummaryHero(crowdfund),
+                SizedBox(height: 14.h),
                 _buildShareLinkCard(crowdfund),
-                SizedBox(height: 12.h),
-                // Description
-                Text('About', style: GoogleFonts.inter(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w700)),
-                SizedBox(height: 4.h),
-                Text(
-                  crowdfund.description,
-                  style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 13.sp, height: 1.4),
-                ),
-                // Story
+                SizedBox(height: 16.h),
+                _sectionHeading(icon: Icons.info_outline, label: 'About'),
+                SizedBox(height: 8.h),
+                _bodyTextCard(crowdfund.description),
                 if (crowdfund.story.isNotEmpty) ...[
-                  SizedBox(height: 12.h),
-                  Text('Story', style: GoogleFonts.inter(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w700)),
-                  SizedBox(height: 4.h),
-                  Text(
-                    crowdfund.story,
-                    style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 13.sp, height: 1.4),
-                  ),
+                  SizedBox(height: 16.h),
+                  _sectionHeading(
+                      icon: Icons.menu_book_outlined, label: 'Story'),
+                  SizedBox(height: 8.h),
+                  _bodyTextCard(crowdfund.story),
                 ],
-                SizedBox(height: 12.h),
+                SizedBox(height: 16.h),
                 // Donors section. The header count uses the server-side
                 // donor count rather than the loaded page so it doesn't
                 // jump as more pages stream in.
-                Text(
-                  'Donors ($donorCount)',
-                  style: GoogleFonts.inter(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w700),
+                _sectionHeading(
+                  icon: Icons.favorite_outline,
+                  label: 'Donors',
+                  trailing: donorCount.toString(),
                 ),
                 SizedBox(height: 8.h),
                 if (donations.isEmpty)
@@ -528,6 +536,11 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
                   ...donations.map((donation) => DonorCard(
                         donation: donation,
                         crowdfund: crowdfund,
+                        // Pass the loaded pool so the donor modal
+                        // can aggregate the same donor's full set
+                        // of contributions on this campaign before
+                        // calling the AI-rating service.
+                        allDonations: donations,
                       )),
                 _buildDonationsPaginationFooter(state),
                 SizedBox(height: 80.h), // FAB clearance
@@ -598,6 +611,48 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
       );
     }
     return const SizedBox.shrink();
+  }
+
+  /// True iff the authenticated user owns this campaign. Today
+  /// the wire's `creator.user_id` is a uint64 (legacy) and the
+  /// auth profile's id is a UUID string, so we match on username
+  /// — the auth profile and the proxy-converted creator both carry
+  /// it. The server-side WithdrawFromCrowdfund handler does its
+  /// own ownership check, so this gate is purely a UX hint.
+  bool _isCampaignCreator(Crowdfund c) {
+    final auth = context.read<AuthenticationCubit>();
+    final myUsername = auth.currentProfile?.user.username?.trim();
+    final creatorUsername = c.creator.username.trim();
+    if (myUsername == null || myUsername.isEmpty) return false;
+    if (creatorUsername.isEmpty) return false;
+    return myUsername.toLowerCase() == creatorUsername.toLowerCase();
+  }
+
+  void _showWithdrawSheet(Crowdfund crowdfund) {
+    final cubit = context.read<CrowdfundCubit>();
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => BlocProvider.value(
+        value: cubit,
+        child: WithdrawFundsSheet(crowdfund: crowdfund),
+      ),
+    );
+  }
+
+  /// Title-cases a category string for display.
+  /// Backend stores categories as lowercase ("medical") or
+  /// title-case ("Medical") depending on which client created the
+  /// row. Normalize at the boundary so the UI is consistent.
+  String _formatCategory(String raw) {
+    final trimmed = raw.trim();
+    if (trimmed.isEmpty) return trimmed;
+    return trimmed
+        .split(RegExp(r'[\s_-]+'))
+        .where((w) => w.isNotEmpty)
+        .map((w) => w[0].toUpperCase() + w.substring(1).toLowerCase())
+        .join(' ');
   }
 
   PopupMenuItem<String> _menuItem({
@@ -686,19 +741,256 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
     );
   }
 
-  Widget _buildStat({
-    required IconData icon,
-    required String label,
+  /// Hero progress card — purple gradient + halo, 3-stat strip,
+  /// amount-of-target line, progress bar. Matches the visual
+  /// language of contribution_details_screen `_buildContributionSummary`
+  /// (group-funds context the user wants this page to mirror).
+  Widget _buildSummaryHero(Crowdfund c) {
+    final progress = (c.progressPercentage / 100).clamp(0.0, 1.0);
+    final progressLabel = c.progressPercentage < 10 && c.progressPercentage > 0
+        ? c.progressPercentage.toStringAsFixed(1)
+        : c.progressPercentage.toStringAsFixed(0);
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 14.h),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF4E03D0),
+            const Color(0xFF4E03D0).withValues(alpha: 0.78),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF4E03D0).withValues(alpha: 0.25),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _buildHeroStat(
+                  title: 'Raised',
+                  value: '${c.currency} ${c.currentAmount.toStringAsFixed(0)}',
+                  icon: Icons.account_balance_wallet,
+                ),
+              ),
+              _heroDivider(),
+              Expanded(
+                child: _buildHeroStat(
+                  title: 'Donors',
+                  value: c.donorCount.toString(),
+                  icon: Icons.groups_outlined,
+                ),
+              ),
+              _heroDivider(),
+              Expanded(
+                child: _buildHeroStat(
+                  title: 'Progress',
+                  value: '$progressLabel%',
+                  icon: Icons.trending_up,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10.h),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '${c.currency} ${c.currentAmount.toStringAsFixed(0)}',
+                style: GoogleFonts.inter(
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+              Text(
+                'of ${c.currency} ${c.targetAmount.toStringAsFixed(0)}',
+                style: GoogleFonts.inter(
+                  fontSize: 11.sp,
+                  color: Colors.white.withValues(alpha: 0.85),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 4.h),
+          Container(
+            height: 5.h,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(3.r),
+            ),
+            child: Stack(
+              children: [
+                FractionallySizedBox(
+                  widthFactor: progress,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(3.r),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (c.hasDeadline) ...[
+            SizedBox(height: 8.h),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.access_time,
+                        size: 11.sp,
+                        color: Colors.white.withValues(alpha: 0.8)),
+                    SizedBox(width: 4.w),
+                    Text(
+                      c.daysRemaining > 0
+                          ? '${c.daysRemaining} days left'
+                          : 'Deadline reached',
+                      style: GoogleFonts.inter(
+                        fontSize: 10.sp,
+                        color: Colors.white.withValues(alpha: 0.85),
+                      ),
+                    ),
+                  ],
+                ),
+                if (c.donorCount > 0)
+                  Text(
+                    'Avg ${c.currency} ${c.averageDonation.toStringAsFixed(0)}',
+                    style: GoogleFonts.inter(
+                      fontSize: 10.sp,
+                      color: Colors.white.withValues(alpha: 0.85),
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _heroDivider() => Container(
+        width: 1,
+        height: 32.h,
+        color: Colors.white.withValues(alpha: 0.22),
+      );
+
+  Widget _buildHeroStat({
+    required String title,
     required String value,
-    bool isWarning = false,
+    required IconData icon,
   }) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, color: isWarning ? const Color(0xFFF59E0B) : const Color(0xFF4E03D0), size: 14.sp),
+        Icon(icon, size: 14.sp, color: Colors.white.withValues(alpha: 0.85)),
+        SizedBox(height: 4.h),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            value,
+            maxLines: 1,
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
         SizedBox(height: 2.h),
-        Text(value, style: GoogleFonts.inter(color: Colors.white, fontSize: 12.sp, fontWeight: FontWeight.w700)),
-        Text(label, style: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 9.sp)),
+        Text(
+          title,
+          style: GoogleFonts.inter(
+            color: Colors.white.withValues(alpha: 0.75),
+            fontSize: 10.sp,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ],
+    );
+  }
+
+  /// Section heading row — icon chip + label + optional trailing
+  /// counter pill. Mirrors the section pattern on
+  /// contribution_details_screen so navigating between the two
+  /// surfaces feels continuous.
+  Widget _sectionHeading({
+    required IconData icon,
+    required String label,
+    String? trailing,
+  }) {
+    return Row(
+      children: [
+        Container(
+          padding: EdgeInsets.all(6.w),
+          decoration: BoxDecoration(
+            color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(8.r),
+          ),
+          child: Icon(icon, color: const Color(0xFF4E03D0), size: 14.sp),
+        ),
+        SizedBox(width: 10.w),
+        Expanded(
+          child: Text(
+            label,
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 15.sp,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.2,
+            ),
+          ),
+        ),
+        if (trailing != null) ...[
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1F1F1F),
+              borderRadius: BorderRadius.circular(10.r),
+            ),
+            child: Text(
+              trailing,
+              style: GoogleFonts.inter(
+                color: const Color(0xFF9CA3AF),
+                fontSize: 11.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  /// Card-style body text container — softens the previous flat
+  /// `Text` blocks for About / Story so they look intentional, not
+  /// like leftover plain text.
+  Widget _bodyTextCard(String body) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: Text(
+        body,
+        style: GoogleFonts.inter(
+          color: const Color(0xFF9CA3AF),
+          fontSize: 13.sp,
+          height: 1.45,
+        ),
+      ),
     );
   }
 

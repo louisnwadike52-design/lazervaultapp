@@ -32,10 +32,11 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
   final _amountController = TextEditingController();
   final _messageController = TextEditingController();
 
-  double? _selectedSuggestedAmount;
   bool _isAnonymous = false;
-  bool _isCustomAmount = false;
   bool _isSubmitting = false;
+  // Currently-typed/picked amount as a clean double (no commas).
+  // Recomputed on every field change via the comma formatter.
+  double _amount = 0.0;
 
   // Account state
   AccountSummaryEntity? _personalAccount;
@@ -110,6 +111,50 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
     super.dispose();
   }
 
+  // ────────────────────────────────────────────────────────────
+  // Amount input — comma-formatted display, plain number on the wire
+  // ────────────────────────────────────────────────────────────
+
+  /// Strip thousands separators and parse to double. Returns 0 on
+  /// empty / malformed input.
+  double _parseAmount(String raw) {
+    final cleaned = raw.replaceAll(',', '').trim();
+    if (cleaned.isEmpty) return 0.0;
+    return double.tryParse(cleaned) ?? 0.0;
+  }
+
+  /// Render a clean double as `1,234.56` (or `1,234` if integral).
+  String _formatAmount(double value) {
+    if (value <= 0) return '';
+    final isInt = value == value.roundToDouble();
+    final whole = value.floor();
+    final fractional =
+        isInt ? '' : '.${((value - whole) * 100).round().toString().padLeft(2, '0')}';
+    final wholeStr = whole.toString();
+    final buf = StringBuffer();
+    for (var i = 0; i < wholeStr.length; i++) {
+      if (i > 0 && (wholeStr.length - i) % 3 == 0) buf.write(',');
+      buf.write(wholeStr[i]);
+    }
+    return buf.toString() + fractional;
+  }
+
+  void _onAmountChanged(String value) {
+    final parsed = _parseAmount(value);
+    if (parsed != _amount) {
+      setState(() => _amount = parsed);
+    }
+  }
+
+  void _selectQuickAmount(double pillAmount) {
+    final formatted = _formatAmount(pillAmount);
+    _amountController.value = TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+    setState(() => _amount = pillAmount);
+  }
+
   Future<void> _processDonation() async {
     if (_isSubmitting) return;
     if (!_formKey.currentState!.validate()) return;
@@ -169,6 +214,12 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
       currency: widget.crowdfund.currency,
       title: 'Confirm Donation',
       message: 'Confirm donation of ${widget.crowdfund.currency} ${amount.toStringAsFixed(2)}',
+      // We have a dedicated DonationProcessingScreen that owns the
+      // post-PIN processing UI, so the bottom sheet should ONLY
+      // show "PIN Verified" — not "Transaction Successful" (which
+      // implies the donation completed, but that happens later on
+      // the processing screen after the gRPC round trip).
+      showProcessingPhase: false,
       onPinValidated: (token) async {
         verificationToken = token;
       },
@@ -259,13 +310,9 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
                   ),
                 ),
                 SizedBox(height: 8.h),
-                _buildSuggestedAmounts(),
-                SizedBox(height: 12.h),
-                _buildCustomAmountToggle(),
-                if (_isCustomAmount) ...[
-                  SizedBox(height: 12.h),
-                  _buildCustomAmountField(),
-                ],
+                _buildAmountField(),
+                SizedBox(height: 10.h),
+                _buildAmountQuickPills(),
                 SizedBox(height: 16.h),
                 // Source account (personal only)
                 Text(
@@ -485,140 +532,42 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
     );
   }
 
-  Widget _buildSuggestedAmounts() {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
-        crossAxisSpacing: 6.w,
-        mainAxisSpacing: 6.h,
-        childAspectRatio: 1.8,
-      ),
-      itemCount: _suggestedAmounts.length,
-      itemBuilder: (context, index) {
-        final amount = _suggestedAmounts[index];
-        final isSelected =
-            !_isCustomAmount && _selectedSuggestedAmount == amount;
-        return InkWell(
-          onTap: () {
-            setState(() {
-              _selectedSuggestedAmount = amount;
-              _isCustomAmount = false;
-            });
-          },
-          borderRadius: BorderRadius.circular(12.r),
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: isSelected
-                  ? const LinearGradient(
-                      colors: [
-                        Color(0xFF4E03D0),
-                        Color.fromARGB(255, 78, 3, 208)
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    )
-                  : null,
-              color: isSelected ? null : const Color(0xFF1F1F1F),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Center(
-              child: Text(
-                '${widget.crowdfund.currency} ${amount.toInt()}',
-                style: GoogleFonts.inter(
-                  color:
-                      isSelected ? Colors.white : const Color(0xFF9CA3AF),
-                  fontSize: 14.sp,
-                  fontWeight:
-                      isSelected ? FontWeight.w700 : FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildCustomAmountToggle() {
-    return InkWell(
-      onTap: () {
-        setState(() {
-          _isCustomAmount = !_isCustomAmount;
-          if (_isCustomAmount) {
-            _selectedSuggestedAmount = null;
-          }
-        });
-      },
-      borderRadius: BorderRadius.circular(12.r),
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-        decoration: BoxDecoration(
-          gradient: _isCustomAmount
-              ? const LinearGradient(
-                  colors: [
-                    Color(0xFF4E03D0),
-                    Color.fromARGB(255, 78, 3, 208)
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                )
-              : null,
-          color: _isCustomAmount ? null : const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.circular(12.r),
-        ),
-        child: Center(
-          child: Text(
-            'Custom Amount',
-            style: GoogleFonts.inter(
-              color:
-                  _isCustomAmount ? Colors.white : const Color(0xFF9CA3AF),
-              fontSize: 14.sp,
-              fontWeight:
-                  _isCustomAmount ? FontWeight.w700 : FontWeight.w600,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCustomAmountField() {
+  Widget _buildAmountField() {
     return TextFormField(
       controller: _amountController,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       inputFormatters: [
-        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+        // Allow digits, commas, and a single decimal with up to 2
+        // decimal places. Commas are display-only — _parseAmount
+        // strips them before sending.
+        FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]')),
+        _ThousandsSeparatorFormatter(),
       ],
-      autofocus: true,
+      onChanged: _onAmountChanged,
       style: GoogleFonts.inter(
         color: Colors.white,
-        fontSize: 16.sp,
+        fontSize: 18.sp,
+        fontWeight: FontWeight.w700,
       ),
-      validator: (value) {
-        if (_isCustomAmount) {
-          if (value == null || value.trim().isEmpty) {
-            return 'Please enter an amount';
-          }
-          final amount = double.tryParse(value.trim());
-          if (amount == null || amount <= 0) {
-            return 'Invalid amount';
-          }
-          if (amount < 1) {
-            return 'Minimum donation is ${widget.crowdfund.currency} 1';
-          }
+      validator: (_) {
+        if (_amount <= 0) return 'Enter a donation amount';
+        if (_amount < 1) {
+          return 'Minimum donation is ${widget.crowdfund.currency} 1';
+        }
+        if (_personalAccount != null &&
+            _amount > _personalAccount!.availableBalance) {
+          return 'Amount exceeds available balance';
         }
         return null;
       },
       decoration: InputDecoration(
-        hintText: 'Enter amount',
+        hintText: '0',
         hintStyle: GoogleFonts.inter(
           color: const Color(0xFF6B7280),
-          fontSize: 16.sp,
+          fontSize: 18.sp,
         ),
         prefixIcon: Padding(
-          padding: EdgeInsets.only(left: 16.w, top: 14.h),
+          padding: EdgeInsets.fromLTRB(16.w, 14.h, 8.w, 14.h),
           child: Text(
             widget.crowdfund.currency,
             style: GoogleFonts.inter(
@@ -628,6 +577,7 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
             ),
           ),
         ),
+        prefixIconConstraints: BoxConstraints(minWidth: 56.w),
         filled: true,
         fillColor: const Color(0xFF1F1F1F),
         border: OutlineInputBorder(
@@ -648,12 +598,49 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide: const BorderSide(
-            color: Color(0xFFEF4444),
-            width: 2,
-          ),
+          borderSide: const BorderSide(color: Color(0xFFEF4444), width: 2),
         ),
       ),
+    );
+  }
+
+  Widget _buildAmountQuickPills() {
+    return Wrap(
+      spacing: 8.w,
+      runSpacing: 8.h,
+      children: _suggestedAmounts.map((pillAmount) {
+        final selected = _amount == pillAmount;
+        return InkWell(
+          onTap: () => _selectQuickAmount(pillAmount),
+          borderRadius: BorderRadius.circular(20.r),
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+            decoration: BoxDecoration(
+              color: selected
+                  ? const Color(0xFF4E03D0)
+                  : const Color(0xFF1F1F1F),
+              borderRadius: BorderRadius.circular(20.r),
+              boxShadow: selected
+                  ? [
+                      BoxShadow(
+                        color: const Color(0xFF4E03D0).withValues(alpha: 0.35),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
+                  : null,
+            ),
+            child: Text(
+              '${widget.crowdfund.currency} ${_formatAmount(pillAmount)}',
+              style: GoogleFonts.inter(
+                color: selected ? Colors.white : const Color(0xFF9CA3AF),
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 
@@ -891,10 +878,46 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
     );
   }
 
-  double _getDonationAmount() {
-    if (_isCustomAmount) {
-      return double.tryParse(_amountController.text.trim()) ?? 0.0;
+  double _getDonationAmount() => _amount;
+}
+
+/// Reformats input as the user types so digits show grouped:
+/// `1234567` → `1,234,567`. Caret position is reanchored from the
+/// right so the user's typing index stays where they expect.
+class _ThousandsSeparatorFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    final raw = newValue.text;
+    if (raw.isEmpty) return newValue;
+    // Split on the (optional) decimal point and reformat the integer
+    // half. Keep at most one decimal point and at most 2 fractional
+    // digits — anything past that gets clipped.
+    final parts = raw.replaceAll(',', '').split('.');
+    final intPart = parts[0];
+    String? fracPart = parts.length > 1 ? parts.sublist(1).join('') : null;
+    if (fracPart != null && fracPart.length > 2) {
+      fracPart = fracPart.substring(0, 2);
     }
-    return _selectedSuggestedAmount ?? 0.0;
+    if (intPart.isEmpty && (fracPart == null || fracPart.isEmpty)) {
+      return TextEditingValue(
+        text: '',
+        selection: const TextSelection.collapsed(offset: 0),
+      );
+    }
+    // Reject all-zero leading runs ("000" → "0")
+    final trimmed = intPart.replaceFirst(RegExp(r'^0+(?=\d)'), '');
+    final buf = StringBuffer();
+    for (var i = 0; i < trimmed.length; i++) {
+      if (i > 0 && (trimmed.length - i) % 3 == 0) buf.write(',');
+      buf.write(trimmed[i]);
+    }
+    final formatted = fracPart != null
+        ? '$buf.$fracPart'
+        : (raw.endsWith('.') ? '$buf.' : buf.toString());
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
   }
 }

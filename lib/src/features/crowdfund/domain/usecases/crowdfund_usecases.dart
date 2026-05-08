@@ -287,6 +287,7 @@ class WithdrawFromCrowdfundUseCase {
     required String crowdfundId,
     required double amount,
     required String transactionPin,
+    required String transactionId,
     String? destinationAccountId,
     String? destinationAccountType,
   }) {
@@ -294,6 +295,7 @@ class WithdrawFromCrowdfundUseCase {
       crowdfundId: crowdfundId,
       amount: amount,
       transactionPin: transactionPin,
+      transactionId: transactionId,
       destinationAccountId: destinationAccountId,
       destinationAccountType: destinationAccountType,
     );

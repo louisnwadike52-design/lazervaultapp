@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import '../../data/services/crowdfund_pdf_service.dart';
 import '../../domain/entities/crowdfund_entities.dart';
 
@@ -134,70 +138,85 @@ class _DonationReceiptScreenState extends State<DonationReceiptScreen>
     }
   }
 
+  /// Goes back to the crowdfund landing — same exit pattern the
+  /// send-funds receipt uses (`Get.offAllNamed(AppRoutes.dashboard)`),
+  /// but for the crowdfund flow we land back on the crowdfund home.
+  void _exitReceipt() {
+    Get.offAllNamed(AppRoutes.crowdfund);
+  }
+
+  /// Stable QR payload encoding the donation reference. Donor scans
+  /// it to surface the receipt later, or campaign owner uses it for
+  /// reconciliation.
+  String get _qrData {
+    final txn = widget.donation.transactionId ?? widget.donation.id;
+    return 'lazervault://crowdfund/donation/$txn';
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
-        Navigator.of(context).popUntil((route) => route.isFirst);
+        _exitReceipt();
       },
       child: Scaffold(
         backgroundColor: const Color(0xFF0A0A0A),
         body: SafeArea(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.all(24.w),
-            child: Column(
-              children: [
-                SizedBox(height: 20.h),
-                // Success animation
-                ScaleTransition(
-                  scale: _scaleAnimation,
-                  child: Container(
-                    width: 80.w,
-                    height: 80.h,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: const LinearGradient(
-                        colors: [
-                          Color(0xFF10B981),
-                          Color(0xFF059669),
-                        ],
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.3),
-                          blurRadius: 20,
-                          spreadRadius: 5,
+          child: Column(
+            children: [
+              _buildTopBar(),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  child: Column(
+                    children: [
+                      SizedBox(height: 8.h),
+                      // Success animation
+                      ScaleTransition(
+                        scale: _scaleAnimation,
+                        child: Container(
+                          width: 56.w,
+                          height: 56.w,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF10B981),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.check,
+                            color: Colors.white,
+                            size: 30.sp,
+                          ),
                         ),
-                      ],
-                    ),
-                    child: Icon(
-                      Icons.check_circle,
-                      color: Colors.white,
-                      size: 44.sp,
-                    ),
-                  ),
-                ),
-                SizedBox(height: 16.h),
-                Text(
-                  'Donation Successful!',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  'Thank you for your generous support',
-                  style: TextStyle(
-                    color: Colors.grey[400],
-                    fontSize: 13.sp,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 24.h),
+                      ),
+                      SizedBox(height: 12.h),
+                      Text(
+                        '${widget.donation.currency} ${widget.donation.amount.toStringAsFixed(2)}',
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 26.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      SizedBox(height: 6.h),
+                      Text(
+                        'Donation Successful',
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        'Thank you for your generous support',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF8E8E93),
+                          fontSize: 12.sp,
+                        ),
+                      ),
+                      SizedBox(height: 18.h),
                 // Receipt card
                 Container(
                   padding: EdgeInsets.all(16.w),
@@ -327,90 +346,174 @@ class _DonationReceiptScreenState extends State<DonationReceiptScreen>
                           ),
                         ),
                       ],
+                      SizedBox(height: 16.h),
+                      Divider(color: const Color(0xFF2D2D2D)),
+                      SizedBox(height: 16.h),
+                      // QR code + reference at the bottom of the
+                      // receipt card. Same shape as the send-funds
+                      // receipt — scan to surface this donation later.
+                      Center(
+                        child: QrImageView(
+                          data: _qrData,
+                          version: QrVersions.auto,
+                          size: 90.w,
+                          backgroundColor: Colors.transparent,
+                          dataModuleStyle: const QrDataModuleStyle(
+                            color: Colors.white,
+                          ),
+                          eyeStyle: const QrEyeStyle(color: Colors.white),
+                        ),
+                      ),
+                      SizedBox(height: 8.h),
+                      Center(
+                        child: Text(
+                          widget.donation.transactionId ?? widget.donation.id,
+                          style: GoogleFonts.robotoMono(
+                            fontSize: 10.sp,
+                            color: const Color(0xFF8E8E93),
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                SizedBox(height: 20.h),
-                // Action buttons
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: _isProcessingPdf ? null : _downloadPDF,
-                        icon: _isProcessingPdf
-                            ? SizedBox(
-                                width: 16.w,
-                                height: 16.h,
-                                child: const CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Color(0xFF4E03D0),
-                                ),
-                              )
-                            : const Icon(Icons.download),
-                        label: Text(_isProcessingPdf ? 'Processing...' : 'Download PDF'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF4E03D0),
-                          side: const BorderSide(color: Color(0xFF4E03D0)),
-                          padding: EdgeInsets.symmetric(vertical: 14.h),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.r),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 12.w),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: _isProcessingPdf ? null : _sharePDF,
-                        icon: _isProcessingPdf
-                            ? SizedBox(
-                                width: 16.w,
-                                height: 16.h,
-                                child: const CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : const Icon(Icons.share),
-                        label: Text(_isProcessingPdf ? 'Processing...' : 'Share'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF4E03D0),
-                          padding: EdgeInsets.symmetric(vertical: 14.h),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.r),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 12.w),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).popUntil((route) => route.isFirst);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1F1F1F),
-                      padding: EdgeInsets.symmetric(vertical: 14.h),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                        side: const BorderSide(color: Color(0xFF2D2D2D)),
-                      ),
-                    ),
-                    child: Text(
-                      'Done',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                      SizedBox(height: 16.h),
+                    ],
                   ),
                 ),
-              ],
+              ),
+              _buildBottomActions(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Top bar — back chevron on the left, LazerVault logo on the
+  /// right. Mirrors the send-funds receipt's `_buildBackButton`.
+  Widget _buildTopBar() {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(12.w, 4.h, 12.w, 0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton(
+            onPressed: _exitReceipt,
+            icon: Icon(Icons.arrow_back, color: Colors.white, size: 22.sp),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+          Image.asset(
+            'assets/images/logo.png',
+            width: 28.w,
+            height: 28.w,
+            errorBuilder: (_, __, ___) => Icon(
+              Icons.shield_outlined,
+              color: const Color(0xFF4E03D0),
+              size: 24.sp,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Bottom actions — icon-only Download + Share side-by-side, then
+  /// a full-width Done. Buttons live OUTSIDE the scroll so they stay
+  /// pinned and visible against the dark background.
+  Widget _buildBottomActions() {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(20.w, 6.h, 20.w, 12.h),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _iconAction(
+                  icon: Icons.download_outlined,
+                  label: 'Download',
+                  isLoading: _isProcessingPdf,
+                  onTap: _isProcessingPdf ? () {} : _downloadPDF,
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: _iconAction(
+                  icon: Icons.share_outlined,
+                  label: 'Share',
+                  isLoading: _isProcessingPdf,
+                  onTap: _isProcessingPdf ? () {} : _sharePDF,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10.h),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _exitReceipt,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4E03D0),
+                padding: EdgeInsets.symmetric(vertical: 14.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+              ),
+              child: Text(
+                'Done',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _iconAction({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    bool isLoading = false,
+  }) {
+    return Material(
+      color: const Color(0xFF1F1F1F),
+      borderRadius: BorderRadius.circular(12.r),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12.r),
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 12.h),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (isLoading)
+                SizedBox(
+                  width: 16.sp,
+                  height: 16.sp,
+                  child: const CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              else
+                Icon(icon, color: Colors.white, size: 18.sp),
+              SizedBox(width: 8.w),
+              Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ],
           ),
         ),
       ),

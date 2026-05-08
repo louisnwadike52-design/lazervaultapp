@@ -130,7 +130,10 @@ class CrowdfundImageUploadService {
     final responseBody = await streamedResponse.stream.bytesToString();
 
     switch (streamedResponse.statusCode) {
+      // 200 (legacy) and 202 (new fast path: server returns the predicted
+      // URL immediately and runs the actual storage write in a goroutine).
       case 200:
+      case 202:
         final data = jsonDecode(responseBody) as Map<String, dynamic>;
         final imageUrl = data['image_url'] as String?;
         if (imageUrl == null || imageUrl.isEmpty) {

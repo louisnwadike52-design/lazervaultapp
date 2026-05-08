@@ -270,6 +270,7 @@ class CrowdfundRepositoryImpl implements CrowdfundRepository {
     required String crowdfundId,
     required double amount,
     required String transactionPin,
+    required String transactionId,
     String? destinationAccountId,
     String? destinationAccountType,
   }) async {
@@ -278,6 +279,7 @@ class CrowdfundRepositoryImpl implements CrowdfundRepository {
         crowdfundId: crowdfundId,
         amount: amount,
         transactionPin: transactionPin,
+        transactionId: transactionId,
         destinationAccountId: destinationAccountId,
         destinationAccountType: destinationAccountType,
       );
