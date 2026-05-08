@@ -515,6 +515,19 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
         SizedBox(height: 12.h),
         if (_isRotatingSavings && _allowsPartial && _myMember != null)
           _buildCycleProgressBanner(),
+        // One-time / non-ROSCA partial-progress banner. Mirrors the
+        // ROSCA banner above but reads from total_paid + expected
+        // share so a member who's already chipped in part of their
+        // contribution sees "you've paid X of Y" before their next
+        // partial. Only shown when (a) partials are explicitly
+        // enabled, (b) the user is a member of this contribution,
+        // and (c) they've actually paid something — there's no
+        // signal to surface for first-time payers.
+        if (!_isRotatingSavings &&
+            _allowsPartial &&
+            _myMember != null &&
+            _myMember!.totalPaid > 0)
+          _buildOneTimePartialBanner(),
         TextFormField(
           controller: _amountController,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -598,7 +611,37 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
           validator: (value) {
             if (value?.isEmpty == true) return 'Amount is required';
             if (double.tryParse(value!) == null) return 'Invalid amount';
-            if (double.parse(value) <= 0) return 'Amount must be greater than 0';
+            final amount = double.parse(value);
+            if (amount <= 0) return 'Amount must be greater than 0';
+            // Overpay guard. Server-side caps the debit to remaining
+            // share, but catching it client-side gives the user a
+            // clearer message instead of a generic "request rejected"
+            // error after the round-trip. ROSCA + allow_partial uses
+            // (regular_amount - cycle_paid_amount); one-time uses
+            // (expected_share - total_paid). Same shape: don't take
+            // more than the user actually owes.
+            if (_isRotatingSavings && _allowsPartial && _myMember != null) {
+              final fixed = _fixedRoscaAmount ?? 0;
+              final paid = _myMember!.cyclePaidAmount;
+              final remaining = (fixed - paid).clamp(0.0, fixed);
+              if (remaining > 0 && amount > remaining + 0.005) {
+                return 'Cap is ${widget.contribution?.currency ?? ''} '
+                    '${remaining.toStringAsFixed(remaining == remaining.truncateToDouble() ? 0 : 2)} '
+                    '(remaining for this cycle)';
+              }
+            }
+            if (!_isRotatingSavings && _allowsPartial && _myMember != null) {
+              final expected = _myMember!.expectedAmount;
+              final paid = _myMember!.totalPaid;
+              if (expected > 0) {
+                final remaining = (expected - paid).clamp(0.0, expected);
+                if (remaining > 0 && amount > remaining + 0.005) {
+                  return 'Cap is ${widget.contribution?.currency ?? ''} '
+                      '${remaining.toStringAsFixed(remaining == remaining.truncateToDouble() ? 0 : 2)} '
+                      '(your remaining share)';
+                }
+              }
+            }
             return null;
           },
         ),
@@ -648,6 +691,117 @@ class _MakePaymentScreenState extends State<MakePaymentScreen>
           _buildQuickAmountButtons(),
         ],
       ],
+    );
+  }
+
+  /// One-time / ad-hoc partial-progress banner. Shows the user's
+  /// running total against their expected share so they know exactly
+  /// how much they've paid and what's left before their next partial.
+  /// Falls back to the contribution's targetAmount split across
+  /// active members when the per-member expected share isn't set
+  /// (server normally fills it on member add, but be defensive).
+  Widget _buildOneTimePartialBanner() {
+    final c = widget.contribution!;
+    final paid = _myMember!.totalPaid;
+    double expected = _myMember!.expectedAmount;
+    if (expected <= 0) {
+      final activeMembers = c.members
+          .where((m) =>
+              m.membershipStatus != ContributionMembershipStatus.declined &&
+              m.membershipStatus != ContributionMembershipStatus.pendingInvite)
+          .length;
+      if (activeMembers > 0 && c.targetAmount > 0) {
+        expected = c.targetAmount / activeMembers;
+      }
+    }
+    final remaining = (expected - paid).clamp(0.0, double.infinity);
+    final progress =
+        expected > 0 ? (paid / expected).clamp(0.0, 1.0) : 0.0;
+    final fullyPaid = expected > 0 && paid >= expected;
+    final currency = c.currency;
+
+    String fmt(double v) =>
+        v.toStringAsFixed(v == v.truncateToDouble() ? 0 : 2);
+
+    return Container(
+      margin: EdgeInsets.only(bottom: 12.h),
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: fullyPaid
+              ? const Color(0xFF10B981).withValues(alpha: 0.4)
+              : const Color(0xFFFB923C).withValues(alpha: 0.35),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                fullyPaid ? Icons.check_circle : Icons.donut_large,
+                size: 16.sp,
+                color: fullyPaid
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFFFB923C),
+              ),
+              SizedBox(width: 8.w),
+              Expanded(
+                child: Text(
+                  fullyPaid
+                      ? 'You\'ve fully paid your share'
+                      : expected > 0
+                          ? 'Paid: $currency ${fmt(paid)} of $currency ${fmt(expected)}'
+                          : 'Paid so far: $currency ${fmt(paid)}',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              if (!fullyPaid && expected > 0)
+                Text(
+                  '$currency ${fmt(remaining)} left',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFFFB923C),
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+            ],
+          ),
+          if (expected > 0) ...[
+            SizedBox(height: 8.h),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(2.r),
+              child: LinearProgressIndicator(
+                value: progress,
+                minHeight: 4.h,
+                backgroundColor: const Color(0xFF2D2D2D),
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  fullyPaid
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFFFB923C),
+                ),
+              ),
+            ),
+          ],
+          SizedBox(height: 6.h),
+          Text(
+            fullyPaid
+                ? 'No further contributions are required from you.'
+                : 'Any extra payment is added to what you\'ve already contributed until your share is complete.',
+            style: GoogleFonts.inter(
+              color: Colors.grey[400],
+              fontSize: 11.sp,
+              height: 1.4,
+            ),
+          ),
+        ],
+      ),
     );
   }
 

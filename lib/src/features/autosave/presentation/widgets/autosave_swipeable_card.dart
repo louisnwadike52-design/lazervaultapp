@@ -78,16 +78,25 @@ class AutoSaveSwipeableCard extends StatelessWidget {
       child: Container(
         margin: EdgeInsets.only(bottom: 12.h),
         decoration: BoxDecoration(
+          // Slightly lifted surface against the page background gives
+          // the row depth without a hairline. Keeps the same purple
+          // accent for selected / active rules but as a subtle glow
+          // (shadow) instead of a flat stroke.
           color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(
-            color: isSelected
-                ? const Color.fromARGB(255, 78, 3, 208)
-                : (rule.isActive
-                    ? const Color.fromARGB(255, 78, 3, 208)
-                    : const Color(0xFF2D2D2D)),
-            width: isSelected ? 2 : 1,
-          ),
+          boxShadow: [
+            BoxShadow(
+              color: isSelected
+                  ? const Color.fromARGB(255, 78, 3, 208)
+                      .withValues(alpha: 0.25)
+                  : (rule.isActive
+                      ? const Color.fromARGB(255, 78, 3, 208)
+                          .withValues(alpha: 0.18)
+                      : Colors.black.withValues(alpha: 0.35)),
+              blurRadius: isSelected ? 18 : 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Material(
           color: Colors.transparent,

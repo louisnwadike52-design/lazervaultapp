@@ -23,11 +23,17 @@ import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_e
 class AutoSaveAnalyticsCard extends StatelessWidget {
   final AutoSaveStatisticsEntity? statistics;
   final List<AutoSaveRuleEntity> rules;
+  /// True when the user has narrowed the rules list with a pill filter
+  /// or search. We then derive every KPI from the filtered `rules`
+  /// instead of the backend's lifetime aggregates so the user sees the
+  /// numbers that match what's on screen.
+  final bool isFiltered;
 
   const AutoSaveAnalyticsCard({
     super.key,
     required this.rules,
     this.statistics,
+    this.isFiltered = false,
   });
 
   @override
@@ -35,22 +41,58 @@ class AutoSaveAnalyticsCard extends StatelessWidget {
     final stats = statistics;
 
     final currency = stats?.currency ?? 'NGN';
-    final totalSaved =
-        stats?.totalSavedAllTime ??
-            rules.fold<double>(0, (sum, r) => sum + r.totalSaved);
-    final activeCount =
-        stats?.activeRulesCount ?? rules.where((r) => r.isActive).length;
-    final totalTransactions = stats?.totalTransactions ?? 0;
-    final avgPerSave = stats?.averageSaveAmount ??
-        (rules.isNotEmpty ? totalSaved / rules.length : 0);
+    // When filters are applied, prefer the filtered list — that's the
+    // set of rules the user is looking at, and showing lifetime totals
+    // alongside a filtered roster is misleading. When unfiltered, the
+    // backend's lifetime aggregates win for accuracy across pagination.
+    final useLocal = isFiltered;
+    final totalSaved = useLocal
+        ? rules.fold<double>(0, (sum, r) => sum + r.totalSaved)
+        : (stats?.totalSavedAllTime ??
+            rules.fold<double>(0, (sum, r) => sum + r.totalSaved));
+    final activeCount = useLocal
+        ? rules.where((r) => r.isActive).length
+        : (stats?.activeRulesCount ??
+            rules.where((r) => r.isActive).length);
+    // totalTransactions is not derivable client-side from the rules
+    // array (we'd need each rule's full transaction history). When
+    // filtering, fall back to summing each rule's trigger_count which
+    // approximates the per-rule activity in scope.
+    final totalTransactions = useLocal
+        ? rules.fold<int>(0, (s, r) => s + r.triggerCount)
+        : (stats?.totalTransactions ?? 0);
+    // Average per save = total / number of saves. Previously this
+    // divided by rules.length (rule count), which is wrong — a rule
+    // can fire many times. Use totalTransactions; when no triggers
+    // have happened yet show 0 so we never divide by zero.
+    final avgPerSave = useLocal
+        ? (totalTransactions > 0 ? totalSaved / totalTransactions : 0)
+        : (stats?.averageSaveAmount ??
+            (totalTransactions > 0 ? totalSaved / totalTransactions : 0));
 
     // Top performer: prefer the backend-aggregated mostActiveRule
     // (highest trigger_count). Fall back to a client-side scan of
     // the loaded rules by total_saved when stats are absent.
-    final topPerformer = stats?.mostActiveRule ??
-        (rules.isNotEmpty
-            ? rules.reduce((a, b) => a.totalSaved > b.totalSaved ? a : b)
-            : null);
+    // Defensive: rules may be List<AutoSaveRuleModel> at runtime even
+    // though declared as List<AutoSaveRuleEntity> (the data class
+    // extends the entity, and Dart's reified generics preserve the
+    // concrete element type). Using `.reduce` directly with a lambda
+    // typed against the entity blows up with "(Entity, Entity) =>
+    // Entity is not a subtype of (Model, Model) => Model of 'combine'".
+    // Pre-walk with fold + a nullable accumulator avoids the variance
+    // mismatch entirely.
+    final topPerformer = useLocal
+        ? rules.fold<AutoSaveRuleEntity?>(
+            null,
+            (best, r) =>
+                best == null || r.totalSaved > best.totalSaved ? r : best,
+          )
+        : stats?.mostActiveRule ??
+            rules.fold<AutoSaveRuleEntity?>(
+              null,
+          (best, r) =>
+              best == null || r.totalSaved > best.totalSaved ? r : best,
+        );
 
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),

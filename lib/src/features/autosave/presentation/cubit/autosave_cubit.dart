@@ -276,11 +276,22 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
         rulesResult.fold(
           (failure) => emit(AutoSaveError(failure.message)),
           (rules) {
-            _cachedRules = rules;
+            // Normalise to a true List<AutoSaveRuleEntity>. The
+            // repository hands back List<AutoSaveRuleModel> (the data
+            // class extends the entity), and Dart's reified generics
+            // remember THAT runtime type — so any downstream `.reduce`
+            // / `.fold` lambda typed against AutoSaveRuleEntity blows
+            // up with "(Entity, Entity) => Entity is not a subtype of
+            // (Model, Model) => Model of 'combine'". Wrapping with
+            // `List<E>.from` materialises a fresh list whose runtime
+            // element type is exactly E.
+            final normalised =
+                List<AutoSaveRuleEntity>.from(rules);
+            _cachedRules = normalised;
             _lastFetch = DateTime.now();
             emit(AutoSaveDashboardLoaded(
               statistics: statistics,
-              rules: rules,
+              rules: normalised,
             ));
           },
         );
@@ -392,7 +403,12 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
       (failure) => emit(AutoSaveError(failure.message)),
       (data) {
         final page = data as AutoSavePagedResult;
-        _cachedRules = page.rules;
+        // List<E>.from forces the runtime element type to E so the
+        // `.reduce(...)` / `.fold(...)` callbacks downstream don't
+        // hit Dart's reified-generic variance check (the repository
+        // returns List<AutoSaveRuleModel>, which is *not* covariant
+        // for callback inputs).
+        _cachedRules = List<AutoSaveRuleEntity>.from(page.rules);
         _hasMore = page.hasMore;
         _totalCount = page.total;
         _lastFetch = DateTime.now();
@@ -442,7 +458,10 @@ class AutoSaveCubit extends Cubit<AutoSaveState> {
       },
       (page) {
         // Append, dedup by id (server pagination + concurrent
-        // create can race; the server total is authoritative).
+        // create can race; the server total is authoritative). The
+        // append target was already normalised to
+        // List<AutoSaveRuleEntity> when the first page landed, so the
+        // runtime element type is preserved as we add rows.
         final seen = _cachedRules.map((r) => r.id).toSet();
         for (final r in page.rules) {
           if (seen.add(r.id)) _cachedRules.add(r);

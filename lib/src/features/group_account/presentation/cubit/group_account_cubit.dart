@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/utils/user_search_query.dart';
+import '../../data/datasources/past_memberships_remote_data_source.dart';
 import '../../domain/usecases/group_account_usecases.dart';
 import '../../domain/entities/group_entities.dart';
 import '../../services/group_account_report_service.dart';
@@ -83,6 +84,16 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
   // Cached report for auto-generation events
   GroupAccountReport? _cachedReport;
   GroupAccountReport? get cachedReport => _cachedReport;
+
+  // Snapshot of the last GroupAccountReportGenerated payload. Used by
+  // share* methods to RE-EMIT the loaded state once the share future
+  // resolves (success / dismissed / error) so the report screen
+  // doesn't get stuck on the "Preparing report..." catch-all branch
+  // of the BlocConsumer.builder. Set when the report screen renders;
+  // cleared when the cubit is disposed.
+  GroupAccount? _cachedReportGroup;
+  List<Contribution>? _cachedReportContributions;
+  String? _cachedReportGroupUrl;
 
   // Snapshot of the last GroupAccountGroupLoaded payload. Used by mutation
   // handlers to apply optimistic patches without refetching, and by views
@@ -178,9 +189,17 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     this.getPublicGroup,
     this.joinPublicGroup,
     this.reportService,
+    PastMembershipsRemoteDataSource? pastMembershipsDataSource,
     FlutterSecureStorage? secureStorage,
   })  : _secureStorage = secureStorage ?? const FlutterSecureStorage(),
+        _pastMemberships =
+            pastMembershipsDataSource ?? PastMembershipsRemoteDataSource(),
         super(GroupAccountInitial());
+
+  // Past-membership read API. Injected so tests can stub the HTTP
+  // layer without spinning up a real gateway, but defaults to a
+  // direct-HTTP implementation matching the production stack.
+  final PastMembershipsRemoteDataSource _pastMemberships;
 
   /// Verify the cached `_currentUserId` still matches the live session.
   /// Returns the user ID to operate as.
@@ -1579,6 +1598,9 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       if (isClosed) return;
 
       _cachedReport = report;
+      _cachedReportGroup = group;
+      _cachedReportContributions = contributions;
+      _cachedReportGroupUrl = groupUrl;
       emit(GroupAccountReportGenerated(
         report: report,
         group: group,
@@ -1589,6 +1611,25 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
       if (isClosed) return;
       emit(GroupAccountReportShareError('Failed to generate report: ${e.toString()}'));
     }
+  }
+
+  /// Re-emit the cached GroupAccountReportGenerated state. Called from
+  /// every share* path's `finally` so cancel/dismiss/success/error all
+  /// restore the report screen to the loaded view instead of leaving
+  /// it stuck on the "Preparing report..." catch-all (the previous
+  /// bug). No-op when nothing is cached or the cubit is closed.
+  void _restoreReportLoadedState() {
+    if (isClosed) return;
+    final report = _cachedReport;
+    final group = _cachedReportGroup;
+    final contributions = _cachedReportContributions;
+    if (report == null || group == null || contributions == null) return;
+    emit(GroupAccountReportGenerated(
+      report: report,
+      group: group,
+      contributions: contributions,
+      groupUrl: _cachedReportGroupUrl,
+    ));
   }
 
   /// Auto-generate report after group creation
@@ -1699,110 +1740,72 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     }
   }
 
-  /// Share report to WhatsApp
-  Future<void> shareReportToWhatsApp(
-    GroupAccountReport report,
-    String? groupUrl,
+  /// Internal: drive any share-* method through one error/finally
+  /// envelope so every legacy social handler restores the loaded view
+  /// the same way `shareReportAsFile` does. Each caller passes its
+  /// platform-specific future + the snackbar label users see on
+  /// success / dismiss.
+  Future<void> _runReportShare(
+    Future<void> Function() shareFuture,
+    String successLabel,
   ) async {
     if (isClosed) return;
     if (reportService == null) {
       emit(const GroupAccountReportShareError('Report service not available'));
+      _restoreReportLoadedState();
       return;
     }
-
     try {
-      await reportService!.shareToWhatsApp(report, groupUrl: groupUrl);
+      await shareFuture();
       if (isClosed) return;
-      emit(const GroupAccountReportShared(message: 'Shared to WhatsApp'));
+      emit(GroupAccountReportShared(message: successLabel));
     } catch (e) {
       if (isClosed) return;
       emit(GroupAccountReportShareError('Failed to share: ${e.toString()}'));
+    } finally {
+      _restoreReportLoadedState();
     }
   }
+
+  /// Share report to WhatsApp
+  Future<void> shareReportToWhatsApp(
+          GroupAccountReport report, String? groupUrl) =>
+      _runReportShare(
+        () => reportService!.shareToWhatsApp(report, groupUrl: groupUrl),
+        'Shared to WhatsApp',
+      );
 
   /// Share report to Telegram
   Future<void> shareReportToTelegram(
-    GroupAccountReport report,
-    String? groupUrl,
-  ) async {
-    if (isClosed) return;
-    if (reportService == null) {
-      emit(const GroupAccountReportShareError('Report service not available'));
-      return;
-    }
-
-    try {
-      await reportService!.shareToTelegram(report, groupUrl: groupUrl);
-      if (isClosed) return;
-      emit(const GroupAccountReportShared(message: 'Shared to Telegram'));
-    } catch (e) {
-      if (isClosed) return;
-      emit(GroupAccountReportShareError('Failed to share: ${e.toString()}'));
-    }
-  }
+          GroupAccountReport report, String? groupUrl) =>
+      _runReportShare(
+        () => reportService!.shareToTelegram(report, groupUrl: groupUrl),
+        'Shared to Telegram',
+      );
 
   /// Share report to Facebook
   Future<void> shareReportToFacebook(
-    GroupAccountReport report,
-    String? groupUrl,
-  ) async {
-    if (isClosed) return;
-    if (reportService == null) {
-      emit(const GroupAccountReportShareError('Report service not available'));
-      return;
-    }
-
-    try {
-      await reportService!.shareToFacebook(report, groupUrl: groupUrl);
-      if (isClosed) return;
-      emit(const GroupAccountReportShared(message: 'Shared to Facebook'));
-    } catch (e) {
-      if (isClosed) return;
-      emit(GroupAccountReportShareError('Failed to share: ${e.toString()}'));
-    }
-  }
+          GroupAccountReport report, String? groupUrl) =>
+      _runReportShare(
+        () => reportService!.shareToFacebook(report, groupUrl: groupUrl),
+        'Shared to Facebook',
+      );
 
   /// Share report to Twitter/X
   Future<void> shareReportToTwitter(
-    GroupAccountReport report,
-    String? groupUrl,
-  ) async {
-    if (isClosed) return;
-    if (reportService == null) {
-      emit(const GroupAccountReportShareError('Report service not available'));
-      return;
-    }
-
-    try {
-      await reportService!.shareToTwitter(report, groupUrl: groupUrl);
-      if (isClosed) return;
-      emit(const GroupAccountReportShared(message: 'Shared to Twitter'));
-    } catch (e) {
-      if (isClosed) return;
-      emit(GroupAccountReportShareError('Failed to share: ${e.toString()}'));
-    }
-  }
+          GroupAccountReport report, String? groupUrl) =>
+      _runReportShare(
+        () => reportService!.shareToTwitter(report, groupUrl: groupUrl),
+        'Shared to Twitter',
+      );
 
   /// General share using system share sheet
   Future<void> shareReportGeneral(
-    GroupAccountReport report,
-    String? groupUrl,
-  ) async {
-    if (isClosed) return;
-    if (reportService == null) {
-      emit(const GroupAccountReportShareError('Report service not available'));
-      return;
-    }
-
-    try {
-      await reportService!.shareGeneral(report, groupUrl: groupUrl);
-      if (isClosed) return;
-      emit(const GroupAccountReportShared(message: 'Report shared'));
-    } catch (e) {
-      if (isClosed) return;
-      emit(GroupAccountReportShareError('Failed to share: ${e.toString()}'));
-    }
-  }
+          GroupAccountReport report, String? groupUrl) =>
+      _runReportShare(
+        () => reportService!.shareGeneral(report, groupUrl: groupUrl),
+        'Report shared',
+      );
 
   /// Share the report as a PDF attachment via the OS share sheet.
   Future<void> shareReportAsFile(
@@ -1813,6 +1816,7 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
     if (isClosed) return;
     if (reportService == null) {
       emit(const GroupAccountReportShareError('Report service not available'));
+      _restoreReportLoadedState();
       return;
     }
 
@@ -1823,10 +1827,22 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
         groupName: groupName,
       );
       if (isClosed) return;
+      // The native share sheet has closed — either the user shared,
+      // dismissed, or the system sent it on. We can't reliably
+      // distinguish dismissed from success on every platform without
+      // returning a ShareResult from the service, so emit a neutral
+      // "shared / closed" state. Listener uses this for the snackbar.
       emit(const GroupAccountReportShared(message: 'Report shared'));
     } catch (e) {
       if (isClosed) return;
       emit(GroupAccountReportShareError('Failed to share: ${e.toString()}'));
+    } finally {
+      // Restore the loaded view so the screen exits "Preparing report"
+      // regardless of share outcome. The transient Shared / ShareError
+      // emit above still fires the BlocListener's snackbar branch
+      // before this re-emit, since BlocListener is reactive to every
+      // distinct state.
+      _restoreReportLoadedState();
     }
   }
 
@@ -2098,6 +2114,108 @@ class GroupAccountCubit extends Cubit<GroupAccountState> {
   /// live cycle synthesized from current state when no frozen row
   /// exists yet, so the UI never has to special-case the "first cycle
   /// hasn't closed" state.
+  // ============================================================
+  // Past Contributions / Past Groups (read-only ex-member surface)
+  // ============================================================
+
+  /// Reads the JWT the rest of the app stores under `access_token`,
+  /// the same key the AuthenticationCubit writes on login. Returns
+  /// null when the user is signed out — callers emit an Error state
+  /// instead of throwing so the screen can render a "Sign in" CTA.
+  /// The screens that drive the past-membership flows pass the live
+  /// token directly via `accessToken` (chat-bottom-sheet style),
+  /// since reading FlutterSecureStorage from a fresh cubit instance
+  /// occasionally misses what the auth cubit just wrote (different
+  /// storage options / Android encryption-pref propagation lag).
+  Future<String?> _readAccessToken({String? accessToken}) async {
+    if (accessToken != null && accessToken.isNotEmpty) {
+      return accessToken;
+    }
+    try {
+      return await _secureStorage.read(key: 'access_token');
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> loadPastContributions({
+    String filter = '',
+    String? accessToken,
+  }) async {
+    if (isClosed) return;
+    emit(const PastContributionsLoading());
+    final token = await _readAccessToken(accessToken: accessToken);
+    if (token == null || token.isEmpty) {
+      if (!isClosed) {
+        emit(const PastContributionsError('Not authenticated'));
+      }
+      return;
+    }
+    try {
+      final entries = await _pastMemberships.listPastContributions(
+        token: token,
+        filter: filter,
+      );
+      if (isClosed) return;
+      emit(PastContributionsLoaded(entries: entries, filter: filter));
+    } catch (e) {
+      if (isClosed) return;
+      emit(PastContributionsError('Failed to load past contributions: $e'));
+    }
+  }
+
+  Future<void> loadPastGroups({
+    String filter = '',
+    String? accessToken,
+  }) async {
+    if (isClosed) return;
+    emit(const PastGroupsLoading());
+    final token = await _readAccessToken(accessToken: accessToken);
+    if (token == null || token.isEmpty) {
+      if (!isClosed) {
+        emit(const PastGroupsError('Not authenticated'));
+      }
+      return;
+    }
+    try {
+      final entries = await _pastMemberships.listPastGroups(
+        token: token,
+        filter: filter,
+      );
+      if (isClosed) return;
+      emit(PastGroupsLoaded(entries: entries, filter: filter));
+    } catch (e) {
+      if (isClosed) return;
+      emit(PastGroupsError('Failed to load past groups: $e'));
+    }
+  }
+
+  Future<void> loadPastContributionDetails(
+    String contributionId, {
+    String? accessToken,
+  }) async {
+    if (isClosed) return;
+    emit(PastContributionDetailsLoading(contributionId: contributionId));
+    final token = await _readAccessToken(accessToken: accessToken);
+    if (token == null || token.isEmpty) {
+      if (!isClosed) {
+        emit(const PastContributionDetailsError('Not authenticated'));
+      }
+      return;
+    }
+    try {
+      final details = await _pastMemberships.getPastContributionDetails(
+        token: token,
+        contributionId: contributionId,
+      );
+      if (isClosed) return;
+      emit(PastContributionDetailsLoaded(details: details));
+    } catch (e) {
+      if (isClosed) return;
+      emit(PastContributionDetailsError('Failed to load details: $e'));
+    }
+  }
+
   Future<void> loadContributionCycles({
     required String contributionId,
     bool includeInProgress = true,

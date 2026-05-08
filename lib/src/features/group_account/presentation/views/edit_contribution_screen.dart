@@ -317,16 +317,26 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
           ),
         ),
         SizedBox(height: 8.h),
+        // Title is immutable post-creation. Receipts, push notifications,
+        // chat headers, and audit logs all reference the title; renaming
+        // it would split the audit trail. Render the existing value as a
+        // read-only field so the user sees what they have without being
+        // misled into thinking they can change it. The server enforces
+        // the same rule (UpdateContribution rejects title changes).
         TextFormField(
           controller: _titleController,
-          style: GoogleFonts.inter(color: Colors.white),
-          decoration: _inputDecoration('Enter contribution title'),
-          validator: (value) {
-            if (value == null || value.trim().isEmpty) {
-              return 'Please enter a title';
-            }
-            return null;
-          },
+          readOnly: true,
+          enabled: false,
+          style: GoogleFonts.inter(color: Colors.white70),
+          decoration: _inputDecoration('Enter contribution title').copyWith(
+            suffixIcon: Icon(Icons.lock_outline,
+                size: 16.sp, color: Colors.grey[500]),
+            helperText: 'Title cannot be changed after creation',
+            helperStyle: GoogleFonts.inter(
+              color: Colors.grey[500],
+              fontSize: 11.sp,
+            ),
+          ),
         ),
       ],
     );
@@ -474,7 +484,45 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
     );
   }
 
+  /// Status FSM mirroring server-side `isContributionStatusTransitionAllowed`:
+  ///
+  ///   active    ⇄ paused
+  ///   active    → completed / cancelled
+  ///   paused    → completed / cancelled
+  ///   completed / cancelled — terminal (no further transitions)
+  ///
+  /// `current` is the contribution's persisted status; `next` is the
+  /// row the user is about to tap. Same-status taps are allowed
+  /// (selecting your current status is a no-op). Anything else is
+  /// blocked and shown disabled with a tooltip.
+  bool _isStatusTransitionAllowed(
+      ContributionStatus current, ContributionStatus next) {
+    if (current == next) return true;
+    switch (current) {
+      case ContributionStatus.active:
+        return next == ContributionStatus.paused ||
+            next == ContributionStatus.completed ||
+            next == ContributionStatus.cancelled;
+      case ContributionStatus.paused:
+        return next == ContributionStatus.active ||
+            next == ContributionStatus.completed ||
+            next == ContributionStatus.cancelled;
+      case ContributionStatus.completed:
+      case ContributionStatus.cancelled:
+        return false;
+    }
+  }
+
   Widget _buildStatusSelector() {
+    final current = widget.contribution.status;
+    // Cancelled is reachable through "Delete contribution" elsewhere —
+    // not exposed as a status pill here so users don't conflate it
+    // with the recoverable paused state.
+    final options = <ContributionStatus>[
+      ContributionStatus.active,
+      ContributionStatus.paused,
+      ContributionStatus.completed,
+    ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -493,56 +541,72 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
             borderRadius: BorderRadius.circular(12.r),
           ),
           child: Column(
-            children: [
-              ContributionStatus.active,
-              ContributionStatus.paused,
-              ContributionStatus.completed,
-            ].map((status) {
+            children: options.map((status) {
               final isSelected = _selectedStatus == status;
+              final allowed = _isStatusTransitionAllowed(current, status);
               return InkWell(
-                onTap: () {
-                  setState(() {
-                    _selectedStatus = status;
-                  });
-                  _onFieldChanged();
-                },
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: status != ContributionStatus.completed
-                          ? BorderSide(color: Colors.grey[800]!, width: 0.5)
-                          : BorderSide.none,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 8.w,
-                        height: 8.w,
-                        decoration: BoxDecoration(
-                          color: _getStatusColor(status),
-                          shape: BoxShape.circle,
-                        ),
+                onTap: allowed
+                    ? () {
+                        setState(() {
+                          _selectedStatus = status;
+                        });
+                        _onFieldChanged();
+                      }
+                    : () {
+                        // Surface why the row is blocked instead of
+                        // failing silently — the user otherwise can't
+                        // tell if it's a bug or an intended rule.
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                                '${_getStatusLabel(current)} → ${_getStatusLabel(status)} is not allowed.'),
+                          ),
+                        );
+                      },
+                child: Opacity(
+                  opacity: allowed ? 1.0 : 0.45,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: 16.w, vertical: 14.h),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: status != options.last
+                            ? BorderSide(color: Colors.grey[800]!, width: 0.5)
+                            : BorderSide.none,
                       ),
-                      SizedBox(width: 12.w),
-                      Expanded(
-                        child: Text(
-                          _getStatusLabel(status),
-                          style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w500,
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 8.w,
+                          height: 8.w,
+                          decoration: BoxDecoration(
+                            color: _getStatusColor(status),
+                            shape: BoxShape.circle,
                           ),
                         ),
-                      ),
-                      if (isSelected)
-                        Icon(
-                          Icons.check_circle,
-                          color: const Color.fromARGB(255, 78, 3, 208),
-                          size: 24.sp,
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: Text(
+                            _getStatusLabel(status),
+                            style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
                         ),
-                    ],
+                        if (!allowed)
+                          Icon(Icons.lock_outline,
+                              size: 16.sp, color: Colors.grey[500]),
+                        if (isSelected)
+                          Icon(
+                            Icons.check_circle,
+                            color: const Color.fromARGB(255, 78, 3, 208),
+                            size: 24.sp,
+                          ),
+                      ],
+                    ),
                   ),
                 ),
               );
@@ -1036,9 +1100,11 @@ class _EditContributionScreenState extends State<EditContributionScreen> {
         metadata.remove('telegram_group_link');
       }
 
-      // Create updated contribution object
+      // Title is immutable post-creation (server enforces). Pass the
+      // existing value through unchanged so the gateway-side mapper
+      // still sees a non-empty string but our edits don't try to
+      // mutate it. Removing it from copyWith keeps `title` stable.
       final updatedContribution = c.copyWith(
-        title: _titleController.text.trim(),
         description: _descriptionController.text.trim(),
         deadline: _deadline,
         status: _selectedStatus,

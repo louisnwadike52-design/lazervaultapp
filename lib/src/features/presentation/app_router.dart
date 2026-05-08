@@ -223,7 +223,6 @@ import 'package:lazervault/src/features/airtime_to_cash/presentation/view/a2c_re
 // AutoSave imports
 import 'package:lazervault/src/features/autosave/presentation/cubit/autosave_cubit.dart';
 import 'package:lazervault/src/features/autosave/presentation/views/autosave_dashboard_screen.dart';
-import 'package:lazervault/src/features/autosave/presentation/views/autosave_transactions_screen.dart';
 import 'package:lazervault/src/features/autosave/presentation/views/create_autosave_rule_screen.dart';
 import 'package:lazervault/src/features/autosave/presentation/views/edit_autosave_rule_screen.dart';
 import 'package:lazervault/src/features/autosave/presentation/views/autosave_rule_review_screen.dart';
@@ -231,6 +230,7 @@ import 'package:lazervault/src/features/autosave/presentation/views/autosave_rul
 import 'package:lazervault/src/features/autosave/presentation/views/autosave_rule_receipt_screen.dart';
 import 'package:lazervault/src/features/autosave/presentation/views/autosave_rule_details_screen.dart';
 import 'package:lazervault/src/features/autosave/presentation/views/autosave_rules_list_screen.dart';
+import 'package:lazervault/src/features/autosave/presentation/views/autosave_transactions_screen.dart';
 
 // Batch Transfer imports
 import 'package:lazervault/src/features/funds/cubit/batch_transfer_cubit.dart';
@@ -2165,6 +2165,12 @@ GetPage(
       page: () => const AutoSaveRuleReceiptScreen(),
       transition: Transition.fadeIn,
     ),
+    // Transactions History — distinct surface from All Rules now.
+    // Rules and transactions are different concepts: rules are the
+    // declarative configs that fire (manually or on schedule); each
+    // fire becomes a transaction. The Transactions History page
+    // lists every fire across every rule, with filters / search /
+    // detail bottom sheet.
     GetPage(
       name: AppRoutes.autoSaveTransactions,
       page: () => BlocProvider(

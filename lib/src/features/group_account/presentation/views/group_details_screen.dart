@@ -17,6 +17,7 @@ import '../widgets/create_contribution_bottom_sheet.dart';
 import '../widgets/edit_group_bottom_sheet.dart';
 import '../widgets/member_detail_dialog.dart';
 import '../views/group_account_report_screen.dart';
+import '../views/past_groups_screen.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../authentication/cubit/authentication_state.dart';
 import '../../../../../core/services/account_manager.dart';
@@ -685,6 +686,24 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
                       ],
                     ),
                   ),
+                // Past Groups — caller's exit history across every
+                // group. Always visible (it's about *me*, not this
+                // group), so even members of one group only can drill
+                // into history elsewhere.
+                PopupMenuItem(
+                  value: 'past_groups',
+                  child: Row(
+                    children: [
+                      Icon(Icons.history,
+                          color: Colors.white, size: 20.sp),
+                      SizedBox(width: 12.w),
+                      Text(
+                        'Past groups',
+                        style: GoogleFonts.inter(color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ),
               ];
             },
             onSelected: (value) => _handleMenuAction(value, group),
@@ -1287,6 +1306,15 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen>
         break;
       case 'leave':
         _showLeaveGroupDialog(group);
+        break;
+      case 'past_groups':
+        final pastCubit = context.read<GroupAccountCubit>();
+        Get.to(
+          () => BlocProvider<GroupAccountCubit>.value(
+            value: pastCubit,
+            child: const PastGroupsScreen(),
+          ),
+        );
         break;
     }
   }

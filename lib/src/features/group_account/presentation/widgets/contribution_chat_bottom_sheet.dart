@@ -244,10 +244,23 @@ class _ContributionChatBottomSheetState
     };
     final msg = _ChatMessage.fromJson(translated);
     if (msg.id.isEmpty) return;
-    // Dedup against both already-rendered server messages and the
-    // optimistic row inserted by the local sender right after their
-    // HTTP POST returned.
-    if (_messages.any((m) => m.id == msg.id)) return;
+    final added = _appendMessage(msg);
+    if (added) _autoscroll();
+  }
+
+  /// Single point of insertion for inbound messages — whether they
+  /// arrive via the WebSocket echo, the HTTP send response, or the
+  /// reconnect-window delta poll. Dedups by message id since the same
+  /// message can land through multiple channels (the server publishes
+  /// to WS the moment the row commits AND returns it in the HTTP body,
+  /// so racing those two paths used to render the same bubble twice).
+  ///
+  /// Returns true when a new row was actually appended so callers can
+  /// decide whether to autoscroll / nudge the sinceCursor; returns
+  /// false on duplicate so the UI doesn't visibly tick.
+  bool _appendMessage(_ChatMessage msg) {
+    if (msg.id.isEmpty) return false;
+    if (_messages.any((m) => m.id == msg.id)) return false;
     setState(() {
       _messages.add(msg);
       final cursor = msg.sentAt.toUtc().toIso8601String();
@@ -255,7 +268,7 @@ class _ContributionChatBottomSheetState
         _sinceCursor = cursor;
       }
     });
-    _autoscroll();
+    return true;
   }
 
   void _scheduleWsReconnect() {
@@ -306,11 +319,15 @@ class _ContributionChatBottomSheetState
     try {
       final msgs = await _fetchMessages(since: _sinceCursor);
       if (!mounted || msgs.isEmpty) return;
-      setState(() {
-        _messages.addAll(msgs);
-        _sinceCursor = msgs.last.sentAt.toUtc().toIso8601String();
-      });
-      _autoscroll();
+      // Route every row through the dedup helper. The poll is a
+      // catch-up after a WS reconnect; if any of those messages were
+      // already delivered via the live socket between the poll fire
+      // and the response, the helper drops them silently.
+      var addedAny = false;
+      for (final m in msgs) {
+        if (_appendMessage(m)) addedAny = true;
+      }
+      if (addedAny) _autoscroll();
     } catch (_) {
       // Polling errors are silent — the next tick retries.
     }
@@ -371,9 +388,12 @@ class _ContributionChatBottomSheetState
       final body = jsonDecode(resp.body) as Map<String, dynamic>;
       final msg = _ChatMessage.fromJson(body['message'] as Map<String, dynamic>);
       if (!mounted) return;
+      // Funnel into the same dedup helper the WS handler uses. The
+      // server publishes the WS frame the moment the row commits, so
+      // it can land before our HTTP response returns — without this
+      // check the sender used to see their own bubble appear twice.
+      _appendMessage(msg);
       setState(() {
-        _messages.add(msg);
-        _sinceCursor = msg.sentAt.toUtc().toIso8601String();
         _composer.clear();
         _sending = false;
       });
@@ -669,10 +689,10 @@ class _ContributionChatBottomSheetState
     final data = jsonDecode(resp.body) as Map<String, dynamic>;
     final msg = _ChatMessage.fromJson(data['message'] as Map<String, dynamic>);
     if (!mounted) return;
-    setState(() {
-      _messages.add(msg);
-      _sinceCursor = msg.sentAt.toUtc().toIso8601String();
-    });
+    // Image / voice send share the same publish-then-return race with
+    // the WS echo as text send — funnel into _appendMessage so the
+    // duplicate is dropped if the WS frame got here first.
+    _appendMessage(msg);
     _autoscroll();
   }
 

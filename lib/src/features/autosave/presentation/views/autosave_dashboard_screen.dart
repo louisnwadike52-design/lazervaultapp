@@ -43,9 +43,42 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
     context.read<AutoSaveCubit>().loadDashboard();
   }
 
+  /// Hardware-back / Get.back from the autosave dashboard used to
+  /// stall because the navigation stack accumulated several pushes
+  /// (create flow, list, transactions, edit, etc.). We now collapse
+  /// the autosave sub-stack on exit and land the user on the main
+  /// app dashboard's active-services carousel — the screen they
+  /// originally launched the autosave service from.
+  void _exitToDashboard() {
+    final navigator = Navigator.of(context);
+    if (navigator.canPop()) {
+      // popUntil with a name predicate scrubs every autosave route.
+      navigator.popUntil((r) =>
+          r.isFirst ||
+          r.settings.name == AppRoutes.dashboard ||
+          r.settings.name == AppRoutes.home);
+    }
+    // Defensive — if the predicate above didn't find a match (e.g.
+    // the user deep-linked into autosave from a notification), reset
+    // the stack to the main dashboard outright.
+    if (Get.currentRoute != AppRoutes.dashboard &&
+        Get.currentRoute != AppRoutes.home) {
+      Get.offAllNamed(AppRoutes.dashboard);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      // Intercept hardware back too. canPop=false stops the default
+      // single-route pop (which is what got stuck before); the
+      // callback runs our explicit stack-flush.
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        _exitToDashboard();
+      },
+      child: Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
       body: SafeArea(
         child: BlocListener<AutoSaveCubit, AutoSaveState>(
@@ -118,6 +151,7 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
           ),
         ),
       ),
+      ),
     );
   }
 
@@ -127,7 +161,10 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => Get.back(),
+            // Always exit the entire autosave sub-stack — see
+            // _exitToDashboard for why a plain Get.back was getting
+            // stuck after several pushes inside the feature.
+            onTap: _exitToDashboard,
             child: Container(
               width: 44.w,
               height: 44.w,
@@ -356,6 +393,11 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
   }
 
   Widget _buildActionButtons() {
+    // Three lanes — Create, All Rules, Transactions — sit side-by-
+    // side. Rules and transactions are distinct surfaces: a rule
+    // is the config that fires; each fire (manual or scheduled)
+    // becomes a transaction. The Transactions screen lists those
+    // fires with filters / search / detail sheet.
     return Row(
       children: [
         Expanded(
@@ -366,12 +408,21 @@ class _AutoSaveDashboardScreenState extends State<AutoSaveDashboardScreen> {
             onTap: () => Get.toNamed(AppRoutes.createAutoSaveRule),
           ),
         ),
-        SizedBox(width: 16.w),
+        SizedBox(width: 12.w),
+        Expanded(
+          child: _buildActionButton(
+            icon: Icons.list_alt_outlined,
+            label: 'All Rules',
+            color: const Color(0xFF10B981),
+            onTap: () => Get.toNamed(AppRoutes.autoSaveRulesList),
+          ),
+        ),
+        SizedBox(width: 12.w),
         Expanded(
           child: _buildActionButton(
             icon: Icons.receipt_long_outlined,
             label: 'Transactions',
-            color: const Color(0xFF10B981),
+            color: const Color(0xFF3B82F6),
             onTap: () => Get.toNamed(AppRoutes.autoSaveTransactions),
           ),
         ),

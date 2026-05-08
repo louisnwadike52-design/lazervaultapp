@@ -357,30 +357,49 @@ class _LoadedView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const totalCards = 5;
     return Stack(
       children: [
-        // PageView with cards
-        PageView(
-          controller: pageController,
-          onPageChanged: onPageChanged,
-          physics: const BouncingScrollPhysics(),
-          children: [
-            // 1. Summary Card
-            _SummaryCard(report: report, group: group),
-            // 2. Impact Story Card
-            _ImpactStoryCard(report: report),
-            // 3. Contributor Highlights Card
-            _ContributorHighlightsCard(report: report),
-            // 4. Milestones Card
-            _MilestonesCard(report: report),
-            // 5. Share Card
-            _ShareCard(
-              report: report,
-              onShare: onShare,
-              onCopy: onCopy,
-              onClose: onClose,
-            ),
-          ],
+        // PageView with cards. Wrapped in a NotificationListener so
+        // swiping forward past the last slide pops back to the group
+        // landing — the user explicitly asked for "once you reach the
+        // end of the slides in the report, just go back". Overscroll
+        // notifications fire when BouncingScrollPhysics rebounds the
+        // PageView past `maxScrollExtent`; gating on currentPage being
+        // the last page prevents a forward overscroll on slide 1
+        // (which can't happen with PageView snapping anyway, but be
+        // defensive) from triggering an unintended pop.
+        NotificationListener<OverscrollNotification>(
+          onNotification: (notification) {
+            if (currentPage == totalCards - 1 &&
+                notification.overscroll > 0) {
+              onClose();
+              return true;
+            }
+            return false;
+          },
+          child: PageView(
+            controller: pageController,
+            onPageChanged: onPageChanged,
+            physics: const BouncingScrollPhysics(),
+            children: [
+              // 1. Summary Card
+              _SummaryCard(report: report, group: group),
+              // 2. Impact Story Card
+              _ImpactStoryCard(report: report),
+              // 3. Contributor Highlights Card
+              _ContributorHighlightsCard(report: report),
+              // 4. Milestones Card
+              _MilestonesCard(report: report),
+              // 5. Share Card
+              _ShareCard(
+                report: report,
+                onShare: onShare,
+                onCopy: onCopy,
+                onClose: onClose,
+              ),
+            ],
+          ),
         ),
         // Close button
         Positioned(
@@ -409,7 +428,7 @@ class _LoadedView extends StatelessWidget {
           right: 24,
           child: _ProgressIndicator(
             currentIndex: currentPage,
-            totalCards: 5,
+            totalCards: totalCards,
           ),
         ),
       ],
