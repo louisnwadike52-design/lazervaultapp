@@ -26,7 +26,7 @@ class BasicInfoStep extends StatelessWidget {
               height: 80.w,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
+                  colors: [Color(0xFF4E03D0), Color.fromARGB(255, 78, 3, 208)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -96,7 +96,7 @@ class BasicInfoStep extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  const Color(0xFF6366F1).withValues(alpha: 0.1),
+                  const Color(0xFF4E03D0).withValues(alpha: 0.1),
                   const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.05),
                 ],
                 begin: Alignment.topLeft,
@@ -108,7 +108,7 @@ class BasicInfoStep extends StatelessWidget {
               children: [
                 Icon(
                   Icons.lightbulb_outline,
-                  color: const Color(0xFF6366F1),
+                  color: const Color(0xFF4E03D0),
                   size: 20.sp,
                 ),
                 SizedBox(width: 12.w),

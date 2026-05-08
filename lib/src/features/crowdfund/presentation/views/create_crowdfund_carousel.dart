@@ -297,6 +297,46 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
     );
   }
 
+  bool _hasUnsavedDraft() {
+    return _titleController.text.trim().isNotEmpty ||
+        _descriptionController.text.trim().isNotEmpty ||
+        _storyController.text.trim().isNotEmpty ||
+        _targetAmountController.text.trim().isNotEmpty ||
+        _imageUrlController.text.trim().isNotEmpty ||
+        _socialLinks.isNotEmpty;
+  }
+
+  Future<bool> _confirmDiscard() async {
+    if (!_hasUnsavedDraft()) return true;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1F1F1F),
+        title: Text(
+          'Discard campaign?',
+          style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w700),
+        ),
+        content: Text(
+          'Your draft will be lost. Are you sure?',
+          style: GoogleFonts.inter(color: const Color(0xFF9CA3AF)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text('Keep editing',
+                style: GoogleFonts.inter(color: const Color(0xFF4E03D0), fontWeight: FontWeight.w600)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text('Discard',
+                style: GoogleFonts.inter(color: const Color(0xFFEF4444), fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+    return confirmed ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<CrowdfundCubit, CrowdfundState>(
@@ -316,10 +356,19 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
           _showErrorSnackBar(state.message);
         }
       },
-      child: Scaffold(
-        backgroundColor: const Color(0xFF0A0A0A),
-        appBar: _buildAppBar(),
-        body: Column(
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) async {
+          if (didPop) return;
+          if (_isProcessing) return;
+          if (await _confirmDiscard()) {
+            if (mounted) Get.offAllNamed(AppRoutes.crowdfund);
+          }
+        },
+        child: Scaffold(
+          backgroundColor: const Color(0xFF0A0A0A),
+          appBar: _buildAppBar(),
+          body: Column(
           children: [
             _buildProgressIndicators(),
             Expanded(
@@ -395,8 +444,9 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
                 ],
               ),
             ),
-            _buildNavigationButtons(),
-          ],
+              _buildNavigationButtons(),
+            ],
+          ),
         ),
       ),
     );
@@ -426,7 +476,7 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
             ),
           ),
           Text(
-            'Step ${_currentPage + 1} of $_totalPages - ${_pageNames[_currentPage]}',
+            'Step ${_currentPage + 1} of $_totalPages · ${_pageNames[_currentPage]}',
             style: GoogleFonts.inter(
               fontSize: 12.sp,
               fontWeight: FontWeight.w500,
@@ -442,7 +492,12 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
             color: Colors.white,
             size: 24.sp,
           ),
-          onPressed: () => Get.offAllNamed(AppRoutes.home),
+          onPressed: () async {
+            if (_isProcessing) return;
+            if (await _confirmDiscard()) {
+              if (mounted) Get.offAllNamed(AppRoutes.crowdfund);
+            }
+          },
         ),
       ],
     );
@@ -472,7 +527,7 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
                   gradient: LinearGradient(
                     colors: _currentPage == _totalPages - 1
                         ? [Colors.green, Colors.green.shade700]
-                        : [const Color(0xFF6366F1), const Color.fromARGB(255, 78, 3, 208)],
+                        : [const Color(0xFF4E03D0), const Color.fromARGB(255, 78, 3, 208)],
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                   ),
@@ -494,7 +549,7 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
                 margin: EdgeInsets.symmetric(horizontal: 4.w),
                 decoration: BoxDecoration(
                   color: _currentPage == index
-                      ? const Color(0xFF6366F1)
+                      ? const Color(0xFF4E03D0)
                       : Colors.white.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(4.r),
                 ),
@@ -546,7 +601,7 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
                   padding: EdgeInsets.symmetric(vertical: 16.h),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
+                      colors: [Color(0xFF4E03D0), Color.fromARGB(255, 78, 3, 208)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),

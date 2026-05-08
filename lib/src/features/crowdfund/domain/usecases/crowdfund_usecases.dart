@@ -140,6 +140,7 @@ class MakeDonationUseCase {
     bool isAnonymous = false,
     required String sourceAccountId,
     required String transactionPin,
+    required String transactionId,
   }) {
     return repository.makeDonation(
       crowdfundId: crowdfundId,
@@ -148,6 +149,7 @@ class MakeDonationUseCase {
       isAnonymous: isAnonymous,
       sourceAccountId: sourceAccountId,
       transactionPin: transactionPin,
+      transactionId: transactionId,
     );
   }
 }

@@ -236,7 +236,7 @@ class _SocialLinksStepState extends State<SocialLinksStep> {
             height: 80.w,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
+                colors: [Color(0xFF4E03D0), Color.fromARGB(255, 78, 3, 208)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -297,7 +297,7 @@ class _SocialLinksStepState extends State<SocialLinksStep> {
         children: [
           Row(
             children: [
-              Icon(platform.icon, color: const Color(0xFF6366F1), size: 18.sp),
+              Icon(platform.icon, color: const Color(0xFF4E03D0), size: 18.sp),
               SizedBox(width: 8.w),
               Text(
                 platform.label,
@@ -422,23 +422,23 @@ class _SocialLinksStepState extends State<SocialLinksStep> {
           color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(20.r),
           border: Border.all(
-            color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+            color: const Color(0xFF4E03D0).withValues(alpha: 0.3),
             width: 1,
           ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.add, size: 14.sp, color: const Color(0xFF6366F1)),
+            Icon(Icons.add, size: 14.sp, color: const Color(0xFF4E03D0)),
             SizedBox(width: 6.w),
-            Icon(platform.icon, size: 14.sp, color: const Color(0xFF6366F1)),
+            Icon(platform.icon, size: 14.sp, color: const Color(0xFF4E03D0)),
             SizedBox(width: 6.w),
             Text(
               platform.label,
               style: GoogleFonts.inter(
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF6366F1),
+                color: const Color(0xFF4E03D0),
               ),
             ),
           ],
@@ -453,7 +453,7 @@ class _SocialLinksStepState extends State<SocialLinksStep> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF6366F1).withValues(alpha: 0.1),
+            const Color(0xFF4E03D0).withValues(alpha: 0.1),
             const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.05),
           ],
           begin: Alignment.topLeft,
@@ -467,7 +467,7 @@ class _SocialLinksStepState extends State<SocialLinksStep> {
           Row(
             children: [
               Icon(Icons.tips_and_updates_outlined,
-                  color: const Color(0xFF6366F1), size: 20.sp),
+                  color: const Color(0xFF4E03D0), size: 20.sp),
               SizedBox(width: 12.w),
               Text(
                 'Why add social links?',
@@ -495,7 +495,7 @@ class _SocialLinksStepState extends State<SocialLinksStep> {
       child: Row(
         children: [
           Icon(Icons.check_circle_outline,
-              color: const Color(0xFF6366F1), size: 14.sp),
+              color: const Color(0xFF4E03D0), size: 14.sp),
           SizedBox(width: 8.w),
           Expanded(
             child: Text(

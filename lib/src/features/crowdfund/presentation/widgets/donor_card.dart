@@ -570,7 +570,7 @@ class _DonorDetailDialogState extends State<DonorDetailDialog> {
               width: 18,
               height: 18,
               child: CircularProgressIndicator(
-                color: Color(0xFF6366F1),
+                color: Color(0xFF4E03D0),
                 strokeWidth: 2,
               ),
             ),
@@ -633,7 +633,7 @@ class _DonorDetailDialogState extends State<DonorDetailDialog> {
             TextButton(
               onPressed: _loadRating,
               style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFF6366F1),
+                foregroundColor: const Color(0xFF4E03D0),
                 padding: EdgeInsets.zero,
                 minimumSize: const Size(0, 0),
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,

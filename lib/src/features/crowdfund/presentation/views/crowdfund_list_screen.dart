@@ -159,28 +159,44 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
     _loadCrowdfunds();
   }
 
+  void _exitToCrowdfundHome() {
+    final navigator = Navigator.of(context);
+    if (navigator.canPop()) {
+      navigator.pop();
+    } else {
+      Get.offAllNamed(AppRoutes.crowdfund);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(),
-            _buildSearchBar(),
-            _buildTabBar(),
-            _buildFilterChips(),
-            _buildStaleIndicator(),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildBrowseAllTab(),
-                  _buildMyFundedTab(),
-                ],
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        _exitToCrowdfundHome();
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFF0A0A0A),
+        body: SafeArea(
+          child: Column(
+            children: [
+              _buildHeader(),
+              _buildSearchBar(),
+              _buildTabBar(),
+              _buildFilterChips(),
+              _buildStaleIndicator(),
+              Expanded(
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildBrowseAllTab(),
+                    _buildMyFundedTab(),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -192,7 +208,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => Navigator.pop(context),
+            onTap: _exitToCrowdfundHome,
             child: Container(
               width: 38.w,
               height: 38.w,
@@ -204,9 +220,43 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
             ),
           ),
           SizedBox(width: 12.w),
-          Text(
-            'Campaigns',
-            style: GoogleFonts.inter(color: Colors.white, fontSize: 20.sp, fontWeight: FontWeight.w700),
+          Expanded(
+            child: Text(
+              'Campaigns',
+              style: GoogleFonts.inter(color: Colors.white, fontSize: 20.sp, fontWeight: FontWeight.w700),
+            ),
+          ),
+          GestureDetector(
+            onTap: () => Get.toNamed(AppRoutes.createCrowdfund),
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFF4E03D0),
+                borderRadius: BorderRadius.circular(20.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF4E03D0).withValues(alpha: 0.35),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.add, color: Colors.white, size: 14.sp),
+                  SizedBox(width: 4.w),
+                  Text(
+                    'Create',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
@@ -272,7 +322,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
       child: TabBar(
         controller: _tabController,
         indicator: BoxDecoration(
-          color: const Color(0xFF6366F1),
+          color: const Color(0xFF4E03D0),
           borderRadius: BorderRadius.circular(10.r),
         ),
         indicatorSize: TabBarIndicatorSize.tab,
@@ -313,7 +363,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? const Color(0xFF6366F1).withValues(alpha: 0.2)
+                    ? const Color(0xFF4E03D0).withValues(alpha: 0.2)
                     : const Color(0xFF1F1F1F),
                 borderRadius: BorderRadius.circular(20.r),
               ),
@@ -321,7 +371,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
                 filter,
                 style: GoogleFonts.inter(
                   color: isSelected
-                      ? const Color(0xFF6366F1)
+                      ? const Color(0xFF4E03D0)
                       : const Color(0xFF9CA3AF),
                   fontSize: 13.sp,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
@@ -340,7 +390,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
         if (state is CrowdfundLoaded && state.isStale) {
           return const LinearProgressIndicator(
             minHeight: 2,
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6366F1)),
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4E03D0)),
             backgroundColor: Color(0xFF1F1F1F),
           );
         }
@@ -372,7 +422,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
               (state.isLoadingMore || state.hasMore ? 1 : 0);
           return RefreshIndicator(
             onRefresh: _onRefresh,
-            color: const Color(0xFF6366F1),
+            color: const Color(0xFF4E03D0),
             backgroundColor: const Color(0xFF1F1F1F),
             child: ListView.builder(
               controller: _browseScrollController,
@@ -386,7 +436,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
                     child: Center(
                       child: state.isLoadingMore
                           ? const CircularProgressIndicator(
-                              color: Color(0xFF6366F1),
+                              color: Color(0xFF4E03D0),
                               strokeWidth: 2,
                             )
                           : const SizedBox.shrink(),
@@ -456,7 +506,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
       onRefresh: () async {
         context.read<CrowdfundCubit>().loadUserDonations();
       },
-      color: const Color(0xFF6366F1),
+      color: const Color(0xFF4E03D0),
       backgroundColor: const Color(0xFF1F1F1F),
       child: ListView.builder(
         controller: _fundedScrollController,
@@ -470,7 +520,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
               child: Center(
                 child: state.isLoadingMore
                     ? const CircularProgressIndicator(
-                        color: Color(0xFF6366F1),
+                        color: Color(0xFF4E03D0),
                         strokeWidth: 2,
                       )
                     : const SizedBox.shrink(),
@@ -491,6 +541,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
 
           return _buildFundedCampaignCard(
             crowdfundId: crowdfundId,
+            campaignTitle: _resolveCampaignTitle(crowdfundId),
             totalDonated: totalDonated,
             currency: currency,
             donationCount: donationCount,
@@ -501,8 +552,28 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
     );
   }
 
+  String _resolveCampaignTitle(String crowdfundId) {
+    final state = context.read<CrowdfundCubit>().state;
+    Iterable<Crowdfund>? pool;
+    if (state is CrowdfundLoaded) {
+      pool = state.crowdfunds;
+    } else if (state is MyCrowdfundsLoaded) {
+      pool = state.crowdfunds;
+    }
+    if (pool != null) {
+      for (final c in pool) {
+        if (c.id == crowdfundId) return c.title;
+      }
+    }
+    final tail = crowdfundId.length > 6
+        ? crowdfundId.substring(crowdfundId.length - 6).toUpperCase()
+        : crowdfundId.toUpperCase();
+    return 'Campaign · $tail';
+  }
+
   Widget _buildFundedCampaignCard({
     required String crowdfundId,
+    required String campaignTitle,
     required double totalDonated,
     required String currency,
     required int donationCount,
@@ -539,7 +610,9 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
               children: [
                 Expanded(
                   child: Text(
-                    'Campaign',
+                    campaignTitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.inter(
                       color: Colors.white,
                       fontSize: 16.sp,
@@ -580,7 +653,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
                 Text(
                   '$currency ${totalDonated.toStringAsFixed(2)}',
                   style: GoogleFonts.inter(
-                    color: const Color(0xFF6366F1),
+                    color: const Color(0xFF4E03D0),
                     fontSize: 16.sp,
                     fontWeight: FontWeight.w700,
                   ),
@@ -627,7 +700,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
               child: Text(
                 'Tap to view details',
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF6366F1),
+                  color: const Color(0xFF4E03D0),
                   fontSize: 11.sp,
                   fontWeight: FontWeight.w500,
                 ),
@@ -789,7 +862,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
   }) {
     return RefreshIndicator(
       onRefresh: _onRefresh,
-      color: const Color(0xFF6366F1),
+      color: const Color(0xFF4E03D0),
       backgroundColor: const Color(0xFF1F1F1F),
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -846,7 +919,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
   Widget _buildErrorState(String message) {
     return RefreshIndicator(
       onRefresh: _onRefresh,
-      color: const Color(0xFF6366F1),
+      color: const Color(0xFF4E03D0),
       backgroundColor: const Color(0xFF1F1F1F),
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -886,7 +959,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
                   ElevatedButton(
                     onPressed: _onRefresh,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF6366F1),
+                      backgroundColor: const Color(0xFF4E03D0),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.r),
                       ),

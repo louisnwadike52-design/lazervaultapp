@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -51,12 +52,14 @@ class LeaderboardCrowdfundCard extends StatelessWidget {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12.r),
                   child: crowdfund.imageUrl != null
-                      ? Image.network(
-                          crowdfund.imageUrl!,
+                      ? CachedNetworkImage(
+                          imageUrl: crowdfund.imageUrl!,
                           width: 60.w,
                           height: 60.w,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _buildImagePlaceholder(),
+                          fadeInDuration: const Duration(milliseconds: 120),
+                          placeholder: (_, __) => _buildImagePlaceholder(),
+                          errorWidget: (_, __, ___) => _buildImagePlaceholder(),
                         )
                       : _buildImagePlaceholder(),
                 ),
@@ -116,7 +119,7 @@ class LeaderboardCrowdfundCard extends StatelessWidget {
                 Text(
                   '${crowdfund.currency} ${_amountFormat.format(crowdfund.currentAmount)}',
                   style: GoogleFonts.inter(
-                    color: const Color(0xFF6366F1),
+                    color: const Color(0xFF4E03D0),
                     fontSize: 12.sp,
                     fontWeight: FontWeight.w600,
                   ),
@@ -195,12 +198,12 @@ class LeaderboardCrowdfundCard extends StatelessWidget {
       width: 60.w,
       height: 60.w,
       decoration: BoxDecoration(
-        color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+        color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Icon(
         Icons.volunteer_activism,
-        color: const Color(0xFF6366F1),
+        color: const Color(0xFF4E03D0),
         size: 24.sp,
       ),
     );

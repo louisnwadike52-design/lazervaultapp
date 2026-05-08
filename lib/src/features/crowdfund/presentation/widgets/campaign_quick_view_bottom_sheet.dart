@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -51,12 +52,17 @@ class CampaignQuickViewBottomSheet extends StatelessWidget {
           if (crowdfund.imageUrl != null)
             ClipRRect(
               borderRadius: BorderRadius.circular(12.r),
-              child: Image.network(
-                crowdfund.imageUrl!,
+              child: CachedNetworkImage(
+                imageUrl: crowdfund.imageUrl!,
                 height: 150.h,
                 width: double.infinity,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                fadeInDuration: const Duration(milliseconds: 150),
+                placeholder: (_, __) => Container(
+                  height: 150.h,
+                  color: const Color(0xFF1F1F1F),
+                ),
+                errorWidget: (_, __, ___) => const SizedBox.shrink(),
               ),
             ),
           Padding(
@@ -83,13 +89,13 @@ class CampaignQuickViewBottomSheet extends StatelessWidget {
                         vertical: 4.h,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF6366F1).withValues(alpha: 0.15),
+                        color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(6.r),
                       ),
                       child: Text(
                         crowdfund.category,
                         style: GoogleFonts.inter(
-                          color: const Color(0xFF6366F1),
+                          color: const Color(0xFF4E03D0),
                           fontSize: 11.sp,
                           fontWeight: FontWeight.w600,
                         ),
@@ -104,7 +110,7 @@ class CampaignQuickViewBottomSheet extends StatelessWidget {
                     CircleAvatar(
                       radius: 16.r,
                       backgroundColor:
-                          const Color(0xFF6366F1).withValues(alpha: 0.2),
+                          const Color(0xFF4E03D0).withValues(alpha: 0.2),
                       backgroundImage: crowdfund.creator.profilePicture != null
                           ? NetworkImage(crowdfund.creator.profilePicture!)
                           : null,
@@ -112,7 +118,7 @@ class CampaignQuickViewBottomSheet extends StatelessWidget {
                           ? Text(
                               _getInitials(crowdfund.creator),
                               style: TextStyle(
-                                color: const Color(0xFF6366F1),
+                                color: const Color(0xFF4E03D0),
                                 fontSize: 11.sp,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -146,7 +152,7 @@ class CampaignQuickViewBottomSheet extends StatelessWidget {
                     Text(
                       '${crowdfund.currency} ${_amountFormat.format(crowdfund.currentAmount)}',
                       style: GoogleFonts.inter(
-                        color: const Color(0xFF6366F1),
+                        color: const Color(0xFF4E03D0),
                         fontSize: 18.sp,
                         fontWeight: FontWeight.w700,
                       ),
@@ -222,7 +228,7 @@ class CampaignQuickViewBottomSheet extends StatelessWidget {
                           }
                         : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF6366F1),
+                      backgroundColor: const Color(0xFF4E03D0),
                       disabledBackgroundColor: const Color(0xFF2D2D2D),
                       disabledForegroundColor: const Color(0xFF9CA3AF),
                       shape: RoundedRectangleBorder(
@@ -257,7 +263,7 @@ class CampaignQuickViewBottomSheet extends StatelessWidget {
                     child: Text(
                       'View Full Details',
                       style: GoogleFonts.inter(
-                        color: const Color(0xFF6366F1),
+                        color: const Color(0xFF4E03D0),
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w500,
                       ),

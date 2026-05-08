@@ -10,322 +10,320 @@ import 'dart:async' as $async;
 import 'dart:core' as $core;
 
 import 'package:grpc/service_api.dart' as $grpc;
-import 'crowdfund.pb.dart' as $11;
+import 'crowdfund.pb.dart' as $0;
 export 'crowdfund.pb.dart';
 
 class CrowdfundServiceClient extends $grpc.Client {
-  static final _$createCrowdfund = $grpc.ClientMethod<
-          $11.CreateCrowdfundRequest, $11.CreateCrowdfundResponse>(
-      '/pb.CrowdfundService/CreateCrowdfund',
-      ($11.CreateCrowdfundRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $11.CreateCrowdfundResponse.fromBuffer(value));
+  static final _$createCrowdfund =
+      $grpc.ClientMethod<$0.CreateCrowdfundRequest, $0.CreateCrowdfundResponse>(
+          '/pb.CrowdfundService/CreateCrowdfund',
+          ($0.CreateCrowdfundRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.CreateCrowdfundResponse.fromBuffer(value));
   static final _$getCrowdfund =
-      $grpc.ClientMethod<$11.GetCrowdfundRequest, $11.GetCrowdfundResponse>(
+      $grpc.ClientMethod<$0.GetCrowdfundRequest, $0.GetCrowdfundResponse>(
           '/pb.CrowdfundService/GetCrowdfund',
-          ($11.GetCrowdfundRequest value) => value.writeToBuffer(),
+          ($0.GetCrowdfundRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $11.GetCrowdfundResponse.fromBuffer(value));
+              $0.GetCrowdfundResponse.fromBuffer(value));
   static final _$listCrowdfunds =
-      $grpc.ClientMethod<$11.ListCrowdfundsRequest, $11.ListCrowdfundsResponse>(
+      $grpc.ClientMethod<$0.ListCrowdfundsRequest, $0.ListCrowdfundsResponse>(
           '/pb.CrowdfundService/ListCrowdfunds',
-          ($11.ListCrowdfundsRequest value) => value.writeToBuffer(),
+          ($0.ListCrowdfundsRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $11.ListCrowdfundsResponse.fromBuffer(value));
+              $0.ListCrowdfundsResponse.fromBuffer(value));
   static final _$searchCrowdfunds = $grpc.ClientMethod<
-          $11.SearchCrowdfundsRequest, $11.SearchCrowdfundsResponse>(
+          $0.SearchCrowdfundsRequest, $0.SearchCrowdfundsResponse>(
       '/pb.CrowdfundService/SearchCrowdfunds',
-      ($11.SearchCrowdfundsRequest value) => value.writeToBuffer(),
+      ($0.SearchCrowdfundsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $11.SearchCrowdfundsResponse.fromBuffer(value));
-  static final _$updateCrowdfund = $grpc.ClientMethod<
-          $11.UpdateCrowdfundRequest, $11.UpdateCrowdfundResponse>(
-      '/pb.CrowdfundService/UpdateCrowdfund',
-      ($11.UpdateCrowdfundRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $11.UpdateCrowdfundResponse.fromBuffer(value));
-  static final _$deleteCrowdfund = $grpc.ClientMethod<
-          $11.DeleteCrowdfundRequest, $11.DeleteCrowdfundResponse>(
-      '/pb.CrowdfundService/DeleteCrowdfund',
-      ($11.DeleteCrowdfundRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $11.DeleteCrowdfundResponse.fromBuffer(value));
-  static final _$makeDonation =
-      $grpc.ClientMethod<$11.MakeDonationRequest, $11.MakeDonationResponse>(
-          '/pb.CrowdfundService/MakeDonation',
-          ($11.MakeDonationRequest value) => value.writeToBuffer(),
+          $0.SearchCrowdfundsResponse.fromBuffer(value));
+  static final _$updateCrowdfund =
+      $grpc.ClientMethod<$0.UpdateCrowdfundRequest, $0.UpdateCrowdfundResponse>(
+          '/pb.CrowdfundService/UpdateCrowdfund',
+          ($0.UpdateCrowdfundRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $11.MakeDonationResponse.fromBuffer(value));
+              $0.UpdateCrowdfundResponse.fromBuffer(value));
+  static final _$deleteCrowdfund =
+      $grpc.ClientMethod<$0.DeleteCrowdfundRequest, $0.DeleteCrowdfundResponse>(
+          '/pb.CrowdfundService/DeleteCrowdfund',
+          ($0.DeleteCrowdfundRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.DeleteCrowdfundResponse.fromBuffer(value));
+  static final _$makeDonation =
+      $grpc.ClientMethod<$0.MakeDonationRequest, $0.MakeDonationResponse>(
+          '/pb.CrowdfundService/MakeDonation',
+          ($0.MakeDonationRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.MakeDonationResponse.fromBuffer(value));
   static final _$getCrowdfundDonations = $grpc.ClientMethod<
-          $11.GetCrowdfundDonationsRequest, $11.GetCrowdfundDonationsResponse>(
+          $0.GetCrowdfundDonationsRequest, $0.GetCrowdfundDonationsResponse>(
       '/pb.CrowdfundService/GetCrowdfundDonations',
-      ($11.GetCrowdfundDonationsRequest value) => value.writeToBuffer(),
+      ($0.GetCrowdfundDonationsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $11.GetCrowdfundDonationsResponse.fromBuffer(value));
+          $0.GetCrowdfundDonationsResponse.fromBuffer(value));
   static final _$getUserDonations = $grpc.ClientMethod<
-          $11.GetUserDonationsRequest, $11.GetUserDonationsResponse>(
+          $0.GetUserDonationsRequest, $0.GetUserDonationsResponse>(
       '/pb.CrowdfundService/GetUserDonations',
-      ($11.GetUserDonationsRequest value) => value.writeToBuffer(),
+      ($0.GetUserDonationsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $11.GetUserDonationsResponse.fromBuffer(value));
+          $0.GetUserDonationsResponse.fromBuffer(value));
   static final _$generateDonationReceipt = $grpc.ClientMethod<
-          $11.GenerateDonationReceiptRequest,
-          $11.GenerateDonationReceiptResponse>(
+          $0.GenerateDonationReceiptRequest,
+          $0.GenerateDonationReceiptResponse>(
       '/pb.CrowdfundService/GenerateDonationReceipt',
-      ($11.GenerateDonationReceiptRequest value) => value.writeToBuffer(),
+      ($0.GenerateDonationReceiptRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $11.GenerateDonationReceiptResponse.fromBuffer(value));
+          $0.GenerateDonationReceiptResponse.fromBuffer(value));
   static final _$getUserCrowdfundReceipts = $grpc.ClientMethod<
-          $11.GetUserCrowdfundReceiptsRequest,
-          $11.GetUserCrowdfundReceiptsResponse>(
+          $0.GetUserCrowdfundReceiptsRequest,
+          $0.GetUserCrowdfundReceiptsResponse>(
       '/pb.CrowdfundService/GetUserCrowdfundReceipts',
-      ($11.GetUserCrowdfundReceiptsRequest value) => value.writeToBuffer(),
+      ($0.GetUserCrowdfundReceiptsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $11.GetUserCrowdfundReceiptsResponse.fromBuffer(value));
+          $0.GetUserCrowdfundReceiptsResponse.fromBuffer(value));
   static final _$getCrowdfundStatistics = $grpc.ClientMethod<
-          $11.GetCrowdfundStatisticsRequest,
-          $11.GetCrowdfundStatisticsResponse>(
+          $0.GetCrowdfundStatisticsRequest, $0.GetCrowdfundStatisticsResponse>(
       '/pb.CrowdfundService/GetCrowdfundStatistics',
-      ($11.GetCrowdfundStatisticsRequest value) => value.writeToBuffer(),
+      ($0.GetCrowdfundStatisticsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $11.GetCrowdfundStatisticsResponse.fromBuffer(value));
+          $0.GetCrowdfundStatisticsResponse.fromBuffer(value));
   static final _$withdrawFromCrowdfund = $grpc.ClientMethod<
-          $11.WithdrawFromCrowdfundRequest, $11.WithdrawFromCrowdfundResponse>(
+          $0.WithdrawFromCrowdfundRequest, $0.WithdrawFromCrowdfundResponse>(
       '/pb.CrowdfundService/WithdrawFromCrowdfund',
-      ($11.WithdrawFromCrowdfundRequest value) => value.writeToBuffer(),
+      ($0.WithdrawFromCrowdfundRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $11.WithdrawFromCrowdfundResponse.fromBuffer(value));
-  static final _$getMyCrowdfunds = $grpc.ClientMethod<
-          $11.GetMyCrowdfundsRequest, $11.GetMyCrowdfundsResponse>(
-      '/pb.CrowdfundService/GetMyCrowdfunds',
-      ($11.GetMyCrowdfundsRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $11.GetMyCrowdfundsResponse.fromBuffer(value));
+          $0.WithdrawFromCrowdfundResponse.fromBuffer(value));
+  static final _$getMyCrowdfunds =
+      $grpc.ClientMethod<$0.GetMyCrowdfundsRequest, $0.GetMyCrowdfundsResponse>(
+          '/pb.CrowdfundService/GetMyCrowdfunds',
+          ($0.GetMyCrowdfundsRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.GetMyCrowdfundsResponse.fromBuffer(value));
   static final _$getCampaignWalletBalance = $grpc.ClientMethod<
-          $11.GetCampaignWalletBalanceRequest,
-          $11.GetCampaignWalletBalanceResponse>(
+          $0.GetCampaignWalletBalanceRequest,
+          $0.GetCampaignWalletBalanceResponse>(
       '/pb.CrowdfundService/GetCampaignWalletBalance',
-      ($11.GetCampaignWalletBalanceRequest value) => value.writeToBuffer(),
+      ($0.GetCampaignWalletBalanceRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $11.GetCampaignWalletBalanceResponse.fromBuffer(value));
+          $0.GetCampaignWalletBalanceResponse.fromBuffer(value));
   static final _$getCrowdfundLeaderboard = $grpc.ClientMethod<
-          $11.GetCrowdfundLeaderboardRequest,
-          $11.GetCrowdfundLeaderboardResponse>(
+          $0.GetCrowdfundLeaderboardRequest,
+          $0.GetCrowdfundLeaderboardResponse>(
       '/pb.CrowdfundService/GetCrowdfundLeaderboard',
-      ($11.GetCrowdfundLeaderboardRequest value) => value.writeToBuffer(),
+      ($0.GetCrowdfundLeaderboardRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $11.GetCrowdfundLeaderboardResponse.fromBuffer(value));
+          $0.GetCrowdfundLeaderboardResponse.fromBuffer(value));
   static final _$connectNotificationChannel = $grpc.ClientMethod<
-          $11.ConnectNotificationChannelRequest,
-          $11.ConnectNotificationChannelResponse>(
+          $0.ConnectNotificationChannelRequest,
+          $0.ConnectNotificationChannelResponse>(
       '/pb.CrowdfundService/ConnectNotificationChannel',
-      ($11.ConnectNotificationChannelRequest value) => value.writeToBuffer(),
+      ($0.ConnectNotificationChannelRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $11.ConnectNotificationChannelResponse.fromBuffer(value));
+          $0.ConnectNotificationChannelResponse.fromBuffer(value));
   static final _$disconnectNotificationChannel = $grpc.ClientMethod<
-          $11.DisconnectNotificationChannelRequest,
-          $11.DisconnectNotificationChannelResponse>(
+          $0.DisconnectNotificationChannelRequest,
+          $0.DisconnectNotificationChannelResponse>(
       '/pb.CrowdfundService/DisconnectNotificationChannel',
-      ($11.DisconnectNotificationChannelRequest value) => value.writeToBuffer(),
+      ($0.DisconnectNotificationChannelRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $11.DisconnectNotificationChannelResponse.fromBuffer(value));
+          $0.DisconnectNotificationChannelResponse.fromBuffer(value));
   static final _$getNotificationChannels = $grpc.ClientMethod<
-          $11.GetNotificationChannelsRequest,
-          $11.GetNotificationChannelsResponse>(
+          $0.GetNotificationChannelsRequest,
+          $0.GetNotificationChannelsResponse>(
       '/pb.CrowdfundService/GetNotificationChannels',
-      ($11.GetNotificationChannelsRequest value) => value.writeToBuffer(),
+      ($0.GetNotificationChannelsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $11.GetNotificationChannelsResponse.fromBuffer(value));
+          $0.GetNotificationChannelsResponse.fromBuffer(value));
   static final _$updateNotificationChannel = $grpc.ClientMethod<
-          $11.UpdateNotificationChannelRequest,
-          $11.UpdateNotificationChannelResponse>(
+          $0.UpdateNotificationChannelRequest,
+          $0.UpdateNotificationChannelResponse>(
       '/pb.CrowdfundService/UpdateNotificationChannel',
-      ($11.UpdateNotificationChannelRequest value) => value.writeToBuffer(),
+      ($0.UpdateNotificationChannelRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $11.UpdateNotificationChannelResponse.fromBuffer(value));
+          $0.UpdateNotificationChannelResponse.fromBuffer(value));
   static final _$testNotificationChannel = $grpc.ClientMethod<
-          $11.TestNotificationChannelRequest,
-          $11.TestNotificationChannelResponse>(
+          $0.TestNotificationChannelRequest,
+          $0.TestNotificationChannelResponse>(
       '/pb.CrowdfundService/TestNotificationChannel',
-      ($11.TestNotificationChannelRequest value) => value.writeToBuffer(),
+      ($0.TestNotificationChannelRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $11.TestNotificationChannelResponse.fromBuffer(value));
+          $0.TestNotificationChannelResponse.fromBuffer(value));
   static final _$getTelegramBotInfo = $grpc.ClientMethod<
-          $11.GetTelegramBotInfoRequest, $11.GetTelegramBotInfoResponse>(
+          $0.GetTelegramBotInfoRequest, $0.GetTelegramBotInfoResponse>(
       '/pb.CrowdfundService/GetTelegramBotInfo',
-      ($11.GetTelegramBotInfoRequest value) => value.writeToBuffer(),
+      ($0.GetTelegramBotInfoRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $11.GetTelegramBotInfoResponse.fromBuffer(value));
+          $0.GetTelegramBotInfoResponse.fromBuffer(value));
   static final _$verifyTelegramChannel = $grpc.ClientMethod<
-          $11.VerifyTelegramChannelRequest, $11.VerifyTelegramChannelResponse>(
+          $0.VerifyTelegramChannelRequest, $0.VerifyTelegramChannelResponse>(
       '/pb.CrowdfundService/VerifyTelegramChannel',
-      ($11.VerifyTelegramChannelRequest value) => value.writeToBuffer(),
+      ($0.VerifyTelegramChannelRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $11.VerifyTelegramChannelResponse.fromBuffer(value));
+          $0.VerifyTelegramChannelResponse.fromBuffer(value));
   static final _$getNotificationHistory = $grpc.ClientMethod<
-          $11.GetNotificationHistoryRequest,
-          $11.GetNotificationHistoryResponse>(
+          $0.GetNotificationHistoryRequest, $0.GetNotificationHistoryResponse>(
       '/pb.CrowdfundService/GetNotificationHistory',
-      ($11.GetNotificationHistoryRequest value) => value.writeToBuffer(),
+      ($0.GetNotificationHistoryRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $11.GetNotificationHistoryResponse.fromBuffer(value));
+          $0.GetNotificationHistoryResponse.fromBuffer(value));
 
   CrowdfundServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
       $core.Iterable<$grpc.ClientInterceptor>? interceptors})
       : super(channel, options: options, interceptors: interceptors);
 
-  $grpc.ResponseFuture<$11.CreateCrowdfundResponse> createCrowdfund(
-      $11.CreateCrowdfundRequest request,
+  $grpc.ResponseFuture<$0.CreateCrowdfundResponse> createCrowdfund(
+      $0.CreateCrowdfundRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$createCrowdfund, request, options: options);
   }
 
-  $grpc.ResponseFuture<$11.GetCrowdfundResponse> getCrowdfund(
-      $11.GetCrowdfundRequest request,
+  $grpc.ResponseFuture<$0.GetCrowdfundResponse> getCrowdfund(
+      $0.GetCrowdfundRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getCrowdfund, request, options: options);
   }
 
-  $grpc.ResponseFuture<$11.ListCrowdfundsResponse> listCrowdfunds(
-      $11.ListCrowdfundsRequest request,
+  $grpc.ResponseFuture<$0.ListCrowdfundsResponse> listCrowdfunds(
+      $0.ListCrowdfundsRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$listCrowdfunds, request, options: options);
   }
 
-  $grpc.ResponseFuture<$11.SearchCrowdfundsResponse> searchCrowdfunds(
-      $11.SearchCrowdfundsRequest request,
+  $grpc.ResponseFuture<$0.SearchCrowdfundsResponse> searchCrowdfunds(
+      $0.SearchCrowdfundsRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$searchCrowdfunds, request, options: options);
   }
 
-  $grpc.ResponseFuture<$11.UpdateCrowdfundResponse> updateCrowdfund(
-      $11.UpdateCrowdfundRequest request,
+  $grpc.ResponseFuture<$0.UpdateCrowdfundResponse> updateCrowdfund(
+      $0.UpdateCrowdfundRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$updateCrowdfund, request, options: options);
   }
 
-  $grpc.ResponseFuture<$11.DeleteCrowdfundResponse> deleteCrowdfund(
-      $11.DeleteCrowdfundRequest request,
+  $grpc.ResponseFuture<$0.DeleteCrowdfundResponse> deleteCrowdfund(
+      $0.DeleteCrowdfundRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$deleteCrowdfund, request, options: options);
   }
 
-  $grpc.ResponseFuture<$11.MakeDonationResponse> makeDonation(
-      $11.MakeDonationRequest request,
+  $grpc.ResponseFuture<$0.MakeDonationResponse> makeDonation(
+      $0.MakeDonationRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$makeDonation, request, options: options);
   }
 
-  $grpc.ResponseFuture<$11.GetCrowdfundDonationsResponse> getCrowdfundDonations(
-      $11.GetCrowdfundDonationsRequest request,
+  $grpc.ResponseFuture<$0.GetCrowdfundDonationsResponse> getCrowdfundDonations(
+      $0.GetCrowdfundDonationsRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getCrowdfundDonations, request, options: options);
   }
 
-  $grpc.ResponseFuture<$11.GetUserDonationsResponse> getUserDonations(
-      $11.GetUserDonationsRequest request,
+  $grpc.ResponseFuture<$0.GetUserDonationsResponse> getUserDonations(
+      $0.GetUserDonationsRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getUserDonations, request, options: options);
   }
 
-  $grpc.ResponseFuture<$11.GenerateDonationReceiptResponse>
-      generateDonationReceipt($11.GenerateDonationReceiptRequest request,
+  $grpc.ResponseFuture<$0.GenerateDonationReceiptResponse>
+      generateDonationReceipt($0.GenerateDonationReceiptRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$generateDonationReceipt, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$11.GetUserCrowdfundReceiptsResponse>
-      getUserCrowdfundReceipts($11.GetUserCrowdfundReceiptsRequest request,
+  $grpc.ResponseFuture<$0.GetUserCrowdfundReceiptsResponse>
+      getUserCrowdfundReceipts($0.GetUserCrowdfundReceiptsRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getUserCrowdfundReceipts, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$11.GetCrowdfundStatisticsResponse>
-      getCrowdfundStatistics($11.GetCrowdfundStatisticsRequest request,
+  $grpc.ResponseFuture<$0.GetCrowdfundStatisticsResponse>
+      getCrowdfundStatistics($0.GetCrowdfundStatisticsRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getCrowdfundStatistics, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$11.WithdrawFromCrowdfundResponse> withdrawFromCrowdfund(
-      $11.WithdrawFromCrowdfundRequest request,
+  $grpc.ResponseFuture<$0.WithdrawFromCrowdfundResponse> withdrawFromCrowdfund(
+      $0.WithdrawFromCrowdfundRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$withdrawFromCrowdfund, request, options: options);
   }
 
-  $grpc.ResponseFuture<$11.GetMyCrowdfundsResponse> getMyCrowdfunds(
-      $11.GetMyCrowdfundsRequest request,
+  $grpc.ResponseFuture<$0.GetMyCrowdfundsResponse> getMyCrowdfunds(
+      $0.GetMyCrowdfundsRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getMyCrowdfunds, request, options: options);
   }
 
-  $grpc.ResponseFuture<$11.GetCampaignWalletBalanceResponse>
-      getCampaignWalletBalance($11.GetCampaignWalletBalanceRequest request,
+  $grpc.ResponseFuture<$0.GetCampaignWalletBalanceResponse>
+      getCampaignWalletBalance($0.GetCampaignWalletBalanceRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getCampaignWalletBalance, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$11.GetCrowdfundLeaderboardResponse>
-      getCrowdfundLeaderboard($11.GetCrowdfundLeaderboardRequest request,
+  $grpc.ResponseFuture<$0.GetCrowdfundLeaderboardResponse>
+      getCrowdfundLeaderboard($0.GetCrowdfundLeaderboardRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getCrowdfundLeaderboard, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$11.ConnectNotificationChannelResponse>
-      connectNotificationChannel($11.ConnectNotificationChannelRequest request,
+  $grpc.ResponseFuture<$0.ConnectNotificationChannelResponse>
+      connectNotificationChannel($0.ConnectNotificationChannelRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$connectNotificationChannel, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$11.DisconnectNotificationChannelResponse>
+  $grpc.ResponseFuture<$0.DisconnectNotificationChannelResponse>
       disconnectNotificationChannel(
-          $11.DisconnectNotificationChannelRequest request,
+          $0.DisconnectNotificationChannelRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$disconnectNotificationChannel, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$11.GetNotificationChannelsResponse>
-      getNotificationChannels($11.GetNotificationChannelsRequest request,
+  $grpc.ResponseFuture<$0.GetNotificationChannelsResponse>
+      getNotificationChannels($0.GetNotificationChannelsRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getNotificationChannels, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$11.UpdateNotificationChannelResponse>
-      updateNotificationChannel($11.UpdateNotificationChannelRequest request,
+  $grpc.ResponseFuture<$0.UpdateNotificationChannelResponse>
+      updateNotificationChannel($0.UpdateNotificationChannelRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$updateNotificationChannel, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$11.TestNotificationChannelResponse>
-      testNotificationChannel($11.TestNotificationChannelRequest request,
+  $grpc.ResponseFuture<$0.TestNotificationChannelResponse>
+      testNotificationChannel($0.TestNotificationChannelRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$testNotificationChannel, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$11.GetTelegramBotInfoResponse> getTelegramBotInfo(
-      $11.GetTelegramBotInfoRequest request,
+  $grpc.ResponseFuture<$0.GetTelegramBotInfoResponse> getTelegramBotInfo(
+      $0.GetTelegramBotInfoRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getTelegramBotInfo, request, options: options);
   }
 
-  $grpc.ResponseFuture<$11.VerifyTelegramChannelResponse> verifyTelegramChannel(
-      $11.VerifyTelegramChannelRequest request,
+  $grpc.ResponseFuture<$0.VerifyTelegramChannelResponse> verifyTelegramChannel(
+      $0.VerifyTelegramChannelRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$verifyTelegramChannel, request, options: options);
   }
 
-  $grpc.ResponseFuture<$11.GetNotificationHistoryResponse>
-      getNotificationHistory($11.GetNotificationHistoryRequest request,
+  $grpc.ResponseFuture<$0.GetNotificationHistoryResponse>
+      getNotificationHistory($0.GetNotificationHistoryRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getNotificationHistory, request,
         options: options);
@@ -336,422 +334,420 @@ abstract class CrowdfundServiceBase extends $grpc.Service {
   $core.String get $name => 'pb.CrowdfundService';
 
   CrowdfundServiceBase() {
-    $addMethod($grpc.ServiceMethod<$11.CreateCrowdfundRequest,
-            $11.CreateCrowdfundResponse>(
+    $addMethod($grpc.ServiceMethod<$0.CreateCrowdfundRequest,
+            $0.CreateCrowdfundResponse>(
         'CreateCrowdfund',
         createCrowdfund_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $11.CreateCrowdfundRequest.fromBuffer(value),
-        ($11.CreateCrowdfundResponse value) => value.writeToBuffer()));
+            $0.CreateCrowdfundRequest.fromBuffer(value),
+        ($0.CreateCrowdfundResponse value) => value.writeToBuffer()));
     $addMethod(
-        $grpc.ServiceMethod<$11.GetCrowdfundRequest, $11.GetCrowdfundResponse>(
+        $grpc.ServiceMethod<$0.GetCrowdfundRequest, $0.GetCrowdfundResponse>(
             'GetCrowdfund',
             getCrowdfund_Pre,
             false,
             false,
             ($core.List<$core.int> value) =>
-                $11.GetCrowdfundRequest.fromBuffer(value),
-            ($11.GetCrowdfundResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$11.ListCrowdfundsRequest,
-            $11.ListCrowdfundsResponse>(
+                $0.GetCrowdfundRequest.fromBuffer(value),
+            ($0.GetCrowdfundResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ListCrowdfundsRequest,
+            $0.ListCrowdfundsResponse>(
         'ListCrowdfunds',
         listCrowdfunds_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $11.ListCrowdfundsRequest.fromBuffer(value),
-        ($11.ListCrowdfundsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$11.SearchCrowdfundsRequest,
-            $11.SearchCrowdfundsResponse>(
+            $0.ListCrowdfundsRequest.fromBuffer(value),
+        ($0.ListCrowdfundsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.SearchCrowdfundsRequest,
+            $0.SearchCrowdfundsResponse>(
         'SearchCrowdfunds',
         searchCrowdfunds_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $11.SearchCrowdfundsRequest.fromBuffer(value),
-        ($11.SearchCrowdfundsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$11.UpdateCrowdfundRequest,
-            $11.UpdateCrowdfundResponse>(
+            $0.SearchCrowdfundsRequest.fromBuffer(value),
+        ($0.SearchCrowdfundsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.UpdateCrowdfundRequest,
+            $0.UpdateCrowdfundResponse>(
         'UpdateCrowdfund',
         updateCrowdfund_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $11.UpdateCrowdfundRequest.fromBuffer(value),
-        ($11.UpdateCrowdfundResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$11.DeleteCrowdfundRequest,
-            $11.DeleteCrowdfundResponse>(
+            $0.UpdateCrowdfundRequest.fromBuffer(value),
+        ($0.UpdateCrowdfundResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.DeleteCrowdfundRequest,
+            $0.DeleteCrowdfundResponse>(
         'DeleteCrowdfund',
         deleteCrowdfund_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $11.DeleteCrowdfundRequest.fromBuffer(value),
-        ($11.DeleteCrowdfundResponse value) => value.writeToBuffer()));
+            $0.DeleteCrowdfundRequest.fromBuffer(value),
+        ($0.DeleteCrowdfundResponse value) => value.writeToBuffer()));
     $addMethod(
-        $grpc.ServiceMethod<$11.MakeDonationRequest, $11.MakeDonationResponse>(
+        $grpc.ServiceMethod<$0.MakeDonationRequest, $0.MakeDonationResponse>(
             'MakeDonation',
             makeDonation_Pre,
             false,
             false,
             ($core.List<$core.int> value) =>
-                $11.MakeDonationRequest.fromBuffer(value),
-            ($11.MakeDonationResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$11.GetCrowdfundDonationsRequest,
-            $11.GetCrowdfundDonationsResponse>(
+                $0.MakeDonationRequest.fromBuffer(value),
+            ($0.MakeDonationResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetCrowdfundDonationsRequest,
+            $0.GetCrowdfundDonationsResponse>(
         'GetCrowdfundDonations',
         getCrowdfundDonations_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $11.GetCrowdfundDonationsRequest.fromBuffer(value),
-        ($11.GetCrowdfundDonationsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$11.GetUserDonationsRequest,
-            $11.GetUserDonationsResponse>(
+            $0.GetCrowdfundDonationsRequest.fromBuffer(value),
+        ($0.GetCrowdfundDonationsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetUserDonationsRequest,
+            $0.GetUserDonationsResponse>(
         'GetUserDonations',
         getUserDonations_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $11.GetUserDonationsRequest.fromBuffer(value),
-        ($11.GetUserDonationsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$11.GenerateDonationReceiptRequest,
-            $11.GenerateDonationReceiptResponse>(
+            $0.GetUserDonationsRequest.fromBuffer(value),
+        ($0.GetUserDonationsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GenerateDonationReceiptRequest,
+            $0.GenerateDonationReceiptResponse>(
         'GenerateDonationReceipt',
         generateDonationReceipt_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $11.GenerateDonationReceiptRequest.fromBuffer(value),
-        ($11.GenerateDonationReceiptResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$11.GetUserCrowdfundReceiptsRequest,
-            $11.GetUserCrowdfundReceiptsResponse>(
+            $0.GenerateDonationReceiptRequest.fromBuffer(value),
+        ($0.GenerateDonationReceiptResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetUserCrowdfundReceiptsRequest,
+            $0.GetUserCrowdfundReceiptsResponse>(
         'GetUserCrowdfundReceipts',
         getUserCrowdfundReceipts_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $11.GetUserCrowdfundReceiptsRequest.fromBuffer(value),
-        ($11.GetUserCrowdfundReceiptsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$11.GetCrowdfundStatisticsRequest,
-            $11.GetCrowdfundStatisticsResponse>(
+            $0.GetUserCrowdfundReceiptsRequest.fromBuffer(value),
+        ($0.GetUserCrowdfundReceiptsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetCrowdfundStatisticsRequest,
+            $0.GetCrowdfundStatisticsResponse>(
         'GetCrowdfundStatistics',
         getCrowdfundStatistics_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $11.GetCrowdfundStatisticsRequest.fromBuffer(value),
-        ($11.GetCrowdfundStatisticsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$11.WithdrawFromCrowdfundRequest,
-            $11.WithdrawFromCrowdfundResponse>(
+            $0.GetCrowdfundStatisticsRequest.fromBuffer(value),
+        ($0.GetCrowdfundStatisticsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.WithdrawFromCrowdfundRequest,
+            $0.WithdrawFromCrowdfundResponse>(
         'WithdrawFromCrowdfund',
         withdrawFromCrowdfund_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $11.WithdrawFromCrowdfundRequest.fromBuffer(value),
-        ($11.WithdrawFromCrowdfundResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$11.GetMyCrowdfundsRequest,
-            $11.GetMyCrowdfundsResponse>(
+            $0.WithdrawFromCrowdfundRequest.fromBuffer(value),
+        ($0.WithdrawFromCrowdfundResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetMyCrowdfundsRequest,
+            $0.GetMyCrowdfundsResponse>(
         'GetMyCrowdfunds',
         getMyCrowdfunds_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $11.GetMyCrowdfundsRequest.fromBuffer(value),
-        ($11.GetMyCrowdfundsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$11.GetCampaignWalletBalanceRequest,
-            $11.GetCampaignWalletBalanceResponse>(
+            $0.GetMyCrowdfundsRequest.fromBuffer(value),
+        ($0.GetMyCrowdfundsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetCampaignWalletBalanceRequest,
+            $0.GetCampaignWalletBalanceResponse>(
         'GetCampaignWalletBalance',
         getCampaignWalletBalance_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $11.GetCampaignWalletBalanceRequest.fromBuffer(value),
-        ($11.GetCampaignWalletBalanceResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$11.GetCrowdfundLeaderboardRequest,
-            $11.GetCrowdfundLeaderboardResponse>(
+            $0.GetCampaignWalletBalanceRequest.fromBuffer(value),
+        ($0.GetCampaignWalletBalanceResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetCrowdfundLeaderboardRequest,
+            $0.GetCrowdfundLeaderboardResponse>(
         'GetCrowdfundLeaderboard',
         getCrowdfundLeaderboard_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $11.GetCrowdfundLeaderboardRequest.fromBuffer(value),
-        ($11.GetCrowdfundLeaderboardResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$11.ConnectNotificationChannelRequest,
-            $11.ConnectNotificationChannelResponse>(
+            $0.GetCrowdfundLeaderboardRequest.fromBuffer(value),
+        ($0.GetCrowdfundLeaderboardResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ConnectNotificationChannelRequest,
+            $0.ConnectNotificationChannelResponse>(
         'ConnectNotificationChannel',
         connectNotificationChannel_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $11.ConnectNotificationChannelRequest.fromBuffer(value),
-        ($11.ConnectNotificationChannelResponse value) =>
+            $0.ConnectNotificationChannelRequest.fromBuffer(value),
+        ($0.ConnectNotificationChannelResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$11.DisconnectNotificationChannelRequest,
-            $11.DisconnectNotificationChannelResponse>(
+    $addMethod($grpc.ServiceMethod<$0.DisconnectNotificationChannelRequest,
+            $0.DisconnectNotificationChannelResponse>(
         'DisconnectNotificationChannel',
         disconnectNotificationChannel_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $11.DisconnectNotificationChannelRequest.fromBuffer(value),
-        ($11.DisconnectNotificationChannelResponse value) =>
+            $0.DisconnectNotificationChannelRequest.fromBuffer(value),
+        ($0.DisconnectNotificationChannelResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$11.GetNotificationChannelsRequest,
-            $11.GetNotificationChannelsResponse>(
+    $addMethod($grpc.ServiceMethod<$0.GetNotificationChannelsRequest,
+            $0.GetNotificationChannelsResponse>(
         'GetNotificationChannels',
         getNotificationChannels_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $11.GetNotificationChannelsRequest.fromBuffer(value),
-        ($11.GetNotificationChannelsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$11.UpdateNotificationChannelRequest,
-            $11.UpdateNotificationChannelResponse>(
+            $0.GetNotificationChannelsRequest.fromBuffer(value),
+        ($0.GetNotificationChannelsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.UpdateNotificationChannelRequest,
+            $0.UpdateNotificationChannelResponse>(
         'UpdateNotificationChannel',
         updateNotificationChannel_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $11.UpdateNotificationChannelRequest.fromBuffer(value),
-        ($11.UpdateNotificationChannelResponse value) =>
-            value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$11.TestNotificationChannelRequest,
-            $11.TestNotificationChannelResponse>(
+            $0.UpdateNotificationChannelRequest.fromBuffer(value),
+        ($0.UpdateNotificationChannelResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.TestNotificationChannelRequest,
+            $0.TestNotificationChannelResponse>(
         'TestNotificationChannel',
         testNotificationChannel_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $11.TestNotificationChannelRequest.fromBuffer(value),
-        ($11.TestNotificationChannelResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$11.GetTelegramBotInfoRequest,
-            $11.GetTelegramBotInfoResponse>(
+            $0.TestNotificationChannelRequest.fromBuffer(value),
+        ($0.TestNotificationChannelResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetTelegramBotInfoRequest,
+            $0.GetTelegramBotInfoResponse>(
         'GetTelegramBotInfo',
         getTelegramBotInfo_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $11.GetTelegramBotInfoRequest.fromBuffer(value),
-        ($11.GetTelegramBotInfoResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$11.VerifyTelegramChannelRequest,
-            $11.VerifyTelegramChannelResponse>(
+            $0.GetTelegramBotInfoRequest.fromBuffer(value),
+        ($0.GetTelegramBotInfoResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.VerifyTelegramChannelRequest,
+            $0.VerifyTelegramChannelResponse>(
         'VerifyTelegramChannel',
         verifyTelegramChannel_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $11.VerifyTelegramChannelRequest.fromBuffer(value),
-        ($11.VerifyTelegramChannelResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$11.GetNotificationHistoryRequest,
-            $11.GetNotificationHistoryResponse>(
+            $0.VerifyTelegramChannelRequest.fromBuffer(value),
+        ($0.VerifyTelegramChannelResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetNotificationHistoryRequest,
+            $0.GetNotificationHistoryResponse>(
         'GetNotificationHistory',
         getNotificationHistory_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $11.GetNotificationHistoryRequest.fromBuffer(value),
-        ($11.GetNotificationHistoryResponse value) => value.writeToBuffer()));
+            $0.GetNotificationHistoryRequest.fromBuffer(value),
+        ($0.GetNotificationHistoryResponse value) => value.writeToBuffer()));
   }
 
-  $async.Future<$11.CreateCrowdfundResponse> createCrowdfund_Pre(
+  $async.Future<$0.CreateCrowdfundResponse> createCrowdfund_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$11.CreateCrowdfundRequest> request) async {
+      $async.Future<$0.CreateCrowdfundRequest> request) async {
     return createCrowdfund(call, await request);
   }
 
-  $async.Future<$11.GetCrowdfundResponse> getCrowdfund_Pre(
+  $async.Future<$0.GetCrowdfundResponse> getCrowdfund_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$11.GetCrowdfundRequest> request) async {
+      $async.Future<$0.GetCrowdfundRequest> request) async {
     return getCrowdfund(call, await request);
   }
 
-  $async.Future<$11.ListCrowdfundsResponse> listCrowdfunds_Pre(
+  $async.Future<$0.ListCrowdfundsResponse> listCrowdfunds_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$11.ListCrowdfundsRequest> request) async {
+      $async.Future<$0.ListCrowdfundsRequest> request) async {
     return listCrowdfunds(call, await request);
   }
 
-  $async.Future<$11.SearchCrowdfundsResponse> searchCrowdfunds_Pre(
+  $async.Future<$0.SearchCrowdfundsResponse> searchCrowdfunds_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$11.SearchCrowdfundsRequest> request) async {
+      $async.Future<$0.SearchCrowdfundsRequest> request) async {
     return searchCrowdfunds(call, await request);
   }
 
-  $async.Future<$11.UpdateCrowdfundResponse> updateCrowdfund_Pre(
+  $async.Future<$0.UpdateCrowdfundResponse> updateCrowdfund_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$11.UpdateCrowdfundRequest> request) async {
+      $async.Future<$0.UpdateCrowdfundRequest> request) async {
     return updateCrowdfund(call, await request);
   }
 
-  $async.Future<$11.DeleteCrowdfundResponse> deleteCrowdfund_Pre(
+  $async.Future<$0.DeleteCrowdfundResponse> deleteCrowdfund_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$11.DeleteCrowdfundRequest> request) async {
+      $async.Future<$0.DeleteCrowdfundRequest> request) async {
     return deleteCrowdfund(call, await request);
   }
 
-  $async.Future<$11.MakeDonationResponse> makeDonation_Pre(
+  $async.Future<$0.MakeDonationResponse> makeDonation_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$11.MakeDonationRequest> request) async {
+      $async.Future<$0.MakeDonationRequest> request) async {
     return makeDonation(call, await request);
   }
 
-  $async.Future<$11.GetCrowdfundDonationsResponse> getCrowdfundDonations_Pre(
+  $async.Future<$0.GetCrowdfundDonationsResponse> getCrowdfundDonations_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$11.GetCrowdfundDonationsRequest> request) async {
+      $async.Future<$0.GetCrowdfundDonationsRequest> request) async {
     return getCrowdfundDonations(call, await request);
   }
 
-  $async.Future<$11.GetUserDonationsResponse> getUserDonations_Pre(
+  $async.Future<$0.GetUserDonationsResponse> getUserDonations_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$11.GetUserDonationsRequest> request) async {
+      $async.Future<$0.GetUserDonationsRequest> request) async {
     return getUserDonations(call, await request);
   }
 
-  $async.Future<$11.GenerateDonationReceiptResponse>
-      generateDonationReceipt_Pre($grpc.ServiceCall call,
-          $async.Future<$11.GenerateDonationReceiptRequest> request) async {
+  $async.Future<$0.GenerateDonationReceiptResponse> generateDonationReceipt_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.GenerateDonationReceiptRequest> request) async {
     return generateDonationReceipt(call, await request);
   }
 
-  $async.Future<$11.GetUserCrowdfundReceiptsResponse>
+  $async.Future<$0.GetUserCrowdfundReceiptsResponse>
       getUserCrowdfundReceipts_Pre($grpc.ServiceCall call,
-          $async.Future<$11.GetUserCrowdfundReceiptsRequest> request) async {
+          $async.Future<$0.GetUserCrowdfundReceiptsRequest> request) async {
     return getUserCrowdfundReceipts(call, await request);
   }
 
-  $async.Future<$11.GetCrowdfundStatisticsResponse> getCrowdfundStatistics_Pre(
+  $async.Future<$0.GetCrowdfundStatisticsResponse> getCrowdfundStatistics_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$11.GetCrowdfundStatisticsRequest> request) async {
+      $async.Future<$0.GetCrowdfundStatisticsRequest> request) async {
     return getCrowdfundStatistics(call, await request);
   }
 
-  $async.Future<$11.WithdrawFromCrowdfundResponse> withdrawFromCrowdfund_Pre(
+  $async.Future<$0.WithdrawFromCrowdfundResponse> withdrawFromCrowdfund_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$11.WithdrawFromCrowdfundRequest> request) async {
+      $async.Future<$0.WithdrawFromCrowdfundRequest> request) async {
     return withdrawFromCrowdfund(call, await request);
   }
 
-  $async.Future<$11.GetMyCrowdfundsResponse> getMyCrowdfunds_Pre(
+  $async.Future<$0.GetMyCrowdfundsResponse> getMyCrowdfunds_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$11.GetMyCrowdfundsRequest> request) async {
+      $async.Future<$0.GetMyCrowdfundsRequest> request) async {
     return getMyCrowdfunds(call, await request);
   }
 
-  $async.Future<$11.GetCampaignWalletBalanceResponse>
+  $async.Future<$0.GetCampaignWalletBalanceResponse>
       getCampaignWalletBalance_Pre($grpc.ServiceCall call,
-          $async.Future<$11.GetCampaignWalletBalanceRequest> request) async {
+          $async.Future<$0.GetCampaignWalletBalanceRequest> request) async {
     return getCampaignWalletBalance(call, await request);
   }
 
-  $async.Future<$11.GetCrowdfundLeaderboardResponse>
-      getCrowdfundLeaderboard_Pre($grpc.ServiceCall call,
-          $async.Future<$11.GetCrowdfundLeaderboardRequest> request) async {
+  $async.Future<$0.GetCrowdfundLeaderboardResponse> getCrowdfundLeaderboard_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.GetCrowdfundLeaderboardRequest> request) async {
     return getCrowdfundLeaderboard(call, await request);
   }
 
-  $async.Future<$11.ConnectNotificationChannelResponse>
+  $async.Future<$0.ConnectNotificationChannelResponse>
       connectNotificationChannel_Pre($grpc.ServiceCall call,
-          $async.Future<$11.ConnectNotificationChannelRequest> request) async {
+          $async.Future<$0.ConnectNotificationChannelRequest> request) async {
     return connectNotificationChannel(call, await request);
   }
 
-  $async.Future<$11.DisconnectNotificationChannelResponse>
+  $async.Future<$0.DisconnectNotificationChannelResponse>
       disconnectNotificationChannel_Pre(
           $grpc.ServiceCall call,
-          $async.Future<$11.DisconnectNotificationChannelRequest>
+          $async.Future<$0.DisconnectNotificationChannelRequest>
               request) async {
     return disconnectNotificationChannel(call, await request);
   }
 
-  $async.Future<$11.GetNotificationChannelsResponse>
-      getNotificationChannels_Pre($grpc.ServiceCall call,
-          $async.Future<$11.GetNotificationChannelsRequest> request) async {
+  $async.Future<$0.GetNotificationChannelsResponse> getNotificationChannels_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.GetNotificationChannelsRequest> request) async {
     return getNotificationChannels(call, await request);
   }
 
-  $async.Future<$11.UpdateNotificationChannelResponse>
+  $async.Future<$0.UpdateNotificationChannelResponse>
       updateNotificationChannel_Pre($grpc.ServiceCall call,
-          $async.Future<$11.UpdateNotificationChannelRequest> request) async {
+          $async.Future<$0.UpdateNotificationChannelRequest> request) async {
     return updateNotificationChannel(call, await request);
   }
 
-  $async.Future<$11.TestNotificationChannelResponse>
-      testNotificationChannel_Pre($grpc.ServiceCall call,
-          $async.Future<$11.TestNotificationChannelRequest> request) async {
+  $async.Future<$0.TestNotificationChannelResponse> testNotificationChannel_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.TestNotificationChannelRequest> request) async {
     return testNotificationChannel(call, await request);
   }
 
-  $async.Future<$11.GetTelegramBotInfoResponse> getTelegramBotInfo_Pre(
+  $async.Future<$0.GetTelegramBotInfoResponse> getTelegramBotInfo_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$11.GetTelegramBotInfoRequest> request) async {
+      $async.Future<$0.GetTelegramBotInfoRequest> request) async {
     return getTelegramBotInfo(call, await request);
   }
 
-  $async.Future<$11.VerifyTelegramChannelResponse> verifyTelegramChannel_Pre(
+  $async.Future<$0.VerifyTelegramChannelResponse> verifyTelegramChannel_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$11.VerifyTelegramChannelRequest> request) async {
+      $async.Future<$0.VerifyTelegramChannelRequest> request) async {
     return verifyTelegramChannel(call, await request);
   }
 
-  $async.Future<$11.GetNotificationHistoryResponse> getNotificationHistory_Pre(
+  $async.Future<$0.GetNotificationHistoryResponse> getNotificationHistory_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$11.GetNotificationHistoryRequest> request) async {
+      $async.Future<$0.GetNotificationHistoryRequest> request) async {
     return getNotificationHistory(call, await request);
   }
 
-  $async.Future<$11.CreateCrowdfundResponse> createCrowdfund(
-      $grpc.ServiceCall call, $11.CreateCrowdfundRequest request);
-  $async.Future<$11.GetCrowdfundResponse> getCrowdfund(
-      $grpc.ServiceCall call, $11.GetCrowdfundRequest request);
-  $async.Future<$11.ListCrowdfundsResponse> listCrowdfunds(
-      $grpc.ServiceCall call, $11.ListCrowdfundsRequest request);
-  $async.Future<$11.SearchCrowdfundsResponse> searchCrowdfunds(
-      $grpc.ServiceCall call, $11.SearchCrowdfundsRequest request);
-  $async.Future<$11.UpdateCrowdfundResponse> updateCrowdfund(
-      $grpc.ServiceCall call, $11.UpdateCrowdfundRequest request);
-  $async.Future<$11.DeleteCrowdfundResponse> deleteCrowdfund(
-      $grpc.ServiceCall call, $11.DeleteCrowdfundRequest request);
-  $async.Future<$11.MakeDonationResponse> makeDonation(
-      $grpc.ServiceCall call, $11.MakeDonationRequest request);
-  $async.Future<$11.GetCrowdfundDonationsResponse> getCrowdfundDonations(
-      $grpc.ServiceCall call, $11.GetCrowdfundDonationsRequest request);
-  $async.Future<$11.GetUserDonationsResponse> getUserDonations(
-      $grpc.ServiceCall call, $11.GetUserDonationsRequest request);
-  $async.Future<$11.GenerateDonationReceiptResponse> generateDonationReceipt(
-      $grpc.ServiceCall call, $11.GenerateDonationReceiptRequest request);
-  $async.Future<$11.GetUserCrowdfundReceiptsResponse> getUserCrowdfundReceipts(
-      $grpc.ServiceCall call, $11.GetUserCrowdfundReceiptsRequest request);
-  $async.Future<$11.GetCrowdfundStatisticsResponse> getCrowdfundStatistics(
-      $grpc.ServiceCall call, $11.GetCrowdfundStatisticsRequest request);
-  $async.Future<$11.WithdrawFromCrowdfundResponse> withdrawFromCrowdfund(
-      $grpc.ServiceCall call, $11.WithdrawFromCrowdfundRequest request);
-  $async.Future<$11.GetMyCrowdfundsResponse> getMyCrowdfunds(
-      $grpc.ServiceCall call, $11.GetMyCrowdfundsRequest request);
-  $async.Future<$11.GetCampaignWalletBalanceResponse> getCampaignWalletBalance(
-      $grpc.ServiceCall call, $11.GetCampaignWalletBalanceRequest request);
-  $async.Future<$11.GetCrowdfundLeaderboardResponse> getCrowdfundLeaderboard(
-      $grpc.ServiceCall call, $11.GetCrowdfundLeaderboardRequest request);
-  $async.Future<$11.ConnectNotificationChannelResponse>
-      connectNotificationChannel($grpc.ServiceCall call,
-          $11.ConnectNotificationChannelRequest request);
-  $async.Future<$11.DisconnectNotificationChannelResponse>
+  $async.Future<$0.CreateCrowdfundResponse> createCrowdfund(
+      $grpc.ServiceCall call, $0.CreateCrowdfundRequest request);
+  $async.Future<$0.GetCrowdfundResponse> getCrowdfund(
+      $grpc.ServiceCall call, $0.GetCrowdfundRequest request);
+  $async.Future<$0.ListCrowdfundsResponse> listCrowdfunds(
+      $grpc.ServiceCall call, $0.ListCrowdfundsRequest request);
+  $async.Future<$0.SearchCrowdfundsResponse> searchCrowdfunds(
+      $grpc.ServiceCall call, $0.SearchCrowdfundsRequest request);
+  $async.Future<$0.UpdateCrowdfundResponse> updateCrowdfund(
+      $grpc.ServiceCall call, $0.UpdateCrowdfundRequest request);
+  $async.Future<$0.DeleteCrowdfundResponse> deleteCrowdfund(
+      $grpc.ServiceCall call, $0.DeleteCrowdfundRequest request);
+  $async.Future<$0.MakeDonationResponse> makeDonation(
+      $grpc.ServiceCall call, $0.MakeDonationRequest request);
+  $async.Future<$0.GetCrowdfundDonationsResponse> getCrowdfundDonations(
+      $grpc.ServiceCall call, $0.GetCrowdfundDonationsRequest request);
+  $async.Future<$0.GetUserDonationsResponse> getUserDonations(
+      $grpc.ServiceCall call, $0.GetUserDonationsRequest request);
+  $async.Future<$0.GenerateDonationReceiptResponse> generateDonationReceipt(
+      $grpc.ServiceCall call, $0.GenerateDonationReceiptRequest request);
+  $async.Future<$0.GetUserCrowdfundReceiptsResponse> getUserCrowdfundReceipts(
+      $grpc.ServiceCall call, $0.GetUserCrowdfundReceiptsRequest request);
+  $async.Future<$0.GetCrowdfundStatisticsResponse> getCrowdfundStatistics(
+      $grpc.ServiceCall call, $0.GetCrowdfundStatisticsRequest request);
+  $async.Future<$0.WithdrawFromCrowdfundResponse> withdrawFromCrowdfund(
+      $grpc.ServiceCall call, $0.WithdrawFromCrowdfundRequest request);
+  $async.Future<$0.GetMyCrowdfundsResponse> getMyCrowdfunds(
+      $grpc.ServiceCall call, $0.GetMyCrowdfundsRequest request);
+  $async.Future<$0.GetCampaignWalletBalanceResponse> getCampaignWalletBalance(
+      $grpc.ServiceCall call, $0.GetCampaignWalletBalanceRequest request);
+  $async.Future<$0.GetCrowdfundLeaderboardResponse> getCrowdfundLeaderboard(
+      $grpc.ServiceCall call, $0.GetCrowdfundLeaderboardRequest request);
+  $async.Future<$0.ConnectNotificationChannelResponse>
+      connectNotificationChannel(
+          $grpc.ServiceCall call, $0.ConnectNotificationChannelRequest request);
+  $async.Future<$0.DisconnectNotificationChannelResponse>
       disconnectNotificationChannel($grpc.ServiceCall call,
-          $11.DisconnectNotificationChannelRequest request);
-  $async.Future<$11.GetNotificationChannelsResponse> getNotificationChannels(
-      $grpc.ServiceCall call, $11.GetNotificationChannelsRequest request);
-  $async.Future<$11.UpdateNotificationChannelResponse>
-      updateNotificationChannel(
-          $grpc.ServiceCall call, $11.UpdateNotificationChannelRequest request);
-  $async.Future<$11.TestNotificationChannelResponse> testNotificationChannel(
-      $grpc.ServiceCall call, $11.TestNotificationChannelRequest request);
-  $async.Future<$11.GetTelegramBotInfoResponse> getTelegramBotInfo(
-      $grpc.ServiceCall call, $11.GetTelegramBotInfoRequest request);
-  $async.Future<$11.VerifyTelegramChannelResponse> verifyTelegramChannel(
-      $grpc.ServiceCall call, $11.VerifyTelegramChannelRequest request);
-  $async.Future<$11.GetNotificationHistoryResponse> getNotificationHistory(
-      $grpc.ServiceCall call, $11.GetNotificationHistoryRequest request);
+          $0.DisconnectNotificationChannelRequest request);
+  $async.Future<$0.GetNotificationChannelsResponse> getNotificationChannels(
+      $grpc.ServiceCall call, $0.GetNotificationChannelsRequest request);
+  $async.Future<$0.UpdateNotificationChannelResponse> updateNotificationChannel(
+      $grpc.ServiceCall call, $0.UpdateNotificationChannelRequest request);
+  $async.Future<$0.TestNotificationChannelResponse> testNotificationChannel(
+      $grpc.ServiceCall call, $0.TestNotificationChannelRequest request);
+  $async.Future<$0.GetTelegramBotInfoResponse> getTelegramBotInfo(
+      $grpc.ServiceCall call, $0.GetTelegramBotInfoRequest request);
+  $async.Future<$0.VerifyTelegramChannelResponse> verifyTelegramChannel(
+      $grpc.ServiceCall call, $0.VerifyTelegramChannelRequest request);
+  $async.Future<$0.GetNotificationHistoryResponse> getNotificationHistory(
+      $grpc.ServiceCall call, $0.GetNotificationHistoryRequest request);
 }

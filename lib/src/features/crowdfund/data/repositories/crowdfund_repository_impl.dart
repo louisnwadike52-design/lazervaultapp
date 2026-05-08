@@ -129,6 +129,7 @@ class CrowdfundRepositoryImpl implements CrowdfundRepository {
     bool isAnonymous = false,
     required String sourceAccountId,
     required String transactionPin,
+    required String transactionId,
   }) async {
     try {
       return await remoteDataSource.makeDonation(
@@ -138,6 +139,7 @@ class CrowdfundRepositoryImpl implements CrowdfundRepository {
         isAnonymous: isAnonymous,
         sourceAccountId: sourceAccountId,
         transactionPin: transactionPin,
+        transactionId: transactionId,
       );
     } catch (e) {
       throw Exception('Failed to make donation: $e');

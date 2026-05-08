@@ -136,7 +136,7 @@ class ReviewStep extends StatelessWidget {
                   padding:
                       EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF6366F1).withValues(alpha: 0.18),
+                    color: const Color(0xFF4E03D0).withValues(alpha: 0.18),
                     borderRadius: BorderRadius.circular(6.r),
                   ),
                   child: Text(
@@ -144,7 +144,7 @@ class ReviewStep extends StatelessWidget {
                     style: GoogleFonts.inter(
                       fontSize: 10.sp,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF6366F1),
+                      color: const Color(0xFF4E03D0),
                     ),
                   ),
                 ),
@@ -207,7 +207,7 @@ class ReviewStep extends StatelessWidget {
             icon: Icons.account_balance_wallet,
             label: 'Goal',
             value: _formattedAmount,
-            valueColor: const Color(0xFF6366F1),
+            valueColor: const Color(0xFF4E03D0),
           ),
         ),
         SizedBox(width: 8.w),
@@ -239,7 +239,7 @@ class ReviewStep extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(icon, size: 18.sp, color: const Color(0xFF6366F1)),
+          Icon(icon, size: 18.sp, color: const Color(0xFF4E03D0)),
           SizedBox(width: 10.w),
           Expanded(
             child: Column(
@@ -284,7 +284,7 @@ class ReviewStep extends StatelessWidget {
       child: Row(
         children: [
           Icon(Icons.menu_book_outlined,
-              size: 16.sp, color: const Color(0xFF6366F1)),
+              size: 16.sp, color: const Color(0xFF4E03D0)),
           SizedBox(width: 10.w),
           Expanded(
             child: Text(
@@ -314,7 +314,7 @@ class ReviewStep extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.link, size: 16.sp, color: const Color(0xFF6366F1)),
+          Icon(Icons.link, size: 16.sp, color: const Color(0xFF4E03D0)),
           SizedBox(width: 10.w),
           Expanded(
             child: Wrap(
@@ -387,7 +387,7 @@ class ReviewStep extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF6366F1).withValues(alpha: 0.12),
+            const Color(0xFF4E03D0).withValues(alpha: 0.12),
             const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.05),
           ],
           begin: Alignment.topLeft,
@@ -395,13 +395,13 @@ class ReviewStep extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+          color: const Color(0xFF4E03D0).withValues(alpha: 0.3),
         ),
       ),
       child: Row(
         children: [
           Icon(Icons.ios_share,
-              size: 16.sp, color: const Color(0xFF6366F1)),
+              size: 16.sp, color: const Color(0xFF4E03D0)),
           SizedBox(width: 10.w),
           Expanded(
             child: Column(
@@ -412,7 +412,7 @@ class ReviewStep extends StatelessWidget {
                   style: GoogleFonts.inter(
                     fontSize: 10.sp,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF6366F1),
+                    color: const Color(0xFF4E03D0),
                   ),
                 ),
                 SizedBox(height: 2.h),

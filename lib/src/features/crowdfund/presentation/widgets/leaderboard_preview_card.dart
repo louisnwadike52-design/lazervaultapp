@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -53,13 +54,13 @@ class LeaderboardPreviewCard extends StatelessWidget {
                         vertical: 2.h,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF6366F1).withValues(alpha: 0.15),
+                        color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(4.r),
                       ),
                       child: Text(
                         crowdfund.category,
                         style: GoogleFonts.inter(
-                          color: const Color(0xFF6366F1),
+                          color: const Color(0xFF4E03D0),
                           fontSize: 9.sp,
                           fontWeight: FontWeight.w600,
                         ),
@@ -72,12 +73,14 @@ class LeaderboardPreviewCard extends StatelessWidget {
               ClipRRect(
                 borderRadius: BorderRadius.circular(8.r),
                 child: crowdfund.imageUrl != null
-                    ? Image.network(
-                        crowdfund.imageUrl!,
+                    ? CachedNetworkImage(
+                        imageUrl: crowdfund.imageUrl!,
                         height: 60.h,
                         width: double.infinity,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _buildImagePlaceholder(),
+                        fadeInDuration: const Duration(milliseconds: 120),
+                        placeholder: (_, __) => _buildImagePlaceholder(),
+                        errorWidget: (_, __, ___) => _buildImagePlaceholder(),
                       )
                     : _buildImagePlaceholder(),
               ),
@@ -101,7 +104,7 @@ class LeaderboardPreviewCard extends StatelessWidget {
                   value: (crowdfund.progressPercentage / 100).clamp(0.0, 1.0),
                   backgroundColor: Colors.white.withValues(alpha: 0.1),
                   valueColor: const AlwaysStoppedAnimation<Color>(
-                    Color(0xFF6366F1),
+                    Color(0xFF4E03D0),
                   ),
                   minHeight: 3.h,
                 ),
@@ -111,7 +114,7 @@ class LeaderboardPreviewCard extends StatelessWidget {
               Text(
                 '${crowdfund.currency} ${_amountFormat.format(crowdfund.currentAmount)}',
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF6366F1),
+                  color: const Color(0xFF4E03D0),
                   fontSize: 12.sp,
                   fontWeight: FontWeight.w700,
                 ),
@@ -162,12 +165,12 @@ class LeaderboardPreviewCard extends StatelessWidget {
       height: 60.h,
       width: double.infinity,
       decoration: BoxDecoration(
-        color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+        color: const Color(0xFF4E03D0).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8.r),
       ),
       child: Icon(
         Icons.volunteer_activism,
-        color: const Color(0xFF6366F1),
+        color: const Color(0xFF4E03D0),
         size: 24.sp,
       ),
     );

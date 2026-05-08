@@ -148,13 +148,22 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
       return;
     }
 
+    // Mint a deterministic transaction_id used both at PIN-mint and at
+    // server-side validation. The auth-service token validator looks
+    // the row up by (token, user_id, transaction_id), so the same
+    // string MUST flow through both calls. The crowdfund id (first 8
+    // chars, uppercased to match server expectations) plus a
+    // millisecond timestamp gives enough entropy that two donations
+    // can't collide.
+    final transactionId =
+        'CF-DONATE-${widget.crowdfund.id.substring(0, 8)}-${DateTime.now().millisecondsSinceEpoch}';
+
     // Show PIN bottomsheet
     String? verificationToken;
 
     final success = await validateTransactionPin(
       context: context,
-      transactionId:
-          'CF-DONATE-${widget.crowdfund.id.substring(0, 8)}-${DateTime.now().millisecondsSinceEpoch}',
+      transactionId: transactionId,
       transactionType: 'crowdfund_donation',
       amount: amount,
       currency: widget.crowdfund.currency,
@@ -181,6 +190,7 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
       isAnonymous: _isAnonymous,
       sourceAccountId: _personalAccount!.id,
       transactionPin: verificationToken!,
+      transactionId: transactionId,
     );
 
     Navigator.pushReplacement(
@@ -295,13 +305,13 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
                         ? _processDonation
                         : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF6366F1),
+                      backgroundColor: const Color(0xFF4E03D0),
                       padding: EdgeInsets.symmetric(vertical: 16.h),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.r),
                       ),
                       disabledBackgroundColor:
-                          const Color(0xFF6366F1).withValues(alpha: 0.3),
+                          const Color(0xFF4E03D0).withValues(alpha: 0.3),
                       elevation: 0,
                     ),
                     child: _isSubmitting
@@ -366,7 +376,7 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
               CircleAvatar(
                 radius: 20.r,
                 backgroundColor:
-                    const Color(0xFF6366F1).withValues(alpha: 0.2),
+                    const Color(0xFF4E03D0).withValues(alpha: 0.2),
                 backgroundImage:
                     widget.crowdfund.creator.profilePicture != null
                         ? NetworkImage(
@@ -376,7 +386,7 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
                     ? Text(
                         widget.crowdfund.creator.initials,
                         style: GoogleFonts.inter(
-                          color: const Color(0xFF6366F1),
+                          color: const Color(0xFF4E03D0),
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w700,
                         ),
@@ -463,7 +473,7 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
               Text(
                 '${widget.crowdfund.currency} ${widget.crowdfund.currentAmount.toStringAsFixed(2)}',
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF6366F1),
+                  color: const Color(0xFF4E03D0),
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w700,
                 ),
@@ -503,7 +513,7 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
               gradient: isSelected
                   ? const LinearGradient(
                       colors: [
-                        Color(0xFF6366F1),
+                        Color(0xFF4E03D0),
                         Color.fromARGB(255, 78, 3, 208)
                       ],
                       begin: Alignment.topLeft,
@@ -548,7 +558,7 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
           gradient: _isCustomAmount
               ? const LinearGradient(
                   colors: [
-                    Color(0xFF6366F1),
+                    Color(0xFF4E03D0),
                     Color.fromARGB(255, 78, 3, 208)
                   ],
                   begin: Alignment.topLeft,
@@ -612,7 +622,7 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
           child: Text(
             widget.crowdfund.currency,
             style: GoogleFonts.inter(
-              color: const Color(0xFF6366F1),
+              color: const Color(0xFF4E03D0),
               fontSize: 16.sp,
               fontWeight: FontWeight.w700,
             ),
@@ -661,7 +671,7 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
               width: 20.w,
               height: 20.h,
               child: const CircularProgressIndicator(
-                color: Color(0xFF6366F1),
+                color: Color(0xFF4E03D0),
                 strokeWidth: 2,
               ),
             ),
@@ -735,11 +745,11 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
             height: 40.h,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFF6366F1).withValues(alpha: 0.2),
+              color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
             ),
             child: Icon(
               Icons.account_balance_wallet,
-              color: const Color(0xFF6366F1),
+              color: const Color(0xFF4E03D0),
               size: 20.sp,
             ),
           ),
@@ -782,7 +792,7 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
           ),
           Icon(
             Icons.check_circle,
-            color: const Color(0xFF6366F1),
+            color: const Color(0xFF4E03D0),
             size: 22.sp,
           ),
         ],
@@ -849,7 +859,7 @@ class _DonationPaymentScreenState extends State<DonationPaymentScreen>
                   _isAnonymous = value ?? false;
                 });
               },
-              activeColor: const Color(0xFF6366F1),
+              activeColor: const Color(0xFF4E03D0),
             ),
             SizedBox(width: 8.w),
             Expanded(
