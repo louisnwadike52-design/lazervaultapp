@@ -329,14 +329,42 @@ class CrowdfundReportShareError extends CrowdfundState {
 // CAMPAIGN WALLET STATES
 // ============================================================================
 
-/// User's own crowdfunds loaded
+/// User's own crowdfunds loaded with pagination metadata so the
+/// dedicated screen can scroll-to-bottom for additional pages.
 class MyCrowdfundsLoaded extends CrowdfundState {
   final List<Crowdfund> crowdfunds;
+  final int currentPage;
+  final int pageSize;
+  final bool hasMore;
+  final bool isLoadingMore;
 
-  const MyCrowdfundsLoaded(this.crowdfunds);
+  const MyCrowdfundsLoaded(
+    this.crowdfunds, {
+    this.currentPage = 1,
+    this.pageSize = 20,
+    this.hasMore = false,
+    this.isLoadingMore = false,
+  });
+
+  MyCrowdfundsLoaded copyWith({
+    List<Crowdfund>? crowdfunds,
+    int? currentPage,
+    int? pageSize,
+    bool? hasMore,
+    bool? isLoadingMore,
+  }) {
+    return MyCrowdfundsLoaded(
+      crowdfunds ?? this.crowdfunds,
+      currentPage: currentPage ?? this.currentPage,
+      pageSize: pageSize ?? this.pageSize,
+      hasMore: hasMore ?? this.hasMore,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+    );
+  }
 
   @override
-  List<Object?> get props => [crowdfunds];
+  List<Object?> get props =>
+      [crowdfunds, currentPage, pageSize, hasMore, isLoadingMore];
 }
 
 /// Withdrawal completed

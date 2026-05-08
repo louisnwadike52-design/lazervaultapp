@@ -134,10 +134,10 @@ class DonorStarRating extends StatelessWidget {
               children: rating.traits.map((t) => Container(
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF6366F1).withValues(alpha: 0.18),
+                  color: const Color(0xFF4E03D0).withValues(alpha: 0.18),
                   borderRadius: BorderRadius.circular(6.r),
                   border: Border.all(
-                    color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+                    color: const Color(0xFF4E03D0).withValues(alpha: 0.3),
                   ),
                 ),
                 child: Text(
@@ -145,7 +145,7 @@ class DonorStarRating extends StatelessWidget {
                   style: GoogleFonts.inter(
                     fontSize: 10.sp,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF6366F1),
+                    color: const Color(0xFF4E03D0),
                   ),
                 ),
               )).toList(growable: false),
@@ -153,7 +153,7 @@ class DonorStarRating extends StatelessWidget {
           ],
           SizedBox(height: 14.h),
           // Factor breakdown bars
-          _buildFactorBar('Generosity', rating.generosityScore, const Color(0xFF6366F1)),
+          _buildFactorBar('Generosity', rating.generosityScore, const Color(0xFF4E03D0)),
           SizedBox(height: 8.h),
           _buildFactorBar('Repeat Support', rating.repeatSupportScore, const Color(0xFF10B981)),
           SizedBox(height: 8.h),

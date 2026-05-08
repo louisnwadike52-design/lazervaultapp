@@ -217,6 +217,7 @@ class CrowdfundGrpcDataSource {
     bool isAnonymous = false,
     required String sourceAccountId,
     required String transactionPin,
+    required String transactionId,
   }) async {
     try {
       final request = pb.MakeDonationRequest()
@@ -224,7 +225,8 @@ class CrowdfundGrpcDataSource {
         ..amount = _amountToInt64(amount)
         ..isAnonymous = isAnonymous
         ..sourceAccountId = sourceAccountId
-        ..transactionPin = transactionPin;
+        ..transactionPin = transactionPin
+        ..transactionId = transactionId;
 
       if (message != null) {
         request.message = message;

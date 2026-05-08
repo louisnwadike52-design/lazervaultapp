@@ -20,18 +20,42 @@ class _MyDonationsScreenState extends State<MyDonationsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final _tabs = const ['All', 'Completed', 'Pending', 'Failed'];
+  late final List<ScrollController> _tabScrollControllers;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: _tabs.length, vsync: this);
+    _tabScrollControllers = List.generate(_tabs.length, (_) {
+      final c = ScrollController();
+      c.addListener(() => _onTabScroll(c));
+      return c;
+    });
     context.read<CrowdfundCubit>().loadUserDonations();
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    for (final c in _tabScrollControllers) {
+      c.dispose();
+    }
     super.dispose();
+  }
+
+  void _onTabScroll(ScrollController controller) {
+    if (!controller.hasClients) return;
+    final position = controller.position;
+    if (position.pixels < position.maxScrollExtent - 240) return;
+
+    final cubit = context.read<CrowdfundCubit>();
+    final state = cubit.state;
+    if (state is! UserDonationsLoaded ||
+        state.isLoadingMore ||
+        !state.hasMore) {
+      return;
+    }
+    cubit.loadMoreUserDonations();
   }
 
   List<CrowdfundDonation> _filterByTab(
@@ -73,7 +97,7 @@ class _MyDonationsScreenState extends State<MyDonationsScreen>
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
-          indicatorColor: const Color(0xFF6366F1),
+          indicatorColor: const Color(0xFF4E03D0),
           indicatorWeight: 3,
           labelColor: Colors.white,
           unselectedLabelColor: const Color(0xFF9CA3AF),
@@ -91,10 +115,10 @@ class _MyDonationsScreenState extends State<MyDonationsScreen>
         builder: (context, state) {
           if (state is CrowdfundLoading) {
             return const Center(
-                child: CircularProgressIndicator(color: Color(0xFF6366F1)));
+                child: CircularProgressIndicator(color: Color(0xFF4E03D0)));
           }
           if (state is UserDonationsLoaded) {
-            return _buildTabs(state.donations);
+            return _buildTabs(state);
           }
           return _buildEmpty('All');
         },
@@ -102,7 +126,8 @@ class _MyDonationsScreenState extends State<MyDonationsScreen>
     );
   }
 
-  Widget _buildTabs(List<CrowdfundDonation> donations) {
+  Widget _buildTabs(UserDonationsLoaded state) {
+    final donations = state.donations;
     // Calculate totals for summary
     final completedDonations =
         donations.where((d) => d.status == DonationStatus.completed).toList();
@@ -144,16 +169,43 @@ class _MyDonationsScreenState extends State<MyDonationsScreen>
             children: List.generate(_tabs.length, (tabIndex) {
               final filtered = _filterByTab(donations, tabIndex);
               if (filtered.isEmpty) return _buildEmpty(_tabs[tabIndex]);
+              // Footer spinner only on the All tab — non-All tabs
+              // filter client-side, so loadMore must drive the
+              // unfiltered list to grow.
+              final showFooter =
+                  tabIndex == 0 && (state.isLoadingMore || state.hasMore);
+              final itemCount = filtered.length + (showFooter ? 1 : 0);
               return RefreshIndicator(
                 onRefresh: () async =>
                     context.read<CrowdfundCubit>().loadUserDonations(),
-                color: const Color(0xFF6366F1),
+                color: const Color(0xFF4E03D0),
                 backgroundColor: const Color(0xFF1F1F1F),
                 child: ListView.separated(
+                  controller: _tabScrollControllers[tabIndex],
+                  physics: const AlwaysScrollableScrollPhysics(),
                   padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                  itemCount: filtered.length,
+                  itemCount: itemCount,
                   separatorBuilder: (_, __) => SizedBox(height: 8.h),
-                  itemBuilder: (_, i) => _buildDonationTile(filtered[i]),
+                  itemBuilder: (_, i) {
+                    if (i >= filtered.length) {
+                      return Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16.h),
+                        child: Center(
+                          child: state.isLoadingMore
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Color(0xFF4E03D0),
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const SizedBox.shrink(),
+                        ),
+                      );
+                    }
+                    return _buildDonationTile(filtered[i]);
+                  },
                 ),
               );
             }),
@@ -166,7 +218,7 @@ class _MyDonationsScreenState extends State<MyDonationsScreen>
   Widget _buildSummaryItem(String value, String label, IconData icon) {
     return Column(
       children: [
-        Icon(icon, color: const Color(0xFF6366F1), size: 20.sp),
+        Icon(icon, color: const Color(0xFF4E03D0), size: 20.sp),
         SizedBox(height: 4.h),
         Text(value,
             style: GoogleFonts.inter(

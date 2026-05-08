@@ -209,7 +209,7 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
             SizedBox(height: 24.h),
             ListTile(
               leading:
-                  Icon(Icons.photo_library, color: const Color(0xFF6366F1)),
+                  Icon(Icons.photo_library, color: const Color(0xFF4E03D0)),
               title: Text(
                 'Gallery',
                 style: GoogleFonts.inter(color: Colors.white),
@@ -221,7 +221,7 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
             ),
             ListTile(
               leading:
-                  Icon(Icons.camera_alt, color: const Color(0xFF6366F1)),
+                  Icon(Icons.camera_alt, color: const Color(0xFF4E03D0)),
               title: Text(
                 'Camera',
                 style: GoogleFonts.inter(color: Colors.white),
@@ -232,7 +232,7 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
               },
             ),
             ListTile(
-              leading: Icon(Icons.link, color: const Color(0xFF6366F1)),
+              leading: Icon(Icons.link, color: const Color(0xFF4E03D0)),
               title: Text(
                 'Enter URL',
                 style: GoogleFonts.inter(color: Colors.white),
@@ -334,7 +334,7 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
               },
               child: Text(
                 'Done',
-                style: GoogleFonts.inter(color: const Color(0xFF6366F1)),
+                style: GoogleFonts.inter(color: const Color(0xFF4E03D0)),
               ),
             ),
           ],
@@ -383,7 +383,7 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [
-                    Color(0xFF6366F1),
+                    Color(0xFF4E03D0),
                     Color.fromARGB(255, 78, 3, 208)
                   ],
                   begin: Alignment.topLeft,
@@ -477,7 +477,7 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  const Color(0xFF6366F1).withValues(alpha: 0.1),
+                  const Color(0xFF4E03D0).withValues(alpha: 0.1),
                   const Color.fromARGB(255, 78, 3, 208)
                       .withValues(alpha: 0.05),
                 ],
@@ -493,7 +493,7 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
                   children: [
                     Icon(
                       Icons.photo_library_outlined,
-                      color: const Color(0xFF6366F1),
+                      color: const Color(0xFF4E03D0),
                       size: 20.sp,
                     ),
                     SizedBox(width: 12.w),
@@ -560,7 +560,7 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
                     child: CircularProgressIndicator(
                       value:
                           _uploadProgress > 0 ? _uploadProgress : null,
-                      color: const Color(0xFF6366F1),
+                      color: const Color(0xFF4E03D0),
                       strokeWidth: 3,
                     ),
                   ),
@@ -728,22 +728,22 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
         decoration: BoxDecoration(
-          color: const Color(0xFF6366F1).withValues(alpha: 0.2),
+          color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(20.r),
           border: Border.all(
-              color: const Color(0xFF6366F1).withValues(alpha: 0.5)),
+              color: const Color(0xFF4E03D0).withValues(alpha: 0.5)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 14.sp, color: const Color(0xFF6366F1)),
+            Icon(icon, size: 14.sp, color: const Color(0xFF4E03D0)),
             SizedBox(width: 4.w),
             Text(
               label,
               style: GoogleFonts.inter(
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF6366F1),
+                color: const Color(0xFF4E03D0),
               ),
             ),
           ],
@@ -777,13 +777,13 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
               width: 60.w,
               height: 60.w,
               decoration: BoxDecoration(
-                color: const Color(0xFF6366F1).withValues(alpha: 0.2),
+                color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.add_photo_alternate_outlined,
                 size: 30.sp,
-                color: const Color(0xFF6366F1),
+                color: const Color(0xFF4E03D0),
               ),
             ),
             SizedBox(height: 16.h),
@@ -850,7 +850,7 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
                         child: Text(
                           'Tap to retry',
                           style: GoogleFonts.inter(
-                            color: const Color(0xFF6366F1),
+                            color: const Color(0xFF4E03D0),
                             fontSize: 12.sp,
                             fontWeight: FontWeight.w600,
                           ),
@@ -869,7 +869,7 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
                 color: const Color(0xFF1A1A3E),
                 child: Center(
                   child: CircularProgressIndicator(
-                    color: const Color(0xFF6366F1),
+                    color: const Color(0xFF4E03D0),
                     value: loadingProgress.expectedTotalBytes != null
                         ? loadingProgress.cumulativeBytesLoaded /
                             loadingProgress.expectedTotalBytes!
@@ -998,7 +998,7 @@ class _StoryMediaStepState extends State<StoryMediaStep> {
         children: [
           Icon(
             Icons.check_circle_outline,
-            color: const Color(0xFF6366F1),
+            color: const Color(0xFF4E03D0),
             size: 14.sp,
           ),
           SizedBox(width: 8.w),

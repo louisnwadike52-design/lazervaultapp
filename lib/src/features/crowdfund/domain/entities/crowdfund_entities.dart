@@ -150,6 +150,8 @@ class Crowdfund extends Equatable {
       : 0;
   double get amountRemaining => (targetAmount - currentAmount).clamp(0.0, double.infinity);
   bool get isTargetReached => currentAmount >= targetAmount;
+  double get averageDonation =>
+      donorCount > 0 ? currentAmount / donorCount : 0.0;
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -241,6 +243,24 @@ class CrowdfundDonor extends Equatable {
     required this.isCreator,
   });
 
+  Map<String, dynamic> toJson() => {
+        'userId': userId,
+        'displayName': displayName,
+        'profilePicture': profilePicture,
+        'isAnonymous': isAnonymous,
+        'isCreator': isCreator,
+      };
+
+  factory CrowdfundDonor.fromJson(Map<String, dynamic> json) {
+    return CrowdfundDonor(
+      userId: (json['userId'] as num).toInt(),
+      displayName: json['displayName'] as String? ?? '',
+      profilePicture: json['profilePicture'] as String?,
+      isAnonymous: json['isAnonymous'] as bool? ?? false,
+      isCreator: json['isCreator'] as bool? ?? false,
+    );
+  }
+
   @override
   List<Object?> get props =>
       [userId, displayName, profilePicture, isAnonymous, isCreator];
@@ -284,6 +304,47 @@ class CrowdfundDonation extends Equatable {
   bool get isPending => status == DonationStatus.pending;
   bool get isProcessing => status == DonationStatus.processing;
   bool get isFailed => status == DonationStatus.failed;
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'crowdfundId': crowdfundId,
+        'donorUserId': donorUserId,
+        'donor': donor.toJson(),
+        'amount': amount,
+        'currency': currency,
+        'donationDate': donationDate.toIso8601String(),
+        'status': status.name,
+        'transactionId': transactionId,
+        'receiptId': receiptId,
+        'message': message,
+        'isAnonymous': isAnonymous,
+        'paymentMethod': paymentMethod,
+        'metadata': metadata,
+      };
+
+  factory CrowdfundDonation.fromJson(Map<String, dynamic> json) {
+    return CrowdfundDonation(
+      id: json['id'] as String,
+      crowdfundId: json['crowdfundId'] as String,
+      donorUserId: (json['donorUserId'] as num).toInt(),
+      donor: CrowdfundDonor.fromJson(json['donor'] as Map<String, dynamic>),
+      amount: (json['amount'] as num).toDouble(),
+      currency: json['currency'] as String? ?? '',
+      donationDate:
+          DateTime.tryParse(json['donationDate'] as String? ?? '') ??
+              DateTime.now(),
+      status: DonationStatus.values.firstWhere(
+        (e) => e.name == (json['status'] as String? ?? ''),
+        orElse: () => DonationStatus.pending,
+      ),
+      transactionId: json['transactionId'] as String?,
+      receiptId: json['receiptId'] as String?,
+      message: json['message'] as String?,
+      isAnonymous: json['isAnonymous'] as bool? ?? false,
+      paymentMethod: json['paymentMethod'] as String? ?? '',
+      metadata: (json['metadata'] as Map?)?.cast<String, dynamic>(),
+    );
+  }
 
   @override
   List<Object?> get props => [

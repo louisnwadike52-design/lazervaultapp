@@ -21,17 +21,45 @@ class _MyCampaignsScreenState extends State<MyCampaignsScreen>
   late TabController _tabController;
   final _tabs = const ['All', 'Active', 'Paused', 'Completed', 'Cancelled'];
 
+  /// One ScrollController per tab so each tab's offset is preserved
+  /// when the user swipes back and forth, and the bottom-detection
+  /// logic isn't confused by sibling tabs' scroll state.
+  late final List<ScrollController> _tabScrollControllers;
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: _tabs.length, vsync: this);
+    _tabScrollControllers = List.generate(_tabs.length, (_) {
+      final c = ScrollController();
+      c.addListener(() => _onTabScroll(c));
+      return c;
+    });
     context.read<CrowdfundCubit>().loadMyCrowdfunds();
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    for (final c in _tabScrollControllers) {
+      c.dispose();
+    }
     super.dispose();
+  }
+
+  void _onTabScroll(ScrollController controller) {
+    if (!controller.hasClients) return;
+    final position = controller.position;
+    if (position.pixels < position.maxScrollExtent - 240) return;
+
+    final cubit = context.read<CrowdfundCubit>();
+    final state = cubit.state;
+    if (state is! MyCrowdfundsLoaded ||
+        state.isLoadingMore ||
+        !state.hasMore) {
+      return;
+    }
+    cubit.loadMoreMyCrowdfunds();
   }
 
   List<Crowdfund> _filterByTab(List<Crowdfund> all, int tabIndex) {
@@ -72,7 +100,7 @@ class _MyCampaignsScreenState extends State<MyCampaignsScreen>
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
-          indicatorColor: const Color(0xFF6366F1),
+          indicatorColor: const Color(0xFF4E03D0),
           indicatorWeight: 3,
           labelColor: Colors.white,
           unselectedLabelColor: const Color(0xFF9CA3AF),
@@ -90,7 +118,7 @@ class _MyCampaignsScreenState extends State<MyCampaignsScreen>
         builder: (context, state) {
           if (state is CrowdfundLoading) {
             return const Center(
-                child: CircularProgressIndicator(color: Color(0xFF6366F1)));
+                child: CircularProgressIndicator(color: Color(0xFF4E03D0)));
           }
           if (state is MyCrowdfundsLoaded) {
             return TabBarView(
@@ -100,16 +128,45 @@ class _MyCampaignsScreenState extends State<MyCampaignsScreen>
                 if (filtered.isEmpty) {
                   return _buildEmpty(_tabs[tabIndex]);
                 }
+                // Show a footer spinner row while paginating; tapping
+                // the All tab is the only one that triggers loadMore
+                // since "Active/Paused/..." filters are client-side
+                // and a server-fetched next page may not include any
+                // of them. The All tab covers every campaign.
+                final showFooter = tabIndex == 0 &&
+                    (state.isLoadingMore || state.hasMore);
+                final itemCount = filtered.length + (showFooter ? 1 : 0);
                 return RefreshIndicator(
                   onRefresh: () async =>
                       context.read<CrowdfundCubit>().loadMyCrowdfunds(),
-                  color: const Color(0xFF6366F1),
+                  color: const Color(0xFF4E03D0),
                   backgroundColor: const Color(0xFF1F1F1F),
                   child: ListView.separated(
+                    controller: _tabScrollControllers[tabIndex],
+                    physics: const AlwaysScrollableScrollPhysics(),
                     padding: EdgeInsets.all(16.w),
-                    itemCount: filtered.length,
+                    itemCount: itemCount,
                     separatorBuilder: (_, __) => SizedBox(height: 10.h),
-                    itemBuilder: (_, i) => _buildCampaignTile(filtered[i]),
+                    itemBuilder: (_, i) {
+                      if (i >= filtered.length) {
+                        return Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16.h),
+                          child: Center(
+                            child: state.isLoadingMore
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Color(0xFF4E03D0),
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const SizedBox.shrink(),
+                          ),
+                        );
+                      }
+                      return _buildCampaignTile(filtered[i]);
+                    },
                   ),
                 );
               }),
@@ -120,7 +177,7 @@ class _MyCampaignsScreenState extends State<MyCampaignsScreen>
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Get.toNamed(AppRoutes.createCrowdfund),
-        backgroundColor: const Color(0xFF6366F1),
+        backgroundColor: const Color(0xFF4E03D0),
         icon: Icon(Icons.add, size: 20.sp),
         label: Text('New Campaign',
             style: GoogleFonts.inter(
@@ -151,7 +208,7 @@ class _MyCampaignsScreenState extends State<MyCampaignsScreen>
             ElevatedButton(
               onPressed: () => Get.toNamed(AppRoutes.createCrowdfund),
               style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6366F1)),
+                  backgroundColor: const Color(0xFF4E03D0)),
               child: Text('Create Campaign',
                   style: GoogleFonts.inter(
                       color: Colors.white, fontWeight: FontWeight.w600)),
@@ -264,7 +321,7 @@ class _MyCampaignsScreenState extends State<MyCampaignsScreen>
       case CrowdfundStatus.paused:
         return const Color(0xFFF59E0B);
       case CrowdfundStatus.completed:
-        return const Color(0xFF6366F1);
+        return const Color(0xFF4E03D0);
       case CrowdfundStatus.cancelled:
         return const Color(0xFF6B7280);
     }

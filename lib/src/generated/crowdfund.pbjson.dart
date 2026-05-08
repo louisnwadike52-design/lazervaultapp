@@ -373,11 +373,12 @@ const MakeDonationRequest$json = const {
     const {'1': 'is_anonymous', '3': 4, '4': 1, '5': 8, '10': 'isAnonymous'},
     const {'1': 'source_account_id', '3': 5, '4': 1, '5': 9, '10': 'sourceAccountId'},
     const {'1': 'transaction_pin', '3': 6, '4': 1, '5': 9, '10': 'transactionPin'},
+    const {'1': 'transaction_id', '3': 7, '4': 1, '5': 9, '10': 'transactionId'},
   ],
 };
 
 /// Descriptor for `MakeDonationRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List makeDonationRequestDescriptor = $convert.base64Decode('ChNNYWtlRG9uYXRpb25SZXF1ZXN0EiEKDGNyb3dkZnVuZF9pZBgBIAEoCVILY3Jvd2RmdW5kSWQSFgoGYW1vdW50GAIgASgEUgZhbW91bnQSGAoHbWVzc2FnZRgDIAEoCVIHbWVzc2FnZRIhCgxpc19hbm9ueW1vdXMYBCABKAhSC2lzQW5vbnltb3VzEioKEXNvdXJjZV9hY2NvdW50X2lkGAUgASgJUg9zb3VyY2VBY2NvdW50SWQSJwoPdHJhbnNhY3Rpb25fcGluGAYgASgJUg50cmFuc2FjdGlvblBpbg==');
+final $typed_data.Uint8List makeDonationRequestDescriptor = $convert.base64Decode('ChNNYWtlRG9uYXRpb25SZXF1ZXN0EiEKDGNyb3dkZnVuZF9pZBgBIAEoCVILY3Jvd2RmdW5kSWQSFgoGYW1vdW50GAIgASgEUgZhbW91bnQSGAoHbWVzc2FnZRgDIAEoCVIHbWVzc2FnZRIhCgxpc19hbm9ueW1vdXMYBCABKAhSC2lzQW5vbnltb3VzEioKEXNvdXJjZV9hY2NvdW50X2lkGAUgASgJUg9zb3VyY2VBY2NvdW50SWQSJwoPdHJhbnNhY3Rpb25fcGluGAYgASgJUg50cmFuc2FjdGlvblBpbhIlCg50cmFuc2FjdGlvbl9pZBgHIAEoCVINdHJhbnNhY3Rpb25JZA==');
 @$core.Deprecated('Use makeDonationResponseDescriptor instead')
 const MakeDonationResponse$json = const {
   '1': 'MakeDonationResponse',

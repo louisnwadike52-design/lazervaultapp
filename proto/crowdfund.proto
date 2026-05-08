@@ -205,6 +205,11 @@ message MakeDonationRequest {
   bool is_anonymous = 4;
   string source_account_id = 5;
   string transaction_pin = 6;
+  // transaction_id is the same string the client passed when minting
+  // the PIN verification token via /api/v1/auth/verify-transaction-pin.
+  // The auth-service token validator looks up the row by
+  // (token, user_id, transaction_id), so the two MUST match exactly.
+  string transaction_id = 7;
 }
 
 message MakeDonationResponse {

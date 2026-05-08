@@ -106,7 +106,7 @@ class _FundingGoalStepState extends State<FundingGoalStep> {
               height: 80.w,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
+                  colors: [Color(0xFF4E03D0), Color.fromARGB(255, 78, 3, 208)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -193,7 +193,7 @@ class _FundingGoalStepState extends State<FundingGoalStep> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  const Color(0xFF6366F1).withValues(alpha: 0.1),
+                  const Color(0xFF4E03D0).withValues(alpha: 0.1),
                   const Color.fromARGB(255, 78, 3, 208)
                       .withValues(alpha: 0.05),
                 ],
@@ -206,7 +206,7 @@ class _FundingGoalStepState extends State<FundingGoalStep> {
               children: [
                 Icon(
                   Icons.info_outline,
-                  color: const Color(0xFF6366F1),
+                  color: const Color(0xFF4E03D0),
                   size: 20.sp,
                 ),
                 SizedBox(width: 12.w),
@@ -271,7 +271,7 @@ class _FundingGoalStepState extends State<FundingGoalStep> {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
             decoration: BoxDecoration(
-              color: const Color(0xFF6366F1).withValues(alpha: 0.15),
+              color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10.r),
             ),
             child: Row(
@@ -282,7 +282,7 @@ class _FundingGoalStepState extends State<FundingGoalStep> {
                   style: GoogleFonts.inter(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF6366F1),
+                    color: const Color(0xFF4E03D0),
                   ),
                 ),
                 SizedBox(width: 6.w),
@@ -291,7 +291,7 @@ class _FundingGoalStepState extends State<FundingGoalStep> {
                   style: GoogleFonts.inter(
                     fontSize: 12.sp,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF6366F1),
+                    color: const Color(0xFF4E03D0),
                   ),
                 ),
               ],

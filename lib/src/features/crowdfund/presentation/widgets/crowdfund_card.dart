@@ -42,7 +42,7 @@ class CrowdfundCard extends StatelessWidget {
                 Text(
                   crowdfund.crowdfundCode,
                   style: TextStyle(
-                    color: const Color(0xFF6366F1),
+                    color: const Color(0xFF4E03D0),
                     fontSize: 10.sp,
                     fontWeight: FontWeight.w600,
                     fontFamily: 'monospace',
@@ -59,14 +59,14 @@ class CrowdfundCard extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 14.r,
-                      backgroundColor: const Color(0xFF6366F1).withValues(alpha: 0.2),
+                      backgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.2),
                       backgroundImage: crowdfund.creator.profilePicture != null
                           ? NetworkImage(crowdfund.creator.profilePicture!)
                           : null,
                       child: crowdfund.creator.profilePicture == null
                           ? Text(
                               crowdfund.creator.initials,
-                              style: TextStyle(color: const Color(0xFF6366F1), fontSize: 10.sp, fontWeight: FontWeight.bold),
+                              style: TextStyle(color: const Color(0xFF4E03D0), fontSize: 10.sp, fontWeight: FontWeight.bold),
                             )
                           : null,
                     ),
@@ -119,18 +119,18 @@ class CrowdfundCard extends StatelessWidget {
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF6366F1).withValues(alpha: 0.15),
+                    color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(4.r),
                   ),
                   child: Text(
                     crowdfund.category,
-                    style: TextStyle(color: const Color(0xFF6366F1), fontSize: 10.sp, fontWeight: FontWeight.w600),
+                    style: TextStyle(color: const Color(0xFF4E03D0), fontSize: 10.sp, fontWeight: FontWeight.w600),
                   ),
                 ),
                 const Spacer(),
                 Text(
                   '${crowdfund.currency} ${crowdfund.currentAmount.toStringAsFixed(0)}',
-                  style: TextStyle(color: const Color(0xFF6366F1), fontSize: 14.sp, fontWeight: FontWeight.bold),
+                  style: TextStyle(color: const Color(0xFF4E03D0), fontSize: 14.sp, fontWeight: FontWeight.bold),
                 ),
                 Text(
                   ' / ${crowdfund.targetAmount.toStringAsFixed(0)}',
@@ -198,8 +198,8 @@ class CrowdfundCard extends StatelessWidget {
         icon = Icons.check_circle;
         break;
       case CrowdfundStatus.completed:
-        backgroundColor = const Color(0xFF6366F1).withValues(alpha: 0.2);
-        textColor = const Color(0xFF6366F1);
+        backgroundColor = const Color(0xFF4E03D0).withValues(alpha: 0.2);
+        textColor = const Color(0xFF4E03D0);
         statusText = 'Completed';
         icon = Icons.celebration;
         break;

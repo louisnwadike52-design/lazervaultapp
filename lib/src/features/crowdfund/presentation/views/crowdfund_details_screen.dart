@@ -1,9 +1,12 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import '../../../../../core/services/injection_container.dart';
 import '../../data/services/crowdfund_share_service.dart';
 import '../../domain/entities/crowdfund_entities.dart';
@@ -27,15 +30,26 @@ class CrowdfundDetailsScreen extends StatefulWidget {
   State<CrowdfundDetailsScreen> createState() => _CrowdfundDetailsScreenState();
 }
 
-class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
+class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
+    with WidgetsBindingObserver {
   // Scroll controller drives the "load more donations" trigger. Anchored
   // to the outer CustomScrollView so we can fire when the user reaches
   // the bottom of the page rather than tracking a separate ListView.
   final ScrollController _scrollController = ScrollController();
 
+  /// Last successful CrowdfundDetailsLoaded snapshot. The cubit is
+  /// shared with the AI report sub-flow, which emits its own report
+  /// states on the same instance. When that screen pops back, the
+  /// cubit's current state may be CrowdfundReportGenerated — without
+  /// this cache _buildBody would render an empty SizedBox and the user
+  /// would see a black screen. Re-rendering from the last snapshot
+  /// keeps the page populated until loadCrowdfundDetails refreshes.
+  CrowdfundDetailsLoaded? _lastDetails;
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _scrollController.addListener(_onScroll);
     // Data loading is triggered by the route's BlocProvider (..loadCrowdfundDetails())
     // Only reload if the cubit is in initial state (no data loaded yet)
@@ -47,9 +61,21 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Foreground refresh: when the app comes back from the background
+    // and this screen is still on top, kick off an SWR revalidation so
+    // counters / donations don't sit on stale data. The SWR layer
+    // skips the network call when nothing is stale.
+    if (state == AppLifecycleState.resumed && mounted) {
+      context.read<CrowdfundCubit>().loadCrowdfundDetails(widget.crowdfundId);
+    }
   }
 
   void _onScroll() {
@@ -66,9 +92,36 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
     context.read<CrowdfundCubit>().loadMoreDonations();
   }
 
+  void _exitToCrowdfundHome() {
+    final navigator = Navigator.of(context);
+    if (navigator.canPop()) {
+      navigator.pop();
+    } else {
+      Get.offAllNamed(AppRoutes.crowdfund);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<CrowdfundCubit, CrowdfundState>(
+      // Skip repaints triggered by sibling cubit operations on the
+      // shared instance: report generation states, my-campaigns /
+      // user-donations refreshes, leaderboard loads, etc. Only the
+      // states actually rendered by this screen should drive a build.
+      // Without this, opening the AI report repaints the whole
+      // details tree on every report state transition.
+      buildWhen: (prev, curr) =>
+          curr is CrowdfundDetailsLoaded ||
+          curr is CrowdfundLoading ||
+          curr is CrowdfundError ||
+          curr is CrowdfundInitial,
+      // Only fire side-effects (snackbars) for state transitions that
+      // this screen drove. The cubit is shared with sibling features
+      // (report flow, list refresh, my-campaigns) — without listenWhen
+      // a CrowdfundError emitted by an unrelated background fetch
+      // would pop a snackbar on top of the donor list.
+      listenWhen: (prev, curr) =>
+          curr is CrowdfundError && prev is! CrowdfundError,
       listener: (context, state) {
         if (state is CrowdfundError) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -80,51 +133,115 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
         }
       },
       builder: (context, state) {
-        Crowdfund? crowdfund;
         if (state is CrowdfundDetailsLoaded) {
-          crowdfund = state.crowdfund;
+          _lastDetails = state;
+        }
+        Crowdfund? crowdfund;
+        final renderState =
+            state is CrowdfundDetailsLoaded ? state : _lastDetails;
+        if (renderState != null) {
+          crowdfund = renderState.crowdfund;
         }
 
-        return Scaffold(
-          backgroundColor: const Color(0xFF0A0A0A),
-          body: _buildBody(state),
-          floatingActionButton: crowdfund != null &&
-                  crowdfund.isActive &&
-                  !crowdfund.isExpired
-              ? FloatingActionButton.extended(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => BlocProvider.value(
-                          value: context.read<CrowdfundCubit>(),
-                          child: DonationPaymentScreen(crowdfund: crowdfund!),
+        return PopScope(
+          canPop: false,
+          onPopInvokedWithResult: (didPop, _) {
+            if (didPop) return;
+            _exitToCrowdfundHome();
+          },
+          child: Scaffold(
+            backgroundColor: const Color(0xFF0A0A0A),
+            body: _buildBody(state),
+            floatingActionButton: crowdfund != null &&
+                    crowdfund.isActive &&
+                    !crowdfund.isExpired
+                ? FloatingActionButton.extended(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => BlocProvider.value(
+                            value: context.read<CrowdfundCubit>(),
+                            child: DonationPaymentScreen(crowdfund: crowdfund!),
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                  backgroundColor: const Color(0xFF6366F1),
-                  icon: const Icon(Icons.volunteer_activism, color: Colors.white),
-                  label: Text(
-                    'Donate',
-                    style: TextStyle(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.bold),
-                  ),
-                )
-              : null,
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+                      );
+                    },
+                    backgroundColor: const Color(0xFF4E03D0),
+                    icon: const Icon(Icons.volunteer_activism, color: Colors.white),
+                    label: Text(
+                      'Donate',
+                      style: TextStyle(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.bold),
+                    ),
+                  )
+                : null,
+            floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          ),
         );
       },
     );
   }
 
   Widget _buildBody(CrowdfundState state) {
-    if (state is CrowdfundLoading) {
-      return const Center(child: CircularProgressIndicator(color: Color(0xFF6366F1)));
-    }
     if (state is CrowdfundDetailsLoaded) {
       return _buildDetails(state);
     }
-    return const SizedBox.shrink();
+    // Fallback: while the cubit is in a sibling state (report flow,
+    // statistics, generic loading) keep showing the last good details
+    // so we never bottom out at a black screen.
+    final fallback = _lastDetails;
+    if (fallback != null) {
+      return _buildDetails(fallback);
+    }
+    if (state is CrowdfundError) {
+      return _buildErrorBody(state.message);
+    }
+    if (state is CrowdfundLoading) {
+      return const Center(child: CircularProgressIndicator(color: Color(0xFF4E03D0)));
+    }
+    return const Center(
+      child: CircularProgressIndicator(color: Color(0xFF4E03D0)),
+    );
+  }
+
+  Widget _buildErrorBody(String message) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(24.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline,
+                size: 48.sp, color: const Color(0xFFEF4444)),
+            SizedBox(height: 16.h),
+            Text('Failed to load campaign',
+                style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w700)),
+            SizedBox(height: 8.h),
+            Text(message,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF), fontSize: 13.sp)),
+            SizedBox(height: 20.h),
+            ElevatedButton(
+              onPressed: () => context
+                  .read<CrowdfundCubit>()
+                  .loadCrowdfundDetails(widget.crowdfundId),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4E03D0),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.r)),
+              ),
+              child: Text('Retry',
+                  style: GoogleFonts.inter(
+                      color: Colors.white, fontWeight: FontWeight.w600)),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildDetails(CrowdfundDetailsLoaded state) {
@@ -145,31 +262,65 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
           expandedHeight: crowdfund.imageUrl != null ? 180.h : 0,
           pinned: true,
           backgroundColor: const Color(0xFF0A0A0A),
+          // Subtle revalidation indicator while SWR refreshes in the
+          // background. Renders a 2-px progress bar pinned to the
+          // bottom of the app bar; invisible when fresh so it doesn't
+          // shift any layout below.
+          bottom: state.isStale
+              ? const PreferredSize(
+                  preferredSize: Size.fromHeight(2),
+                  child: LinearProgressIndicator(
+                    minHeight: 2,
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(Color(0xFF4E03D0)),
+                    backgroundColor: Color(0xFF1F1F1F),
+                  ),
+                )
+              : null,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: () => Navigator.pop(context),
+            onPressed: _exitToCrowdfundHome,
           ),
           actions: [
-            IconButton(
-              icon: const Icon(Icons.auto_awesome, color: Colors.white, size: 20),
-              tooltip: 'AI Report',
-              onPressed: () => _navigateToReport(crowdfund, donations, statistics),
-            ),
-            IconButton(
-              icon: const Icon(Icons.share, color: Colors.white, size: 20),
-              onPressed: () => _shareCrowdfund(crowdfund),
-            ),
-            IconButton(
-              icon: const Icon(Icons.content_copy, color: Colors.white, size: 20),
-              onPressed: () => _copyCrowdfundCode(crowdfund),
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert, color: Colors.white),
+              color: const Color(0xFF1F1F1F),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              onSelected: (value) {
+                switch (value) {
+                  case 'report':
+                    _navigateToReport(crowdfund, donations, statistics);
+                    break;
+                  case 'share':
+                    _shareCrowdfund(crowdfund);
+                    break;
+                  case 'copy_code':
+                    _copyCrowdfundCode(crowdfund);
+                    break;
+                }
+              },
+              itemBuilder: (_) => [
+                _menuItem(value: 'report', icon: Icons.auto_awesome, label: 'AI Report'),
+                _menuItem(value: 'share', icon: Icons.share, label: 'Share'),
+                _menuItem(value: 'copy_code', icon: Icons.content_copy, label: 'Copy code'),
+              ],
             ),
           ],
           flexibleSpace: crowdfund.imageUrl != null
               ? FlexibleSpaceBar(
-                  background: Image.network(
-                    crowdfund.imageUrl!,
+                  background: CachedNetworkImage(
+                    imageUrl: crowdfund.imageUrl!,
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
+                    fadeInDuration: const Duration(milliseconds: 180),
+                    placeholder: (context, _) => Container(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                            colors: [Color(0xFF1A1A3E), Color(0xFF0A0E27)]),
+                      ),
+                    ),
+                    errorWidget: (context, error, stackTrace) => Container(
                       decoration: const BoxDecoration(
                         gradient: LinearGradient(colors: [Color(0xFF1A1A3E), Color(0xFF0A0E27)]),
                       ),
@@ -191,21 +342,23 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                   style: GoogleFonts.inter(color: Colors.white, fontSize: 20.sp, fontWeight: FontWeight.w700),
                 ),
                 SizedBox(height: 8.h),
-                // Category + code badges
-                Row(
+                // Status + category + code badges
+                Wrap(
+                  spacing: 6.w,
+                  runSpacing: 6.h,
                   children: [
+                    _buildStatusPill(crowdfund),
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF6366F1).withValues(alpha: 0.2),
+                        color: const Color(0xFF4E03D0).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(6.r),
                       ),
                       child: Text(
                         crowdfund.category,
-                        style: GoogleFonts.inter(color: const Color(0xFF6366F1), fontSize: 11.sp, fontWeight: FontWeight.w600),
+                        style: GoogleFonts.inter(color: const Color(0xFF4E03D0), fontSize: 11.sp, fontWeight: FontWeight.w600),
                       ),
                     ),
-                    SizedBox(width: 6.w),
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                       decoration: BoxDecoration(
@@ -214,7 +367,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                       ),
                       child: Text(
                         crowdfund.crowdfundCode,
-                        style: TextStyle(color: const Color(0xFF6366F1), fontSize: 11.sp, fontWeight: FontWeight.w600, fontFamily: 'monospace'),
+                        style: TextStyle(color: const Color(0xFF4E03D0), fontSize: 11.sp, fontWeight: FontWeight.w600, fontFamily: 'monospace'),
                       ),
                     ),
                   ],
@@ -249,7 +402,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                               Text('Raised', style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 10.sp)),
                               Text(
                                 '${crowdfund.currency} ${crowdfund.currentAmount.toStringAsFixed(2)}',
-                                style: GoogleFonts.inter(color: const Color(0xFF6366F1), fontSize: 18.sp, fontWeight: FontWeight.w700),
+                                style: GoogleFonts.inter(color: const Color(0xFF4E03D0), fontSize: 18.sp, fontWeight: FontWeight.w700),
                               ),
                             ],
                           ),
@@ -279,11 +432,11 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                               value: crowdfund.daysRemaining.toString(),
                               isWarning: crowdfund.daysRemaining < 7,
                             ),
-                          if (statistics != null)
+                          if (crowdfund.donorCount > 0)
                             _buildStat(
                               icon: Icons.analytics,
                               label: 'Avg',
-                              value: '${crowdfund.currency} ${statistics.averageDonation.toStringAsFixed(0)}',
+                              value: '${crowdfund.currency} ${crowdfund.averageDonation.toStringAsFixed(0)}',
                             ),
                         ],
                       ),
@@ -320,17 +473,55 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                 ),
                 SizedBox(height: 8.h),
                 if (donations.isEmpty)
-                  Center(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 20.h),
-                      child: Column(
-                        children: [
-                          Icon(Icons.volunteer_activism, color: const Color(0xFF6B7280), size: 36.sp),
-                          SizedBox(height: 8.h),
-                          Text('No donations yet', style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 13.sp)),
-                          Text('Be the first to donate!', style: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 11.sp)),
-                        ],
-                      ),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 18.h),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1F1F1F),
+                      borderRadius: BorderRadius.circular(12.r),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.18),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(10.w),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF4E03D0).withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(10.r),
+                          ),
+                          child: Icon(
+                            Icons.volunteer_activism,
+                            color: const Color(0xFF4E03D0),
+                            size: 18.sp,
+                          ),
+                        ),
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('No donations yet',
+                                  style: GoogleFonts.inter(
+                                      color: Colors.white,
+                                      fontSize: 13.sp,
+                                      fontWeight: FontWeight.w700)),
+                              SizedBox(height: 2.h),
+                              Text(
+                                crowdfund.isActive && !crowdfund.isExpired
+                                    ? 'Be the first to back this campaign.'
+                                    : 'No one donated before this campaign closed.',
+                                style: GoogleFonts.inter(
+                                    color: const Color(0xFF9CA3AF), fontSize: 11.sp),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   )
                 else
@@ -364,7 +555,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
             width: 22,
             height: 22,
             child: CircularProgressIndicator(
-              color: Color(0xFF6366F1),
+              color: Color(0xFF4E03D0),
               strokeWidth: 2,
             ),
           ),
@@ -379,7 +570,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
             onPressed: () =>
                 context.read<CrowdfundCubit>().loadMoreDonations(),
             style: TextButton.styleFrom(
-              foregroundColor: const Color(0xFF6366F1),
+              foregroundColor: const Color(0xFF4E03D0),
             ),
             child: Text(
               'Load more',
@@ -409,6 +600,92 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
     return const SizedBox.shrink();
   }
 
+  PopupMenuItem<String> _menuItem({
+    required String value,
+    required IconData icon,
+    required String label,
+  }) {
+    return PopupMenuItem<String>(
+      value: value,
+      child: Row(
+        children: [
+          Icon(icon, color: const Color(0xFF4E03D0), size: 18.sp),
+          SizedBox(width: 12.w),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  ({Color color, String label, IconData icon}) _statusVisuals(Crowdfund c) {
+    if (c.isExpired && c.isActive) {
+      return (
+        color: const Color(0xFFEF4444),
+        label: 'Expired',
+        icon: Icons.access_time_filled,
+      );
+    }
+    if (c.isCompleted) {
+      return (
+        color: const Color(0xFF10B981),
+        label: 'Completed',
+        icon: Icons.verified,
+      );
+    }
+    if (c.isCancelled) {
+      return (
+        color: const Color(0xFFEF4444),
+        label: 'Cancelled',
+        icon: Icons.block,
+      );
+    }
+    if (c.isPaused) {
+      return (
+        color: const Color(0xFFF59E0B),
+        label: 'Paused',
+        icon: Icons.pause_circle,
+      );
+    }
+    return (
+      color: const Color(0xFF4E03D0),
+      label: 'Active',
+      icon: Icons.bolt,
+    );
+  }
+
+  Widget _buildStatusPill(Crowdfund c) {
+    final v = _statusVisuals(c);
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+      decoration: BoxDecoration(
+        color: v.color.withValues(alpha: 0.18),
+        borderRadius: BorderRadius.circular(6.r),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(v.icon, size: 11.sp, color: v.color),
+          SizedBox(width: 4.w),
+          Text(
+            v.label,
+            style: GoogleFonts.inter(
+              color: v.color,
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildStat({
     required IconData icon,
     required String label,
@@ -417,7 +694,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
   }) {
     return Column(
       children: [
-        Icon(icon, color: isWarning ? const Color(0xFFF59E0B) : const Color(0xFF6366F1), size: 14.sp),
+        Icon(icon, color: isWarning ? const Color(0xFFF59E0B) : const Color(0xFF4E03D0), size: 14.sp),
         SizedBox(height: 2.h),
         Text(value, style: GoogleFonts.inter(color: Colors.white, fontSize: 12.sp, fontWeight: FontWeight.w700)),
         Text(label, style: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 9.sp)),
@@ -457,20 +734,24 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF6366F1).withValues(alpha: 0.18),
+            const Color(0xFF4E03D0).withValues(alpha: 0.18),
             const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.08),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: const Color(0xFF6366F1).withValues(alpha: 0.3),
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF4E03D0).withValues(alpha: 0.18),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Row(
         children: [
-          Icon(Icons.ios_share, size: 18.sp, color: const Color(0xFF6366F1)),
+          Icon(Icons.ios_share, size: 18.sp, color: const Color(0xFF4E03D0)),
           SizedBox(width: 10.w),
           Expanded(
             child: Column(
@@ -481,7 +762,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
                   style: GoogleFonts.inter(
                     fontSize: 10.sp,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF6366F1),
+                    color: const Color(0xFF4E03D0),
                   ),
                 ),
                 SizedBox(height: 2.h),
@@ -501,7 +782,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
           IconButton(
             tooltip: 'Copy link',
             onPressed: () => _copyShareLink(url),
-            icon: Icon(Icons.copy, size: 18.sp, color: const Color(0xFF6366F1)),
+            icon: Icon(Icons.copy, size: 18.sp, color: const Color(0xFF4E03D0)),
             visualDensity: VisualDensity.compact,
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
@@ -510,7 +791,7 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
           IconButton(
             tooltip: 'Share',
             onPressed: () => _shareLink(crowdfund, url),
-            icon: Icon(Icons.share, size: 18.sp, color: const Color(0xFF6366F1)),
+            icon: Icon(Icons.share, size: 18.sp, color: const Color(0xFF4E03D0)),
             visualDensity: VisualDensity.compact,
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
@@ -642,10 +923,10 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
     );
   }
 
-  void _navigateToReport(Crowdfund crowdfund, List<CrowdfundDonation> donations, CrowdfundStatistics? statistics) {
+  Future<void> _navigateToReport(Crowdfund crowdfund, List<CrowdfundDonation> donations, CrowdfundStatistics? statistics) async {
     final campaignUrl = 'https://app.lazervault.com/crowdfund/${crowdfund.crowdfundCode}';
     final cubit = context.read<CrowdfundCubit>();
-    Navigator.push(
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => BlocProvider.value(
@@ -659,5 +940,11 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen> {
         ),
       ),
     );
+    // After the report screen pops, the cubit state is in one of the
+    // CrowdfundReport* variants. Re-emit CrowdfundDetailsLoaded so the
+    // builder picks up a fresh details payload (stale-while-revalidate
+    // through the SWR cache makes this near-instant).
+    if (!mounted) return;
+    cubit.loadCrowdfundDetails(crowdfund.id);
   }
 }

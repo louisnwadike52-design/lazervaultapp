@@ -115,6 +115,15 @@ class CacheConfig {
     cacheTime: Duration(hours: 6),
   );
 
+  /// Configuration for the first page of donations on a campaign.
+  /// Donations turn over fast (people donate in real time), so the
+  /// stale window is short (45s). Keeping a 6h cache lets repeat
+  /// visits paint instantly while we revalidate in the background.
+  static const crowdfundDonationsFirstPage = CacheConfig(
+    staleTime: Duration(seconds: 45),
+    cacheTime: Duration(hours: 6),
+  );
+
   /// Configuration for trending crowdfunds on discovery page.
   /// Short stale time (2 min) for freshness, 6 hour cache.
   static const trendingCrowdfunds = CacheConfig(
