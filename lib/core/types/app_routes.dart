@@ -288,6 +288,10 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   static const String paymentReceipt = '/group-account/payment-receipt';
   static const String contributionTranscript = '/group-account/contribution-transcript';
   static const String contributionHistory = '/group-account/contribution-history';
+  // Past Contributions / Past Groups (read-only ex-member surface)
+  static const String pastContributions = '/group-account/past-contributions';
+  static const String pastGroups = '/group-account/past-groups';
+  static const String pastContributionDetails = '/group-account/past-contribution-details';
 
   // Insurance Routes
   static const String insurance = '/insurance';

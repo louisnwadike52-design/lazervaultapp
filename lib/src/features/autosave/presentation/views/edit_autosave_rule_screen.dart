@@ -23,6 +23,11 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
   final _targetAmountController = TextEditingController();
   final _minimumBalanceController = TextEditingController();
   final _maximumPerSaveController = TextEditingController();
+  // Round-up rules carry an extra "round up to" denomination (kobo
+  // value the rule rounds purchases up to). The proto allows
+  // patching it on update, so the edit form mirrors the create wizard
+  // and surfaces it when triggerType == roundUp.
+  final _roundUpToController = TextEditingController();
 
   late AutoSaveRuleEntity originalRule;
   late AmountType _selectedAmountType;
@@ -56,6 +61,12 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
       _maximumPerSaveController.text = originalRule.maximumPerSave.toString();
     }
 
+    // Populate round-up denomination when applicable.
+    if (originalRule.triggerType == TriggerType.roundUp &&
+        originalRule.roundUpTo != null) {
+      _roundUpToController.text = originalRule.roundUpTo.toString();
+    }
+
     // Populate schedule fields if scheduled rule
     if (originalRule.triggerType == TriggerType.scheduled) {
       _selectedFrequency = originalRule.frequency;
@@ -79,6 +90,7 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
     _targetAmountController.addListener(_checkForChanges);
     _minimumBalanceController.addListener(_checkForChanges);
     _maximumPerSaveController.addListener(_checkForChanges);
+    _roundUpToController.addListener(_checkForChanges);
   }
 
   void _checkForChanges() {
@@ -89,7 +101,8 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
           _selectedAmountType != originalRule.amountType ||
           _targetAmountController.text != (originalRule.targetAmount?.toString() ?? '') ||
           _minimumBalanceController.text != (originalRule.minimumBalance?.toString() ?? '') ||
-          _maximumPerSaveController.text != (originalRule.maximumPerSave?.toString() ?? '');
+          _maximumPerSaveController.text != (originalRule.maximumPerSave?.toString() ?? '') ||
+          _roundUpToController.text != (originalRule.roundUpTo?.toString() ?? '');
     });
   }
 
@@ -101,6 +114,7 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
     _targetAmountController.dispose();
     _minimumBalanceController.dispose();
     _maximumPerSaveController.dispose();
+    _roundUpToController.dispose();
     super.dispose();
   }
 
@@ -514,6 +528,14 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
       scheduleTime = '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}';
     }
 
+    // Round-up denomination — only round-up rules have one. Parse to
+    // int (kobo) since the proto types it as int32.
+    int? roundUpTo;
+    if (originalRule.triggerType == TriggerType.roundUp &&
+        _roundUpToController.text.isNotEmpty) {
+      roundUpTo = int.tryParse(_roundUpToController.text);
+    }
+
     // Call update rule
     context.read<AutoSaveCubit>().updateRule(
       ruleId: originalRule.id,
@@ -524,6 +546,7 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
       frequency: _selectedFrequency,
       scheduleTime: scheduleTime,
       scheduleDay: _selectedDay,
+      roundUpTo: roundUpTo,
       targetAmount: _targetAmountController.text.isEmpty ? null : double.parse(_targetAmountController.text),
       minimumBalance: _minimumBalanceController.text.isEmpty ? null : double.parse(_minimumBalanceController.text),
       maximumPerSave: _maximumPerSaveController.text.isEmpty ? null : double.parse(_maximumPerSaveController.text),
@@ -676,6 +699,30 @@ class _EditAutoSaveRuleScreenState extends State<EditAutoSaveRuleScreen> {
                       SizedBox(height: 16.h),
                       _buildTimeSelector(),
                     ],
+                  ],
+
+                  // Round-up denomination — only relevant for round-up
+                  // rules. Mirrors the field the create wizard exposes
+                  // so the edit flow has parity for this trigger type.
+                  if (originalRule.triggerType == TriggerType.roundUp) ...[
+                    SizedBox(height: 24.h),
+                    _buildSectionHeader(
+                        'Round-up Settings', Icons.unfold_more),
+                    SizedBox(height: 12.h),
+                    _buildTextField(
+                      controller: _roundUpToController,
+                      label: 'Round up to (NGN)',
+                      hint: 'e.g., 100',
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) return null;
+                        final v = int.tryParse(value);
+                        if (v == null || v <= 0) {
+                          return 'Enter a positive whole number';
+                        }
+                        return null;
+                      },
+                    ),
                   ],
 
                   SizedBox(height: 24.h),

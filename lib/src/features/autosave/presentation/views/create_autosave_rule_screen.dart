@@ -388,7 +388,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
       case 2:
         switch (_selectedTriggerType) {
           case TriggerType.scheduled:
-            return 'Daily, weekly, bi-weekly or monthly — at any time of day.';
+            return 'Daily, weekly, bi-weekly or monthly. Choose any time of day.';
           case TriggerType.roundUp:
             return 'Every spend rounds up to this multiple. The change is saved.';
           case TriggerType.onDeposit:
@@ -492,7 +492,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
             icon: Icons.schedule_rounded,
             title: 'Scheduled',
             description:
-                'Save a fixed amount on a recurring cadence — daily, weekly or monthly at any time of day.',
+                'Save a fixed amount on a recurring cadence: daily, weekly or monthly at any time of day.',
             selected: _selectedTriggerType == TriggerType.scheduled,
             onTap: () => setState(() {
               _selectedTriggerType = TriggerType.scheduled;
@@ -623,7 +623,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
           _SectionTitle('Time of day'),
           SizedBox(height: 4.h),
           Text(
-            'Defaults to 00:00 — tap the tile to change.',
+            'Defaults to 00:00. Tap the tile to change.',
             style: GoogleFonts.inter(color: _textMuted, fontSize: 12.sp),
           ),
           SizedBox(height: 12.h),
@@ -888,7 +888,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
                   label: 'Destination account',
                   badge: dests.isEmpty ? null : 'Savings',
                   help: dests.isEmpty
-                      ? 'You have no savings account yet — pick any other account.'
+                      ? 'You have no savings account yet. Pick any other account.'
                       : null,
                   child: _AccountDropdown(
                     accounts: (dests.isEmpty ? all : dests)
@@ -947,7 +947,7 @@ class _CreateAutoSaveRuleScreenState extends State<CreateAutoSaveRuleScreen> {
             icon: Icons.tune_rounded,
             title: 'Optional',
             body:
-                'Skip any field — the rule still works fine without these.',
+                'Skip any field. The rule still works fine without these.',
           ),
           SizedBox(height: 18.h),
           _LabeledField(

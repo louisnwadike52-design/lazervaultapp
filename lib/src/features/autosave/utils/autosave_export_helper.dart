@@ -125,9 +125,15 @@ class AutoSaveExportHelper {
     final pausedCount = rules.where((r) => r.isPaused).length;
     final completedCount = rules.where((r) => r.status == AutoSaveStatus.completed).length;
     final avgSaved = rules.isNotEmpty ? totalSaved / rules.length : 0;
-    final bestPerformer = rules.isNotEmpty
-        ? rules.reduce((a, b) => a.totalSaved > b.totalSaved ? a : b)
-        : null;
+    // fold + nullable accumulator instead of `.reduce(...)` so a list
+    // whose runtime element type is AutoSaveRuleModel (data class
+    // extending the entity) doesn't trip Dart's reified-generic
+    // variance check. See cubit's normalisation comment for context.
+    final bestPerformer = rules.fold<AutoSaveRuleEntity?>(
+      null,
+      (best, r) =>
+          best == null || r.totalSaved > best.totalSaved ? r : best,
+    );
 
     final summary = '''
 AutoSave Rules Summary Report

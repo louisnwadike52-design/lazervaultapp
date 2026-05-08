@@ -452,12 +452,17 @@ class _AutoSaveRulesListScreenState extends State<AutoSaveRulesListScreen> {
         SizedBox(height: 8.h),
 
         // Analytics card (only show when not in selection mode and has rules).
-        // Stats come from the backend's GetAutoSaveStatistics aggregate, not
-        // from re-summing the (paginated/filtered) rules array.
+        // When the user has narrowed the list with a pill / search /
+        // sort, derive numbers from the filtered rules so the KPIs
+        // match what's on screen. Otherwise lean on the backend's
+        // lifetime aggregates for accuracy across pagination.
         if (!_selectionMode && state.rules.isNotEmpty)
           AutoSaveAnalyticsCard(
             rules: state.rules,
             statistics: state.statistics,
+            isFiltered: state.appliedFilter != null ||
+                (state.appliedSearch != null &&
+                    state.appliedSearch!.isNotEmpty),
           ),
 
         // Rules list

@@ -14,7 +14,6 @@ import '../../domain/entities/group_entities.dart';
 import '../cubit/group_account_cubit.dart';
 import '../cubit/group_account_state.dart';
 import '../widgets/contribution_type_badge.dart';
-import '../widgets/payment_history_card.dart';
 import '../widgets/add_members_to_contribution_dialog.dart';
 import '../widgets/payout_receiver_banner.dart';
 import 'contribution_payment_confirmation_screen.dart';
@@ -22,6 +21,8 @@ import '../widgets/contribution_chat_bottom_sheet.dart';
 import '../widgets/exit_contribution_bottom_sheet.dart';
 import 'contribution_cycles_history_screen.dart';
 import 'edit_contribution_screen.dart';
+import 'past_contributions_screen.dart';
+import '../widgets/payment_group_widgets.dart';
 
 class ContributionDetailsScreen extends StatefulWidget {
   final String contributionId;
@@ -672,6 +673,19 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                     color: Colors.grey[400],
                   ),
                 ),
+                // ROSCA / one-time pill in the header — surfaces the
+                // payout model up where the title sits, instead of
+                // burying it next to the description further down the
+                // screen. Intrinsic-width badge so the row doesn't
+                // stretch; clipped if the title squeezes the column.
+                Padding(
+                  padding: EdgeInsets.only(top: 4.h),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child:
+                        ContributionTypeBadge(type: contribution.type),
+                  ),
+                ),
               ],
             ),
           ),
@@ -768,6 +782,24 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                     ],
                   ),
                 ),
+                // Past Contributions — same caller, different
+                // contribution(s). Always visible because the entry
+                // surfaces the *user's* exit history, not anything
+                // about the contribution they're currently viewing.
+                PopupMenuItem(
+                  value: 'past_contributions',
+                  child: Row(
+                    children: [
+                      Icon(Icons.history_edu,
+                          color: Colors.white, size: 20.sp),
+                      SizedBox(width: 12.w),
+                      Text(
+                        'Past contributions',
+                        style: GoogleFonts.inter(color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ),
               ];
             },
             onSelected: (value) => _handleMenuAction(value, contribution),
@@ -785,6 +817,56 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   // 30,000 reads as "30,000" not "30.0M" and not "30000.00".
   Widget _buildContributionSummary(Contribution contribution) {
     final progressPercentage = contribution.progressPercentage;
+
+    // Partial-aware stat inputs. The "Contributors" stat counts every
+    // user who has made any payment attempt (completed, processing,
+    // or even still-pending) so a single partial-paying member never
+    // renders as zero contributors. We also count how many of those
+    // contributors haven't yet hit their full expected share, so the
+    // banner under the stats row can call them out — this is the
+    // "show partials with a badge instead of hiding them" UX the user
+    // asked for. Both reads merge local and server-side payment state
+    // exactly the way the Payments tab does.
+    final paymentLog = <ContributionPayment>[];
+    final seenIds = <String>{};
+    for (final p in _localPayments) {
+      if (seenIds.add(p.id)) paymentLog.add(p);
+    }
+    for (final p in contribution.payments) {
+      if (seenIds.add(p.id)) paymentLog.add(p);
+    }
+    // Contributors = distinct users with at least one non-failed
+    // payment attempt. Failed/refunded attempts don't qualify because
+    // no money ever moved (or it moved back).
+    final contributorIds = <String>{};
+    final paidByUser = <String, double>{};
+    for (final p in paymentLog) {
+      if (p.status == PaymentStatus.failed ||
+          p.status == PaymentStatus.cancelled ||
+          p.status == PaymentStatus.refunded) {
+        continue;
+      }
+      contributorIds.add(p.userId);
+      if (p.status == PaymentStatus.completed) {
+        paidByUser.update(p.userId, (v) => v + p.amount,
+            ifAbsent: () => p.amount);
+      }
+    }
+    int partialCount = 0;
+    int fullyPaidCount = 0;
+    final memberByUser = <String, ContributionMember>{
+      for (final m in contribution.members) m.userId: m,
+    };
+    for (final entry in paidByUser.entries) {
+      final member = memberByUser[entry.key];
+      final expected = _expectedShareFor(contribution, member);
+      if (expected <= 0) continue;
+      if (entry.value >= expected) {
+        fullyPaidCount++;
+      } else if (entry.value > 0) {
+        partialCount++;
+      }
+    }
 
     // Mirrors the compact stat-row treatment from group_details_screen
     // (_buildGroupOverview): three-up KPI row, progress bar, totals
@@ -826,9 +908,15 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                 color: Colors.white.withValues(alpha: 0.2),
               ),
               _buildContribStat(
-                title: 'Payments',
-                value: contribution.payments.length.toString(),
-                icon: Icons.receipt_long,
+                // Replaced the raw "Payments" attempt count with
+                // "Contributors". The old count showed zero when the
+                // only payment in flight was still pending; counting
+                // distinct contributors gives the user immediate
+                // signal that someone is paying, even before the
+                // payment row clears the completed gate.
+                title: 'Contributors',
+                value: contributorIds.length.toString(),
+                icon: Icons.groups_outlined,
               ),
               Container(
                 width: 1,
@@ -836,12 +924,67 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                 color: Colors.white.withValues(alpha: 0.2),
               ),
               _buildContribStat(
+                // Progress reads from the contribution's currentAmount
+                // (server-side, completed-only) so it stays anchored
+                // to actual money in. Partial flags get their own row
+                // below so users see "X partial, Y fully paid" instead
+                // of the percentage being skewed by in-flight money.
                 title: 'Progress',
-                value: '${progressPercentage.toStringAsFixed(0)}%',
+                value: '${progressPercentage.toStringAsFixed(progressPercentage < 10 && progressPercentage > 0 ? 1 : 0)}%',
                 icon: Icons.trending_up,
               ),
             ],
           ),
+          if (partialCount > 0 || fullyPaidCount > 0) ...[
+            SizedBox(height: 8.h),
+            Container(
+              padding: EdgeInsets.symmetric(
+                  horizontal: 10.w, vertical: 6.h),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (fullyPaidCount > 0) ...[
+                    Icon(Icons.check_circle,
+                        color: const Color(0xFF10B981), size: 12.sp),
+                    SizedBox(width: 4.w),
+                    Text(
+                      '$fullyPaidCount fully paid',
+                      style: GoogleFonts.inter(
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                  if (fullyPaidCount > 0 && partialCount > 0) ...[
+                    SizedBox(width: 8.w),
+                    Container(
+                        width: 1,
+                        height: 10.h,
+                        color: Colors.white.withValues(alpha: 0.3)),
+                    SizedBox(width: 8.w),
+                  ],
+                  if (partialCount > 0) ...[
+                    Icon(Icons.donut_large,
+                        color: const Color(0xFFFB923C), size: 12.sp),
+                    SizedBox(width: 4.w),
+                    Text(
+                      '$partialCount partial',
+                      style: GoogleFonts.inter(
+                        fontSize: 11.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
           SizedBox(height: 8.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1129,6 +1272,21 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   }
 
   Widget _buildOverviewTab(Contribution contribution) {
+    // Source of truth for Average Payment + completed-only stats.
+    // Merges _localPayments (just-made, not yet refreshed from server)
+    // with the proto-embedded list and dedups by id / transaction id —
+    // same shape as _buildPaymentsTab so the two tabs never disagree.
+    final completed = _completedPaymentsFor(contribution);
+    final completedCount = completed.length;
+    final completedSum =
+        completed.fold<double>(0.0, (sum, p) => sum + p.amount);
+    // Remaining is clamped at zero. Server caps overpay (validator on
+    // the pay screen + DB check), but a brief over-shoot during a
+    // race could otherwise surface as a negative "Remaining" — bad UX.
+    final remaining =
+        (contribution.targetAmount - contribution.currentAmount)
+            .clamp(0.0, double.infinity);
+
     return SingleChildScrollView(
       padding: EdgeInsets.all(20.w),
       child: Column(
@@ -1136,7 +1294,8 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
         children: [
           _buildStatCard(
             title: 'Remaining Amount',
-            value: '${contribution.currency} ${(contribution.targetAmount - contribution.currentAmount).toStringAsFixed(2)}',
+            value:
+                '${contribution.currency} ${remaining.toStringAsFixed(2)}',
             icon: Icons.account_balance_wallet,
             color: const Color(0xFF3B82F6),
           ),
@@ -1152,9 +1311,14 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
           SizedBox(height: 16.h),
           _buildStatCard(
             title: 'Average Payment',
-            value: contribution.payments.isNotEmpty
-                ? '${contribution.currency} ${(contribution.currentAmount / contribution.payments.length).toStringAsFixed(2)}'
-                : '${contribution.currency} 0.00',
+            // sum / count over **completed** payments only. Pending /
+            // failed / refunded rows don't represent successful chunks
+            // of money in, so excluding them keeps the average honest.
+            // When everything that's landed has since been refunded
+            // (count == 0), show "—" rather than misleading 0.00.
+            value: completedCount > 0
+                ? '${contribution.currency} ${(completedSum / completedCount).toStringAsFixed(2)}'
+                : '${contribution.currency} —',
             icon: Icons.trending_up,
             color: const Color(0xFFF59E0B),
           ),
@@ -1185,15 +1349,6 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
               ),
             ),
           ),
-          SizedBox(height: 12.h),
-          // Type badge — surfaces ROSCA vs one-time at the top of the
-          // overview so the user knows which payout model this
-          // contribution follows. Width is intrinsic; the label
-          // ellipsis-clips inside the badge if the row is squeezed.
-          Align(
-            alignment: Alignment.centerLeft,
-            child: ContributionTypeBadge(type: contribution.type),
-          ),
         ],
       ),
     );
@@ -1202,24 +1357,24 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   Widget _buildPaymentsTab(Contribution contribution) {
     // Combine local payments with static contribution payments
     final allPayments = <ContributionPayment>[];
-    
+
     // Add local payments first (these are newer)
     allPayments.addAll(_localPayments);
-    
+
     // Add static payments, but avoid duplicates
     for (final staticPayment in contribution.payments) {
-      final isDuplicate = allPayments.any((localPayment) => 
+      final isDuplicate = allPayments.any((localPayment) =>
         localPayment.id == staticPayment.id ||
-        (localPayment.transactionId != null && 
+        (localPayment.transactionId != null &&
          staticPayment.transactionId != null &&
          localPayment.transactionId == staticPayment.transactionId)
       );
-      
+
       if (!isDuplicate) {
         allPayments.add(staticPayment);
       }
     }
-    
+
     // Sort by payment date, newest first
     allPayments.sort((a, b) => b.paymentDate.compareTo(a.paymentDate));
 
@@ -1227,12 +1382,16 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       return _buildEmptyPayments();
     }
 
-    // Only the payer should be able to drill into a payment's
-    // details (transaction id, status timeline, retry path, etc.).
-    // Other group members see the row but it isn't tappable — privacy
-    // boundary on what would otherwise leak transaction-level data.
-    final myUserId =
-        context.read<GroupAccountCubit>().currentUserId;
+    // Group payments by user. The Payments tab now shows ONE row per
+    // payer instead of one per attempt — partials by the same user
+    // collapse into a single aggregated row with a "Partial" badge,
+    // and the bottom sheet shows the per-attempt breakdown when tapped.
+    // Members tab remains the per-user-with-cycle-stats view; this tab
+    // is now the per-user transaction roll-up.
+    final groups = _groupPaymentsByUser(allPayments, contribution);
+    // Sort groups so the most recently active payer is on top — same
+    // expectation users had from the per-attempt list.
+    groups.sort((a, b) => b.latestPaymentDate.compareTo(a.latestPaymentDate));
 
     return RefreshIndicator(
       onRefresh: _refreshPayments,
@@ -1240,21 +1399,113 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
       color: const Color.fromARGB(255, 78, 3, 208),
       child: ListView.builder(
         padding: EdgeInsets.all(20.w),
-        itemCount: allPayments.length,
+        itemCount: groups.length,
         itemBuilder: (context, index) {
-          final payment = allPayments[index];
-          final isMine =
-              myUserId != null && payment.userId == myUserId;
+          final group = groups[index];
           return Padding(
             padding: EdgeInsets.only(bottom: 12.h),
-            child: PaymentHistoryCard(
-              payment: payment,
-              onTap: isMine ? () => _showPaymentDetails(payment) : null,
+            child: _PaymentGroupCard(
+              group: group,
+              onTap: () => _showPaymentGroupDetails(group, contribution),
             ),
           );
         },
       ),
     );
+  }
+
+  /// Buckets the flat payment stream by user_id and decorates each
+  /// bucket with the partial-payment metrics the row + bottom sheet
+  /// need (paid / expected / remaining / progress%). Per-cycle expected
+  /// share is read off the matching `ContributionMember` row when one
+  /// exists; otherwise we fall back to the contribution's regular_amount
+  /// (ROSCA) or the configured target amount divided by member count
+  /// (one-time). Falling back conservatively rather than throwing means
+  /// even a payer who's no longer a member still renders cleanly.
+  List<_UserPaymentGroup> _groupPaymentsByUser(
+      List<ContributionPayment> payments, Contribution contribution) {
+    final byUser = <String, List<ContributionPayment>>{};
+    for (final p in payments) {
+      byUser.putIfAbsent(p.userId, () => []).add(p);
+    }
+
+    final memberByUser = <String, ContributionMember>{
+      for (final m in contribution.members) m.userId: m,
+    };
+
+    final out = <_UserPaymentGroup>[];
+    byUser.forEach((userId, list) {
+      list.sort((a, b) => b.paymentDate.compareTo(a.paymentDate));
+
+      double totalPaid = 0;
+      double totalInFlight = 0;
+      double totalRefunded = 0;
+      for (final p in list) {
+        switch (p.status) {
+          case PaymentStatus.completed:
+            totalPaid += p.amount;
+            break;
+          case PaymentStatus.pending:
+          case PaymentStatus.processing:
+          case PaymentStatus.awaitingVerification:
+            totalInFlight += p.amount;
+            break;
+          case PaymentStatus.refunded:
+          case PaymentStatus.refunding:
+            totalRefunded += p.amount;
+            break;
+          default:
+            break;
+        }
+      }
+
+      final member = memberByUser[userId];
+      final expected = _expectedShareFor(contribution, member);
+      final remaining = (expected - totalPaid).clamp(0.0, double.infinity);
+      final latest = list.first;
+
+      out.add(_UserPaymentGroup(
+        userId: userId,
+        userName: latest.userName.isNotEmpty
+            ? latest.userName
+            : (member?.userName ?? ''),
+        member: member,
+        payments: list,
+        totalPaid: totalPaid,
+        totalInFlight: totalInFlight,
+        totalRefunded: totalRefunded,
+        expectedAmount: expected,
+        remaining: remaining,
+        latestPaymentDate: latest.paymentDate,
+        currency: latest.currency,
+      ));
+    });
+    return out;
+  }
+
+  /// Per-user expected share. ROSCA: the configured regular_amount per
+  /// cycle. One-time / ad-hoc: target_amount split evenly across
+  /// active members — best effort, since the precise allocation rule
+  /// is configured server-side and may not be plumbed through.
+  double _expectedShareFor(
+      Contribution contribution, ContributionMember? member) {
+    if (member != null && member.expectedAmount > 0) {
+      return member.expectedAmount;
+    }
+    if (contribution.type == ContributionType.rotatingSavings &&
+        contribution.regularAmount != null &&
+        contribution.regularAmount! > 0) {
+      return contribution.regularAmount!;
+    }
+    final activeCount = contribution.members
+        .where((m) =>
+            m.membershipStatus != ContributionMembershipStatus.declined &&
+            m.membershipStatus != ContributionMembershipStatus.pendingInvite)
+        .length;
+    if (activeCount > 0 && contribution.targetAmount > 0) {
+      return contribution.targetAmount / activeCount;
+    }
+    return 0;
   }
 
   Future<void> _refreshPayments() async {
@@ -1403,6 +1654,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                   hasPaidCurrentCycle: member.hasPaidCurrentCycle,
                   member: member,
                   joinedAt: member.joinedAt,
+                  memberPayments: payments,
                 );
               }
 
@@ -1426,6 +1678,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
                   paymentCount: payments.length,
                   currency: contribution.currency,
                   hasPaidCurrentCycle: true,
+                  memberPayments: payments,
                   joinedAt: payments.first.paymentDate,
                 );
               }
@@ -1490,6 +1743,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     required bool hasPaidCurrentCycle,
     ContributionMember? member,
     DateTime? joinedAt,
+    List<ContributionPayment> memberPayments = const [],
   }) {
     final displayName = userName.isNotEmpty
         ? userName
@@ -1527,6 +1781,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
         hasPaidCurrentCycle: showCurrentCycle,
         joinedAt: joinedAt ?? member?.joinedAt ?? DateTime.now(),
         member: member,
+        memberPayments: memberPayments,
       ),
       child: Container(
         margin: EdgeInsets.only(bottom: 12.h),
@@ -1715,6 +1970,7 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     required bool hasPaidCurrentCycle,
     required DateTime joinedAt,
     ContributionMember? member,
+    List<ContributionPayment> memberPayments = const [],
   }) {
     HapticFeedback.lightImpact();
     final cubit = context.read<GroupAccountCubit>();
@@ -1748,6 +2004,15 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
         hasPaidCurrentCycle: hasPaidCurrentCycle,
         joinedAt: joinedAt,
         member: member,
+        memberPayments: memberPayments,
+        // Tap on a breakdown row pops this sheet first, then opens
+        // the per-attempt details sheet so the back-stack stays
+        // single-modal — pushing on top of an open bottom sheet
+        // tends to misrender on Android.
+        onPaymentTap: (p) {
+          Navigator.of(sheetCtx).pop();
+          _showPaymentDetails(p);
+        },
         // Show "Remove" when the caller is admin AND it's not their
         // own row — admin doesn't remove themselves through this
         // flow, that's the Leave button.
@@ -1895,16 +2160,50 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   }
 
   String _calculateDaysRemaining(DateTime deadline) {
-    final now = DateTime.now();
-    final difference = deadline.difference(now);
+    // Compare in UTC against the deadline's UTC instant so a user
+    // in UTC+1 doesn't see "1 day" while a UTC+0 user sees "0 days"
+    // for the same moment. The deadline column is timestamptz; when
+    // it round-trips through Dart it's already in local time on the
+    // device, so we normalise both sides to UTC before subtracting.
+    final now = DateTime.now().toUtc();
+    final difference = deadline.toUtc().difference(now);
 
-    if (difference.inDays < 0) {
-      return 'Overdue by ${(-difference.inDays)} days';
+    if (difference.isNegative) {
+      final overdueDays = (-difference.inDays);
+      return overdueDays == 0
+          ? 'Overdue'
+          : 'Overdue by $overdueDays day${overdueDays == 1 ? '' : 's'}';
     } else if (difference.inDays == 0) {
       return 'Due today';
     } else {
-      return '${difference.inDays} days';
+      return '${difference.inDays} day${difference.inDays == 1 ? '' : 's'}';
     }
+  }
+
+  /// Returns the contribution's completed payments deduplicated against
+  /// the local just-made buffer. Used by both the Overview-tab Average
+  /// Payment and any future stat that must agree with what the
+  /// Payments tab actually shows.
+  List<ContributionPayment> _completedPaymentsFor(Contribution contribution) {
+    final all = <ContributionPayment>[];
+    final seenIds = <String>{};
+    final seenTxIds = <String>{};
+    for (final p in _localPayments) {
+      if (seenIds.add(p.id)) {
+        if (p.transactionId != null) seenTxIds.add(p.transactionId!);
+        all.add(p);
+      }
+    }
+    for (final p in contribution.payments) {
+      if (seenIds.contains(p.id)) continue;
+      if (p.transactionId != null && seenTxIds.contains(p.transactionId!)) {
+        continue;
+      }
+      all.add(p);
+    }
+    return all
+        .where((p) => p.status == PaymentStatus.completed)
+        .toList(growable: false);
   }
 
   void _handleMenuAction(String action, Contribution contribution) {
@@ -1955,6 +2254,17 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
             value: histCubit,
             child: ContributionCyclesHistoryScreen(
                 contribution: contribution),
+          ),
+        );
+        break;
+      case 'past_contributions':
+        // Threading the same cubit through preserves auth + cached
+        // groups so the past-contributions list lands instantly.
+        final pastCubit = context.read<GroupAccountCubit>();
+        Get.to(
+          () => BlocProvider<GroupAccountCubit>.value(
+            value: pastCubit,
+            child: const PastContributionsScreen(),
           ),
         );
         break;
@@ -2382,6 +2692,280 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
     );
   }
 
+  /// Roles allowed to issue receipts or share full transaction details
+  /// for the supplied payment. Admins/creators can always — they own
+  /// the audit/operations flow. Otherwise, only the actual payer.
+  /// Other members can VIEW the breakdown and per-attempt info, but
+  /// not generate downstream artefacts (PDF receipt, social share)
+  /// that mix in their own user identity with someone else's payment.
+  bool _canIssueReceiptsFor(String payerUserId) {
+    final cubit = context.read<GroupAccountCubit>();
+    final currentUserId = cubit.currentUserId;
+    if (currentUserId == null) return false;
+    if (currentUserId == payerUserId) return true;
+    final group = cubit.lastLoadedGroup;
+    if (_currentContribution != null &&
+        _currentContribution!.createdBy == currentUserId) {
+      return true;
+    }
+    if (group != null &&
+        group.id == _currentContribution?.groupId &&
+        (group.adminId == currentUserId ||
+            group.members.any((m) =>
+                m.userId == currentUserId &&
+                m.role == GroupMemberRole.admin))) {
+      return true;
+    }
+    return false;
+  }
+
+  void _showPaymentGroupDetails(
+      _UserPaymentGroup group, Contribution contribution) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetContext) => DraggableScrollableSheet(
+        initialChildSize: 0.85,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        expand: false,
+        builder: (_, scrollController) {
+          return Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  const Color(0xFF2A2A3E).withValues(alpha: 0.95),
+                  const Color(0xFF1F1F35).withValues(alpha: 0.98),
+                ],
+              ),
+              borderRadius:
+                  BorderRadius.vertical(top: Radius.circular(24.r)),
+            ),
+            child: ListView(
+              controller: scrollController,
+              padding: EdgeInsets.all(24.w),
+              children: [
+                _buildPaymentGroupHeader(group),
+                SizedBox(height: 16.h),
+                _buildPaymentGroupProgress(group),
+                SizedBox(height: 20.h),
+                _buildPaymentDivider(),
+                SizedBox(height: 16.h),
+                Text(
+                  'Payment breakdown',
+                  style: GoogleFonts.inter(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                Text(
+                  'Tap any payment to see its full transaction details.',
+                  style: GoogleFonts.inter(
+                    fontSize: 12.sp,
+                    color: Colors.grey[400],
+                  ),
+                ),
+                SizedBox(height: 12.h),
+                ...group.payments.map((p) => Padding(
+                      padding: EdgeInsets.only(bottom: 8.h),
+                      child: _PaymentBreakdownRow(
+                        payment: p,
+                        onTap: () => _showPaymentDetails(p),
+                      ),
+                    )),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildPaymentGroupHeader(_UserPaymentGroup group) {
+    final formatter = NumberFormat('#,##0.##');
+    final displayName =
+        group.userName.isNotEmpty ? group.userName : 'Unknown User';
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                displayName,
+                style: GoogleFonts.inter(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              SizedBox(height: 4.h),
+              Text(
+                '${group.currency} ${formatter.format(group.totalPaid)} paid'
+                '${group.expectedAmount > 0 ? ' of ${group.currency} ${formatter.format(group.expectedAmount)}' : ''}',
+                style: GoogleFonts.inter(
+                  fontSize: 12.sp,
+                  color: Colors.grey[300],
+                ),
+              ),
+            ],
+          ),
+        ),
+        GestureDetector(
+          onTap: () => Navigator.pop(context),
+          child: Container(
+            padding: EdgeInsets.all(8.w),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+            child: Icon(Icons.close, color: Colors.white, size: 20.sp),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPaymentGroupProgress(_UserPaymentGroup group) {
+    final formatter = NumberFormat('#,##0.##');
+    final progress = (group.progressPercent / 100).clamp(0.0, 1.0);
+    final accentColor = group.isComplete
+        ? const Color(0xFF10B981)
+        : group.isPartial
+            ? const Color(0xFFFB923C)
+            : const Color.fromARGB(255, 78, 3, 208);
+    final stateLabel = group.isComplete
+        ? 'Fully paid'
+        : group.isPartial
+            ? 'Partial — ${group.progressPercent.toStringAsFixed(0)}%'
+            : group.isInFlightOnly
+                ? 'Payment pending'
+                : group.expectedAmount > 0
+                    ? 'Not paid yet'
+                    : 'Open contributions';
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: accentColor.withValues(alpha: 0.4)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.symmetric(
+                    horizontal: 8.w, vertical: 4.h),
+                decoration: BoxDecoration(
+                  color: accentColor.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(6.r),
+                ),
+                child: Text(
+                  stateLabel,
+                  style: GoogleFonts.inter(
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w700,
+                    color: accentColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12.h),
+          if (group.expectedAmount > 0) ...[
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4.r),
+              child: LinearProgressIndicator(
+                value: progress,
+                minHeight: 8.h,
+                backgroundColor: Colors.white.withValues(alpha: 0.08),
+                valueColor: AlwaysStoppedAnimation<Color>(accentColor),
+              ),
+            ),
+            SizedBox(height: 12.h),
+          ],
+          Row(
+            children: [
+              _summaryStat(
+                  'Paid',
+                  '${group.currency} ${formatter.format(group.totalPaid)}',
+                  Colors.white),
+              _summaryStat(
+                  'Remaining',
+                  group.expectedAmount > 0
+                      ? '${group.currency} ${formatter.format(group.remaining)}'
+                      : '—',
+                  group.remaining > 0 ? accentColor : const Color(0xFF10B981)),
+              _summaryStat(
+                  'Attempts', '${group.attemptCount}', Colors.white),
+            ],
+          ),
+          if (group.totalInFlight > 0 || group.totalRefunded > 0) ...[
+            SizedBox(height: 8.h),
+            Wrap(
+              spacing: 12.w,
+              children: [
+                if (group.totalInFlight > 0)
+                  Text(
+                    'Pending: ${group.currency} ${formatter.format(group.totalInFlight)}',
+                    style: GoogleFonts.inter(
+                      fontSize: 11.sp,
+                      color: const Color(0xFFF59E0B),
+                    ),
+                  ),
+                if (group.totalRefunded > 0)
+                  Text(
+                    'Refunded: ${group.currency} ${formatter.format(group.totalRefunded)}',
+                    style: GoogleFonts.inter(
+                      fontSize: 11.sp,
+                      color: Colors.grey[400],
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _summaryStat(String label, String value, Color valueColor) {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 10.sp,
+              color: Colors.grey[400],
+              letterSpacing: 0.4,
+            ),
+          ),
+          SizedBox(height: 2.h),
+          Text(
+            value,
+            style: GoogleFonts.inter(
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w700,
+              color: valueColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showPaymentDetails(ContributionPayment payment) {
     showModalBottomSheet(
       context: context,
@@ -2770,6 +3354,39 @@ class _ContributionDetailsScreenState extends State<ContributionDetailsScreen>
   }
 
   Widget _buildPaymentActions(ContributionPayment payment) {
+    // Receipts and share emit content tied to the *payer's* identity
+    // (their name on the PDF, their wallet ref, their card brand).
+    // Letting any group member generate those would be a privacy leak
+    // — they could share another person's transaction trail. Gate to
+    // admin / creator (operations / audit need this) and the actual
+    // payer (their own data). Everyone else sees an explainer.
+    final canIssue = _canIssueReceiptsFor(payment.userId);
+    if (!canIssue) {
+      return Container(
+        padding: EdgeInsets.all(14.w),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.04),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.lock_outline,
+                size: 18.sp, color: Colors.grey[400]),
+            SizedBox(width: 10.w),
+            Expanded(
+              child: Text(
+                'Only the payer or a group admin can generate the receipt or share this transaction.',
+                style: GoogleFonts.inter(
+                  fontSize: 12.sp,
+                  color: Colors.grey[300],
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
     return Column(
       children: [
         SizedBox(
@@ -3283,6 +3900,16 @@ class _ContributionMemberDetailsSheet extends StatelessWidget {
   final bool canLeave;
   final VoidCallback? onRemove;
   final VoidCallback? onLeave;
+  /// Per-member payment history (newest first preferred). When this
+  /// list has more than one element OR the single element is a
+  /// partial, the sheet renders a "Payment breakdown" section so the
+  /// caller can drill into each attempt. Empty list = hide the
+  /// section entirely.
+  final List<ContributionPayment> memberPayments;
+  /// Tapped from a breakdown row. Caller is responsible for popping
+  /// this sheet first if it wants to chain another modal (the sheet
+  /// itself does not pop on tap).
+  final void Function(ContributionPayment payment)? onPaymentTap;
 
   const _ContributionMemberDetailsSheet({
     required this.userName,
@@ -3300,6 +3927,8 @@ class _ContributionMemberDetailsSheet extends StatelessWidget {
     this.canLeave = false,
     this.onRemove,
     this.onLeave,
+    this.memberPayments = const [],
+    this.onPaymentTap,
   });
 
   @override
@@ -3526,6 +4155,53 @@ class _ContributionMemberDetailsSheet extends StatelessWidget {
             '$currency ${remaining.toStringAsFixed(2)}',
             valueColor: remaining > 0 ? const Color(0xFFF59E0B) : const Color(0xFF10B981),
           ),
+
+          // Per-attempt payment breakdown. Mirrors the Payments-tab
+          // bottom sheet so the same data shows wherever a user lands
+          // — Members tab tap or Payments tab tap. Hidden when there
+          // are no payments yet (e.g. an invite-only shadow row).
+          if (memberPayments.isNotEmpty) ...[
+            SizedBox(height: 20.h),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Payment breakdown',
+                style: GoogleFonts.inter(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            SizedBox(height: 4.h),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Tap any payment to see its full transaction details.',
+                style: GoogleFonts.inter(
+                  fontSize: 12.sp,
+                  color: Colors.grey[400],
+                ),
+              ),
+            ),
+            SizedBox(height: 10.h),
+            ...(() {
+              // Sort newest first so the most recent partial sits at
+              // the top of the list. We don't mutate the input —
+              // taking a defensive copy keeps the caller's ordering.
+              final sorted = List<ContributionPayment>.from(memberPayments)
+                ..sort((a, b) => b.paymentDate.compareTo(a.paymentDate));
+              return sorted.map((p) => Padding(
+                    padding: EdgeInsets.only(bottom: 8.h),
+                    child: _PaymentBreakdownRow(
+                      payment: p,
+                      onTap: onPaymentTap == null
+                          ? () {}
+                          : () => onPaymentTap!(p),
+                    ),
+                  ));
+            })(),
+          ],
 
           SizedBox(height: 24.h),
 
@@ -4115,4 +4791,65 @@ class _CompactRoleBannerState extends State<_CompactRoleBanner> {
       ),
     );
   }
-} 
+}
+
+/// Aggregates one user's payment activity for a contribution. Built
+/// client-side from the flat ContributionPayment stream so we don't
+/// need a new RPC just to render the per-user roll-up. Decisions like
+/// "is this a partial?" are derived from the totals + the user's
+/// expected share so the data class is the single source of truth for
+/// the row, the bottom sheet, and the breakdown.
+// _UserPaymentGroup / _PaymentGroupCard / _PaymentBreakdownRow used to
+// live here as private classes. They've been promoted to public widgets
+// in `widgets/payment_group_widgets.dart` so the past-contribution sheet
+// can reuse exactly the same row treatment without duplicating ~400
+// lines of styling. The aliases below keep this file's existing call
+// sites compiling without churn — they delegate straight to the
+// promoted versions.
+typedef _UserPaymentGroupBase = UserPaymentGroup;
+
+class _UserPaymentGroup extends _UserPaymentGroupBase {
+  const _UserPaymentGroup({
+    required super.userId,
+    required super.userName,
+    required super.member,
+    required super.payments,
+    required super.totalPaid,
+    required super.totalInFlight,
+    required super.totalRefunded,
+    required super.expectedAmount,
+    required super.remaining,
+    required super.latestPaymentDate,
+    required super.currency,
+  });
+
+}
+
+/// Thin private alias around the now-public `PaymentGroupCard`.
+/// Existing callers in this file pass `_UserPaymentGroup` (which
+/// extends `UserPaymentGroup`), so the delegating constructor takes
+/// the typed field as-is and forwards to the public widget.
+class _PaymentGroupCard extends StatelessWidget {
+  final _UserPaymentGroup group;
+  final VoidCallback onTap;
+
+  const _PaymentGroupCard({required this.group, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) =>
+      PaymentGroupCard(group: group, onTap: onTap);
+}
+
+
+/// Thin private alias around the now-public `PaymentBreakdownRow`.
+/// Keeps the existing call-sites in this file unchanged while the
+/// public widget is reused by the past-contribution sheet too.
+class _PaymentBreakdownRow extends StatelessWidget {
+  final ContributionPayment payment;
+  final VoidCallback onTap;
+  const _PaymentBreakdownRow(
+      {required this.payment, required this.onTap});
+  @override
+  Widget build(BuildContext context) =>
+      PaymentBreakdownRow(payment: payment, onTap: onTap);
+}

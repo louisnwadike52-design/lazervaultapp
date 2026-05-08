@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:get_it/get_it.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:lazervault/src/features/autosave/services/autosave_pdf_service.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
 import 'package:lazervault/src/features/autosave/domain/entities/autosave_rule_entity.dart';
@@ -227,31 +228,59 @@ class _AutoSaveRuleDetailsScreenState extends State<AutoSaveRuleDetailsScreen> w
     });
   }
 
-  void _exportRule() {
-    final details = '''
-Auto-Save Rule Details
-
-Name: ${rule.name}
-Description: ${rule.description}
-Status: ${_getStatusText(rule.status)}
-
-Trigger: ${_getTriggerDescription()}
-Amount: ${_getAmountDescription()}
-
-Source Account: ${_sourceAccountName ?? rule.sourceAccountId}
-Destination Account: ${_destinationAccountName ?? rule.destinationAccountId}
-
-Total Saved: ${currency_formatter.CurrencySymbols.formatAmountWithCurrency(rule.totalSaved, rule.currency)}
-Times Triggered: ${rule.triggerCount}
-${rule.targetAmount != null ? 'Target: ${currency_formatter.CurrencySymbols.formatAmountWithCurrency(rule.targetAmount!, rule.currency)}' : ''}
-${rule.minimumBalance != null ? 'Min Balance: ${currency_formatter.CurrencySymbols.formatAmountWithCurrency(rule.minimumBalance!, rule.currency)}' : ''}
-${rule.maximumPerSave != null ? 'Max Per Save: ${currency_formatter.CurrencySymbols.formatAmountWithCurrency(rule.maximumPerSave!, rule.currency)}' : ''}
-
-Created: ${DateFormat('MMM dd, yyyy').format(rule.createdAt)}
-${rule.lastTriggeredAt != null ? 'Last Triggered: ${DateFormat('MMM dd, yyyy').format(rule.lastTriggeredAt!)}' : ''}
-''';
-
-    SharePlus.instance.share(ShareParams(text: details, subject: 'Auto-Save Rule: ${rule.name}'));
+  Future<void> _exportRule() async {
+    // Build a proper PDF (the previous text-only share leaked details
+    // verbatim into the share intent and was hard to archive). The
+    // service captures every rule field + the recent transactions
+    // already loaded in state — same data the screen renders.
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.showSnackBar(SnackBar(
+      content: Row(
+        children: [
+          SizedBox(
+            width: 16.w,
+            height: 16.w,
+            child: const CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor:
+                  AlwaysStoppedAnimation<Color>(Colors.white),
+            ),
+          ),
+          SizedBox(width: 12.w),
+          const Text('Building PDF...'),
+        ],
+      ),
+      duration: const Duration(seconds: 2),
+    ));
+    try {
+      final file = await AutoSavePdfService.generateRuleDetails(
+        rule: rule,
+        sourceAccountLabel:
+            _sourceAccountName ?? rule.sourceAccountId,
+        destinationAccountLabel:
+            _destinationAccountName ?? rule.destinationAccountId,
+        triggerDescription: _getTriggerDescription(),
+        amountDescription: _getAmountDescription(),
+        // The detail screen doesn't currently page in transactions —
+        // the All Rules screen owns that history. Skip the table when
+        // we don't have the data; the PDF still surfaces every rule
+        // field + lifetime aggregates.
+        recentTransactions: const [],
+      );
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path)],
+          subject: 'Auto-Save Rule: ${rule.name}',
+          text: 'Auto-save rule report: ${rule.name}',
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      messenger.showSnackBar(SnackBar(
+        content: Text('Could not export PDF: $e'),
+        backgroundColor: const Color(0xFFEF4444),
+      ));
+    }
   }
 
   void _navigateToEdit() {
@@ -281,10 +310,10 @@ ${rule.lastTriggeredAt != null ? 'Last Triggered: ${DateFormat('MMM dd, yyyy').f
   }
 
   void _viewTransactions() {
-    Get.toNamed(
-      AppRoutes.autoSaveTransactions,
-      arguments: {'ruleId': rule.id, 'ruleName': rule.name},
-    );
+    // Single canonical history surface — All Rules. Completed /
+    // cancelled rules are filterable from the same screen, so a
+    // dedicated transactions page would duplicate functionality.
+    Get.toNamed(AppRoutes.autoSaveRulesList);
   }
 
   void _navigateBack() {
@@ -401,9 +430,16 @@ ${rule.lastTriggeredAt != null ? 'Last Triggered: ${DateFormat('MMM dd, yyyy').f
             _isTriggeringRule = false;
           });
 
+          // Map backend executor strings to user-friendly copy.
+          // The autosave executor returns reasons verbatim ("debit
+          // rejected: insufficient funds", "savings goal already
+          // reached", etc.); these are clear to engineers but
+          // unfriendly in a snackbar. Falls back to the raw message
+          // for unmatched cases so we never swallow useful detail.
+          final friendly = _humaniseAutosaveError(state.message);
           Get.snackbar(
-            'Error',
-            state.message,
+            friendly.title,
+            friendly.body,
             backgroundColor: const Color(0xFFEF4444),
             colorText: Colors.white,
             snackPosition: SnackPosition.TOP,
@@ -942,46 +978,78 @@ ${rule.lastTriggeredAt != null ? 'Last Triggered: ${DateFormat('MMM dd, yyyy').f
   }
 
   Widget _buildActionsCard() {
-    return Column(
-      children: [
-        // View Transactions Button
-        _buildActionButton(
-          label: 'View Transaction History',
-          icon: Icons.history,
-          color: const Color(0xFF3B82F6),
-          onPressed: _viewTransactions,
-        ),
-        SizedBox(height: 12.h),
+    final busy = _isTogglingRule || _isDeletingRule || _isTriggeringRule;
 
-        // Trigger Manual Save Button
-        if (rule.isActive)
-          _buildActionButton(
-            label: 'Trigger Manual Save',
+    // Group the CTAs into rows of two so destructive / state-changing
+    // actions sit side-by-side instead of stacking down the screen.
+    // Manual Trigger only shows for active rules — when present we
+    // pair it with Pause; otherwise Resume gets the lead slot.
+    final pauseResume = _buildActionButton(
+      label: rule.isActive ? 'Pause' : 'Resume',
+      icon: rule.isActive
+          ? Icons.pause_circle_outline
+          : Icons.play_circle_filled,
+      color: rule.isActive
+          ? const Color(0xFFF59E0B)
+          : const Color(0xFF10B981),
+      onPressed: busy ? null : _toggleRule,
+      isLoading: _isTogglingRule,
+    );
+
+    final triggerOrAllRules = rule.isActive
+        ? _buildActionButton(
+            label: 'Manual Save',
             icon: Icons.play_circle_outline,
             color: const Color.fromARGB(255, 78, 3, 208),
-            onPressed: (_isTogglingRule || _isDeletingRule || _isTriggeringRule) ? null : _triggerManualSave,
+            onPressed: busy ? null : _triggerManualSave,
             isLoading: _isTriggeringRule,
-          ),
-        if (rule.isActive) SizedBox(height: 12.h),
+          )
+        : _buildActionButton(
+            label: 'All Rules',
+            icon: Icons.list_alt_outlined,
+            color: const Color(0xFF3B82F6),
+            onPressed: _viewTransactions,
+          );
 
-        // Pause/Resume Button
-        _buildActionButton(
-          label: rule.isActive ? 'Pause Rule' : 'Resume Rule',
-          icon: rule.isActive ? Icons.pause_circle_outline : Icons.play_circle_filled,
-          color: rule.isActive ? const Color(0xFFF59E0B) : const Color(0xFF10B981),
-          onPressed: (_isTogglingRule || _isDeletingRule || _isTriggeringRule) ? null : _toggleRule,
-          isLoading: _isTogglingRule,
+    final deleteButton = _buildActionButton(
+      label: 'Delete',
+      icon: Icons.delete_outline,
+      color: const Color(0xFFEF4444),
+      onPressed: busy ? null : _deleteRule,
+      isLoading: _isDeletingRule,
+    );
+
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(child: triggerOrAllRules),
+            SizedBox(width: 12.w),
+            Expanded(child: pauseResume),
+          ],
         ),
         SizedBox(height: 12.h),
-
-        // Delete Button
-        _buildActionButton(
-          label: 'Delete Rule',
-          icon: Icons.delete_outline,
-          color: const Color(0xFFEF4444),
-          onPressed: (_isTogglingRule || _isDeletingRule || _isTriggeringRule) ? null : _deleteRule,
-          isLoading: _isDeletingRule,
-        ),
+        // For active rules row 1 already has Manual Save, so pair
+        // All Rules + Delete on row 2. For inactive rules row 1
+        // already had All Rules + Resume, so row 2 is full-width
+        // Delete — keeping it stretched looks less awkward than a
+        // half-empty pair.
+        rule.isActive
+            ? Row(
+                children: [
+                  Expanded(
+                    child: _buildActionButton(
+                      label: 'All Rules',
+                      icon: Icons.list_alt_outlined,
+                      color: const Color(0xFF3B82F6),
+                      onPressed: _viewTransactions,
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(child: deleteButton),
+                ],
+              )
+            : SizedBox(width: double.infinity, child: deleteButton),
       ],
     );
   }
@@ -1075,4 +1143,84 @@ ${rule.lastTriggeredAt != null ? 'Last Triggered: ${DateFormat('MMM dd, yyyy').f
       ],
     );
   }
+}
+
+/// Tiny pair returned by [_humaniseAutosaveError] — split-out so the
+/// snackbar can show a strong title + softer detail line.
+class _FriendlyError {
+  final String title;
+  final String body;
+  const _FriendlyError(this.title, this.body);
+}
+
+/// Map verbatim backend executor messages onto user-friendly copy.
+/// The executor itself returns short technical reasons ("debit
+/// rejected: insufficient funds", "savings goal already reached",
+/// "rule not active (status=paused)", etc.) — fine for engineers but
+/// noisy in a snackbar. Unmatched messages fall through with a
+/// neutral title + the raw text so we never swallow useful detail.
+_FriendlyError _humaniseAutosaveError(String raw) {
+  final m = raw.toLowerCase();
+  if (m.contains('savings goal already reached') ||
+      m.contains('target reached')) {
+    return const _FriendlyError(
+      'Goal already met',
+      'This rule has already saved its full target amount.',
+    );
+  }
+  if (m.contains('rule not active') || m.contains('status=paused') ||
+      m.contains('status=cancelled') || m.contains('status=completed')) {
+    return const _FriendlyError(
+      'Rule not active',
+      'Resume the rule first, then try again.',
+    );
+  }
+  if (m.contains('insufficient') || m.contains('balance') &&
+      m.contains('low')) {
+    return const _FriendlyError(
+      'Not enough balance',
+      'Your source account doesn\'t have the funds for this save right now.',
+    );
+  }
+  if (m.contains('debit rejected')) {
+    return _FriendlyError(
+      'Source account couldn\'t be debited',
+      raw.replaceFirst(RegExp(r'^debit rejected:?\s*', caseSensitive: false), ''),
+    );
+  }
+  if (m.contains('credit rejected')) {
+    return _FriendlyError(
+      'Destination account refused the credit',
+      raw.replaceFirst(RegExp(r'^credit rejected:?\s*', caseSensitive: false), ''),
+    );
+  }
+  if (m.contains('duplicate trigger in progress')) {
+    return const _FriendlyError(
+      'Already saving',
+      'A save for this rule is already in flight. Hold on a moment.',
+    );
+  }
+  if (m.contains('minimum') && m.contains('balance')) {
+    return const _FriendlyError(
+      'Below minimum balance',
+      'Saving would take your account below its configured minimum balance.',
+    );
+  }
+  if (m.contains('amount') && (m.contains('exceeds') || m.contains('cap'))) {
+    return const _FriendlyError(
+      'Above per-save cap',
+      'The computed amount is over your configured maximum per save.',
+    );
+  }
+  // Network / accounts-service unreachable — produced by the gRPC
+  // client wrapper before the executor records anything.
+  if (m.contains('unavailable') ||
+      m.contains('deadline exceeded') ||
+      m.contains('connection')) {
+    return const _FriendlyError(
+      'Network hiccup',
+      'We couldn\'t reach the savings service. The reconciler will retry shortly.',
+    );
+  }
+  return _FriendlyError('Couldn\'t save', raw);
 }
