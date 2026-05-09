@@ -135,22 +135,11 @@ class _DonorCardState extends State<DonorCard> {
         ),
       );
     }
-
-    return CircleAvatar(
+    return _DonorAvatar(
+      displayName: donor.displayName,
+      profilePicture: donor.profilePicture,
       radius: 24.r,
-      backgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.2),
-      backgroundImage:
-          donor.profilePicture != null ? NetworkImage(donor.profilePicture!) : null,
-      child: donor.profilePicture == null
-          ? Text(
-              donor.displayName.isNotEmpty ? donor.displayName[0].toUpperCase() : '?',
-              style: TextStyle(
-                color: const Color(0xFF4E03D0),
-                fontSize: 16.sp,
-                fontWeight: FontWeight.bold,
-              ),
-            )
-          : null,
+      fontSize: 16.sp,
     );
   }
 
@@ -529,27 +518,19 @@ class _DonorDetailDialogState extends State<DonorDetailDialog> {
             ],
           ),
           SizedBox(height: 16.h),
-          CircleAvatar(
-            radius: 36.r,
-            backgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.2),
-            backgroundImage: !isAnonymous && donor.profilePicture != null
-                ? NetworkImage(donor.profilePicture!)
-                : null,
-            child: isAnonymous
-                ? Icon(Icons.visibility_off, color: Colors.grey[400], size: 28.sp)
-                : (donor.profilePicture == null
-                    ? Text(
-                        donor.displayName.isNotEmpty
-                            ? donor.displayName[0].toUpperCase()
-                            : '?',
-                        style: TextStyle(
-                          color: const Color(0xFF4E03D0),
-                          fontSize: 24.sp,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      )
-                    : null),
-          ),
+          isAnonymous
+              ? CircleAvatar(
+                  radius: 36.r,
+                  backgroundColor: const Color(0xFF2D2D2D),
+                  child: Icon(Icons.visibility_off,
+                      color: Colors.grey[400], size: 28.sp),
+                )
+              : _DonorAvatar(
+                  displayName: donor.displayName,
+                  profilePicture: donor.profilePicture,
+                  radius: 36.r,
+                  fontSize: 24.sp,
+                ),
           SizedBox(height: 12.h),
           // Names can be long; clamp to 2 lines + ellipsis so the
           // header height stays bounded.
@@ -725,6 +706,77 @@ class _DonorDetailDialogState extends State<DonorDetailDialog> {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Avatar that mirrors the recipients-list pattern in the send-funds
+/// flow: gradient-purple circle with the donor's initial, swapping
+/// to a network-image overlay when one is available. Matches the
+/// behaviour seen in
+/// `recipients/.../enhanced_recipient_selection_bottom_sheet.dart`
+/// — never rendering a "?" or broken-image icon, even when the
+/// profile_picture URL fails to load.
+class _DonorAvatar extends StatelessWidget {
+  final String displayName;
+  final String? profilePicture;
+  final double radius;
+  final double fontSize;
+
+  const _DonorAvatar({
+    required this.displayName,
+    required this.profilePicture,
+    required this.radius,
+    required this.fontSize,
+  });
+
+  String get _initial {
+    final trimmed = displayName.trim();
+    if (trimmed.isEmpty) return 'D';
+    // Use the first RUNE so emoji / non-BMP characters don't get
+    // sliced into a surrogate half by `substring(0, 1)`. Falls back
+    // to 'D' if for some reason the rune is unprintable.
+    final firstRune = trimmed.runes.first;
+    final asString = String.fromCharCode(firstRune);
+    return asString.toUpperCase();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final initialWidget = Text(
+      _initial,
+      style: GoogleFonts.inter(
+        color: Colors.white,
+        fontSize: fontSize,
+        fontWeight: FontWeight.w700,
+      ),
+    );
+    return Container(
+      width: radius * 2,
+      height: radius * 2,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: const LinearGradient(
+          colors: [Color(0xFF4E03D0), Color(0xFF8B5CF6)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: profilePicture == null || profilePicture!.isEmpty
+          ? Center(child: initialWidget)
+          : ClipOval(
+              child: Image.network(
+                profilePicture!,
+                fit: BoxFit.cover,
+                width: radius * 2,
+                height: radius * 2,
+                // Async load: while bytes arrive, show the initial so
+                // the user never sees a broken-image / blank circle.
+                loadingBuilder: (context, child, progress) =>
+                    progress == null ? child : Center(child: initialWidget),
+                errorBuilder: (_, __, ___) => Center(child: initialWidget),
+              ),
+            ),
     );
   }
 }

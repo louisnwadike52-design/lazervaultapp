@@ -111,6 +111,13 @@ abstract class CrowdfundRepository {
     required double amount,
   });
 
+  /// User-scoped custom categories used by the create-campaign wizard.
+  Future<List<CrowdfundCustomCategory>> listCrowdfundCustomCategories();
+  Future<AddCrowdfundCustomCategoryResult> addCrowdfundCustomCategory({
+    required String name,
+  });
+  Future<bool> deleteCrowdfundCustomCategory({required String categoryId});
+
   Future<CampaignWalletBalance> getCampaignWalletBalance(String crowdfundId);
 
   // Notification Channel Operations

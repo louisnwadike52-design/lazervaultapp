@@ -36,6 +36,21 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
   CrowdfundLoaded? _lastBrowse;
   UserDonationsLoaded? _lastFunded;
 
+  /// id → {title, status} lookup used by the My Funded tab to resolve
+  /// real campaign titles + render the correct status badge, and by
+  /// the filter pills to filter client-side. Built up opportunistically
+  /// from any list snapshot we paint, then lazily back-filled (in
+  /// parallel) for donations whose campaigns weren't in the snapshot
+  /// (i.e. campaigns the user has funded but didn't create).
+  final Map<String, _CampaignMeta> _campaignMetaCache = {};
+  /// IDs we tried to back-fill but couldn't (404, network error,
+  /// deleted campaign). Tracked separately so the UI swaps from
+  /// "Loading campaign…" to "Campaign unavailable" once the warm-up
+  /// completes — instead of looping forever on a campaign that no
+  /// longer exists.
+  final Set<String> _unresolvableIds = {};
+  bool _fundedStatusesWarming = false;
+
   @override
   void initState() {
     super.initState();
@@ -117,6 +132,76 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
     _searchController.clear();
     _searchDebouncer.cancel(); // Cancel any pending debounced search from clear
     _loadCrowdfunds();
+    if (_tabController.index == 1) {
+      // Switched to My Funded — kick off a background back-fill so
+      // when the user reaches for the filter pills the campaign
+      // statuses are already cached.
+      _warmFundedCampaignStatuses();
+    }
+  }
+
+  /// Absorbs (id → title+status) mappings from any list snapshot we
+  /// paint. Free intel — the data already came over the wire and is
+  /// otherwise discarded after the list paints. Used by both the
+  /// title-resolver on My Funded and the badge renderer on either
+  /// tab.
+  void _absorbCampaignMeta(Iterable<Crowdfund> crowdfunds) {
+    var changed = 0;
+    for (final c in crowdfunds) {
+      if (c.id.isEmpty) continue;
+      final next = _CampaignMeta(title: c.title, status: c.status.name);
+      final existing = _campaignMetaCache[c.id];
+      if (existing != next) {
+        _campaignMetaCache[c.id] = next;
+        changed++;
+      }
+    }
+    if (changed > 0 && mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        setState(() {});
+      });
+    }
+  }
+
+  /// Lazy parallel back-fill for the My Funded tab. Issues one
+  /// getCrowdfund call per *unknown* campaign id, in parallel via
+  /// Future.wait — total wall-clock cost is roughly one round-trip
+  /// regardless of the donation count. Donations whose campaign was
+  /// already in the cache (e.g. seen earlier on Browse All) cost
+  /// zero. Re-entry is no-op while a warm-up is in flight.
+  Future<void> _warmFundedCampaignStatuses() async {
+    if (!mounted || _fundedStatusesWarming) return;
+    final donationsState = _lastFunded;
+    if (donationsState == null) return;
+    final missing = <String>{};
+    for (final d in donationsState.donations) {
+      if (d.crowdfundId.isEmpty) continue;
+      // Skip IDs already cached as resolved AND IDs we already
+      // know are unresolvable. Without the second check we'd retry
+      // a deleted campaign on every rebuild.
+      if (_campaignMetaCache.containsKey(d.crowdfundId)) continue;
+      if (_unresolvableIds.contains(d.crowdfundId)) continue;
+      missing.add(d.crowdfundId);
+    }
+    if (missing.isEmpty) return;
+    _fundedStatusesWarming = true;
+    try {
+      final cubit = context.read<CrowdfundCubit>();
+      final result = await cubit.fetchCampaignMetaMap(missing.toList());
+      if (!mounted) return;
+      setState(() {
+        for (final entry in result.resolved.entries) {
+          _campaignMetaCache[entry.key] = _CampaignMeta(
+            title: entry.value.title,
+            status: entry.value.status,
+          );
+        }
+        _unresolvableIds.addAll(result.unresolved);
+      });
+    } finally {
+      _fundedStatusesWarming = false;
+    }
   }
 
   String? get _statusParam {
@@ -321,7 +406,11 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
 
   Widget _buildTabBar() {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.w),
+      // Mirror the search bar's `bottom: 8.h` margin so the gap above
+      // and below the tab strip is symmetric (search → tabs → chips
+      // all read as one rhythm rather than tabs visually clinging to
+      // the chip row).
+      margin: EdgeInsets.fromLTRB(16.w, 0, 16.w, 8.h),
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),
@@ -354,8 +443,12 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
 
   Widget _buildFilterChips() {
     return Container(
+      // Vertical padding is owned by the tab bar's bottom margin
+      // above and the list's own padding below — keep this row tight
+      // so the search → tabs → chips rhythm reads as a single 8.h
+      // cadence.
       height: 40.h,
-      padding: EdgeInsets.symmetric(vertical: 6.h),
+      alignment: Alignment.center,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -421,6 +514,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
         // Error states don't collapse to the shimmer.
         if (state is CrowdfundLoaded) {
           _lastBrowse = state;
+          _absorbCampaignMeta(state.crowdfunds);
         }
         // Render priority:
         //   1. Live Loaded → render it.
@@ -493,7 +587,16 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
           curr is CrowdfundInitial,
       builder: (context, state) {
         if (state is UserDonationsLoaded) {
+          final isFreshList = _lastFunded?.donations != state.donations;
           _lastFunded = state;
+          // Each fresh donation list may include campaigns we've never
+          // seen — warm the status cache so the filter pills work
+          // straight away.
+          if (isFreshList) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _warmFundedCampaignStatuses();
+            });
+          }
         }
         final render =
             state is UserDonationsLoaded ? state : _lastFunded;
@@ -523,9 +626,34 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
       grouped.putIfAbsent(donation.crowdfundId, () => []).add(donation);
     }
 
-    final campaignIds = grouped.keys.toList();
+    // Apply the filter pills client-side: filter campaigns by the
+    // status we have cached. Campaigns whose status hasn't been
+    // resolved yet are kept visible (graceful degradation while the
+    // background back-fill resolves) so the user never sees an
+    // empty list just because the cache is still warming up.
+    var campaignIds = grouped.keys.toList();
+    final wantStatus = _statusParam;
+    if (wantStatus != null) {
+      campaignIds = campaignIds.where((id) {
+        final meta = _campaignMetaCache[id];
+        if (meta != null) return meta.status == wantStatus;
+        // Hide IDs we know we can't resolve so the filter never
+        // shows a mystery row that can never match. Still-resolving
+        // IDs stay visible so the user doesn't see a flicker as the
+        // back-fill lands.
+        return !_unresolvableIds.contains(id);
+      }).toList();
+    }
     final showFooter = state.isLoadingMore || state.hasMore;
     final itemCount = campaignIds.length + (showFooter ? 1 : 0);
+    if (campaignIds.isEmpty && !showFooter) {
+      return _buildEmptyState(
+        icon: Icons.filter_alt_off_outlined,
+        title: 'No funded campaigns match',
+        subtitle:
+            'No ${_selectedFilter.toLowerCase()} campaigns in your funded list yet.',
+      );
+    }
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -564,9 +692,15 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
             (a, b) => a.donationDate.isAfter(b.donationDate) ? a : b,
           );
 
+          final meta = _campaignMetaCache[crowdfundId];
           return _buildFundedCampaignCard(
             crowdfundId: crowdfundId,
             campaignTitle: _resolveCampaignTitle(crowdfundId),
+            // Status drives the badge color + label so a funded
+            // campaign that's later cancelled / completed / expired
+            // reads correctly in the list. null while back-fill is
+            // in flight — the card hides the badge in that case.
+            status: meta?.status,
             totalDonated: totalDonated,
             currency: currency,
             donationCount: donationCount,
@@ -578,6 +712,15 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
   }
 
   String _resolveCampaignTitle(String crowdfundId) {
+    // 1. Per-campaign cache first — populated from any list snapshot
+    //    we've painted plus the My Funded back-fill, so it covers
+    //    BOTH the user's own campaigns AND ones they've donated to
+    //    (which never appear in CrowdfundLoaded since that's
+    //    user-scoped today).
+    final cached = _campaignMetaCache[crowdfundId];
+    if (cached != null && cached.title.isNotEmpty) return cached.title;
+    // 2. Fall back to the live cubit state in case the cache hasn't
+    //    absorbed yet (race window between paint and absorb).
     final state = context.read<CrowdfundCubit>().state;
     Iterable<Crowdfund>? pool;
     if (state is CrowdfundLoaded) {
@@ -590,15 +733,20 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
         if (c.id == crowdfundId) return c.title;
       }
     }
-    final tail = crowdfundId.length > 6
-        ? crowdfundId.substring(crowdfundId.length - 6).toUpperCase()
-        : crowdfundId.toUpperCase();
-    return 'Campaign · $tail';
+    // 3. Known-unresolvable: campaign was deleted or 404'd. Show a
+    //    truthful label so the user understands why they can't open
+    //    it, instead of a perpetual "Loading campaign…".
+    if (_unresolvableIds.contains(crowdfundId)) {
+      return 'Campaign unavailable';
+    }
+    // 4. Otherwise the back-fill is still in flight — surface that.
+    return 'Loading campaign…';
   }
 
   Widget _buildFundedCampaignCard({
     required String crowdfundId,
     required String campaignTitle,
+    required String? status,
     required double totalDonated,
     required String currency,
     required int donationCount,
@@ -645,22 +793,7 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
                     ),
                   ),
                 ),
-                Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(6.r),
-                  ),
-                  child: Text(
-                    'Funded',
-                    style: GoogleFonts.inter(
-                      color: Colors.green,
-                      fontSize: 10.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
+                _buildStatusBadge(status),
               ],
             ),
             SizedBox(height: 16.h),
@@ -1006,4 +1139,70 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
       ),
     );
   }
+
+  /// Status pill driven by the cached campaign meta. Colours match
+  /// the rest of the crowdfund flow (purple-active, green-completed,
+  /// orange-expired, red-cancelled). When status is null the cache
+  /// hasn't resolved yet — render a neutral skeleton-style pill so
+  /// the row doesn't shift width once the back-fill lands.
+  Widget _buildStatusBadge(String? status) {
+    final ({Color bg, Color fg, String label}) palette = switch (status) {
+      'active' => (
+          bg: const Color(0xFF4E03D0).withValues(alpha: 0.18),
+          fg: const Color(0xFF8B5CF6),
+          label: 'Active',
+        ),
+      'completed' => (
+          bg: const Color(0xFF10B981).withValues(alpha: 0.18),
+          fg: const Color(0xFF10B981),
+          label: 'Completed',
+        ),
+      'expired' => (
+          bg: const Color(0xFFFB923C).withValues(alpha: 0.18),
+          fg: const Color(0xFFFB923C),
+          label: 'Expired',
+        ),
+      'cancelled' => (
+          bg: const Color(0xFFEF4444).withValues(alpha: 0.18),
+          fg: const Color(0xFFEF4444),
+          label: 'Cancelled',
+        ),
+      _ => (
+          bg: const Color(0xFF2D2D2D),
+          fg: const Color(0xFF9CA3AF),
+          label: '…',
+        ),
+    };
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+      decoration: BoxDecoration(
+        color: palette.bg,
+        borderRadius: BorderRadius.circular(6.r),
+      ),
+      child: Text(
+        palette.label,
+        style: GoogleFonts.inter(
+          color: palette.fg,
+          fontSize: 10.sp,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+/// Cached campaign metadata used by the My Funded tab to resolve
+/// real campaign titles + render the correct status badge without
+/// hitting the network on every render.
+class _CampaignMeta {
+  final String title;
+  final String status;
+  const _CampaignMeta({required this.title, required this.status});
+
+  @override
+  bool operator ==(Object other) =>
+      other is _CampaignMeta && other.title == title && other.status == status;
+
+  @override
+  int get hashCode => Object.hash(title, status);
 }

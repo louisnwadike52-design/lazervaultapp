@@ -16,6 +16,8 @@ import '../widgets/create_crowdfund_steps/basic_info_step.dart';
 import '../widgets/create_crowdfund_steps/funding_goal_step.dart';
 import '../widgets/create_crowdfund_steps/story_media_step.dart';
 import '../widgets/create_crowdfund_steps/category_deadline_step.dart';
+import '../widgets/custom_category_bottom_sheet.dart';
+import '../../domain/entities/crowdfund_entities.dart';
 import '../widgets/create_crowdfund_steps/social_links_step.dart';
 import '../widgets/create_crowdfund_steps/review_step.dart';
 import '../../../../../core/services/injection_container.dart';
@@ -72,15 +74,33 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
   DateTime? _selectedDeadline;
   Map<String, String> _socialLinks = {};
 
-  final List<String> _categories = [
+  /// Built-in categories shipped with the app. Stay constant — the
+  /// backend doesn't store these, only the user-added rows below.
+  static const List<String> _builtInCategories = [
     'Medical',
     'Education',
     'Emergency',
     'Community',
     'Creative',
     'Business',
-    'Other',
   ];
+  // Sentinel chip that opens the custom-category bottom sheet. Always
+  // rendered last so it visually reads as "+ Add" without needing a
+  // distinct chip type.
+  static const String _otherSentinel = 'Other';
+
+  /// User's persisted custom categories, hydrated on initState. The
+  /// merged list shown to the user is `built-ins + customs + Other`.
+  List<CrowdfundCustomCategory> _customCategories = [];
+
+  /// Computed view of the chip list. Rebuilt on every customCategories
+  /// mutation rather than mutating in place so we can pass a fresh
+  /// `List<String>` to the immutable CategoryDeadlineStep.
+  List<String> get _categories => [
+        ..._builtInCategories,
+        ..._customCategories.map((c) => c.name),
+        _otherSentinel,
+      ];
 
   // Supported currencies - includes user's local currency
   late List<String> _currencies;
@@ -106,6 +126,56 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
           _currencies = _buildCurrenciesList(newCurrency);
         });
       }
+    });
+
+    // Hydrate the user's persisted custom categories so the chip list
+    // shows them immediately on next visit. Pure read — no UI gating
+    // (the wizard still renders if this fails).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _loadCustomCategories();
+    });
+  }
+
+  Future<void> _loadCustomCategories() async {
+    try {
+      final cubit = context.read<CrowdfundCubit>();
+      final cats = await cubit.fetchCustomCategories();
+      if (!mounted) return;
+      setState(() => _customCategories = cats);
+    } catch (_) {
+      // Silent — wizard falls back to the built-ins.
+    }
+  }
+
+  /// Handles a category chip tap. The `Other` sentinel opens the
+  /// bottom sheet; everything else is a straight selection.
+  Future<void> _onCategoryTapped(String value) async {
+    if (value != _otherSentinel) {
+      setState(() => _selectedCategory = value);
+      return;
+    }
+    // Build the lower-case name set for the in-sheet duplicate hint.
+    // Always include the built-ins + the user's existing custom rows
+    // so the user sees "you already have this" before the round-trip.
+    final existingNamesLower = <String>{
+      for (final n in _builtInCategories) n.toLowerCase(),
+      for (final c in _customCategories) c.name.toLowerCase(),
+    };
+    final result = await showCustomCategoryBottomSheet(
+      context,
+      existingNamesLower: existingNamesLower,
+    );
+    if (!mounted || result == null) return;
+    setState(() {
+      // Dedupe by id so a save-then-reopen doesn't double-insert when
+      // the server returned the existing row (created=false). New
+      // categories land at the top so the user can spot them.
+      final existing = _customCategories.indexWhere((c) => c.id == result.id);
+      if (existing == -1) {
+        _customCategories = [result, ..._customCategories];
+      }
+      _selectedCategory = result.name;
     });
   }
 
@@ -443,11 +513,12 @@ class _CreateCrowdfundCarouselState extends State<CreateCrowdfundCarousel> {
                     selectedCategory: _selectedCategory,
                     categories: _categories,
                     selectedDeadline: _selectedDeadline,
-                    onCategoryChanged: (value) {
-                      setState(() {
-                        _selectedCategory = value;
-                      });
-                    },
+                    // Tapping a built-in / custom chip just selects;
+                    // tapping the "Other" sentinel opens the
+                    // add-custom bottom sheet. Both paths flow through
+                    // _onCategoryTapped so the step widget stays
+                    // dumb about the distinction.
+                    onCategoryChanged: _onCategoryTapped,
                     onDeadlineChanged: (date) {
                       setState(() {
                         _selectedDeadline = date;

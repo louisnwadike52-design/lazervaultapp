@@ -11,6 +11,7 @@ import '../cubit/crowdfund_cubit.dart';
 import '../cubit/crowdfund_state.dart';
 import '../cubit/leaderboard_cubit.dart';
 import '../cubit/leaderboard_state.dart';
+import '../widgets/my_donation_detail_bottom_sheet.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 
@@ -22,6 +23,19 @@ class CrowdfundHomeScreen extends StatefulWidget {
 }
 
 class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
+  /// id → {title, status} for the user's funded campaigns. Same cache
+  /// pattern as the My Funded list + the My Donations view-all page —
+  /// keyed off the donation list's unique crowdfund_ids and back-filled
+  /// in parallel via cubit.fetchCampaignMetaMap. Lets the 3-item
+  /// donations strip render real campaign titles instead of "Donation".
+  final Map<String, ({String title, String status})> _donationMetaCache = {};
+  /// IDs we tried to back-fill but couldn't (deleted / 404). Tracked
+  /// separately so the strip swaps to "Campaign unavailable" once the
+  /// warm-up settles, instead of looping forever on a missing one.
+  final Set<String> _unresolvableDonationIds = {};
+  bool _warmingDonationMeta = false;
+  Set<String> _lastSeenIds = const {};
+
   @override
   void initState() {
     super.initState();
@@ -37,6 +51,30 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
       cubit.loadMyCrowdfunds();
       cubit.loadUserDonations();
     });
+  }
+
+  Future<void> _warmDonationMeta(List<CrowdfundDonation> donations) async {
+    if (!mounted || _warmingDonationMeta) return;
+    final missing = <String>{};
+    for (final d in donations) {
+      if (d.crowdfundId.isEmpty) continue;
+      if (_donationMetaCache.containsKey(d.crowdfundId)) continue;
+      if (_unresolvableDonationIds.contains(d.crowdfundId)) continue;
+      missing.add(d.crowdfundId);
+    }
+    if (missing.isEmpty) return;
+    _warmingDonationMeta = true;
+    try {
+      final cubit = context.read<CrowdfundCubit>();
+      final result = await cubit.fetchCampaignMetaMap(missing.toList());
+      if (!mounted) return;
+      setState(() {
+        _donationMetaCache.addAll(result.resolved);
+        _unresolvableDonationIds.addAll(result.unresolved);
+      });
+    } finally {
+      _warmingDonationMeta = false;
+    }
   }
 
   /// Force-pop the entire crowdfund sub-stack and land on the main
@@ -1051,6 +1089,16 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
           return const SizedBox.shrink();
         }
         final donations = state.donations;
+        // Trigger a meta back-fill the first time we see this set
+        // (or whenever new IDs arrive). Idempotent + race-safe — fine
+        // to call on every rebuild; only NEW IDs hit the network.
+        final currIds = donations.map((d) => d.crowdfundId).toSet();
+        if (currIds.difference(_lastSeenIds).isNotEmpty) {
+          _lastSeenIds = currIds;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _warmDonationMeta(donations);
+          });
+        }
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1084,27 +1132,37 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
   }
 
   Widget _buildDonationItem(CrowdfundDonation donation) {
-    final statusColor = donation.status == DonationStatus.completed
-        ? const Color(0xFF10B981)
-        : donation.status == DonationStatus.pending
-            ? const Color(0xFFF59E0B)
-            : const Color(0xFFEF4444);
-    final statusLabel = donation.status == DonationStatus.completed
-        ? 'Completed'
-        : donation.status == DonationStatus.pending
-            ? 'Pending'
-            : donation.status == DonationStatus.processing
-                ? 'Processing'
-                : 'Failed';
-    final primary = (donation.message != null && donation.message!.trim().isNotEmpty)
-        ? donation.message!.trim()
-        : 'Donation';
+    final donationPalette = switch (donation.status) {
+      DonationStatus.completed => (color: const Color(0xFF10B981), label: 'Completed'),
+      DonationStatus.pending => (color: const Color(0xFFF59E0B), label: 'Pending'),
+      DonationStatus.processing => (color: const Color(0xFFF59E0B), label: 'Processing'),
+      DonationStatus.failed => (color: const Color(0xFFEF4444), label: 'Failed'),
+      DonationStatus.refunded => (color: const Color(0xFF6B7280), label: 'Refunded'),
+    };
+    final meta = _donationMetaCache[donation.crowdfundId];
+    final isUnresolvable =
+        meta == null && _unresolvableDonationIds.contains(donation.crowdfundId);
+    final title = (meta != null && meta.title.isNotEmpty)
+        ? meta.title
+        : isUnresolvable
+            ? 'Campaign unavailable'
+            : 'Loading campaign…';
+    final initial = (meta != null && meta.title.trim().isNotEmpty)
+        ? String.fromCharCode(meta.title.trim().runes.first).toUpperCase()
+        : '…';
     final dateLabel =
         '${donation.donationDate.year.toString().padLeft(4, '0')}-'
         '${donation.donationDate.month.toString().padLeft(2, '0')}-'
         '${donation.donationDate.day.toString().padLeft(2, '0')}';
-    return GestureDetector(
-      onTap: () => Get.toNamed(AppRoutes.crowdfundDetails, arguments: donation.crowdfundId),
+    return InkWell(
+      onTap: () => showMyDonationDetailBottomSheet(
+        context,
+        donation: donation,
+        campaignTitle: meta?.title,
+        campaignStatus: meta?.status,
+        isUnresolvable: isUnresolvable,
+      ),
+      borderRadius: BorderRadius.circular(10.r),
       child: Container(
         margin: EdgeInsets.only(bottom: 6.h),
         padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
@@ -1124,24 +1182,34 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
             Container(
               width: 32.w, height: 32.w,
               decoration: BoxDecoration(
-                color: statusColor.withValues(alpha: 0.15),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF4E03D0), Color(0xFF8B5CF6)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 borderRadius: BorderRadius.circular(8.r),
               ),
-              child: Icon(Icons.favorite, color: statusColor, size: 16.sp),
+              child: Center(
+                child: Text(initial,
+                    style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w800)),
+              ),
             ),
             SizedBox(width: 10.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(primary,
+                  Text(title,
                       style: GoogleFonts.inter(color: Colors.white, fontSize: 12.sp, fontWeight: FontWeight.w600),
                       maxLines: 1, overflow: TextOverflow.ellipsis),
                   SizedBox(height: 2.h),
                   Row(
                     children: [
-                      Text(statusLabel,
-                          style: GoogleFonts.inter(color: statusColor, fontSize: 10.sp, fontWeight: FontWeight.w600)),
+                      Text(donationPalette.label,
+                          style: GoogleFonts.inter(color: donationPalette.color, fontSize: 10.sp, fontWeight: FontWeight.w600)),
                       Text('  ·  ',
                           style: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 10.sp)),
                       Flexible(
@@ -1156,7 +1224,7 @@ class _CrowdfundHomeScreenState extends State<CrowdfundHomeScreen> {
             ),
             Text(
               '${CurrencySymbols.getSymbol(donation.currency)}${donation.amount.toStringAsFixed(0)}',
-              style: GoogleFonts.inter(color: statusColor, fontSize: 13.sp, fontWeight: FontWeight.w700),
+              style: GoogleFonts.inter(color: donationPalette.color, fontSize: 13.sp, fontWeight: FontWeight.w700),
             ),
           ],
         ),

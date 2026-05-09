@@ -55,20 +55,20 @@ class _DonationProcessingScreenState extends State<DonationProcessingScreen>
         body: BlocConsumer<CrowdfundCubit, CrowdfundState>(
           listener: (context, state) {
             if (state is DonationCompleted) {
-              // Wait a moment before navigating
-              Future.delayed(const Duration(seconds: 2), () {
-                if (!context.mounted) return;
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => DonationReceiptScreen(
-                      donation: state.donation,
-                      receipt: state.receipt,
-                      crowdfund: widget.crowdfund,
-                    ),
+              // Navigate as soon as the cubit reports completion —
+              // no artificial wait. The receipt screen has its own
+              // entry animation so the transition still feels paced.
+              if (!context.mounted) return;
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => DonationReceiptScreen(
+                    donation: state.donation,
+                    receipt: state.receipt,
+                    crowdfund: widget.crowdfund,
                   ),
-                );
-              });
+                ),
+              );
             } else if (state is CrowdfundError) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -76,17 +76,17 @@ class _DonationProcessingScreenState extends State<DonationProcessingScreen>
                   backgroundColor: const Color(0xFFEF4444),
                 ),
               );
-              // Navigate back after error
-              Future.delayed(const Duration(seconds: 2), () {
-                if (!context.mounted) return;
-                Navigator.pop(context);
-              });
+              // Pop immediately on error so the user can retry from
+              // the donation form. The snackbar persists across the
+              // pop via ScaffoldMessenger's queue.
+              if (!context.mounted) return;
+              Navigator.pop(context);
             }
           },
           builder: (context, state) {
             String currentStep = 'Processing donation...';
             int currentStepIndex = 0;
-            int totalSteps = 4;
+            int totalSteps = 3;
 
             if (state is DonationProcessing) {
               currentStep = state.step;
@@ -225,10 +225,12 @@ class _DonationProcessingScreenState extends State<DonationProcessingScreen>
   }
 
   Widget _buildProgressSteps(int currentStep, int totalSteps) {
+    // Three real steps, mirroring the cubit's emit boundaries: PIN
+    // verify → money-movement RPC → receipt. No artificial fourth
+    // step — the cubit no longer pads with Future.delayed.
     final steps = [
       'Verify',
       'Process',
-      'Update',
       'Receipt',
     ];
 

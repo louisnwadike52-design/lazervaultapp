@@ -101,6 +101,27 @@ class CrowdfundServiceClient extends $grpc.Client {
       ($0.GetCrowdfundWithdrawalFeeQuoteRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
           $0.GetCrowdfundWithdrawalFeeQuoteResponse.fromBuffer(value));
+  static final _$listCrowdfundCustomCategories = $grpc.ClientMethod<
+          $0.ListCrowdfundCustomCategoriesRequest,
+          $0.ListCrowdfundCustomCategoriesResponse>(
+      '/pb.CrowdfundService/ListCrowdfundCustomCategories',
+      ($0.ListCrowdfundCustomCategoriesRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.ListCrowdfundCustomCategoriesResponse.fromBuffer(value));
+  static final _$addCrowdfundCustomCategory = $grpc.ClientMethod<
+          $0.AddCrowdfundCustomCategoryRequest,
+          $0.AddCrowdfundCustomCategoryResponse>(
+      '/pb.CrowdfundService/AddCrowdfundCustomCategory',
+      ($0.AddCrowdfundCustomCategoryRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.AddCrowdfundCustomCategoryResponse.fromBuffer(value));
+  static final _$deleteCrowdfundCustomCategory = $grpc.ClientMethod<
+          $0.DeleteCrowdfundCustomCategoryRequest,
+          $0.DeleteCrowdfundCustomCategoryResponse>(
+      '/pb.CrowdfundService/DeleteCrowdfundCustomCategory',
+      ($0.DeleteCrowdfundCustomCategoryRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.DeleteCrowdfundCustomCategoryResponse.fromBuffer(value));
   static final _$getMyCrowdfunds =
       $grpc.ClientMethod<$0.GetMyCrowdfundsRequest, $0.GetMyCrowdfundsResponse>(
           '/pb.CrowdfundService/GetMyCrowdfunds',
@@ -266,6 +287,29 @@ class CrowdfundServiceClient extends $grpc.Client {
           $0.GetCrowdfundWithdrawalFeeQuoteRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getCrowdfundWithdrawalFeeQuote, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$0.ListCrowdfundCustomCategoriesResponse>
+      listCrowdfundCustomCategories(
+          $0.ListCrowdfundCustomCategoriesRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$listCrowdfundCustomCategories, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$0.AddCrowdfundCustomCategoryResponse>
+      addCrowdfundCustomCategory($0.AddCrowdfundCustomCategoryRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$addCrowdfundCustomCategory, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$0.DeleteCrowdfundCustomCategoryResponse>
+      deleteCrowdfundCustomCategory(
+          $0.DeleteCrowdfundCustomCategoryRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$deleteCrowdfundCustomCategory, request,
         options: options);
   }
 
@@ -476,6 +520,36 @@ abstract class CrowdfundServiceBase extends $grpc.Service {
             $0.GetCrowdfundWithdrawalFeeQuoteRequest.fromBuffer(value),
         ($0.GetCrowdfundWithdrawalFeeQuoteResponse value) =>
             value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ListCrowdfundCustomCategoriesRequest,
+            $0.ListCrowdfundCustomCategoriesResponse>(
+        'ListCrowdfundCustomCategories',
+        listCrowdfundCustomCategories_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.ListCrowdfundCustomCategoriesRequest.fromBuffer(value),
+        ($0.ListCrowdfundCustomCategoriesResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AddCrowdfundCustomCategoryRequest,
+            $0.AddCrowdfundCustomCategoryResponse>(
+        'AddCrowdfundCustomCategory',
+        addCrowdfundCustomCategory_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.AddCrowdfundCustomCategoryRequest.fromBuffer(value),
+        ($0.AddCrowdfundCustomCategoryResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.DeleteCrowdfundCustomCategoryRequest,
+            $0.DeleteCrowdfundCustomCategoryResponse>(
+        'DeleteCrowdfundCustomCategory',
+        deleteCrowdfundCustomCategory_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.DeleteCrowdfundCustomCategoryRequest.fromBuffer(value),
+        ($0.DeleteCrowdfundCustomCategoryResponse value) =>
+            value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.GetMyCrowdfundsRequest,
             $0.GetMyCrowdfundsResponse>(
         'GetMyCrowdfunds',
@@ -665,6 +739,28 @@ abstract class CrowdfundServiceBase extends $grpc.Service {
     return getCrowdfundWithdrawalFeeQuote(call, await request);
   }
 
+  $async.Future<$0.ListCrowdfundCustomCategoriesResponse>
+      listCrowdfundCustomCategories_Pre(
+          $grpc.ServiceCall call,
+          $async.Future<$0.ListCrowdfundCustomCategoriesRequest>
+              request) async {
+    return listCrowdfundCustomCategories(call, await request);
+  }
+
+  $async.Future<$0.AddCrowdfundCustomCategoryResponse>
+      addCrowdfundCustomCategory_Pre($grpc.ServiceCall call,
+          $async.Future<$0.AddCrowdfundCustomCategoryRequest> request) async {
+    return addCrowdfundCustomCategory(call, await request);
+  }
+
+  $async.Future<$0.DeleteCrowdfundCustomCategoryResponse>
+      deleteCrowdfundCustomCategory_Pre(
+          $grpc.ServiceCall call,
+          $async.Future<$0.DeleteCrowdfundCustomCategoryRequest>
+              request) async {
+    return deleteCrowdfundCustomCategory(call, await request);
+  }
+
   $async.Future<$0.GetMyCrowdfundsResponse> getMyCrowdfunds_Pre(
       $grpc.ServiceCall call,
       $async.Future<$0.GetMyCrowdfundsRequest> request) async {
@@ -762,6 +858,15 @@ abstract class CrowdfundServiceBase extends $grpc.Service {
   $async.Future<$0.GetCrowdfundWithdrawalFeeQuoteResponse>
       getCrowdfundWithdrawalFeeQuote($grpc.ServiceCall call,
           $0.GetCrowdfundWithdrawalFeeQuoteRequest request);
+  $async.Future<$0.ListCrowdfundCustomCategoriesResponse>
+      listCrowdfundCustomCategories($grpc.ServiceCall call,
+          $0.ListCrowdfundCustomCategoriesRequest request);
+  $async.Future<$0.AddCrowdfundCustomCategoryResponse>
+      addCrowdfundCustomCategory(
+          $grpc.ServiceCall call, $0.AddCrowdfundCustomCategoryRequest request);
+  $async.Future<$0.DeleteCrowdfundCustomCategoryResponse>
+      deleteCrowdfundCustomCategory($grpc.ServiceCall call,
+          $0.DeleteCrowdfundCustomCategoryRequest request);
   $async.Future<$0.GetMyCrowdfundsResponse> getMyCrowdfunds(
       $grpc.ServiceCall call, $0.GetMyCrowdfundsRequest request);
   $async.Future<$0.GetCampaignWalletBalanceResponse> getCampaignWalletBalance(

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import '../../../../../core/utils/emulator_url.dart';
 import '../../domain/entities/crowdfund_entities.dart';
 import 'progress_indicator_widget.dart';
 
@@ -53,7 +54,7 @@ class LeaderboardCrowdfundCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12.r),
                   child: crowdfund.imageUrl != null
                       ? CachedNetworkImage(
-                          imageUrl: crowdfund.imageUrl!,
+                          imageUrl: rewriteHostForEmulator(crowdfund.imageUrl!),
                           width: 60.w,
                           height: 60.w,
                           fit: BoxFit.cover,

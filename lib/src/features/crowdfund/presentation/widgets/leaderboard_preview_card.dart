@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import '../../../../../core/utils/emulator_url.dart';
 import '../../domain/entities/crowdfund_entities.dart';
 
 final _amountFormat = NumberFormat('#,##0.00');
@@ -74,7 +75,7 @@ class LeaderboardPreviewCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8.r),
                 child: crowdfund.imageUrl != null
                     ? CachedNetworkImage(
-                        imageUrl: crowdfund.imageUrl!,
+                        imageUrl: rewriteHostForEmulator(crowdfund.imageUrl!),
                         height: 60.h,
                         width: double.infinity,
                         fit: BoxFit.cover,

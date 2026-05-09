@@ -304,6 +304,39 @@ class CrowdfundRepositoryImpl implements CrowdfundRepository {
   }
 
   @override
+  Future<List<CrowdfundCustomCategory>>
+      listCrowdfundCustomCategories() async {
+    try {
+      return await remoteDataSource.listCrowdfundCustomCategories();
+    } catch (e) {
+      throw Exception('Failed to list custom categories: $e');
+    }
+  }
+
+  @override
+  Future<AddCrowdfundCustomCategoryResult> addCrowdfundCustomCategory({
+    required String name,
+  }) async {
+    try {
+      return await remoteDataSource.addCrowdfundCustomCategory(name: name);
+    } catch (e) {
+      throw Exception('Failed to add custom category: $e');
+    }
+  }
+
+  @override
+  Future<bool> deleteCrowdfundCustomCategory(
+      {required String categoryId}) async {
+    try {
+      return await remoteDataSource.deleteCrowdfundCustomCategory(
+        categoryId: categoryId,
+      );
+    } catch (e) {
+      throw Exception('Failed to delete custom category: $e');
+    }
+  }
+
+  @override
   Future<CampaignWalletBalance> getCampaignWalletBalance(
       String crowdfundId) async {
     try {

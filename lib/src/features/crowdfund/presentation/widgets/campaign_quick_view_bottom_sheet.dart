@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import '../../../../../core/utils/emulator_url.dart';
 import '../../domain/entities/crowdfund_entities.dart';
 import 'progress_indicator_widget.dart';
 
@@ -53,7 +54,7 @@ class CampaignQuickViewBottomSheet extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(12.r),
               child: CachedNetworkImage(
-                imageUrl: crowdfund.imageUrl!,
+                imageUrl: rewriteHostForEmulator(crowdfund.imageUrl!),
                 height: 150.h,
                 width: double.infinity,
                 fit: BoxFit.cover,

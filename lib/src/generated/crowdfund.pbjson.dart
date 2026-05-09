@@ -601,6 +601,76 @@ const GetCrowdfundWithdrawalFeeQuoteResponse$json = const {
 
 /// Descriptor for `GetCrowdfundWithdrawalFeeQuoteResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getCrowdfundWithdrawalFeeQuoteResponseDescriptor = $convert.base64Decode('CiZHZXRDcm93ZGZ1bmRXaXRoZHJhd2FsRmVlUXVvdGVSZXNwb25zZRIhCgxncm9zc19hbW91bnQYASABKARSC2dyb3NzQW1vdW50Eh0KCmZlZV9hbW91bnQYAiABKARSCWZlZUFtb3VudBIdCgpuZXRfYW1vdW50GAMgASgEUgluZXRBbW91bnQSGgoIY3VycmVuY3kYBCABKAlSCGN1cnJlbmN5Eh8KC2ZlZV9lbmFibGVkGAUgASgIUgpmZWVFbmFibGVkEhkKCGZlZV90eXBlGAYgASgJUgdmZWVUeXBlEigKEGZlZV9iYXNpc19wb2ludHMYByABKAVSDmZlZUJhc2lzUG9pbnRzEiQKDmZlZV9maXhlZF9rb2JvGAggASgEUgxmZWVGaXhlZEtvYm8=');
+@$core.Deprecated('Use crowdfundCustomCategoryDescriptor instead')
+const CrowdfundCustomCategory$json = const {
+  '1': 'CrowdfundCustomCategory',
+  '2': const [
+    const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    const {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
+    const {'1': 'created_at', '3': 3, '4': 1, '5': 9, '10': 'createdAt'},
+  ],
+};
+
+/// Descriptor for `CrowdfundCustomCategory`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List crowdfundCustomCategoryDescriptor = $convert.base64Decode('ChdDcm93ZGZ1bmRDdXN0b21DYXRlZ29yeRIOCgJpZBgBIAEoCVICaWQSEgoEbmFtZRgCIAEoCVIEbmFtZRIdCgpjcmVhdGVkX2F0GAMgASgJUgljcmVhdGVkQXQ=');
+@$core.Deprecated('Use listCrowdfundCustomCategoriesRequestDescriptor instead')
+const ListCrowdfundCustomCategoriesRequest$json = const {
+  '1': 'ListCrowdfundCustomCategoriesRequest',
+};
+
+/// Descriptor for `ListCrowdfundCustomCategoriesRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List listCrowdfundCustomCategoriesRequestDescriptor = $convert.base64Decode('CiRMaXN0Q3Jvd2RmdW5kQ3VzdG9tQ2F0ZWdvcmllc1JlcXVlc3Q=');
+@$core.Deprecated('Use listCrowdfundCustomCategoriesResponseDescriptor instead')
+const ListCrowdfundCustomCategoriesResponse$json = const {
+  '1': 'ListCrowdfundCustomCategoriesResponse',
+  '2': const [
+    const {'1': 'categories', '3': 1, '4': 3, '5': 11, '6': '.pb.CrowdfundCustomCategory', '10': 'categories'},
+  ],
+};
+
+/// Descriptor for `ListCrowdfundCustomCategoriesResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List listCrowdfundCustomCategoriesResponseDescriptor = $convert.base64Decode('CiVMaXN0Q3Jvd2RmdW5kQ3VzdG9tQ2F0ZWdvcmllc1Jlc3BvbnNlEjsKCmNhdGVnb3JpZXMYASADKAsyGy5wYi5Dcm93ZGZ1bmRDdXN0b21DYXRlZ29yeVIKY2F0ZWdvcmllcw==');
+@$core.Deprecated('Use addCrowdfundCustomCategoryRequestDescriptor instead')
+const AddCrowdfundCustomCategoryRequest$json = const {
+  '1': 'AddCrowdfundCustomCategoryRequest',
+  '2': const [
+    const {'1': 'name', '3': 1, '4': 1, '5': 9, '10': 'name'},
+  ],
+};
+
+/// Descriptor for `AddCrowdfundCustomCategoryRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List addCrowdfundCustomCategoryRequestDescriptor = $convert.base64Decode('CiFBZGRDcm93ZGZ1bmRDdXN0b21DYXRlZ29yeVJlcXVlc3QSEgoEbmFtZRgBIAEoCVIEbmFtZQ==');
+@$core.Deprecated('Use addCrowdfundCustomCategoryResponseDescriptor instead')
+const AddCrowdfundCustomCategoryResponse$json = const {
+  '1': 'AddCrowdfundCustomCategoryResponse',
+  '2': const [
+    const {'1': 'category', '3': 1, '4': 1, '5': 11, '6': '.pb.CrowdfundCustomCategory', '10': 'category'},
+    const {'1': 'created', '3': 2, '4': 1, '5': 8, '10': 'created'},
+  ],
+};
+
+/// Descriptor for `AddCrowdfundCustomCategoryResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List addCrowdfundCustomCategoryResponseDescriptor = $convert.base64Decode('CiJBZGRDcm93ZGZ1bmRDdXN0b21DYXRlZ29yeVJlc3BvbnNlEjcKCGNhdGVnb3J5GAEgASgLMhsucGIuQ3Jvd2RmdW5kQ3VzdG9tQ2F0ZWdvcnlSCGNhdGVnb3J5EhgKB2NyZWF0ZWQYAiABKAhSB2NyZWF0ZWQ=');
+@$core.Deprecated('Use deleteCrowdfundCustomCategoryRequestDescriptor instead')
+const DeleteCrowdfundCustomCategoryRequest$json = const {
+  '1': 'DeleteCrowdfundCustomCategoryRequest',
+  '2': const [
+    const {'1': 'category_id', '3': 1, '4': 1, '5': 9, '10': 'categoryId'},
+  ],
+};
+
+/// Descriptor for `DeleteCrowdfundCustomCategoryRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List deleteCrowdfundCustomCategoryRequestDescriptor = $convert.base64Decode('CiREZWxldGVDcm93ZGZ1bmRDdXN0b21DYXRlZ29yeVJlcXVlc3QSHwoLY2F0ZWdvcnlfaWQYASABKAlSCmNhdGVnb3J5SWQ=');
+@$core.Deprecated('Use deleteCrowdfundCustomCategoryResponseDescriptor instead')
+const DeleteCrowdfundCustomCategoryResponse$json = const {
+  '1': 'DeleteCrowdfundCustomCategoryResponse',
+  '2': const [
+    const {'1': 'deleted', '3': 1, '4': 1, '5': 8, '10': 'deleted'},
+  ],
+};
+
+/// Descriptor for `DeleteCrowdfundCustomCategoryResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List deleteCrowdfundCustomCategoryResponseDescriptor = $convert.base64Decode('CiVEZWxldGVDcm93ZGZ1bmRDdXN0b21DYXRlZ29yeVJlc3BvbnNlEhgKB2RlbGV0ZWQYASABKAhSB2RlbGV0ZWQ=');
 @$core.Deprecated('Use getMyCrowdfundsRequestDescriptor instead')
 const GetMyCrowdfundsRequest$json = const {
   '1': 'GetMyCrowdfundsRequest',
