@@ -352,6 +352,35 @@ message GetCrowdfundWithdrawalFeeQuoteResponse {
   uint64 fee_fixed_kobo = 8;
 }
 
+message CrowdfundCustomCategory {
+  string id = 1;
+  string name = 2;
+  string created_at = 3;
+}
+
+message ListCrowdfundCustomCategoriesRequest {}
+
+message ListCrowdfundCustomCategoriesResponse {
+  repeated CrowdfundCustomCategory categories = 1;
+}
+
+message AddCrowdfundCustomCategoryRequest {
+  string name = 1;
+}
+
+message AddCrowdfundCustomCategoryResponse {
+  CrowdfundCustomCategory category = 1;
+  bool created = 2;
+}
+
+message DeleteCrowdfundCustomCategoryRequest {
+  string category_id = 1;
+}
+
+message DeleteCrowdfundCustomCategoryResponse {
+  bool deleted = 1;
+}
+
 // Get My Crowdfunds (Creator's campaigns)
 message GetMyCrowdfundsRequest {
   int32 page = 1;
@@ -507,6 +536,25 @@ service CrowdfundService {
   rpc GetCrowdfundWithdrawalFeeQuote(GetCrowdfundWithdrawalFeeQuoteRequest) returns (GetCrowdfundWithdrawalFeeQuoteResponse) {
     option (google.api.http) = {
       get: "/v1/crowdfunds/{crowdfund_id}/withdraw/fee-quote"
+    };
+  }
+
+  // User-scoped custom categories used by the create-campaign
+  // wizard's "Other → custom" bottom sheet.
+  rpc ListCrowdfundCustomCategories(ListCrowdfundCustomCategoriesRequest) returns (ListCrowdfundCustomCategoriesResponse) {
+    option (google.api.http) = {
+      get: "/v1/crowdfunds/categories/custom"
+    };
+  }
+  rpc AddCrowdfundCustomCategory(AddCrowdfundCustomCategoryRequest) returns (AddCrowdfundCustomCategoryResponse) {
+    option (google.api.http) = {
+      post: "/v1/crowdfunds/categories/custom"
+      body: "*"
+    };
+  }
+  rpc DeleteCrowdfundCustomCategory(DeleteCrowdfundCustomCategoryRequest) returns (DeleteCrowdfundCustomCategoryResponse) {
+    option (google.api.http) = {
+      delete: "/v1/crowdfunds/categories/custom/{category_id}"
     };
   }
 

@@ -703,6 +703,42 @@ class CrowdfundWithdrawalResult extends Equatable {
       ];
 }
 
+/// User-scoped custom category created via the "Other → custom"
+/// bottom sheet on the create-campaign wizard. Built-in categories
+/// (Medical, Education, ...) live in client code and are NOT
+/// represented as instances of this class — only persisted custom
+/// rows are.
+class CrowdfundCustomCategory extends Equatable {
+  final String id;
+  final String name;
+  final DateTime createdAt;
+
+  const CrowdfundCustomCategory({
+    required this.id,
+    required this.name,
+    required this.createdAt,
+  });
+
+  @override
+  List<Object?> get props => [id, name, createdAt];
+}
+
+/// Result of a category add — returns the row plus whether it was
+/// freshly created (false when a case-insensitive duplicate already
+/// existed and the server returned the existing row).
+class AddCrowdfundCustomCategoryResult extends Equatable {
+  final CrowdfundCustomCategory category;
+  final bool created;
+
+  const AddCrowdfundCustomCategoryResult({
+    required this.category,
+    required this.created,
+  });
+
+  @override
+  List<Object?> get props => [category, created];
+}
+
 /// Read-only quote returned by GetCrowdfundWithdrawalFeeQuote. The
 /// withdraw sheet renders this so the user sees the platform
 /// commission BEFORE they confirm a PIN — the same precedence rule

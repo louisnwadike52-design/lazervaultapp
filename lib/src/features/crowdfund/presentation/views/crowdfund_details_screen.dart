@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import '../../../../../core/utils/emulator_url.dart';
 import '../../../../../core/services/injection_container.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../data/services/crowdfund_share_service.dart';
@@ -289,23 +290,11 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
             onTap: () => _showCreatorDetailsDialog(crowdfund.creator),
             child: Row(
               children: [
-                CircleAvatar(
+                _CreatorAvatar(
+                  initials: crowdfund.creator.initials,
+                  profilePicture: crowdfund.creator.profilePicture,
                   radius: 16.r,
-                  backgroundColor:
-                      const Color(0xFF4E03D0).withValues(alpha: 0.2),
-                  backgroundImage: crowdfund.creator.profilePicture != null
-                      ? NetworkImage(crowdfund.creator.profilePicture!)
-                      : null,
-                  child: crowdfund.creator.profilePicture == null
-                      ? Text(
-                          crowdfund.creator.initials,
-                          style: GoogleFonts.inter(
-                            color: const Color(0xFF4E03D0),
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        )
-                      : null,
+                  fontSize: 12.sp,
                 ),
                 SizedBox(width: 10.w),
                 Expanded(
@@ -390,7 +379,10 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
           flexibleSpace: crowdfund.imageUrl != null
               ? FlexibleSpaceBar(
                   background: CachedNetworkImage(
-                    imageUrl: crowdfund.imageUrl!,
+                    // Rewrite localhost / 127.0.0.1 → 10.0.2.2 on
+                    // Android emulator so dev-time uploads served
+                    // by the host machine are reachable.
+                    imageUrl: rewriteHostForEmulator(crowdfund.imageUrl!),
                     fit: BoxFit.cover,
                     fadeInDuration: const Duration(milliseconds: 180),
                     placeholder: (context, _) => Container(
@@ -1148,13 +1140,11 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
                     SizedBox(height: 12.h),
                     Stack(
                       children: [
-                        CircleAvatar(
+                        _CreatorAvatar(
+                          initials: creator.initials,
+                          profilePicture: creator.profilePicture,
                           radius: 32.r,
-                          backgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.2),
-                          backgroundImage: creator.profilePicture != null ? NetworkImage(creator.profilePicture!) : null,
-                          child: creator.profilePicture == null
-                              ? Text(creator.initials, style: TextStyle(color: const Color(0xFF4E03D0), fontSize: 20.sp, fontWeight: FontWeight.bold))
-                              : null,
+                          fontSize: 20.sp,
                         ),
                         if (creator.verified)
                           Positioned(
@@ -1238,5 +1228,61 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
     // through the SWR cache makes this near-instant).
     if (!mounted) return;
     cubit.loadCrowdfundDetails(crowdfund.id);
+  }
+}
+
+/// Robust avatar that mirrors the donor + recipient avatar pattern:
+/// purple-gradient circle with initials, network image overlaid only
+/// when it loads successfully. Network failures fall back to the
+/// initials so the user never sees a blank circle / broken icon.
+class _CreatorAvatar extends StatelessWidget {
+  final String initials;
+  final String? profilePicture;
+  final double radius;
+  final double fontSize;
+
+  const _CreatorAvatar({
+    required this.initials,
+    required this.profilePicture,
+    required this.radius,
+    required this.fontSize,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final initialWidget = Text(
+      initials.isEmpty ? 'U' : initials,
+      style: GoogleFonts.inter(
+        color: Colors.white,
+        fontSize: fontSize,
+        fontWeight: FontWeight.w700,
+      ),
+    );
+    final url = profilePicture;
+    return Container(
+      width: radius * 2,
+      height: radius * 2,
+      decoration: const BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(
+          colors: [Color(0xFF4E03D0), Color(0xFF8B5CF6)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: (url == null || url.isEmpty)
+          ? Center(child: initialWidget)
+          : ClipOval(
+              child: Image.network(
+                rewriteHostForEmulator(url),
+                fit: BoxFit.cover,
+                width: radius * 2,
+                height: radius * 2,
+                loadingBuilder: (context, child, progress) =>
+                    progress == null ? child : Center(child: initialWidget),
+                errorBuilder: (_, __, ___) => Center(child: initialWidget),
+              ),
+            ),
+    );
   }
 }

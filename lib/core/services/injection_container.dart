@@ -1803,6 +1803,9 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton(() => WithdrawFromCrowdfundUseCase(serviceLocator<CrowdfundRepository>()));
   serviceLocator.registerLazySingleton(() => GetCrowdfundWithdrawalFeeQuoteUseCase(serviceLocator<CrowdfundRepository>()));
   serviceLocator.registerLazySingleton(() => GetCampaignWalletBalanceUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() => ListCrowdfundCustomCategoriesUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() => AddCrowdfundCustomCategoryUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() => DeleteCrowdfundCustomCategoryUseCase(serviceLocator<CrowdfundRepository>()));
   serviceLocator.registerLazySingleton(() => ConnectNotificationChannelUseCase(serviceLocator<CrowdfundRepository>()));
   serviceLocator.registerLazySingleton(() => DisconnectNotificationChannelUseCase(serviceLocator<CrowdfundRepository>()));
   serviceLocator.registerLazySingleton(() => GetNotificationChannelsUseCase(serviceLocator<CrowdfundRepository>()));
@@ -1832,6 +1835,9 @@ Future<void> init() async {
     withdrawFromCrowdfundUseCase: serviceLocator<WithdrawFromCrowdfundUseCase>(),
     getCrowdfundWithdrawalFeeQuoteUseCase: serviceLocator<GetCrowdfundWithdrawalFeeQuoteUseCase>(),
     getCampaignWalletBalanceUseCase: serviceLocator<GetCampaignWalletBalanceUseCase>(),
+    listCrowdfundCustomCategoriesUseCase: serviceLocator<ListCrowdfundCustomCategoriesUseCase>(),
+    addCrowdfundCustomCategoryUseCase: serviceLocator<AddCrowdfundCustomCategoryUseCase>(),
+    deleteCrowdfundCustomCategoryUseCase: serviceLocator<DeleteCrowdfundCustomCategoryUseCase>(),
     connectNotificationChannelUseCase: serviceLocator<ConnectNotificationChannelUseCase>(),
     disconnectNotificationChannelUseCase: serviceLocator<DisconnectNotificationChannelUseCase>(),
     getNotificationChannelsUseCase: serviceLocator<GetNotificationChannelsUseCase>(),

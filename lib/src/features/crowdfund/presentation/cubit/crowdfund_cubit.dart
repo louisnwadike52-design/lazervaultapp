@@ -26,6 +26,9 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
   final WithdrawFromCrowdfundUseCase? withdrawFromCrowdfundUseCase;
   final GetCrowdfundWithdrawalFeeQuoteUseCase? getCrowdfundWithdrawalFeeQuoteUseCase;
   final GetCampaignWalletBalanceUseCase? getCampaignWalletBalanceUseCase;
+  final ListCrowdfundCustomCategoriesUseCase? listCrowdfundCustomCategoriesUseCase;
+  final AddCrowdfundCustomCategoryUseCase? addCrowdfundCustomCategoryUseCase;
+  final DeleteCrowdfundCustomCategoryUseCase? deleteCrowdfundCustomCategoryUseCase;
   final ConnectNotificationChannelUseCase? connectNotificationChannelUseCase;
   final DisconnectNotificationChannelUseCase? disconnectNotificationChannelUseCase;
   final GetNotificationChannelsUseCase? getNotificationChannelsUseCase;
@@ -59,6 +62,9 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
     this.withdrawFromCrowdfundUseCase,
     this.getCrowdfundWithdrawalFeeQuoteUseCase,
     this.getCampaignWalletBalanceUseCase,
+    this.listCrowdfundCustomCategoriesUseCase,
+    this.addCrowdfundCustomCategoryUseCase,
+    this.deleteCrowdfundCustomCategoryUseCase,
     this.connectNotificationChannelUseCase,
     this.disconnectNotificationChannelUseCase,
     this.getNotificationChannelsUseCase,
@@ -592,23 +598,30 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
     required String transactionId,
   }) async {
     try {
-      // Step 1: Verifying donation
+      // Each emit is gated on a real boundary in the underlying RPC
+      // pipeline — no artificial Future.delayed padding. The screen
+      // advances purely on actual progress so the user never waits
+      // for a fake animation when the donation is already done.
+
+      // Step 1: contacting backend (covers PIN bind + idempotency
+      // resolve before the real debit lands).
       if (isClosed) return;
       emit(const DonationProcessing(
         step: 'Verifying donation',
         currentStepIndex: 1,
-        totalSteps: 4,
+        totalSteps: 3,
       ));
-      await Future.delayed(const Duration(milliseconds: 500));
 
-      // Step 2: Processing payment
+      // Step 2: actual money-movement RPC. The await straddles the
+      // PIN validation, source-account debit, and crowdfund row
+      // update, so when this returns we know the campaign was
+      // credited.
       if (isClosed) return;
       emit(const DonationProcessing(
         step: 'Processing payment',
         currentStepIndex: 2,
-        totalSteps: 4,
+        totalSteps: 3,
       ));
-
       final donation = await makeDonationUseCase(
         crowdfundId: crowdfundId,
         amount: amount,
@@ -619,23 +632,14 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
         transactionId: transactionId,
       );
 
-      // Step 3: Updating crowdfund
-      if (isClosed) return;
-      emit(const DonationProcessing(
-        step: 'Updating crowdfund',
-        currentStepIndex: 3,
-        totalSteps: 4,
-      ));
-      await Future.delayed(const Duration(milliseconds: 500));
-
-      // Step 4: Generating receipt
+      // Step 3: receipt generation. Optional — the donation already
+      // committed, so a receipt failure shouldn't block completion.
       if (isClosed) return;
       emit(const DonationProcessing(
         step: 'Generating receipt',
-        currentStepIndex: 4,
-        totalSteps: 4,
+        currentStepIndex: 3,
+        totalSteps: 3,
       ));
-
       CrowdfundReceipt? receipt;
       try {
         receipt = await generateDonationReceiptUseCase(donation.id);
@@ -800,6 +804,48 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       if (isClosed) return;
       emit(CrowdfundError(message: getUserFriendlyErrorMessage(e, fallback: "Couldn't load your donations. Please try again.")));
     }
+  }
+
+  /// Resolve title + status for N campaigns by id in parallel.
+  /// Returns a record with both resolved entries AND the IDs that
+  /// failed (404, network error, deleted) so the caller can mark
+  /// them as "unavailable" and stop showing a perpetual loading
+  /// label. Read-only; emits no state.
+  Future<({Map<String, ({String title, String status})> resolved, Set<String> unresolved})>
+      fetchCampaignMetaMap(List<String> ids) async {
+    if (ids.isEmpty) {
+      return (
+        resolved: <String, ({String title, String status})>{},
+        unresolved: <String>{},
+      );
+    }
+    final results = await Future.wait(
+      ids.map((id) async {
+        try {
+          final cf = await getCrowdfundUseCase(id);
+          return MapEntry(
+            id,
+            (title: cf.title, status: cf.status.name),
+          );
+        } catch (_) {
+          // Differentiate "couldn't resolve" from "succeeded with
+          // empty payload" via a sentinel — null means failed.
+          return null;
+        }
+      }),
+      eagerError: false,
+    );
+    final resolved = <String, ({String title, String status})>{};
+    final unresolved = <String>{};
+    for (var i = 0; i < ids.length; i++) {
+      final entry = results[i];
+      if (entry != null) {
+        resolved[entry.key] = entry.value;
+      } else {
+        unresolved.add(ids[i]);
+      }
+    }
+    return (resolved: resolved, unresolved: unresolved);
   }
 
   /// Load next page of the user's donations (append to existing list).
@@ -1054,6 +1100,48 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
       );
     } catch (_) {
       return null;
+    }
+  }
+
+  // ==========================================================================
+  // CUSTOM CATEGORIES (user-scoped, used by the create-campaign wizard's
+  // "Other → custom" bottom sheet)
+  // ==========================================================================
+
+  /// Returns the user's custom categories. Pure read — does not emit
+  /// any state so the wizard can call this freely without disturbing
+  /// the surrounding BlocBuilders. Returns an empty list on any error
+  /// so the wizard falls back to the seven built-ins.
+  Future<List<CrowdfundCustomCategory>> fetchCustomCategories() async {
+    if (listCrowdfundCustomCategoriesUseCase == null) return const [];
+    try {
+      return await listCrowdfundCustomCategoriesUseCase!();
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  /// Adds a user-scoped custom category. Returns the resolved row +
+  /// whether it was freshly created (false when a case-insensitive
+  /// match already existed). Throws on validation/network failure so
+  /// the bottom sheet can surface an inline error and keep the user
+  /// in the editor.
+  Future<AddCrowdfundCustomCategoryResult> addCustomCategory(String name) {
+    if (addCrowdfundCustomCategoryUseCase == null) {
+      throw Exception('Custom categories are not available right now');
+    }
+    return addCrowdfundCustomCategoryUseCase!(name);
+  }
+
+  /// Removes a user-scoped custom category. Best-effort; returns
+  /// false on any failure so the caller can decide whether to roll
+  /// back the optimistic UI removal.
+  Future<bool> removeCustomCategory(String categoryId) async {
+    if (deleteCrowdfundCustomCategoryUseCase == null) return false;
+    try {
+      return await deleteCrowdfundCustomCategoryUseCase!(categoryId);
+    } catch (_) {
+      return false;
     }
   }
 

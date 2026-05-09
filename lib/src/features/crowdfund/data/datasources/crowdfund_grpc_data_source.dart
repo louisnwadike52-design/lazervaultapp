@@ -463,6 +463,72 @@ class CrowdfundGrpcDataSource {
   }
 
   // ============================================================================
+  // USER-SCOPED CUSTOM CATEGORIES
+  // ============================================================================
+
+  /// Returns the caller's custom categories. Built-in categories are
+  /// owned by the Flutter client; this RPC only carries user-added
+  /// rows so the wizard can rehydrate them on next visit.
+  Future<List<CrowdfundCustomCategory>> listCrowdfundCustomCategories() async {
+    try {
+      final request = pb.ListCrowdfundCustomCategoriesRequest();
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _client.listCrowdfundCustomCategories(
+        request,
+        options: callOptions,
+      );
+      return response.categories
+          .map((c) => CrowdfundCustomCategory(
+                id: c.id,
+                name: c.name,
+                createdAt: DateTime.tryParse(c.createdAt) ?? DateTime.now(),
+              ))
+          .toList();
+    } on GrpcError catch (e) {
+      throw Exception(friendlyGrpcError(e, 'Failed to load custom categories'));
+    }
+  }
+
+  Future<AddCrowdfundCustomCategoryResult> addCrowdfundCustomCategory({
+    required String name,
+  }) async {
+    try {
+      final request = pb.AddCrowdfundCustomCategoryRequest()..name = name;
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _client.addCrowdfundCustomCategory(
+        request,
+        options: callOptions,
+      );
+      final cat = response.category;
+      return AddCrowdfundCustomCategoryResult(
+        category: CrowdfundCustomCategory(
+          id: cat.id,
+          name: cat.name,
+          createdAt: DateTime.tryParse(cat.createdAt) ?? DateTime.now(),
+        ),
+        created: response.created,
+      );
+    } on GrpcError catch (e) {
+      throw Exception(friendlyGrpcError(e, 'Failed to add custom category'));
+    }
+  }
+
+  Future<bool> deleteCrowdfundCustomCategory({required String categoryId}) async {
+    try {
+      final request = pb.DeleteCrowdfundCustomCategoryRequest()
+        ..categoryId = categoryId;
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _client.deleteCrowdfundCustomCategory(
+        request,
+        options: callOptions,
+      );
+      return response.deleted;
+    } on GrpcError catch (e) {
+      throw Exception(friendlyGrpcError(e, 'Failed to delete custom category'));
+    }
+  }
+
+  // ============================================================================
   // LEADERBOARD OPERATIONS
   // ============================================================================
 

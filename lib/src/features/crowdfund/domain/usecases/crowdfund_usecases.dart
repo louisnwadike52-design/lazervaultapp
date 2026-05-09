@@ -331,6 +331,27 @@ class GetCrowdfundWithdrawalFeeQuoteUseCase {
   }
 }
 
+class ListCrowdfundCustomCategoriesUseCase {
+  final CrowdfundRepository repository;
+  ListCrowdfundCustomCategoriesUseCase(this.repository);
+  Future<List<CrowdfundCustomCategory>> call() =>
+      repository.listCrowdfundCustomCategories();
+}
+
+class AddCrowdfundCustomCategoryUseCase {
+  final CrowdfundRepository repository;
+  AddCrowdfundCustomCategoryUseCase(this.repository);
+  Future<AddCrowdfundCustomCategoryResult> call(String name) =>
+      repository.addCrowdfundCustomCategory(name: name);
+}
+
+class DeleteCrowdfundCustomCategoryUseCase {
+  final CrowdfundRepository repository;
+  DeleteCrowdfundCustomCategoryUseCase(this.repository);
+  Future<bool> call(String categoryId) =>
+      repository.deleteCrowdfundCustomCategory(categoryId: categoryId);
+}
+
 // ============================================================================
 // NOTIFICATION CHANNEL USE CASES
 // ============================================================================
