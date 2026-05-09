@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -31,12 +33,21 @@ class _WithdrawFundsSheetState extends State<WithdrawFundsSheet>
   double _amount = 0.0;
   bool _isSubmitting = false;
 
+  // Fee-quote bookkeeping: the latest server-confirmed breakdown,
+  // the pending debounce timer, and a request token so out-of-order
+  // responses can never overwrite a fresher quote.
+  CrowdfundWithdrawalFeeQuote? _quote;
+  bool _quoteLoading = false;
+  Timer? _quoteDebounce;
+  int _quoteToken = 0;
+
   @override
   ITransactionPinService get transactionPinService =>
       GetIt.I<ITransactionPinService>();
 
   @override
   void dispose() {
+    _quoteDebounce?.cancel();
     _amountController.dispose();
     super.dispose();
   }
@@ -49,7 +60,49 @@ class _WithdrawFundsSheetState extends State<WithdrawFundsSheet>
 
   void _onAmountChanged(String value) {
     final parsed = _parseAmount(value);
-    if (parsed != _amount) setState(() => _amount = parsed);
+    if (parsed == _amount) return;
+    setState(() => _amount = parsed);
+    _scheduleQuoteFetch(parsed);
+  }
+
+  /// Debounced background fetch of the fee quote. We don't want to
+  /// hammer fp-service while the user types — wait 300ms after the
+  /// last keystroke. The token gate prevents an in-flight quote from
+  /// stomping a fresher one if responses arrive out of order.
+  void _scheduleQuoteFetch(double amount) {
+    _quoteDebounce?.cancel();
+    if (amount <= 0) {
+      // Clear the previous breakdown so an empty field doesn't keep
+      // showing stale numbers.
+      if (_quote != null || _quoteLoading) {
+        setState(() {
+          _quote = null;
+          _quoteLoading = false;
+        });
+      }
+      return;
+    }
+    _quoteDebounce = Timer(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
+      _fetchQuote(amount);
+    });
+  }
+
+  Future<void> _fetchQuote(double amount) async {
+    final token = ++_quoteToken;
+    setState(() => _quoteLoading = true);
+    final cubit = context.read<CrowdfundCubit>();
+    final result = await cubit.fetchWithdrawalFeeQuote(
+      crowdfundId: widget.crowdfund.id,
+      amount: amount,
+    );
+    // Drop the response if a newer fetch has fired in the meantime
+    // (out-of-order arrival), or if the sheet was dismissed.
+    if (!mounted || token != _quoteToken) return;
+    setState(() {
+      _quote = result;
+      _quoteLoading = false;
+    });
   }
 
   String? _validate() {
@@ -123,6 +176,115 @@ class _WithdrawFundsSheetState extends State<WithdrawFundsSheet>
         content: Text(message),
         backgroundColor: const Color(0xFFEF4444),
       ),
+    );
+  }
+
+  /// Renders Gross / Fee / Net so the user sees the platform
+  /// commission BEFORE they confirm. When there's no quote yet we
+  /// optimistically show "Net = Gross" with a faint "Calculating..."
+  /// hint instead of an empty box, so the user never confirms a PIN
+  /// with no breakdown shown.
+  Widget _buildFeeBreakdown() {
+    final currency = widget.crowdfund.currency;
+    final q = _quote;
+    final fee = q?.feeAmount ?? 0.0;
+    final net = q?.netAmount ?? _amount;
+    final showsFee = fee > 0;
+
+    String? feeLabel() {
+      if (q == null || !showsFee) return null;
+      switch (q.feeType) {
+        case 'percentage':
+          // Display bps as a friendly percentage. 250 bps -> 2.5%.
+          final pct = (q.feeBasisPoints / 100.0);
+          // Drop trailing zero on integer percentages (2.0% -> 2%).
+          final pctText = pct == pct.roundToDouble()
+              ? pct.toStringAsFixed(0)
+              : pct.toStringAsFixed(2);
+          return 'Platform fee ($pctText%)';
+        case 'flat':
+          return 'Platform fee (flat)';
+        default:
+          return 'Platform fee';
+      }
+    }
+
+    return Container(
+      padding: EdgeInsets.all(12.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0A0A0A),
+        borderRadius: BorderRadius.circular(10.r),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _breakdownRow(
+            label: 'Withdrawal',
+            value: '$currency ${_formatAmount(_amount)}',
+            valueColor: Colors.white,
+          ),
+          if (showsFee) ...[
+            SizedBox(height: 6.h),
+            _breakdownRow(
+              label: feeLabel() ?? 'Platform fee',
+              value: '- $currency ${_formatAmount(fee)}',
+              valueColor: const Color(0xFFFB923C),
+            ),
+          ],
+          SizedBox(height: 8.h),
+          Container(height: 1.h, color: const Color(0xFF1F1F1F)),
+          SizedBox(height: 8.h),
+          _breakdownRow(
+            label: 'You receive',
+            value: '$currency ${_formatAmount(net)}',
+            valueColor: const Color(0xFF10B981),
+            bold: true,
+          ),
+          if (_quoteLoading) ...[
+            SizedBox(height: 6.h),
+            Text(
+              'Calculating fee…',
+              style: GoogleFonts.inter(
+                color: const Color(0xFF6B7280),
+                fontSize: 11.sp,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _breakdownRow({
+    required String label,
+    required String value,
+    required Color valueColor,
+    bool bold = false,
+  }) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Text(
+            label,
+            style: GoogleFonts.inter(
+              color: const Color(0xFF9CA3AF),
+              fontSize: 12.sp,
+              fontWeight: bold ? FontWeight.w600 : FontWeight.w500,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        SizedBox(width: 12.w),
+        Text(
+          value,
+          style: GoogleFonts.inter(
+            color: valueColor,
+            fontSize: bold ? 14.sp : 13.sp,
+            fontWeight: bold ? FontWeight.w700 : FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 
@@ -319,6 +481,7 @@ class _WithdrawFundsSheetState extends State<WithdrawFundsSheet>
                             offset: formatted.length),
                       );
                       setState(() => _amount = amt);
+                      _scheduleQuoteFetch(amt);
                     },
                     borderRadius: BorderRadius.circular(20.r),
                     child: Container(
@@ -344,6 +507,10 @@ class _WithdrawFundsSheetState extends State<WithdrawFundsSheet>
                   );
                 }).toList(),
               ),
+              if (_amount > 0) ...[
+                SizedBox(height: 16.h),
+                _buildFeeBreakdown(),
+              ],
               SizedBox(height: 20.h),
               SizedBox(
                 width: double.infinity,

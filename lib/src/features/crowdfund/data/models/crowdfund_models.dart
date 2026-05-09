@@ -288,6 +288,25 @@ class CrowdfundWithdrawalResultModel extends CrowdfundWithdrawalResult {
     required super.destinationAccountId,
     required super.destinationNewBalance,
     required super.message,
+    super.feeAmount,
+    super.netAmount,
+    super.feeType,
+    super.feeBasisPoints,
+    super.feeFixedKobo,
+  });
+}
+
+/// Wire-shape of a fee quote, mirroring CrowdfundWithdrawalFeeQuote.
+class CrowdfundWithdrawalFeeQuoteModel extends CrowdfundWithdrawalFeeQuote {
+  const CrowdfundWithdrawalFeeQuoteModel({
+    required super.grossAmount,
+    required super.feeAmount,
+    required super.netAmount,
+    required super.currency,
+    required super.feeEnabled,
+    required super.feeType,
+    required super.feeBasisPoints,
+    required super.feeFixedKobo,
   });
 }
 

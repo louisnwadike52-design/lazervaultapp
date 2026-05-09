@@ -419,9 +419,46 @@ class CrowdfundGrpcDataSource {
         destinationAccountId: response.destinationAccountId,
         destinationNewBalance: response.destinationNewBalance.toDouble() / 100,
         message: response.message,
+        feeAmount: response.feeAmount.toDouble() / 100,
+        netAmount: response.netAmount.toDouble() / 100,
+        feeType: response.feeType,
+        feeBasisPoints: response.feeBasisPoints,
+        feeFixedKobo: response.feeFixedKobo.toInt(),
       );
     } on GrpcError catch (e) {
       throw Exception(friendlyGrpcError(e, 'Failed to withdraw from crowdfund'));
+    }
+  }
+
+  /// Quote the platform fee + net amount for a hypothetical withdrawal.
+  /// Read-only; no balance changes on either side. Called from the
+  /// withdraw sheet on every amount edit (debounced) so the user sees
+  /// Gross / Fee / Net before they tap Confirm.
+  Future<CrowdfundWithdrawalFeeQuoteModel> getCrowdfundWithdrawalFeeQuote({
+    required String crowdfundId,
+    required double amount,
+  }) async {
+    try {
+      final request = pb.GetCrowdfundWithdrawalFeeQuoteRequest()
+        ..crowdfundId = crowdfundId
+        ..amount = _amountToInt64(amount);
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _client.getCrowdfundWithdrawalFeeQuote(
+        request,
+        options: callOptions,
+      );
+      return CrowdfundWithdrawalFeeQuoteModel(
+        grossAmount: response.grossAmount.toDouble() / 100,
+        feeAmount: response.feeAmount.toDouble() / 100,
+        netAmount: response.netAmount.toDouble() / 100,
+        currency: response.currency,
+        feeEnabled: response.feeEnabled,
+        feeType: response.feeType,
+        feeBasisPoints: response.feeBasisPoints,
+        feeFixedKobo: response.feeFixedKobo.toInt(),
+      );
+    } on GrpcError catch (e) {
+      throw Exception(friendlyGrpcError(e, 'Failed to fetch fee quote'));
     }
   }
 

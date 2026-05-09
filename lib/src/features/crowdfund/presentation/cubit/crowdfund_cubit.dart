@@ -24,6 +24,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
   final GetCrowdfundStatisticsUseCase getCrowdfundStatisticsUseCase;
   final GetMyCrowdfundsUseCase? getMyCrowdfundsUseCase;
   final WithdrawFromCrowdfundUseCase? withdrawFromCrowdfundUseCase;
+  final GetCrowdfundWithdrawalFeeQuoteUseCase? getCrowdfundWithdrawalFeeQuoteUseCase;
   final GetCampaignWalletBalanceUseCase? getCampaignWalletBalanceUseCase;
   final ConnectNotificationChannelUseCase? connectNotificationChannelUseCase;
   final DisconnectNotificationChannelUseCase? disconnectNotificationChannelUseCase;
@@ -56,6 +57,7 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
     required this.getCrowdfundStatisticsUseCase,
     this.getMyCrowdfundsUseCase,
     this.withdrawFromCrowdfundUseCase,
+    this.getCrowdfundWithdrawalFeeQuoteUseCase,
     this.getCampaignWalletBalanceUseCase,
     this.connectNotificationChannelUseCase,
     this.disconnectNotificationChannelUseCase,
@@ -1030,6 +1032,28 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
     } catch (e) {
       if (isClosed) return;
       emit(CrowdfundError(message: getUserFriendlyErrorMessage(e, fallback: 'Withdrawal failed. Please try again.')));
+    }
+  }
+
+  /// Quote the platform commission for a hypothetical withdrawal.
+  /// Returns null on any failure (network, fp-service down, fee
+  /// quote disabled at admin gateway) — the sheet treats null as
+  /// "no fee" and falls back to the previous render rather than
+  /// blocking the user. Doesn't emit a state so the in-flight
+  /// WithdrawalCompleted / CrowdfundLoading flow isn't disturbed.
+  Future<CrowdfundWithdrawalFeeQuote?> fetchWithdrawalFeeQuote({
+    required String crowdfundId,
+    required double amount,
+  }) async {
+    if (getCrowdfundWithdrawalFeeQuoteUseCase == null) return null;
+    if (amount <= 0) return null;
+    try {
+      return await getCrowdfundWithdrawalFeeQuoteUseCase!(
+        crowdfundId: crowdfundId,
+        amount: amount,
+      );
+    } catch (_) {
+      return null;
     }
   }
 
