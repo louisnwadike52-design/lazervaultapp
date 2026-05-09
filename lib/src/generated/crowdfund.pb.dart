@@ -3202,6 +3202,11 @@ class WithdrawFromCrowdfundResponse extends $pb.GeneratedMessage {
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'destinationAccountId')
     ..a<$fixnum.Int64>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'destinationNewBalance', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..a<$fixnum.Int64>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'feeAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'netAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'feeType')
+    ..a<$core.int>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'feeBasisPoints', $pb.PbFieldType.O3)
+    ..a<$fixnum.Int64>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'feeFixedKobo', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..hasRequiredFields = false
   ;
 
@@ -3213,6 +3218,11 @@ class WithdrawFromCrowdfundResponse extends $pb.GeneratedMessage {
     $core.String? destinationAccountId,
     $fixnum.Int64? destinationNewBalance,
     $core.String? message,
+    $fixnum.Int64? feeAmount,
+    $fixnum.Int64? netAmount,
+    $core.String? feeType,
+    $core.int? feeBasisPoints,
+    $fixnum.Int64? feeFixedKobo,
   }) {
     final _result = create();
     if (crowdfundId != null) {
@@ -3232,6 +3242,21 @@ class WithdrawFromCrowdfundResponse extends $pb.GeneratedMessage {
     }
     if (message != null) {
       _result.message = message;
+    }
+    if (feeAmount != null) {
+      _result.feeAmount = feeAmount;
+    }
+    if (netAmount != null) {
+      _result.netAmount = netAmount;
+    }
+    if (feeType != null) {
+      _result.feeType = feeType;
+    }
+    if (feeBasisPoints != null) {
+      _result.feeBasisPoints = feeBasisPoints;
+    }
+    if (feeFixedKobo != null) {
+      _result.feeFixedKobo = feeFixedKobo;
     }
     return _result;
   }
@@ -3309,6 +3334,257 @@ class WithdrawFromCrowdfundResponse extends $pb.GeneratedMessage {
   $core.bool hasMessage() => $_has(5);
   @$pb.TagNumber(6)
   void clearMessage() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $fixnum.Int64 get feeAmount => $_getI64(6);
+  @$pb.TagNumber(7)
+  set feeAmount($fixnum.Int64 v) { $_setInt64(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasFeeAmount() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearFeeAmount() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $fixnum.Int64 get netAmount => $_getI64(7);
+  @$pb.TagNumber(8)
+  set netAmount($fixnum.Int64 v) { $_setInt64(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasNetAmount() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearNetAmount() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get feeType => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set feeType($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasFeeType() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearFeeType() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.int get feeBasisPoints => $_getIZ(9);
+  @$pb.TagNumber(10)
+  set feeBasisPoints($core.int v) { $_setSignedInt32(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasFeeBasisPoints() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearFeeBasisPoints() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $fixnum.Int64 get feeFixedKobo => $_getI64(10);
+  @$pb.TagNumber(11)
+  set feeFixedKobo($fixnum.Int64 v) { $_setInt64(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasFeeFixedKobo() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearFeeFixedKobo() => clearField(11);
+}
+
+class GetCrowdfundWithdrawalFeeQuoteRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetCrowdfundWithdrawalFeeQuoteRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundId')
+    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..hasRequiredFields = false
+  ;
+
+  GetCrowdfundWithdrawalFeeQuoteRequest._() : super();
+  factory GetCrowdfundWithdrawalFeeQuoteRequest({
+    $core.String? crowdfundId,
+    $fixnum.Int64? amount,
+  }) {
+    final _result = create();
+    if (crowdfundId != null) {
+      _result.crowdfundId = crowdfundId;
+    }
+    if (amount != null) {
+      _result.amount = amount;
+    }
+    return _result;
+  }
+  factory GetCrowdfundWithdrawalFeeQuoteRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetCrowdfundWithdrawalFeeQuoteRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetCrowdfundWithdrawalFeeQuoteRequest clone() => GetCrowdfundWithdrawalFeeQuoteRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetCrowdfundWithdrawalFeeQuoteRequest copyWith(void Function(GetCrowdfundWithdrawalFeeQuoteRequest) updates) => super.copyWith((message) => updates(message as GetCrowdfundWithdrawalFeeQuoteRequest)) as GetCrowdfundWithdrawalFeeQuoteRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetCrowdfundWithdrawalFeeQuoteRequest create() => GetCrowdfundWithdrawalFeeQuoteRequest._();
+  GetCrowdfundWithdrawalFeeQuoteRequest createEmptyInstance() => create();
+  static $pb.PbList<GetCrowdfundWithdrawalFeeQuoteRequest> createRepeated() => $pb.PbList<GetCrowdfundWithdrawalFeeQuoteRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetCrowdfundWithdrawalFeeQuoteRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetCrowdfundWithdrawalFeeQuoteRequest>(create);
+  static GetCrowdfundWithdrawalFeeQuoteRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get crowdfundId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set crowdfundId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCrowdfundId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCrowdfundId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get amount => $_getI64(1);
+  @$pb.TagNumber(2)
+  set amount($fixnum.Int64 v) { $_setInt64(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasAmount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAmount() => clearField(2);
+}
+
+class GetCrowdfundWithdrawalFeeQuoteResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetCrowdfundWithdrawalFeeQuoteResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'grossAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'feeAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'netAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'feeEnabled')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'feeType')
+    ..a<$core.int>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'feeBasisPoints', $pb.PbFieldType.O3)
+    ..a<$fixnum.Int64>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'feeFixedKobo', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..hasRequiredFields = false
+  ;
+
+  GetCrowdfundWithdrawalFeeQuoteResponse._() : super();
+  factory GetCrowdfundWithdrawalFeeQuoteResponse({
+    $fixnum.Int64? grossAmount,
+    $fixnum.Int64? feeAmount,
+    $fixnum.Int64? netAmount,
+    $core.String? currency,
+    $core.bool? feeEnabled,
+    $core.String? feeType,
+    $core.int? feeBasisPoints,
+    $fixnum.Int64? feeFixedKobo,
+  }) {
+    final _result = create();
+    if (grossAmount != null) {
+      _result.grossAmount = grossAmount;
+    }
+    if (feeAmount != null) {
+      _result.feeAmount = feeAmount;
+    }
+    if (netAmount != null) {
+      _result.netAmount = netAmount;
+    }
+    if (currency != null) {
+      _result.currency = currency;
+    }
+    if (feeEnabled != null) {
+      _result.feeEnabled = feeEnabled;
+    }
+    if (feeType != null) {
+      _result.feeType = feeType;
+    }
+    if (feeBasisPoints != null) {
+      _result.feeBasisPoints = feeBasisPoints;
+    }
+    if (feeFixedKobo != null) {
+      _result.feeFixedKobo = feeFixedKobo;
+    }
+    return _result;
+  }
+  factory GetCrowdfundWithdrawalFeeQuoteResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetCrowdfundWithdrawalFeeQuoteResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetCrowdfundWithdrawalFeeQuoteResponse clone() => GetCrowdfundWithdrawalFeeQuoteResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetCrowdfundWithdrawalFeeQuoteResponse copyWith(void Function(GetCrowdfundWithdrawalFeeQuoteResponse) updates) => super.copyWith((message) => updates(message as GetCrowdfundWithdrawalFeeQuoteResponse)) as GetCrowdfundWithdrawalFeeQuoteResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetCrowdfundWithdrawalFeeQuoteResponse create() => GetCrowdfundWithdrawalFeeQuoteResponse._();
+  GetCrowdfundWithdrawalFeeQuoteResponse createEmptyInstance() => create();
+  static $pb.PbList<GetCrowdfundWithdrawalFeeQuoteResponse> createRepeated() => $pb.PbList<GetCrowdfundWithdrawalFeeQuoteResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetCrowdfundWithdrawalFeeQuoteResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetCrowdfundWithdrawalFeeQuoteResponse>(create);
+  static GetCrowdfundWithdrawalFeeQuoteResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $fixnum.Int64 get grossAmount => $_getI64(0);
+  @$pb.TagNumber(1)
+  set grossAmount($fixnum.Int64 v) { $_setInt64(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasGrossAmount() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearGrossAmount() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get feeAmount => $_getI64(1);
+  @$pb.TagNumber(2)
+  set feeAmount($fixnum.Int64 v) { $_setInt64(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasFeeAmount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearFeeAmount() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get netAmount => $_getI64(2);
+  @$pb.TagNumber(3)
+  set netAmount($fixnum.Int64 v) { $_setInt64(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasNetAmount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearNetAmount() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get currency => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set currency($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasCurrency() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCurrency() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.bool get feeEnabled => $_getBF(4);
+  @$pb.TagNumber(5)
+  set feeEnabled($core.bool v) { $_setBool(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasFeeEnabled() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearFeeEnabled() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get feeType => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set feeType($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasFeeType() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearFeeType() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.int get feeBasisPoints => $_getIZ(6);
+  @$pb.TagNumber(7)
+  set feeBasisPoints($core.int v) { $_setSignedInt32(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasFeeBasisPoints() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearFeeBasisPoints() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $fixnum.Int64 get feeFixedKobo => $_getI64(7);
+  @$pb.TagNumber(8)
+  set feeFixedKobo($fixnum.Int64 v) { $_setInt64(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasFeeFixedKobo() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearFeeFixedKobo() => clearField(8);
 }
 
 class GetMyCrowdfundsRequest extends $pb.GeneratedMessage {

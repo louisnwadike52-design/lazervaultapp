@@ -289,6 +289,21 @@ class CrowdfundRepositoryImpl implements CrowdfundRepository {
   }
 
   @override
+  Future<CrowdfundWithdrawalFeeQuote> getCrowdfundWithdrawalFeeQuote({
+    required String crowdfundId,
+    required double amount,
+  }) async {
+    try {
+      return await remoteDataSource.getCrowdfundWithdrawalFeeQuote(
+        crowdfundId: crowdfundId,
+        amount: amount,
+      );
+    } catch (e) {
+      throw Exception('Failed to fetch fee quote: $e');
+    }
+  }
+
+  @override
   Future<CampaignWalletBalance> getCampaignWalletBalance(
       String crowdfundId) async {
     try {

@@ -103,6 +103,14 @@ abstract class CrowdfundRepository {
     String? destinationAccountType,
   });
 
+  /// Read-only fee quote: returns the platform commission + net for
+  /// a hypothetical withdrawal so the sheet can render the breakdown
+  /// before the user confirms a PIN.
+  Future<CrowdfundWithdrawalFeeQuote> getCrowdfundWithdrawalFeeQuote({
+    required String crowdfundId,
+    required double amount,
+  });
+
   Future<CampaignWalletBalance> getCampaignWalletBalance(String crowdfundId);
 
   // Notification Channel Operations

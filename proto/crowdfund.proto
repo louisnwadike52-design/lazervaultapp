@@ -325,6 +325,31 @@ message WithdrawFromCrowdfundResponse {
   string destination_account_id = 4; // Account where funds were credited
   uint64 destination_new_balance = 5; // New balance of destination account
   string message = 6;
+  // Platform commission snapshot. Zero / empty when no fee applied.
+  // amount_withdrawn always reflects the GROSS the user requested;
+  // net_amount is what landed in the destination, fee_amount is what
+  // was credited to the platform revenue wallet.
+  uint64 fee_amount = 7;          // kobo
+  uint64 net_amount = 8;          // kobo
+  string fee_type = 9;            // ""|"flat"|"percentage"
+  int32 fee_basis_points = 10;
+  uint64 fee_fixed_kobo = 11;
+}
+
+message GetCrowdfundWithdrawalFeeQuoteRequest {
+  string crowdfund_id = 1;
+  uint64 amount = 2;              // kobo
+}
+
+message GetCrowdfundWithdrawalFeeQuoteResponse {
+  uint64 gross_amount = 1;        // kobo
+  uint64 fee_amount = 2;          // kobo
+  uint64 net_amount = 3;          // kobo
+  string currency = 4;
+  bool fee_enabled = 5;
+  string fee_type = 6;            // ""|"flat"|"percentage"
+  int32 fee_basis_points = 7;
+  uint64 fee_fixed_kobo = 8;
 }
 
 // Get My Crowdfunds (Creator's campaigns)
@@ -473,6 +498,15 @@ service CrowdfundService {
     option (google.api.http) = {
       post: "/v1/crowdfunds/{crowdfund_id}/withdraw"
       body: "*"
+    };
+  }
+
+  // Quote the platform fee + net amount for a hypothetical withdrawal
+  // (read-only). Flutter calls this on every amount change so the
+  // user sees Gross / Fee / Net before confirming a PIN.
+  rpc GetCrowdfundWithdrawalFeeQuote(GetCrowdfundWithdrawalFeeQuoteRequest) returns (GetCrowdfundWithdrawalFeeQuoteResponse) {
+    option (google.api.http) = {
+      get: "/v1/crowdfunds/{crowdfund_id}/withdraw/fee-quote"
     };
   }
 

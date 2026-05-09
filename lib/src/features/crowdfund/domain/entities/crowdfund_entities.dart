@@ -659,11 +659,19 @@ class LeaderboardEntry extends Equatable {
 /// Result of a withdrawal from a campaign wallet
 class CrowdfundWithdrawalResult extends Equatable {
   final String crowdfundId;
-  final double amountWithdrawn;
+  final double amountWithdrawn; // gross amount the user requested
   final double remainingBalance;
   final String destinationAccountId;
   final double destinationNewBalance;
   final String message;
+  // Platform-commission snapshot. Zero / empty when no fee applied.
+  // [amountWithdrawn] is GROSS; [netAmount] is what hit the
+  // destination; [feeAmount] is what the platform booked.
+  final double feeAmount;
+  final double netAmount;
+  final String feeType; // ""|"flat"|"percentage"
+  final int feeBasisPoints;
+  final int feeFixedKobo;
 
   const CrowdfundWithdrawalResult({
     required this.crowdfundId,
@@ -672,6 +680,11 @@ class CrowdfundWithdrawalResult extends Equatable {
     required this.destinationAccountId,
     required this.destinationNewBalance,
     required this.message,
+    this.feeAmount = 0,
+    this.netAmount = 0,
+    this.feeType = '',
+    this.feeBasisPoints = 0,
+    this.feeFixedKobo = 0,
   });
 
   @override
@@ -682,6 +695,52 @@ class CrowdfundWithdrawalResult extends Equatable {
         destinationAccountId,
         destinationNewBalance,
         message,
+        feeAmount,
+        netAmount,
+        feeType,
+        feeBasisPoints,
+        feeFixedKobo,
+      ];
+}
+
+/// Read-only quote returned by GetCrowdfundWithdrawalFeeQuote. The
+/// withdraw sheet renders this so the user sees the platform
+/// commission BEFORE they confirm a PIN — the same precedence rule
+/// the actual withdrawal uses (flat fee overrides margin if both
+/// configured, else whichever single value is set).
+class CrowdfundWithdrawalFeeQuote extends Equatable {
+  final double grossAmount;
+  final double feeAmount;
+  final double netAmount;
+  final String currency;
+  final bool feeEnabled;
+  final String feeType; // ""|"flat"|"percentage"
+  final int feeBasisPoints;
+  final int feeFixedKobo;
+
+  const CrowdfundWithdrawalFeeQuote({
+    required this.grossAmount,
+    required this.feeAmount,
+    required this.netAmount,
+    required this.currency,
+    required this.feeEnabled,
+    required this.feeType,
+    required this.feeBasisPoints,
+    required this.feeFixedKobo,
+  });
+
+  bool get hasFee => feeAmount > 0;
+
+  @override
+  List<Object?> get props => [
+        grossAmount,
+        feeAmount,
+        netAmount,
+        currency,
+        feeEnabled,
+        feeType,
+        feeBasisPoints,
+        feeFixedKobo,
       ];
 }
 

@@ -312,6 +312,25 @@ class GetCampaignWalletBalanceUseCase {
   }
 }
 
+/// Read-only quote of the platform commission for a hypothetical
+/// withdrawal. The withdraw sheet calls this on every amount edit
+/// (debounced) so the user sees the breakdown before confirming.
+class GetCrowdfundWithdrawalFeeQuoteUseCase {
+  final CrowdfundRepository repository;
+
+  GetCrowdfundWithdrawalFeeQuoteUseCase(this.repository);
+
+  Future<CrowdfundWithdrawalFeeQuote> call({
+    required String crowdfundId,
+    required double amount,
+  }) {
+    return repository.getCrowdfundWithdrawalFeeQuote(
+      crowdfundId: crowdfundId,
+      amount: amount,
+    );
+  }
+}
+
 // ============================================================================
 // NOTIFICATION CHANNEL USE CASES
 // ============================================================================

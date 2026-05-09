@@ -563,11 +563,44 @@ const WithdrawFromCrowdfundResponse$json = const {
     const {'1': 'destination_account_id', '3': 4, '4': 1, '5': 9, '10': 'destinationAccountId'},
     const {'1': 'destination_new_balance', '3': 5, '4': 1, '5': 4, '10': 'destinationNewBalance'},
     const {'1': 'message', '3': 6, '4': 1, '5': 9, '10': 'message'},
+    const {'1': 'fee_amount', '3': 7, '4': 1, '5': 4, '10': 'feeAmount'},
+    const {'1': 'net_amount', '3': 8, '4': 1, '5': 4, '10': 'netAmount'},
+    const {'1': 'fee_type', '3': 9, '4': 1, '5': 9, '10': 'feeType'},
+    const {'1': 'fee_basis_points', '3': 10, '4': 1, '5': 5, '10': 'feeBasisPoints'},
+    const {'1': 'fee_fixed_kobo', '3': 11, '4': 1, '5': 4, '10': 'feeFixedKobo'},
   ],
 };
 
 /// Descriptor for `WithdrawFromCrowdfundResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List withdrawFromCrowdfundResponseDescriptor = $convert.base64Decode('Ch1XaXRoZHJhd0Zyb21Dcm93ZGZ1bmRSZXNwb25zZRIhCgxjcm93ZGZ1bmRfaWQYASABKAlSC2Nyb3dkZnVuZElkEikKEGFtb3VudF93aXRoZHJhd24YAiABKARSD2Ftb3VudFdpdGhkcmF3bhIrChFyZW1haW5pbmdfYmFsYW5jZRgDIAEoBFIQcmVtYWluaW5nQmFsYW5jZRI0ChZkZXN0aW5hdGlvbl9hY2NvdW50X2lkGAQgASgJUhRkZXN0aW5hdGlvbkFjY291bnRJZBI2ChdkZXN0aW5hdGlvbl9uZXdfYmFsYW5jZRgFIAEoBFIVZGVzdGluYXRpb25OZXdCYWxhbmNlEhgKB21lc3NhZ2UYBiABKAlSB21lc3NhZ2U=');
+final $typed_data.Uint8List withdrawFromCrowdfundResponseDescriptor = $convert.base64Decode('Ch1XaXRoZHJhd0Zyb21Dcm93ZGZ1bmRSZXNwb25zZRIhCgxjcm93ZGZ1bmRfaWQYASABKAlSC2Nyb3dkZnVuZElkEikKEGFtb3VudF93aXRoZHJhd24YAiABKARSD2Ftb3VudFdpdGhkcmF3bhIrChFyZW1haW5pbmdfYmFsYW5jZRgDIAEoBFIQcmVtYWluaW5nQmFsYW5jZRI0ChZkZXN0aW5hdGlvbl9hY2NvdW50X2lkGAQgASgJUhRkZXN0aW5hdGlvbkFjY291bnRJZBI2ChdkZXN0aW5hdGlvbl9uZXdfYmFsYW5jZRgFIAEoBFIVZGVzdGluYXRpb25OZXdCYWxhbmNlEhgKB21lc3NhZ2UYBiABKAlSB21lc3NhZ2USHQoKZmVlX2Ftb3VudBgHIAEoBFIJZmVlQW1vdW50Eh0KCm5ldF9hbW91bnQYCCABKARSCW5ldEFtb3VudBIZCghmZWVfdHlwZRgJIAEoCVIHZmVlVHlwZRIoChBmZWVfYmFzaXNfcG9pbnRzGAogASgFUg5mZWVCYXNpc1BvaW50cxIkCg5mZWVfZml4ZWRfa29ibxgLIAEoBFIMZmVlRml4ZWRLb2Jv');
+@$core.Deprecated('Use getCrowdfundWithdrawalFeeQuoteRequestDescriptor instead')
+const GetCrowdfundWithdrawalFeeQuoteRequest$json = const {
+  '1': 'GetCrowdfundWithdrawalFeeQuoteRequest',
+  '2': const [
+    const {'1': 'crowdfund_id', '3': 1, '4': 1, '5': 9, '10': 'crowdfundId'},
+    const {'1': 'amount', '3': 2, '4': 1, '5': 4, '10': 'amount'},
+  ],
+};
+
+/// Descriptor for `GetCrowdfundWithdrawalFeeQuoteRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getCrowdfundWithdrawalFeeQuoteRequestDescriptor = $convert.base64Decode('CiVHZXRDcm93ZGZ1bmRXaXRoZHJhd2FsRmVlUXVvdGVSZXF1ZXN0EiEKDGNyb3dkZnVuZF9pZBgBIAEoCVILY3Jvd2RmdW5kSWQSFgoGYW1vdW50GAIgASgEUgZhbW91bnQ=');
+@$core.Deprecated('Use getCrowdfundWithdrawalFeeQuoteResponseDescriptor instead')
+const GetCrowdfundWithdrawalFeeQuoteResponse$json = const {
+  '1': 'GetCrowdfundWithdrawalFeeQuoteResponse',
+  '2': const [
+    const {'1': 'gross_amount', '3': 1, '4': 1, '5': 4, '10': 'grossAmount'},
+    const {'1': 'fee_amount', '3': 2, '4': 1, '5': 4, '10': 'feeAmount'},
+    const {'1': 'net_amount', '3': 3, '4': 1, '5': 4, '10': 'netAmount'},
+    const {'1': 'currency', '3': 4, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'fee_enabled', '3': 5, '4': 1, '5': 8, '10': 'feeEnabled'},
+    const {'1': 'fee_type', '3': 6, '4': 1, '5': 9, '10': 'feeType'},
+    const {'1': 'fee_basis_points', '3': 7, '4': 1, '5': 5, '10': 'feeBasisPoints'},
+    const {'1': 'fee_fixed_kobo', '3': 8, '4': 1, '5': 4, '10': 'feeFixedKobo'},
+  ],
+};
+
+/// Descriptor for `GetCrowdfundWithdrawalFeeQuoteResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getCrowdfundWithdrawalFeeQuoteResponseDescriptor = $convert.base64Decode('CiZHZXRDcm93ZGZ1bmRXaXRoZHJhd2FsRmVlUXVvdGVSZXNwb25zZRIhCgxncm9zc19hbW91bnQYASABKARSC2dyb3NzQW1vdW50Eh0KCmZlZV9hbW91bnQYAiABKARSCWZlZUFtb3VudBIdCgpuZXRfYW1vdW50GAMgASgEUgluZXRBbW91bnQSGgoIY3VycmVuY3kYBCABKAlSCGN1cnJlbmN5Eh8KC2ZlZV9lbmFibGVkGAUgASgIUgpmZWVFbmFibGVkEhkKCGZlZV90eXBlGAYgASgJUgdmZWVUeXBlEigKEGZlZV9iYXNpc19wb2ludHMYByABKAVSDmZlZUJhc2lzUG9pbnRzEiQKDmZlZV9maXhlZF9rb2JvGAggASgEUgxmZWVGaXhlZEtvYm8=');
 @$core.Deprecated('Use getMyCrowdfundsRequestDescriptor instead')
 const GetMyCrowdfundsRequest$json = const {
   '1': 'GetMyCrowdfundsRequest',

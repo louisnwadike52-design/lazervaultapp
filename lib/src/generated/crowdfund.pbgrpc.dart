@@ -94,6 +94,13 @@ class CrowdfundServiceClient extends $grpc.Client {
       ($0.WithdrawFromCrowdfundRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
           $0.WithdrawFromCrowdfundResponse.fromBuffer(value));
+  static final _$getCrowdfundWithdrawalFeeQuote = $grpc.ClientMethod<
+          $0.GetCrowdfundWithdrawalFeeQuoteRequest,
+          $0.GetCrowdfundWithdrawalFeeQuoteResponse>(
+      '/pb.CrowdfundService/GetCrowdfundWithdrawalFeeQuote',
+      ($0.GetCrowdfundWithdrawalFeeQuoteRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.GetCrowdfundWithdrawalFeeQuoteResponse.fromBuffer(value));
   static final _$getMyCrowdfunds =
       $grpc.ClientMethod<$0.GetMyCrowdfundsRequest, $0.GetMyCrowdfundsResponse>(
           '/pb.CrowdfundService/GetMyCrowdfunds',
@@ -252,6 +259,14 @@ class CrowdfundServiceClient extends $grpc.Client {
       $0.WithdrawFromCrowdfundRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$withdrawFromCrowdfund, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetCrowdfundWithdrawalFeeQuoteResponse>
+      getCrowdfundWithdrawalFeeQuote(
+          $0.GetCrowdfundWithdrawalFeeQuoteRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getCrowdfundWithdrawalFeeQuote, request,
+        options: options);
   }
 
   $grpc.ResponseFuture<$0.GetMyCrowdfundsResponse> getMyCrowdfunds(
@@ -451,6 +466,16 @@ abstract class CrowdfundServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.WithdrawFromCrowdfundRequest.fromBuffer(value),
         ($0.WithdrawFromCrowdfundResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetCrowdfundWithdrawalFeeQuoteRequest,
+            $0.GetCrowdfundWithdrawalFeeQuoteResponse>(
+        'GetCrowdfundWithdrawalFeeQuote',
+        getCrowdfundWithdrawalFeeQuote_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetCrowdfundWithdrawalFeeQuoteRequest.fromBuffer(value),
+        ($0.GetCrowdfundWithdrawalFeeQuoteResponse value) =>
+            value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.GetMyCrowdfundsRequest,
             $0.GetMyCrowdfundsResponse>(
         'GetMyCrowdfunds',
@@ -632,6 +657,14 @@ abstract class CrowdfundServiceBase extends $grpc.Service {
     return withdrawFromCrowdfund(call, await request);
   }
 
+  $async.Future<$0.GetCrowdfundWithdrawalFeeQuoteResponse>
+      getCrowdfundWithdrawalFeeQuote_Pre(
+          $grpc.ServiceCall call,
+          $async.Future<$0.GetCrowdfundWithdrawalFeeQuoteRequest>
+              request) async {
+    return getCrowdfundWithdrawalFeeQuote(call, await request);
+  }
+
   $async.Future<$0.GetMyCrowdfundsResponse> getMyCrowdfunds_Pre(
       $grpc.ServiceCall call,
       $async.Future<$0.GetMyCrowdfundsRequest> request) async {
@@ -726,6 +759,9 @@ abstract class CrowdfundServiceBase extends $grpc.Service {
       $grpc.ServiceCall call, $0.GetCrowdfundStatisticsRequest request);
   $async.Future<$0.WithdrawFromCrowdfundResponse> withdrawFromCrowdfund(
       $grpc.ServiceCall call, $0.WithdrawFromCrowdfundRequest request);
+  $async.Future<$0.GetCrowdfundWithdrawalFeeQuoteResponse>
+      getCrowdfundWithdrawalFeeQuote($grpc.ServiceCall call,
+          $0.GetCrowdfundWithdrawalFeeQuoteRequest request);
   $async.Future<$0.GetMyCrowdfundsResponse> getMyCrowdfunds(
       $grpc.ServiceCall call, $0.GetMyCrowdfundsRequest request);
   $async.Future<$0.GetCampaignWalletBalanceResponse> getCampaignWalletBalance(
