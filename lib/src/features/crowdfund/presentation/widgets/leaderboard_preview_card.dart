@@ -74,14 +74,17 @@ class LeaderboardPreviewCard extends StatelessWidget {
               ClipRRect(
                 borderRadius: BorderRadius.circular(8.r),
                 child: crowdfund.imageUrl != null
-                    ? CachedNetworkImage(
-                        imageUrl: rewriteHostForEmulator(crowdfund.imageUrl!),
-                        height: 60.h,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        fadeInDuration: const Duration(milliseconds: 120),
-                        placeholder: (_, __) => _buildImagePlaceholder(),
-                        errorWidget: (_, __, ___) => _buildImagePlaceholder(),
+                    ? RepaintBoundary(
+                        child: CachedNetworkImage(
+                          imageUrl: rewriteHostForEmulator(crowdfund.imageUrl!),
+                          height: 60.h,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          memCacheWidth: 600,
+                          fadeInDuration: const Duration(milliseconds: 120),
+                          placeholder: (_, __) => _buildImagePlaceholder(),
+                          errorWidget: (_, __, ___) => _buildImagePlaceholder(),
+                        ),
                       )
                     : _buildImagePlaceholder(),
               ),

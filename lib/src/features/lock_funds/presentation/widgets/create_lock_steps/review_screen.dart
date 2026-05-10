@@ -3,31 +3,37 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
+
 import '../../../domain/entities/lock_fund_entity.dart';
 import '../../cubit/create_lock_cubit.dart';
 import '../../cubit/lock_funds_cubit.dart';
 import '../../cubit/lock_funds_state.dart';
-import 'package:lazervault/core/utils/currency_formatter.dart';
 
-/// Review screen - Step 4 of 5
+/// Review slide — step 4 of 5.
 ///
-/// Shows all selected details with interest calculation breakdown
-/// Allows toggling auto-renew option
+/// Slimmed down from the previous version: the heavy "Lock Details"
+/// card has been folded into a compact hero strip and the per-row
+/// repetition (lock amount + interest breakdown duplicating
+/// principal + duration) collapsed into a single combined card.
+/// The Auto-Renew toggle and Important-Notes panel were both moved
+/// to the next slide (PaymentMethodSelector) so they sit next to
+/// the user's payment confirmation rather than competing with it.
 class ReviewScreen extends StatelessWidget {
   const ReviewScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<CreateLockCubit, CreateLockState>(
-      builder: (context, createState) {
+      builder: (context, _) {
         final cubit = context.read<CreateLockCubit>();
         final lockType = cubit.lockType;
-        final amount = cubit.amount;
+        final amount = cubit.amount ?? 0;
         final currency = cubit.currency;
-        final durationDays = cubit.lockDurationDays;
-        final autoRenew = cubit.autoRenew;
+        final durationDays = cubit.lockDurationDays ?? 0;
         final goalName = cubit.goalName;
         final goalDescription = cubit.goalDescription;
+        final maturity = DateTime.now().add(Duration(days: durationDays));
 
         return SingleChildScrollView(
           padding: EdgeInsets.all(20.w),
@@ -35,378 +41,59 @@ class ReviewScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Review Your Lock',
+                'Review your lock',
                 style: GoogleFonts.inter(
-                  fontSize: 24.sp,
+                  fontSize: 22.sp,
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
                 ),
               ),
-              SizedBox(height: 8.h),
+              SizedBox(height: 6.h),
               Text(
-                'Review all details before proceeding to payment',
+                'Confirm the details below before proceeding to payment',
                 style: GoogleFonts.inter(
-                  fontSize: 14.sp,
+                  fontSize: 13.sp,
                   fontWeight: FontWeight.w400,
                   color: const Color(0xFF9CA3AF),
                 ),
               ),
-              SizedBox(height: 24.h),
-
-              // Lock Details Card
-              Container(
-                padding: EdgeInsets.all(20.w),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF2A2A3E), Color(0xFF1F1F35)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(16.r),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.2),
-                      blurRadius: 16,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: EdgeInsets.all(12.w),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(12.r),
-                          ),
-                          child: Icon(
-                            _getLockTypeIcon(lockType),
-                            color: Colors.white,
-                            size: 24.sp,
-                          ),
-                        ),
-                        SizedBox(width: 12.w),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                lockType?.displayName ?? 'Unknown',
-                                style: GoogleFonts.inter(
-                                  fontSize: 18.sp,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              if (goalName != null)
-                                Text(
-                                  goalName,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 14.sp,
-                                    fontWeight: FontWeight.w500,
-                                    color: const Color(0xFF6366F1),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (goalDescription != null) ...[
-                      SizedBox(height: 12.h),
-                      Text(
-                        goalDescription,
-                        style: GoogleFonts.inter(
-                          fontSize: 13.sp,
-                          fontWeight: FontWeight.w400,
-                          color: const Color(0xFF9CA3AF),
-                        ),
-                      ),
-                    ],
-                    SizedBox(height: 20.h),
-                    Divider(color: Colors.white.withValues(alpha: 0.1)),
-                    SizedBox(height: 16.h),
-                    _buildDetailRow('Lock Amount', '${CurrencySymbols.getSymbol(currency)}${amount?.toStringAsFixed(2) ?? ''}'),
-                    SizedBox(height: 12.h),
-                    _buildDetailRow(
-                      'Lock Duration',
-                      '$durationDays ${durationDays == 1 ? 'day' : 'days'}',
-                    ),
-                    SizedBox(height: 12.h),
-                    _buildDetailRow(
-                      'Maturity Date',
-                      DateFormat('MMM dd, yyyy').format(
-                        DateTime.now().add(Duration(days: durationDays ?? 0)),
-                      ),
-                    ),
-                  ],
-                ),
+              SizedBox(height: 22.h),
+              // Single hero card — plan + headline amount + duration +
+              // maturity all on one surface so the eye doesn't have
+              // to ladder through three separate boxes for the same
+              // logical "what am I locking" snapshot.
+              _buildHero(
+                lockType: lockType,
+                amount: amount,
+                currency: currency,
+                durationDays: durationDays,
+                maturity: maturity,
+                goalName: goalName,
+                goalDescription: goalDescription,
               ),
-              SizedBox(height: 20.h),
-
-              // Interest Calculation Card
+              SizedBox(height: 16.h),
+              // Interest breakdown — only the rows that aren't already
+              // in the hero. Principal + duration removed (visible
+              // above); we keep rate, interest earned, and total at
+              // maturity so the user sees the bottom-line clearly.
               BlocBuilder<LockFundsCubit, LockFundsState>(
                 builder: (context, lockState) {
-                  if (lockState is InterestCalculated) {
-                    final calc = lockState.calculation;
-                    return Container(
-                      padding: EdgeInsets.all(20.w),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            const Color(0xFF10B981).withValues(alpha: 0.2),
-                            const Color(0xFF10B981).withValues(alpha: 0.1),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(16.r),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.2),
-                            blurRadius: 16,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.calculate_rounded,
-                                color: const Color(0xFF10B981),
-                                size: 24.sp,
-                              ),
-                              SizedBox(width: 12.w),
-                              Text(
-                                'Interest Breakdown',
-                                style: GoogleFonts.inter(
-                                  fontSize: 18.sp,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 20.h),
-                          _buildCalculationRow(
-                            'Principal Amount',
-                            '${CurrencySymbols.getSymbol(currency)}${calc.principalAmount.toStringAsFixed(2)}',
-                          ),
-                          SizedBox(height: 12.h),
-                          _buildCalculationRow(
-                            'Interest Rate',
-                            '${(calc.interestRate * 100).toStringAsFixed(1)}% p.a.',
-                          ),
-                          SizedBox(height: 12.h),
-                          _buildCalculationRow(
-                            'Duration',
-                            '$durationDays ${durationDays == 1 ? 'day' : 'days'}',
-                          ),
-                          SizedBox(height: 12.h),
-                          _buildCalculationRow(
-                            'Interest Earned',
-                            '${CurrencySymbols.getSymbol(currency)}${calc.interestAmount.toStringAsFixed(2)}',
-                            valueColor: const Color(0xFF10B981),
-                          ),
-                          SizedBox(height: 16.h),
-                          Divider(color: Colors.white.withValues(alpha: 0.2)),
-                          SizedBox(height: 16.h),
-                          _buildCalculationRow(
-                            'Total at Maturity',
-                            '${CurrencySymbols.getSymbol(currency)}${calc.totalAmount.toStringAsFixed(2)}',
-                            isTotal: true,
-                          ),
-                        ],
-                      ),
-                    );
+                  if (lockState is! InterestCalculated) {
+                    return const SizedBox.shrink();
                   }
-                  return const SizedBox.shrink();
+                  final calc = lockState.calculation;
+                  return _buildInterestCard(
+                    rate: calc.interestRate,
+                    interest: calc.interestAmount,
+                    total: calc.totalAmount,
+                    currency: currency,
+                  );
                 },
               ),
-              SizedBox(height: 20.h),
-
-              // Auto-Renew Toggle
-              Container(
-                padding: EdgeInsets.all(20.w),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF2A2A3E), Color(0xFF1F1F35)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(16.r),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.2),
-                      blurRadius: 16,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(10.w),
-                      decoration: BoxDecoration(
-                        color: autoRenew
-                            ? const Color(0xFF6366F1).withValues(alpha: 0.2)
-                            : Colors.white.withValues(alpha: 0.05),
-                        borderRadius: BorderRadius.circular(10.r),
-                      ),
-                      child: Icon(
-                        Icons.repeat_rounded,
-                        color: autoRenew ? const Color(0xFF6366F1) : const Color(0xFF9CA3AF),
-                        size: 24.sp,
-                      ),
-                    ),
-                    SizedBox(width: 16.w),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Auto-Renew',
-                            style: GoogleFonts.inter(
-                              fontSize: 16.sp,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                            ),
-                          ),
-                          SizedBox(height: 4.h),
-                          Text(
-                            'Automatically renew this lock when it matures',
-                            style: GoogleFonts.inter(
-                              fontSize: 13.sp,
-                              fontWeight: FontWeight.w400,
-                              color: const Color(0xFF9CA3AF),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Switch(
-                      value: autoRenew,
-                      onChanged: (value) {
-                        cubit.updateAutoRenew(value);
-                      },
-                      activeThumbColor: const Color(0xFF6366F1),
-                      activeTrackColor: const Color(0xFF6366F1).withValues(alpha: 0.5),
-                      inactiveThumbColor: const Color(0xFF9CA3AF),
-                      inactiveTrackColor: Colors.white.withValues(alpha: 0.1),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 20.h),
-
-              // Upfront Interest Notice (for 180+ day locks)
-              if (cubit.qualifiesForUpfrontInterest)
-                Container(
-                  margin: EdgeInsets.only(bottom: 20.h),
-                  padding: EdgeInsets.all(16.w),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        const Color(0xFF6366F1).withValues(alpha: 0.15),
-                        const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(12.r),
-                    border: Border.all(
-                      color: const Color(0xFF6366F1).withValues(alpha: 0.3),
-                      width: 1,
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.bolt_rounded,
-                            color: const Color(0xFF6366F1),
-                            size: 20.sp,
-                          ),
-                          SizedBox(width: 8.w),
-                          Expanded(
-                            child: Text(
-                              'Upfront Interest',
-                              style: GoogleFonts.inter(
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.w700,
-                                color: const Color(0xFF6366F1),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 8.h),
-                      Text(
-                        'Your interest will be calculated and credited to your savings account immediately when you lock your funds.',
-                        style: GoogleFonts.inter(
-                          fontSize: 13.sp,
-                          fontWeight: FontWeight.w400,
-                          color: const Color(0xFF9CA3AF),
-                          height: 1.4,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-              // Important Notes
-              Container(
-                padding: EdgeInsets.all(16.w),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.info_outline_rounded,
-                          color: const Color(0xFFF59E0B),
-                          size: 20.sp,
-                        ),
-                        SizedBox(width: 12.w),
-                        Text(
-                          'Important Notes',
-                          style: GoogleFonts.inter(
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFFF59E0B),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 12.h),
-                    _buildNoteItem('Funds will be locked until the maturity date'),
-                    _buildNoteItem('Early withdrawal may incur penalties'),
-                    _buildNoteItem('Interest rates are set by the platform and may vary by duration'),
-                    if (cubit.qualifiesForUpfrontInterest)
-                      _buildNoteItem('Interest is paid upfront to your account'),
-                    if ((durationDays ?? 0) < 180)
-                      _buildNoteItem('Lock for 6+ months to receive interest upfront'),
-                    if (autoRenew)
-                      _buildNoteItem('Lock will automatically renew at maturity'),
-                  ],
-                ),
-              ),
+              if (cubit.qualifiesForUpfrontInterest) ...[
+                SizedBox(height: 14.h),
+                _buildUpfrontPill(),
+              ],
             ],
           ),
         );
@@ -414,102 +101,333 @@ class ReviewScreen extends StatelessWidget {
     );
   }
 
-  IconData _getLockTypeIcon(LockType? type) {
-    switch (type) {
-      case LockType.savings:
-        return Icons.savings_rounded;
-      case LockType.investment:
-        return Icons.trending_up_rounded;
-      case LockType.emergencyFund:
-        return Icons.emergency_rounded;
-      case LockType.goalBased:
-        return Icons.flag_rounded;
-      default:
-        return Icons.lock_rounded;
-    }
-  }
+  // Hero ───────────────────────────────────────────────────────────────
 
-  Widget _buildDetailRow(String label, String? value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.inter(
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w500,
-            color: const Color(0xFF9CA3AF),
-          ),
+  Widget _buildHero({
+    required LockType? lockType,
+    required double amount,
+    required String currency,
+    required int durationDays,
+    required DateTime maturity,
+    String? goalName,
+    String? goalDescription,
+  }) {
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF4E03D0), Color(0xFF8B5CF6)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        Text(
-          value ?? 'N/A',
-          style: GoogleFonts.inter(
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
+        borderRadius: BorderRadius.circular(18.r),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF4E03D0).withValues(alpha: 0.32),
+            blurRadius: 18,
+            offset: const Offset(0, 10),
           ),
-        ),
-      ],
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(10.w),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                child: Icon(
+                  _iconFor(lockType),
+                  color: Colors.white,
+                  size: 20.sp,
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Text(
+                  lockType?.displayName ?? 'Lock',
+                  style: GoogleFonts.inter(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white.withValues(alpha: 0.92),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 14.h),
+          Text(
+            'You are locking',
+            style: GoogleFonts.inter(
+              fontSize: 12.sp,
+              color: Colors.white.withValues(alpha: 0.85),
+            ),
+          ),
+          SizedBox(height: 4.h),
+          Text(
+            '${CurrencySymbols.getSymbol(currency)}${NumberFormat('#,##0.00').format(amount)}',
+            style: GoogleFonts.inter(
+              fontSize: 30.sp,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(height: 14.h),
+          // Two-up KPI strip — duration + maturity. Avoids the
+          // separate "Lock Duration" / "Maturity Date" rows the old
+          // review card had (each was its own line; now the visual
+          // weight matches their actual importance).
+          Row(
+            children: [
+              Expanded(
+                child: _kpi(
+                  label: 'Duration',
+                  value: _formatDuration(durationDays),
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: _kpi(
+                  label: 'Matures',
+                  value: DateFormat('MMM d, yyyy').format(maturity),
+                ),
+              ),
+            ],
+          ),
+          if (goalName != null && goalName.isNotEmpty) ...[
+            SizedBox(height: 14.h),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    goalName,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  if (goalDescription != null &&
+                      goalDescription.trim().isNotEmpty) ...[
+                    SizedBox(height: 2.h),
+                    Text(
+                      goalDescription,
+                      style: GoogleFonts.inter(
+                        color: Colors.white.withValues(alpha: 0.85),
+                        fontSize: 11.sp,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 
-  Widget _buildCalculationRow(
-    String label,
-    String value, {
-    bool isTotal = false,
-    Color? valueColor,
+  Widget _kpi({required String label, required String value}) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(10.r),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              color: Colors.white.withValues(alpha: 0.78),
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          SizedBox(height: 2.h),
+          Text(
+            value,
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Interest breakdown card ────────────────────────────────────────────
+
+  Widget _buildInterestCard({
+    required double rate,
+    required double interest,
+    required double total,
+    required String currency,
   }) {
+    final symbol = CurrencySymbols.getSymbol(currency);
+    return Container(
+      padding: EdgeInsets.all(18.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(
+          color: const Color(0xFF10B981).withValues(alpha: 0.25),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.trending_up_rounded,
+                  color: const Color(0xFF10B981), size: 18.sp),
+              SizedBox(width: 8.w),
+              Text(
+                'What you earn',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 14.h),
+          _row('Interest rate', '${(rate * 100).toStringAsFixed(1)}% p.a.'),
+          SizedBox(height: 8.h),
+          _row(
+            'Interest earned',
+            '$symbol${NumberFormat('#,##0.00').format(interest)}',
+            valueColor: const Color(0xFF10B981),
+          ),
+          SizedBox(height: 12.h),
+          Container(height: 1, color: const Color(0xFF2D2D2D)),
+          SizedBox(height: 12.h),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Total at maturity',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              Text(
+                '$symbol${NumberFormat('#,##0.00').format(total)}',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF10B981),
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _row(String label, String value, {Color? valueColor}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           label,
           style: GoogleFonts.inter(
-            fontSize: isTotal ? 16.sp : 14.sp,
-            fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
-            color: isTotal ? Colors.white : const Color(0xFF9CA3AF),
+            color: const Color(0xFF9CA3AF),
+            fontSize: 13.sp,
+            fontWeight: FontWeight.w500,
           ),
         ),
         Text(
           value,
           style: GoogleFonts.inter(
-            fontSize: isTotal ? 20.sp : 14.sp,
+            color: valueColor ?? Colors.white,
+            fontSize: 13.sp,
             fontWeight: FontWeight.w700,
-            color: valueColor ?? (isTotal ? const Color(0xFF10B981) : Colors.white),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildNoteItem(String text) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 8.h),
+  Widget _buildUpfrontPill() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFF4E03D0).withValues(alpha: 0.15),
+            const Color(0xFF8B5CF6).withValues(alpha: 0.08),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: const Color(0xFF8B5CF6).withValues(alpha: 0.35)),
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            margin: EdgeInsets.only(top: 6.h),
-            width: 4.w,
-            height: 4.w,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF59E0B),
-              shape: BoxShape.circle,
-            ),
-          ),
-          SizedBox(width: 12.w),
+          Icon(Icons.bolt_rounded, color: const Color(0xFF8B5CF6), size: 18.sp),
+          SizedBox(width: 10.w),
           Expanded(
             child: Text(
-              text,
+              'Interest is paid upfront to your destination account when the lock is created.',
               style: GoogleFonts.inter(
-                fontSize: 13.sp,
-                fontWeight: FontWeight.w400,
-                color: const Color(0xFFF59E0B),
+                color: const Color(0xFFE9D5FF),
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w500,
+                height: 1.4,
               ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  IconData _iconFor(LockType? type) {
+    switch (type) {
+      case null:
+        return Icons.lock_rounded;
+      case LockType.savings:
+        return Icons.savings_rounded;
+      case LockType.investment:
+        return Icons.trending_up_rounded;
+      case LockType.goalBased:
+        return Icons.flag_rounded;
+    }
+  }
+
+  String _formatDuration(int days) {
+    if (days <= 0) return 'Flexible';
+    if (days < 30) return '$days day${days == 1 ? '' : 's'}';
+    if (days < 365) {
+      final months = (days / 30).round();
+      return '$months month${months == 1 ? '' : 's'}';
+    }
+    final years = days ~/ 365;
+    final remDays = days % 365;
+    if (remDays == 0) {
+      return '$years year${years == 1 ? '' : 's'}';
+    }
+    final months = (remDays / 30).round();
+    return '${years}y ${months}m';
   }
 }

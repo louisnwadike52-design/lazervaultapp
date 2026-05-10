@@ -93,6 +93,8 @@ message PiggyVaultConfig {
   string duration_bonus_tiers = 17;
   bool is_active = 18;
   string description = 19;
+  bool is_fixed_amount = 20;
+  double fixed_amount = 21;
 }
 
 // === Lock Fund AutoSave ===

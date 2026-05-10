@@ -577,7 +577,12 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
               ],
             ),
           ),
-          if (lock.lockType.allowsEarlyWithdrawal && lock.isActive) ...[
+          // Early-withdrawal information panel — shown for any lock
+          // whose snapshotted penalty is < 100% (i.e. the user CAN
+          // exit early, possibly with a penalty). Driven by the lock
+          // row, not the enum, so it stays correct even if the
+          // admin-side config changes after issue.
+          if (lock.earlyUnlockPenaltyPercent < 100 && lock.isActive) ...[
             SizedBox(height: 12.h),
             Container(
               width: double.infinity,
@@ -672,11 +677,17 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
             ],
           ),
         ] else if (lock.isActive) ...[
-          // Active - show TopUp + AutoSave + Break Lock buttons
+          // Active — show available follow-up actions. Whether
+          // top-up + early withdrawal are offered comes from
+          // properties on the lock itself (penalty %, plan type)
+          // rather than per-type hardcodes; the admin dashboard
+          // owns the underlying behaviour via PiggyVaultConfig.
           Row(
             children: [
-              // TopUp button (for Flex, Target)
-              if (lock.lockType == LockType.emergencyFund || lock.lockType == LockType.goalBased)
+              // Top-up: only the Flex savings plan supports adding to
+              // an active lock today. Treasury / Year Lock disallow
+              // it because the rate is locked at issue.
+              if (lock.lockType == LockType.savings)
                 Expanded(
                   child: _buildActionButton(
                     'Top Up',
@@ -685,9 +696,7 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
                     () => _showTopUpScreen(),
                   ),
                 ),
-              if (lock.lockType == LockType.emergencyFund || lock.lockType == LockType.goalBased)
-                SizedBox(width: 12.w),
-              // AutoSave button
+              if (lock.lockType == LockType.savings) SizedBox(width: 12.w),
               Expanded(
                 child: _buildActionButton(
                   'Auto-Save',
@@ -699,16 +708,24 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
             ],
           ),
           SizedBox(height: 12.h),
-          // Break lock / withdraw button
-          if (lock.lockType.allowsEarlyWithdrawal)
+          // Withdraw vs Break Lock: drive the label + colour by the
+          // penalty applied at issue time. Zero penalty = penalty-
+          // free withdrawal; non-zero = an early-break that costs
+          // the user.
+          if (lock.lockType == LockType.savings ||
+              lock.earlyUnlockPenaltyPercent == 0)
             _buildActionButton(
-              lock.lockType == LockType.emergencyFund ? 'Withdraw' : 'Break Lock',
-              lock.lockType == LockType.emergencyFund
-                  ? Icons.account_balance_wallet_outlined
-                  : Icons.lock_open_outlined,
-              lock.lockType == LockType.emergencyFund
-                  ? const Color(0xFF10B981)
-                  : const Color(0xFFFB923C),
+              'Withdraw',
+              Icons.account_balance_wallet_outlined,
+              const Color(0xFF10B981),
+              () => _showBreakLockDialog(),
+              fullWidth: true,
+            )
+          else
+            _buildActionButton(
+              'Break Lock',
+              Icons.lock_open_outlined,
+              const Color(0xFFFB923C),
               () => _showBreakLockDialog(),
               fullWidth: true,
             ),

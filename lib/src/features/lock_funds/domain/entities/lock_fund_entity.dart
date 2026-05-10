@@ -1,232 +1,64 @@
-/// PiggyVault (Lock Funds) entity with locale-aware currency formatting
+// PiggyVault (Lock Funds) entity with locale-aware currency formatting.
 import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
 
-/// Lock types following PiggyVest-style naming
+/// Lock types matching the three plans the platform offers today.
+/// Every visible attribute (display name, %, duration, amount range,
+/// description) is loaded from PiggyVaultConfig at runtime — see
+/// `loadPiggyVaultConfigsUseCase`. This enum only carries the stable
+/// backend slug, plus a couple of safe defaults used when the
+/// network is unreachable on first paint.
 enum LockType {
-  /// SafeLock - Lock funds for a fixed period with competitive interest
-  /// Early withdrawal incurs penalty. Best for disciplined saving.
+  /// Flex Savings — withdraw anytime; mirrors a regular savings
+  /// account. Default rate is 10% but the actual figure is admin-
+  /// configurable via piggyvault_configs.
   savings,
 
-  /// Vault - Premium lock with highest interest rates
-  /// Requires longer commitment. Best for long-term wealth building.
+  /// Treasury Lock — treasury-bills-linked. Locked for the
+  /// configured timeframe; no early withdrawal.
   investment,
 
-  /// Flex - Flexible savings with instant withdrawal
-  /// Lower interest but full flexibility. Best for emergency funds.
-  emergencyFund,
-
-  /// Target - Goal-oriented savings with deadline
-  /// Save towards a specific goal. Best for planned purchases.
+  /// Year Lock — fixed one-year lock. Highest return on the
+  /// platform; least flexibility.
   goalBased;
 
+  /// Backend slug. The seed in accounts-service uses these strings
+  /// verbatim; never localise them.
+  String get backendKey {
+    switch (this) {
+      case LockType.savings:
+        return 'savings';
+      case LockType.investment:
+        return 'investment';
+      case LockType.goalBased:
+        return 'goal_based';
+    }
+  }
+
+  /// Fallback display name when the live PiggyVaultConfig hasn't
+  /// loaded yet (cold-start, offline). The admin-supplied
+  /// display_name takes precedence — see PiggyVaultConfig.displayName.
   String get displayName {
     switch (this) {
       case LockType.savings:
-        return 'SafeLock';
+        return 'Flex Savings';
       case LockType.investment:
-        return 'Vault';
-      case LockType.emergencyFund:
-        return 'Flex';
+        return 'Treasury Lock';
       case LockType.goalBased:
-        return 'Target';
+        return 'Year Lock';
     }
   }
 
-  String get subtitle {
-    switch (this) {
-      case LockType.savings:
-        return 'Fixed-term savings';
-      case LockType.investment:
-        return 'Premium returns';
-      case LockType.emergencyFund:
-        return 'Flexible savings';
-      case LockType.goalBased:
-        return 'Goal-based savings';
-    }
-  }
-
+  /// Static glyph used as a chip icon. Cosmetic, so kept in code
+  /// rather than driven by config — easy to change here without an
+  /// admin-side migration.
   String get icon {
     switch (this) {
       case LockType.savings:
         return '🔐';
       case LockType.investment:
         return '💎';
-      case LockType.emergencyFund:
-        return '⚡';
       case LockType.goalBased:
         return '🎯';
-    }
-  }
-
-  String get description {
-    switch (this) {
-      case LockType.savings:
-        return 'Lock for a fixed period and earn competitive interest. Early withdrawal has a penalty.';
-      case LockType.investment:
-        return 'Premium lock with the highest interest rates. Best returns for long-term commitment.';
-      case LockType.emergencyFund:
-        return 'Flexible savings with instant withdrawal. Zero penalties. Perfect for rainy day funds.';
-      case LockType.goalBased:
-        return 'Save towards a specific goal with a deadline. Small early withdrawal penalty.';
-    }
-  }
-
-  /// Base interest rate per annum (fallback when backend config unavailable)
-  double get baseInterestRate => fallbackBaseRate;
-
-  /// Maximum possible interest rate
-  double get maxInterestRate => fallbackMaxRate;
-
-  /// Penalty percentage for early withdrawal
-  double get earlyUnlockPenalty => fallbackPenalty;
-
-  /// Minimum lock duration in days
-  int get minimumDurationDays => fallbackMinDuration;
-
-  /// Maximum lock duration in days
-  int get maximumDurationDays => fallbackMaxDuration;
-
-  /// Whether this lock type allows early withdrawal
-  bool get allowsEarlyWithdrawal => fallbackAllowsEarlyWithdrawal;
-
-  /// Whether this lock type supports auto-renewal
-  bool get supportsAutoRenew => fallbackSupportsAutoRenew;
-
-  /// Whether this lock type qualifies for upfront interest payment (180+ days)
-  bool get supportsUpfrontInterest {
-    switch (this) {
-      case LockType.savings:
-        return true;
-      case LockType.investment:
-        return true;
-      case LockType.emergencyFund:
-        return false;
-      case LockType.goalBased:
-        return true;
-    }
-  }
-
-  /// Whether this lock type supports top-up
-  bool get supportsTopUp {
-    switch (this) {
-      case LockType.savings:
-        return false;
-      case LockType.investment:
-        return false;
-      case LockType.emergencyFund:
-        return true;
-      case LockType.goalBased:
-        return true;
-    }
-  }
-
-  /// Whether this lock type supports auto-save
-  bool get supportsAutoSave {
-    switch (this) {
-      case LockType.savings:
-        return true;
-      case LockType.investment:
-        return false;
-      case LockType.emergencyFund:
-        return true;
-      case LockType.goalBased:
-        return true;
-    }
-  }
-
-  /// Fallback base interest rate (used when backend config is unavailable)
-  double get fallbackBaseRate {
-    switch (this) {
-      case LockType.savings:
-        return 10.0;
-      case LockType.investment:
-        return 15.0;
-      case LockType.emergencyFund:
-        return 4.0;
-      case LockType.goalBased:
-        return 8.0;
-    }
-  }
-
-  /// Fallback max interest rate
-  double get fallbackMaxRate {
-    switch (this) {
-      case LockType.savings:
-        return 13.0;
-      case LockType.investment:
-        return 18.0;
-      case LockType.emergencyFund:
-        return 4.0;
-      case LockType.goalBased:
-        return 11.0;
-    }
-  }
-
-  /// Fallback penalty rate
-  double get fallbackPenalty {
-    switch (this) {
-      case LockType.savings:
-        return 5.0;
-      case LockType.investment:
-        return 15.0;
-      case LockType.emergencyFund:
-        return 0.0;
-      case LockType.goalBased:
-        return 3.0;
-    }
-  }
-
-  /// Fallback min duration
-  int get fallbackMinDuration {
-    switch (this) {
-      case LockType.savings:
-        return 10;
-      case LockType.investment:
-        return 90;
-      case LockType.emergencyFund:
-        return 0;
-      case LockType.goalBased:
-        return 7;
-    }
-  }
-
-  /// Fallback max duration
-  int get fallbackMaxDuration {
-    switch (this) {
-      case LockType.savings:
-        return 1000;
-      case LockType.investment:
-        return 1825;
-      case LockType.emergencyFund:
-        return 0;
-      case LockType.goalBased:
-        return 730;
-    }
-  }
-
-  bool get fallbackAllowsEarlyWithdrawal {
-    switch (this) {
-      case LockType.savings:
-        return true;
-      case LockType.investment:
-        return false;
-      case LockType.emergencyFund:
-        return true;
-      case LockType.goalBased:
-        return true;
-    }
-  }
-
-  bool get fallbackSupportsAutoRenew {
-    switch (this) {
-      case LockType.savings:
-        return true;
-      case LockType.investment:
-        return true;
-      case LockType.emergencyFund:
-        return false;
-      case LockType.goalBased:
-        return false;
     }
   }
 }
@@ -279,6 +111,11 @@ class PiggyVaultConfig {
   final int maxDurationDays;
   final double minAmount;
   final double maxAmount;
+  /// When true, the wizard hides the amount input and locks every
+  /// deposit to [fixedAmount]. Useful for promotional fixed-headline
+  /// plans configured by ops via the admin dashboard.
+  final bool isFixedAmount;
+  final double fixedAmount;
   final bool allowsEarlyWithdrawal;
   final bool supportsAutoRenew;
   final bool supportsTopUp;
@@ -300,6 +137,8 @@ class PiggyVaultConfig {
     required this.maxDurationDays,
     required this.minAmount,
     this.maxAmount = 0,
+    this.isFixedAmount = false,
+    this.fixedAmount = 0,
     required this.allowsEarlyWithdrawal,
     required this.supportsAutoRenew,
     this.supportsTopUp = false,

@@ -7,12 +7,19 @@ class CrowdfundCard extends StatelessWidget {
   final Crowdfund crowdfund;
   final VoidCallback? onTap;
   final VoidCallback? onCreatorTap;
+  /// Set when the authenticated user is the campaign creator. Drives
+  /// a "Yours" badge on the card so the user can spot their own
+  /// campaigns in the global Browse All feed at a glance.
+  /// Computed by the parent (the list screen owns the auth state)
+  /// so the card itself stays auth-agnostic.
+  final bool isMine;
 
   const CrowdfundCard({
     super.key,
     required this.crowdfund,
     this.onTap,
     this.onCreatorTap,
+    this.isMine = false,
   });
 
   @override
@@ -34,11 +41,21 @@ class CrowdfundCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header: status + code
+            // Header: status + (optional) ownership badge + code
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildStatusBadge(),
+                Expanded(
+                  child: Wrap(
+                    spacing: 6.w,
+                    runSpacing: 4.h,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      _buildStatusBadge(),
+                      if (isMine) _buildOwnershipBadge(),
+                    ],
+                  ),
+                ),
                 Text(
                   crowdfund.crowdfundCode,
                   style: TextStyle(
@@ -229,6 +246,41 @@ class CrowdfundCard extends StatelessWidget {
           Icon(icon, color: textColor, size: 12.sp),
           SizedBox(width: 3.w),
           Text(statusText, style: TextStyle(color: textColor, fontSize: 11.sp, fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
+  }
+
+  /// "Yours" pill rendered next to the status badge when the
+  /// authenticated user owns the campaign. Uses the brand purple
+  /// + a person-icon glyph so it reads at a glance against the
+  /// other status colours and stays distinct from the verified
+  /// (green) or active (green) palettes.
+  Widget _buildOwnershipBadge() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF4E03D0).withValues(alpha: 0.22),
+        borderRadius: BorderRadius.circular(6.r),
+        border: Border.all(
+          color: const Color(0xFF8B5CF6).withValues(alpha: 0.45),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.person_outline,
+              color: const Color(0xFF8B5CF6), size: 12.sp),
+          SizedBox(width: 3.w),
+          Text(
+            'Yours',
+            style: TextStyle(
+              color: const Color(0xFF8B5CF6),
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ],
       ),
     );

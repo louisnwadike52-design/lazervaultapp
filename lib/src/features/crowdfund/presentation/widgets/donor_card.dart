@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -764,17 +765,24 @@ class _DonorAvatar extends StatelessWidget {
       ),
       child: profilePicture == null || profilePicture!.isEmpty
           ? Center(child: initialWidget)
-          : ClipOval(
-              child: Image.network(
-                profilePicture!,
-                fit: BoxFit.cover,
-                width: radius * 2,
-                height: radius * 2,
-                // Async load: while bytes arrive, show the initial so
-                // the user never sees a broken-image / blank circle.
-                loadingBuilder: (context, child, progress) =>
-                    progress == null ? child : Center(child: initialWidget),
-                errorBuilder: (_, __, ___) => Center(child: initialWidget),
+          // RepaintBoundary keeps the network image off the parent
+          // layer so a list scroll / sibling rebuild doesn't force a
+          // re-decode. CachedNetworkImage owns the disk cache so
+          // the image survives across screens / app restarts; the
+          // memCacheWidth cap limits decode cost to roughly the
+          // pixel size we actually render at.
+          : RepaintBoundary(
+              child: ClipOval(
+                child: CachedNetworkImage(
+                  imageUrl: profilePicture!,
+                  fit: BoxFit.cover,
+                  width: radius * 2,
+                  height: radius * 2,
+                  memCacheWidth: (radius * 2 * 3).round(),
+                  fadeInDuration: const Duration(milliseconds: 120),
+                  placeholder: (_, __) => Center(child: initialWidget),
+                  errorWidget: (_, __, ___) => Center(child: initialWidget),
+                ),
               ),
             ),
     );
