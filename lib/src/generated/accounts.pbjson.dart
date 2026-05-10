@@ -529,11 +529,13 @@ const CreateLockFundsRequest$json = const {
     const {'1': 'penalty_rate', '3': 7, '4': 1, '5': 1, '10': 'penaltyRate'},
     const {'1': 'pin', '3': 8, '4': 1, '5': 9, '10': 'pin'},
     const {'1': 'auto_renew', '3': 9, '4': 1, '5': 8, '10': 'autoRenew'},
+    const {'1': 'interest_destination_account_id', '3': 10, '4': 1, '5': 9, '10': 'interestDestinationAccountId'},
+    const {'1': 'currency', '3': 11, '4': 1, '5': 9, '10': 'currency'},
   ],
 };
 
 /// Descriptor for `CreateLockFundsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List createLockFundsRequestDescriptor = $convert.base64Decode('ChZDcmVhdGVMb2NrRnVuZHNSZXF1ZXN0Eh0KCmFjY291bnRfaWQYASABKAlSCWFjY291bnRJZBISCgRuYW1lGAIgASgJUgRuYW1lEhYKBmFtb3VudBgDIAEoAVIGYW1vdW50EhsKCWxvY2tfdHlwZRgEIAEoCVIIbG9ja1R5cGUSHwoLdW5sb2NrX2RhdGUYBSABKAlSCnVubG9ja0RhdGUSIwoNdGFyZ2V0X2Ftb3VudBgGIAEoAVIMdGFyZ2V0QW1vdW50EiEKDHBlbmFsdHlfcmF0ZRgHIAEoAVILcGVuYWx0eVJhdGUSEAoDcGluGAggASgJUgNwaW4SHQoKYXV0b19yZW5ldxgJIAEoCFIJYXV0b1JlbmV3');
+final $typed_data.Uint8List createLockFundsRequestDescriptor = $convert.base64Decode('ChZDcmVhdGVMb2NrRnVuZHNSZXF1ZXN0Eh0KCmFjY291bnRfaWQYASABKAlSCWFjY291bnRJZBISCgRuYW1lGAIgASgJUgRuYW1lEhYKBmFtb3VudBgDIAEoAVIGYW1vdW50EhsKCWxvY2tfdHlwZRgEIAEoCVIIbG9ja1R5cGUSHwoLdW5sb2NrX2RhdGUYBSABKAlSCnVubG9ja0RhdGUSIwoNdGFyZ2V0X2Ftb3VudBgGIAEoAVIMdGFyZ2V0QW1vdW50EiEKDHBlbmFsdHlfcmF0ZRgHIAEoAVILcGVuYWx0eVJhdGUSEAoDcGluGAggASgJUgNwaW4SHQoKYXV0b19yZW5ldxgJIAEoCFIJYXV0b1JlbmV3EkUKH2ludGVyZXN0X2Rlc3RpbmF0aW9uX2FjY291bnRfaWQYCiABKAlSHGludGVyZXN0RGVzdGluYXRpb25BY2NvdW50SWQSGgoIY3VycmVuY3kYCyABKAlSCGN1cnJlbmN5');
 @$core.Deprecated('Use createLockFundsResponseDescriptor instead')
 const CreateLockFundsResponse$json = const {
   '1': 'CreateLockFundsResponse',
@@ -542,11 +544,13 @@ const CreateLockFundsResponse$json = const {
     const {'1': 'transaction', '3': 2, '4': 1, '5': 11, '6': '.accounts.Transaction', '10': 'transaction'},
     const {'1': 'new_available_balance', '3': 3, '4': 1, '5': 1, '10': 'newAvailableBalance'},
     const {'1': 'message', '3': 4, '4': 1, '5': 9, '10': 'message'},
+    const {'1': 'upfront_interest_paid', '3': 5, '4': 1, '5': 1, '10': 'upfrontInterestPaid'},
+    const {'1': 'upfront_interest_destination', '3': 6, '4': 1, '5': 9, '10': 'upfrontInterestDestination'},
   ],
 };
 
 /// Descriptor for `CreateLockFundsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List createLockFundsResponseDescriptor = $convert.base64Decode('ChdDcmVhdGVMb2NrRnVuZHNSZXNwb25zZRIxCglsb2NrZnVuZHMYASABKAsyEy5hY2NvdW50cy5Mb2NrRnVuZHNSCWxvY2tmdW5kcxI3Cgt0cmFuc2FjdGlvbhgCIAEoCzIVLmFjY291bnRzLlRyYW5zYWN0aW9uUgt0cmFuc2FjdGlvbhIyChVuZXdfYXZhaWxhYmxlX2JhbGFuY2UYAyABKAFSE25ld0F2YWlsYWJsZUJhbGFuY2USGAoHbWVzc2FnZRgEIAEoCVIHbWVzc2FnZQ==');
+final $typed_data.Uint8List createLockFundsResponseDescriptor = $convert.base64Decode('ChdDcmVhdGVMb2NrRnVuZHNSZXNwb25zZRIxCglsb2NrZnVuZHMYASABKAsyEy5hY2NvdW50cy5Mb2NrRnVuZHNSCWxvY2tmdW5kcxI3Cgt0cmFuc2FjdGlvbhgCIAEoCzIVLmFjY291bnRzLlRyYW5zYWN0aW9uUgt0cmFuc2FjdGlvbhIyChVuZXdfYXZhaWxhYmxlX2JhbGFuY2UYAyABKAFSE25ld0F2YWlsYWJsZUJhbGFuY2USGAoHbWVzc2FnZRgEIAEoCVIHbWVzc2FnZRIyChV1cGZyb250X2ludGVyZXN0X3BhaWQYBSABKAFSE3VwZnJvbnRJbnRlcmVzdFBhaWQSQAocdXBmcm9udF9pbnRlcmVzdF9kZXN0aW5hdGlvbhgGIAEoCVIadXBmcm9udEludGVyZXN0RGVzdGluYXRpb24=');
 @$core.Deprecated('Use getLockFundsRequestDescriptor instead')
 const GetLockFundsRequest$json = const {
   '1': 'GetLockFundsRequest',
@@ -620,11 +624,15 @@ const PiggyVaultConfigProto$json = const {
     const {'1': 'duration_bonus_tiers', '3': 17, '4': 1, '5': 9, '10': 'durationBonusTiers'},
     const {'1': 'is_active', '3': 18, '4': 1, '5': 8, '10': 'isActive'},
     const {'1': 'description', '3': 19, '4': 1, '5': 9, '10': 'description'},
+    const {'1': 'is_fixed_amount', '3': 20, '4': 1, '5': 8, '10': 'isFixedAmount'},
+    const {'1': 'fixed_amount', '3': 21, '4': 1, '5': 1, '10': 'fixedAmount'},
+    const {'1': 'duration_options', '3': 22, '4': 1, '5': 9, '10': 'durationOptions'},
+    const {'1': 'quick_amount_options', '3': 23, '4': 1, '5': 9, '10': 'quickAmountOptions'},
   ],
 };
 
 /// Descriptor for `PiggyVaultConfigProto`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List piggyVaultConfigProtoDescriptor = $convert.base64Decode('ChVQaWdneVZhdWx0Q29uZmlnUHJvdG8SDgoCaWQYASABKAlSAmlkEhsKCWxvY2tfdHlwZRgCIAEoCVIIbG9ja1R5cGUSGgoIY3VycmVuY3kYAyABKAlSCGN1cnJlbmN5EiEKDGRpc3BsYXlfbmFtZRgEIAEoCVILZGlzcGxheU5hbWUSLAoSYmFzZV9pbnRlcmVzdF9yYXRlGAUgASgBUhBiYXNlSW50ZXJlc3RSYXRlEioKEW1heF9pbnRlcmVzdF9yYXRlGAYgASgBUg9tYXhJbnRlcmVzdFJhdGUSOAoYZWFybHlfd2l0aGRyYXdhbF9wZW5hbHR5GAcgASgBUhZlYXJseVdpdGhkcmF3YWxQZW5hbHR5EioKEW1pbl9kdXJhdGlvbl9kYXlzGAggASgFUg9taW5EdXJhdGlvbkRheXMSKgoRbWF4X2R1cmF0aW9uX2RheXMYCSABKAVSD21heER1cmF0aW9uRGF5cxIdCgptaW5fYW1vdW50GAogASgBUgltaW5BbW91bnQSHQoKbWF4X2Ftb3VudBgLIAEoAVIJbWF4QW1vdW50EjYKF2FsbG93c19lYXJseV93aXRoZHJhd2FsGAwgASgIUhVhbGxvd3NFYXJseVdpdGhkcmF3YWwSLgoTc3VwcG9ydHNfYXV0b19yZW5ldxgNIAEoCFIRc3VwcG9ydHNBdXRvUmVuZXcSJgoPc3VwcG9ydHNfdG9wX3VwGA4gASgIUg1zdXBwb3J0c1RvcFVwEiwKEnN1cHBvcnRzX2F1dG9fc2F2ZRgPIAEoCFIQc3VwcG9ydHNBdXRvU2F2ZRI6ChlzdXBwb3J0c191cGZyb250X2ludGVyZXN0GBAgASgIUhdzdXBwb3J0c1VwZnJvbnRJbnRlcmVzdBIwChRkdXJhdGlvbl9ib251c190aWVycxgRIAEoCVISZHVyYXRpb25Cb251c1RpZXJzEhsKCWlzX2FjdGl2ZRgSIAEoCFIIaXNBY3RpdmUSIAoLZGVzY3JpcHRpb24YEyABKAlSC2Rlc2NyaXB0aW9u');
+final $typed_data.Uint8List piggyVaultConfigProtoDescriptor = $convert.base64Decode('ChVQaWdneVZhdWx0Q29uZmlnUHJvdG8SDgoCaWQYASABKAlSAmlkEhsKCWxvY2tfdHlwZRgCIAEoCVIIbG9ja1R5cGUSGgoIY3VycmVuY3kYAyABKAlSCGN1cnJlbmN5EiEKDGRpc3BsYXlfbmFtZRgEIAEoCVILZGlzcGxheU5hbWUSLAoSYmFzZV9pbnRlcmVzdF9yYXRlGAUgASgBUhBiYXNlSW50ZXJlc3RSYXRlEioKEW1heF9pbnRlcmVzdF9yYXRlGAYgASgBUg9tYXhJbnRlcmVzdFJhdGUSOAoYZWFybHlfd2l0aGRyYXdhbF9wZW5hbHR5GAcgASgBUhZlYXJseVdpdGhkcmF3YWxQZW5hbHR5EioKEW1pbl9kdXJhdGlvbl9kYXlzGAggASgFUg9taW5EdXJhdGlvbkRheXMSKgoRbWF4X2R1cmF0aW9uX2RheXMYCSABKAVSD21heER1cmF0aW9uRGF5cxIdCgptaW5fYW1vdW50GAogASgBUgltaW5BbW91bnQSHQoKbWF4X2Ftb3VudBgLIAEoAVIJbWF4QW1vdW50EjYKF2FsbG93c19lYXJseV93aXRoZHJhd2FsGAwgASgIUhVhbGxvd3NFYXJseVdpdGhkcmF3YWwSLgoTc3VwcG9ydHNfYXV0b19yZW5ldxgNIAEoCFIRc3VwcG9ydHNBdXRvUmVuZXcSJgoPc3VwcG9ydHNfdG9wX3VwGA4gASgIUg1zdXBwb3J0c1RvcFVwEiwKEnN1cHBvcnRzX2F1dG9fc2F2ZRgPIAEoCFIQc3VwcG9ydHNBdXRvU2F2ZRI6ChlzdXBwb3J0c191cGZyb250X2ludGVyZXN0GBAgASgIUhdzdXBwb3J0c1VwZnJvbnRJbnRlcmVzdBIwChRkdXJhdGlvbl9ib251c190aWVycxgRIAEoCVISZHVyYXRpb25Cb251c1RpZXJzEhsKCWlzX2FjdGl2ZRgSIAEoCFIIaXNBY3RpdmUSIAoLZGVzY3JpcHRpb24YEyABKAlSC2Rlc2NyaXB0aW9uEiYKD2lzX2ZpeGVkX2Ftb3VudBgUIAEoCFINaXNGaXhlZEFtb3VudBIhCgxmaXhlZF9hbW91bnQYFSABKAFSC2ZpeGVkQW1vdW50EikKEGR1cmF0aW9uX29wdGlvbnMYFiABKAlSD2R1cmF0aW9uT3B0aW9ucxIwChRxdWlja19hbW91bnRfb3B0aW9ucxgXIAEoCVIScXVpY2tBbW91bnRPcHRpb25z');
 @$core.Deprecated('Use getPiggyVaultConfigRequestDescriptor instead')
 const GetPiggyVaultConfigRequest$json = const {
   '1': 'GetPiggyVaultConfigRequest',
@@ -688,11 +696,15 @@ const UpdatePiggyVaultConfigRequest$json = const {
     const {'1': 'is_active', '3': 16, '4': 1, '5': 8, '10': 'isActive'},
     const {'1': 'description', '3': 17, '4': 1, '5': 9, '10': 'description'},
     const {'1': 'display_name', '3': 18, '4': 1, '5': 9, '10': 'displayName'},
+    const {'1': 'is_fixed_amount', '3': 19, '4': 1, '5': 8, '10': 'isFixedAmount'},
+    const {'1': 'fixed_amount', '3': 20, '4': 1, '5': 1, '10': 'fixedAmount'},
+    const {'1': 'duration_options', '3': 21, '4': 1, '5': 9, '10': 'durationOptions'},
+    const {'1': 'quick_amount_options', '3': 22, '4': 1, '5': 9, '10': 'quickAmountOptions'},
   ],
 };
 
 /// Descriptor for `UpdatePiggyVaultConfigRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updatePiggyVaultConfigRequestDescriptor = $convert.base64Decode('Ch1VcGRhdGVQaWdneVZhdWx0Q29uZmlnUmVxdWVzdBIbCglsb2NrX3R5cGUYASABKAlSCGxvY2tUeXBlEhoKCGN1cnJlbmN5GAIgASgJUghjdXJyZW5jeRIsChJiYXNlX2ludGVyZXN0X3JhdGUYAyABKAFSEGJhc2VJbnRlcmVzdFJhdGUSKgoRbWF4X2ludGVyZXN0X3JhdGUYBCABKAFSD21heEludGVyZXN0UmF0ZRI4ChhlYXJseV93aXRoZHJhd2FsX3BlbmFsdHkYBSABKAFSFmVhcmx5V2l0aGRyYXdhbFBlbmFsdHkSKgoRbWluX2R1cmF0aW9uX2RheXMYBiABKAVSD21pbkR1cmF0aW9uRGF5cxIqChFtYXhfZHVyYXRpb25fZGF5cxgHIAEoBVIPbWF4RHVyYXRpb25EYXlzEh0KCm1pbl9hbW91bnQYCCABKAFSCW1pbkFtb3VudBIdCgptYXhfYW1vdW50GAkgASgBUgltYXhBbW91bnQSNgoXYWxsb3dzX2Vhcmx5X3dpdGhkcmF3YWwYCiABKAhSFWFsbG93c0Vhcmx5V2l0aGRyYXdhbBIuChNzdXBwb3J0c19hdXRvX3JlbmV3GAsgASgIUhFzdXBwb3J0c0F1dG9SZW5ldxImCg9zdXBwb3J0c190b3BfdXAYDCABKAhSDXN1cHBvcnRzVG9wVXASLAoSc3VwcG9ydHNfYXV0b19zYXZlGA0gASgIUhBzdXBwb3J0c0F1dG9TYXZlEjoKGXN1cHBvcnRzX3VwZnJvbnRfaW50ZXJlc3QYDiABKAhSF3N1cHBvcnRzVXBmcm9udEludGVyZXN0EjAKFGR1cmF0aW9uX2JvbnVzX3RpZXJzGA8gASgJUhJkdXJhdGlvbkJvbnVzVGllcnMSGwoJaXNfYWN0aXZlGBAgASgIUghpc0FjdGl2ZRIgCgtkZXNjcmlwdGlvbhgRIAEoCVILZGVzY3JpcHRpb24SIQoMZGlzcGxheV9uYW1lGBIgASgJUgtkaXNwbGF5TmFtZQ==');
+final $typed_data.Uint8List updatePiggyVaultConfigRequestDescriptor = $convert.base64Decode('Ch1VcGRhdGVQaWdneVZhdWx0Q29uZmlnUmVxdWVzdBIbCglsb2NrX3R5cGUYASABKAlSCGxvY2tUeXBlEhoKCGN1cnJlbmN5GAIgASgJUghjdXJyZW5jeRIsChJiYXNlX2ludGVyZXN0X3JhdGUYAyABKAFSEGJhc2VJbnRlcmVzdFJhdGUSKgoRbWF4X2ludGVyZXN0X3JhdGUYBCABKAFSD21heEludGVyZXN0UmF0ZRI4ChhlYXJseV93aXRoZHJhd2FsX3BlbmFsdHkYBSABKAFSFmVhcmx5V2l0aGRyYXdhbFBlbmFsdHkSKgoRbWluX2R1cmF0aW9uX2RheXMYBiABKAVSD21pbkR1cmF0aW9uRGF5cxIqChFtYXhfZHVyYXRpb25fZGF5cxgHIAEoBVIPbWF4RHVyYXRpb25EYXlzEh0KCm1pbl9hbW91bnQYCCABKAFSCW1pbkFtb3VudBIdCgptYXhfYW1vdW50GAkgASgBUgltYXhBbW91bnQSNgoXYWxsb3dzX2Vhcmx5X3dpdGhkcmF3YWwYCiABKAhSFWFsbG93c0Vhcmx5V2l0aGRyYXdhbBIuChNzdXBwb3J0c19hdXRvX3JlbmV3GAsgASgIUhFzdXBwb3J0c0F1dG9SZW5ldxImCg9zdXBwb3J0c190b3BfdXAYDCABKAhSDXN1cHBvcnRzVG9wVXASLAoSc3VwcG9ydHNfYXV0b19zYXZlGA0gASgIUhBzdXBwb3J0c0F1dG9TYXZlEjoKGXN1cHBvcnRzX3VwZnJvbnRfaW50ZXJlc3QYDiABKAhSF3N1cHBvcnRzVXBmcm9udEludGVyZXN0EjAKFGR1cmF0aW9uX2JvbnVzX3RpZXJzGA8gASgJUhJkdXJhdGlvbkJvbnVzVGllcnMSGwoJaXNfYWN0aXZlGBAgASgIUghpc0FjdGl2ZRIgCgtkZXNjcmlwdGlvbhgRIAEoCVILZGVzY3JpcHRpb24SIQoMZGlzcGxheV9uYW1lGBIgASgJUgtkaXNwbGF5TmFtZRImCg9pc19maXhlZF9hbW91bnQYEyABKAhSDWlzRml4ZWRBbW91bnQSIQoMZml4ZWRfYW1vdW50GBQgASgBUgtmaXhlZEFtb3VudBIpChBkdXJhdGlvbl9vcHRpb25zGBUgASgJUg9kdXJhdGlvbk9wdGlvbnMSMAoUcXVpY2tfYW1vdW50X29wdGlvbnMYFiABKAlSEnF1aWNrQW1vdW50T3B0aW9ucw==');
 @$core.Deprecated('Use updatePiggyVaultConfigResponseDescriptor instead')
 const UpdatePiggyVaultConfigResponse$json = const {
   '1': 'UpdatePiggyVaultConfigResponse',

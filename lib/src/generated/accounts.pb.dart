@@ -3644,6 +3644,8 @@ class CreateLockFundsRequest extends $pb.GeneratedMessage {
     ..a<$core.double>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'penaltyRate', $pb.PbFieldType.OD)
     ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pin')
     ..aOB(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'autoRenew')
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'interestDestinationAccountId')
+    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
     ..hasRequiredFields = false
   ;
 
@@ -3658,6 +3660,8 @@ class CreateLockFundsRequest extends $pb.GeneratedMessage {
     $core.double? penaltyRate,
     $core.String? pin,
     $core.bool? autoRenew,
+    $core.String? interestDestinationAccountId,
+    $core.String? currency,
   }) {
     final _result = create();
     if (accountId != null) {
@@ -3686,6 +3690,12 @@ class CreateLockFundsRequest extends $pb.GeneratedMessage {
     }
     if (autoRenew != null) {
       _result.autoRenew = autoRenew;
+    }
+    if (interestDestinationAccountId != null) {
+      _result.interestDestinationAccountId = interestDestinationAccountId;
+    }
+    if (currency != null) {
+      _result.currency = currency;
     }
     return _result;
   }
@@ -3790,6 +3800,24 @@ class CreateLockFundsRequest extends $pb.GeneratedMessage {
   $core.bool hasAutoRenew() => $_has(8);
   @$pb.TagNumber(9)
   void clearAutoRenew() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get interestDestinationAccountId => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set interestDestinationAccountId($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasInterestDestinationAccountId() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearInterestDestinationAccountId() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get currency => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set currency($core.String v) { $_setString(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasCurrency() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearCurrency() => clearField(11);
 }
 
 class CreateLockFundsResponse extends $pb.GeneratedMessage {
@@ -3798,6 +3826,8 @@ class CreateLockFundsResponse extends $pb.GeneratedMessage {
     ..aOM<Transaction>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transaction', subBuilder: Transaction.create)
     ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'newAvailableBalance', $pb.PbFieldType.OD)
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'upfrontInterestPaid', $pb.PbFieldType.OD)
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'upfrontInterestDestination')
     ..hasRequiredFields = false
   ;
 
@@ -3807,6 +3837,8 @@ class CreateLockFundsResponse extends $pb.GeneratedMessage {
     Transaction? transaction,
     $core.double? newAvailableBalance,
     $core.String? message,
+    $core.double? upfrontInterestPaid,
+    $core.String? upfrontInterestDestination,
   }) {
     final _result = create();
     if (lockfunds != null) {
@@ -3820,6 +3852,12 @@ class CreateLockFundsResponse extends $pb.GeneratedMessage {
     }
     if (message != null) {
       _result.message = message;
+    }
+    if (upfrontInterestPaid != null) {
+      _result.upfrontInterestPaid = upfrontInterestPaid;
+    }
+    if (upfrontInterestDestination != null) {
+      _result.upfrontInterestDestination = upfrontInterestDestination;
     }
     return _result;
   }
@@ -3883,6 +3921,24 @@ class CreateLockFundsResponse extends $pb.GeneratedMessage {
   $core.bool hasMessage() => $_has(3);
   @$pb.TagNumber(4)
   void clearMessage() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.double get upfrontInterestPaid => $_getN(4);
+  @$pb.TagNumber(5)
+  set upfrontInterestPaid($core.double v) { $_setDouble(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasUpfrontInterestPaid() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearUpfrontInterestPaid() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get upfrontInterestDestination => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set upfrontInterestDestination($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasUpfrontInterestDestination() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearUpfrontInterestDestination() => clearField(6);
 }
 
 class GetLockFundsRequest extends $pb.GeneratedMessage {
@@ -4232,6 +4288,10 @@ class PiggyVaultConfigProto extends $pb.GeneratedMessage {
     ..aOS(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'durationBonusTiers')
     ..aOB(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isActive')
     ..aOS(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
+    ..aOB(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isFixedAmount')
+    ..a<$core.double>(21, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fixedAmount', $pb.PbFieldType.OD)
+    ..aOS(22, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'durationOptions')
+    ..aOS(23, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'quickAmountOptions')
     ..hasRequiredFields = false
   ;
 
@@ -4256,6 +4316,10 @@ class PiggyVaultConfigProto extends $pb.GeneratedMessage {
     $core.String? durationBonusTiers,
     $core.bool? isActive,
     $core.String? description,
+    $core.bool? isFixedAmount,
+    $core.double? fixedAmount,
+    $core.String? durationOptions,
+    $core.String? quickAmountOptions,
   }) {
     final _result = create();
     if (id != null) {
@@ -4314,6 +4378,18 @@ class PiggyVaultConfigProto extends $pb.GeneratedMessage {
     }
     if (description != null) {
       _result.description = description;
+    }
+    if (isFixedAmount != null) {
+      _result.isFixedAmount = isFixedAmount;
+    }
+    if (fixedAmount != null) {
+      _result.fixedAmount = fixedAmount;
+    }
+    if (durationOptions != null) {
+      _result.durationOptions = durationOptions;
+    }
+    if (quickAmountOptions != null) {
+      _result.quickAmountOptions = quickAmountOptions;
     }
     return _result;
   }
@@ -4508,6 +4584,42 @@ class PiggyVaultConfigProto extends $pb.GeneratedMessage {
   $core.bool hasDescription() => $_has(18);
   @$pb.TagNumber(19)
   void clearDescription() => clearField(19);
+
+  @$pb.TagNumber(20)
+  $core.bool get isFixedAmount => $_getBF(19);
+  @$pb.TagNumber(20)
+  set isFixedAmount($core.bool v) { $_setBool(19, v); }
+  @$pb.TagNumber(20)
+  $core.bool hasIsFixedAmount() => $_has(19);
+  @$pb.TagNumber(20)
+  void clearIsFixedAmount() => clearField(20);
+
+  @$pb.TagNumber(21)
+  $core.double get fixedAmount => $_getN(20);
+  @$pb.TagNumber(21)
+  set fixedAmount($core.double v) { $_setDouble(20, v); }
+  @$pb.TagNumber(21)
+  $core.bool hasFixedAmount() => $_has(20);
+  @$pb.TagNumber(21)
+  void clearFixedAmount() => clearField(21);
+
+  @$pb.TagNumber(22)
+  $core.String get durationOptions => $_getSZ(21);
+  @$pb.TagNumber(22)
+  set durationOptions($core.String v) { $_setString(21, v); }
+  @$pb.TagNumber(22)
+  $core.bool hasDurationOptions() => $_has(21);
+  @$pb.TagNumber(22)
+  void clearDurationOptions() => clearField(22);
+
+  @$pb.TagNumber(23)
+  $core.String get quickAmountOptions => $_getSZ(22);
+  @$pb.TagNumber(23)
+  set quickAmountOptions($core.String v) { $_setString(22, v); }
+  @$pb.TagNumber(23)
+  $core.bool hasQuickAmountOptions() => $_has(22);
+  @$pb.TagNumber(23)
+  void clearQuickAmountOptions() => clearField(23);
 }
 
 class GetPiggyVaultConfigRequest extends $pb.GeneratedMessage {
@@ -4728,6 +4840,10 @@ class UpdatePiggyVaultConfigRequest extends $pb.GeneratedMessage {
     ..aOB(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isActive')
     ..aOS(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
     ..aOS(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'displayName')
+    ..aOB(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isFixedAmount')
+    ..a<$core.double>(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fixedAmount', $pb.PbFieldType.OD)
+    ..aOS(21, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'durationOptions')
+    ..aOS(22, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'quickAmountOptions')
     ..hasRequiredFields = false
   ;
 
@@ -4751,6 +4867,10 @@ class UpdatePiggyVaultConfigRequest extends $pb.GeneratedMessage {
     $core.bool? isActive,
     $core.String? description,
     $core.String? displayName,
+    $core.bool? isFixedAmount,
+    $core.double? fixedAmount,
+    $core.String? durationOptions,
+    $core.String? quickAmountOptions,
   }) {
     final _result = create();
     if (lockType != null) {
@@ -4806,6 +4926,18 @@ class UpdatePiggyVaultConfigRequest extends $pb.GeneratedMessage {
     }
     if (displayName != null) {
       _result.displayName = displayName;
+    }
+    if (isFixedAmount != null) {
+      _result.isFixedAmount = isFixedAmount;
+    }
+    if (fixedAmount != null) {
+      _result.fixedAmount = fixedAmount;
+    }
+    if (durationOptions != null) {
+      _result.durationOptions = durationOptions;
+    }
+    if (quickAmountOptions != null) {
+      _result.quickAmountOptions = quickAmountOptions;
     }
     return _result;
   }
@@ -4991,6 +5123,42 @@ class UpdatePiggyVaultConfigRequest extends $pb.GeneratedMessage {
   $core.bool hasDisplayName() => $_has(17);
   @$pb.TagNumber(18)
   void clearDisplayName() => clearField(18);
+
+  @$pb.TagNumber(19)
+  $core.bool get isFixedAmount => $_getBF(18);
+  @$pb.TagNumber(19)
+  set isFixedAmount($core.bool v) { $_setBool(18, v); }
+  @$pb.TagNumber(19)
+  $core.bool hasIsFixedAmount() => $_has(18);
+  @$pb.TagNumber(19)
+  void clearIsFixedAmount() => clearField(19);
+
+  @$pb.TagNumber(20)
+  $core.double get fixedAmount => $_getN(19);
+  @$pb.TagNumber(20)
+  set fixedAmount($core.double v) { $_setDouble(19, v); }
+  @$pb.TagNumber(20)
+  $core.bool hasFixedAmount() => $_has(19);
+  @$pb.TagNumber(20)
+  void clearFixedAmount() => clearField(20);
+
+  @$pb.TagNumber(21)
+  $core.String get durationOptions => $_getSZ(20);
+  @$pb.TagNumber(21)
+  set durationOptions($core.String v) { $_setString(20, v); }
+  @$pb.TagNumber(21)
+  $core.bool hasDurationOptions() => $_has(20);
+  @$pb.TagNumber(21)
+  void clearDurationOptions() => clearField(21);
+
+  @$pb.TagNumber(22)
+  $core.String get quickAmountOptions => $_getSZ(21);
+  @$pb.TagNumber(22)
+  set quickAmountOptions($core.String v) { $_setString(21, v); }
+  @$pb.TagNumber(22)
+  $core.bool hasQuickAmountOptions() => $_has(21);
+  @$pb.TagNumber(22)
+  void clearQuickAmountOptions() => clearField(22);
 }
 
 class UpdatePiggyVaultConfigResponse extends $pb.GeneratedMessage {
