@@ -144,6 +144,17 @@ class CreateLockCubit extends Cubit<CreateLockState> {
   double getFixedAmount(LockType type) =>
       getConfigForType(type)?.fixedAmount ?? 0;
 
+  /// Admin-supplied duration chips (days). Empty list means "no
+  /// admin override" — callers fall back to a generic preset
+  /// filtered by min/max duration.
+  List<int> getDurationOptions(LockType type) =>
+      getConfigForType(type)?.parsedDurationOptions ?? const [];
+
+  /// Admin-supplied quick-amount pills. Empty list means "free-
+  /// form only", which the wizard treats as no-pills.
+  List<double> getQuickAmountOptions(LockType type) =>
+      getConfigForType(type)?.parsedQuickAmountOptions ?? const [];
+
   // Backend slug — re-exposed via the enum's `backendKey` getter.
   String _lockTypeToConfigString(LockType type) => type.backendKey;
 

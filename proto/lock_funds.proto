@@ -95,6 +95,8 @@ message PiggyVaultConfig {
   string description = 19;
   bool is_fixed_amount = 20;
   double fixed_amount = 21;
+  string duration_options = 22;
+  string quick_amount_options = 23;
 }
 
 // === Lock Fund AutoSave ===

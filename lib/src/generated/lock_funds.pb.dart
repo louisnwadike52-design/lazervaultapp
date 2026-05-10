@@ -605,6 +605,8 @@ class PiggyVaultConfig extends $pb.GeneratedMessage {
     ..aOS(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
     ..aOB(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isFixedAmount')
     ..a<$core.double>(21, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fixedAmount', $pb.PbFieldType.OD)
+    ..aOS(22, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'durationOptions')
+    ..aOS(23, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'quickAmountOptions')
     ..hasRequiredFields = false
   ;
 
@@ -631,6 +633,8 @@ class PiggyVaultConfig extends $pb.GeneratedMessage {
     $core.String? description,
     $core.bool? isFixedAmount,
     $core.double? fixedAmount,
+    $core.String? durationOptions,
+    $core.String? quickAmountOptions,
   }) {
     final _result = create();
     if (id != null) {
@@ -695,6 +699,12 @@ class PiggyVaultConfig extends $pb.GeneratedMessage {
     }
     if (fixedAmount != null) {
       _result.fixedAmount = fixedAmount;
+    }
+    if (durationOptions != null) {
+      _result.durationOptions = durationOptions;
+    }
+    if (quickAmountOptions != null) {
+      _result.quickAmountOptions = quickAmountOptions;
     }
     return _result;
   }
@@ -907,6 +917,24 @@ class PiggyVaultConfig extends $pb.GeneratedMessage {
   $core.bool hasFixedAmount() => $_has(20);
   @$pb.TagNumber(21)
   void clearFixedAmount() => clearField(21);
+
+  @$pb.TagNumber(22)
+  $core.String get durationOptions => $_getSZ(21);
+  @$pb.TagNumber(22)
+  set durationOptions($core.String v) { $_setString(21, v); }
+  @$pb.TagNumber(22)
+  $core.bool hasDurationOptions() => $_has(21);
+  @$pb.TagNumber(22)
+  void clearDurationOptions() => clearField(22);
+
+  @$pb.TagNumber(23)
+  $core.String get quickAmountOptions => $_getSZ(22);
+  @$pb.TagNumber(23)
+  set quickAmountOptions($core.String v) { $_setString(22, v); }
+  @$pb.TagNumber(23)
+  $core.bool hasQuickAmountOptions() => $_has(22);
+  @$pb.TagNumber(23)
+  void clearQuickAmountOptions() => clearField(23);
 }
 
 class LockFundAutoSave extends $pb.GeneratedMessage {

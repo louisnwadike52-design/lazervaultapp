@@ -1,4 +1,5 @@
 // PiggyVault (Lock Funds) entity with locale-aware currency formatting.
+import 'dart:convert';
 import 'package:lazervault/core/utils/currency_formatter.dart' as currency_formatter;
 
 /// Lock types matching the three plans the platform offers today.
@@ -116,6 +117,12 @@ class PiggyVaultConfig {
   /// plans configured by ops via the admin dashboard.
   final bool isFixedAmount;
   final double fixedAmount;
+  /// Raw JSON arrays from the admin dashboard. Empty arrays mean
+  /// "no chips defined; client falls back to a generic preset".
+  /// See [parsedDurationOptions] / [parsedQuickAmountOptions] for
+  /// safe accessors.
+  final String durationOptions;
+  final String quickAmountOptions;
   final bool allowsEarlyWithdrawal;
   final bool supportsAutoRenew;
   final bool supportsTopUp;
@@ -139,6 +146,8 @@ class PiggyVaultConfig {
     this.maxAmount = 0,
     this.isFixedAmount = false,
     this.fixedAmount = 0,
+    this.durationOptions = '[]',
+    this.quickAmountOptions = '[]',
     required this.allowsEarlyWithdrawal,
     required this.supportsAutoRenew,
     this.supportsTopUp = false,
@@ -164,6 +173,69 @@ class PiggyVaultConfig {
       return '${baseRatePercent.toStringAsFixed(0)}% p.a.';
     }
     return '${baseRatePercent.toStringAsFixed(0)}% - ${maxRatePercent.toStringAsFixed(0)}% p.a.';
+  }
+
+  /// Parsed duration chip set from the admin-supplied JSON array.
+  /// Out-of-range values are dropped so a typo on the admin form
+  /// can't slip a 1000-day chip into a plan capped at 365. Returns
+  /// an empty list when the JSON is empty / malformed — callers
+  /// fall back to their own preset in that case.
+  List<int> get parsedDurationOptions {
+    final raw = durationOptions.trim();
+    if (raw.isEmpty || raw == '[]') return const [];
+    try {
+      final decoded = _safeDecode(raw);
+      if (decoded is! List) return const [];
+      return decoded
+          .map((v) {
+            if (v is num) return v.toInt();
+            return int.tryParse('$v') ?? -1;
+          })
+          .where((d) => d > 0 &&
+              d >= minDurationDays &&
+              (maxDurationDays == 0 || d <= maxDurationDays))
+          .toList()
+        ..sort();
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  /// Parsed quick-amount pills from the admin-supplied JSON array.
+  /// Filters against [minAmount] / [maxAmount] so an out-of-range
+  /// pill can't sneak past the wizard's per-step validators.
+  List<double> get parsedQuickAmountOptions {
+    final raw = quickAmountOptions.trim();
+    if (raw.isEmpty || raw == '[]') return const [];
+    try {
+      final decoded = _safeDecode(raw);
+      if (decoded is! List) return const [];
+      return decoded
+          .map((v) {
+            if (v is num) return v.toDouble();
+            return double.tryParse('$v') ?? -1;
+          })
+          .where((a) =>
+              a > 0 &&
+              a >= minAmount &&
+              (maxAmount == 0 || a <= maxAmount))
+          .toList()
+        ..sort();
+    } catch (_) {
+      return const [];
+    }
+  }
+}
+
+dynamic _safeDecode(String raw) {
+  // Hoisted decoder for the JSONB-backed PiggyVaultConfig string
+  // fields. Returns null on any parse failure (e.g. operator typed
+  // garbage into the admin form) so callers fall back to their
+  // generic presets.
+  try {
+    return jsonDecode(raw);
+  } catch (_) {
+    return null;
   }
 }
 
