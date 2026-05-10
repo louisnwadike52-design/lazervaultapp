@@ -260,7 +260,14 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
       controller: _scrollController,
       slivers: [
         SliverAppBar(
-          expandedHeight: crowdfund.imageUrl != null ? 180.h : 0,
+          // Always reserve space for the hero — when the campaign has
+          // no image (or its image fails to load) we fall back to a
+          // stable internet-hosted photo so the page header doesn't
+          // collapse to a flat bar. The fallback URL is the same one
+          // the errorWidget swaps to, so the visual weight is
+          // consistent across "no image", "image broken", and
+          // "image-still-loading" states.
+          expandedHeight: 180.h,
           pinned: true,
           backgroundColor: const Color(0xFF0A0A0A),
           // Subtle revalidation indicator while SWR refreshes in the
@@ -376,30 +383,11 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
               ],
             ),
           ],
-          flexibleSpace: crowdfund.imageUrl != null
-              ? FlexibleSpaceBar(
-                  background: CachedNetworkImage(
-                    // Rewrite localhost / 127.0.0.1 → 10.0.2.2 on
-                    // Android emulator so dev-time uploads served
-                    // by the host machine are reachable.
-                    imageUrl: rewriteHostForEmulator(crowdfund.imageUrl!),
-                    fit: BoxFit.cover,
-                    fadeInDuration: const Duration(milliseconds: 180),
-                    placeholder: (context, _) => Container(
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                            colors: [Color(0xFF1A1A3E), Color(0xFF0A0E27)]),
-                      ),
-                    ),
-                    errorWidget: (context, error, stackTrace) => Container(
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(colors: [Color(0xFF1A1A3E), Color(0xFF0A0E27)]),
-                      ),
-                      child: Center(child: Icon(Icons.image_not_supported, color: Colors.grey[600], size: 48.sp)),
-                    ),
-                  ),
-                )
-              : null,
+          flexibleSpace: FlexibleSpaceBar(
+            background: _CampaignHeroImage(
+              imageUrl: crowdfund.imageUrl,
+            ),
+          ),
         ),
         SliverToBoxAdapter(
           child: Padding(
@@ -1231,6 +1219,95 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
   }
 }
 
+/// Stable internet-hosted fallback for the campaign hero image.
+/// Used when the campaign has no `imageUrl` (creator skipped upload)
+/// AND when the configured URL fails to load (404, network error,
+/// rotated CDN). Picked from Unsplash's CDN — a community / hands-
+/// together photo that reads as "fundraising" without being
+/// category-specific. The query string keeps the rendered size
+/// modest (800px wide) so cellular fetches stay quick.
+const String _campaignFallbackImageUrl =
+    'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=800&q=80';
+
+/// Hero header image for the campaign details page. Routes through a
+/// fallback URL when the primary is missing or fails — the screen
+/// always shows a real photo at the configured 180.h slot, never an
+/// `image_not_supported` icon.
+class _CampaignHeroImage extends StatefulWidget {
+  final String? imageUrl;
+
+  const _CampaignHeroImage({required this.imageUrl});
+
+  @override
+  State<_CampaignHeroImage> createState() => _CampaignHeroImageState();
+}
+
+class _CampaignHeroImageState extends State<_CampaignHeroImage> {
+  // Tracks whether the primary URL has thrown an errorWidget. Once
+  // it has, we lock onto the fallback URL so we don't keep retrying
+  // a known-broken source on every rebuild.
+  bool _primaryFailed = false;
+
+  bool get _hasPrimary {
+    final u = widget.imageUrl;
+    return u != null && u.trim().isNotEmpty && !_primaryFailed;
+  }
+
+  String get _activeUrl {
+    if (_hasPrimary) {
+      return rewriteHostForEmulator(widget.imageUrl!);
+    }
+    return _campaignFallbackImageUrl;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // RepaintBoundary parks the decoded image bitmap on its own
+    // layer so the surrounding scroll view never has to repaint it
+    // when sibling widgets (status pill, donor list) mutate. Pair
+    // with memCacheWidth = 800 (matches the URL ?w=800 query) so we
+    // don't pay to decode a multi-megapixel source at 800×180 dp.
+    return RepaintBoundary(
+      child: CachedNetworkImage(
+        // Re-key on which URL is active so cached_network_image rebuilds
+        // its internal stream when we swap from primary → fallback.
+        key: ValueKey(_activeUrl),
+        imageUrl: _activeUrl,
+        fit: BoxFit.cover,
+        memCacheWidth: 800,
+        fadeInDuration: const Duration(milliseconds: 180),
+        placeholder: (context, _) => Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+                colors: [Color(0xFF1A1A3E), Color(0xFF0A0E27)]),
+          ),
+        ),
+        errorWidget: (context, error, stackTrace) {
+          if (_hasPrimary) {
+            // Primary just blew up — flip the flag on next frame so the
+            // widget rebuilds with the fallback URL instead of looping
+            // on this same broken source. We can't setState inside
+            // build directly.
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted) return;
+              setState(() => _primaryFailed = true);
+            });
+          }
+          // Last-resort gradient + icon when even the fallback is
+          // unreachable (e.g. user is fully offline). Bare gradient
+          // — no icon, since the user already knows there's no image.
+          return Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                  colors: [Color(0xFF1A1A3E), Color(0xFF0A0E27)]),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
 /// Robust avatar that mirrors the donor + recipient avatar pattern:
 /// purple-gradient circle with initials, network image overlaid only
 /// when it loads successfully. Network failures fall back to the
@@ -1272,15 +1349,22 @@ class _CreatorAvatar extends StatelessWidget {
       ),
       child: (url == null || url.isEmpty)
           ? Center(child: initialWidget)
-          : ClipOval(
-              child: Image.network(
-                rewriteHostForEmulator(url),
-                fit: BoxFit.cover,
-                width: radius * 2,
-                height: radius * 2,
-                loadingBuilder: (context, child, progress) =>
-                    progress == null ? child : Center(child: initialWidget),
-                errorBuilder: (_, __, ___) => Center(child: initialWidget),
+          : RepaintBoundary(
+              child: ClipOval(
+                child: CachedNetworkImage(
+                  imageUrl: rewriteHostForEmulator(url),
+                  fit: BoxFit.cover,
+                  width: radius * 2,
+                  height: radius * 2,
+                  // Cap the decode size at ~3× the pixel diameter so
+                  // we don't pay to decode a multi-megapixel profile
+                  // photo for a 32-pixel circle. Disk-cached across
+                  // sessions via cached_network_image.
+                  memCacheWidth: (radius * 2 * 3).round(),
+                  fadeInDuration: const Duration(milliseconds: 120),
+                  placeholder: (_, __) => Center(child: initialWidget),
+                  errorWidget: (_, __, ___) => Center(child: initialWidget),
+                ),
               ),
             ),
     );

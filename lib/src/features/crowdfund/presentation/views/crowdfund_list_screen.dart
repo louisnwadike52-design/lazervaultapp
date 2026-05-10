@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../../../../core/utils/debouncer.dart';
+import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../domain/entities/crowdfund_entities.dart';
 import '../cubit/crowdfund_cubit.dart';
 import '../cubit/crowdfund_state.dart';
@@ -202,6 +203,21 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
     } finally {
       _fundedStatusesWarming = false;
     }
+  }
+
+  /// True when the JWT user is the campaign creator. Used by
+  /// CrowdfundCard's `isMine` flag to render the "Yours" pill on
+  /// Browse All. Match by username because the wire's
+  /// creator.user_id is a uint64 (legacy) while the auth profile's
+  /// id is a UUID — usernames are the only stable cross-walk.
+  /// Same logic the details screen uses for its withdraw / edit
+  /// gating, kept here as a one-liner for the per-row check.
+  bool _isOwnCampaign(Crowdfund c) {
+    final auth = context.read<AuthenticationCubit>();
+    final me = auth.currentProfile?.user.username?.trim();
+    final creator = c.creator.username.trim();
+    if (me == null || me.isEmpty || creator.isEmpty) return false;
+    return me.toLowerCase() == creator.toLowerCase();
   }
 
   String? get _statusParam {
@@ -562,12 +578,19 @@ class _CrowdfundListScreenState extends State<CrowdfundListScreen>
                   ),
                 );
               }
+              final cf = render.crowdfunds[index];
               return CrowdfundCard(
-                crowdfund: render.crowdfunds[index],
+                crowdfund: cf,
+                // Tag campaigns the authenticated user owns so they
+                // stand out in the global Browse All feed. Match by
+                // username (the auth profile's id is a UUID while
+                // the wire-side creator.user_id is a legacy uint64,
+                // so usernames are the only stable cross-walk).
+                isMine: _isOwnCampaign(cf),
                 onTap: () {
                   Get.toNamed(
                     AppRoutes.crowdfundDetails,
-                    arguments: render.crowdfunds[index].id,
+                    arguments: cf.id,
                   );
                 },
               );

@@ -337,10 +337,10 @@ class LockFundsPdfService {
           style: _getTextStyle(fontSize: 12, color: PdfColors.grey700),
         ),
         pw.SizedBox(height: 2),
-        pw.Text(
-          lockFund.lockType.subtitle,
-          style: _getTextStyle(fontSize: 11, color: PdfColors.grey600),
-        ),
+        // Subtitle was removed from LockType when the per-type
+        // hardcodes were stripped — the canonical display copy lives
+        // on PiggyVaultConfig now and the PDF can omit it; the
+        // headline displayName is enough context for a receipt.
       ],
     );
   }
@@ -514,13 +514,16 @@ class LockFundsPdfService {
   static pw.Widget _buildLockTerms(LockFund lockFund) {
     final terms = <String>[];
 
-    if (lockFund.lockType.allowsEarlyWithdrawal) {
-      if (lockFund.earlyUnlockPenaltyPercent > 0) {
-        terms.add(
-            'Early withdrawal incurs a ${lockFund.earlyUnlockPenaltyPercent.toStringAsFixed(0)}% penalty on principal.');
-      } else {
-        terms.add('Withdraw anytime without penalties.');
-      }
+    // Early-withdrawal phrasing is driven by the penalty applied at
+    // issue time (snapshot on the lock row) rather than per-type
+    // hardcodes — the admin dashboard sets the penalty per plan
+    // and we render whatever was in force when the lock was created.
+    if (lockFund.earlyUnlockPenaltyPercent == 0) {
+      terms.add('Withdraw anytime without penalties.');
+    } else if (lockFund.earlyUnlockPenaltyPercent > 0 &&
+        lockFund.earlyUnlockPenaltyPercent < 100) {
+      terms.add(
+          'Early withdrawal incurs a ${lockFund.earlyUnlockPenaltyPercent.toStringAsFixed(0)}% penalty on principal.');
     } else {
       terms.add('Early withdrawal is not permitted for this lock type.');
     }

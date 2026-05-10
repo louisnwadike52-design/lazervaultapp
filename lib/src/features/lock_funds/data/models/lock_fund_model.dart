@@ -40,24 +40,24 @@ class LockFundModel {
         return pb.LockType.LOCK_TYPE_SAVINGS;
       case LockType.investment:
         return pb.LockType.LOCK_TYPE_INVESTMENT;
-      case LockType.emergencyFund:
-        return pb.LockType.LOCK_TYPE_EMERGENCY_FUND;
       case LockType.goalBased:
         return pb.LockType.LOCK_TYPE_GOAL_BASED;
     }
   }
 
-  /// Convert protobuf LockType to domain
+  /// Convert protobuf LockType to domain. The legacy
+  /// LOCK_TYPE_EMERGENCY_FUND value (carried by older API rows in
+  /// the wild) maps onto the savings plan rather than failing —
+  /// keeps any historical lock created under the deprecated type
+  /// renderable in My Locks. New writes never produce that value.
   static LockType _convertProtoLockType(pb.LockType type) {
     switch (type) {
-      case pb.LockType.LOCK_TYPE_SAVINGS:
-        return LockType.savings;
       case pb.LockType.LOCK_TYPE_INVESTMENT:
         return LockType.investment;
-      case pb.LockType.LOCK_TYPE_EMERGENCY_FUND:
-        return LockType.emergencyFund;
       case pb.LockType.LOCK_TYPE_GOAL_BASED:
         return LockType.goalBased;
+      case pb.LockType.LOCK_TYPE_SAVINGS:
+      case pb.LockType.LOCK_TYPE_EMERGENCY_FUND:
       default:
         return LockType.savings;
     }

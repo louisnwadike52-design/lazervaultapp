@@ -42,12 +42,14 @@ class CreateLockCubit extends Cubit<CreateLockState> {
 
   /// Whether the current lock qualifies for upfront interest payment
   bool get qualifiesForUpfrontInterest {
+    // Upfront-interest eligibility comes purely from the admin
+    // config; no per-type fallback. If config hasn't loaded yet,
+    // we default to false rather than guessing — a wrong-true
+    // would mis-credit interest, a wrong-false just hides a
+    // toggle until the config request resolves.
     final config = getConfigForType(_lockType);
-    if (config != null) {
-      return (_lockDurationDays ?? 0) >= 180 && config.supportsUpfrontInterest;
-    }
     return (_lockDurationDays ?? 0) >= 180 &&
-        (_lockType?.supportsUpfrontInterest ?? false);
+        (config?.supportsUpfrontInterest ?? false);
   }
 
   // Interest calculation fields
@@ -78,103 +80,72 @@ class CreateLockCubit extends Cubit<CreateLockState> {
     return null;
   }
 
-  /// Get display name from config or fallback
+  // Every getter below routes through PiggyVaultConfig — the admin
+  // dashboard is the single source of truth. The fallbacks
+  // sprinkled in are only used during the cold-start window before
+  // the config fetch resolves; once the cubit emits with configs
+  // loaded, every UI surface re-paints with the real values.
+  //
+  // Hardcoded fallbacks stay generic (no per-type magic numbers)
+  // so changing a plan's rate / duration in the admin dashboard
+  // takes effect without a Flutter deploy.
+
+  /// Display name from config; falls back to the enum's static
+  /// label (matches the seed) when config hasn't loaded yet.
   String getDisplayName(LockType type) {
     return getConfigForType(type)?.displayName ?? type.displayName;
   }
 
-  /// Get description from config or fallback
+  /// Description from config. Empty string while loading — UI
+  /// hides the description block in that case rather than showing
+  /// stale copy.
   String getDescription(LockType type) {
-    return getConfigForType(type)?.description ?? type.description;
+    return getConfigForType(type)?.description ?? '';
   }
 
-  /// Get base interest rate (as percentage, e.g. 10.0) from config or fallback
-  double getBaseRate(LockType type) {
-    final config = getConfigForType(type);
-    if (config != null) return config.baseRatePercent;
-    return type.fallbackBaseRate;
-  }
+  double getBaseRate(LockType type) =>
+      getConfigForType(type)?.baseRatePercent ?? 0;
 
-  /// Get max interest rate (as percentage) from config or fallback
-  double getMaxRate(LockType type) {
-    final config = getConfigForType(type);
-    if (config != null) return config.maxRatePercent;
-    return type.fallbackMaxRate;
-  }
+  double getMaxRate(LockType type) =>
+      getConfigForType(type)?.maxRatePercent ?? 0;
 
-  /// Get penalty rate (as percentage) from config or fallback
-  double getPenaltyRate(LockType type) {
-    final config = getConfigForType(type);
-    if (config != null) return config.penaltyPercent;
-    return type.fallbackPenalty;
-  }
+  double getPenaltyRate(LockType type) =>
+      getConfigForType(type)?.penaltyPercent ?? 0;
 
-  /// Get min duration from config or fallback
-  int getMinDuration(LockType type) {
-    final config = getConfigForType(type);
-    if (config != null) return config.minDurationDays;
-    return type.fallbackMinDuration;
-  }
+  int getMinDuration(LockType type) =>
+      getConfigForType(type)?.minDurationDays ?? 0;
 
-  /// Get max duration from config or fallback
-  int getMaxDuration(LockType type) {
-    final config = getConfigForType(type);
-    if (config != null) return config.maxDurationDays;
-    return type.fallbackMaxDuration;
-  }
+  int getMaxDuration(LockType type) =>
+      getConfigForType(type)?.maxDurationDays ?? 0;
 
-  /// Get min amount from config
-  double getMinAmount(LockType type) {
-    return getConfigForType(type)?.minAmount ?? 100;
-  }
+  double getMinAmount(LockType type) =>
+      getConfigForType(type)?.minAmount ?? 0;
 
-  /// Whether this lock type allows early withdrawal
-  bool getAllowsEarlyWithdrawal(LockType type) {
-    final config = getConfigForType(type);
-    if (config != null) return config.allowsEarlyWithdrawal;
-    return type.fallbackAllowsEarlyWithdrawal;
-  }
+  bool getAllowsEarlyWithdrawal(LockType type) =>
+      getConfigForType(type)?.allowsEarlyWithdrawal ?? false;
 
-  /// Whether this lock type supports auto-renew
-  bool getSupportsAutoRenew(LockType type) {
-    final config = getConfigForType(type);
-    if (config != null) return config.supportsAutoRenew;
-    return type.fallbackSupportsAutoRenew;
-  }
+  bool getSupportsAutoRenew(LockType type) =>
+      getConfigForType(type)?.supportsAutoRenew ?? false;
 
-  /// Whether this lock type supports top-up
-  bool getSupportsTopUp(LockType type) {
-    final config = getConfigForType(type);
-    if (config != null) return config.supportsTopUp;
-    return type.supportsTopUp;
-  }
+  bool getSupportsTopUp(LockType type) =>
+      getConfigForType(type)?.supportsTopUp ?? false;
 
-  /// Whether this lock type supports auto-save
-  bool getSupportsAutoSave(LockType type) {
-    final config = getConfigForType(type);
-    if (config != null) return config.supportsAutoSave;
-    return type.supportsAutoSave;
-  }
+  bool getSupportsAutoSave(LockType type) =>
+      getConfigForType(type)?.supportsAutoSave ?? false;
 
-  /// Whether this lock type is active (available for creation)
-  bool isTypeActive(LockType type) {
-    final config = getConfigForType(type);
-    if (config != null) return config.isActive;
-    return true; // Default to active if no config
-  }
+  bool isTypeActive(LockType type) =>
+      getConfigForType(type)?.isActive ?? true;
 
-  String _lockTypeToConfigString(LockType type) {
-    switch (type) {
-      case LockType.savings:
-        return 'savings';
-      case LockType.investment:
-        return 'investment';
-      case LockType.emergencyFund:
-        return 'emergency';
-      case LockType.goalBased:
-        return 'goal_based';
-    }
-  }
+  /// True when the plan locks every deposit to the configured
+  /// fixed amount; the wizard hides the amount field in this case.
+  bool getIsFixedAmount(LockType type) =>
+      getConfigForType(type)?.isFixedAmount ?? false;
+
+  double getFixedAmount(LockType type) =>
+      getConfigForType(type)?.fixedAmount ?? 0;
+
+  // Backend slug — re-exposed via the enum's `backendKey` getter.
+  String _lockTypeToConfigString(LockType type) => type.backendKey;
 
   void updateLockType(LockType type) {
     _lockType = type;
@@ -280,15 +251,19 @@ class CreateLockCubit extends Cubit<CreateLockState> {
         return false;
       }
     }
-    if (_lockType != LockType.emergencyFund) {
-      if (_lockDurationDays == null || _lockDurationDays! <= 0) {
-        if (isClosed) return false;
-        emit(CreateLockValidationError('Please select a lock duration'));
-        return false;
-      }
-      if (_lockType != null) {
-        final minDays = getMinDuration(_lockType!);
-        final maxDays = getMaxDuration(_lockType!);
+    // Plans whose admin config sets min_duration=0 AND max_duration=0
+    // are treated as flex-style (Flex Savings today) — no fixed
+    // term required. Any other plan must have a duration selected.
+    if (_lockType != null) {
+      final minDays = getMinDuration(_lockType!);
+      final maxDays = getMaxDuration(_lockType!);
+      final isFlex = minDays == 0 && maxDays == 0;
+      if (!isFlex) {
+        if (_lockDurationDays == null || _lockDurationDays! <= 0) {
+          if (isClosed) return false;
+          emit(CreateLockValidationError('Please select a lock duration'));
+          return false;
+        }
         if (minDays > 0 && _lockDurationDays! < minDays) {
           if (isClosed) return false;
           emit(CreateLockValidationError('Minimum duration is $minDays days'));

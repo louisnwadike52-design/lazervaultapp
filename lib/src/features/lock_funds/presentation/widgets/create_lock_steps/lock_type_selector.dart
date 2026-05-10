@@ -44,11 +44,14 @@ class LockTypeSelector extends StatelessWidget {
               SizedBox(height: 24.h),
               // Build cards dynamically from available lock types
               // Only show active types from backend config
+              // Only the three plans the platform supports today.
+              // Each plan's display name / rate / description / amount
+              // rules come from PiggyVaultConfig via the cubit — the
+              // icon + premium-tag flag stay here as cosmetic decoration.
               for (final entry in [
                 (LockType.savings, Icons.savings_rounded, false),
                 (LockType.investment, Icons.trending_up_rounded, true),
-                (LockType.emergencyFund, Icons.emergency_rounded, false),
-                (LockType.goalBased, Icons.flag_rounded, false),
+                (LockType.goalBased, Icons.flag_rounded, true),
               ]) ...[
                 if (cubit.isTypeActive(entry.$1))
                   _buildLockTypeCard(

@@ -314,6 +314,8 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
         maxDurationDays: c.maxDurationDays,
         minAmount: c.minAmount,
         maxAmount: c.maxAmount,
+        isFixedAmount: c.isFixedAmount,
+        fixedAmount: c.fixedAmount,
         allowsEarlyWithdrawal: c.allowsEarlyWithdrawal,
         supportsAutoRenew: c.supportsAutoRenew,
         supportsTopUp: c.supportsTopUp,

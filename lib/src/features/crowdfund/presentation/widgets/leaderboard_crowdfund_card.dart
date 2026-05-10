@@ -53,14 +53,20 @@ class LeaderboardCrowdfundCard extends StatelessWidget {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12.r),
                   child: crowdfund.imageUrl != null
-                      ? CachedNetworkImage(
-                          imageUrl: rewriteHostForEmulator(crowdfund.imageUrl!),
-                          width: 60.w,
-                          height: 60.w,
-                          fit: BoxFit.cover,
-                          fadeInDuration: const Duration(milliseconds: 120),
-                          placeholder: (_, __) => _buildImagePlaceholder(),
-                          errorWidget: (_, __, ___) => _buildImagePlaceholder(),
+                      ? RepaintBoundary(
+                          child: CachedNetworkImage(
+                            imageUrl: rewriteHostForEmulator(crowdfund.imageUrl!),
+                            width: 60.w,
+                            height: 60.w,
+                            fit: BoxFit.cover,
+                            // Decode at ~3× the display size — leaderboard
+                            // tiles render at 60dp so 200px is plenty even
+                            // on Retina without blowing up memory.
+                            memCacheWidth: 200,
+                            fadeInDuration: const Duration(milliseconds: 120),
+                            placeholder: (_, __) => _buildImagePlaceholder(),
+                            errorWidget: (_, __, ___) => _buildImagePlaceholder(),
+                          ),
                         )
                       : _buildImagePlaceholder(),
                 ),

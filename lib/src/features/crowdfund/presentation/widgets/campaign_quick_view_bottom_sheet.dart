@@ -53,17 +53,20 @@ class CampaignQuickViewBottomSheet extends StatelessWidget {
           if (crowdfund.imageUrl != null)
             ClipRRect(
               borderRadius: BorderRadius.circular(12.r),
-              child: CachedNetworkImage(
-                imageUrl: rewriteHostForEmulator(crowdfund.imageUrl!),
-                height: 150.h,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                fadeInDuration: const Duration(milliseconds: 150),
-                placeholder: (_, __) => Container(
+              child: RepaintBoundary(
+                child: CachedNetworkImage(
+                  imageUrl: rewriteHostForEmulator(crowdfund.imageUrl!),
                   height: 150.h,
-                  color: const Color(0xFF1F1F1F),
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  memCacheWidth: 800,
+                  fadeInDuration: const Duration(milliseconds: 150),
+                  placeholder: (_, __) => Container(
+                    height: 150.h,
+                    color: const Color(0xFF1F1F1F),
+                  ),
+                  errorWidget: (_, __, ___) => const SizedBox.shrink(),
                 ),
-                errorWidget: (_, __, ___) => const SizedBox.shrink(),
               ),
             ),
           Padding(
