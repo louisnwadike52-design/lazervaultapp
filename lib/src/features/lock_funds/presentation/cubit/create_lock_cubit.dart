@@ -40,44 +40,67 @@ class CreateLockCubit extends Cubit<CreateLockState> {
   String? get selectedAccountId => _selectedAccountId;
   String? get interestDestinationAccountId => _interestDestinationAccountId;
 
-  /// Whether the current lock qualifies for upfront interest payment
+  /// Whether the current lock qualifies for upfront interest
+  /// payment. The dashboard's `supports_upfront_interest` toggle
+  /// is the single source of truth — no client-side duration
+  /// gate, no per-type override. Operators can configure the rule
+  /// (eg "only Year Lock pays upfront") without a Flutter deploy.
   bool get qualifiesForUpfrontInterest {
-    // Upfront-interest eligibility comes purely from the admin
-    // config; no per-type fallback. If config hasn't loaded yet,
-    // we default to false rather than guessing — a wrong-true
-    // would mis-credit interest, a wrong-false just hides a
-    // toggle until the config request resolves.
     final config = getConfigForType(_lockType);
-    return (_lockDurationDays ?? 0) >= 180 &&
-        (config?.supportsUpfrontInterest ?? false);
+    return config?.supportsUpfrontInterest ?? false;
   }
 
   // Interest calculation fields
   InterestCalculation? _interestCalculation;
   InterestCalculation? get interestCalculation => _interestCalculation;
 
-  /// Load backend-configurable product configs on init
+  /// Load every plan config from the backend.
+  ///
+  /// We fetch ALL currencies (not just the user's locale) so a
+  /// device set to a currency the admin hasn't configured rows for
+  /// still sees the platform's default plans. The
+  /// per-currency match happens client-side in [getConfigForType].
+  /// Net effect: the wizard always renders SOMETHING as long as
+  /// the dashboard has at least one row per plan.
   Future<void> _loadConfigs() async {
     try {
       final repo = serviceLocator<LockFundsRepository>();
-      _configs = await repo.getPiggyVaultConfigs(currency: _currency);
+      _configs = await repo.getPiggyVaultConfigs(currency: '');
       _configsLoaded = true;
       if (!isClosed) emit(CreateLockState());
     } catch (_) {
-      // Fallback to hardcoded values — configs remain empty
       _configsLoaded = true;
       if (!isClosed) emit(CreateLockState());
     }
   }
 
-  /// Get backend config for a given lock type. Returns null if not found (uses fallbacks).
+  /// Resolve the right config row for [type] under the user's
+  /// active currency. Three-step preference:
+  ///
+  ///   1. Exact match on (lockType, currency).
+  ///   2. lockType match against NGN — the platform's default
+  ///      currency. Operators may not have rolled out per-currency
+  ///      pricing yet; falling back here keeps the wizard usable
+  ///      instead of dropping to fallback defaults.
+  ///   3. First lockType match regardless of currency. Last-resort
+  ///      so the wizard still renders chips for an actively
+  ///      operating plan even on currencies the dashboard hasn't
+  ///      mirrored.
   PiggyVaultConfig? getConfigForType(LockType? type) {
     if (type == null || _configs.isEmpty) return null;
     final typeStr = _lockTypeToConfigString(type);
+    final upperCurrency = _currency.toUpperCase();
+    PiggyVaultConfig? ngnFallback;
+    PiggyVaultConfig? anyFallback;
     for (final c in _configs) {
-      if (c.lockType == typeStr) return c;
+      if (c.lockType != typeStr) continue;
+      if (c.currency.toUpperCase() == upperCurrency) return c;
+      if (c.currency.toUpperCase() == 'NGN') {
+        ngnFallback ??= c;
+      }
+      anyFallback ??= c;
     }
-    return null;
+    return ngnFallback ?? anyFallback;
   }
 
   // Every getter below routes through PiggyVaultConfig — the admin

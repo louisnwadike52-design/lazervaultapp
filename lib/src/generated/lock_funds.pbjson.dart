@@ -154,11 +154,12 @@ const CreateLockFundRequest$json = const {
     const {'1': 'payment_method', '3': 8, '4': 1, '5': 9, '10': 'paymentMethod'},
     const {'1': 'source_account_id', '3': 9, '4': 1, '5': 9, '10': 'sourceAccountId'},
     const {'1': 'transaction_pin', '3': 10, '4': 1, '5': 9, '10': 'transactionPin'},
+    const {'1': 'interest_destination_account_id', '3': 11, '4': 1, '5': 9, '10': 'interestDestinationAccountId'},
   ],
 };
 
 /// Descriptor for `CreateLockFundRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List createLockFundRequestDescriptor = $convert.base64Decode('ChVDcmVhdGVMb2NrRnVuZFJlcXVlc3QSKQoJbG9ja190eXBlGAEgASgOMgwucGIuTG9ja1R5cGVSCGxvY2tUeXBlEhYKBmFtb3VudBgCIAEoAVIGYW1vdW50EhoKCGN1cnJlbmN5GAMgASgJUghjdXJyZW5jeRIsChJsb2NrX2R1cmF0aW9uX2RheXMYBCABKAVSEGxvY2tEdXJhdGlvbkRheXMSHQoKYXV0b19yZW5ldxgFIAEoCFIJYXV0b1JlbmV3EhsKCWdvYWxfbmFtZRgGIAEoCVIIZ29hbE5hbWUSKQoQZ29hbF9kZXNjcmlwdGlvbhgHIAEoCVIPZ29hbERlc2NyaXB0aW9uEiUKDnBheW1lbnRfbWV0aG9kGAggASgJUg1wYXltZW50TWV0aG9kEioKEXNvdXJjZV9hY2NvdW50X2lkGAkgASgJUg9zb3VyY2VBY2NvdW50SWQSJwoPdHJhbnNhY3Rpb25fcGluGAogASgJUg50cmFuc2FjdGlvblBpbg==');
+final $typed_data.Uint8List createLockFundRequestDescriptor = $convert.base64Decode('ChVDcmVhdGVMb2NrRnVuZFJlcXVlc3QSKQoJbG9ja190eXBlGAEgASgOMgwucGIuTG9ja1R5cGVSCGxvY2tUeXBlEhYKBmFtb3VudBgCIAEoAVIGYW1vdW50EhoKCGN1cnJlbmN5GAMgASgJUghjdXJyZW5jeRIsChJsb2NrX2R1cmF0aW9uX2RheXMYBCABKAVSEGxvY2tEdXJhdGlvbkRheXMSHQoKYXV0b19yZW5ldxgFIAEoCFIJYXV0b1JlbmV3EhsKCWdvYWxfbmFtZRgGIAEoCVIIZ29hbE5hbWUSKQoQZ29hbF9kZXNjcmlwdGlvbhgHIAEoCVIPZ29hbERlc2NyaXB0aW9uEiUKDnBheW1lbnRfbWV0aG9kGAggASgJUg1wYXltZW50TWV0aG9kEioKEXNvdXJjZV9hY2NvdW50X2lkGAkgASgJUg9zb3VyY2VBY2NvdW50SWQSJwoPdHJhbnNhY3Rpb25fcGluGAogASgJUg50cmFuc2FjdGlvblBpbhJFCh9pbnRlcmVzdF9kZXN0aW5hdGlvbl9hY2NvdW50X2lkGAsgASgJUhxpbnRlcmVzdERlc3RpbmF0aW9uQWNjb3VudElk');
 @$core.Deprecated('Use createLockFundResponseDescriptor instead')
 const CreateLockFundResponse$json = const {
   '1': 'CreateLockFundResponse',

@@ -70,6 +70,7 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
     required String paymentMethod,
     required String sourceAccountId,
     String transactionPin = '',
+    String? interestDestinationAccountId,
   }) async {
     try {
       final request = LockFundModel.toCreateRequest(
@@ -83,6 +84,7 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
         paymentMethod: paymentMethod,
         sourceAccountId: sourceAccountId,
         transactionPin: transactionPin,
+        interestDestinationAccountId: interestDestinationAccountId,
       );
 
       final response =

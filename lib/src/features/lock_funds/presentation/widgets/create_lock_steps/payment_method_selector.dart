@@ -573,10 +573,13 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
     );
   }
 
-  // Upfront-interest destination picker — kept in this slide for
-  // long-term locks. Same behaviour as before (uses the existing
-  // matching-currency accounts list); refactored to reuse the
-  // bottom-sheet pattern would require a follow-up.
+  // Upfront-interest destination picker. Same shape as the pay-from
+  // selector: shows a single active row + Change CTA, opens a
+  // bottom sheet listing every wallet. Inside the sheet, only
+  // matching-currency wallets are selectable (regardless of
+  // balance — there's no funds movement out of this account, the
+  // platform only credits interest into it). Foreign-currency
+  // wallets render visibly but disabled.
   Widget _buildInterestDestinationSelector(
       String currency, CreateLockCubit cubit) {
     return BlocBuilder<AccountCardsSummaryCubit, AccountCardsSummaryState>(
@@ -584,91 +587,155 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
         if (state is! AccountCardsSummaryLoaded) {
           return const SizedBox.shrink();
         }
-        final accounts = state.accountSummaries
-            .where((a) => _currencyMatches(a, currency))
-            .toList();
-        if (accounts.isEmpty) return const SizedBox.shrink();
+        final allAccounts = state.accountSummaries;
+        final matching =
+            allAccounts.where((a) => _currencyMatches(a, currency)).toList();
+        if (matching.isEmpty) return const SizedBox.shrink();
+
         final selectedId =
-            cubit.interestDestinationAccountId ?? accounts.first.id;
-        return Container(
-          padding: EdgeInsets.all(14.w),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1F1F1F),
-            borderRadius: BorderRadius.circular(14.r),
-            border: Border.all(
-                color: const Color(0xFF8B5CF6).withValues(alpha: 0.3)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.bolt_rounded,
-                      color: const Color(0xFF8B5CF6), size: 16.sp),
-                  SizedBox(width: 8.w),
-                  Text(
-                    'Send upfront interest to',
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 13.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
+            cubit.interestDestinationAccountId ?? matching.first.id;
+        final active = matching.firstWhere(
+          (a) => a.id == selectedId,
+          orElse: () => matching.first,
+        );
+        // Bind a default the first time the section paints so the
+        // user can advance the wizard without explicitly tapping.
+        if (cubit.interestDestinationAccountId == null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && cubit.interestDestinationAccountId == null) {
+              cubit.updateInterestDestinationAccount(matching.first.id);
+            }
+          });
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.bolt_rounded,
+                    color: const Color(0xFF8B5CF6), size: 16.sp),
+                SizedBox(width: 6.w),
+                Text(
+                  'Send upfront interest to',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w700,
                   ),
-                ],
-              ),
-              SizedBox(height: 10.h),
-              ...accounts.map((a) {
-                final isSelected = selectedId == a.id;
-                return InkWell(
-                  onTap: () => cubit.updateInterestDestinationAccount(a.id),
-                  borderRadius: BorderRadius.circular(10.r),
-                  child: Container(
-                    margin: EdgeInsets.only(bottom: 6.h),
-                    padding: EdgeInsets.symmetric(
-                        horizontal: 10.w, vertical: 8.h),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? const Color(0xFF4E03D0).withValues(alpha: 0.15)
-                          : Colors.white.withValues(alpha: 0.03),
-                      border: Border.all(
-                        color: isSelected
-                            ? const Color(0xFF8B5CF6)
-                            : Colors.transparent,
-                        width: 1.2,
+                ),
+              ],
+            ),
+            SizedBox(height: 8.h),
+            InkWell(
+              onTap: () => _openInterestDestinationPicker(
+                  allAccounts, currency, cubit),
+              borderRadius: BorderRadius.circular(14.r),
+              child: Container(
+                padding: EdgeInsets.all(14.w),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1F1F1F),
+                  borderRadius: BorderRadius.circular(14.r),
+                  border: Border.all(
+                    color: const Color(0xFF8B5CF6).withValues(alpha: 0.4),
+                    width: 1.4,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 42.w,
+                      height: 42.w,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF8B5CF6).withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(11.r),
                       ),
-                      borderRadius: BorderRadius.circular(10.r),
+                      child: Icon(
+                        Icons.account_balance_wallet_rounded,
+                        color: const Color(0xFF8B5CF6),
+                        size: 20.sp,
+                      ),
                     ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.account_balance_wallet,
-                            color: isSelected
-                                ? const Color(0xFF8B5CF6)
-                                : const Color(0xFF9CA3AF),
-                            size: 16.sp),
-                        SizedBox(width: 8.w),
-                        Expanded(
-                          child: Text(
-                            a.accountType,
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            active.accountType,
                             style: GoogleFonts.inter(
                               color: Colors.white,
-                              fontSize: 13.sp,
-                              fontWeight: FontWeight.w600,
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          SizedBox(height: 2.h),
+                          Text(
+                            CurrencySymbols.formatAmountWithCurrency(
+                                active.availableBalance, active.currency),
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF9CA3AF),
+                              fontSize: 12.sp,
                             ),
                           ),
-                        ),
-                        if (isSelected)
-                          Icon(Icons.check_circle,
-                              color: const Color(0xFF8B5CF6), size: 16.sp),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              }),
-            ],
-          ),
+                    SizedBox(width: 8.w),
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 8.w, vertical: 4.h),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF8B5CF6).withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Change',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF8B5CF6),
+                              fontSize: 11.sp,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          SizedBox(width: 2.w),
+                          Icon(Icons.arrow_drop_down_rounded,
+                              color: const Color(0xFF8B5CF6), size: 16.sp),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         );
       },
     );
+  }
+
+  Future<void> _openInterestDestinationPicker(
+    List<AccountSummaryEntity> accounts,
+    String currency,
+    CreateLockCubit cubit,
+  ) async {
+    final picked = await showModalBottomSheet<AccountSummaryEntity>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetCtx) => _InterestDestinationPickerSheet(
+        accounts: accounts,
+        currency: currency,
+        selectedAccountId: cubit.interestDestinationAccountId,
+      ),
+    );
+    if (picked != null) {
+      cubit.updateInterestDestinationAccount(picked.id);
+    }
   }
 
   // Generic empty / error states reused from the previous version.
@@ -862,22 +929,26 @@ class _AccountPickerSheet extends StatelessWidget {
                       ...matching.map((a) {
                         final hasBalance = a.availableBalance >= amount;
                         final isSelected = a.id == selectedAccountId;
+                        // Same-currency wallets are always
+                        // selectable, even if under-funded — the
+                        // user might intend to top up before
+                        // hitting Create Lock. The active-account
+                        // tile on the main slide flags
+                        // "Insufficient" so they still see the
+                        // status, and validateStep5 / accounts-
+                        // service block forward motion if balance
+                        // really is too low at confirm time.
                         return _SheetAccountTile(
                           account: a,
                           isSelected: isSelected,
                           hasBalance: hasBalance,
-                          // Allow taps even on under-funded same-
-                          // currency wallets so the user sees the
-                          // "Insufficient" badge surface on the main
-                          // slide; the next-CTA gating still blocks
-                          // forward motion.
                           onTap: () => Navigator.of(context).pop(a),
                         );
                       }),
                     if (others.isNotEmpty) ...[
                       SizedBox(height: 14.h),
                       Text(
-                        'Other wallets (different currency, disabled)',
+                        'Other wallets (not eligible)',
                         style: GoogleFonts.inter(
                           color: const Color(0xFF6B7280),
                           fontSize: 11.sp,
@@ -1016,6 +1087,130 @@ class _SheetAccountTile extends StatelessWidget {
               ],
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Bottom-sheet picker for the upfront-interest destination.
+/// Mirrors [_AccountPickerSheet] except: no balance gate (the
+/// platform deposits INTO this account, so balance is irrelevant),
+/// foreign-currency wallets render but are tap-disabled.
+class _InterestDestinationPickerSheet extends StatelessWidget {
+  final List<AccountSummaryEntity> accounts;
+  final String currency;
+  final String? selectedAccountId;
+
+  const _InterestDestinationPickerSheet({
+    required this.accounts,
+    required this.currency,
+    required this.selectedAccountId,
+  });
+
+  bool _matches(AccountSummaryEntity a) =>
+      a.currency.toUpperCase() == currency.toUpperCase();
+
+  @override
+  Widget build(BuildContext context) {
+    final matching = accounts.where(_matches).toList();
+    final others = accounts.where((a) => !_matches(a)).toList();
+    return Padding(
+      padding:
+          EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        ),
+        padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 24.h),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF3D3D3D),
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+            ),
+            SizedBox(height: 14.h),
+            Text(
+              'Receive upfront interest in',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 17.sp,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            SizedBox(height: 4.h),
+            Text(
+              'Only $currency wallets can receive this interest payout',
+              style: GoogleFonts.inter(
+                color: const Color(0xFF9CA3AF),
+                fontSize: 12.sp,
+              ),
+            ),
+            SizedBox(height: 16.h),
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.55,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (matching.isEmpty)
+                      Padding(
+                        padding: EdgeInsets.symmetric(vertical: 24.h),
+                        child: Center(
+                          child: Text(
+                            'No $currency wallets available',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF9CA3AF),
+                              fontSize: 13.sp,
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      ...matching.map((a) {
+                        final isSelected = a.id == selectedAccountId;
+                        return _SheetAccountTile(
+                          account: a,
+                          isSelected: isSelected,
+                          hasBalance: true,
+                          onTap: () => Navigator.of(context).pop(a),
+                        );
+                      }),
+                    if (others.isNotEmpty) ...[
+                      SizedBox(height: 14.h),
+                      Text(
+                        'Other wallets (not eligible)',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF6B7280),
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      SizedBox(height: 8.h),
+                      ...others.map((a) => _SheetAccountTile(
+                            account: a,
+                            isSelected: false,
+                            hasBalance: false,
+                            disabledReason: 'Wrong currency',
+                            onTap: null,
+                          )),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

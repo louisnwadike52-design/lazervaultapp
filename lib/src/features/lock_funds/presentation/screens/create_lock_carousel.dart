@@ -1,4 +1,4 @@
-import 'dart:developer' as developer;
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../cubit/create_lock_cubit.dart';
 import '../cubit/lock_funds_cubit.dart';
 import '../cubit/lock_funds_state.dart';
+import '../../domain/entities/lock_fund_entity.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../authentication/cubit/authentication_state.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
@@ -39,7 +40,6 @@ class _CreateLockCarouselState extends State<CreateLockCarousel>
   late PageController _pageController;
   int _currentPage = 0;
   final int _totalPages = 5;
-  bool _isProcessing = false;
 
   final List<String> _pageNames = [
     'Lock Type',
@@ -119,135 +119,115 @@ class _CreateLockCarouselState extends State<CreateLockCarousel>
     final lockFundsCubit = context.read<LockFundsCubit>();
     final authCubit = context.read<AuthenticationCubit>();
 
-    // Debug logging
-    developer.log(
-      'CreateLock: selectedAccountId = "${createCubit.selectedAccountId}"',
-      name: 'LockFunds',
-    );
-
-    // Verify authentication before creating lock
     final authState = authCubit.state;
     if (authState is! AuthenticationSuccess) {
       _showErrorSnackBar('Please log in to create a lock fund');
-      Navigator.of(context).pop(); // Close carousel
+      Navigator.of(context).pop();
       return;
     }
 
-    // Verify account is selected with better validation
     final selectedAccountId = createCubit.selectedAccountId;
     if (selectedAccountId == null || selectedAccountId.isEmpty) {
-      developer.log(
-        'CreateLock: ERROR - selectedAccountId is null or empty',
-        name: 'LockFunds',
-      );
       _showErrorSnackBar('Please select an account to fund your lock');
       return;
     }
-
-    // Additional validation - ensure it's a valid UUID format or numeric ID
     if (selectedAccountId == '0') {
-      developer.log(
-        'CreateLock: ERROR - selectedAccountId is "0" (invalid)',
-        name: 'LockFunds',
-      );
       _showErrorSnackBar('Invalid account selected. Please select a different account.');
       return;
     }
 
     HapticFeedback.mediumImpact();
 
-    // Store values BEFORE showing PIN dialog (in case of state changes during async operation)
+    // Snapshot wizard state. The bottom sheet stays open across the
+    // verify → process → success arc and we don't want a UI rebuild
+    // mid-flight to mutate any of these values.
     final lockType = createCubit.lockType!;
     final amount = createCubit.amount!;
     final currency = createCubit.currency;
-    final lockDurationDays = createCubit.lockDurationDays!;
+    final lockDurationDays = createCubit.lockDurationDays ?? 0;
     final autoRenew = createCubit.autoRenew;
     final goalName = createCubit.goalName;
     final goalDescription = createCubit.goalDescription;
     final paymentMethod = createCubit.paymentMethod!;
-    // Use the already validated selectedAccountId
     final sourceAccountId = selectedAccountId;
+    // Empty when admin's plan disables upfront interest — backend
+    // ignores the field unless supports_upfront_interest=true.
+    final interestDestinationAccountId =
+        createCubit.interestDestinationAccountId;
 
-    developer.log(
-      'CreateLock: Stored sourceAccountId = "$sourceAccountId" before PIN validation',
-      name: 'LockFunds',
-    );
-
-    // Generate a unique transaction ID for PIN validation
     final transactionId =
         'LOCK-${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}';
 
-    // Validate transaction PIN
-    final pinResult = await validatePinOnly(
+    // Single PIN bottomsheet that walks Entry → Verifying →
+    // Processing → Success, all inline. The createLockFund call is
+    // wired into onPinValidated so the network round-trip happens
+    // while the sheet shows the spinner. After success the sheet
+    // closes itself (validateTransactionPin handles the dismiss),
+    // and the BlocListener routes us to the receipt.
+    await validateTransactionPin(
       context: context,
       transactionId: transactionId,
       transactionType: 'lock_fund',
       amount: amount,
       currency: currency,
-    );
+      title: 'Confirm PiggyVault',
+      message: 'Locking ${amount.toStringAsFixed(2)} $currency',
+      onPinValidated: (verificationToken) async {
+        if (!mounted) return;
 
-    if (pinResult == null || !pinResult.success) {
-      return; // User cancelled or PIN validation failed
-    }
+        // Wire the pending-create call to a Completer so we can
+        // await the cubit's result (success or error) inside the
+        // PIN sheet — letting setSuccess()/setFailed() fire AFTER
+        // the backend confirms, not after the call enqueues.
+        final completer = Completer<LockFund>();
+        late final StreamSubscription<LockFundsState> sub;
+        sub = lockFundsCubit.stream.listen((state) {
+          if (state is LockFundCreated && !completer.isCompleted) {
+            completer.complete(state.lockFund);
+            sub.cancel();
+          } else if (state is LockFundsError && !completer.isCompleted) {
+            completer.completeError(Exception(state.message));
+            sub.cancel();
+          }
+        });
 
-    if (!mounted) return;
+        lockFundsCubit.createLockFund(
+          lockType: lockType,
+          amount: amount,
+          currency: currency,
+          lockDurationDays: lockDurationDays,
+          autoRenew: autoRenew,
+          goalName: goalName,
+          goalDescription: goalDescription,
+          paymentMethod: paymentMethod,
+          sourceAccountId: sourceAccountId,
+          transactionPin: verificationToken,
+          interestDestinationAccountId: interestDestinationAccountId,
+        );
 
-    // Verify the account ID is still valid after PIN validation
-    developer.log(
-      'CreateLock: After PIN validation, using sourceAccountId = "$sourceAccountId"',
-      name: 'LockFunds',
-    );
-
-    setState(() {
-      _isProcessing = true;
-    });
-
-    // Show loading dialog
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => Center(
-        child: Container(
-          padding: EdgeInsets.all(24.w),
-          margin: EdgeInsets.symmetric(horizontal: 40.w),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1F1F35),
-            borderRadius: BorderRadius.circular(16.r),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircularProgressIndicator(
-                color: const Color(0xFF6366F1),
-              ),
-              SizedBox(height: 16.h),
-              Text(
-                'Creating PiggyVault...',
-                style: GoogleFonts.inter(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-
-    // Create lock fund with source account and transaction PIN
-    // Use the stored values to ensure consistency
-    lockFundsCubit.createLockFund(
-      lockType: lockType,
-      amount: amount,
-      currency: currency,
-      lockDurationDays: lockDurationDays,
-      autoRenew: autoRenew,
-      goalName: goalName,
-      goalDescription: goalDescription,
-      paymentMethod: paymentMethod,
-      sourceAccountId: sourceAccountId,
-      transactionPin: pinResult.verificationToken ?? '',
+        try {
+          final lockFund = await completer.future
+              .timeout(const Duration(seconds: 60));
+          // Success: validateTransactionPin will fire setSuccess()
+          // and dismiss the sheet. We schedule the receipt jump on
+          // a microtask so navigation runs after the bottomsheet
+          // pops cleanly.
+          if (!mounted) return;
+          Future.microtask(() {
+            if (!mounted) return;
+            Get.offAllNamed(
+              AppRoutes.lockFundReceipt,
+              arguments: {
+                'lockFund': lockFund,
+                'interestCalculation': createCubit.interestCalculation,
+              },
+            );
+          });
+        } catch (e) {
+          await sub.cancel();
+          rethrow;
+        }
+      },
     );
   }
 
@@ -274,75 +254,37 @@ class _CreateLockCarouselState extends State<CreateLockCarousel>
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<LockFundsCubit, LockFundsState>(
-      listener: (context, state) {
-        if (state is LockFundCreated) {
-          setState(() {
-            _isProcessing = false;
-          });
-
-          // Close loading dialog if open
-          if (ModalRoute.of(context)?.isCurrent == false) {
-            Navigator.of(context).pop();
-          }
-
-          // Get the create cubit to pass interest calculation to receipt
-          final createCubit = context.read<CreateLockCubit>();
-
-          // Navigate to receipt screen
-          Get.offAllNamed(
-            AppRoutes.lockFundReceipt,
-            arguments: {
-              'lockFund': state.lockFund,
-              'interestCalculation': createCubit.interestCalculation,
-            },
-          );
-        } else if (state is LockFundsError) {
-          setState(() {
-            _isProcessing = false;
-          });
-
-          // Check if loading dialog is open before popping
-          if (ModalRoute.of(context)?.isCurrent == false) {
-            Navigator.of(context).pop();
-          }
-
-          // Show error snackbar
-          Get.snackbar(
-            'PiggyVault Failed',
-            state.message,
-            backgroundColor: const Color(0xFFEF4444),
-            colorText: Colors.white,
-            snackPosition: SnackPosition.TOP,
-            duration: const Duration(seconds: 4),
-          );
-        }
-      },
-      child: Scaffold(
-        backgroundColor: const Color(0xFF0A0A0A),
-        appBar: _buildAppBar(),
-        body: Column(
-          children: [
-            _buildProgressIndicators(),
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(),
-                onPageChanged: (page) {
-                  setState(() => _currentPage = page);
-                },
-                children: const [
-                  LockTypeSelector(),
-                  AmountDurationSelector(),
-                  GoalDetailsScreen(),
-                  ReviewScreen(),
-                  PaymentMethodSelector(),
-                ],
-              ),
+    // Navigation + error surfacing are owned by the
+    // validateTransactionPin flow inside _proceedToCreateLock — the
+    // PIN bottom sheet drives Verify → Process → Success/Failed
+    // states inline and triggers the receipt navigation directly.
+    // No BlocListener needed here, removing it eliminates the
+    // duplicate "Creating PiggyVault…" overlay that used to fire
+    // alongside the bottom sheet.
+    return Scaffold(
+      backgroundColor: const Color(0xFF0A0A0A),
+      appBar: _buildAppBar(),
+      body: Column(
+        children: [
+          _buildProgressIndicators(),
+          Expanded(
+            child: PageView(
+              controller: _pageController,
+              physics: const NeverScrollableScrollPhysics(),
+              onPageChanged: (page) {
+                setState(() => _currentPage = page);
+              },
+              children: const [
+                LockTypeSelector(),
+                AmountDurationSelector(),
+                GoalDetailsScreen(),
+                ReviewScreen(),
+                PaymentMethodSelector(),
+              ],
             ),
-            _buildNavigationButtons(),
-          ],
-        ),
+          ),
+          _buildNavigationButtons(),
+        ],
       ),
     );
   }

@@ -127,6 +127,7 @@ message CreateLockFundRequest {
   string payment_method = 8;
   string source_account_id = 9;
   string transaction_pin = 10;
+  string interest_destination_account_id = 11;
 }
 
 message CreateLockFundResponse {
