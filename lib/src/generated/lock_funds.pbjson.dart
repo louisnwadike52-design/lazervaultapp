@@ -384,11 +384,12 @@ const GetPiggyVaultConfigsRequest$json = const {
   '1': 'GetPiggyVaultConfigsRequest',
   '2': const [
     const {'1': 'currency', '3': 1, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'locale', '3': 2, '4': 1, '5': 9, '10': 'locale'},
   ],
 };
 
 /// Descriptor for `GetPiggyVaultConfigsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getPiggyVaultConfigsRequestDescriptor = $convert.base64Decode('ChtHZXRQaWdneVZhdWx0Q29uZmlnc1JlcXVlc3QSGgoIY3VycmVuY3kYASABKAlSCGN1cnJlbmN5');
+final $typed_data.Uint8List getPiggyVaultConfigsRequestDescriptor = $convert.base64Decode('ChtHZXRQaWdneVZhdWx0Q29uZmlnc1JlcXVlc3QSGgoIY3VycmVuY3kYASABKAlSCGN1cnJlbmN5EhYKBmxvY2FsZRgCIAEoCVIGbG9jYWxl');
 @$core.Deprecated('Use getPiggyVaultConfigsResponseDescriptor instead')
 const GetPiggyVaultConfigsResponse$json = const {
   '1': 'GetPiggyVaultConfigsResponse',

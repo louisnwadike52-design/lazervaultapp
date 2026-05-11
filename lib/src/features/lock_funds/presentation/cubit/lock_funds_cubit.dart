@@ -282,11 +282,17 @@ class LockFundsCubit extends Cubit<LockFundsState> {
     }
   }
 
-  /// Load PiggyVault product configs from backend
-  Future<void> loadPiggyVaultConfigs({String? currency}) async {
+  /// Load PiggyVault product configs from backend. [locale] is a
+  /// BCP-47 tag (e.g. `Localizations.localeOf(context).toLanguageTag()`);
+  /// the backend returns localized strings when an admin has published
+  /// overrides for the locale and falls back to defaults otherwise.
+  Future<void> loadPiggyVaultConfigs({String? currency, String? locale}) async {
     try {
       if (isClosed) return;
-      final configs = await _repository.getPiggyVaultConfigs(currency: currency);
+      final configs = await _repository.getPiggyVaultConfigs(
+        currency: currency,
+        locale: locale,
+      );
       if (isClosed) return;
       emit(PiggyVaultConfigsLoaded(configs));
     } catch (e) {

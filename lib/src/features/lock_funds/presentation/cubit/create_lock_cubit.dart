@@ -65,7 +65,15 @@ class CreateLockCubit extends Cubit<CreateLockState> {
   Future<void> _loadConfigs() async {
     try {
       final repo = serviceLocator<LockFundsRepository>();
-      _configs = await repo.getPiggyVaultConfigs(currency: '');
+      // Pass the user's active locale so the backend can return
+      // localized plan strings. LocaleManager is the single source of
+      // truth for the active locale across the app (it tracks both
+      // country and language; see core/services/locale_manager.dart).
+      final activeLocale = serviceLocator<LocaleManager>().currentLocale;
+      _configs = await repo.getPiggyVaultConfigs(
+        currency: '',
+        locale: activeLocale,
+      );
       _configsLoaded = true;
       if (!isClosed) emit(CreateLockState());
     } catch (_) {

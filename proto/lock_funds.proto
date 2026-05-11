@@ -264,6 +264,10 @@ message CancelLockFundResponse {
 // PiggyVault configs
 message GetPiggyVaultConfigsRequest {
   string currency = 1;
+  // BCP-47 locale tag (e.g. "fr", "fr-CA"). When set, the backend
+  // returns localized display_name / description / confirmation_notes
+  // for admins that have published overrides for the locale.
+  string locale = 2;
 }
 
 message GetPiggyVaultConfigsResponse {
