@@ -218,29 +218,37 @@ class LockFundsCubit extends Cubit<LockFundsState> {
     }
   }
 
-  Future<void> cancelLockFund({
+  /// Cancels an active lock. Backend flips status to 'cancelled',
+  /// refunds principal less penalty to source, writes a
+  /// settlement row capturing the reason. Returns the CancelResult
+  /// so the caller can show refund_amount in the confirmation
+  /// snackbar. Throws on failure so the UI can surface the typed
+  /// message.
+  Future<CancelResult> cancelLockFund({
     required String lockFundId,
     required String reason,
   }) async {
+    if (isClosed) {
+      throw StateError('LockFundsCubit closed');
+    }
+    emit(const LockFundsLoading());
     try {
-      if (isClosed) return;
-      emit(const LockFundsLoading());
-
       final result = await _repository.cancelLockFund(
         lockFundId: lockFundId,
         reason: reason,
       );
-      if (isClosed) return;
-
-      if (result.success) {
-        // Reload list
-        loadLockFunds();
-      } else {
+      if (isClosed) return result;
+      if (!result.success) {
         emit(LockFundsError(result.message));
+        throw Exception(result.message);
       }
+      // Reload list so the cancelled lock surfaces under its new
+      // filter tab; cubit's WS listener handles other devices.
+      loadLockFunds();
+      return result;
     } catch (e) {
-      if (isClosed) return;
-      emit(LockFundsError(e.toString()));
+      if (!isClosed) emit(LockFundsError(e.toString()));
+      rethrow;
     }
   }
 

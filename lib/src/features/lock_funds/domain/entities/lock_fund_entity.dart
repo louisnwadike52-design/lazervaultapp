@@ -540,4 +540,11 @@ class InterestCalculation {
   });
 
   bool get qualifiesForUpfrontInterest => lockDurationDays >= 180;
+
+  /// Upfront-interest amount surfaced on the receipt + detail
+  /// screens. When isUpfrontInterest is true, this equals
+  /// interestAmount; otherwise 0. Saves callers from
+  /// re-implementing the conditional everywhere.
+  double get upfrontInterestAmount =>
+      isUpfrontInterest ? interestAmount : 0;
 }

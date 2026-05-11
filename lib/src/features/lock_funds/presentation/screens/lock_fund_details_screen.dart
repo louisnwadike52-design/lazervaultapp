@@ -730,9 +730,190 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
               () => _showBreakLockDialog(),
               fullWidth: true,
             ),
+          // Cancel — distinct from "break lock" / early withdraw
+          // semantically: cancel flips status to 'cancelled' and
+          // captures a typed reason, useful for ops audit (lost
+          // interest in plan, changed mind, etc). Money movement
+          // is identical to break-lock (principal minus penalty
+          // returns to source). Hidden for Flex / zero-penalty
+          // plans where "Withdraw" already covers the same intent.
+          if (lock.lockType != LockType.savings && lock.earlyUnlockPenaltyPercent > 0) ...[
+            SizedBox(height: 8.h),
+            _buildActionButton(
+              'Cancel lock',
+              Icons.cancel_outlined,
+              const Color(0xFFEF4444),
+              () => _showCancelLockDialog(),
+              fullWidth: true,
+            ),
+          ],
         ],
       ],
     );
+  }
+
+  /// Cancel-lock confirmation modal. Two-step: reason picker
+  /// first (close enough to "I changed my mind" / "found a better
+  /// rate" / "need the cash" — short enum so the analytics layer
+  /// can group them), then a destructive confirm with penalty
+  /// preview. Mirrors the production-pattern from the
+  /// transfer-cancel + exchange-cancel flows.
+  void _showCancelLockDialog() {
+    HapticFeedback.mediumImpact();
+    final lock = widget.lockFund;
+    final cubit = context.read<LockFundsCubit>();
+    String selectedReason = 'changed_mind';
+    final reasons = <_CancelReason>[
+      _CancelReason('changed_mind', 'Changed my mind'),
+      _CancelReason('need_funds', 'Need the funds'),
+      _CancelReason('found_better_rate', 'Found a better rate'),
+      _CancelReason('other', 'Other'),
+    ];
+    final estPenalty = lock.amount * (lock.earlyUnlockPenaltyPercent / 100);
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetCtx) => StatefulBuilder(
+        builder: (ctx, setLocal) => Padding(
+          padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+          child: Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF1F1F1F),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+            ),
+            padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40.w, height: 4.h,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3D3D3D),
+                      borderRadius: BorderRadius.circular(2.r),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                Text('Cancel this lock', style: GoogleFonts.inter(
+                  color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w700)),
+                SizedBox(height: 6.h),
+                Text(
+                  'You\'ll get back ${(lock.amount - estPenalty).toStringAsFixed(2)} ${lock.currency}. Penalty: ${estPenalty.toStringAsFixed(2)} ${lock.currency} (${lock.earlyUnlockPenaltyPercent.toStringAsFixed(1)}%).',
+                  style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+                ),
+                SizedBox(height: 18.h),
+                Text('Why are you cancelling?', style: GoogleFonts.inter(
+                  color: Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w600)),
+                SizedBox(height: 8.h),
+                ...reasons.map((r) {
+                  final selected = r.code == selectedReason;
+                  return GestureDetector(
+                    onTap: () => setLocal(() => selectedReason = r.code),
+                    child: Container(
+                      margin: EdgeInsets.only(bottom: 6.h),
+                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                      decoration: BoxDecoration(
+                        color: selected
+                            ? const Color(0xFFEF4444).withValues(alpha: 0.18)
+                            : const Color(0xFF0A0A0A),
+                        border: Border.all(
+                          color: selected
+                              ? const Color(0xFFEF4444)
+                              : const Color(0xFF2D2D2D),
+                        ),
+                        borderRadius: BorderRadius.circular(10.r),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            selected ? Icons.radio_button_checked : Icons.radio_button_off,
+                            color: selected ? const Color(0xFFEF4444) : const Color(0xFF6B7280),
+                            size: 18.sp,
+                          ),
+                          SizedBox(width: 10.w),
+                          Text(r.label, style: GoogleFonts.inter(
+                            color: Colors.white, fontSize: 13.sp,
+                            fontWeight: selected ? FontWeight.w600 : FontWeight.w500)),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+                SizedBox(height: 16.h),
+                Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => Navigator.of(ctx).pop(),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(vertical: 14.h),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.05),
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                          child: Center(child: Text('Keep lock', style: GoogleFonts.inter(
+                            color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w600))),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () async {
+                          Navigator.of(ctx).pop();
+                          await _executeCancel(cubit, lock.id, selectedReason);
+                        },
+                        child: Container(
+                          padding: EdgeInsets.symmetric(vertical: 14.h),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEF4444),
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                          child: Center(child: Text('Cancel lock',
+                            style: GoogleFonts.inter(
+                              color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w700))),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _executeCancel(LockFundsCubit cubit, String lockFundId, String reason) async {
+    try {
+      final result = await cubit.cancelLockFund(
+        lockFundId: lockFundId,
+        reason: reason,
+      );
+      if (!mounted) return;
+      Get.snackbar(
+        'Lock cancelled',
+        'Refunded ${result.refundAmount.toStringAsFixed(2)} to your wallet.',
+        backgroundColor: const Color(0xFF10B981),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+      Navigator.of(context).pop();
+    } catch (e) {
+      if (!mounted) return;
+      Get.snackbar(
+        'Cancel failed',
+        e.toString().replaceAll('Exception:', '').trim(),
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 5),
+      );
+    }
   }
 
   Widget _buildActionButton(
@@ -996,4 +1177,13 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
       }
     });
   }
+}
+
+/// Cancel-reason enum entry: short code shipped to the backend
+/// (so analytics groups by category) + human-readable label for
+/// the radio chip on the cancel modal.
+class _CancelReason {
+  final String code;
+  final String label;
+  const _CancelReason(this.code, this.label);
 }

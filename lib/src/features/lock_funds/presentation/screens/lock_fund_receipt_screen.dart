@@ -87,6 +87,16 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
     return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
   }
 
+  /// Shortens a UUID-shaped account id into the leading + trailing
+  /// hex chunks ops + users typically reference (e.g.
+  /// `8c89c7d4…0489`). Avoids dumping the full UUID into the
+  /// receipt; the full string lives in the share-PDF metadata if
+  /// needed.
+  String _shortAccountId(String accountId) {
+    if (accountId.length <= 13) return accountId;
+    return '${accountId.substring(0, 8)}…${accountId.substring(accountId.length - 4)}';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -305,6 +315,36 @@ class _LockFundReceiptScreenState extends State<LockFundReceiptScreen> {
           _buildDetailRow('Locked On', _formatDate(lockFund.lockedAt)),
           SizedBox(height: 12.h),
           _buildDetailRow('Matures On', _formatDate(lockFund.unlockAt)),
+          // Maturity countdown — concrete time-until rather than
+          // a static date. Hidden once the lock matures (already
+          // covered by the status pill).
+          if (lockFund.status == LockStatus.active && lockFund.daysRemaining > 0) ...[
+            SizedBox(height: 12.h),
+            _buildDetailRow('Matures In', lockFund.daysRemainingText),
+          ],
+          // Upfront-interest disclosure. Only renders when the
+          // wizard's interest calculation flagged the lock as
+          // qualifying for an upfront payout — otherwise it's a
+          // confusing "0 NGN paid upfront" line. The destination
+          // account ID is rendered as a short hint so the user
+          // recognises it without dumping the full UUID.
+          if (interestCalculation != null &&
+              interestCalculation!.qualifiesForUpfrontInterest &&
+              interestCalculation!.upfrontInterestAmount > 0) ...[
+            SizedBox(height: 12.h),
+            _buildDetailRow(
+              'Upfront Interest Paid',
+              '${CurrencySymbols.getSymbol(lockFund.currency)}${interestCalculation!.upfrontInterestAmount.toStringAsFixed(2)}',
+            ),
+            if (lockFund.destinationAccountId != null &&
+                lockFund.destinationAccountId!.isNotEmpty) ...[
+              SizedBox(height: 12.h),
+              _buildDetailRow(
+                'Paid Into',
+                _shortAccountId(lockFund.destinationAccountId!),
+              ),
+            ],
+          ],
           if (lockFund.goalName != null && lockFund.goalName!.isNotEmpty) ...[
             SizedBox(height: 12.h),
             _buildDetailRow('Goal', lockFund.goalName!),
