@@ -11,6 +11,7 @@ import '../cubit/lock_funds_state.dart';
 import 'lock_withdrawal_screen.dart';
 import 'lock_fund_topup_screen.dart';
 import 'lock_fund_autosave_screen.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 
 class LockFundDetailsScreen extends StatefulWidget {
@@ -105,6 +106,8 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
                           SizedBox(height: 20.h),
                           _buildInterestCard(),
                           SizedBox(height: 20.h),
+                          _buildActivitySection(),
+                          SizedBox(height: 20.h),
                           if (!widget.lockFund.isTerminal) _buildActionButtons(),
                           SizedBox(height: 40.h),
                         ],
@@ -175,9 +178,104 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
             ),
           ),
           _buildStatusBadge(widget.lockFund.status),
+          SizedBox(width: 8.w),
+          _buildOverflowMenu(),
         ],
       ),
     );
+  }
+
+  /// PopupMenu surfaced in the AppBar with secondary actions:
+  /// share / view receipt / open in admin (deep link) / cancel.
+  /// Cancel is the destructive option, separated visually + tinted
+  /// red so users can't trigger it by mistake. Items hide based on
+  /// lock status (no cancel on terminal locks).
+  Widget _buildOverflowMenu() {
+    final lock = widget.lockFund;
+    return PopupMenuButton<String>(
+      icon: Icon(Icons.more_vert, color: Colors.white, size: 22.sp),
+      color: const Color(0xFF1F1F1F),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+      onSelected: (value) {
+        switch (value) {
+          case 'receipt':
+            _openReceipt();
+            break;
+          case 'auto_save':
+            _showAutoSaveScreen();
+            break;
+          case 'top_up':
+            _showTopUpScreen();
+            break;
+          case 'cancel':
+            _showCancelLockDialog();
+            break;
+          case 'renew':
+            _showRenewDialog();
+            break;
+        }
+      },
+      itemBuilder: (ctx) => [
+        PopupMenuItem(
+          value: 'receipt',
+          child: Row(children: [
+            Icon(Icons.receipt_long_outlined, color: Colors.white, size: 18.sp),
+            SizedBox(width: 10.w),
+            Text('View receipt', style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp)),
+          ]),
+        ),
+        if (lock.status == LockStatus.active && lock.lockType.defaultSupportsRenewal)
+          PopupMenuItem(
+            value: 'renew',
+            child: Row(children: [
+              Icon(Icons.refresh_rounded, color: const Color(0xFF6366F1), size: 18.sp),
+              SizedBox(width: 10.w),
+              Text('Renew lock', style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp)),
+            ]),
+          ),
+        if (lock.status == LockStatus.active && lock.lockType.defaultSupportsTopUp)
+          PopupMenuItem(
+            value: 'top_up',
+            child: Row(children: [
+              Icon(Icons.add_circle_outline, color: const Color(0xFF6366F1), size: 18.sp),
+              SizedBox(width: 10.w),
+              Text('Top up', style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp)),
+            ]),
+          ),
+        if (lock.status == LockStatus.active && lock.lockType.defaultSupportsAutoSave)
+          PopupMenuItem(
+            value: 'auto_save',
+            child: Row(children: [
+              Icon(Icons.autorenew, color: const Color(0xFF3B82F6), size: 18.sp),
+              SizedBox(width: 10.w),
+              Text('Auto-save', style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp)),
+            ]),
+          ),
+        if (lock.status == LockStatus.active && lock.earlyUnlockPenaltyPercent > 0)
+          PopupMenuItem(
+            value: 'cancel',
+            child: Row(children: [
+              Icon(Icons.cancel_outlined, color: const Color(0xFFEF4444), size: 18.sp),
+              SizedBox(width: 10.w),
+              Text('Cancel lock', style: GoogleFonts.inter(color: const Color(0xFFEF4444), fontSize: 13.sp)),
+            ]),
+          ),
+      ],
+    );
+  }
+
+  /// Navigates to the receipt screen for this lock. Reuses the
+  /// same route the create-flow ships to so the rendered surface
+  /// is identical — no second receipt implementation.
+  void _openReceipt() {
+    Get.toNamed(AppRoutes.lockFundReceipt, arguments: {
+      'lockFund': widget.lockFund,
+      // The post-create wizard's interestCalculation isn't
+      // available from this surface (it lives on CreateLockCubit
+      // for one wizard run only). The receipt screen tolerates a
+      // null calc and just hides the upfront block.
+      'interestCalculation': null,
+    });
   }
 
   Widget _buildStatusBadge(LockStatus status) {
@@ -646,6 +744,152 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
         ],
       ),
     );
+  }
+
+  /// Renders the lock-fund's transaction history (top-ups, interest
+  /// accruals, the original lock debit) below the interest card.
+  /// Uses BlocBuilder to bind to LockFundDetailsLoaded which the
+  /// screen's initState already requests via
+  /// loadLockFundDetails — so this surface fills in once the
+  /// cubit emits, with a labelled spinner during the load and a
+  /// graceful empty state if there's no activity yet.
+  Widget _buildActivitySection() {
+    return BlocBuilder<LockFundsCubit, LockFundsState>(
+      buildWhen: (prev, next) =>
+          next is LockFundDetailsLoaded ||
+          next is LockFundsLoading,
+      builder: (context, state) {
+        List<LockTransaction>? txs;
+        if (state is LockFundDetailsLoaded) {
+          txs = state.transactions;
+        }
+        return Container(
+          padding: EdgeInsets.all(20.w),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(16.r),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.history_rounded, color: const Color(0xFF8B5CF6), size: 18.sp),
+                  SizedBox(width: 8.w),
+                  Text('Activity', style: GoogleFonts.inter(
+                    color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w700)),
+                ],
+              ),
+              SizedBox(height: 14.h),
+              if (txs == null) ...[
+                // First-load spinner. The cubit's
+                // loadLockFundDetails kicks off in initState.
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 18.h),
+                  child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                ),
+              ] else if (txs.isEmpty) ...[
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 18.h),
+                  child: Center(
+                    child: Text('No activity yet', style: GoogleFonts.inter(
+                      color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
+                  ),
+                ),
+              ] else ...[
+                for (final tx in txs) _buildActivityRow(tx),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildActivityRow(LockTransaction tx) {
+    final isCredit = tx.transactionType.toLowerCase().contains('credit') ||
+        tx.transactionType.toLowerCase().contains('interest') ||
+        tx.transactionType.toLowerCase().contains('payout');
+    final amountColor =
+        isCredit ? const Color(0xFF10B981) : const Color(0xFFFB923C);
+    final sign = isCredit ? '+' : '-';
+    return Container(
+      margin: EdgeInsets.only(bottom: 10.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0A0A0A),
+        borderRadius: BorderRadius.circular(10.r),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 32.w, height: 32.w,
+            decoration: BoxDecoration(
+              color: amountColor.withValues(alpha: 0.18),
+              borderRadius: BorderRadius.circular(9.r),
+            ),
+            child: Icon(
+              isCredit ? Icons.south_west_rounded : Icons.north_east_rounded,
+              color: amountColor, size: 16.sp,
+            ),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _humanizeTxType(tx.transactionType),
+                  style: GoogleFonts.inter(
+                    color: Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w600),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  DateFormat.yMMMd().add_jm().format(tx.transactionDate),
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF), fontSize: 11.sp),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            '$sign${CurrencySymbols.getSymbol(widget.lockFund.currency)}${tx.amount.toStringAsFixed(2)}',
+            style: GoogleFonts.inter(
+              color: amountColor, fontSize: 13.sp, fontWeight: FontWeight.w700),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Maps backend tx type slugs into user-readable labels. Falls
+  /// back to a sentence-cased version of the slug for any type
+  /// that isn't in the map.
+  String _humanizeTxType(String slug) {
+    switch (slug.toLowerCase()) {
+      case 'lock_funds':
+      case 'lock':
+        return 'Funds locked';
+      case 'upfront_interest':
+        return 'Upfront interest';
+      case 'interest':
+      case 'interest_payout':
+        return 'Interest payout';
+      case 'topup':
+      case 'top_up':
+        return 'Top-up';
+      case 'unlock':
+      case 'unlocked':
+        return 'Unlocked';
+      case 'cancelled':
+      case 'cancel':
+        return 'Cancelled';
+      case 'penalty':
+        return 'Early-withdrawal penalty';
+      default:
+        return slug.replaceAll('_', ' ').toUpperCase();
+    }
   }
 
   Widget _buildActionButtons() {
