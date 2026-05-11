@@ -153,6 +153,44 @@ class LocaleManager {
     }
   }
 
+  /// Refresh the platform-supported-locales list from the backend.
+  /// Backend is the source of truth; this swaps the runtime list in
+  /// [CountryLocales] so existing call sites pick up new countries
+  /// without code changes. Failures are silent — the previous list
+  /// (or static fallback) stays in effect.
+  ///
+  /// Safe to call before login; the gRPC method is in the
+  /// accounts-service public allowlist and returns the same list
+  /// either way (the `userHasAccount` flags are not consumed here).
+  ///
+  /// We intentionally take a fetcher function rather than the
+  /// repository type to keep this class free of feature-layer
+  /// imports. The wiring in injection_container.dart bridges them.
+  Future<void> refreshSupportedLocales(
+    Future<List<({String locale, String countryCode, String countryName, String currencyCode, String flagEmoji, bool isActive})>> Function() fetch,
+  ) async {
+    try {
+      final rows = await fetch();
+      final next = <CountryLocale>[];
+      for (final r in rows) {
+        final c = CountryLocales.fromBackendLocale(
+          locale: r.locale,
+          countryCode: r.countryCode,
+          countryName: r.countryName,
+          currencyCode: r.currencyCode,
+          flagEmoji: r.flagEmoji,
+          isActive: r.isActive,
+        );
+        if (c != null) next.add(c);
+      }
+      if (next.isNotEmpty) {
+        CountryLocales.replace(next);
+      }
+    } catch (_) {
+      // Silent: keep current runtime list (or static fallback).
+    }
+  }
+
   /// Clean up resources
   void dispose() {
     _localeController.close();
@@ -186,13 +224,36 @@ class CountryLocale {
   String get currencyDisplay => '$currency ($countryCode)';
 }
 
-/// Pre-defined country locales - must match backend locales.go exactly.
+/// Platform-supported country locales.
 ///
-/// IMPORTANT: This list must match the countries in SelectCountry widget and
-/// backend config/locales.go. When adding/removing countries, update all three.
+/// Backend is the source of truth — call [CountryLocales.refreshFromBackend]
+/// at app boot to pull the live list from
+/// `accounts.MultiCountryAccountService/GetSupportedLocales`. The static
+/// [_fallback] list below mirrors backend `config/locales.go` and is used
+/// when the backend call hasn't completed (cold start / offline). After a
+/// successful refresh, [all] returns the backend-driven list.
 class CountryLocales {
-  /// Supported countries - matches backend locales.go (6 countries)
-  static const List<CountryLocale> all = [
+  static List<CountryLocale>? _runtime;
+
+  /// Current supported locales. Returns the backend-driven list after
+  /// [refreshFromBackend] has succeeded; otherwise the offline fallback.
+  /// Existing callers (`CountryLocales.all`) keep working untouched.
+  static List<CountryLocale> get all => _runtime ?? _fallback;
+
+  /// Replace the supported-locale list with one fetched from the backend.
+  /// Pass an empty list to revert to the fallback. The caller is
+  /// responsible for converting from `SupportedLocaleEntity` (proto shape).
+  static void replace(List<CountryLocale> next) {
+    if (next.isEmpty) {
+      _runtime = null;
+      return;
+    }
+    _runtime = List.unmodifiable(next);
+  }
+
+  /// Offline fallback. Mirrors backend config/locales.go::SupportedLocales().
+  /// Used only when the backend hasn't been reached yet.
+  static const List<CountryLocale> _fallback = [
     // Nigeria (Primary supported country)
     CountryLocale(
       countryCode: 'NG',
@@ -277,5 +338,38 @@ class CountryLocales {
              country.locale.toLowerCase().contains(lowerQuery) ||
              country.dialCode.contains(query);
     }).toList();
+  }
+
+  /// Build a CountryLocale from a backend SupportedLocale proto entry,
+  /// preserving the static fallback's dialCode (the backend doesn't
+  /// publish dial codes yet). Returns null when the backend marks the
+  /// locale inactive so callers don't render unavailable countries.
+  static CountryLocale? fromBackendLocale({
+    required String locale,
+    required String countryCode,
+    required String countryName,
+    required String currencyCode,
+    required String flagEmoji,
+    required bool isActive,
+  }) {
+    if (!isActive) return null;
+    // dial codes aren't on the backend yet — fall back to the static
+    // mapping when the country is known, otherwise omit.
+    String dialCode = '';
+    for (final c in _fallback) {
+      if (c.countryCode.toUpperCase() == countryCode.toUpperCase()) {
+        dialCode = c.dialCode;
+        break;
+      }
+    }
+    return CountryLocale(
+      countryCode: countryCode,
+      countryName: countryName,
+      languageCode: locale.split('-').first,
+      locale: locale,
+      flag: flagEmoji,
+      dialCode: dialCode,
+      currency: currencyCode,
+    );
   }
 }
