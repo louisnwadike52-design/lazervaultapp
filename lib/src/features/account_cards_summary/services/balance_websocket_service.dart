@@ -73,6 +73,60 @@ enum WebSocketConnectionState {
   error,
 }
 
+/// Lock-fund lifecycle event pushed from ws-balance-service. Used
+/// by [LockFundsCubit] (or any other listener) to refresh the
+/// lock-funds list within seconds of a worker-driven state change
+/// (auto-renew at 02:00, maturity at 14:30, etc.) without waiting
+/// for a manual pull-to-refresh.
+class LockFundLifecycleEvent {
+  final String userId;
+  final String lockFundId;
+  final String accountId;
+  final String eventType; // lock_fund.created | .matured | .renewed | .renewal_skipped
+  final String name;
+  final double amount;
+  final String currency;
+  final double upfrontInterestPaid;
+  final String newUnlockDate;
+  final String reason;
+  final int timestamp;
+
+  LockFundLifecycleEvent({
+    required this.userId,
+    required this.lockFundId,
+    required this.accountId,
+    required this.eventType,
+    required this.name,
+    required this.amount,
+    required this.currency,
+    required this.upfrontInterestPaid,
+    required this.newUnlockDate,
+    required this.reason,
+    required this.timestamp,
+  });
+
+  factory LockFundLifecycleEvent.fromJson(Map<String, dynamic> json) {
+    double n(dynamic v) => v == null ? 0.0 : (v as num).toDouble();
+    return LockFundLifecycleEvent(
+      userId: json['user_id'] as String? ?? '',
+      lockFundId: json['lock_fund_id'] as String? ?? '',
+      accountId: json['account_id'] as String? ?? '',
+      eventType: json['event_type'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+      amount: n(json['amount']),
+      currency: json['currency'] as String? ?? '',
+      upfrontInterestPaid: n(json['upfront_interest_paid']),
+      newUnlockDate: json['new_unlock_date'] as String? ?? '',
+      reason: json['reason'] as String? ?? '',
+      timestamp: (json['timestamp'] as num?)?.toInt() ?? 0,
+    );
+  }
+
+  @override
+  String toString() =>
+      'LockFundLifecycleEvent($eventType lock=$lockFundId user=$userId reason=$reason)';
+}
+
 /// WebSocket service for real-time balance updates
 /// Supports both WebSocket and SSE (Server-Sent Events) for broad compatibility
 class BalanceWebSocketService {
@@ -80,6 +134,8 @@ class BalanceWebSocketService {
   http.Client? _httpClient;
   StreamSubscription? _sseSubscription;
   final _eventController = StreamController<BalanceUpdateEvent>.broadcast();
+  final _lockFundEventController =
+      StreamController<LockFundLifecycleEvent>.broadcast();
   final _connectionController = StreamController<WebSocketConnectionState>.broadcast();
   Timer? _pingTimer;
   bool _isConnected = false;
@@ -95,6 +151,11 @@ class BalanceWebSocketService {
 
   /// Stream of balance update events
   Stream<BalanceUpdateEvent> get balanceUpdates => _eventController.stream;
+
+  /// Stream of PiggyVault lock-fund lifecycle events
+  /// (created / matured / renewed / renewal_skipped).
+  Stream<LockFundLifecycleEvent> get lockFundEvents =>
+      _lockFundEventController.stream;
 
   /// Stream of connection state changes
   Stream<WebSocketConnectionState> get connectionState => _connectionController.stream;
@@ -359,6 +420,19 @@ class BalanceWebSocketService {
         return;
       }
 
+      // Handle PiggyVault lock-fund lifecycle events. Pushed by
+      // accounts-service from CreateLockFunds and the auto-renew
+      // worker; consumed by LockFundsCubit to refresh the list.
+      if (messageType == 'lock_fund_lifecycle') {
+        final payload = data['payload'] as Map<String, dynamic>?;
+        if (payload != null) {
+          final event = LockFundLifecycleEvent.fromJson(payload);
+          print('BalanceWebSocketService: Lock-fund lifecycle - $event');
+          _lockFundEventController.add(event);
+        }
+        return;
+      }
+
       // Legacy format support: direct event_type in message
       final eventType = data['event_type'] as String?;
       if (eventType == 'transfer' ||
@@ -403,6 +477,7 @@ class BalanceWebSocketService {
   void dispose() {
     disconnect();
     _eventController.close();
+    _lockFundEventController.close();
     _connectionController.close();
   }
 

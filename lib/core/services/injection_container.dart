@@ -2940,7 +2940,10 @@ Future<void> init() async {
 
   // Blocs/Cubits
   serviceLocator.registerFactory<LockFundsCubit>(
-    () => LockFundsCubit(serviceLocator<LockFundsRepository>()),
+    () => LockFundsCubit(
+      serviceLocator<LockFundsRepository>(),
+      wsService: serviceLocator<BalanceWebSocketService>(),
+    ),
   );
 
   serviceLocator.registerFactory<CreateLockCubit>(
