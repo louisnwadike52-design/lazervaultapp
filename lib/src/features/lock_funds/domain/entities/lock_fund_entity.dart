@@ -62,6 +62,34 @@ enum LockType {
         return '🎯';
     }
   }
+
+  /// Whether mid-lock top-up is offered for this plan, used as the
+  /// UI affordance gate on the details screen. Mirrors the
+  /// supports_top_up flag the admin dashboard sets on
+  /// piggyvault_configs for each plan. The backend is the
+  /// authoritative gate — this just keeps the button hidden when
+  /// the action would be rejected. Defaults track the seed:
+  ///   savings  → Flex top-up supported
+  ///   others   → rate locked at issue, no top-up
+  bool get defaultSupportsTopUp => this == LockType.savings;
+
+  /// Whether recurring auto-save into this lock is offered. Same
+  /// seed-aligned defaults as defaultSupportsTopUp: only the Flex
+  /// plan supports recurring deposits today.
+  bool get defaultSupportsAutoSave => this == LockType.savings;
+
+  /// Whether the user can renew the lock for another term. Flex
+  /// has no fixed term so "renew" doesn't apply; the other two
+  /// plans both support manual renewal.
+  bool get defaultSupportsRenewal {
+    switch (this) {
+      case LockType.savings:
+        return false;
+      case LockType.investment:
+      case LockType.goalBased:
+        return true;
+    }
+  }
 }
 
 enum LockStatus {

@@ -677,36 +677,37 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
             ],
           ),
         ] else if (lock.isActive) ...[
-          // Active — show available follow-up actions. Whether
-          // top-up + early withdrawal are offered comes from
-          // properties on the lock itself (penalty %, plan type)
-          // rather than per-type hardcodes; the admin dashboard
-          // owns the underlying behaviour via PiggyVaultConfig.
-          Row(
-            children: [
-              // Top-up: only the Flex savings plan supports adding to
-              // an active lock today. Treasury / Year Lock disallow
-              // it because the rate is locked at issue.
-              if (lock.lockType == LockType.savings)
-                Expanded(
-                  child: _buildActionButton(
-                    'Top Up',
-                    Icons.add_circle_outline,
-                    const Color(0xFF6366F1),
-                    () => _showTopUpScreen(),
+          // Active — show available follow-up actions. Top-up +
+          // auto-save visibility tracks the admin dashboard's
+          // PiggyVaultConfig (supports_top_up / supports_auto_save)
+          // via LockType.defaultSupportsTopUp / Auto-save. The
+          // backend is the authoritative gate; this UI check just
+          // avoids rendering buttons the backend would reject.
+          if (lock.lockType.defaultSupportsTopUp || lock.lockType.defaultSupportsAutoSave)
+            Row(
+              children: [
+                if (lock.lockType.defaultSupportsTopUp)
+                  Expanded(
+                    child: _buildActionButton(
+                      'Top Up',
+                      Icons.add_circle_outline,
+                      const Color(0xFF6366F1),
+                      () => _showTopUpScreen(),
+                    ),
                   ),
-                ),
-              if (lock.lockType == LockType.savings) SizedBox(width: 12.w),
-              Expanded(
-                child: _buildActionButton(
-                  'Auto-Save',
-                  Icons.autorenew,
-                  const Color(0xFF3B82F6),
-                  () => _showAutoSaveScreen(),
-                ),
-              ),
-            ],
-          ),
+                if (lock.lockType.defaultSupportsTopUp && lock.lockType.defaultSupportsAutoSave)
+                  SizedBox(width: 12.w),
+                if (lock.lockType.defaultSupportsAutoSave)
+                  Expanded(
+                    child: _buildActionButton(
+                      'Auto-Save',
+                      Icons.autorenew,
+                      const Color(0xFF3B82F6),
+                      () => _showAutoSaveScreen(),
+                    ),
+                  ),
+              ],
+            ),
           SizedBox(height: 12.h),
           // Withdraw vs Break Lock: drive the label + colour by the
           // penalty applied at issue time. Zero penalty = penalty-
@@ -797,15 +798,166 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
     );
   }
 
+  /// Opens a bottom sheet collecting the new term length, then
+  /// calls RenewLockFund on accept. Re-uses the active lock's
+  /// original duration as the suggested chip + extends from now()
+  /// (server-side semantics — see RenewLockFunds service method).
+  /// Realtime WS lifecycle event refreshes the list automatically;
+  /// this screen reloads details on success.
   void _showRenewDialog() {
     HapticFeedback.mediumImpact();
-    Get.snackbar(
-      'Coming Soon',
-      'Lock renewal will be available soon',
-      backgroundColor: const Color(0xFF6366F1),
-      colorText: Colors.white,
-      snackPosition: SnackPosition.TOP,
+    final lock = widget.lockFund;
+    final cubit = context.read<LockFundsCubit>();
+    final defaultDays = lock.lockDurationDays > 0 ? lock.lockDurationDays : 90;
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetCtx) {
+        int selectedDays = defaultDays;
+        return StatefulBuilder(
+          builder: (ctx, setState) => Padding(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+            child: Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFF1F1F1F),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+              ),
+              padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40.w, height: 4.h,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3D3D3D),
+                        borderRadius: BorderRadius.circular(2.r),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                  Text('Renew this lock', style: GoogleFonts.inter(
+                    color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w700)),
+                  SizedBox(height: 6.h),
+                  Text(
+                    'Extend ${lock.displayName} for another term. Upfront interest (if your plan supports it) is paid into your wallet immediately.',
+                    style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+                  ),
+                  SizedBox(height: 18.h),
+                  Text('New term', style: GoogleFonts.inter(
+                    color: Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w600)),
+                  SizedBox(height: 8.h),
+                  Wrap(
+                    spacing: 8.w, runSpacing: 8.h,
+                    children: [30, 90, 180, 365].map((d) {
+                      final selected = d == selectedDays;
+                      return GestureDetector(
+                        onTap: () => setState(() => selectedDays = d),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+                          decoration: BoxDecoration(
+                            color: selected
+                                ? const Color(0xFF4E03D0)
+                                : const Color(0xFF0A0A0A),
+                            border: Border.all(
+                              color: selected
+                                  ? const Color(0xFF8B5CF6)
+                                  : const Color(0xFF2D2D2D),
+                            ),
+                            borderRadius: BorderRadius.circular(20.r),
+                          ),
+                          child: Text('$d days', style: GoogleFonts.inter(
+                            color: Colors.white, fontSize: 12.sp,
+                            fontWeight: selected ? FontWeight.w700 : FontWeight.w500)),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  SizedBox(height: 24.h),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => Navigator.of(ctx).pop(),
+                          child: Container(
+                            padding: EdgeInsets.symmetric(vertical: 14.h),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.05),
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                            child: Center(child: Text('Cancel', style: GoogleFonts.inter(
+                              color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w600))),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 12.w),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () async {
+                            Navigator.of(ctx).pop();
+                            await _executeRenew(cubit, lock.id, selectedDays);
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(vertical: 14.h),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
+                              ),
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                            child: Center(child: Text('Renew $selectedDays days',
+                              style: GoogleFonts.inter(
+                                color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w700))),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
+  }
+
+  /// Calls the cubit's renewLockFund and surfaces success / failure
+  /// as a snackbar. The cubit emits LockFundCreated on success +
+  /// reloads the list; we pop back to it so the user sees the
+  /// updated state instead of stale details. Errors bubble up
+  /// from the gRPC layer with the typed message
+  /// (revenue_underfunded, plan_deactivated, frozen, etc).
+  Future<void> _executeRenew(LockFundsCubit cubit, String lockFundId, int days) async {
+    try {
+      final renewed = await cubit.renewLockFund(
+        lockFundId: lockFundId,
+        newDurationDays: days,
+      );
+      if (!mounted) return;
+      Get.snackbar(
+        'Lock renewed',
+        'New maturity: ${DateFormat.yMMMd().format(renewed.unlockAt)}',
+        backgroundColor: const Color(0xFF10B981),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+      );
+      // Pop back to the list so the user sees the fresh unlock
+      // date + the cubit's auto-reload covers other surfaces.
+      Navigator.of(context).pop();
+    } catch (e) {
+      if (!mounted) return;
+      Get.snackbar(
+        'Renewal failed',
+        e.toString().replaceAll('Exception:', '').trim(),
+        backgroundColor: const Color(0xFFEF4444),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 5),
+      );
+    }
   }
 
   void _showTopUpScreen() {
