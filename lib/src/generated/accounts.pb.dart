@@ -4292,6 +4292,9 @@ class PiggyVaultConfigProto extends $pb.GeneratedMessage {
     ..a<$core.double>(21, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fixedAmount', $pb.PbFieldType.OD)
     ..aOS(22, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'durationOptions')
     ..aOS(23, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'quickAmountOptions')
+    ..aOS(24, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'confirmationNotes')
+    ..aOS(25, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'confirmationNotesRenewOn')
+    ..aOS(26, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'confirmationNotesRenewOff')
     ..hasRequiredFields = false
   ;
 
@@ -4320,6 +4323,9 @@ class PiggyVaultConfigProto extends $pb.GeneratedMessage {
     $core.double? fixedAmount,
     $core.String? durationOptions,
     $core.String? quickAmountOptions,
+    $core.String? confirmationNotes,
+    $core.String? confirmationNotesRenewOn,
+    $core.String? confirmationNotesRenewOff,
   }) {
     final _result = create();
     if (id != null) {
@@ -4390,6 +4396,15 @@ class PiggyVaultConfigProto extends $pb.GeneratedMessage {
     }
     if (quickAmountOptions != null) {
       _result.quickAmountOptions = quickAmountOptions;
+    }
+    if (confirmationNotes != null) {
+      _result.confirmationNotes = confirmationNotes;
+    }
+    if (confirmationNotesRenewOn != null) {
+      _result.confirmationNotesRenewOn = confirmationNotesRenewOn;
+    }
+    if (confirmationNotesRenewOff != null) {
+      _result.confirmationNotesRenewOff = confirmationNotesRenewOff;
     }
     return _result;
   }
@@ -4620,6 +4635,33 @@ class PiggyVaultConfigProto extends $pb.GeneratedMessage {
   $core.bool hasQuickAmountOptions() => $_has(22);
   @$pb.TagNumber(23)
   void clearQuickAmountOptions() => clearField(23);
+
+  @$pb.TagNumber(24)
+  $core.String get confirmationNotes => $_getSZ(23);
+  @$pb.TagNumber(24)
+  set confirmationNotes($core.String v) { $_setString(23, v); }
+  @$pb.TagNumber(24)
+  $core.bool hasConfirmationNotes() => $_has(23);
+  @$pb.TagNumber(24)
+  void clearConfirmationNotes() => clearField(24);
+
+  @$pb.TagNumber(25)
+  $core.String get confirmationNotesRenewOn => $_getSZ(24);
+  @$pb.TagNumber(25)
+  set confirmationNotesRenewOn($core.String v) { $_setString(24, v); }
+  @$pb.TagNumber(25)
+  $core.bool hasConfirmationNotesRenewOn() => $_has(24);
+  @$pb.TagNumber(25)
+  void clearConfirmationNotesRenewOn() => clearField(25);
+
+  @$pb.TagNumber(26)
+  $core.String get confirmationNotesRenewOff => $_getSZ(25);
+  @$pb.TagNumber(26)
+  set confirmationNotesRenewOff($core.String v) { $_setString(25, v); }
+  @$pb.TagNumber(26)
+  $core.bool hasConfirmationNotesRenewOff() => $_has(25);
+  @$pb.TagNumber(26)
+  void clearConfirmationNotesRenewOff() => clearField(26);
 }
 
 class GetPiggyVaultConfigRequest extends $pb.GeneratedMessage {
@@ -4844,6 +4886,9 @@ class UpdatePiggyVaultConfigRequest extends $pb.GeneratedMessage {
     ..a<$core.double>(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fixedAmount', $pb.PbFieldType.OD)
     ..aOS(21, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'durationOptions')
     ..aOS(22, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'quickAmountOptions')
+    ..aOS(23, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'confirmationNotes')
+    ..aOS(24, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'confirmationNotesRenewOn')
+    ..aOS(25, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'confirmationNotesRenewOff')
     ..hasRequiredFields = false
   ;
 
@@ -4871,6 +4916,9 @@ class UpdatePiggyVaultConfigRequest extends $pb.GeneratedMessage {
     $core.double? fixedAmount,
     $core.String? durationOptions,
     $core.String? quickAmountOptions,
+    $core.String? confirmationNotes,
+    $core.String? confirmationNotesRenewOn,
+    $core.String? confirmationNotesRenewOff,
   }) {
     final _result = create();
     if (lockType != null) {
@@ -4938,6 +4986,15 @@ class UpdatePiggyVaultConfigRequest extends $pb.GeneratedMessage {
     }
     if (quickAmountOptions != null) {
       _result.quickAmountOptions = quickAmountOptions;
+    }
+    if (confirmationNotes != null) {
+      _result.confirmationNotes = confirmationNotes;
+    }
+    if (confirmationNotesRenewOn != null) {
+      _result.confirmationNotesRenewOn = confirmationNotesRenewOn;
+    }
+    if (confirmationNotesRenewOff != null) {
+      _result.confirmationNotesRenewOff = confirmationNotesRenewOff;
     }
     return _result;
   }
@@ -5159,6 +5216,33 @@ class UpdatePiggyVaultConfigRequest extends $pb.GeneratedMessage {
   $core.bool hasQuickAmountOptions() => $_has(21);
   @$pb.TagNumber(22)
   void clearQuickAmountOptions() => clearField(22);
+
+  @$pb.TagNumber(23)
+  $core.String get confirmationNotes => $_getSZ(22);
+  @$pb.TagNumber(23)
+  set confirmationNotes($core.String v) { $_setString(22, v); }
+  @$pb.TagNumber(23)
+  $core.bool hasConfirmationNotes() => $_has(22);
+  @$pb.TagNumber(23)
+  void clearConfirmationNotes() => clearField(23);
+
+  @$pb.TagNumber(24)
+  $core.String get confirmationNotesRenewOn => $_getSZ(23);
+  @$pb.TagNumber(24)
+  set confirmationNotesRenewOn($core.String v) { $_setString(23, v); }
+  @$pb.TagNumber(24)
+  $core.bool hasConfirmationNotesRenewOn() => $_has(23);
+  @$pb.TagNumber(24)
+  void clearConfirmationNotesRenewOn() => clearField(24);
+
+  @$pb.TagNumber(25)
+  $core.String get confirmationNotesRenewOff => $_getSZ(24);
+  @$pb.TagNumber(25)
+  set confirmationNotesRenewOff($core.String v) { $_setString(24, v); }
+  @$pb.TagNumber(25)
+  $core.bool hasConfirmationNotesRenewOff() => $_has(24);
+  @$pb.TagNumber(25)
+  void clearConfirmationNotesRenewOff() => clearField(25);
 }
 
 class UpdatePiggyVaultConfigResponse extends $pb.GeneratedMessage {

@@ -265,6 +265,49 @@ service AccountsService {
   }
 
   // =========================================================================
+  // DEPOSIT CLEARING OPERATIONS
+  // =========================================================================
+
+  // CreditToClearing - Credit deposit to balance but hold in clearing (not available yet)
+  rpc CreditToClearing(CreditToClearingRequest) returns (CreditToClearingResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/internal/accounts/{account_id}/credit-clearing"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Credit To Clearing";
+      description: "Credit deposit to balance but hold in clearing buffer. Service-to-service only.";
+      tags: ["Clearing Operations"];
+    };
+  }
+
+  // ClearDeposit - Move cleared deposit to available balance
+  rpc ClearDeposit(ClearDepositRequest) returns (ClearDepositResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/internal/clearing/{clearing_record_id}/clear"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Clear Deposit";
+      description: "Move cleared deposit to available balance. Service-to-service only.";
+      tags: ["Clearing Operations"];
+    };
+  }
+
+  // ReverseClearingDeposit - Reverse a clearing deposit (e.g., bank reversal)
+  rpc ReverseClearingDeposit(ReverseClearingDepositRequest) returns (ReverseClearingDepositResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/internal/clearing/{clearing_record_id}/reverse"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Reverse Clearing Deposit";
+      description: "Reverse a deposit that is still in clearing. Service-to-service only.";
+      tags: ["Clearing Operations"];
+    };
+  }
+
+  // =========================================================================
   // PLATFORM WALLET OPERATIONS - Separate from user accounts
   // =========================================================================
 
@@ -304,6 +347,19 @@ service AccountsService {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary: "Credit Platform Wallet";
       description: "Credit a platform wallet without debiting any user account. Used for internal fee settlement after fund hold capture. Service-to-service only.";
+      tags: ["Platform Wallet Operations"];
+    };
+  }
+
+  // DebitPlatformWallet - Debit platform wallet only (internal settlement, no user credit)
+  rpc DebitPlatformWallet(DebitPlatformWalletRequest) returns (DebitPlatformWalletResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/internal/platform-wallets/debit"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Debit Platform Wallet";
+      description: "Debit a platform wallet without crediting any user account. Used for withdrawal capture/release settlement. Service-to-service only.";
       tags: ["Platform Wallet Operations"];
     };
   }
@@ -452,6 +508,26 @@ service AccountsService {
     };
   }
 
+  // Read-only lookup of a transaction by its full reference string. Used by
+  // background reconcilers (supervisors, rollback processors) in other
+  // services to verify whether a previously-attempted debit or credit
+  // actually committed — WITHOUT the side effect of re-attempting it via
+  // an idempotent RPC. This is the safe verification path that prevents
+  // double-charges in the corner case where a service retries with the
+  // same idempotency key but the original request never reached this
+  // service in the first place.
+  rpc LookupTransactionByReference(LookupTransactionByReferenceRequest) returns (LookupTransactionByReferenceResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/transactions/by-reference/{reference}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Lookup Transaction By Reference";
+      description: "Read-only lookup by reference (idempotency-key probe). No side effects.";
+      tags: ["Transactions"];
+      security: {} // No auth required for inter-service calls
+    };
+  }
+
   // === ACCOUNT-SPECIFIC FEATURES ===
 
   // Auto-save management
@@ -540,6 +616,107 @@ service AccountsService {
       summary: "Unlock Funds";
       description: "Unlock locked funds";
       tags: ["LockFunds"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  // TopUp an existing lock fund (add more money)
+  rpc TopUpLockFunds(TopUpLockFundsRequest) returns (TopUpLockFundsResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/accounts/lockfunds/{lockfunds_id}/topup"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Top Up Lock Funds";
+      description: "Add more money to an existing PiggyVault lock";
+      tags: ["PiggyVault"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  // PiggyVault config management (backend-configurable interest rates)
+  rpc GetPiggyVaultConfig(GetPiggyVaultConfigRequest) returns (GetPiggyVaultConfigResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/accounts/piggyvault/config/{lock_type}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get PiggyVault Config";
+      description: "Get configuration for a specific PiggyVault lock type";
+      tags: ["PiggyVault"];
+    };
+  }
+
+  rpc GetAllPiggyVaultConfigs(GetAllPiggyVaultConfigsRequest) returns (GetAllPiggyVaultConfigsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/accounts/piggyvault/configs"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get All PiggyVault Configs";
+      description: "Get all PiggyVault product configurations with interest rates";
+      tags: ["PiggyVault"];
+    };
+  }
+
+  rpc UpdatePiggyVaultConfig(UpdatePiggyVaultConfigRequest) returns (UpdatePiggyVaultConfigResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/accounts/piggyvault/config/{lock_type}"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Update PiggyVault Config";
+      description: "Update interest rates and rules for a PiggyVault product (admin)";
+      tags: ["PiggyVault"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  // Lock fund auto-save management
+  rpc CreateLockFundAutoSave(CreateLockFundAutoSaveRequest) returns (CreateLockFundAutoSaveResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/accounts/lockfunds/{lock_fund_id}/autosave"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Create Lock Fund AutoSave";
+      description: "Set up recurring auto-save into a PiggyVault lock";
+      tags: ["PiggyVault"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  rpc GetLockFundAutoSave(GetLockFundAutoSaveRequest) returns (GetLockFundAutoSaveResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/accounts/lockfunds/{lock_fund_id}/autosave"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Lock Fund AutoSave";
+      description: "Get auto-save configuration for a PiggyVault lock";
+      tags: ["PiggyVault"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  rpc UpdateLockFundAutoSave(UpdateLockFundAutoSaveRequest) returns (UpdateLockFundAutoSaveResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/accounts/lockfunds/autosave/{autosave_id}"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Update Lock Fund AutoSave";
+      description: "Update auto-save schedule for a PiggyVault lock";
+      tags: ["PiggyVault"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  rpc DeleteLockFundAutoSave(DeleteLockFundAutoSaveRequest) returns (DeleteLockFundAutoSaveResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/accounts/lockfunds/autosave/{autosave_id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Delete Lock Fund AutoSave";
+      description: "Remove auto-save for a PiggyVault lock";
+      tags: ["PiggyVault"];
       security: { security_requirement: { key: "bearer"; } };
     };
   }
@@ -672,6 +849,20 @@ service AccountsService {
     };
   }
 
+  // Update security settings for an account (3D Secure, contactless, ATM, online, international)
+  rpc UpdateSecuritySettings(UpdateSecuritySettingsRequest) returns (UpdateSecuritySettingsResponse) {
+    option (google.api.http) = {
+      patch: "/api/v1/accounts/{account_id}/security-settings"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Update Security Settings";
+      description: "Update card security settings (3D Secure, contactless, ATM, online, international payments)";
+      tags: ["Account Management"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
   // Generate account statement PDF
   rpc GenerateStatement(GenerateStatementRequest) returns (GenerateStatementResponse) {
     option (google.api.http) = {
@@ -713,6 +904,168 @@ service AccountsService {
       security: { security_requirement: { key: "bearer"; } };
     };
   }
+
+  // =========================================================================
+  // ADMIN OPERATIONS - Called by admin-gateway for dashboard
+  // =========================================================================
+
+  // Admin: Search accounts by email, phone, user_id, or account_number
+  rpc AdminSearchAccounts(AdminSearchAccountsRequest) returns (AdminSearchAccountsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/accounts/search"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Admin Search Accounts";
+      description: "Search accounts by various criteria (admin only)";
+      tags: ["Admin"];
+    };
+  }
+
+  // Admin: Get detailed account information
+  rpc AdminGetAccountDetail(AdminGetAccountDetailRequest) returns (AdminAccountDetailResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/accounts/{account_id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Admin Get Account Detail";
+      description: "Get detailed account information including holds and clearing (admin only)";
+      tags: ["Admin"];
+    };
+  }
+
+  // Admin: Get account transactions with admin-level filters
+  rpc AdminGetAccountTransactions(AdminGetAccountTransactionsRequest) returns (AdminAccountTransactionsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/accounts/{account_id}/transactions"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Admin Get Account Transactions";
+      description: "Get account transactions with admin-level filters (admin only)";
+      tags: ["Admin"];
+    };
+  }
+
+  // Admin: Get holds for a specific account
+  rpc AdminGetAccountHolds(AdminGetAccountHoldsRequest) returns (AdminAccountHoldsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/accounts/{account_id}/holds"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Admin Get Account Holds";
+      description: "Get fund holds for a specific account (admin only)";
+      tags: ["Admin"];
+    };
+  }
+
+  // Admin: Get clearing records for a specific account
+  rpc AdminGetAccountClearing(AdminGetAccountClearingRequest) returns (AdminAccountClearingResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/accounts/{account_id}/clearing"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Admin Get Account Clearing";
+      description: "Get deposit clearing records for a specific account (admin only)";
+      tags: ["Admin"];
+    };
+  }
+
+  // Admin: List all holds across all accounts
+  rpc AdminListAllHolds(AdminListAllHoldsRequest) returns (AdminListAllHoldsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/holds"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Admin List All Holds";
+      description: "List all fund holds across all accounts with filters (admin only)";
+      tags: ["Admin"];
+    };
+  }
+
+  // Admin: Get stale (expired but still active) holds
+  rpc AdminGetStaleHolds(AdminGetStaleHoldsRequest) returns (AdminGetStaleHoldsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/holds/stale"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Admin Get Stale Holds";
+      description: "Get stale holds (active but expired) (admin only)";
+      tags: ["Admin"];
+    };
+  }
+
+  // Admin: Get all platform wallets
+  rpc AdminGetAllPlatformWallets(AdminGetAllPlatformWalletsRequest) returns (AdminGetAllPlatformWalletsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/platform-wallets"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Admin Get All Platform Wallets";
+      description: "Get all platform wallets with balances (admin only)";
+      tags: ["Admin"];
+    };
+  }
+
+  // Admin: Get platform wallet transactions
+  rpc AdminGetPlatformWalletTransactions(AdminGetPlatformWalletTransactionsRequest) returns (AdminGetPlatformWalletTransactionsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/platform-wallets/{wallet_code}/transactions"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Admin Get Platform Wallet Transactions";
+      description: "Get transactions for a platform wallet (admin only)";
+      tags: ["Admin"];
+    };
+  }
+
+  // Admin: Get clearing records with filters
+  rpc AdminGetClearingRecords(AdminGetClearingRecordsRequest) returns (AdminGetClearingRecordsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/clearing"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Admin Get Clearing Records";
+      description: "Get deposit clearing records with filters (admin only)";
+      tags: ["Admin"];
+    };
+  }
+
+  // Admin: Get clearing system health metrics
+  rpc AdminGetClearingHealth(AdminGetClearingHealthRequest) returns (AdminGetClearingHealthResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/clearing/health"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Admin Get Clearing Health";
+      description: "Get clearing system health metrics (admin only)";
+      tags: ["Admin"];
+    };
+  }
+
+  // Admin: Freeze an account
+  rpc AdminFreezeAccount(AdminFreezeAccountRequest) returns (AdminFreezeAccountResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/accounts/{account_id}/freeze"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Admin Freeze Account";
+      description: "Freeze an account (admin only)";
+      tags: ["Admin"];
+    };
+  }
+
+  // Admin: Unfreeze an account
+  rpc AdminUnfreezeAccount(AdminUnfreezeAccountRequest) returns (AdminUnfreezeAccountResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/accounts/{account_id}/unfreeze"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Admin Unfreeze Account";
+      description: "Unfreeze an account (admin only)";
+      tags: ["Admin"];
+    };
+  }
 }
 
 // ===== Account Model =====
@@ -744,6 +1097,8 @@ message Account {
   string provider_ref = 24;             // Provider's reference for the virtual account
   string bank_name = 25;                // Bank name from provider (e.g., "Wema Bank", "Sterling Bank")
   double single_transaction_limit = 26; // Single transaction limit (0 = no limit)
+  double reserved_balance = 27;         // Funds held via HoldFunds (not yet captured/released)
+  int32 kyc_tier = 28;                  // KYC tier level (1, 2, 3) — synced from auth-service via Kafka
 }
 
 // ===== Account Summary Model (for carousel/list views) =====
@@ -752,13 +1107,13 @@ message AccountSummary {
   uint64 id = 1;                        // Numeric ID (for backward compatibility)
   string account_type = 2;              // e.g., "personal", "savings"
   string currency = 3;                  // e.g., "GBP", "USD"
-  uint64 balance = 4;                   // Balance in minor units (cents/pence)
+  uint64 balance = 4;                   // Total balance in minor units (cents/pence)
   string masked_account_number = 5;     // e.g., "•••• 7890"
   string status = 6;                    // e.g., "active", "blocked_temporary"
   string uuid = 7;                      // Account UUID (use this for cross-service communication)
   string account_number = 8;            // Full account number (for deposits)
-  uint64 available_balance = 9;         // Available balance (balance - reserved - clearing holds) in minor units
-  uint64 reserved_balance = 10;         // Funds held (fund holds + clearing deposits) in minor units
+  uint64 available_balance = 9;         // Available balance (balance - reserved - clearing holds)
+  uint64 reserved_balance = 10;         // Funds held (fund holds + clearing deposits)
   string account_name = 11;             // Custom account name (e.g., "Kids Allowance", "Family Pool")
 }
 
@@ -892,6 +1247,13 @@ message UpdateBalanceRequest {
   string reference = 4;
   string description = 5;
   string category = 6;
+  // When true (and operation == "subtract"), this debit is a
+  // system-initiated reactive operation — e.g. provider clawback,
+  // refund pipeline — and is allowed to drive available_balance
+  // below zero down to the per-account overdraft floor (bounded by
+  // global system_settings cap). User-initiated debits (transfer,
+  // bill, buy) MUST leave reactive=false. Ignored for "add".
+  bool reactive = 7;
 }
 
 message UpdateBalanceResponse {
@@ -1015,20 +1377,21 @@ message DeleteAutoSaveResponse {
   string message = 2;
 }
 
-// === LockFunds ===
+// === LockFunds / PiggyVault ===
 message LockFunds {
   string id = 1;
   string account_id = 2;
   string user_id = 3;
   string name = 4;
   double amount = 5;
-  string lock_type = 6;                 // "time_based", "goal_based", "emergency"
+  string lock_type = 6;                 // "savings", "investment", "emergency", "goal_based"
   string status = 7;                    // "locked", "unlocked", "matured"
   string unlock_date = 8;               // When funds can be unlocked
   double target_amount = 9;             // For goal-based locks
   double penalty_rate = 10;             // Early withdrawal penalty %
   string created_at = 11;
   string matured_at = 12;
+  bool auto_renew = 13;
 }
 
 // NOTE: user_id extracted from JWT token, not from request
@@ -1041,6 +1404,15 @@ message CreateLockFundsRequest {
   double target_amount = 6;
   double penalty_rate = 7;
   string pin = 8;
+  bool auto_renew = 9;
+  // Wallet that receives upfront interest. If empty or
+  // supports_upfront_interest is false on the resolved
+  // PiggyVaultConfig, no upfront payout occurs.
+  string interest_destination_account_id = 10;
+  // Currency the gateway resolved for this lock — used to look up
+  // the correct PiggyVaultConfig row when computing upfront
+  // interest. Empty falls back to the source account's currency.
+  string currency = 11;
 }
 
 message CreateLockFundsResponse {
@@ -1048,6 +1420,10 @@ message CreateLockFundsResponse {
   Transaction transaction = 2;
   double new_available_balance = 3;
   string message = 4;
+  // Populated when an upfront interest payout occurred. Zero
+  // when the plan doesn't support upfront interest.
+  double upfront_interest_paid = 5;
+  string upfront_interest_destination = 6;
 }
 
 // NOTE: user_id extracted from JWT token, not from request
@@ -1076,6 +1452,170 @@ message UnlockFundsResponse {
   double released_amount = 4;
   double new_available_balance = 5;
   string message = 6;
+}
+
+// === PiggyVault Config (Backend-Configurable ROI) ===
+message PiggyVaultConfigProto {
+  string id = 1;
+  string lock_type = 2;
+  string currency = 3;
+  string display_name = 4;
+  double base_interest_rate = 5;
+  double max_interest_rate = 6;
+  double early_withdrawal_penalty = 7;
+  int32 min_duration_days = 8;
+  int32 max_duration_days = 9;
+  double min_amount = 10;
+  double max_amount = 11;
+  bool allows_early_withdrawal = 12;
+  bool supports_auto_renew = 13;
+  bool supports_top_up = 14;
+  bool supports_auto_save = 15;
+  bool supports_upfront_interest = 16;
+  string duration_bonus_tiers = 17;     // JSON array
+  bool is_active = 18;
+  string description = 19;
+  // is_fixed_amount=true forces the wizard to deposit exactly
+  // fixed_amount; the amount input is hidden and the user just
+  // confirms the headline figure.
+  bool is_fixed_amount = 20;
+  double fixed_amount = 21;
+  // JSON array of integers (days) — wizard renders these as
+  // quick-pick duration chips. Empty array → client falls back
+  // to a generic preset filtered by min/max.
+  string duration_options = 22;
+  // JSON array of decimals — wizard renders these as quick-pick
+  // amount pills. Empty array → no pills, free-form amount only.
+  string quick_amount_options = 23;
+  // Newline-separated bullets rendered on the Pay & confirm slide's
+  // "Before you confirm" panel. confirmation_notes shows always;
+  // confirmation_notes_renew_on/off are appended below it based on
+  // the user's auto-renew toggle. Empty strings → no extra notes.
+  string confirmation_notes = 24;
+  string confirmation_notes_renew_on = 25;
+  string confirmation_notes_renew_off = 26;
+}
+
+message GetPiggyVaultConfigRequest {
+  string lock_type = 1;
+  string currency = 2;                  // Optional, defaults to account currency
+}
+
+message GetPiggyVaultConfigResponse {
+  PiggyVaultConfigProto config = 1;
+}
+
+message GetAllPiggyVaultConfigsRequest {
+  string currency = 1;                  // Optional filter
+}
+
+message GetAllPiggyVaultConfigsResponse {
+  repeated PiggyVaultConfigProto configs = 1;
+}
+
+message UpdatePiggyVaultConfigRequest {
+  string lock_type = 1;
+  string currency = 2;
+  double base_interest_rate = 3;
+  double max_interest_rate = 4;
+  double early_withdrawal_penalty = 5;
+  int32 min_duration_days = 6;
+  int32 max_duration_days = 7;
+  double min_amount = 8;
+  double max_amount = 9;
+  bool allows_early_withdrawal = 10;
+  bool supports_auto_renew = 11;
+  bool supports_top_up = 12;
+  bool supports_auto_save = 13;
+  bool supports_upfront_interest = 14;
+  string duration_bonus_tiers = 15;
+  bool is_active = 16;
+  string description = 17;
+  string display_name = 18;
+  bool is_fixed_amount = 19;
+  double fixed_amount = 20;
+  string duration_options = 21;
+  string quick_amount_options = 22;
+  string confirmation_notes = 23;
+  string confirmation_notes_renew_on = 24;
+  string confirmation_notes_renew_off = 25;
+}
+
+message UpdatePiggyVaultConfigResponse {
+  PiggyVaultConfigProto config = 1;
+  string message = 2;
+}
+
+// === TopUp Lock Fund ===
+message TopUpLockFundsRequest {
+  string lockfunds_id = 1;
+  double amount = 2;
+  string pin = 3;
+  string source_account_id = 4;
+}
+
+message TopUpLockFundsResponse {
+  LockFunds lockfunds = 1;
+  Transaction transaction = 2;
+  double new_available_balance = 3;
+  string message = 4;
+}
+
+// === Lock Fund AutoSave ===
+message LockFundAutoSaveProto {
+  string id = 1;
+  string lock_fund_id = 2;
+  string user_id = 3;
+  string source_account_id = 4;
+  double amount = 5;
+  string frequency = 6;                 // "daily", "weekly", "monthly"
+  string status = 7;                    // "active", "paused", "stopped"
+  string next_run_at = 8;
+  string last_run_at = 9;
+  double total_saved = 10;
+  int32 run_count = 11;
+  string created_at = 12;
+}
+
+message CreateLockFundAutoSaveRequest {
+  string lock_fund_id = 1;
+  string source_account_id = 2;
+  double amount = 3;
+  string frequency = 4;
+}
+
+message CreateLockFundAutoSaveResponse {
+  LockFundAutoSaveProto autosave = 1;
+  string message = 2;
+}
+
+message GetLockFundAutoSaveRequest {
+  string lock_fund_id = 1;
+}
+
+message GetLockFundAutoSaveResponse {
+  LockFundAutoSaveProto autosave = 1;
+}
+
+message UpdateLockFundAutoSaveRequest {
+  string autosave_id = 1;
+  double amount = 2;
+  string frequency = 3;
+  string status = 4;                    // "active", "paused", "stopped"
+}
+
+message UpdateLockFundAutoSaveResponse {
+  LockFundAutoSaveProto autosave = 1;
+  string message = 2;
+}
+
+message DeleteLockFundAutoSaveRequest {
+  string autosave_id = 1;
+}
+
+message DeleteLockFundAutoSaveResponse {
+  bool success = 1;
+  string message = 2;
 }
 
 // ===== TRANSACTION HISTORY MANAGEMENT =====
@@ -1113,6 +1653,28 @@ message UpdateTransactionStatusResponse {
   string message = 2;
 }
 
+// LookupTransactionByReference — read-only verification probe.
+//
+// Background reconcilers must distinguish "the debit committed" from "the
+// debit was never attempted at the service" before deciding whether to
+// retry, refund, or fail a payment. Using DebitBalance again with the same
+// idempotency key will return the cached outcome IF the original committed,
+// but if it didn't commit it will start a FRESH debit — moving money the
+// caller may no longer want to move. This RPC is the side-effect-free path.
+message LookupTransactionByReferenceRequest {
+  // Full reference string. For idempotency-key probes pass the canonical
+  // "IDEM-DR-{key}" or "IDEM-CR-{key}" reference the original call would
+  // have used.
+  string reference = 1;
+}
+
+message LookupTransactionByReferenceResponse {
+  // True iff a transaction with the supplied reference exists.
+  bool found = 1;
+  // Populated when found=true. Status field is the authoritative outcome.
+  Transaction transaction = 2;
+}
+
 // GetTransactionHistory - Get transactions for an account
 // Locale can be passed explicitly; falls back to account locale if empty
 message GetTransactionHistoryRequest {
@@ -1143,6 +1705,7 @@ message GetTransactionStatisticsRequest {
   string account_id = 1;
   string start_date = 2;
   string end_date = 3;
+  bool include_external_banks = 4;     // Include external bank transactions (default: true)
   string locale = 5;                   // Optional: BCP 47 locale (e.g. "en-NG"); falls back to account locale
 }
 
@@ -1244,6 +1807,8 @@ message CreditBalanceRequest {
   string metadata = 8;                // JSON metadata (provider ref, etc.)
   string service_name = 9;            // Calling service (banking-service, etc.)
   string idempotency_key = 10;        // Idempotency key for duplicate detection
+  string counterparty_name = 11;      // Name of the other party (for transfers)
+  string counterparty_account = 12;   // Account number of the other party (for transfers)
 }
 
 message CreditBalanceResponse {
@@ -1269,6 +1834,15 @@ message DebitBalanceRequest {
   string idempotency_key = 10;        // Idempotency key
   bool require_hold = 11;             // If true, funds must be held first
   string hold_id = 12;                // Existing hold to capture (if require_hold)
+  string counterparty_name = 13;      // Name of the other party (for transfers)
+  string counterparty_account = 14;   // Account number of the other party (for transfers)
+  // Reactive: when true, this debit is system-initiated (e.g. provider
+  // chargeback / clawback / refund-pipeline) and is allowed to drive
+  // the available_balance below zero, down to the per-account
+  // overdraft floor (bounded by the global system_settings cap).
+  // Proactive (user-initiated) debits MUST leave reactive=false; they
+  // continue to enforce the strict balance >= amount check.
+  bool reactive = 15;
 }
 
 message DebitBalanceResponse {
@@ -1338,6 +1912,14 @@ message CaptureHoldRequest {
   string service_name = 2;
   string description = 3;             // Transaction description
   string metadata = 4;                // Additional metadata
+  // actual_amount: when > 0, capture this amount instead of the held
+  // amount. Lets a saga settle execute-time slippage atomically:
+  //   actual_amount > hold_amount → capture full hold + extra debit
+  //                                  for the overage (overdraft allowed)
+  //   actual_amount < hold_amount → capture actual_amount, refund the
+  //                                  unspent portion to available_balance
+  // 0 = unset = capture exactly hold_amount (legacy behavior).
+  double actual_amount = 5;
 }
 
 message CaptureHoldResponse {
@@ -1345,7 +1927,10 @@ message CaptureHoldResponse {
   string error_code = 2;
   string error_message = 3;
   string transaction_id = 4;
-  int64 new_balance = 5;
+  int64 new_balance = 5;                  // in minor units (kobo)
+  double captured_amount = 6;             // amount actually debited
+  double overage_amount = 7;              // > 0 when actual > hold (extra charged)
+  double refund_amount = 8;               // > 0 when actual < hold (returned to available)
 }
 
 // ReleaseHoldRequest - Release hold without debiting
@@ -1471,6 +2056,30 @@ message CreditPlatformWalletResponse {
   int64 wallet_new_balance = 5;         // Platform wallet new balance in minor units
 }
 
+// DebitPlatformWallet - Debit-only (internal settlement for hold captures/releases)
+message DebitPlatformWalletRequest {
+  string wallet_code = 1;               // Platform wallet code (e.g., "WITHDRAWAL_PENDING")
+  int64 amount = 2;                     // Amount in minor units (kobo/cents)
+  string currency = 3;                  // Currency code (e.g., "NGN")
+  string reference = 4;                 // Unique reference for this settlement
+  string category = 5;                  // e.g., "withdrawal_capture"
+  string description = 6;              // Human-readable description
+  string metadata = 7;                  // JSON metadata
+  string service_name = 8;             // Calling service identifier
+  string idempotency_key = 9;          // Idempotency key for dedup
+  string source_account_id = 10;       // User account (audit trail)
+  string source_user_id = 11;          // User (audit trail)
+  string source_payment_id = 12;       // Payment/transaction that generated this (audit trail)
+}
+
+message DebitPlatformWalletResponse {
+  bool success = 1;
+  string error_code = 2;
+  string error_message = 3;
+  string platform_transaction_id = 4;   // Platform wallet transaction ID
+  int64 wallet_new_balance = 5;         // Platform wallet new balance in minor units
+}
+
 // GetPlatformWallet - Get wallet by ID or code
 message GetPlatformWalletRequest {
   string wallet_id = 1;                 // UUID (optional if wallet_code is set)
@@ -1516,6 +2125,7 @@ message GetFinancialAnalyticsRequest {
   string period = 2;                   // "week", "month", "quarter", "year"
   string start_date = 3;               // Optional: override period with custom dates
   string end_date = 4;                 // Optional: override period with custom dates
+  bool include_external_banks = 5;     // Include external bank transactions (default: true)
   string locale = 6;                   // Optional: BCP 47 locale; falls back to account locale
 }
 
@@ -1549,6 +2159,7 @@ message GetCategoryAnalyticsRequest {
   string account_id = 1;
   string start_date = 2;
   string end_date = 3;
+  bool include_external_banks = 4;     // Include external bank transactions (default: true)
   string locale = 5;                   // Optional: BCP 47 locale; falls back to account locale
 }
 
@@ -1589,6 +2200,7 @@ message GetExpenseTimeSeriesRequest {
   string account_id = 1;
   string start_date = 2;
   string end_date = 3;
+  bool include_external_banks = 4;     // Include external bank transactions (default: true)
   string locale = 5;                   // Optional: BCP 47 locale; falls back to account locale
 }
 
@@ -1719,4 +2331,319 @@ message GenerateProofOfFundsResponse {
   double current_balance = 4;                // Current account balance
   string currency = 5;                       // Account currency
   string message = 6;                        // Optional message
+}
+
+// Update security settings request
+message UpdateSecuritySettingsRequest {
+  string account_id = 1;
+  bool enable_3d_secure = 2;
+  bool enable_contactless = 3;
+  bool enable_online_payments = 4;
+  bool enable_atm_withdrawals = 5;
+  bool enable_international_payments = 6;
+}
+
+message UpdateSecuritySettingsResponse {
+  Account account = 1;
+  string message = 2;
+  bool enable_3d_secure = 3;
+  bool enable_contactless = 4;
+  bool enable_online_payments = 5;
+  bool enable_atm_withdrawals = 6;
+  bool enable_international_payments = 7;
+}
+
+// =============================================================================
+// DEPOSIT CLEARING Messages
+// =============================================================================
+
+// CreditToClearingRequest - Credit deposit to balance but NOT available_balance
+message CreditToClearingRequest {
+  string account_id = 1;
+  string user_id = 2;
+  int64 amount = 3;                     // Amount in minor units
+  string currency = 4;
+  string reference = 5;                 // Deposit reference (e.g., DEP-xxx)
+  string description = 6;
+  string metadata = 7;
+  string service_name = 8;
+  string idempotency_key = 9;
+  string provider = 10;                 // flutterwave, vfd, mono
+  string provider_tx_id = 11;           // Provider's transaction ID
+  int32 kyc_tier = 12;                  // User's KYC tier (determines clearing time)
+  string deposit_type = 13;             // "virtual_account" or "bank_transfer"
+}
+
+message CreditToClearingResponse {
+  bool success = 1;
+  string error_code = 2;
+  string error_message = 3;
+  string clearing_record_id = 4;        // Clearing record UUID
+  string transaction_id = 5;            // Transaction UUID
+  int64 new_balance = 6;                // Total balance (includes clearing)
+  int64 new_available_balance = 7;      // Available balance (excludes clearing)
+  string clears_at = 8;                 // ISO8601 when funds become available
+}
+
+// ClearDepositRequest - Move cleared deposit to available balance
+message ClearDepositRequest {
+  string clearing_record_id = 1;
+  string service_name = 2;
+}
+
+message ClearDepositResponse {
+  bool success = 1;
+  string error_code = 2;
+  string error_message = 3;
+  int64 new_available_balance = 4;
+}
+
+// ReverseClearingDepositRequest - Reverse a deposit in clearing
+message ReverseClearingDepositRequest {
+  string clearing_record_id = 1;
+  string reason = 2;
+  string service_name = 3;
+}
+
+message ReverseClearingDepositResponse {
+  bool success = 1;
+  string error_code = 2;
+  string error_message = 3;
+  int64 new_balance = 4;
+}
+
+// =============================================================================
+// ADMIN OPERATION Messages
+// =============================================================================
+
+message AdminSearchAccountsRequest {
+  string query = 1;                     // Search value
+  string search_type = 2;              // "email", "phone", "user_id", "account_number"
+  int32 page = 3;
+  int32 per_page = 4;
+}
+
+message AdminSearchAccountsResponse {
+  repeated AdminAccountSummary accounts = 1;
+  int64 total = 2;
+}
+
+message AdminAccountSummary {
+  string id = 1;
+  string user_id = 2;
+  string currency = 3;
+  int64 balance = 4;                    // minor units
+  int64 available_balance = 5;
+  int64 reserved_balance = 6;
+  string status = 7;
+  string account_type = 8;
+  string created_at = 9;
+  string user_email = 10;
+  string user_name = 11;
+  string user_phone = 12;
+}
+
+message AdminGetAccountDetailRequest {
+  string account_id = 1;
+}
+
+message AdminAccountDetailResponse {
+  AdminAccountSummary account = 1;
+  int64 pending_clearing_amount = 2;
+  int32 active_holds_count = 3;
+  int64 active_holds_amount = 4;
+  int32 pending_clearing_count = 5;
+  string kyc_tier = 6;
+  string locale = 7;
+  repeated AdminVirtualAccount virtual_accounts = 8;
+}
+
+message AdminVirtualAccount {
+  string id = 1;
+  string bank_name = 2;
+  string account_number = 3;
+  string account_name = 4;
+  string provider = 5;
+  string status = 6;
+}
+
+message AdminGetAccountTransactionsRequest {
+  string account_id = 1;
+  string type = 2;                      // "credit", "debit", or empty for all
+  string category = 3;
+  string from_date = 4;
+  string to_date = 5;
+  int32 page = 6;
+  int32 per_page = 7;
+}
+
+message AdminAccountTransactionsResponse {
+  repeated AdminTransaction transactions = 1;
+  int64 total = 2;
+}
+
+message AdminTransaction {
+  string id = 1;
+  string reference = 2;
+  string type = 3;
+  string category = 4;
+  int64 amount = 5;
+  int64 balance_before = 6;
+  int64 balance_after = 7;
+  string description = 8;
+  string status = 9;
+  string service_name = 10;
+  string created_at = 11;
+  string metadata = 12;
+}
+
+message AdminGetAccountHoldsRequest {
+  string account_id = 1;
+  string status = 2;                    // "active", "captured", "released", or empty for all
+  int32 page = 3;
+  int32 per_page = 4;
+}
+
+message AdminAccountHoldsResponse {
+  repeated AdminHold holds = 1;
+  int64 total = 2;
+}
+
+message AdminHold {
+  string id = 1;
+  string account_id = 2;
+  int64 amount = 3;
+  string currency = 4;
+  string reference = 5;
+  string reason = 6;
+  string status = 7;
+  string service_name = 8;
+  string created_at = 9;
+  string expires_at = 10;
+  string captured_at = 11;
+  string released_at = 12;
+  string idempotency_key = 13;
+}
+
+message AdminGetAccountClearingRequest {
+  string account_id = 1;
+  string status = 2;
+  int32 page = 3;
+  int32 per_page = 4;
+}
+
+message AdminAccountClearingResponse {
+  repeated AdminClearingRecord records = 1;
+  int64 total = 2;
+}
+
+message AdminListAllHoldsRequest {
+  string status = 1;
+  string account_id = 2;
+  int32 age_hours = 3;                  // filter by age (e.g., 24 = older than 24h)
+  int32 page = 4;
+  int32 per_page = 5;
+}
+
+message AdminListAllHoldsResponse {
+  repeated AdminHold holds = 1;
+  int64 total = 2;
+}
+
+message AdminGetStaleHoldsRequest {
+  int32 page = 1;
+  int32 per_page = 2;
+}
+
+message AdminGetStaleHoldsResponse {
+  repeated AdminHold holds = 1;
+  int64 total = 2;
+}
+
+message AdminGetAllPlatformWalletsRequest {}
+
+message AdminGetAllPlatformWalletsResponse {
+  repeated AdminPlatformWallet wallets = 1;
+}
+
+message AdminPlatformWallet {
+  string id = 1;
+  string code = 2;
+  string name = 3;
+  int64 balance = 4;
+  string currency = 5;
+  string description = 6;
+}
+
+message AdminGetPlatformWalletTransactionsRequest {
+  string wallet_code = 1;
+  int32 page = 2;
+  int32 per_page = 3;
+}
+
+message AdminGetPlatformWalletTransactionsResponse {
+  repeated AdminTransaction transactions = 1;
+  int64 total = 2;
+}
+
+message AdminGetClearingRecordsRequest {
+  string status = 1;                    // pending_clearing, cleared, reversed, failed
+  string account_id = 2;
+  int32 page = 3;
+  int32 per_page = 4;
+}
+
+message AdminGetClearingRecordsResponse {
+  repeated AdminClearingRecord records = 1;
+  int64 total = 2;
+}
+
+message AdminClearingRecord {
+  string id = 1;
+  string account_id = 2;
+  string user_id = 3;
+  int64 amount = 4;
+  string currency = 5;
+  string status = 6;
+  string clearing_tier = 7;
+  string source_reference = 8;
+  string provider = 9;
+  string provider_tx_id = 10;
+  string created_at = 11;
+  string clears_at = 12;
+  string cleared_at = 13;
+  string failure_reason = 14;
+}
+
+message AdminGetClearingHealthRequest {}
+
+message AdminGetClearingHealthResponse {
+  int32 pending_count = 1;
+  int32 cleared_today = 2;
+  int32 reversed_today = 3;
+  int32 failed_today = 4;
+  int32 stuck_count = 5;                // pending > 24h
+  double avg_clear_seconds = 6;
+}
+
+message AdminFreezeAccountRequest {
+  string account_id = 1;
+  string reason = 2;
+  string admin_user_id = 3;
+}
+
+message AdminFreezeAccountResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message AdminUnfreezeAccountRequest {
+  string account_id = 1;
+  string reason = 2;
+  string admin_user_id = 3;
+}
+
+message AdminUnfreezeAccountResponse {
+  bool success = 1;
+  string message = 2;
 }
