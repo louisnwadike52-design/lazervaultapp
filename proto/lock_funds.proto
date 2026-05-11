@@ -131,6 +131,9 @@ message CreateLockFundRequest {
   string source_account_id = 9;
   string transaction_pin = 10;
   string interest_destination_account_id = 11;
+  // Dedup key for retries; same key returns the existing lock
+  // instead of creating a duplicate.
+  string idempotency_key = 12;
 }
 
 message CreateLockFundResponse {
@@ -191,6 +194,9 @@ message TopUpLockFundRequest {
   double amount = 2;
   string transaction_pin = 3;
   string source_account_id = 4;
+  // Dedup key. Same key on retry returns the existing top-up
+  // settlement instead of debiting again.
+  string idempotency_key = 5;
 }
 
 message TopUpLockFundResponse {
@@ -232,6 +238,9 @@ message CalculateInterestResponse {
 message RenewLockFundRequest {
   string lock_fund_id = 1;
   int32 new_duration_days = 2;
+  // Dedup key. Same key on retry returns the existing renewal
+  // settlement instead of extending the lock again.
+  string idempotency_key = 3;
 }
 
 message RenewLockFundResponse {

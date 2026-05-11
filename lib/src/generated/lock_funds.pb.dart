@@ -1165,6 +1165,7 @@ class CreateLockFundRequest extends $pb.GeneratedMessage {
     ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceAccountId')
     ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionPin')
     ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'interestDestinationAccountId')
+    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'idempotencyKey')
     ..hasRequiredFields = false
   ;
 
@@ -1181,6 +1182,7 @@ class CreateLockFundRequest extends $pb.GeneratedMessage {
     $core.String? sourceAccountId,
     $core.String? transactionPin,
     $core.String? interestDestinationAccountId,
+    $core.String? idempotencyKey,
   }) {
     final _result = create();
     if (lockType != null) {
@@ -1215,6 +1217,9 @@ class CreateLockFundRequest extends $pb.GeneratedMessage {
     }
     if (interestDestinationAccountId != null) {
       _result.interestDestinationAccountId = interestDestinationAccountId;
+    }
+    if (idempotencyKey != null) {
+      _result.idempotencyKey = idempotencyKey;
     }
     return _result;
   }
@@ -1337,6 +1342,15 @@ class CreateLockFundRequest extends $pb.GeneratedMessage {
   $core.bool hasInterestDestinationAccountId() => $_has(10);
   @$pb.TagNumber(11)
   void clearInterestDestinationAccountId() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get idempotencyKey => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set idempotencyKey($core.String v) { $_setString(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasIdempotencyKey() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearIdempotencyKey() => clearField(12);
 }
 
 class CreateLockFundResponse extends $pb.GeneratedMessage {
@@ -1968,6 +1982,7 @@ class TopUpLockFundRequest extends $pb.GeneratedMessage {
     ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionPin')
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceAccountId')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'idempotencyKey')
     ..hasRequiredFields = false
   ;
 
@@ -1977,6 +1992,7 @@ class TopUpLockFundRequest extends $pb.GeneratedMessage {
     $core.double? amount,
     $core.String? transactionPin,
     $core.String? sourceAccountId,
+    $core.String? idempotencyKey,
   }) {
     final _result = create();
     if (lockFundId != null) {
@@ -1990,6 +2006,9 @@ class TopUpLockFundRequest extends $pb.GeneratedMessage {
     }
     if (sourceAccountId != null) {
       _result.sourceAccountId = sourceAccountId;
+    }
+    if (idempotencyKey != null) {
+      _result.idempotencyKey = idempotencyKey;
     }
     return _result;
   }
@@ -2049,6 +2068,15 @@ class TopUpLockFundRequest extends $pb.GeneratedMessage {
   $core.bool hasSourceAccountId() => $_has(3);
   @$pb.TagNumber(4)
   void clearSourceAccountId() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get idempotencyKey => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set idempotencyKey($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasIdempotencyKey() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearIdempotencyKey() => clearField(5);
 }
 
 class TopUpLockFundResponse extends $pb.GeneratedMessage {
@@ -2468,6 +2496,7 @@ class RenewLockFundRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'RenewLockFundRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lockFundId')
     ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'newDurationDays', $pb.PbFieldType.O3)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'idempotencyKey')
     ..hasRequiredFields = false
   ;
 
@@ -2475,6 +2504,7 @@ class RenewLockFundRequest extends $pb.GeneratedMessage {
   factory RenewLockFundRequest({
     $core.String? lockFundId,
     $core.int? newDurationDays,
+    $core.String? idempotencyKey,
   }) {
     final _result = create();
     if (lockFundId != null) {
@@ -2482,6 +2512,9 @@ class RenewLockFundRequest extends $pb.GeneratedMessage {
     }
     if (newDurationDays != null) {
       _result.newDurationDays = newDurationDays;
+    }
+    if (idempotencyKey != null) {
+      _result.idempotencyKey = idempotencyKey;
     }
     return _result;
   }
@@ -2523,6 +2556,15 @@ class RenewLockFundRequest extends $pb.GeneratedMessage {
   $core.bool hasNewDurationDays() => $_has(1);
   @$pb.TagNumber(2)
   void clearNewDurationDays() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get idempotencyKey => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set idempotencyKey($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasIdempotencyKey() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearIdempotencyKey() => clearField(3);
 }
 
 class RenewLockFundResponse extends $pb.GeneratedMessage {

@@ -1,8 +1,11 @@
 import 'package:lazervault/src/core/network/grpc_client.dart';
 import 'package:lazervault/src/generated/lock_funds.pbgrpc.dart' as pb;
+import 'package:uuid/uuid.dart';
 import '../../domain/entities/lock_fund_entity.dart';
 import '../../domain/repositories/lock_funds_repository.dart';
 import '../models/lock_fund_model.dart';
+
+const _uuid = Uuid();
 
 class LockFundsRepositoryImpl implements LockFundsRepository {
   final GrpcClient _grpcClient;
@@ -85,6 +88,7 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
         sourceAccountId: sourceAccountId,
         transactionPin: transactionPin,
         interestDestinationAccountId: interestDestinationAccountId,
+        idempotencyKey: _uuid.v4(),
       );
 
       final response =
@@ -198,7 +202,8 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
     try {
       final request = pb.RenewLockFundRequest()
         ..lockFundId = lockFundId
-        ..newDurationDays = newDurationDays;
+        ..newDurationDays = newDurationDays
+        ..idempotencyKey = _uuid.v4();
 
       final response = await _grpcClient.lockFundsClient.renewLockFund(
         request,
@@ -276,7 +281,8 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
         ..lockFundId = lockFundId
         ..amount = amount
         ..sourceAccountId = sourceAccountId
-        ..transactionPin = transactionPin;
+        ..transactionPin = transactionPin
+        ..idempotencyKey = _uuid.v4();
 
       final response = await _grpcClient.lockFundsClient.topUpLockFund(
         request,
