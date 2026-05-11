@@ -2783,16 +2783,21 @@ class CancelLockFundResponse extends $pb.GeneratedMessage {
 class GetPiggyVaultConfigsRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetPiggyVaultConfigsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'locale')
     ..hasRequiredFields = false
   ;
 
   GetPiggyVaultConfigsRequest._() : super();
   factory GetPiggyVaultConfigsRequest({
     $core.String? currency,
+    $core.String? locale,
   }) {
     final _result = create();
     if (currency != null) {
       _result.currency = currency;
+    }
+    if (locale != null) {
+      _result.locale = locale;
     }
     return _result;
   }
@@ -2825,6 +2830,15 @@ class GetPiggyVaultConfigsRequest extends $pb.GeneratedMessage {
   $core.bool hasCurrency() => $_has(0);
   @$pb.TagNumber(1)
   void clearCurrency() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get locale => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set locale($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasLocale() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLocale() => clearField(2);
 }
 
 class GetPiggyVaultConfigsResponse extends $pb.GeneratedMessage {

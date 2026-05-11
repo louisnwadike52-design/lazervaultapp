@@ -65,8 +65,14 @@ abstract class LockFundsRepository {
   /// Get lock funds statistics
   Future<LockFundsStatistics> getStatistics();
 
-  /// Get all PiggyVault product configs (backend-configurable rates)
-  Future<List<PiggyVaultConfig>> getPiggyVaultConfigs({String? currency});
+  /// Get all PiggyVault product configs (backend-configurable rates).
+  /// [locale] is a BCP-47 tag; when supplied the backend returns
+  /// localized display_name / description / confirmation_notes for
+  /// configs that have published overrides.
+  Future<List<PiggyVaultConfig>> getPiggyVaultConfigs({
+    String? currency,
+    String? locale,
+  });
 
   /// Create auto-save for a lock fund
   Future<LockFundAutoSaveConfig> createAutoSave({

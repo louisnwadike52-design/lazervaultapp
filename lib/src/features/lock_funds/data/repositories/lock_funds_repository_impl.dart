@@ -300,10 +300,14 @@ class LockFundsRepositoryImpl implements LockFundsRepository {
   }
 
   @override
-  Future<List<PiggyVaultConfig>> getPiggyVaultConfigs({String? currency}) async {
+  Future<List<PiggyVaultConfig>> getPiggyVaultConfigs({
+    String? currency,
+    String? locale,
+  }) async {
     try {
       final request = pb.GetPiggyVaultConfigsRequest();
       if (currency != null) request.currency = currency;
+      if (locale != null && locale.isNotEmpty) request.locale = locale;
 
       final response = await _grpcClient.lockFundsClient.getPiggyVaultConfigs(
         request,
