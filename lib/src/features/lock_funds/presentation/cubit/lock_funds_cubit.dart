@@ -1,17 +1,51 @@
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../account_cards_summary/services/balance_websocket_service.dart';
 import '../../domain/entities/lock_fund_entity.dart';
 import '../../domain/repositories/lock_funds_repository.dart';
 import 'lock_funds_state.dart';
 
 class LockFundsCubit extends Cubit<LockFundsState> {
   final LockFundsRepository _repository;
+  final BalanceWebSocketService? _wsService;
+  StreamSubscription<LockFundLifecycleEvent>? _lifecycleSub;
   String? currentUserId;
 
-  LockFundsCubit(this._repository) : super(const LockFundsInitial());
+  /// Optionally pass a [BalanceWebSocketService] so the cubit
+  /// auto-refreshes the list whenever a lock-fund lifecycle event
+  /// arrives (auto-renew, maturity, renewal_skipped, create from
+  /// another device). Without it the cubit behaves the same way it
+  /// did before — manual loads only.
+  LockFundsCubit(this._repository, {BalanceWebSocketService? wsService})
+      : _wsService = wsService,
+        super(const LockFundsInitial()) {
+    _lifecycleSub = _wsService?.lockFundEvents.listen(_onLifecycleEvent);
+  }
 
   void setUserId(String userId) {
     currentUserId = userId;
     loadLockFunds();
+  }
+
+  void _onLifecycleEvent(LockFundLifecycleEvent event) {
+    // Any state change on the user's locks invalidates the list +
+    // the receipt screen's statistics. Re-fetch is cheap (single
+    // gRPC call) and avoids the patch-vs-refetch consistency
+    // burden of trying to mutate the loaded list inline. The cubit
+    // is shared across the list screen and receipt, so a single
+    // load covers both surfaces.
+    if (isClosed) return;
+    if (currentUserId != null && event.userId.isNotEmpty &&
+        event.userId != currentUserId) {
+      return;
+    }
+    loadLockFunds();
+  }
+
+  @override
+  Future<void> close() async {
+    await _lifecycleSub?.cancel();
+    return super.close();
   }
 
   Future<void> loadLockFunds({LockStatus? status}) async {
