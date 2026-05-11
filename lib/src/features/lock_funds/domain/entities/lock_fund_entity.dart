@@ -123,6 +123,13 @@ class PiggyVaultConfig {
   /// safe accessors.
   final String durationOptions;
   final String quickAmountOptions;
+  /// Newline-separated bullets the admin sets for the
+  /// "Before you confirm" panel. confirmationNotes is always shown;
+  /// confirmationNotesRenewOn / confirmationNotesRenewOff are
+  /// appended below it based on the user's auto-renew toggle.
+  final String confirmationNotes;
+  final String confirmationNotesRenewOn;
+  final String confirmationNotesRenewOff;
   final bool allowsEarlyWithdrawal;
   final bool supportsAutoRenew;
   final bool supportsTopUp;
@@ -148,6 +155,9 @@ class PiggyVaultConfig {
     this.fixedAmount = 0,
     this.durationOptions = '[]',
     this.quickAmountOptions = '[]',
+    this.confirmationNotes = '',
+    this.confirmationNotesRenewOn = '',
+    this.confirmationNotesRenewOff = '',
     required this.allowsEarlyWithdrawal,
     required this.supportsAutoRenew,
     this.supportsTopUp = false,

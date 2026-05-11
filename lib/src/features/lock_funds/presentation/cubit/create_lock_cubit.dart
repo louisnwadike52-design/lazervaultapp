@@ -178,6 +178,31 @@ class CreateLockCubit extends Cubit<CreateLockState> {
   List<double> getQuickAmountOptions(LockType type) =>
       getConfigForType(type)?.parsedQuickAmountOptions ?? const [];
 
+  /// Bullets for the Pay & confirm slide's "Before you confirm"
+  /// panel. Combines the always-on notes with the auto-renew
+  /// variant the admin configured. Each line in the source string
+  /// becomes its own bullet; empty lines are dropped so a stray
+  /// trailing newline doesn't render an empty bullet.
+  List<String> getConfirmationNotes(LockType? type, {required bool autoRenew}) {
+    final config = getConfigForType(type);
+    if (config == null) return const [];
+    final parts = <String>[];
+    parts.addAll(_splitNotes(config.confirmationNotes));
+    parts.addAll(_splitNotes(
+      autoRenew
+          ? config.confirmationNotesRenewOn
+          : config.confirmationNotesRenewOff,
+    ));
+    return parts;
+  }
+
+  static List<String> _splitNotes(String raw) =>
+      raw
+          .split('\n')
+          .map((s) => s.trim())
+          .where((s) => s.isNotEmpty)
+          .toList();
+
   // Backend slug — re-exposed via the enum's `backendKey` getter.
   String _lockTypeToConfigString(LockType type) => type.backendKey;
 
@@ -314,12 +339,16 @@ class CreateLockCubit extends Cubit<CreateLockState> {
   }
 
   bool validateStep3() {
-    if (_lockType == LockType.goalBased) {
-      if (_goalName == null || _goalName!.trim().isEmpty) {
-        if (isClosed) return false;
-        emit(CreateLockValidationError('Please enter a goal name'));
-        return false;
-      }
+    // Every lock needs a name, regardless of plan type — the
+    // backend column is NOT NULL, the receipt + transaction history
+    // both read from it, and "Untitled lock" is a poor UX.
+    // Description stays optional; ops asked for the friction-free
+    // version so users can lock funds in two taps when they don't
+    // have anything specific to add.
+    if (_goalName == null || _goalName!.trim().isEmpty) {
+      if (isClosed) return false;
+      emit(CreateLockValidationError('Please enter a name for this lock'));
+      return false;
     }
     return true;
   }

@@ -52,7 +52,7 @@ class _GoalDetailsScreenState extends State<GoalDetailsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                isGoalBased ? 'Set Your Goal' : 'Goal Details (Optional)',
+                isGoalBased ? 'Set Your Goal' : 'Name Your Lock',
                 style: GoogleFonts.inter(
                   fontSize: 24.sp,
                   fontWeight: FontWeight.w700,
@@ -63,7 +63,7 @@ class _GoalDetailsScreenState extends State<GoalDetailsScreen> {
               Text(
                 isGoalBased
                     ? 'Tell us about your financial goal to keep you motivated'
-                    : 'You can skip this step or add a goal for motivation',
+                    : 'Give this lock a short name so you can spot it later',
                 style: GoogleFonts.inter(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w400,
@@ -96,9 +96,11 @@ class _GoalDetailsScreenState extends State<GoalDetailsScreen> {
               ),
               SizedBox(height: 32.h),
 
-              // Goal Name Input
+              // Name Input — required across every plan now; the
+              // backend column is NOT NULL and the receipt /
+              // transaction history reads from this string.
               Text(
-                'Goal Name ${isGoalBased ? '*' : '(Optional)'}',
+                isGoalBased ? 'Goal Name *' : 'Lock Name *',
                 style: GoogleFonts.inter(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w600,
