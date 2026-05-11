@@ -187,27 +187,34 @@ class LockFundsCubit extends Cubit<LockFundsState> {
     }
   }
 
-  Future<void> renewLockFund({
+  /// Renews an active lock. Returns the updated LockFund so the
+  /// caller (details screen) can patch its local state without a
+  /// round-trip; also reloads the list cubit-side so other screens
+  /// stay consistent. Throws on backend failure so callers can
+  /// surface the typed error message to the user.
+  Future<LockFund> renewLockFund({
     required String lockFundId,
     required int newDurationDays,
   }) async {
+    if (isClosed) {
+      throw StateError('LockFundsCubit closed');
+    }
+    emit(const LockFundsLoading());
     try {
-      if (isClosed) return;
-      emit(const LockFundsLoading());
-
       final lockFund = await _repository.renewLockFund(
         lockFundId: lockFundId,
         newDurationDays: newDurationDays,
       );
-      if (isClosed) return;
+      if (isClosed) return lockFund;
 
       emit(LockFundCreated(lockFund));
 
       // Reload list
       loadLockFunds();
+      return lockFund;
     } catch (e) {
-      if (isClosed) return;
-      emit(LockFundsError(e.toString()));
+      if (!isClosed) emit(LockFundsError(e.toString()));
+      rethrow;
     }
   }
 

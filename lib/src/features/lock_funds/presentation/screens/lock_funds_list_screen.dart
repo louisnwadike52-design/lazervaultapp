@@ -1,14 +1,17 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../authentication/cubit/authentication_state.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
+import '../../../account_cards_summary/services/balance_websocket_service.dart';
 import '../../domain/entities/lock_fund_entity.dart';
 import '../cubit/lock_funds_cubit.dart';
 import '../cubit/lock_funds_state.dart';
@@ -32,6 +35,20 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
   bool _hasLoadedData = false;
+  // Filter state. null = show every status. Backend takes the
+  // status enum verbatim ("locked", "matured", "cancelled", ...);
+  // see PiggyVault `LockStatus.backendValue` translation. Local
+  // client-side filter for the UI tab strip, NOT a paging param —
+  // we always fetch the full page and filter in-memory because the
+  // total count per user is small enough that this avoids a second
+  // network round-trip on every tab tap.
+  LockStatus? _filterStatus;
+  // Subscription for in-app toast notifications when the realtime
+  // WS pushes a lock-fund lifecycle event. The cubit already
+  // refreshes the list on these events; this subscription only
+  // adds the user-visible snackbar. Cancelled in dispose so
+  // backgrounding the screen doesn't keep dispatching toasts.
+  StreamSubscription<LockFundLifecycleEvent>? _toastSub;
 
   @override
   void initState() {
@@ -55,6 +72,77 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
 
     _fadeController.forward();
     _slideController.forward();
+
+    // Surface a toast for every WS lifecycle event matching the
+    // current user. The cubit already drives the list reload on
+    // these; the snackbar here is purely the visible cue that
+    // "your auto-renew ran at 02:00 and you have a fresh upfront
+    // payout sitting in your wallet now". Falls back gracefully
+    // if the WS service isn't registered in DI.
+    try {
+      final ws = serviceLocator<BalanceWebSocketService>();
+      _toastSub = ws.lockFundEvents.listen(_onLifecycleToast);
+    } catch (_) {
+      // WS not wired — silent. The list refresh path on entry
+      // still gives the user the canonical state.
+    }
+  }
+
+  /// Translates a LockFundLifecycleEvent into a user-friendly
+  /// snackbar. Four event types, each with its own colour + copy
+  /// so the user can tell "your lock matured" apart from "renewal
+  /// bailed; you may want to investigate".
+  void _onLifecycleToast(LockFundLifecycleEvent event) {
+    if (!mounted) return;
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is AuthenticationSuccess &&
+        event.userId.isNotEmpty &&
+        event.userId != authState.profile.user.id) {
+      return;
+    }
+    String title;
+    String message;
+    Color color;
+    switch (event.eventType) {
+      case 'lock_fund.matured':
+        title = 'Lock matured';
+        message = '${event.name} just unlocked. Tap to claim.';
+        color = const Color(0xFF10B981);
+        break;
+      case 'lock_fund.renewed':
+        title = 'Lock renewed';
+        message = event.upfrontInterestPaid > 0
+            ? 'Renewed ${event.name}. Upfront interest credited.'
+            : 'Renewed ${event.name}.';
+        color = const Color(0xFF6366F1);
+        break;
+      case 'lock_fund.renewal_skipped':
+        title = 'Auto-renew skipped';
+        message = event.reason.isNotEmpty
+            ? '${event.name}: ${event.reason}. Lock matured instead.'
+            : 'Auto-renew failed for ${event.name}; lock matured.';
+        color = const Color(0xFFFB923C);
+        break;
+      case 'lock_fund.cancelled':
+        title = 'Lock cancelled';
+        message = '${event.name} cancelled. Funds returned to wallet.';
+        color = const Color(0xFF6B7280);
+        break;
+      case 'lock_fund.created':
+        // Don't double-notify on create — the user is on the
+        // wizard's receipt screen already.
+        return;
+      default:
+        return;
+    }
+    Get.snackbar(
+      title,
+      message,
+      backgroundColor: color,
+      colorText: Colors.white,
+      snackPosition: SnackPosition.TOP,
+      duration: const Duration(seconds: 4),
+    );
   }
 
   @override
@@ -83,6 +171,7 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
 
   @override
   void dispose() {
+    _toastSub?.cancel();
     _fadeController.dispose();
     _slideController.dispose();
     super.dispose();
@@ -270,6 +359,9 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
   }
 
   Widget _buildLocksView(LockFundsLoaded state) {
+    final filtered = _filterStatus == null
+        ? state.lockFunds
+        : state.lockFunds.where((l) => l.status == _filterStatus).toList();
     return RefreshIndicator(
       onRefresh: () async => context.read<LockFundsCubit>().loadLockFunds(),
       backgroundColor: const Color(0xFF1F1F1F),
@@ -282,12 +374,113 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
           children: [
             _buildStatisticsCards(state.statistics),
             SizedBox(height: 32.h),
-            _buildSectionHeader('Your Locks', state.lockFunds.length),
+            _buildFilterTabs(state.lockFunds),
             SizedBox(height: 16.h),
-            _buildLocksList(state.lockFunds),
+            _buildSectionHeader('Your Locks', filtered.length),
+            SizedBox(height: 16.h),
+            if (filtered.isEmpty)
+              _buildFilterEmptyState()
+            else
+              _buildLocksList(filtered),
             SizedBox(height: 100.h), // Space for FAB
           ],
         ),
+      ),
+    );
+  }
+
+  /// Five-tab status filter strip rendered above the lock list.
+  /// Each tab shows a count badge so the user can see "you have 3
+  /// active, 1 matured" at a glance without ticking through every
+  /// tab. The "All" tab is always present + selected by default.
+  Widget _buildFilterTabs(List<LockFund> allLocks) {
+    final tabs = <_FilterTab>[
+      _FilterTab('All', null, allLocks.length),
+      _FilterTab('Active', LockStatus.active,
+          allLocks.where((l) => l.status == LockStatus.active).length),
+      _FilterTab('Matured', LockStatus.matured,
+          allLocks.where((l) => l.status == LockStatus.matured).length),
+      _FilterTab('Unlocked', LockStatus.unlocked,
+          allLocks.where((l) => l.status == LockStatus.unlocked).length),
+      _FilterTab('Cancelled', LockStatus.cancelled,
+          allLocks.where((l) => l.status == LockStatus.cancelled).length),
+    ];
+    return SizedBox(
+      height: 36.h,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemCount: tabs.length,
+        separatorBuilder: (_, __) => SizedBox(width: 8.w),
+        itemBuilder: (ctx, i) {
+          final t = tabs[i];
+          final selected = _filterStatus == t.status;
+          return GestureDetector(
+            onTap: () => setState(() => _filterStatus = t.status),
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
+              decoration: BoxDecoration(
+                color: selected
+                    ? const Color(0xFF4E03D0)
+                    : Colors.white.withValues(alpha: 0.06),
+                border: Border.all(
+                  color: selected
+                      ? const Color(0xFF8B5CF6)
+                      : Colors.white.withValues(alpha: 0.1),
+                ),
+                borderRadius: BorderRadius.circular(18.r),
+              ),
+              child: Row(
+                children: [
+                  Text(t.label, style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 12.sp,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                  )),
+                  if (t.count > 0) ...[
+                    SizedBox(width: 6.w),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 1.h),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(8.r),
+                      ),
+                      child: Text('${t.count}', style: GoogleFonts.inter(
+                        color: Colors.white, fontSize: 10.sp,
+                        fontWeight: FontWeight.w700)),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  /// Empty-state for the active filter — e.g. "no matured locks
+  /// yet" — rendered when the unfiltered list isn't empty but the
+  /// current tab has zero rows.
+  Widget _buildFilterEmptyState() {
+    final label = _filterStatus == null ? 'locks' : '${_filterStatus!.name.toLowerCase()} locks';
+    return Container(
+      padding: EdgeInsets.all(24.w),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(16.r),
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.filter_alt_off_outlined,
+              color: const Color(0xFF6B7280), size: 32.sp),
+          SizedBox(height: 8.h),
+          Text('No $label', style: GoogleFonts.inter(
+            color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w600)),
+          SizedBox(height: 4.h),
+          Text('Try a different filter.', style: GoogleFonts.inter(
+            color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
+        ],
       ),
     );
   }
@@ -1042,4 +1235,15 @@ class _LockFundsListScreenState extends State<LockFundsListScreen>
       }
     });
   }
+}
+
+/// One row in the status-filter strip on the lock-funds list
+/// screen. label is the chip text, status is the LockStatus to
+/// filter by (null = "All"), count is the number of rows matching
+/// the filter in the current loaded page.
+class _FilterTab {
+  final String label;
+  final LockStatus? status;
+  final int count;
+  const _FilterTab(this.label, this.status, this.count);
 }
