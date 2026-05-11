@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:get_it/get_it.dart';
 import 'package:grpc/grpc.dart';
 import 'package:http/http.dart' as http;
@@ -3609,4 +3611,32 @@ Future<void> init() async {
   );
 
   print("Dependency Injection Initialized with Hierarchical Order");
+
+  // Fire-and-forget: refresh the platform-supported-locales list from
+  // the backend so CountryLocales.all reflects what the platform
+  // currently supports rather than the static fallback. The fetch is
+  // unauthenticated (public RPC on accounts-service) so it succeeds
+  // before login. Failures are silent — fallback list keeps working.
+  unawaited(_refreshSupportedLocalesFromBackend());
+}
+
+Future<void> _refreshSupportedLocalesFromBackend() async {
+  final manager = serviceLocator<LocaleManager>();
+  final repo = serviceLocator<IMultiCountryRepository>();
+  await manager.refreshSupportedLocales(() async {
+    final res = await repo.getSupportedLocales();
+    return res.fold(
+      (_) => const [],
+      (locales) => locales
+          .map((l) => (
+                locale: l.locale,
+                countryCode: l.countryCode,
+                countryName: l.countryName,
+                currencyCode: l.currencyCode,
+                flagEmoji: l.flagEmoji,
+                isActive: l.isActive,
+              ))
+          .toList(),
+    );
+  });
 }
