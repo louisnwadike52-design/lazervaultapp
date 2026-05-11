@@ -158,11 +158,12 @@ const CreateLockFundRequest$json = const {
     const {'1': 'source_account_id', '3': 9, '4': 1, '5': 9, '10': 'sourceAccountId'},
     const {'1': 'transaction_pin', '3': 10, '4': 1, '5': 9, '10': 'transactionPin'},
     const {'1': 'interest_destination_account_id', '3': 11, '4': 1, '5': 9, '10': 'interestDestinationAccountId'},
+    const {'1': 'idempotency_key', '3': 12, '4': 1, '5': 9, '10': 'idempotencyKey'},
   ],
 };
 
 /// Descriptor for `CreateLockFundRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List createLockFundRequestDescriptor = $convert.base64Decode('ChVDcmVhdGVMb2NrRnVuZFJlcXVlc3QSKQoJbG9ja190eXBlGAEgASgOMgwucGIuTG9ja1R5cGVSCGxvY2tUeXBlEhYKBmFtb3VudBgCIAEoAVIGYW1vdW50EhoKCGN1cnJlbmN5GAMgASgJUghjdXJyZW5jeRIsChJsb2NrX2R1cmF0aW9uX2RheXMYBCABKAVSEGxvY2tEdXJhdGlvbkRheXMSHQoKYXV0b19yZW5ldxgFIAEoCFIJYXV0b1JlbmV3EhsKCWdvYWxfbmFtZRgGIAEoCVIIZ29hbE5hbWUSKQoQZ29hbF9kZXNjcmlwdGlvbhgHIAEoCVIPZ29hbERlc2NyaXB0aW9uEiUKDnBheW1lbnRfbWV0aG9kGAggASgJUg1wYXltZW50TWV0aG9kEioKEXNvdXJjZV9hY2NvdW50X2lkGAkgASgJUg9zb3VyY2VBY2NvdW50SWQSJwoPdHJhbnNhY3Rpb25fcGluGAogASgJUg50cmFuc2FjdGlvblBpbhJFCh9pbnRlcmVzdF9kZXN0aW5hdGlvbl9hY2NvdW50X2lkGAsgASgJUhxpbnRlcmVzdERlc3RpbmF0aW9uQWNjb3VudElk');
+final $typed_data.Uint8List createLockFundRequestDescriptor = $convert.base64Decode('ChVDcmVhdGVMb2NrRnVuZFJlcXVlc3QSKQoJbG9ja190eXBlGAEgASgOMgwucGIuTG9ja1R5cGVSCGxvY2tUeXBlEhYKBmFtb3VudBgCIAEoAVIGYW1vdW50EhoKCGN1cnJlbmN5GAMgASgJUghjdXJyZW5jeRIsChJsb2NrX2R1cmF0aW9uX2RheXMYBCABKAVSEGxvY2tEdXJhdGlvbkRheXMSHQoKYXV0b19yZW5ldxgFIAEoCFIJYXV0b1JlbmV3EhsKCWdvYWxfbmFtZRgGIAEoCVIIZ29hbE5hbWUSKQoQZ29hbF9kZXNjcmlwdGlvbhgHIAEoCVIPZ29hbERlc2NyaXB0aW9uEiUKDnBheW1lbnRfbWV0aG9kGAggASgJUg1wYXltZW50TWV0aG9kEioKEXNvdXJjZV9hY2NvdW50X2lkGAkgASgJUg9zb3VyY2VBY2NvdW50SWQSJwoPdHJhbnNhY3Rpb25fcGluGAogASgJUg50cmFuc2FjdGlvblBpbhJFCh9pbnRlcmVzdF9kZXN0aW5hdGlvbl9hY2NvdW50X2lkGAsgASgJUhxpbnRlcmVzdERlc3RpbmF0aW9uQWNjb3VudElkEicKD2lkZW1wb3RlbmN5X2tleRgMIAEoCVIOaWRlbXBvdGVuY3lLZXk=');
 @$core.Deprecated('Use createLockFundResponseDescriptor instead')
 const CreateLockFundResponse$json = const {
   '1': 'CreateLockFundResponse',
@@ -262,11 +263,12 @@ const TopUpLockFundRequest$json = const {
     const {'1': 'amount', '3': 2, '4': 1, '5': 1, '10': 'amount'},
     const {'1': 'transaction_pin', '3': 3, '4': 1, '5': 9, '10': 'transactionPin'},
     const {'1': 'source_account_id', '3': 4, '4': 1, '5': 9, '10': 'sourceAccountId'},
+    const {'1': 'idempotency_key', '3': 5, '4': 1, '5': 9, '10': 'idempotencyKey'},
   ],
 };
 
 /// Descriptor for `TopUpLockFundRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List topUpLockFundRequestDescriptor = $convert.base64Decode('ChRUb3BVcExvY2tGdW5kUmVxdWVzdBIgCgxsb2NrX2Z1bmRfaWQYASABKAlSCmxvY2tGdW5kSWQSFgoGYW1vdW50GAIgASgBUgZhbW91bnQSJwoPdHJhbnNhY3Rpb25fcGluGAMgASgJUg50cmFuc2FjdGlvblBpbhIqChFzb3VyY2VfYWNjb3VudF9pZBgEIAEoCVIPc291cmNlQWNjb3VudElk');
+final $typed_data.Uint8List topUpLockFundRequestDescriptor = $convert.base64Decode('ChRUb3BVcExvY2tGdW5kUmVxdWVzdBIgCgxsb2NrX2Z1bmRfaWQYASABKAlSCmxvY2tGdW5kSWQSFgoGYW1vdW50GAIgASgBUgZhbW91bnQSJwoPdHJhbnNhY3Rpb25fcGluGAMgASgJUg50cmFuc2FjdGlvblBpbhIqChFzb3VyY2VfYWNjb3VudF9pZBgEIAEoCVIPc291cmNlQWNjb3VudElkEicKD2lkZW1wb3RlbmN5X2tleRgFIAEoCVIOaWRlbXBvdGVuY3lLZXk=');
 @$core.Deprecated('Use topUpLockFundResponseDescriptor instead')
 const TopUpLockFundResponse$json = const {
   '1': 'TopUpLockFundResponse',
@@ -336,11 +338,12 @@ const RenewLockFundRequest$json = const {
   '2': const [
     const {'1': 'lock_fund_id', '3': 1, '4': 1, '5': 9, '10': 'lockFundId'},
     const {'1': 'new_duration_days', '3': 2, '4': 1, '5': 5, '10': 'newDurationDays'},
+    const {'1': 'idempotency_key', '3': 3, '4': 1, '5': 9, '10': 'idempotencyKey'},
   ],
 };
 
 /// Descriptor for `RenewLockFundRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List renewLockFundRequestDescriptor = $convert.base64Decode('ChRSZW5ld0xvY2tGdW5kUmVxdWVzdBIgCgxsb2NrX2Z1bmRfaWQYASABKAlSCmxvY2tGdW5kSWQSKgoRbmV3X2R1cmF0aW9uX2RheXMYAiABKAVSD25ld0R1cmF0aW9uRGF5cw==');
+final $typed_data.Uint8List renewLockFundRequestDescriptor = $convert.base64Decode('ChRSZW5ld0xvY2tGdW5kUmVxdWVzdBIgCgxsb2NrX2Z1bmRfaWQYASABKAlSCmxvY2tGdW5kSWQSKgoRbmV3X2R1cmF0aW9uX2RheXMYAiABKAVSD25ld0R1cmF0aW9uRGF5cxInCg9pZGVtcG90ZW5jeV9rZXkYAyABKAlSDmlkZW1wb3RlbmN5S2V5');
 @$core.Deprecated('Use renewLockFundResponseDescriptor instead')
 const RenewLockFundResponse$json = const {
   '1': 'RenewLockFundResponse',

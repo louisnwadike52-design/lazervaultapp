@@ -106,6 +106,7 @@ class LockFundModel {
     required String sourceAccountId,
     String transactionPin = '',
     String? interestDestinationAccountId,
+    String? idempotencyKey,
   }) {
     return pb.CreateLockFundRequest()
       ..lockType = convertLockTypeToProto(lockType)
@@ -118,7 +119,8 @@ class LockFundModel {
       ..paymentMethod = paymentMethod
       ..sourceAccountId = sourceAccountId
       ..transactionPin = transactionPin
-      ..interestDestinationAccountId = interestDestinationAccountId ?? '';
+      ..interestDestinationAccountId = interestDestinationAccountId ?? ''
+      ..idempotencyKey = idempotencyKey ?? '';
   }
 
   /// Convert protobuf LockTransaction to domain entity
