@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
 import '../../domain/entities/crypto_entity.dart';
-import '../models/crypto_transaction_models.dart';
-import 'crypto_confirmation_screen.dart';
+import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
+import '../../../transaction_pin/services/transaction_pin_service.dart';
+import '../widgets/price_quote_card.dart';
+import 'swap_flow_dispatcher.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 
@@ -22,21 +25,25 @@ class SwapCryptoScreen extends StatefulWidget {
 }
 
 class _SwapCryptoScreenState extends State<SwapCryptoScreen>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, TransactionPinMixin {
   final TextEditingController _fromAmountController = TextEditingController();
   final TextEditingController _toAmountController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
-  
+
   late AnimationController _animationController;
   late AnimationController _swapAnimationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _rotationAnimation;
-  
+
   CryptoHolding? _fromHolding;
   Crypto? _toCrypto;
   bool _isFromAmountActive = true;
   bool _isLoading = false;
+  bool _isTransacting = false;
+
+  @override
+  ITransactionPinService get transactionPinService => GetIt.I<ITransactionPinService>();
 
   List<CryptoHolding> get _holdings {
     final state = context.read<CryptoCubit>().state;
@@ -181,6 +188,29 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           _buildSwapInterface(),
+                          if (_fromHolding != null || _toCrypto != null) ...[
+                            SizedBox(height: 12.h),
+                            Row(
+                              children: [
+                                if (_fromHolding != null)
+                                  Expanded(
+                                    child: PriceQuoteCard(
+                                      cryptoId: _fromHolding!.cryptoId,
+                                      cryptoSymbol: _fromHolding!.cryptoSymbol,
+                                    ),
+                                  ),
+                                if (_fromHolding != null && _toCrypto != null)
+                                  SizedBox(width: 8.w),
+                                if (_toCrypto != null)
+                                  Expanded(
+                                    child: PriceQuoteCard(
+                                      cryptoId: _toCrypto!.id,
+                                      cryptoSymbol: _toCrypto!.symbol,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ],
                           SizedBox(height: 24.h),
                           if (_fromHolding != null && _toCrypto != null) ...[
                             _buildExchangeRate(),
@@ -1306,8 +1336,8 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
     );
   }
 
-  void _processSwapOrder() {
-    if (_fromHolding == null || _toCrypto == null || !_hasValidAmount || _isLoading) return;
+  Future<void> _processSwapOrder() async {
+    if (_fromHolding == null || _toCrypto == null || !_hasValidAmount || _isLoading || _isTransacting) return;
     // Prevent swapping same crypto to same crypto
     if (_fromHolding!.cryptoId == _toCrypto!.id ||
         _fromHolding!.cryptoSymbol.toLowerCase() == _toCrypto!.symbol.toLowerCase()) {
@@ -1321,33 +1351,51 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
       return;
     }
 
-    // Create transaction details
-    final fee = (_fromAmount * _fromHolding!.currentPrice) * 0.005; // 0.5% fee for swaps
-    final totalFiatValue = _fromAmount * _fromHolding!.currentPrice;
+    final fromSymbol = _fromHolding!.cryptoSymbol;
+    final toSymbol = _toCrypto!.symbol;
+    final fromAmount = _fromAmount;
 
-    final transactionDetails = CryptoTransactionDetails(
-      type: CryptoTransactionType.swap,
-      cryptoName: _toCrypto!.name,
-      cryptoSymbol: _toCrypto!.symbol,
-      cryptoAmount: _toAmount.toStringAsFixed(6),
-      pricePerUnit: _toCrypto!.currentPrice,
-      fiatAmount: totalFiatValue,
-      networkFee: fee * 0.3,
-      tradingFee: fee * 0.7,
-      totalAmount: totalFiatValue,
-      paymentMethod: 'Crypto Wallet',
-      fromCrypto: _fromHolding!.cryptoSymbol,
-      toCrypto: _toCrypto!.symbol,
-      fromCryptoId: _fromHolding!.cryptoId,
-      toCryptoId: _toCrypto!.id,
-      cryptoQuantity: _fromAmount,
+    final success = await validateTransactionPin(
+      context: context,
+      transactionId: 'CRYPTO-CONVERT-${DateTime.now().millisecondsSinceEpoch}',
+      transactionType: 'swap',
+      amount: fromAmount,
+      currency: fromSymbol.toUpperCase(),
+      title: 'Confirm Convert',
+      message: 'Convert ${fromAmount.toStringAsFixed(6)} '
+          '${fromSymbol.toUpperCase()} → ${toSymbol.toUpperCase()}',
+      showProcessingPhase: false,
+      onPinValidated: (verificationToken) async {
+        if (!mounted) return;
+        setState(() => _isTransacting = true);
+
+        // PR9d — route through the swap_quotation pipeline (15s locked quote +
+        // confirm). The dispatcher accepts side="convert" with `fiatAmount`
+        // reinterpreted as the from-side major units (e.g. 0.001 BTC). The
+        // server's CreateSwapQuote saga handles min-order / pair support /
+        // hold lifecycle; the legacy `convertCrypto` RPC stays in place for
+        // chat/voice agents only.
+        final result = await runSwapFlow(
+          context: context,
+          side: 'convert',
+          fromCryptoSymbol: fromSymbol,
+          cryptoSymbol: toSymbol,
+          fiatAmount: fromAmount,
+          description: 'Convert ${fromAmount.toStringAsFixed(6)} '
+              '${fromSymbol.toUpperCase()} → ${toSymbol.toUpperCase()}',
+        );
+
+        if (!mounted) return;
+        if (!result.initiated && (result.message ?? '').isNotEmpty) {
+          Get.snackbar('Convert failed', result.message!,
+              snackPosition: SnackPosition.BOTTOM);
+        }
+        setState(() => _isTransacting = false);
+      },
     );
 
-    // Navigate to confirmation screen with CryptoCubit
-    final cryptoCubit = context.read<CryptoCubit>();
-    Get.to(() => BlocProvider.value(
-      value: cryptoCubit,
-      child: CryptoConfirmationScreen(transactionDetails: transactionDetails),
-    ));
+    if (!success && mounted) {
+      setState(() => _isTransacting = false);
+    }
   }
-} 
+}

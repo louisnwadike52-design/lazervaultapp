@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart' hide Transition;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -491,9 +492,16 @@ class CryptoWalletDetailScreen extends StatelessWidget {
                   ),
                   if (wallet.address.isNotEmpty)
                     GestureDetector(
-                      onTap: () {
-                        // Copy address
-                        // TODO: Implement copy to clipboard
+                      onTap: () async {
+                        await Clipboard.setData(ClipboardData(text: wallet.address));
+                        Get.snackbar(
+                          'Copied',
+                          'Deposit address copied to clipboard',
+                          snackPosition: SnackPosition.BOTTOM,
+                          backgroundColor: const Color(0xFF4E03D0).withValues(alpha: 0.9),
+                          colorText: Colors.white,
+                          duration: const Duration(seconds: 2),
+                        );
                       },
                       child: Container(
                         padding: EdgeInsets.all(8.w),
