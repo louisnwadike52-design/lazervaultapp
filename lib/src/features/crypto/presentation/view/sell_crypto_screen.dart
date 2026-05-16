@@ -8,11 +8,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
+import '../../cubit/crypto_config_cubit.dart';
 import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
 import '../../domain/entities/crypto_entity.dart';
-import '../models/crypto_transaction_models.dart';
-import 'crypto_processing_screen.dart';
+import '../widgets/price_quote_card.dart';
+import 'swap_flow_dispatcher.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 
 class SellCryptoScreen extends StatefulWidget {
@@ -41,6 +42,20 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
 
   @override
   ITransactionPinService get transactionPinService => GetIt.I<ITransactionPinService>();
+
+  /// Display-only fee rate driven by `crypto.fee_display.fallback_bps`. The
+  /// authoritative fee comes from the server's swap-quote response.
+  double _feeDisplayRate() {
+    int? bps;
+    try {
+      bps = context.read<CryptoConfigCubit>().config.feeDisplayFallbackBps;
+    } catch (_) {
+      try {
+        bps = GetIt.I<CryptoConfigCubit>().config.feeDisplayFallbackBps;
+      } catch (_) {}
+    }
+    return (bps ?? 150) / 10000.0;
+  }
 
   @override
   void initState() {
@@ -135,6 +150,13 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           _buildHoldingSelector(),
+                          if (_selectedHolding != null) ...[
+                            SizedBox(height: 12.h),
+                            PriceQuoteCard(
+                              cryptoId: _selectedHolding!.cryptoId,
+                              cryptoSymbol: _selectedHolding!.cryptoSymbol,
+                            ),
+                          ],
                           SizedBox(height: 24.h),
                           _buildAmountInput(),
                           SizedBox(height: 24.h),
@@ -617,7 +639,9 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
   }
 
   Widget _buildOrderSummary() {
-    final fee = _fiatAmount * 0.015; // 1.5% fee
+    // Display estimate; authoritative fee comes from server swap-quote
+    // response. Rate sourced from CryptoConfigCubit (PR5d.4).
+    final fee = _fiatAmount * _feeDisplayRate();
     final networkFee = fee * 0.3;
     final tradingFee = fee * 0.7;
     final netProceeds = _fiatAmount - fee;
@@ -1258,13 +1282,13 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
   void _processSellOrder() async {
     if (_selectedHolding == null || !_hasValidAmount || _isLoading || _isTransacting) return;
 
-    // Calculate fee
-    final fee = _fiatAmount * 0.015; // 1.5% fee
+    // Fee display still shown to user via the PIN sheet; the actual platform
+    // spread is computed server-side from system_settings.crypto.spread.*
+    // basis points and applied during the swap-quotation flow. The display
+    // rate here comes from CryptoConfigCubit (PR5d.4).
+    final fee = _fiatAmount * _feeDisplayRate();
     final netProceeds = _fiatAmount - fee;
-
-    final cryptoId = _selectedHolding!.cryptoId;
     final quantity = _cryptoAmount;
-    final price = _selectedHolding!.currentPrice;
 
     // Show PIN bottom sheet first
     final success = await validateTransactionPin(
@@ -1279,29 +1303,30 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
       totalAmount: netProceeds,
       showProcessingPhase: false, // We'll use our own processing screen
       onPinValidated: (verificationToken) async {
-        // PIN validated - navigate to processing screen
         if (!mounted) return;
-
         setState(() => _isTransacting = true);
 
-        Get.to(() => BlocProvider.value(
-          value: context.read<CryptoCubit>(),
-          child: CryptoProcessingScreen(
-            transactionType: CryptoTransactionType.sell,
-            cryptoName: _selectedHolding!.cryptoName,
-            cryptoSymbol: _selectedHolding!.cryptoSymbol,
-            cryptoAmount: quantity.toStringAsFixed(6),
-            fiatAmount: netProceeds,
-            price: price,
-            cryptoId: cryptoId,
-            cryptoQuantity: quantity,
-            transactionPin: verificationToken,
-            paymentMethod: 'Bank Transfer',
-          ),
-        ));
+        // PR4.7: PIN validated → route into the Quidax swap-quotation flow.
+        // For Sell, fiatAmount represents the target NGN proceeds; the saga
+        // resolves the matching from-crypto amount via the Quidax quote.
+        final result = await runSwapFlow(
+          context: context,
+          side: 'sell',
+          cryptoSymbol: _selectedHolding!.cryptoSymbol,
+          fiatAmount: netProceeds,
+          description: 'Sell ${quantity.toStringAsFixed(6)} ${_selectedHolding!.cryptoSymbol.toUpperCase()}',
+        );
 
-        // Clear amount after initiating transaction (processing screen handles success/error)
-        _amountController.clear();
+        if (!mounted) return;
+        if (!result.initiated && (result.message ?? '').isNotEmpty) {
+          Get.snackbar(
+            'Trade failed',
+            result.message!,
+            snackPosition: SnackPosition.BOTTOM,
+          );
+        } else {
+          _amountController.clear();
+        }
         setState(() => _isTransacting = false);
       },
     );
