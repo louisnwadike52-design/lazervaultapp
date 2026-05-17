@@ -61,18 +61,34 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
   }
 
   CryptoTransactionStatus _mapStatus(String status) {
+    // Maps the backend's raw status string onto the UI enum. Mirrors the
+    // saga's status set (migrations 007 + 018 + 020). Default falls
+    // through to verifying — the most conservative UI label — rather
+    // than to completed, so an unknown future-status doesn't show a
+    // misleading green badge.
     switch (status.toLowerCase()) {
       case 'completed':
       case 'success':
         return CryptoTransactionStatus.completed;
+      case 'quote_pending':
+      case 'submitting':
+      case 'swap_pending':
       case 'pending':
       case 'processing':
         return CryptoTransactionStatus.pending;
       case 'failed':
+      case 'reversed':
       case 'error':
         return CryptoTransactionStatus.failed;
+      case 'refunded':
+      case 'refund_pending':
+        return CryptoTransactionStatus.refunded;
+      case 'manual_review':
+        return CryptoTransactionStatus.manualReview;
+      case 'submission_unknown':
+        return CryptoTransactionStatus.verifying;
       default:
-        return CryptoTransactionStatus.completed;
+        return CryptoTransactionStatus.verifying;
     }
   }
 
@@ -456,7 +472,7 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
                               borderRadius: BorderRadius.circular(12.r),
                             ),
                             child: Text(
-                              transaction.status.name.toUpperCase(),
+                              _getStatusLabel(transaction.status).toUpperCase(),
                               style: GoogleFonts.inter(
                                 fontSize: 10.sp,
                                 fontWeight: FontWeight.w600,
@@ -804,9 +820,37 @@ class _CryptoTransactionHistoryScreenState extends State<CryptoTransactionHistor
       case CryptoTransactionStatus.completed:
         return Colors.green;
       case CryptoTransactionStatus.pending:
+      case CryptoTransactionStatus.verifying:
         return Colors.orange;
       case CryptoTransactionStatus.failed:
         return Colors.red;
+      case CryptoTransactionStatus.refunded:
+        // Neutral grey — neither a "good" nor a "bad" outcome; the user
+        // got their fiat back but the trade didn't happen.
+        return const Color(0xFF9CA3AF);
+      case CryptoTransactionStatus.manualReview:
+        // Deep amber so admin-attention rows stand out from regular
+        // pending. Visible without being alarming.
+        return const Color(0xFFFB923C);
+    }
+  }
+
+  /// Human-readable label shown in the badge next to the status colour.
+  /// Kept short so the row stays single-line on narrow screens.
+  String _getStatusLabel(CryptoTransactionStatus status) {
+    switch (status) {
+      case CryptoTransactionStatus.completed:
+        return 'Completed';
+      case CryptoTransactionStatus.pending:
+        return 'Processing';
+      case CryptoTransactionStatus.failed:
+        return 'Failed';
+      case CryptoTransactionStatus.refunded:
+        return 'Refunded';
+      case CryptoTransactionStatus.manualReview:
+        return 'Under Review';
+      case CryptoTransactionStatus.verifying:
+        return 'Verifying';
     }
   }
 
