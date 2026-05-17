@@ -165,13 +165,15 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
   }
 
   Widget _buildSuccessHeader() {
+    final statusColor = _getStatusColor();
+    final statusIcon = _getStatusIcon();
     return Container(
       padding: EdgeInsets.all(32.w),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Colors.green.withValues(alpha: 0.2),
-            Colors.green.withValues(alpha: 0.05),
+            statusColor.withValues(alpha: 0.2),
+            statusColor.withValues(alpha: 0.05),
           ],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -184,25 +186,25 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
             offset: Offset(0, 2),
           ),
         ],
-        
+
       ),
       child: Column(
         children: [
           Container(
             padding: EdgeInsets.all(20.w),
             decoration: BoxDecoration(
-              color: Colors.green.withValues(alpha: 0.2),
+              color: statusColor.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: Icon(
-              Icons.check_circle,
+              statusIcon,
               size: 48.sp,
-              color: Colors.green,
+              color: statusColor,
             ),
           ),
           SizedBox(height: 16.h),
           Text(
-            'Transaction Successful!',
+            _getHeadline(),
             style: GoogleFonts.inter(
               fontSize: 24.sp,
               fontWeight: FontWeight.bold,
@@ -606,20 +608,87 @@ class _CryptoReceiptScreenState extends State<CryptoReceiptScreen>
       case CryptoTransactionStatus.completed:
         return Colors.green;
       case CryptoTransactionStatus.pending:
+      case CryptoTransactionStatus.verifying:
         return Colors.orange;
       case CryptoTransactionStatus.failed:
         return Colors.red;
+      case CryptoTransactionStatus.refunded:
+        return const Color(0xFF9CA3AF);
+      case CryptoTransactionStatus.manualReview:
+        return const Color(0xFFFB923C);
+    }
+  }
+
+  /// Status-aware icon for the headline card. Mirrors the colour set
+  /// so a glance at the icon shape conveys the outcome before reading.
+  IconData _getStatusIcon() {
+    switch (widget.receipt.status) {
+      case CryptoTransactionStatus.completed:
+        return Icons.check_circle;
+      case CryptoTransactionStatus.pending:
+        return Icons.hourglass_top;
+      case CryptoTransactionStatus.verifying:
+        return Icons.sync;
+      case CryptoTransactionStatus.refunded:
+        return Icons.replay_circle_filled;
+      case CryptoTransactionStatus.failed:
+        return Icons.cancel;
+      case CryptoTransactionStatus.manualReview:
+        return Icons.flag;
+    }
+  }
+
+  /// Headline rendered in the success card. Status-aware so the user
+  /// sees an honest summary — pre-fix this always said "Transaction
+  /// Successful!" even when the row was actually refunded or under
+  /// admin review.
+  String _getHeadline() {
+    final t = widget.receipt.transactionDetails.type;
+    switch (widget.receipt.status) {
+      case CryptoTransactionStatus.completed:
+        switch (t) {
+          case CryptoTransactionType.buy:
+            return 'Buy Completed';
+          case CryptoTransactionType.sell:
+            return 'Sell Completed';
+          case CryptoTransactionType.swap:
+            return 'Swap Completed';
+        }
+      case CryptoTransactionStatus.pending:
+        return 'Processing…';
+      case CryptoTransactionStatus.verifying:
+        return 'Verifying with Exchange';
+      case CryptoTransactionStatus.refunded:
+        return 'Trade Refunded';
+      case CryptoTransactionStatus.failed:
+        return 'Trade Failed';
+      case CryptoTransactionStatus.manualReview:
+        return 'Under Admin Review';
     }
   }
 
   String _getSuccessMessage() {
-    switch (widget.receipt.transactionDetails.type) {
-      case CryptoTransactionType.buy:
-        return 'You have successfully purchased ${widget.receipt.transactionDetails.cryptoAmount} ${widget.receipt.transactionDetails.cryptoSymbol}';
-      case CryptoTransactionType.sell:
-        return 'You have successfully sold ${widget.receipt.transactionDetails.cryptoAmount} ${widget.receipt.transactionDetails.cryptoSymbol}';
-      case CryptoTransactionType.swap:
-        return 'You have successfully swapped ${widget.receipt.transactionDetails.fromCrypto} for ${widget.receipt.transactionDetails.toCrypto}';
+    final details = widget.receipt.transactionDetails;
+    switch (widget.receipt.status) {
+      case CryptoTransactionStatus.completed:
+        switch (details.type) {
+          case CryptoTransactionType.buy:
+            return 'You have successfully purchased ${details.cryptoAmount} ${details.cryptoSymbol}';
+          case CryptoTransactionType.sell:
+            return 'You have successfully sold ${details.cryptoAmount} ${details.cryptoSymbol}';
+          case CryptoTransactionType.swap:
+            return 'You have successfully swapped ${details.fromCrypto} for ${details.toCrypto}';
+        }
+      case CryptoTransactionStatus.pending:
+        return 'Your trade is on its way. We\'ll update this receipt as soon as the exchange confirms.';
+      case CryptoTransactionStatus.verifying:
+        return 'The exchange returned an ambiguous response. We are reconciling automatically — your funds are safe.';
+      case CryptoTransactionStatus.refunded:
+        return 'The trade did not complete on the exchange. Your fiat has been returned to your account.';
+      case CryptoTransactionStatus.failed:
+        return 'The exchange rejected this trade. No funds were moved.';
+      case CryptoTransactionStatus.manualReview:
+        return 'This transaction is being reviewed by our operations team. You\'ll be notified by the time it\'s resolved.';
     }
   }
 
