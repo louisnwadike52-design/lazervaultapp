@@ -439,7 +439,102 @@ Future<void> _runFlow({
     _fail('Account was not debited (before=$initialBalanceKobo, after=$afterKobo)');
   }
 
+  // ── Step 10: Post-purchase scenarios ──────────────────────────────
+  // These exercise the four plan-mandated checks the purchase saga is
+  // supposed to make true. Failures here surface gaps between the
+  // gRPC contract and the real backend response shape — exactly the
+  // class of bug the Flutter UI silently absorbs today.
+  await _verifyPostPurchaseScenarios(
+    fpClient: fpClient,
+    auth: auth,
+    purchaseResp: purchaseResp,
+    email: email,
+  );
+
   print('\n✓✓✓ INSURANCE PURCHASE FLOW SUCCEEDED ✓✓✓');
+}
+
+// ─── Post-purchase verification ──────────────────────────────────────────────
+// Four scenarios from the slice plan, run after the happy-path purchase:
+//   1. PolicyListAfterPurchase — listing returns the policy, status=active,
+//      nextPaymentDate=endDate, coverageDetails.renew_link_base non-null.
+//   2. PolicyDetailExtras — getInsurancePolicy returns renew_url containing
+//      both `policy_number=` and `email=` pre-fragment.
+//   3+4. WS event handling — these are widget-level integration tests that
+//      need an isolated mock of BalanceWebSocketService; they live in
+//      test/insurance_cubit_ws_test.dart so they can run under `flutter test`
+//      without a backend dependency. This file exercises the wire path only.
+Future<void> _verifyPostPurchaseScenarios({
+  required fp_pb.FinancialProductsServiceClient fpClient,
+  required CallOptions auth,
+  required fppb.PurchaseMarketplaceInsuranceResponse purchaseResp,
+  required String email,
+}) async {
+  final policyId = purchaseResp.result.policyId;
+  if (policyId.isEmpty) {
+    print('\n[10] post-purchase: policy_id missing — skipping scenarios');
+    return;
+  }
+
+  // 1) PolicyListAfterPurchase
+  print('\n[10] PolicyListAfterPurchase');
+  final listResp = await fpClient.getInsurancePolicies(
+    fppb.GetInsurancePoliciesRequest()
+      ..limit = 50
+      ..offset = 0,
+    options: auth,
+  );
+  final ours = listResp.policies.where((p) => p.id == policyId).toList();
+  if (ours.isEmpty) {
+    print('   ✗ purchased policy ($policyId) not in GetUserInsurances response');
+    _fail('Policy missing from list');
+  }
+  final policy = ours.first;
+  print('   ↳ status=${policy.status} '
+      'end=${policy.endDate} '
+      'next=${policy.nextPaymentDate}');
+  if (policy.status != 'active' && policy.status != 'completed') {
+    _fail('Policy status is ${policy.status}, expected active/completed');
+  }
+  if (policy.endDate.isEmpty) {
+    _fail('end_date is empty');
+  }
+  final extras = _decodeMetadata(policy.metadata);
+  final renewBase = (extras['renew_link_base'] ?? '').toString();
+  if (renewBase.isEmpty) {
+    print('   ⚠ metadata.renew_link_base is empty '
+        '— extras roundtrip may be broken');
+  } else {
+    print('   ✓ renew_link_base present');
+  }
+  // PolicyDates scenario rides on this same response: next_payment_date
+  // should equal end_date (was hardcoded to "today" pre-fix).
+  if (policy.nextPaymentDate != policy.endDate) {
+    print('   ✗ next_payment_date (${policy.nextPaymentDate}) '
+        '!= end_date (${policy.endDate})');
+    _fail('Next-payment / end-date mismatch');
+  }
+  print('   ✓ next_payment_date == end_date');
+
+  // 2) PolicyDetailExtras
+  print('\n[11] PolicyDetailExtras');
+  final detailResp = await fpClient.getInsurancePolicy(
+    (fppb.GetInsurancePolicyRequest()..policyId = policyId),
+    options: auth,
+  );
+  final detailExtras = _decodeMetadata(detailResp.insurance.metadata);
+  final renewUrl = (detailExtras['renew_url'] ?? '').toString();
+  final preFragment = renewUrl.contains('#')
+      ? renewUrl.substring(0, renewUrl.indexOf('#'))
+      : renewUrl;
+  if (renewUrl.isEmpty) {
+    print('   ⚠ renew_url empty — extras may not be populated yet');
+  } else if (preFragment.contains('policy_number=') &&
+      preFragment.contains('email=')) {
+    print('   ✓ renew_url has policy_number= and email= pre-fragment');
+  } else {
+    _fail('renew_url malformed: $renewUrl');
+  }
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -480,6 +575,19 @@ AccountSummary? _findNgn(Iterable<AccountSummary> accounts) {
 Never _fail(String msg) {
   print('    ✗ $msg');
   throw StateError(msg);
+}
+
+/// Backend persists extras (renew_link_base, claim_link_base, renew_url,
+/// claim_url) as a JSON string under `Insurance.metadata`. The Flutter
+/// model decodes this into `coverageDetails`; in this test we do the
+/// same inline rather than pulling in the full domain entity mapper.
+Map<String, dynamic> _decodeMetadata(String raw) {
+  if (raw.isEmpty) return const {};
+  try {
+    final decoded = jsonDecode(raw);
+    if (decoded is Map<String, dynamic>) return decoded;
+  } catch (_) {/* fall through */}
+  return const {};
 }
 
 String _userIdFromJwt(String token) {

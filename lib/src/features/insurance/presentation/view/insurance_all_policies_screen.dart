@@ -19,7 +19,17 @@ class InsuranceAllPoliciesScreen extends StatefulWidget {
 class _InsuranceAllPoliciesScreenState extends State<InsuranceAllPoliciesScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final _tabs = const ['All', 'Active', 'Pending', 'Expired', 'Cancelled'];
+  // MyCover surfaces three policy states: active (IsActive), pending
+  // (IsSubmittedToProvider / our saga still in flight), and expired
+  // (derived from expiration_date < now). They don't expose user-facing
+  // cancellation — failed purchases get refunded silently and never
+  // appear on the user's policy page. Tabs mirror what MyCover actually
+  // returns so filters and provider state stay in sync.
+  final _tabs = const ['All', 'Active', 'Pending', 'Expired'];
+
+  // Slice 4: one ScrollController per tab so scroll-to-bottom triggers
+  // loadMoreInsurances on the currently-visible tab only.
+  late final List<ScrollController> _scrollControllers;
 
   @override
   void initState() {
@@ -33,28 +43,48 @@ class _InsuranceAllPoliciesScreenState extends State<InsuranceAllPoliciesScreen>
       vsync: this,
       initialIndex: initialIndex >= 0 ? initialIndex : 0,
     );
+    _scrollControllers = List.generate(_tabs.length, (_) {
+      final ctrl = ScrollController();
+      ctrl.addListener(() => _onScroll(ctrl));
+      return ctrl;
+    });
   }
 
   @override
   void dispose() {
+    for (final ctrl in _scrollControllers) {
+      ctrl.dispose();
+    }
     _tabController.dispose();
     super.dispose();
   }
 
+  void _onScroll(ScrollController ctrl) {
+    if (!ctrl.hasClients) return;
+    if (ctrl.position.pixels < ctrl.position.maxScrollExtent - 240) return;
+    final cubit = context.read<InsuranceCubit>();
+    final s = cubit.state;
+    if (s is InsurancesLoaded && s.hasMore && !s.isLoadingMore) {
+      cubit.loadMoreInsurances();
+    }
+  }
+
   List<Insurance> _filterByTab(List<Insurance> all, int tabIndex) {
     switch (tabIndex) {
-      case 1:
-        return all.where((i) => i.status == InsuranceStatus.active).toList();
-      case 2:
-        return all.where((i) => i.status == InsuranceStatus.pending).toList();
-      case 3:
-        return all.where((i) => i.status == InsuranceStatus.expired).toList();
-      case 4:
+      case 1: // Active — alive at the provider AND not past end_date.
+        return all
+            .where((i) => i.status == InsuranceStatus.active && !i.isExpired)
+            .toList();
+      case 2: // Pending — anything in flight on our saga or awaiting MyCover.
         return all
             .where((i) =>
-                i.status == InsuranceStatus.cancelled ||
-                i.status == InsuranceStatus.suspended)
+                i.status == InsuranceStatus.pending ||
+                i.status == InsuranceStatus.processing ||
+                i.status == InsuranceStatus.awaitingWebhook ||
+                i.status == InsuranceStatus.manualReview)
             .toList();
+      case 3: // Expired — derived from end_date so a renewal automatically clears it.
+        return all.where((i) => i.isExpired).toList();
       default:
         return all;
     }
@@ -135,16 +165,25 @@ class _InsuranceAllPoliciesScreenState extends State<InsuranceAllPoliciesScreen>
                 if (filtered.isEmpty) {
                   return _buildEmptyTab(_tabs[tabIndex]);
                 }
+                // Slice 4 — extra slot per tab for the load-more footer.
+                final showFooter = state.isLoadingMore || (!state.hasMore && tabIndex == 0);
+                final itemCount = filtered.length + (showFooter ? 1 : 0);
                 return RefreshIndicator(
                   onRefresh: () async =>
                       context.read<InsuranceCubit>().loadInsurances(),
                   color: const Color(0xFF6366F1),
                   backgroundColor: const Color(0xFF1F1F1F),
                   child: ListView.separated(
+                    controller: _scrollControllers[tabIndex],
                     padding: EdgeInsets.all(16.w),
-                    itemCount: filtered.length,
+                    itemCount: itemCount,
                     separatorBuilder: (_, __) => SizedBox(height: 10.h),
-                    itemBuilder: (_, i) => _buildPolicyTile(filtered[i]),
+                    itemBuilder: (_, i) {
+                      if (i >= filtered.length) {
+                        return _buildLoadMoreFooter(state);
+                      }
+                      return _buildPolicyTile(filtered[i]);
+                    },
                   ),
                 );
               }),
@@ -154,6 +193,39 @@ class _InsuranceAllPoliciesScreenState extends State<InsuranceAllPoliciesScreen>
         },
       ),
     );
+  }
+
+  Widget _buildLoadMoreFooter(InsurancesLoaded state) {
+    if (state.isLoadingMore) {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 16.h),
+        child: const Center(
+          child: SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation(Color(0xFF6366F1)),
+            ),
+          ),
+        ),
+      );
+    }
+    if (!state.hasMore) {
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 12.h),
+        child: Center(
+          child: Text(
+            "You've reached the end",
+            style: GoogleFonts.inter(
+              fontSize: 12.sp,
+              color: const Color(0xFF6B7280),
+            ),
+          ),
+        ),
+      );
+    }
+    return const SizedBox.shrink();
   }
 
   Widget _buildEmptyTab(String tabName) {
@@ -268,12 +340,19 @@ class _InsuranceAllPoliciesScreenState extends State<InsuranceAllPoliciesScreen>
       case InsuranceStatus.active:
         return const Color(0xFF10B981);
       case InsuranceStatus.pending:
+      case InsuranceStatus.processing:
+      case InsuranceStatus.awaitingWebhook:
         return const Color(0xFFF59E0B);
       case InsuranceStatus.expired:
+      case InsuranceStatus.refundFailed:
         return const Color(0xFFEF4444);
       case InsuranceStatus.cancelled:
+      case InsuranceStatus.refunded:
         return const Color(0xFF6B7280);
+      case InsuranceStatus.refundPending:
+        return const Color(0xFFFB923C);
       case InsuranceStatus.suspended:
+      case InsuranceStatus.manualReview:
         return const Color.fromARGB(255, 78, 3, 208);
     }
   }

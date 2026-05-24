@@ -8,6 +8,10 @@ enum InsuranceType {
   travel,
   business,
   gadget,
+  // Used when the backend sends an opaque identifier (e.g. raw
+  // marketplace product UUID) or an empty string. Renders as the
+  // neutral "Insurance" label rather than misclassifying as Health.
+  other,
 }
 
 enum InsuranceStatus {
@@ -16,6 +20,16 @@ enum InsuranceStatus {
   expired,
   cancelled,
   suspended,
+  // In-flight purchase states from the marketplace saga. Surfacing
+  // them so the user sees "Processing…" / "Refunding…" instead of a
+  // generic "Pending" or — worse — silence until the row flips to
+  // terminal. Wire-name strings match insurance_purchases.status.
+  processing,
+  awaitingWebhook,
+  refundPending,
+  refunded,
+  refundFailed,
+  manualReview,
 }
 
 extension InsuranceTypeExtension on InsuranceType {
@@ -35,6 +49,8 @@ extension InsuranceTypeExtension on InsuranceType {
         return 'Business Insurance';
       case InsuranceType.gadget:
         return 'Gadget Insurance';
+      case InsuranceType.other:
+        return 'Insurance';
     }
   }
 
@@ -54,6 +70,8 @@ extension InsuranceTypeExtension on InsuranceType {
         return '🏢';
       case InsuranceType.gadget:
         return '📱';
+      case InsuranceType.other:
+        return '🛡️';
     }
   }
 }
@@ -71,6 +89,55 @@ extension InsuranceStatusExtension on InsuranceStatus {
         return 'Cancelled';
       case InsuranceStatus.suspended:
         return 'Suspended';
+      case InsuranceStatus.processing:
+        return 'Processing';
+      case InsuranceStatus.awaitingWebhook:
+        return 'Awaiting Provider';
+      case InsuranceStatus.refundPending:
+        return 'Refunding';
+      case InsuranceStatus.refunded:
+        return 'Refunded';
+      case InsuranceStatus.refundFailed:
+        return 'Refund Failed';
+      case InsuranceStatus.manualReview:
+        return 'Under Manual Review';
+    }
+  }
+
+  // Short hint shown beneath the status pill — helps the user
+  // understand what's actually happening without an ops call.
+  String get hint {
+    switch (this) {
+      case InsuranceStatus.processing:
+        return 'Awaiting provider confirmation. Refresh in a moment.';
+      case InsuranceStatus.awaitingWebhook:
+        return 'Provider notification pending. Reconciler verifies every few minutes.';
+      case InsuranceStatus.refundPending:
+        return 'Your payment is being returned. Funds usually land within 5 minutes.';
+      case InsuranceStatus.refundFailed:
+        return 'We couldn\'t refund automatically. Our team is on it.';
+      case InsuranceStatus.manualReview:
+        return 'Our ops team is reviewing this purchase.';
+      case InsuranceStatus.refunded:
+        return 'Funds were returned to your wallet.';
+      default:
+        return '';
+    }
+  }
+
+  // Terminal = no further state transitions are expected. The
+  // detail screen uses this to decide whether to show the polling
+  // "in flight" badge or just the static status.
+  bool get isTerminal {
+    switch (this) {
+      case InsuranceStatus.active:
+      case InsuranceStatus.expired:
+      case InsuranceStatus.cancelled:
+      case InsuranceStatus.refunded:
+      case InsuranceStatus.manualReview:
+        return true;
+      default:
+        return false;
     }
   }
 }

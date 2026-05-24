@@ -709,9 +709,13 @@ class _InsurancePaymentConfirmationScreenState extends State<InsurancePaymentCon
 
   void _emailReceipt() {
     final subject = Uri.encodeComponent('Insurance Payment Receipt - ${widget.payment.policyNumber}');
-    final body = Uri.encodeComponent('Your insurance payment receipt: ${widget.receiptUrl}');
+    // Only include the URL when we have one — otherwise the user sees
+    // "Your insurance payment receipt: " with nothing after.
+    final bodyText = widget.receiptUrl.isNotEmpty
+        ? 'Your insurance payment receipt: ${widget.receiptUrl}'
+        : 'Your insurance payment for policy ${widget.payment.policyNumber} was successful.';
     launchUrl(
-      Uri.parse('mailto:?subject=$subject&body=$body'),
+      Uri.parse('mailto:?subject=$subject&body=${Uri.encodeComponent(bodyText)}'),
       mode: LaunchMode.externalApplication,
     );
   }

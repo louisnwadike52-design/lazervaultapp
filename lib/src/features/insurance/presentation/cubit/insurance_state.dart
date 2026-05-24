@@ -21,15 +21,50 @@ class InsurancesLoaded extends InsuranceState {
   final List<InsurancePayment> overduePayments;
   final Map<String, dynamic> statistics;
 
+  // Slice 4 pagination flags. hasMore = there's a next page to load.
+  // isLoadingMore = a load-more fetch is in-flight (UI shows footer
+  // spinner). currentPage = last page successfully appended.
+  final bool hasMore;
+  final bool isLoadingMore;
+  final int currentPage;
+
   const InsurancesLoaded({
     required this.insurances,
     required this.recentPayments,
     required this.overduePayments,
     required this.statistics,
+    this.hasMore = false,
+    this.isLoadingMore = false,
+    this.currentPage = 1,
   });
 
+  InsurancesLoaded copyWith({
+    List<Insurance>? insurances,
+    bool? hasMore,
+    bool? isLoadingMore,
+    int? currentPage,
+  }) {
+    return InsurancesLoaded(
+      insurances: insurances ?? this.insurances,
+      recentPayments: recentPayments,
+      overduePayments: overduePayments,
+      statistics: statistics,
+      hasMore: hasMore ?? this.hasMore,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      currentPage: currentPage ?? this.currentPage,
+    );
+  }
+
   @override
-  List<Object?> get props => [insurances, recentPayments, overduePayments, statistics];
+  List<Object?> get props => [
+        insurances,
+        recentPayments,
+        overduePayments,
+        statistics,
+        hasMore,
+        isLoadingMore,
+        currentPage,
+      ];
 }
 
 class InsuranceDetailsLoaded extends InsuranceState {

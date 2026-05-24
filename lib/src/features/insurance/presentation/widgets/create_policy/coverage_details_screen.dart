@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../cubit/create_policy_cubit.dart';
+import 'monetary_form_field.dart';
 
 /// Screen 3: Coverage Details
 ///
@@ -22,34 +23,22 @@ class _CoverageDetailsScreenState extends State<CoverageDetailsScreen>
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
 
-  late TextEditingController _premiumController;
-  late TextEditingController _coverageController;
+  // Seed the MonetaryFormField with whatever the cubit already has
+  // (e.g. the user navigated back to this screen). The widget itself
+  // owns its TextEditingController; this screen just stores the
+  // initial seed.
+  late String _initialPremiumRaw;
+  late String _initialCoverageRaw;
 
   @override
   void initState() {
     super.initState();
 
     final cubit = context.read<CreatePolicyCubit>();
-    _premiumController = TextEditingController(
-      text: cubit.premiumAmount != null
-          ? cubit.premiumAmount!.toStringAsFixed(2)
-          : '',
-    );
-    _coverageController = TextEditingController(
-      text: cubit.coverageAmount != null
-          ? cubit.coverageAmount!.toStringAsFixed(2)
-          : '',
-    );
-
-    _premiumController.addListener(() {
-      final amount = double.tryParse(_premiumController.text);
-      cubit.updatePremiumAmount(amount);
-    });
-
-    _coverageController.addListener(() {
-      final amount = double.tryParse(_coverageController.text);
-      cubit.updateCoverageAmount(amount);
-    });
+    _initialPremiumRaw =
+        cubit.premiumAmount != null ? cubit.premiumAmount!.toStringAsFixed(2) : '';
+    _initialCoverageRaw =
+        cubit.coverageAmount != null ? cubit.coverageAmount!.toStringAsFixed(2) : '';
 
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 400),
@@ -74,8 +63,6 @@ class _CoverageDetailsScreenState extends State<CoverageDetailsScreen>
   @override
   void dispose() {
     _fadeController.dispose();
-    _premiumController.dispose();
-    _coverageController.dispose();
     super.dispose();
   }
 
@@ -131,190 +118,41 @@ class _CoverageDetailsScreenState extends State<CoverageDetailsScreen>
   }
 
   Widget _buildPremiumField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text(
-              'Premium Amount',
-              style: GoogleFonts.inter(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
-            Text(
-              ' *',
-              style: GoogleFonts.inter(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.red,
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 12.h),
-        TextFormField(
-          controller: _premiumController,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
-          ],
-          style: GoogleFonts.inter(
-            fontSize: 15.sp,
-            fontWeight: FontWeight.w500,
-            color: Colors.white,
-          ),
-          decoration: InputDecoration(
-            hintText: '0.00',
-            hintStyle: GoogleFonts.inter(
-              fontSize: 15.sp,
-              fontWeight: FontWeight.w400,
-              color: Colors.grey[500],
-            ),
-            prefixIcon: Padding(
-              padding: EdgeInsets.only(left: 16.w, top: 15.h, bottom: 15.h),
-              child: Text(
-                '\$',
-                style: GoogleFonts.inter(
-                  fontSize: 15.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white.withValues(alpha: 0.6),
-                ),
-              ),
-            ),
-            filled: true,
-            fillColor: Colors.white.withValues(alpha: 0.05),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(
-                color: Colors.white.withValues(alpha: 0.1),
-                width: 1.5,
-              ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(
-                color: Colors.white.withValues(alpha: 0.1),
-                width: 1.5,
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: const BorderSide(
-                color: Color(0xFF6366F1),
-                width: 1.5,
-              ),
-            ),
-          ),
-        ),
-        Padding(
-          padding: EdgeInsets.only(top: 8.h, left: 4.w),
-          child: Text(
-            'The monthly or annual premium you\'ll pay',
-            style: GoogleFonts.inter(
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w400,
-              color: Colors.grey[500],
-            ),
-          ),
-        ),
-      ],
+    final cubit = context.read<CreatePolicyCubit>();
+    final currencyCode = cubit.activeCurrency;
+    final symbol = CurrencySymbols.getSymbol(currencyCode);
+    return MonetaryFormField(
+      currencyCode: currencyCode,
+      currencySymbol: symbol,
+      initialRawValue: _initialPremiumRaw,
+      label: 'Premium Amount',
+      required: true,
+      helperText: "The monthly or annual premium you'll pay",
+      onChanged: (raw) {
+        // raw is the cleaned numeric string ("1000000.50"). Empty means
+        // the user cleared the field — push null so the cubit's
+        // validator can flag it as missing.
+        final amount = raw.isEmpty ? null : double.tryParse(raw);
+        cubit.updatePremiumAmount(amount);
+      },
     );
   }
 
   Widget _buildCoverageField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text(
-              'Coverage Amount',
-              style: GoogleFonts.inter(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
-            Text(
-              ' *',
-              style: GoogleFonts.inter(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.red,
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 12.h),
-        TextFormField(
-          controller: _coverageController,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
-          ],
-          style: GoogleFonts.inter(
-            fontSize: 15.sp,
-            fontWeight: FontWeight.w500,
-            color: Colors.white,
-          ),
-          decoration: InputDecoration(
-            hintText: '0.00',
-            hintStyle: GoogleFonts.inter(
-              fontSize: 15.sp,
-              fontWeight: FontWeight.w400,
-              color: Colors.grey[500],
-            ),
-            prefixIcon: Padding(
-              padding: EdgeInsets.only(left: 16.w, top: 15.h, bottom: 15.h),
-              child: Text(
-                '\$',
-                style: GoogleFonts.inter(
-                  fontSize: 15.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white.withValues(alpha: 0.6),
-                ),
-              ),
-            ),
-            filled: true,
-            fillColor: Colors.white.withValues(alpha: 0.05),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(
-                color: Colors.white.withValues(alpha: 0.1),
-                width: 1.5,
-              ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(
-                color: Colors.white.withValues(alpha: 0.1),
-                width: 1.5,
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: const BorderSide(
-                color: Color(0xFF6366F1),
-                width: 1.5,
-              ),
-            ),
-          ),
-        ),
-        Padding(
-          padding: EdgeInsets.only(top: 8.h, left: 4.w),
-          child: Text(
-            'Total coverage amount (must be greater than premium)',
-            style: GoogleFonts.inter(
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w400,
-              color: Colors.grey[500],
-            ),
-          ),
-        ),
-      ],
+    final cubit = context.read<CreatePolicyCubit>();
+    final currencyCode = cubit.activeCurrency;
+    final symbol = CurrencySymbols.getSymbol(currencyCode);
+    return MonetaryFormField(
+      currencyCode: currencyCode,
+      currencySymbol: symbol,
+      initialRawValue: _initialCoverageRaw,
+      label: 'Coverage Amount',
+      required: true,
+      helperText: 'Total coverage amount (must be greater than premium)',
+      onChanged: (raw) {
+        final amount = raw.isEmpty ? null : double.tryParse(raw);
+        cubit.updateCoverageAmount(amount);
+      },
     );
   }
 

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lazervault/core/types/app_routes.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../domain/entities/insurance_entity.dart';
+import '../widgets/mycover_claim_bottom_sheet.dart';
 
 class InsuranceContactScreen extends StatefulWidget {
   final Insurance insurance;
@@ -74,6 +74,29 @@ class _InsuranceContactScreenState extends State<InsuranceContactScreen> {
     }
     final cleanPhone = _providerPhone.replaceAll(RegExp(r'[^0-9+]'), '');
     _launchUrl('https://wa.me/$cleanPhone');
+  }
+
+  // Opens MyCover's hosted claim flow in an in-app bottom sheet. The
+  // sheet handles its own loading + "claim not ready" states inside its
+  // chrome, so we don't pre-gate on the cached claim_url anymore — the
+  // resolver synchronously returns the cached value when present, which
+  // the sheet treats as a fast path.
+  void _openMyCoverClaim() {
+    final provider =
+        widget.insurance.coverageDetails['provider_name']?.toString() ??
+            widget.insurance.provider;
+    MyCoverClaimBottomSheet.show(
+      context,
+      policyLabel: widget.insurance.policyNumber.isNotEmpty
+          ? widget.insurance.policyNumber
+          : widget.insurance.type.name,
+      providerName: provider.isNotEmpty ? provider : null,
+      urlResolver: () async {
+        final raw =
+            widget.insurance.coverageDetails['claim_url']?.toString().trim();
+        return (raw == null || raw.isEmpty || raw == 'null') ? null : raw;
+      },
+    );
   }
 
   void _openWebsite() {
@@ -273,9 +296,7 @@ class _InsuranceContactScreenState extends State<InsuranceContactScreen> {
                 icon: Icons.assignment,
                 label: 'File Claim',
                 color: const Color(0xFFFB923C),
-                onTap: () {
-                  Get.toNamed(AppRoutes.createClaim, arguments: widget.insurance.id);
-                },
+                onTap: _openMyCoverClaim,
               ),
             ],
           ),

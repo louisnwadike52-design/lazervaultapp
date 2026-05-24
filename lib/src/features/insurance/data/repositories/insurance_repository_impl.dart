@@ -4,6 +4,7 @@ import '../../domain/entities/insurance_payment_entity.dart';
 import '../../domain/entities/insurance_claim_entity.dart';
 import '../../domain/entities/insurance_product_entity.dart';
 import '../../domain/entities/mycover_management_entities.dart';
+import '../../domain/entities/insurance_document_upload_url.dart';
 import '../../domain/repositories/insurance_repository.dart';
 import '../datasources/insurance_remote_datasource.dart';
 import '../../../../../core/services/secure_storage_service.dart';
@@ -16,6 +17,26 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
     required this.remoteDataSource,
     required this.secureStorage,
   });
+
+  @override
+  Future<UserInsurancesPage> getUserInsurancesPage({
+    required String userId,
+    int page = 1,
+    int limit = 15,
+  }) async {
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.getUserInsurancesPage(
+        accessToken: accessToken,
+        page: page,
+        limit: limit,
+      );
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to fetch user insurances page: $e');
+    }
+  }
 
   @override
   Future<List<Insurance>> getUserInsurances(String userId) async {
@@ -168,10 +189,18 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   }
 
   @override
-  Future<List<InsuranceClaim>> getUserClaims(String userId) async {
+  Future<List<InsuranceClaim>> getUserClaims(
+    String userId, {
+    int page = 1,
+    int limit = 20,
+  }) async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
-      return await remoteDataSource.getUserClaims(accessToken: accessToken);
+      return await remoteDataSource.getUserClaims(
+        accessToken: accessToken,
+        page: page,
+        limit: limit,
+      );
     } on GrpcError catch (e) {
       throw _handleGrpcError(e);
     } catch (e) {
@@ -285,6 +314,29 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
   }
 
   @override
+  Future<InsuranceProductPage> getInsuranceProductsPage({
+    required String locale,
+    String? category,
+    int page = 1,
+    int limit = 15,
+  }) async {
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.getInsuranceProductsPage(
+        accessToken: accessToken,
+        locale: locale,
+        category: category,
+        page: page,
+        limit: limit,
+      );
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to fetch insurance products page: $e');
+    }
+  }
+
+  @override
   Future<List<InsuranceCategoryInfo>> getInsuranceCategories({required String locale}) async {
     try {
       final accessToken = await secureStorage.getAccessToken() ?? '';
@@ -293,6 +345,21 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
       throw _handleGrpcError(e);
     } catch (e) {
       throw Exception('Failed to fetch insurance categories: $e');
+    }
+  }
+
+  @override
+  Future<String> getInsuranceTermsLink({required String locale}) async {
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.getInsuranceTermsLink(
+        locale: locale,
+        accessToken: accessToken,
+      );
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to fetch insurance terms link: $e');
     }
   }
 
@@ -369,6 +436,27 @@ class InsuranceRepositoryImpl implements InsuranceRepository {
       throw _handleGrpcError(e);
     } catch (e) {
       throw Exception('Failed to upload document: $e');
+    }
+  }
+
+  @override
+  Future<InsuranceDocumentUploadURL> getInsuranceDocumentUploadURL({
+    required String filename,
+    required String contentType,
+    required String documentType,
+  }) async {
+    try {
+      final accessToken = await secureStorage.getAccessToken() ?? '';
+      return await remoteDataSource.getInsuranceDocumentUploadURL(
+        accessToken: accessToken,
+        filename: filename,
+        contentType: contentType,
+        documentType: documentType,
+      );
+    } on GrpcError catch (e) {
+      throw _handleGrpcError(e);
+    } catch (e) {
+      throw Exception('Failed to fetch insurance upload URL: $e');
     }
   }
 

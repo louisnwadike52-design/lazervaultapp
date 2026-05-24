@@ -5,11 +5,15 @@ import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:grpc/grpc.dart';
+import 'package:http/http.dart' as http;
 
 import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/core/errors/failures.dart';
 import '../../domain/entities/insurance_entity.dart';
 import '../../domain/entities/insurance_product_entity.dart';
+import '../../domain/entities/insurance_document_upload_url.dart';
 import '../../domain/repositories/insurance_repository.dart';
 import '../../../authentication/domain/entities/user.dart';
 import '../../../../../core/cache/cache_config.dart';
@@ -38,6 +42,12 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
   InsuranceCategoryInfo? _selectedCategoryInfo;
   List<InsuranceProduct> _products = [];
   List<InsuranceCategoryInfo> _categories = [];
+
+  // Slice 4 race guard. Every call to loadProductsPaginated bumps this
+  // counter; the awaited response only emits if the counter is unchanged.
+  // Prevents stale category products from landing in state when the user
+  // taps categories fast (tap A → tap B → A's RPC completes last).
+  int _productsLoadGeneration = 0;
   InsuranceProduct? _selectedProduct;
   Map<String, String> _formData = {};
   InsuranceQuote? _quote;
@@ -47,10 +57,67 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
   bool _isPurchasing = false;
   String? _lastIdempotencyKey;
 
+  // Cached admin-set terms link, fetched lazily when the user opens the
+  // terms bottom sheet. Null = not yet resolved; "" = fetched but admin
+  // has not configured a link (UI shows "unavailable").
+  String? _cachedTermsLink;
+
+  /// Lazily fetch the admin-set hosted Terms & Conditions link. Used by
+  /// the in-app webview bottom sheet. Returns `null` when no link is
+  /// configured so the sheet can render an "unavailable" state.
+  Future<String?> resolveTermsLink() async {
+    if (_cachedTermsLink != null) {
+      return _cachedTermsLink!.isEmpty ? null : _cachedTermsLink;
+    }
+    final link = await _repository.getInsuranceTermsLink(locale: _locale);
+    _cachedTermsLink = link;
+    return link.isEmpty ? null : link;
+  }
+
+  /// Deferred file uploads — populated when the user picks a document
+  /// on the form (`stagePendingFile`) and drained when the purchase
+  /// saga begins (`_uploadPendingFiles`). Keeping the bytes off the
+  /// network until purchase commit means the user can preview / replace
+  /// the file without burning MyCover upload quota, and the actual
+  /// upload happens INSIDE the processing screen so the form step
+  /// feels instant.
+  ///
+  /// Keys are form-field names (`identification_url`, `device_photo`,
+  /// `proof_of_purchase`, …). Values include the bytes, filename, and
+  /// the MyCover-compatible document_type so the saga step uploads with
+  /// the right metadata.
+  final Map<String, _PendingFileUpload> _pendingUploads = {};
+
+  /// Public read of a single staged file. Returns null when the field
+  /// has no pending upload. Used by the form widget to render preview
+  /// thumbnails + the full-screen viewer without leaking the private
+  /// `_PendingFileUpload` class.
+  StagedInsuranceFile? stagedFile(String fieldName) {
+    final p = _pendingUploads[fieldName];
+    if (p == null) return null;
+    return StagedInsuranceFile._(
+      bytes: p.bytes,
+      filename: p.filename,
+      contentType: p.contentType,
+      isImage: p.isImage,
+    );
+  }
+
+  /// Marker sentinel stored in `_formData` for fields whose upload is
+  /// deferred to the purchase saga. Exposed so the form widget can
+  /// detect the staged state without having to redeclare the constant.
+  static const String pendingUploadMarker = _kPendingUploadMarker;
+
   // Legacy form data (kept for backward compat)
   InsuranceType _insuranceType = InsuranceType.health;
   String _provider = '';
   String _policyHolderName = '';
+  // Split first/last from the user profile so a MyCover form that
+  // ships separate first_name + last_name fields gets the right
+  // half in each, not the concatenated full name in both. Falls back
+  // to the full name when only one half is available.
+  String _policyHolderFirstName = '';
+  String _policyHolderLastName = '';
   String _policyHolderEmail = '';
   String _policyHolderPhone = '';
   double? _premiumAmount;
@@ -117,6 +184,8 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
     }
 
     // Auto-fill legacy form fields
+    _policyHolderFirstName = user.firstName.trim();
+    _policyHolderLastName = user.lastName.trim();
     _policyHolderName = '${user.firstName} ${user.lastName}'.trim();
     _policyHolderEmail = user.email;
     _policyHolderPhone = user.phoneNumber ?? '';
@@ -188,25 +257,43 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
     }
   }
 
-  /// Load products for a category with SWR caching.
-  /// Always requires a category — pass the category UUID directly to the
-  /// backend so it skips the extra GetCategories() name→UUID resolution call.
-  Future<void> loadProducts({InsuranceProductCategory? category}) async {
+  /// Load products for a category with SWR caching. Prefer passing
+  /// [info] (the backend-resolved CategoryInfo with UUID) — the
+  /// enum-only form is kept for backwards compatibility but is lossy:
+  /// multiple backend categories can map to the same enum (e.g. both
+  /// `Agency Banking` and `Credit Life` resolve to `.other`), and
+  /// firstWhere then picks the wrong one. When [info] is supplied,
+  /// the UUID round-trips exactly to the backend.
+  Future<void> loadProducts({
+    InsuranceCategoryInfo? info,
+    InsuranceProductCategory? category,
+  }) async {
     if (isClosed) return;
 
     // Clear selected product when changing categories to avoid stale UI
     _selectedProduct = null;
-    _selectedCategory = category;
 
-    // Resolve the InsuranceCategoryInfo to get the UUID for the backend
-    _selectedCategoryInfo = category != null
-        ? _categories.cast<InsuranceCategoryInfo?>().firstWhere(
-            (c) => c!.category == category,
-            orElse: () => null,
-          )
-        : null;
+    if (info != null) {
+      // Caller supplied the backend-resolved object — use it directly.
+      // This is the lossless path; the enum value below is only used
+      // for the icon on the products screen.
+      _selectedCategoryInfo = info;
+      _selectedCategory = info.category;
+    } else {
+      // Legacy enum-only callers: resolve back to the first matching
+      // CategoryInfo. Safe only for enum values that uniquely identify
+      // a backend category (Auto/Health/Travel/Gadget/Marine — but
+      // NOT `.other`, which is the catch-all).
+      _selectedCategory = category;
+      _selectedCategoryInfo = category != null
+          ? _categories.cast<InsuranceCategoryInfo?>().firstWhere(
+              (c) => c!.category == category,
+              orElse: () => null,
+            )
+          : null;
+    }
 
-    emit(InsuranceProductsLoading(category: category));
+    emit(InsuranceProductsLoading(category: _selectedCategory));
 
     // Pass category UUID (id) to backend to avoid the extra GetCategories() call
     final categoryId = _selectedCategoryInfo?.id;
@@ -326,6 +413,138 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
     }
   }
 
+  /// Slice 4: paginated entry point. Used by screens that want
+  /// scroll-to-bottom infinite scroll. Replaces the legacy
+  /// loadProducts(info: …) path that fetched all products at once.
+  ///
+  /// First call resets the list to page 1. Subsequent loadMoreProducts()
+  /// calls append next pages.
+  Future<void> loadProductsPaginated({
+    InsuranceCategoryInfo? info,
+    InsuranceProductCategory? category,
+    int limit = 15,
+  }) async {
+    if (isClosed) return;
+    _selectedProduct = null;
+    if (info != null) {
+      _selectedCategoryInfo = info;
+      _selectedCategory = info.category;
+    } else {
+      _selectedCategory = category;
+      _selectedCategoryInfo = category != null
+          ? _categories.cast<InsuranceCategoryInfo?>().firstWhere(
+              (c) => c!.category == category,
+              orElse: () => null,
+            )
+          : null;
+    }
+    // Clear stale products from a previous category before emitting
+    // Loading. Without this, the screen renders the new Loading
+    // indicator on top of the *old* category's product tiles for a
+    // frame, which looks like a glitch when switching categories fast.
+    _products = const [];
+    emit(InsuranceProductsLoading(category: _selectedCategory));
+
+    // Slice 4 race guard: bump generation so any in-flight previous call's
+    // emit is dropped when it lands.
+    _productsLoadGeneration++;
+    final myGeneration = _productsLoadGeneration;
+    final categoryId = _selectedCategoryInfo?.id;
+    try {
+      final page = await _repository.getInsuranceProductsPage(
+        locale: _locale,
+        category: categoryId ?? category?.name,
+        page: 1,
+        limit: limit,
+      );
+      if (isClosed) return;
+      if (myGeneration != _productsLoadGeneration) return; // superseded
+      _products = page.products;
+      emit(InsuranceProductsLoaded(
+        products: _products,
+        categories: _categories,
+        selectedCategory: _selectedCategory,
+        locale: _locale,
+        isStale: false,
+        hasMore: page.hasMore,
+        isLoadingMore: false,
+        currentPage: 1,
+      ));
+    } catch (e) {
+      developer.log('[loadProductsPaginated] threw: runtimeType=${e.runtimeType} '
+          'message=${e.toString()}');
+      if (isClosed) return;
+      if (myGeneration != _productsLoadGeneration) return; // superseded
+      final msg = e.toString().toLowerCase();
+      if (msg.contains('connection') ||
+          msg.contains('unavailable') ||
+          msg.contains('socket')) {
+        emit(const CreatePolicyError(
+          message:
+              'Unable to connect. Please check your connection and try again.',
+        ));
+      } else if (msg.contains('timeout') || msg.contains('deadline')) {
+        emit(const CreatePolicyError(
+          message: 'Request timed out. Please try again.',
+        ));
+      } else {
+        emit(const CreatePolicyError(
+          message: 'Failed to load insurance products. Please try again.',
+        ));
+      }
+    }
+  }
+
+  /// Slice 4: fetch the next page of products and append to the loaded
+  /// list. No-op when there's no more, an in-flight load, or the state
+  /// isn't InsuranceProductsLoaded.
+  Future<void> loadMoreProducts() async {
+    if (isClosed) return;
+    final current = state;
+    if (current is! InsuranceProductsLoaded) return;
+    if (!current.hasMore || current.isLoadingMore) return;
+
+    // Optimistic state — show footer spinner.
+    emit(current.copyWith(isLoadingMore: true));
+
+    // Race guard: if the user taps another category mid-load-more, the
+    // generation bumps and we abandon this fetch's emit.
+    final myGeneration = _productsLoadGeneration;
+    final categoryId = _selectedCategoryInfo?.id;
+    final nextPage = current.currentPage + 1;
+    try {
+      final page = await _repository.getInsuranceProductsPage(
+        locale: _locale,
+        category: categoryId ?? _selectedCategory?.name,
+        page: nextPage,
+        limit: 15,
+      );
+      if (isClosed) return;
+      if (myGeneration != _productsLoadGeneration) return;
+      // Re-read latest state in case it was rebuilt between optimistic
+      // emit and now (pull-to-refresh etc).
+      final latest = state;
+      if (latest is! InsuranceProductsLoaded) return;
+      _products = [...latest.products, ...page.products];
+      emit(latest.copyWith(
+        products: _products,
+        isLoadingMore: false,
+        currentPage: nextPage,
+        hasMore: page.hasMore,
+        isStale: false,
+      ));
+    } catch (e) {
+      if (isClosed) return;
+      if (myGeneration != _productsLoadGeneration) return;
+      // On load-more failure, drop the in-flight flag and keep the
+      // existing page intact so the user can retry by scrolling again.
+      final latest = state;
+      if (latest is InsuranceProductsLoaded) {
+        emit(latest.copyWith(isLoadingMore: false));
+      }
+    }
+  }
+
   /// Navigate back to the category grid without losing loaded categories
   void backToCategories() {
     if (isClosed) return;
@@ -342,40 +561,247 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
     _selectedProduct = product;
     _formData = {};
 
-    // Pre-fill default values from form fields
+    // Pre-fill default values from form fields. Boolean fields get a
+    // schema-aware default when the product doesn't ship one so that an
+    // unflipped toggle doesn't trip the "fill required fields" error.
+    //
+    // The "buying for self" family (`bought_for_self`, `buying_for_self`,
+    // `for_self`) defaults to TRUE — buying for yourself is the happy
+    // path, and MyCover rejects the purchase with HTTP 400 when this is
+    // false unless the form also collects `insured_first_name`,
+    // `insured_email`, etc. (which our schema doesn't ship). Defaulting
+    // to true keeps the happy path clean while still letting the user
+    // flip the switch if they're buying for someone else.
+    //
+    // Everything else (consent toggles, terms acceptance, optional
+    // add-ons) defaults to FALSE — the user must take an explicit
+    // action to opt in.
     for (final field in product.formFields) {
       if (field.defaultValue.isNotEmpty) {
         _formData[field.name] = field.defaultValue;
+      } else if (field.type.toLowerCase() == 'boolean') {
+        _formData[field.name] =
+            _isBuyingForSelfField(field.name) ? 'true' : 'false';
       }
     }
 
-    // Auto-fill common fields from user data
+    // Belt-and-suspenders: MyCover's Sanlam underwriter rejects an
+    // empty `bought_for_self` with a generic "External: Internal Server
+    // Error". When the product schema doesn't declare the field as a
+    // boolean (so the loop above missed it), seed it to "true" so the
+    // wire payload always carries a valid value. Wire format matches
+    // the Switch widget's `true.toString()` output.
+    _formData.putIfAbsent('bought_for_self', () => 'true');
+
+    // Auto-fill common fields from user data. For person-name fields
+    // we route to the right half: `first_name`/`firstname` → first
+    // name only; `last_name`/`lastname`/`surname` → last name only;
+    // everything else in the whitelist (`name`, `full_name`, etc.)
+    // gets the concatenated full name. This stops the previous bug
+    // where MyCover received "Finance Nwadike" in BOTH first_name
+    // and last_name fields.
     for (final field in product.formFields) {
       final name = field.name.toLowerCase();
       if (name.contains('email') && _policyHolderEmail.isNotEmpty) {
         _formData[field.name] = _policyHolderEmail;
       } else if (name.contains('phone') && _policyHolderPhone.isNotEmpty) {
         _formData[field.name] = _policyHolderPhone;
-      } else if ((name.contains('name') || name.contains('first_name')) && _policyHolderName.isNotEmpty) {
-        _formData[field.name] = _policyHolderName;
+      } else if (_isPersonNameField(name)) {
+        final v = _autoFillNameValue(name);
+        if (v.isNotEmpty) _formData[field.name] = v;
       }
     }
 
     emit(InsuranceProductSelected(product: product, formData: _formData));
+    // BVN / NIN auto-fill runs async because secure storage I/O is
+    // platform-bridged. We emit the product-selected state synchronously
+    // first so the form renders immediately, then patch in the identity
+    // numbers when they arrive. Fields stay editable — the user can
+    // overwrite both during typing and via updateFormField.
+    _autoFillIdentityNumbers(product);
+  }
+
+  /// Read cached BVN / NIN from secure storage (populated by the KYC
+  /// verification flow on tier-2 success) and merge into the form.
+  /// Only writes when a matching form field exists AND the field isn't
+  /// already filled — preserving any value the user has already typed.
+  ///
+  /// Matching is by field name pattern so it works across MyCover's
+  /// product-specific schema variations: `bvn`, `bvn_number`,
+  /// `customer_bvn`, `nin`, `nin_number`, `national_id` all match.
+  Future<void> _autoFillIdentityNumbers(InsuranceProduct product) async {
+    final hasBvnField = product.formFields.any(
+        (f) => _isBvnField(f.name) && (_formData[f.name] ?? '').isEmpty);
+    final hasNinField = product.formFields.any(
+        (f) => _isNinField(f.name) && (_formData[f.name] ?? '').isEmpty);
+    if (!hasBvnField && !hasNinField) return;
+
+    SecureStorageService? storage;
+    try {
+      storage = serviceLocator<SecureStorageService>();
+    } catch (_) {
+      // Unit-test path with no GetIt — gracefully skip.
+      return;
+    }
+    String? bvn;
+    String? nin;
+    if (hasBvnField) bvn = await storage.getBvn();
+    if (hasNinField) nin = await storage.getNin();
+    if (isClosed) return;
+    if ((bvn == null || bvn.isEmpty) && (nin == null || nin.isEmpty)) {
+      // No KYC numbers cached yet — the BVN verification flow hasn't
+      // written them. Field stays empty, user types it in.
+      return;
+    }
+    var mutated = false;
+    for (final f in product.formFields) {
+      if (_isBvnField(f.name) &&
+          bvn != null &&
+          bvn.isNotEmpty &&
+          (_formData[f.name] ?? '').isEmpty) {
+        _formData[f.name] = bvn;
+        mutated = true;
+      } else if (_isNinField(f.name) &&
+          nin != null &&
+          nin.isNotEmpty &&
+          (_formData[f.name] ?? '').isEmpty) {
+        _formData[f.name] = nin;
+        mutated = true;
+      }
+    }
+    if (mutated && _selectedProduct != null) {
+      emit(InsuranceProductSelected(
+        product: _selectedProduct!,
+        formData: Map<String, String>.from(_formData),
+      ));
+    }
+  }
+
+  /// Picks the right half of the policy-holder's name to drop into a
+  /// MyCover form field. The form schema can ship `first_name`,
+  /// `last_name`, OR a unified `full_name`/`name`; we hand back the
+  /// matching slice. Empty string when the user profile has no name.
+  String _autoFillNameValue(String fieldNameLower) {
+    final first = _policyHolderFirstName;
+    final last = _policyHolderLastName;
+    final full = _policyHolderName;
+    if (fieldNameLower == 'first_name' || fieldNameLower == 'firstname') {
+      return first.isNotEmpty ? first : full;
+    }
+    if (fieldNameLower == 'last_name' ||
+        fieldNameLower == 'lastname' ||
+        fieldNameLower == 'surname') {
+      return last.isNotEmpty ? last : full;
+    }
+    // `name`, `full_name`, `policy_holder_name`, `insured_name`, etc.
+    return full;
+  }
+
+  // Tight whitelist for "auto-fill the policy holder's name into this
+  // field". Substring matching on `name` was too greedy and was landing
+  // the full name into fields like `identification_name` (whose label
+  // is "Identification Type" — a select), `bank_name`, `nok_full_name`,
+  // etc. Match only the canonical names MyCover uses for the buyer's
+  // own name.
+  bool _isPersonNameField(String n) {
+    return n == 'name' ||
+        n == 'full_name' ||
+        n == 'first_name' ||
+        n == 'firstname' ||
+        n == 'last_name' ||
+        n == 'lastname' ||
+        n == 'surname' ||
+        n == 'customer_name' ||
+        n == 'policy_holder_name' ||
+        n == 'holder_name' ||
+        n == 'insured_name';
+  }
+
+  /// Returns true when the `bought_for_self` form value is the
+  /// canonical "false" (or one of the forgiving aliases the cubit also
+  /// accepts: "0", "no"). Treated as false everywhere else — that
+  /// matches the Switch's `false.toString()` output and the backend
+  /// validator at `PurchaseMarketplaceInsurance`.
+  bool _isBoughtForSelfFalse(String? raw) {
+    if (raw == null) return false;
+    final v = raw.trim().toLowerCase();
+    return v == 'false' || v == '0' || v == 'no';
+  }
+
+  // Matches the MyCover boolean field that toggles between "I'm buying
+  // for myself" (true) and "I'm buying for someone else" (false).
+  // Currently `bought_for_self` per the v2 schema; we also match a few
+  // legacy / variant spellings (`buying_for_self`, `for_self`) so the
+  // default flip doesn't depend on exact field naming.
+  bool _isBuyingForSelfField(String name) {
+    final n = name.toLowerCase();
+    return n == 'bought_for_self' ||
+        n == 'buying_for_self' ||
+        n == 'buy_for_self' ||
+        n == 'for_self';
+  }
+
+  bool _isBvnField(String name) {
+    final n = name.toLowerCase();
+    return n == 'bvn' || n.startsWith('bvn_') || n.endsWith('_bvn') ||
+        n.contains('bvn_number');
+  }
+
+  bool _isNinField(String name) {
+    final n = name.toLowerCase();
+    return n == 'nin' || n.startsWith('nin_') || n.endsWith('_nin') ||
+        n.contains('nin_number') || n == 'national_id' ||
+        n == 'national_identification_number';
   }
 
   /// Update a form field value
+  /// Fields whose value changes the premium — editing any of them
+  /// after a quote was loaded must invalidate the cached quote so
+  /// the user re-quotes instead of paying with a stale premium.
+  static const _premiumDrivingFields = <String>{
+    // Auto / Gadget
+    'value', 'vehicle_value',
+    // Health / Hospicash
+    'payment_plan',
+    // Package / Content / Riders
+    'total_value', 'sum_insured', 'item_details', 'items',
+    // Travel
+    'num_of_passengers', 'departure_date', 'arrival_date',
+    'destination', 'nationality',
+    // Property
+    'property_value', 'contents_value',
+    // Life
+    'benefits', 'benefit_details', 'beneficiaries',
+    'repayment_amount', 'repayment_plan',
+    // Content variant
+    'plan',
+  };
+
   void updateFormField(String name, String value) {
     if (isClosed) return;
 
     // Trim text values (not dropdowns/booleans)
     final trimmedValue = (value == 'true' || value == 'false') ? value : value.trim();
+    final previous = _formData[name];
     _formData = {..._formData, name: trimmedValue};
 
     // Clear dependent vehicle_model when vehicle_make changes
     if (name == 'vehicle_make' || name == 'make') {
       _formData.remove('vehicle_model');
       _formData.remove('model');
+    }
+
+    // Invalidate any cached quote when a premium-driving input
+    // actually changes — otherwise the user could see a fresh quote
+    // for ₦52,500 then edit `vehicle_value` from 1M to 5M and
+    // submit at the stale premium. The user has to re-tap "Get
+    // Quote" after such an edit.
+    if (_quote != null
+        && previous != null
+        && previous != trimmedValue
+        && _premiumDrivingFields.contains(name)) {
+      _quote = null;
+      _lastIdempotencyKey = null; // fresh quote ⇒ fresh idempotency key
     }
 
     if (_selectedProduct != null) {
@@ -386,15 +812,72 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
     }
   }
 
-  /// Validate dynamic form fields and return true if valid
+  /// Returns true when [raw] is a JSON-encoded empty array, or an
+  /// array whose entries are all empty maps / strings (e.g. `"[]"`,
+  /// `"[{}]"`, `"[\"\"]"`, `"[{\"name\":\"\"}]"`). Used to catch the
+  /// "added a row but didn't fill anything" submission path.
+  static bool _isEmptyJsonArray(String raw) {
+    if (raw.isEmpty) return true;
+    try {
+      final parsed = jsonDecode(raw);
+      if (parsed is! List) return false;
+      if (parsed.isEmpty) return true;
+      // Every entry must have at least one non-empty scalar.
+      return parsed.every((entry) {
+        if (entry == null) return true;
+        if (entry is String) return entry.trim().isEmpty;
+        if (entry is Map) {
+          return entry.values.every((v) {
+            if (v == null) return true;
+            if (v is String) return v.trim().isEmpty;
+            return false;
+          });
+        }
+        return false;
+      });
+    } catch (_) {
+      // Malformed JSON — let the existing regex/required check handle it.
+      return false;
+    }
+  }
+
+  /// Validate dynamic form fields and return true if valid.
+  ///
+  /// Array-typed fields (`items`, `item_details`, `benefits`,
+  /// `beneficiaries`, `benefit_details`) are stored as JSON-encoded
+  /// strings — `"[]"`, `"[{}]"`, and `"[{\"name\":\"\"}]"` would all
+  /// pass the simple `value.isEmpty` check while violating the
+  /// required contract. Detect those cases explicitly.
   bool validateFormFields() {
     if (_selectedProduct == null) return false;
+
+    // `bought_for_self` decides whether the `insured_*` family of
+    // fields is required. MyCover marks them optional at the schema
+    // level because they're conditionally-required at the API level —
+    // only when the toggle is off. Mirror that contract here so the
+    // Flutter form doesn't block the happy path AND doesn't let an
+    // empty submission slip through to MyCover when the toggle is off.
+    final boughtForSelf = !_isBoughtForSelfFalse(_formData['bought_for_self']);
 
     final errors = <String, String>{};
     for (final field in _selectedProduct!.formFields) {
       final value = _formData[field.name] ?? '';
-      if (field.required && value.isEmpty) {
+      final isArray = field.type.toLowerCase() == 'array';
+      final isInsuredField = field.name.startsWith('insured_');
+
+      // Skip insured_* fields entirely when buying for self — they're
+      // hidden on the form and irrelevant to the submission.
+      if (isInsuredField && boughtForSelf) continue;
+
+      // Treat insured_* as required when buying for someone else, even
+      // though the schema marks them optional. Otherwise honor the
+      // schema's required flag.
+      final required = field.required || (isInsuredField && !boughtForSelf);
+
+      if (required && value.isEmpty) {
         errors[field.name] = '${field.label} is required';
+      } else if (required && isArray && _isEmptyJsonArray(value)) {
+        errors[field.name] = 'Add at least one ${field.label.toLowerCase()} entry';
       } else if (value.isNotEmpty && field.validationRegex.isNotEmpty) {
         try {
           final regex = RegExp(field.validationRegex);
@@ -422,12 +905,30 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
 
   /// Get a quote for the selected product with current form data
   Future<void> getQuote() async {
-    if (isClosed || _selectedProduct == null) return;
-    if (_quotePending) return; // Prevent concurrent quote requests
+    developer.log('[getQuote] enter; closed=$isClosed product=${_selectedProduct?.id} pending=$_quotePending');
+    if (isClosed || _selectedProduct == null) {
+      developer.log('[getQuote] early return: isClosed/product-null');
+      return;
+    }
+    if (_quotePending) {
+      developer.log('[getQuote] early return: _quotePending=true (concurrent call)');
+      return;
+    }
 
-    if (!validateFormFields()) return;
+    if (!validateFormFields()) {
+      // After validateFormFields fails it emits InsuranceProductSelected
+      // with formErrors. Read those out of the current state so the
+      // log line names the offending fields.
+      final s = state;
+      final errs = s is InsuranceProductSelected ? s.formErrors : const <String, String>{};
+      developer.log('[getQuote] early return: validateFormFields=false; '
+          'errors=${errs.entries.map((e) => "${e.key}:${e.value}").join(", ")}; '
+          'formDataKeys=${_formData.keys.toList()}');
+      return;
+    }
 
     _quotePending = true;
+    developer.log('[getQuote] validation passed; firing gRPC. formDataKeys=${_formData.keys.toList()}');
     // Reset idempotency key when requesting a new quote (even if it fails)
     _lastIdempotencyKey = null;
 
@@ -445,12 +946,14 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
       // Re-check _selectedProduct after async gap — user may have navigated away
       if (_selectedProduct == null || _quote == null) return;
 
+      developer.log('[getQuote] success; emitting Loaded');
       emit(InsuranceQuoteLoaded(
         quote: _quote!,
         product: _selectedProduct!,
         formData: _formData,
       ));
     } catch (e) {
+      developer.log('[getQuote] threw: $e');
       if (isClosed) return;
       final msg = e.toString().toLowerCase();
       if (msg.contains('connection') || msg.contains('unavailable') || msg.contains('socket')) {
@@ -541,6 +1044,27 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
     ));
 
     try {
+      // Step 1.5 — flush any deferred file uploads BEFORE the MyCover
+      // buy call. Files staged on the form (preview only) get uploaded
+      // here, their returned URLs stamped into form_data so the
+      // payload MyCover sees carries real URLs, never the local
+      // `__pending_upload__` marker. Runs in parallel for all staged
+      // files so the wait time is bounded by the slowest upload, not
+      // the sum. Failure here aborts the saga before any wallet hold
+      // is created — protects the user's funds when an upload fails
+      // mid-flow.
+      if (_pendingUploads.isNotEmpty) {
+        if (!isClosed) {
+          emit(InsurancePurchaseProcessing(
+            step: InsuranceProcessingStep.uploadingDocuments,
+            product: product,
+            quote: quote,
+            progress: 0.35,
+          ));
+        }
+        await _uploadPendingFiles();
+      }
+
       // Emit holding funds/processing payment step
       if (!isClosed) {
         emit(InsurancePurchaseProcessing(
@@ -611,6 +1135,12 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
         final msg = e.toString().toLowerCase();
         if (msg.contains('insufficient') || msg.contains('balance')) {
           emit(const CreatePolicyError(message: 'Insufficient balance. Please fund your account and try again.'));
+        } else if (msg.contains('pin') && (msg.contains('expired') || msg.contains('token'))) {
+          // Auth-service stamps PIN-verification tokens with a 10-minute
+          // TTL (DefaultPinConfig.TokenExpiry). If the user pauses on
+          // the confirm screen past that, MyCover purchase fails with a
+          // bare "invalid token" — surface a clearer recovery hint.
+          emit(const CreatePolicyError(message: 'Your PIN session expired. Please re-enter your transaction PIN.'));
         } else if (msg.contains('pin') || msg.contains('permission')) {
           emit(const CreatePolicyError(message: 'Invalid transaction PIN. Please try again.'));
         } else if (msg.contains('quote') && (msg.contains('expired') || msg.contains('not found'))) {
@@ -941,4 +1471,292 @@ class CreatePolicyCubit extends Cubit<CreatePolicyState> {
       isAutoFilled: _isAutoFilled,
     ));
   }
+
+  /// Stage a file the user picked for an upload field. The bytes stay
+  /// in memory until purchase tap — no network call here, so the form
+  /// step feels instant and we don't burn MyCover upload quota on
+  /// re-pickers or back-button flows.
+  ///
+  /// Stages a file and pre-constructs its public URL via the backend
+  /// (`GetInsuranceDocumentUploadURL`). The deterministic public URL
+  /// is stamped into form_data IMMEDIATELY so MyCover sees a real URL
+  /// at submit time, and the actual PUT to the upload URL runs in the
+  /// background. By the time MyCover's downstream insurer fetches the
+  /// URL, the bytes have landed.
+  ///
+  /// While the URL pair is being fetched (round-trip < 1s typically)
+  /// the marker sits in form_data so validation passes. The marker is
+  /// overwritten with the real URL once the resolver returns.
+  ///
+  /// Errors at resolver-time bubble up via state; the background PUT
+  /// keeps a Future on the pending entry that the purchase saga awaits
+  /// in `_uploadPendingFiles` — that guarantees we never submit before
+  /// the bytes are at the URL.
+  Future<void> stagePendingFile({
+    required String fieldName,
+    required List<int> bytes,
+    required String filename,
+    required String contentType,
+  }) async {
+    if (isClosed) return;
+    // Initial entry with marker — keeps validation green while we
+    // resolve the URL pair.
+    _pendingUploads[fieldName] = _PendingFileUpload(
+      bytes: bytes,
+      filename: filename,
+      contentType: contentType,
+    );
+    _formData[fieldName] = _kPendingUploadMarker;
+    if (_selectedProduct != null) {
+      emit(InsuranceProductSelected(
+        product: _selectedProduct!,
+        formData: Map<String, String>.from(_formData),
+      ));
+    }
+
+    // Resolve the URL pair, then start the background PUT.
+    try {
+      final urls = await _repository.getInsuranceDocumentUploadURL(
+        filename: filename,
+        contentType: contentType,
+        documentType: _documentTypeForField(fieldName),
+      );
+      if (isClosed || !_pendingUploads.containsKey(fieldName)) {
+        // User dropped the file (or the cubit closed) before the
+        // resolver returned. Skip.
+        return;
+      }
+      // Stamp the deterministic public URL into form_data so the
+      // purchase request carries a real URL even if the user fires
+      // Continue while the PUT is still in flight.
+      _formData[fieldName] = urls.publicUrl;
+      final updated = _pendingUploads[fieldName]!.withResolvedURL(urls);
+      _pendingUploads[fieldName] = updated;
+      if (_selectedProduct != null && !isClosed) {
+        emit(InsuranceProductSelected(
+          product: _selectedProduct!,
+          formData: Map<String, String>.from(_formData),
+        ));
+      }
+      // Kick off the actual upload. Stored on the pending entry so the
+      // saga can await it.
+      updated.startBackgroundPut(_repository);
+    } catch (e) {
+      // Surface the error inside the form, but keep the marker in
+      // place so the user can retry by tapping the field again. We
+      // intentionally don't clear `_pendingUploads` — the form
+      // preview stays so the user doesn't lose their selection.
+      if (_selectedProduct != null && !isClosed) {
+        emit(InsuranceProductSelected(
+          product: _selectedProduct!,
+          formData: Map<String, String>.from(_formData),
+          formErrors: {fieldName: "Couldn't prepare upload — tap to retry"},
+        ));
+      }
+    }
+  }
+
+  /// Stages a per-item image upload (e.g. `item_details[i].image_url`
+  /// in Marine Cover) and returns the deterministic public URL the
+  /// caller writes into the array item's `image_url` slot.
+  ///
+  /// Same lifecycle as [stagePendingFile] — fetches the URL pair from
+  /// the backend, kicks off the background PUT, tracks the in-flight
+  /// future so the purchase saga's `_uploadPendingFiles` step awaits
+  /// it before submitting to MyCover. Uses a synthetic key (`__item_image:<storage_key>`)
+  /// to register the pending upload without colliding with top-level
+  /// form fields; the saga special-cases these so it doesn't write
+  /// the public URL into form_data (the array item already has it).
+  ///
+  /// Throws on resolver-time errors; the caller surfaces those in-line.
+  Future<String> stageArrayItemImage({
+    required List<int> bytes,
+    required String filename,
+    required String contentType,
+  }) async {
+    final urls = await _repository.getInsuranceDocumentUploadURL(
+      filename: filename,
+      contentType: contentType,
+      documentType: 'item_image',
+    );
+    final p = _PendingFileUpload(
+      bytes: bytes,
+      filename: filename,
+      contentType: contentType,
+      resolvedUrls: urls,
+    );
+    p.startBackgroundPut(_repository);
+    _pendingUploads['__item_image:${urls.storageKey}'] = p;
+    return urls.publicUrl;
+  }
+
+  /// Drop a staged file before purchase (e.g. user tapped "Remove").
+  void clearPendingFile(String fieldName) {
+    if (isClosed) return;
+    _pendingUploads.remove(fieldName);
+    if (_formData[fieldName] == _kPendingUploadMarker) {
+      _formData.remove(fieldName);
+    }
+    if (_selectedProduct != null) {
+      emit(InsuranceProductSelected(
+        product: _selectedProduct!,
+        formData: Map<String, String>.from(_formData),
+      ));
+    }
+  }
+
+  /// Drain `_pendingUploads`: await each background PUT that
+  /// `stagePendingFile` kicked off, so MyCover never fetches a public
+  /// URL whose bytes haven't landed yet. The public URLs are already
+  /// in `_formData` (stamped at stage time) — we just wait for the
+  /// in-flight PUTs to finish.
+  ///
+  /// If a pending entry has no resolved URL yet (the resolver
+  /// round-trip is still in flight, or it failed), or has no
+  /// in-flight PUT (which means stage was called but resolver hadn't
+  /// returned), we fall back to the legacy synchronous-upload path
+  /// using the existing `uploadInsuranceDocument` RPC. That keeps the
+  /// saga robust against transient backend errors during stage.
+  Future<void> _uploadPendingFiles() async {
+    if (_pendingUploads.isEmpty) return;
+    final entries = List<MapEntry<String, _PendingFileUpload>>.from(
+        _pendingUploads.entries);
+    final futures = entries.map((entry) async {
+      final fieldName = entry.key;
+      final p = entry.value;
+
+      // Happy path — URL was pre-constructed at stage time. Await
+      // the background PUT (started in stagePendingFile) and we're
+      // done. Public URL is already in _formData.
+      final inflight = p.inflightPut;
+      if (inflight != null) {
+        await inflight;
+        return MapEntry(fieldName, _formData[fieldName] ?? '');
+      }
+
+      // Fallback — resolver-time error left the marker in place. Hit
+      // the legacy direct-upload RPC and use whatever URL it returns.
+      final url = await _repository.uploadInsuranceDocument(
+        fileData: p.bytes,
+        filename: p.filename,
+        documentType: _documentTypeForField(fieldName),
+      );
+      return MapEntry(fieldName, url);
+    });
+    final results = await Future.wait(futures);
+    for (final r in results) {
+      // Synthetic per-item-image keys are bookkeeping only — the
+      // array item already carries the public URL (stamped at stage
+      // time). Just drain the pending map without rewriting form data.
+      if (!r.key.startsWith('__item_image:')) {
+        _formData[r.key] = r.value;
+      }
+      _pendingUploads.remove(r.key);
+    }
+  }
+
+  static String _documentTypeForField(String fieldName) {
+    final n = fieldName.toLowerCase();
+    if (n.contains('id') || n.contains('identification')) return 'id_document';
+    if (n.contains('proof')) return 'proof_of_purchase';
+    if (n.contains('claim')) return 'claim_evidence';
+    return 'device_photo';
+  }
+}
+
+/// Marker stored in `_formData` for fields whose upload hasn't run yet.
+/// The form widget detects this marker to show the preview thumbnail
+/// instead of treating the field as "no value". Stripped (replaced
+/// with the real URL) inside `_uploadPendingFiles` before the purchase
+/// payload is sent to MyCover.
+const String _kPendingUploadMarker = '__pending_upload__';
+
+/// Holds the bytes + metadata for a file the user has selected but not
+/// yet uploaded. Lives on the cubit only — flushed when the purchase
+/// saga starts. Never persisted.
+///
+/// `resolvedUrls` and `inflightPut` are populated once
+/// `stagePendingFile` has called the backend's
+/// GetInsuranceDocumentUploadURL RPC and kicked off the background
+/// PUT. Both are null while the resolver is in flight (the field's
+/// form_data value is `__pending_upload__` during that window).
+class _PendingFileUpload {
+  final List<int> bytes;
+  final String filename;
+  final String contentType;
+  InsuranceDocumentUploadURL? resolvedUrls;
+  // Future tracking the in-flight PUT to the upload URL. Stays null
+  // until startBackgroundPut() is called by the cubit once the URL
+  // resolver returns. The purchase saga awaits this so MyCover never
+  // fetches the public URL before the PUT lands.
+  Future<void>? inflightPut;
+
+  _PendingFileUpload({
+    required this.bytes,
+    required this.filename,
+    required this.contentType,
+    this.resolvedUrls,
+    this.inflightPut,
+  });
+
+  /// Best-effort sniff of file kind for the preview UI. Anything starting
+  /// with `image/` renders as an Image.memory; otherwise we show a
+  /// document icon + filename.
+  bool get isImage => contentType.startsWith('image/');
+
+  /// Returns a copy with the resolved URL pair attached. The caller
+  /// then calls `startBackgroundPut` to begin the actual upload.
+  _PendingFileUpload withResolvedURL(InsuranceDocumentUploadURL urls) {
+    return _PendingFileUpload(
+      bytes: bytes,
+      filename: filename,
+      contentType: contentType,
+      resolvedUrls: urls,
+      inflightPut: inflightPut,
+    );
+  }
+
+  /// Begins the actual PUT to the upload URL. Idempotent — calling
+  /// twice keeps the first in-flight future.
+  void startBackgroundPut(InsuranceRepository repository) {
+    final urls = resolvedUrls;
+    if (urls == null || inflightPut != null) return;
+    inflightPut = _putBytes(urls.uploadUrl, bytes, contentType);
+  }
+}
+
+Future<void> _putBytes(
+  String uploadUrl,
+  List<int> bytes,
+  String contentType,
+) async {
+  // Plain HTTP PUT — works for both the GCS V4-signed URL and the
+  // dev /assets/insurance route. We use `package:http` so the call
+  // goes through the same client as the rest of the app.
+  final resp = await http.put(
+    Uri.parse(uploadUrl),
+    headers: {'Content-Type': contentType},
+    body: bytes,
+  );
+  if (resp.statusCode < 200 || resp.statusCode >= 300) {
+    throw Exception('upload PUT failed: HTTP ${resp.statusCode}');
+  }
+}
+
+/// Public read-only view of a staged file. Returned by
+/// [CreatePolicyCubit.stagedFile] so the form widget can render the
+/// preview thumbnail + full-screen viewer without touching the
+/// private `_PendingFileUpload` class.
+class StagedInsuranceFile {
+  final List<int> bytes;
+  final String filename;
+  final String contentType;
+  final bool isImage;
+
+  const StagedInsuranceFile._({
+    required this.bytes,
+    required this.filename,
+    required this.contentType,
+    required this.isImage,
+  });
 }

@@ -559,11 +559,29 @@ const InsuranceProductFormField$json = const {
     const {'1': 'validation_regex', '3': 7, '4': 1, '5': 9, '10': 'validationRegex'},
     const {'1': 'placeholder', '3': 8, '4': 1, '5': 9, '10': 'placeholder'},
     const {'1': 'description', '3': 9, '4': 1, '5': 9, '10': 'description'},
+    const {'1': 'utility_id', '3': 10, '4': 1, '5': 9, '10': 'utilityId'},
+    const {'1': 'depends_on', '3': 11, '4': 1, '5': 9, '10': 'dependsOn'},
+    const {'1': 'item_fields', '3': 12, '4': 3, '5': 11, '6': '.pb.InsuranceProductFormItemField', '10': 'itemFields'},
   ],
 };
 
 /// Descriptor for `InsuranceProductFormField`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List insuranceProductFormFieldDescriptor = $convert.base64Decode('ChlJbnN1cmFuY2VQcm9kdWN0Rm9ybUZpZWxkEhIKBG5hbWUYASABKAlSBG5hbWUSFAoFbGFiZWwYAiABKAlSBWxhYmVsEhIKBHR5cGUYAyABKAlSBHR5cGUSGgoIcmVxdWlyZWQYBCABKAhSCHJlcXVpcmVkEhgKB29wdGlvbnMYBSADKAlSB29wdGlvbnMSIwoNZGVmYXVsdF92YWx1ZRgGIAEoCVIMZGVmYXVsdFZhbHVlEikKEHZhbGlkYXRpb25fcmVnZXgYByABKAlSD3ZhbGlkYXRpb25SZWdleBIgCgtwbGFjZWhvbGRlchgIIAEoCVILcGxhY2Vob2xkZXISIAoLZGVzY3JpcHRpb24YCSABKAlSC2Rlc2NyaXB0aW9u');
+final $typed_data.Uint8List insuranceProductFormFieldDescriptor = $convert.base64Decode('ChlJbnN1cmFuY2VQcm9kdWN0Rm9ybUZpZWxkEhIKBG5hbWUYASABKAlSBG5hbWUSFAoFbGFiZWwYAiABKAlSBWxhYmVsEhIKBHR5cGUYAyABKAlSBHR5cGUSGgoIcmVxdWlyZWQYBCABKAhSCHJlcXVpcmVkEhgKB29wdGlvbnMYBSADKAlSB29wdGlvbnMSIwoNZGVmYXVsdF92YWx1ZRgGIAEoCVIMZGVmYXVsdFZhbHVlEikKEHZhbGlkYXRpb25fcmVnZXgYByABKAlSD3ZhbGlkYXRpb25SZWdleBIgCgtwbGFjZWhvbGRlchgIIAEoCVILcGxhY2Vob2xkZXISIAoLZGVzY3JpcHRpb24YCSABKAlSC2Rlc2NyaXB0aW9uEh0KCnV0aWxpdHlfaWQYCiABKAlSCXV0aWxpdHlJZBIdCgpkZXBlbmRzX29uGAsgASgJUglkZXBlbmRzT24SQgoLaXRlbV9maWVsZHMYDCADKAsyIS5wYi5JbnN1cmFuY2VQcm9kdWN0Rm9ybUl0ZW1GaWVsZFIKaXRlbUZpZWxkcw==');
+@$core.Deprecated('Use insuranceProductFormItemFieldDescriptor instead')
+const InsuranceProductFormItemField$json = const {
+  '1': 'InsuranceProductFormItemField',
+  '2': const [
+    const {'1': 'name', '3': 1, '4': 1, '5': 9, '10': 'name'},
+    const {'1': 'label', '3': 2, '4': 1, '5': 9, '10': 'label'},
+    const {'1': 'type', '3': 3, '4': 1, '5': 9, '10': 'type'},
+    const {'1': 'required', '3': 4, '4': 1, '5': 8, '10': 'required'},
+    const {'1': 'options', '3': 5, '4': 3, '5': 9, '10': 'options'},
+    const {'1': 'placeholder', '3': 6, '4': 1, '5': 9, '10': 'placeholder'},
+  ],
+};
+
+/// Descriptor for `InsuranceProductFormItemField`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List insuranceProductFormItemFieldDescriptor = $convert.base64Decode('Ch1JbnN1cmFuY2VQcm9kdWN0Rm9ybUl0ZW1GaWVsZBISCgRuYW1lGAEgASgJUgRuYW1lEhQKBWxhYmVsGAIgASgJUgVsYWJlbBISCgR0eXBlGAMgASgJUgR0eXBlEhoKCHJlcXVpcmVkGAQgASgIUghyZXF1aXJlZBIYCgdvcHRpb25zGAUgAygJUgdvcHRpb25zEiAKC3BsYWNlaG9sZGVyGAYgASgJUgtwbGFjZWhvbGRlcg==');
 @$core.Deprecated('Use insuranceProductDescriptor instead')
 const InsuranceProduct$json = const {
   '1': 'InsuranceProduct',
@@ -705,11 +723,12 @@ const GetInsuranceCategoriesResponse$json = const {
     const {'1': 'categories', '3': 1, '4': 3, '5': 11, '6': '.pb.InsuranceCategory', '10': 'categories'},
     const {'1': 'success', '3': 2, '4': 1, '5': 8, '10': 'success'},
     const {'1': 'msg', '3': 3, '4': 1, '5': 9, '10': 'msg'},
+    const {'1': 'terms_link', '3': 4, '4': 1, '5': 9, '10': 'termsLink'},
   ],
 };
 
 /// Descriptor for `GetInsuranceCategoriesResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getInsuranceCategoriesResponseDescriptor = $convert.base64Decode('Ch5HZXRJbnN1cmFuY2VDYXRlZ29yaWVzUmVzcG9uc2USNQoKY2F0ZWdvcmllcxgBIAMoCzIVLnBiLkluc3VyYW5jZUNhdGVnb3J5UgpjYXRlZ29yaWVzEhgKB3N1Y2Nlc3MYAiABKAhSB3N1Y2Nlc3MSEAoDbXNnGAMgASgJUgNtc2c=');
+final $typed_data.Uint8List getInsuranceCategoriesResponseDescriptor = $convert.base64Decode('Ch5HZXRJbnN1cmFuY2VDYXRlZ29yaWVzUmVzcG9uc2USNQoKY2F0ZWdvcmllcxgBIAMoCzIVLnBiLkluc3VyYW5jZUNhdGVnb3J5UgpjYXRlZ29yaWVzEhgKB3N1Y2Nlc3MYAiABKAhSB3N1Y2Nlc3MSEAoDbXNnGAMgASgJUgNtc2cSHQoKdGVybXNfbGluaxgEIAEoCVIJdGVybXNMaW5r');
 @$core.Deprecated('Use getInsuranceQuoteRequestDescriptor instead')
 const GetInsuranceQuoteRequest$json = const {
   '1': 'GetInsuranceQuoteRequest',

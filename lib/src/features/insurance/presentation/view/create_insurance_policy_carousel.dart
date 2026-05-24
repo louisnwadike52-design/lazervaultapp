@@ -16,7 +16,9 @@ import '../../../authentication/cubit/authentication_state.dart';
 import '../widgets/create_policy/insurance_category_products_screen.dart';
 import '../widgets/create_policy/insurance_form_screen.dart';
 import '../widgets/create_policy/insurance_quote_review_screen.dart';
-import '../widgets/create_policy/insurance_payment_confirm_screen.dart';
+// insurance_payment_confirm_screen.dart no longer used — folded into
+// insurance_quote_review_screen.dart so the user reviews and pays on
+// the same slide.
 import '../widgets/create_policy/insurance_processing_screen.dart';
 
 /// Main carousel for MyCover.ai insurance policy creation
@@ -39,15 +41,17 @@ class _CreateInsurancePolicyCarouselState
 
   late PageController _pageController;
   int _currentPage = 0;
-  final int _totalPages = 4;
+  // Reduced from 4 → 3 by folding the Confirm & Pay slide into Review.
+  // The carousel's bottom-nav "Confirm & Pay" button now triggers the
+  // purchase directly from the review slide.
+  final int _totalPages = 3;
   bool _isProcessing = false;
   StreamSubscription<CreatePolicyState>? _purchaseSubscription;
 
   final List<String> _pageNames = [
     'Browse Plans',
     'Your Details',
-    'Review Quote',
-    'Confirm & Pay',
+    'Review & Pay',
   ];
 
   @override
@@ -99,10 +103,13 @@ class _CreateInsurancePolicyCarouselState
             child: CircularProgressIndicator(color: Color(0xFF6366F1)),
           ),
         );
-        // Use a simple timeout approach — getQuote completes or 30s elapses
+        // Outer guard at 65s — kept just ABOVE the datasource's 60s quote
+        // cap so the datasource's friendly "Quote took too long" wins for
+        // slow providers (e.g. travel premium ~30–50s) and this only fires
+        // if the whole call wedges. (Was 30s, which pre-empted the 60s cap.)
         bool quoteTimedOut = false;
         try {
-          await cubit.getQuote().timeout(const Duration(seconds: 30));
+          await cubit.getQuote().timeout(const Duration(seconds: 65));
         } on TimeoutException {
           quoteTimedOut = true;
         }
@@ -117,7 +124,9 @@ class _CreateInsurancePolicyCarouselState
         }
         break;
       case 2:
-        // Review Quote -> check if quote is expired
+        // Review & Pay (merged slide): re-check quote freshness, then
+        // validate account + terms (used to live on the dropped
+        // separate Confirm & Pay slide), then fire the purchase.
         if (cubit.quote?.isExpired == true) {
           if (!mounted) return;
           final getNew = await showDialog<bool>(
@@ -158,15 +167,15 @@ class _CreateInsurancePolicyCarouselState
           }
           return;
         }
-        break;
-      case 3:
-        // Confirm & Pay -> validate account selection and terms then trigger PIN entry
         if (cubit.selectedAccountId == null) {
           _showErrorSnackBar('Please select an account to pay from');
           return;
         }
         if (!cubit.agreedToTerms) {
-          _showErrorSnackBar('Please accept the terms and conditions');
+          // Tell the review screen to scroll the agreement row into
+          // view and render an inline error — far more discoverable
+          // than a transient snackbar at the bottom.
+          InsuranceQuoteReviewScreen.requestTermsFocus.value++;
           return;
         }
         _proceedToPurchase();
@@ -333,8 +342,10 @@ class _CreateInsurancePolicyCarouselState
               children: const [
                 InsuranceCategoryProductsScreen(),
                 InsuranceFormScreen(),
+                // Review & Pay (merged) — coverage AI summary +
+                // premium + account selector + terms + carousel
+                // nav-button fires the purchase.
                 InsuranceQuoteReviewScreen(),
-                InsurancePaymentConfirmScreen(),
               ],
             ),
           ),

@@ -4,20 +4,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
-import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:lazervault/core/types/app_routes.dart';
+import '../insurance_terms_bottom_sheet.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:get_it/get_it.dart';
+import '../../../data/services/coverage_summary_service.dart';
 import '../../../domain/entities/insurance_product_entity.dart';
 import '../../cubit/create_policy_cubit.dart';
 import '../../cubit/create_policy_state.dart';
+import '../../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import '../../../../account_cards_summary/cubit/account_cards_summary_state.dart';
+import 'package:lazervault/core/services/account_manager.dart';
 
 /// Screen 3: Review quote details - premium, coverage breakdown, provider info
 class InsuranceQuoteReviewScreen extends StatefulWidget {
   const InsuranceQuoteReviewScreen({super.key});
+
+  /// Bumped by the carousel when the user taps Confirm & Pay without
+  /// accepting the agreement. The screen state listens, scrolls the
+  /// terms row into view, and flashes a red highlight on it.
+  /// Using a ValueNotifier (rather than a GlobalKey on the State) keeps
+  /// the screen const-constructible inside the PageView.
+  static final ValueNotifier<int> requestTermsFocus = ValueNotifier<int>(0);
 
   @override
   State<InsuranceQuoteReviewScreen> createState() =>
@@ -28,6 +38,19 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
     with TransactionPinMixin {
   Timer? _countdownTimer;
   Duration _remaining = Duration.zero;
+
+  // Scroll target for the terms checkbox so the carousel can request
+  // the user scroll to it on Confirm & Pay when terms aren't accepted.
+  final ScrollController _scrollController = ScrollController();
+  final GlobalKey _termsKey = GlobalKey();
+  bool _termsValidationError = false;
+
+  /// AI-generated coverage summary. Keyed by quote_id so navigating
+  /// back+forward doesn't refetch unnecessarily.
+  String? _summarisedQuoteId;
+  CoverageSummary? _coverageSummary;
+  bool _coverageSummaryLoading = false;
+  String? _coverageSummaryError;
 
   String _currencySymbol(String currency) {
     final c = currency.toLowerCase().trim();
@@ -42,9 +65,36 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
   }
 
   @override
+  void initState() {
+    super.initState();
+    InsuranceQuoteReviewScreen.requestTermsFocus.addListener(_handleTermsFocusRequest);
+  }
+
+  @override
   void dispose() {
     _countdownTimer?.cancel();
+    InsuranceQuoteReviewScreen.requestTermsFocus.removeListener(_handleTermsFocusRequest);
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  /// Triggered by the carousel when the user taps Confirm & Pay without
+  /// ticking the terms checkbox. Scrolls the terms row into view and
+  /// flips the inline error flag so the row renders with a red border
+  /// + helper text.
+  void _handleTermsFocusRequest() {
+    if (!mounted) return;
+    setState(() => _termsValidationError = true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ctx = _termsKey.currentContext;
+      if (ctx == null || !mounted) return;
+      Scrollable.ensureVisible(
+        ctx,
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeInOut,
+        alignment: 0.5,
+      );
+    });
   }
 
   void _startCountdown(DateTime validUntil) {
@@ -151,6 +201,7 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
     return Stack(
       children: [
         SingleChildScrollView(
+          controller: _scrollController,
           padding: EdgeInsets.symmetric(horizontal: 20.w),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             SizedBox(height: 8.h),
@@ -215,26 +266,19 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
             ], onInfo: () => _showProductInfoSheet(context, product)),
             SizedBox(height: 12.h),
 
-            // Coverage summary
+            // AI-generated coverage summary. Replaces the raw HTML
+            // coverage rendering — the chat-agent-gateway endpoint
+            // distills MyCover's mixed-quality descriptions into a
+            // concise 2-3 sentence summary + 3-5 bullets. Fires on
+            // every new quote and is keyed by quote_id so navigating
+            // back+forward doesn't refetch.
             if (quote.coverageSummary.isNotEmpty || quote.coverageItems.isNotEmpty)
-              _buildInfoCard('Coverage', [
-                if (quote.coverageSummary.isNotEmpty)
-                  Padding(padding: EdgeInsets.only(bottom: 8.h),
-                    child: _buildRichContent(quote.coverageSummary, const Color(0xFF9CA3AF))),
-                ...quote.coverageItems.map((item) => Padding(
-                  padding: EdgeInsets.only(bottom: 6.h),
-                  child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Icon(Icons.check_circle, color: const Color(0xFF10B981), size: 16.sp),
-                    SizedBox(width: 8.w),
-                    Expanded(child: _buildRichContent(item, Colors.white)),
-                  ]),
-                )),
-              ]),
+              _buildAiCoverageCard(context, state),
 
             // View Terms link
             SizedBox(height: 12.h),
             GestureDetector(
-              onTap: () => Get.toNamed(AppRoutes.insuranceTerms, arguments: product),
+              onTap: () => _openTermsBottomSheet(context),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -261,6 +305,18 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
                 quote.quoteDetails.entries.map((e) => _buildInfoRow(e.key, e.value)).toList()),
             ],
 
+            // Account selector + terms — these used to live on the
+            // dropped "Confirm & Pay" slide. The carousel's bottom
+            // navigation button handles the actual purchase.
+            if (!isExpired) ...[
+              SizedBox(height: 20.h),
+              Text('Pay with', style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w700, color: Colors.white)),
+              SizedBox(height: 8.h),
+              _buildAccountSelector(context, quote.currency, quote.premium),
+              SizedBox(height: 16.h),
+              _buildTermsCheckbox(context, product, quote),
+            ],
+
             // Expired quote action
             if (isExpired) ...[
               SizedBox(height: 20.h),
@@ -283,49 +339,6 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
             SizedBox(height: 20.h),
           ]),
         ),
-
-        // Continue to Payment button (only show when quote is valid)
-        if (!isExpired)
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              padding: EdgeInsets.all(20.w),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    const Color(0xFF0A0A0A).withValues(alpha: 0.9),
-                    const Color(0xFF0A0A0A),
-                  ],
-                ),
-              ),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _proceedToPayment,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6366F1),
-                    disabledBackgroundColor: const Color(0xFF6366F1).withValues(alpha: 0.5),
-                    padding: EdgeInsets.symmetric(vertical: 18.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                  ),
-                  child: Text(
-                    'Continue to Payment',
-                    style: GoogleFonts.inter(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
 
         // Expired overlay
         if (isExpired)
@@ -399,43 +412,363 @@ class _InsuranceQuoteReviewScreenState extends State<InsuranceQuoteReviewScreen>
     );
   }
 
-  Future<void> _proceedToPayment() async {
-    final cubit = context.read<CreatePolicyCubit>();
-    final state = cubit.state;
+  /// Fetch the AI-generated coverage summary on first render of this
+  /// quote. Idempotent — keyed by quote id so back/forward navigation
+  /// reuses the cached result.
+  void _maybeFetchCoverageSummary(InsuranceQuoteLoaded state) {
+    final qid = state.quote.quoteId;
+    if (_summarisedQuoteId == qid && (_coverageSummary != null || _coverageSummaryError != null)) {
+      return;
+    }
+    if (_coverageSummaryLoading && _summarisedQuoteId == qid) return;
+    _summarisedQuoteId = qid;
+    _coverageSummary = null;
+    _coverageSummaryError = null;
+    _coverageSummaryLoading = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        final svc = CoverageSummaryService();
+        final res = await svc.summarize(
+          productId: state.product.id,
+          productName: state.product.name,
+          providerName: state.product.providerName,
+          category: state.product.category.displayName,
+          coverageSummary: state.quote.coverageSummary,
+          coverageItems: state.quote.coverageItems,
+          currency: state.quote.currency,
+        );
+        if (!mounted || _summarisedQuoteId != qid) return;
+        setState(() {
+          _coverageSummary = res;
+          _coverageSummaryLoading = false;
+        });
+      } catch (e) {
+        if (!mounted || _summarisedQuoteId != qid) return;
+        setState(() {
+          _coverageSummaryError = e.toString();
+          _coverageSummaryLoading = false;
+        });
+      }
+    });
+  }
 
-    if (state is! InsuranceQuoteLoaded) return;
+  Widget _buildAiCoverageCard(BuildContext context, InsuranceQuoteLoaded state) {
+    _maybeFetchCoverageSummary(state);
+    if (_coverageSummaryLoading) {
+      return _buildInfoCard('Coverage', [
+        Row(children: [
+          SizedBox(
+            width: 14.w, height: 14.w,
+            child: const CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF6366F1)),
+          ),
+          SizedBox(width: 10.w),
+          Text('Summarising coverage…', style: GoogleFonts.inter(fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
+        ]),
+      ]);
+    }
+    final summary = _coverageSummary;
+    if (summary == null) {
+      // AI failed entirely — fall back to a plain text rendering of
+      // whatever raw description we have so the user is never staring
+      // at nothing.
+      return _buildInfoCard('Coverage', [
+        if (state.quote.coverageSummary.isNotEmpty)
+          Padding(padding: EdgeInsets.only(bottom: 8.h),
+            child: _buildRichContent(state.quote.coverageSummary, const Color(0xFF9CA3AF))),
+        ...state.quote.coverageItems.map((item) => Padding(
+          padding: EdgeInsets.only(bottom: 6.h),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Icon(Icons.check_circle, color: const Color(0xFF10B981), size: 16.sp),
+            SizedBox(width: 8.w),
+            Expanded(child: _buildRichContent(item, Colors.white)),
+          ]),
+        )),
+      ]);
+    }
+    return _buildInfoCard('Coverage', [
+      if (summary.summary.isNotEmpty)
+        Padding(padding: EdgeInsets.only(bottom: summary.bullets.isEmpty ? 0 : 10.h),
+          child: Text(
+            summary.summary,
+            style: GoogleFonts.inter(fontSize: 13.sp, height: 1.4, color: Colors.white),
+          ),
+        ),
+      ...summary.bullets.map((b) => Padding(
+        padding: EdgeInsets.only(bottom: 6.h),
+        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Icon(Icons.check_circle, color: const Color(0xFF10B981), size: 16.sp),
+          SizedBox(width: 8.w),
+          Expanded(child: Text(b, style: GoogleFonts.inter(fontSize: 13.sp, color: Colors.white))),
+        ]),
+      )),
+    ]);
+  }
 
-    final quote = state.quote;
-    final product = state.product;
+  /// Active-account-only display on the Review slide.
+  ///
+  /// Per product decision: the last slide should *only* show the active
+  /// account selected on the dashboard — no account-change bottom sheet,
+  /// no expand chevron, no list. Users wanting to pay from a different
+  /// account switch their active account before starting the purchase.
+  /// The currency-mismatch and missing-account error states are kept
+  /// so the user always knows why payment is blocked.
+  Widget _buildAccountSelector(BuildContext context, String currency, double premium) {
+    return BlocBuilder<AccountCardsSummaryCubit, AccountCardsSummaryState>(
+      builder: (context, state) {
+        final cubit = context.read<CreatePolicyCubit>();
+        final activeId = GetIt.I<AccountManager>().activeAccountId;
 
-    // Then show PIN modal and validate
-    final success = await validateTransactionPin(
-      context: context,
-      transactionId: quote.quoteId,
-      transactionType: 'insurance_purchase',
-      amount: quote.premium,
-      currency: quote.currency,
-      onPinValidated: (verificationToken) async {
-        // Call purchase with the verification token
-        await cubit.purchaseInsurance(
-          accountId: cubit.selectedAccountId ?? '',
-          transactionPin: verificationToken, // This is now the token, not raw PIN
-          transactionId: quote.quoteId,
+        if (state is! AccountCardsSummaryLoaded) {
+          return Container(
+            padding: EdgeInsets.all(14.w),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1F1F1F),
+              borderRadius: BorderRadius.circular(10.r),
+              border: Border.all(color: const Color(0xFF2D2D2D)),
+            ),
+            child: Row(children: [
+              SizedBox(width: 14.w, height: 14.w, child: const CircularProgressIndicator(strokeWidth: 2)),
+              SizedBox(width: 10.w),
+              Text('Loading account…', style: GoogleFonts.inter(fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
+            ]),
+          );
+        }
+
+        // Find the active account directly. If it exists and matches
+        // the quote currency we use it; otherwise we surface a clear
+        // error rather than silently switching accounts.
+        final active = state.accountSummaries
+            .cast<dynamic>()
+            .firstWhere(
+              (a) => a.id == activeId,
+              orElse: () => null,
+            );
+
+        if (active == null) {
+          return Container(
+            padding: EdgeInsets.all(14.w),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEF4444).withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(10.r),
+              border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.4)),
+            ),
+            child: Row(children: [
+              Icon(Icons.warning_amber, color: const Color(0xFFEF4444), size: 18.sp),
+              SizedBox(width: 8.w),
+              Expanded(child: Text(
+                'No active account selected. Choose one on the dashboard before purchasing.',
+                style: GoogleFonts.inter(fontSize: 12.sp, color: const Color(0xFFEF4444)),
+              )),
+            ]),
+          );
+        }
+
+        final currencyMismatch =
+            active.currency.toUpperCase() != currency.toUpperCase();
+
+        if (currencyMismatch) {
+          return Container(
+            padding: EdgeInsets.all(14.w),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEF4444).withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(10.r),
+              border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.4)),
+            ),
+            child: Row(children: [
+              Icon(Icons.warning_amber, color: const Color(0xFFEF4444), size: 18.sp),
+              SizedBox(width: 8.w),
+              Expanded(child: Text(
+                'Your active account is in ${active.currency.toUpperCase()}, but this premium is in '
+                '${currency.toUpperCase()}. Switch your active account on the dashboard before purchasing.',
+                style: GoogleFonts.inter(fontSize: 12.sp, color: const Color(0xFFEF4444)),
+              )),
+            ]),
+          );
+        }
+
+        // Push the active account into the cubit so the carousel's
+        // case-2 validation (selectedAccountId != null) passes.
+        if (cubit.selectedAccountId != active.id) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) cubit.selectAccount(active.id);
+          });
+        }
+
+        final hasFunds = active.availableBalance >= premium;
+
+        return Container(
+          padding: EdgeInsets.all(14.w),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.circular(10.r),
+            border: Border.all(
+              color: hasFunds
+                  ? const Color(0xFF2D2D2D)
+                  : const Color(0xFFEF4444).withValues(alpha: 0.4),
+              width: hasFunds ? 1 : 1.5,
+            ),
+          ),
+          child: Row(children: [
+            Container(
+              width: 38.w, height: 38.w,
+              decoration: BoxDecoration(
+                color: const Color(0xFF6366F1).withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.account_balance_wallet, color: const Color(0xFF6366F1), size: 20.sp),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [
+                Flexible(child: Text(
+                  (active.accountName?.isNotEmpty ?? false)
+                      ? active.accountName!
+                      : 'Account ${active.accountNumber ?? active.id.substring(0, 6)}',
+                  style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600, color: Colors.white),
+                  overflow: TextOverflow.ellipsis,
+                )),
+                SizedBox(width: 6.w),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(4.r),
+                  ),
+                  child: Text('ACTIVE',
+                    style: GoogleFonts.inter(
+                      fontSize: 9.sp,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF10B981),
+                      letterSpacing: 0.3,
+                    )),
+                ),
+              ]),
+              SizedBox(height: 2.h),
+              Text(
+                'Balance: ${_currencySymbol(currency)}${active.availableBalance.toStringAsFixed(2)}',
+                style: GoogleFonts.inter(
+                  fontSize: 12.sp,
+                  color: hasFunds ? const Color(0xFF9CA3AF) : const Color(0xFFEF4444),
+                ),
+              ),
+              if (!hasFunds) ...[
+                SizedBox(height: 2.h),
+                Text(
+                  'Insufficient balance for this premium.',
+                  style: GoogleFonts.inter(fontSize: 11.sp, color: const Color(0xFFEF4444)),
+                ),
+              ],
+            ])),
+          ]),
         );
       },
-      title: 'Confirm Insurance Purchase',
-      message: 'Purchase ${product.name} from ${product.providerName}?',
-      currencySymbol: _currencySymbol(quote.currency),
     );
+  }
 
-    if (!success && mounted) {
-      // PIN validation failed or was cancelled
-      // Stay on the quote review screen
-    }
+  // Account-change bottom sheet removed: per product decision the
+  // Review slide displays the dashboard-active account only. Users
+  // change it from the dashboard rather than here.
+
+  /// Terms acceptance — must be checked before the carousel's bottom
+  /// "Confirm & Pay" button lets the purchase proceed.
+  Widget _buildTermsCheckbox(BuildContext context, InsuranceProduct product, dynamic quote) {
+    final cubit = context.read<CreatePolicyCubit>();
+    final agreed = cubit.agreedToTerms;
+    final showError = _termsValidationError && !agreed;
+    final borderColor = showError
+        ? const Color(0xFFEF4444)
+        : const Color(0xFFFB923C).withValues(alpha: 0.3);
+    final tintColor = showError
+        ? const Color(0xFFEF4444).withValues(alpha: 0.08)
+        : const Color(0xFFFB923C).withValues(alpha: 0.08);
+    return Column(
+      key: _termsKey,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          width: double.infinity,
+          padding: EdgeInsets.all(12.w),
+          decoration: BoxDecoration(
+            color: tintColor,
+            borderRadius: BorderRadius.circular(8.r),
+            border: Border.all(color: borderColor, width: showError ? 1.5 : 1),
+          ),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            SizedBox(
+              width: 24.w, height: 24.w,
+              child: Checkbox(
+                value: agreed,
+                onChanged: (v) {
+                  cubit.setTermsAgreed(v ?? false);
+                  setState(() {
+                    if (v == true) _termsValidationError = false;
+                  });
+                },
+                activeColor: const Color(0xFF6366F1),
+                side: BorderSide(color: const Color(0xFFFB923C).withValues(alpha: 0.5)),
+              ),
+            ),
+            SizedBox(width: 8.w),
+            Expanded(child: GestureDetector(
+              onTap: () => _openTermsBottomSheet(context),
+              child: Text.rich(
+                TextSpan(children: [
+                  TextSpan(
+                    text: 'I agree to the ',
+                    style: GoogleFonts.inter(fontSize: 12.sp, color: const Color(0xFFFB923C).withValues(alpha: 0.8)),
+                  ),
+                  TextSpan(
+                    text: 'insurance terms and conditions',
+                    style: GoogleFonts.inter(
+                      fontSize: 12.sp, color: const Color(0xFFFB923C),
+                      fontWeight: FontWeight.w600,
+                      decoration: TextDecoration.underline,
+                      decorationColor: const Color(0xFFFB923C),
+                    ),
+                  ),
+                  TextSpan(
+                    text: '. I will be charged ${_currencySymbol(quote.currency)}${quote.premium.toStringAsFixed(2)} from my selected account.',
+                    style: GoogleFonts.inter(fontSize: 12.sp, color: const Color(0xFFFB923C).withValues(alpha: 0.8)),
+                  ),
+                ]),
+              ),
+            )),
+          ]),
+        ),
+        if (showError)
+          Padding(
+            padding: EdgeInsets.only(top: 6.h, left: 4.w),
+            child: Row(children: [
+              Icon(Icons.error_outline, color: const Color(0xFFEF4444), size: 14.sp),
+              SizedBox(width: 6.w),
+              Text(
+                'Please accept the terms to continue.',
+                style: GoogleFonts.inter(
+                  fontSize: 12.sp,
+                  color: const Color(0xFFEF4444),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ]),
+          ),
+      ],
+    );
   }
 
   @override
   ITransactionPinService get transactionPinService => GetIt.I<ITransactionPinService>();
+
+  /// Open the in-app webview bottom sheet that loads the admin-set
+  /// terms link. The link is fetched lazily through the cubit so we
+  /// always reflect the current admin config.
+  void _openTermsBottomSheet(BuildContext context) {
+    final cubit = context.read<CreatePolicyCubit>();
+    InsuranceTermsBottomSheet.show(
+      context,
+      urlResolver: cubit.resolveTermsLink,
+    );
+  }
 
   Widget _buildInfoCard(String title, List<Widget> children) {
     return Container(

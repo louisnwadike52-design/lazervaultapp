@@ -1,11 +1,17 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:get_it/get_it.dart';
 import '../../cubit/create_policy_cubit.dart';
 import '../../cubit/create_policy_state.dart';
 import '../../../domain/entities/insurance_product_entity.dart';
+import '../../../domain/repositories/insurance_repository.dart';
+import '../../../../account_cards_summary/services/balance_websocket_service.dart';
 
 /// Screen showing insurance purchase progress with animated steps
 class InsuranceProcessingScreen extends StatefulWidget {
@@ -20,6 +26,14 @@ class _InsuranceProcessingScreenState extends State<InsuranceProcessingScreen>
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
 
+  // Watchdog timer — if no terminal state (success/error) is emitted
+  // within this window, MyCover is probably hung or the gRPC call
+  // dropped. Surface a retry-prompt so the user isn't staring at an
+  // infinite spinner.
+  static const Duration _hangTimeout = Duration(seconds: 60);
+  Timer? _hangTimer;
+  bool _hangTimedOut = false;
+
   @override
   void initState() {
     super.initState();
@@ -31,10 +45,21 @@ class _InsuranceProcessingScreenState extends State<InsuranceProcessingScreen>
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
     _pulseController.repeat(reverse: true);
+    _armHangTimer();
+  }
+
+  void _armHangTimer() {
+    _hangTimer?.cancel();
+    _hangTimedOut = false;
+    _hangTimer = Timer(_hangTimeout, () {
+      if (!mounted) return;
+      setState(() => _hangTimedOut = true);
+    });
   }
 
   @override
   void dispose() {
+    _hangTimer?.cancel();
     _pulseController.dispose();
     super.dispose();
   }
@@ -51,10 +76,82 @@ class _InsuranceProcessingScreenState extends State<InsuranceProcessingScreen>
     return currency;
   }
 
+  /// Spinner shown before the cubit emits any processing state. After
+  /// the watchdog fires, swap to an "is this taking too long?" panel
+  /// with a Go Back option so the user is never trapped staring at
+  /// a static spinner.
+  Widget _buildInitialSpinner() {
+    if (!_hangTimedOut) {
+      return const Scaffold(
+        backgroundColor: Color(0xFF0A0A0A),
+        body: Center(child: CircularProgressIndicator(color: Color(0xFF6366F1))),
+      );
+    }
+    return Scaffold(
+      backgroundColor: const Color(0xFF0A0A0A),
+      body: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 32.w),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(Icons.hourglass_bottom_outlined,
+                  color: const Color(0xFFFB923C), size: 48.sp),
+              SizedBox(height: 16.h),
+              Text('This is taking longer than usual',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                      fontSize: 17.sp,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white)),
+              SizedBox(height: 8.h),
+              Text(
+                  'Our insurance provider is slow to respond. Your '
+                  'payment is safe — we will refund automatically if '
+                  'the policy does not issue. You can wait or go '
+                  'back and check your purchases later.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                      fontSize: 13.sp,
+                      color: const Color(0xFF9CA3AF),
+                      height: 1.4)),
+              SizedBox(height: 28.h),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1F1F1F),
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r)),
+                  ),
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text('Go back',
+                      style: GoogleFonts.inter(
+                          fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                ),
+              ),
+              SizedBox(height: 12.h),
+              const CircularProgressIndicator(
+                color: Color(0xFF6366F1), strokeWidth: 2),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<CreatePolicyCubit, CreatePolicyState>(
       listener: (context, state) {
+        // Any terminal state cancels the hang watchdog.
+        if (state is InsurancePurchaseSuccess
+            || state is CreatePolicyError) {
+          _hangTimer?.cancel();
+        }
         if (state is InsurancePurchaseSuccess) {
           _pulseController.stop();
           // Navigate to success/receipt screen
@@ -83,10 +180,7 @@ class _InsuranceProcessingScreenState extends State<InsuranceProcessingScreen>
       builder: (context, state) {
         if (state is! InsurancePurchaseProcessing &&
             state is! InsurancePurchaseSuccess) {
-          return const Scaffold(
-            backgroundColor: Color(0xFF0A0A0A),
-            body: Center(child: CircularProgressIndicator(color: Color(0xFF6366F1))),
-          );
+          return _buildInitialSpinner();
         }
 
         final processingState = state is InsurancePurchaseProcessing
@@ -284,6 +378,10 @@ class _InsuranceProcessingScreenState extends State<InsuranceProcessingScreen>
     final stepIndex = switch (currentStep) {
       InsuranceProcessingStep.initiated => 0,
       InsuranceProcessingStep.validatingPin => 0,
+      // Documents upload runs between PIN and fund-hold. Treat it as
+      // still under the "verifying" rail so the user sees motion on
+      // the first step.
+      InsuranceProcessingStep.uploadingDocuments => 0,
       InsuranceProcessingStep.holdingFunds => 1,
       InsuranceProcessingStep.purchasingPolicy => 2,
       InsuranceProcessingStep.completed => 3,
@@ -429,7 +527,7 @@ class _ProgressStep {
 }
 
 /// Receipt/Success screen shown after successful insurance purchase
-class InsurancePurchaseReceiptScreen extends StatelessWidget {
+class InsurancePurchaseReceiptScreen extends StatefulWidget {
   final dynamic purchaseResult;
   final InsuranceProduct product;
   final InsuranceQuote quote;
@@ -440,6 +538,89 @@ class InsurancePurchaseReceiptScreen extends StatelessWidget {
     required this.product,
     required this.quote,
   });
+
+  @override
+  State<InsurancePurchaseReceiptScreen> createState() =>
+      _InsurancePurchaseReceiptScreenState();
+}
+
+class _InsurancePurchaseReceiptScreenState
+    extends State<InsurancePurchaseReceiptScreen> {
+  // Mutable result so a deferred (processing) purchase can resolve to
+  // completed live, on this very screen, via the balance-WS — never a poll.
+  late dynamic _pr;
+  StreamSubscription? _purchaseSub;
+  bool _refreshing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _pr = widget.purchaseResult;
+    if (!_confirmed) {
+      // 1) Live: balance-WS pushes insurance_purchase_completed; refetch on it.
+      try {
+        final ws = GetIt.I<BalanceWebSocketService>();
+        _purchaseSub = ws.insurancePurchaseEvents.listen((e) {
+          if (!mounted) return;
+          if (e.isPurchaseTerminal || e.status == 'completed' || e.status == 'active') {
+            _refreshStatus();
+          }
+        });
+      } catch (_) {
+        // WS service not registered (shouldn't happen) — fetch-on-load +
+        // pull-to-refresh still resolve it.
+      }
+      // 2) Fetch-on-load: catch an already-completed status (webhook landed
+      //    between purchase and this screen opening).
+      WidgetsBinding.instance.addPostFrameCallback((_) => _refreshStatus());
+    }
+  }
+
+  @override
+  void dispose() {
+    _purchaseSub?.cancel();
+    super.dispose();
+  }
+
+  String _statusStr() {
+    final pr = _pr;
+    if (pr is InsurancePurchaseResult) return pr.status;
+    if (pr is Map) return (pr['status'] ?? '').toString();
+    return '';
+  }
+
+  String _referenceStr() {
+    final pr = _pr;
+    if (pr is InsurancePurchaseResult) return pr.reference;
+    if (pr is Map) return (pr['reference'] ?? '').toString();
+    return '';
+  }
+
+  // Confirmed = policy actually active. Anything else (processing / pending /
+  // awaiting_webhook) shows the "confirming" state, not a false success.
+  bool get _confirmed {
+    final pr = _pr;
+    if (pr is InsurancePurchaseResult) return pr.isCompleted;
+    final s = _statusStr();
+    return s == 'completed' || s == 'active';
+  }
+
+  // Re-fetch the authoritative status by reference (no Timer.periodic — this
+  // fires only on WS events, on load, and on pull-to-refresh).
+  Future<void> _refreshStatus() async {
+    final ref = _referenceStr();
+    if (ref.isEmpty || _refreshing) return;
+    _refreshing = true;
+    try {
+      final updated =
+          await GetIt.I<InsuranceRepository>().getInsurancePurchaseStatus(reference: ref);
+      if (mounted) setState(() => _pr = updated);
+    } catch (_) {
+      // Leave the "confirming" state; pull-to-refresh / next WS event retries.
+    } finally {
+      _refreshing = false;
+    }
+  }
 
   String _currencySymbol(String currency) {
     final c = currency.toLowerCase().trim();
@@ -458,41 +639,90 @@ class InsurancePurchaseReceiptScreen extends StatelessWidget {
     final formatter = NumberFormat('#,##0.00');
     final now = DateTime.now();
 
-    // Extract data from purchaseResult - handle both map and object
-    final policyNumber = purchaseResult is Map
-        ? (purchaseResult as Map)['policy_number'] ?? 'Processing...'
-        : purchaseResult.policyNumber.toString();
-    final status = purchaseResult is Map
-        ? (purchaseResult as Map)['status'] ?? 'active'
-        : purchaseResult.status.toString();
+    // Aliases so the body below reads from the LIVE mutable result/widget
+    // fields (StatefulWidget refactor) without touching every reference.
+    final purchaseResult = _pr;
+    final product = widget.product;
+    final quote = widget.quote;
+    final confirmed = _confirmed;
+
+    // Typed view of the result when available (promotes cleanly; the Map
+    // path is a legacy/defensive fallback).
+    final InsurancePurchaseResult? prTyped =
+        purchaseResult is InsurancePurchaseResult ? purchaseResult : null;
+    final Map? prMap = purchaseResult is Map ? purchaseResult : null;
+
+    // Extract data - handle both typed entity and legacy map.
+    final rawPolicyNumber = prMap != null
+        ? (prMap['policy_number'] ?? '')
+        : (prTyped?.policyNumber ?? '');
+    final policyNumber = rawPolicyNumber.toString().isNotEmpty
+        ? rawPolicyNumber.toString()
+        : (confirmed ? '—' : 'Pending confirmation');
+    final status = prMap != null
+        ? (prMap['status'] ?? 'active').toString()
+        : (prTyped?.status ?? 'active');
+
+    // Provider-confirmed policy detail (only present on the typed entity).
+    final String certificateUrl = prTyped?.certificateUrl ?? '';
+    final DateTime? policyStart = prTyped?.startDate;
+    final DateTime? policyEnd = prTyped?.endDate;
+    final double? coverageAmount = prTyped?.coverageAmount;
+
+    // Status-aware header: only claim "active" when the policy is actually
+    // confirmed. A deferred (processing) purchase shows a "confirming"
+    // state that resolves live via the balance-WS (see initState).
+    final Color headerColor =
+        confirmed ? const Color(0xFF10B981) : const Color(0xFFFB923C);
+    final IconData headerIcon =
+        confirmed ? Icons.check_circle : Icons.schedule_rounded;
+    final String headerTitle =
+        confirmed ? 'Purchase Successful!' : 'Payment Received';
+    final String headerSubtitle = confirmed
+        ? 'Your insurance policy is now active'
+        : 'We’re confirming your policy with the provider. This page '
+            'updates automatically — pull down to refresh.';
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 24.w),
-          child: Column(
-            children: [
+        child: RefreshIndicator(
+          color: const Color(0xFF6366F1),
+          backgroundColor: const Color(0xFF1F1F1F),
+          onRefresh: _refreshStatus,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.symmetric(horizontal: 24.w),
+            child: Column(
+              children: [
               SizedBox(height: 40.h),
 
-              // Success animation
+              // Status header (confirmed = green check, processing = amber clock)
               Container(
                 width: 80.w,
                 height: 80.w,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                  color: headerColor.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  Icons.check_circle,
-                  color: const Color(0xFF10B981),
-                  size: 48.sp,
-                ),
+                child: confirmed
+                    ? Icon(headerIcon, color: headerColor, size: 48.sp)
+                    : SizedBox(
+                        width: 28.w,
+                        height: 28.w,
+                        child: Padding(
+                          padding: EdgeInsets.all(2.w),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 3,
+                            valueColor: AlwaysStoppedAnimation(headerColor),
+                          ),
+                        ),
+                      ),
               ),
               SizedBox(height: 24.h),
 
               Text(
-                'Purchase Successful!',
+                headerTitle,
                 style: GoogleFonts.inter(
                   fontSize: 24.sp,
                   fontWeight: FontWeight.w700,
@@ -501,7 +731,8 @@ class InsurancePurchaseReceiptScreen extends StatelessWidget {
               ),
               SizedBox(height: 8.h),
               Text(
-                'Your insurance policy is now active',
+                headerSubtitle,
+                textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
                   fontSize: 14.sp,
                   color: const Color(0xFF9CA3AF),
@@ -541,9 +772,18 @@ class InsurancePurchaseReceiptScreen extends StatelessWidget {
                     _buildReceiptRow('Premium Amount',
                         '${_currencySymbol(quote.currency)}${formatter.format(quote.premium)}',
                         isAmount: true),
+                    if (coverageAmount != null && coverageAmount > 0)
+                      _buildReceiptRow('Sum Insured',
+                          '${_currencySymbol(quote.currency)}${formatter.format(coverageAmount)}'),
                     if (quote.coverageItems.isNotEmpty)
                       _buildReceiptRow('Coverage', quote.coverageItems.first),
                     SizedBox(height: 16.h),
+                    if (policyStart != null)
+                      _buildReceiptRow('Start Date',
+                          DateFormat('MMM dd, yyyy').format(policyStart)),
+                    if (policyEnd != null)
+                      _buildReceiptRow('End Date',
+                          DateFormat('MMM dd, yyyy').format(policyEnd)),
                     _buildReceiptRow('Purchase Date',
                         DateFormat('MMM dd, yyyy • HH:mm').format(now)),
                     _buildReceiptRow('Reference',
@@ -608,6 +848,38 @@ class InsurancePurchaseReceiptScreen extends StatelessWidget {
               ],
 
               // Action buttons
+              if (certificateUrl.isNotEmpty) ...[
+                SizedBox(
+                  width: double.infinity,
+                  height: 52.h,
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      final uri = Uri.tryParse(certificateUrl);
+                      if (uri != null) {
+                        await launchUrl(uri,
+                            mode: LaunchMode.externalApplication);
+                      }
+                    },
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFF6366F1)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                    ),
+                    icon: Icon(Icons.description_outlined,
+                        color: const Color(0xFF6366F1), size: 18.sp),
+                    label: Text(
+                      'View Certificate',
+                      style: GoogleFonts.inter(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF6366F1),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 12.h),
+              ],
               SizedBox(
                 width: double.infinity,
                 height: 52.h,
@@ -641,6 +913,7 @@ class InsurancePurchaseReceiptScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
             ],
+            ),
           ),
         ),
       ),

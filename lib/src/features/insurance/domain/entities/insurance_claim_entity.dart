@@ -1,5 +1,9 @@
 import 'package:equatable/equatable.dart';
 
+// Lifecycle states the user can see on a claim. The first six are the
+// canonical Flutter tabs; the rest mirror MyCover's mid-flight stages
+// (per docs/MYCOVER_AI_PRODUCT_REFERENCE.md) so the adjuster's progress
+// is visible instead of every mid-flight state collapsing to under_review.
 enum ClaimStatus {
   submitted,
   underReview,
@@ -7,6 +11,16 @@ enum ClaimStatus {
   rejected,
   settled,
   cancelled,
+  // Mid-flight (also rolled into the "Under Review" tab on the list
+  // screen — but rendered with their specific label on the row).
+  documented,
+  inspectionSubmitted,
+  repairEstimateRequested,
+  repairEstimateProvided,
+  offerSent,
+  offerAccepted,
+  offerRejected,
+  paid, // alias for settled used by some providers
 }
 
 enum ClaimType {
@@ -36,6 +50,39 @@ extension ClaimStatusExtension on ClaimStatus {
         return 'Settled';
       case ClaimStatus.cancelled:
         return 'Cancelled';
+      case ClaimStatus.documented:
+        return 'Documented';
+      case ClaimStatus.inspectionSubmitted:
+        return 'Inspection Submitted';
+      case ClaimStatus.repairEstimateRequested:
+        return 'Repair Estimate Requested';
+      case ClaimStatus.repairEstimateProvided:
+        return 'Repair Estimate Provided';
+      case ClaimStatus.offerSent:
+        return 'Offer Sent';
+      case ClaimStatus.offerAccepted:
+        return 'Offer Accepted';
+      case ClaimStatus.offerRejected:
+        return 'Offer Rejected';
+      case ClaimStatus.paid:
+        return 'Paid';
+    }
+  }
+
+  // Mid-flight states roll into the Under Review tab for filtering, but
+  // their per-row label still surfaces the specific stage.
+  bool get isUnderReviewFamily {
+    switch (this) {
+      case ClaimStatus.underReview:
+      case ClaimStatus.documented:
+      case ClaimStatus.inspectionSubmitted:
+      case ClaimStatus.repairEstimateRequested:
+      case ClaimStatus.repairEstimateProvided:
+      case ClaimStatus.offerSent:
+      case ClaimStatus.offerAccepted:
+        return true;
+      default:
+        return false;
     }
   }
 }

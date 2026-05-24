@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:grpc/grpc.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
+import 'package:lazervault/src/features/account_cards_summary/services/balance_websocket_service.dart';
 import '../../domain/entities/insurance_entity.dart';
 import '../../domain/entities/insurance_payment_entity.dart';
 import '../../domain/entities/insurance_claim_entity.dart';
@@ -9,10 +13,17 @@ import 'insurance_state.dart';
 
 class InsuranceCubit extends Cubit<InsuranceState> {
   final InsuranceRepository repository;
+  // Optional: when present, the cubit subscribes to insurance_*
+  // WS events so the policy list refreshes the moment a purchase
+  // completes or a renewal lands, without waiting on a pull-to-refresh.
+  // Optional so unit tests can construct without GetIt.
+  final BalanceWebSocketService? wsService;
+  StreamSubscription<InsurancePurchaseEvent>? _purchaseEventSub;
   String? _currentUserId;
 
   InsuranceCubit({
     required this.repository,
+    this.wsService,
   }) : super(InsuranceInitial());
 
   /// Convert raw errors into user-friendly messages
@@ -52,8 +63,40 @@ class InsuranceCubit extends Cubit<InsuranceState> {
       // Reload data when user changes
       if (userId.isNotEmpty) {
         loadInsurances();
+        _subscribeToInsuranceEvents();
+      } else {
+        _purchaseEventSub?.cancel();
+        _purchaseEventSub = null;
       }
     }
+  }
+
+  /// Subscribe to ws-balance-service insurance events so the policy
+  /// list refreshes in real time. Events of interest:
+  ///   * insurance_purchase_completed — a new policy just landed
+  ///   * insurance_purchase_failed / refunded / refund_failed —
+  ///     the in-flight purchase reached a terminal state; refetch so
+  ///     the list reflects the post-saga truth.
+  ///   * insurance_policy_renewed — policy_end_date moved forward;
+  ///     refetch so Renewal Date + the Renew CTA reflect the new term.
+  ///
+  /// The subscription is best-effort: if wsService is null (unit tests)
+  /// or the channel is down, we silently fall back to manual refreshes.
+  /// Filters on userId so multi-user environments don't cross-react.
+  void _subscribeToInsuranceEvents() {
+    if (wsService == null) return;
+    _purchaseEventSub?.cancel();
+    _purchaseEventSub = wsService!.insurancePurchaseEvents.listen((event) {
+      if (event.userId.isNotEmpty &&
+          _currentUserId != null &&
+          event.userId != _currentUserId) {
+        return;
+      }
+      // Refetch unconditionally — every event we care about either
+      // adds a policy, changes a policy's status, or moves an expiry
+      // date. Cheap re-fetch is simpler than diffing here.
+      loadInsurances();
+    });
   }
 
   /// Get the current user ID
@@ -63,9 +106,19 @@ class InsuranceCubit extends Cubit<InsuranceState> {
   bool get _isAuthenticated => _currentUserId != null && _currentUserId!.isNotEmpty;
 
   bool _isLoadingInsurances = false;
+  // Slice 4 race guard: same pattern as CreatePolicyCubit. Increments
+  // every time loadInsurances starts a new first-page fetch; any
+  // in-flight loadMoreInsurances whose generation no longer matches
+  // drops its emit on completion. Prevents stale appends after a
+  // pull-to-refresh.
+  int _insurancesLoadGeneration = 0;
 
-  /// Load all insurances for the current user
-  Future<void> loadInsurances() async {
+  /// Load the first page of insurances for the current user.
+  ///
+  /// Slice 4: switched to the paginated repo entry point so the resulting
+  /// state carries hasMore/currentPage and the UI can scroll-load further
+  /// pages via loadMoreInsurances.
+  Future<void> loadInsurances({int limit = 15}) async {
     try {
       if (isClosed) return;
       if (!_isAuthenticated) {
@@ -75,29 +128,91 @@ class InsuranceCubit extends Cubit<InsuranceState> {
       if (_isLoadingInsurances) return;
       _isLoadingInsurances = true;
       emit(InsuranceLoading());
+      _insurancesLoadGeneration++;
+      final myGeneration = _insurancesLoadGeneration;
 
-      final insurances = await repository.getUserInsurances(currentUserId);
-      if (isClosed) return;
+      // Fan out the three independent companion RPCs in parallel with
+      // the main page fetch instead of awaiting them serially. Each
+      // adds 200–600 ms on a healthy backend; serial = ~2s spinner.
+      // Parallel = single max-of-3 = ~600 ms. Wrapped in _safeCall so a
+      // missing/erroring endpoint doesn't take down the whole load.
+      final pageFuture = repository.getUserInsurancesPage(
+        userId: currentUserId,
+        page: 1,
+        limit: limit,
+      );
+      final recentPaymentsFuture =
+          _safeCall(() => repository.getUserPayments(currentUserId), <InsurancePayment>[]);
+      final overduePaymentsFuture =
+          _safeCall(() => repository.getOverduePayments(currentUserId), <InsurancePayment>[]);
+      final statisticsFuture =
+          _safeCall(() => repository.getInsuranceStatistics(currentUserId), <String, dynamic>{});
 
-      // These RPCs may not be implemented yet - provide empty defaults
-      final recentPayments = await _safeCall(() => repository.getUserPayments(currentUserId), <InsurancePayment>[]);
+      final page = await pageFuture;
       if (isClosed) return;
-      final overduePayments = await _safeCall(() => repository.getOverduePayments(currentUserId), <InsurancePayment>[]);
-      if (isClosed) return;
-      final statistics = await _safeCall(() => repository.getInsuranceStatistics(currentUserId), <String, dynamic>{});
+      if (myGeneration != _insurancesLoadGeneration) return; // superseded
+
+      final recentPayments = await recentPaymentsFuture;
+      final overduePayments = await overduePaymentsFuture;
+      final statistics = await statisticsFuture;
       if (isClosed) return;
 
       emit(InsurancesLoaded(
-        insurances: insurances,
+        insurances: page.insurances,
         recentPayments: recentPayments.take(5).toList(),
         overduePayments: overduePayments,
         statistics: statistics,
+        hasMore: page.hasMore,
+        currentPage: 1,
+        isLoadingMore: false,
       ));
     } catch (e) {
       if (isClosed) return;
       emit(InsuranceError(_friendlyError(e, 'Failed to load insurance policies. Please try again.')));
     } finally {
       _isLoadingInsurances = false;
+    }
+  }
+
+  /// Slice 4: load the next page of user insurances and append to the
+  /// current list. No-op when there's nothing more, an in-flight load, or
+  /// the state isn't InsurancesLoaded.
+  Future<void> loadMoreInsurances({int limit = 15}) async {
+    if (isClosed) return;
+    final current = state;
+    if (current is! InsurancesLoaded) return;
+    if (!current.hasMore || current.isLoadingMore) return;
+    if (!_isAuthenticated) return;
+
+    emit(current.copyWith(isLoadingMore: true));
+    final myGeneration = _insurancesLoadGeneration;
+
+    try {
+      final nextPage = current.currentPage + 1;
+      final page = await repository.getUserInsurancesPage(
+        userId: currentUserId,
+        page: nextPage,
+        limit: limit,
+      );
+      if (isClosed) return;
+      if (myGeneration != _insurancesLoadGeneration) return; // superseded by refresh
+      // Re-read state in case a pull-to-refresh rebuilt it.
+      final latest = state;
+      if (latest is! InsurancesLoaded) return;
+      emit(latest.copyWith(
+        insurances: [...latest.insurances, ...page.insurances],
+        hasMore: page.hasMore,
+        isLoadingMore: false,
+        currentPage: nextPage,
+      ));
+    } catch (_) {
+      if (isClosed) return;
+      if (myGeneration != _insurancesLoadGeneration) return;
+      // Drop the in-flight flag so user can retry scroll-load.
+      final latest = state;
+      if (latest is InsurancesLoaded) {
+        emit(latest.copyWith(isLoadingMore: false));
+      }
     }
   }
 
@@ -159,10 +274,21 @@ class InsuranceCubit extends Cubit<InsuranceState> {
       ));
 
       // Then load payments and claims in the background (may be unimplemented)
-      final payments = await _safeCall(() => repository.getInsurancePayments(insurance.id), <InsurancePayment>[]);
+      final fetched = await _safeCall(() => repository.getInsurancePayments(insurance.id), <InsurancePayment>[]);
       if (isClosed) return;
       final claims = await _safeCall(() => repository.getInsuranceClaims(insurance.id), <InsuranceClaim>[]);
       if (isClosed) return;
+
+      // MyCover.ai doesn't expose a per-policy payment list — there's no
+      // PUT /policies endpoint and no /policies/:id/payments. The policy
+      // record itself carries `amount` (the premium paid at purchase) and
+      // its `start_date`. When our local insurance_payments table has no
+      // rows (typical for fresh purchases), synthesize the initial
+      // purchase row from the policy so users see the transaction that
+      // bought the cover, matching what they expect under "Payments".
+      final payments = fetched.isEmpty
+          ? _synthesizePurchasePayment(insurance)
+          : fetched;
 
       // Update the state with loaded payments and claims
       emit(InsuranceDetailsLoaded(
@@ -174,6 +300,36 @@ class InsuranceCubit extends Cubit<InsuranceState> {
       if (isClosed) return;
       emit(InsuranceError(_friendlyError(e, 'Failed to load insurance details. Please try again.')));
     }
+  }
+
+  /// Build a synthetic payment row representing the initial premium
+  /// charge at purchase. Used only when the backend returns no
+  /// insurance_payments rows; the policy itself is the source of truth
+  /// for the amount + date.
+  List<InsurancePayment> _synthesizePurchasePayment(Insurance insurance) {
+    if (insurance.premiumAmount <= 0) return const [];
+    return [
+      InsurancePayment(
+        id: 'purchase-${insurance.id}',
+        insuranceId: insurance.id,
+        policyNumber: insurance.policyNumber,
+        amount: insurance.premiumAmount,
+        currency: insurance.currency.isNotEmpty ? insurance.currency : 'NGN',
+        paymentMethod: PaymentMethod.wallet,
+        status: insurance.startDate.isBefore(DateTime.now().add(const Duration(days: 1)))
+            ? PaymentStatus.completed
+            : PaymentStatus.pending,
+        referenceNumber: insurance.policyNumber.isNotEmpty
+            ? insurance.policyNumber
+            : null,
+        paymentDate: insurance.startDate,
+        dueDate: insurance.startDate,
+        processedAt: insurance.startDate,
+        createdAt: insurance.startDate,
+        updatedAt: insurance.startDate,
+        userId: currentUserId,
+      ),
+    ];
   }
 
   /// Create a new insurance policy
@@ -194,23 +350,11 @@ class InsuranceCubit extends Cubit<InsuranceState> {
     }
   }
 
-  /// Update an existing insurance policy
-  Future<void> updateInsurance(Insurance insurance) async {
-    try {
-      if (isClosed) return;
-      emit(InsuranceLoading());
-
-      final updatedInsurance = await repository.updateInsurance(insurance);
-      if (isClosed) return;
-      emit(InsuranceUpdated(updatedInsurance));
-
-      // Reload insurances
-      await loadInsurances();
-    } catch (e) {
-      if (isClosed) return;
-      emit(InsuranceError(_friendlyError(e, 'Failed to update insurance. Please try again.')));
-    }
-  }
+  // Removed: `updateInsurance` cubit method. MyCover.ai has no
+  // policy-update endpoint, and our local-only write path drifted from
+  // the upstream policy state. The repository's `updateInsurance` is
+  // kept for internal status mutations (cancel) but is no longer
+  // exposed through the cubit.
 
   /// Delete an insurance policy
   Future<void> deleteInsurance(String insuranceId) async {
@@ -274,19 +418,45 @@ class InsuranceCubit extends Cubit<InsuranceState> {
     }
   }
 
-  /// Create a payment for a specific insurance
+  /// In-flight payment dedupe map. Keyed by `${insuranceId}:${amount}` so two
+  /// rapid taps for the same policy + amount share one backend call instead of
+  /// firing two and double-charging the user. The entry is cleared on
+  /// resolution (success or error) so a legitimate retry is allowed.
+  final Map<String, Future<InsurancePayment>> _inFlightPayments = {};
+
+  /// Create a payment for a specific insurance.
+  ///
+  /// Idempotent at the cubit level: if a payment with the same key is
+  /// already in flight, the same Future is returned to the second caller
+  /// so we never fire two `createPayment` RPCs concurrently for the same
+  /// policy + amount. Backend-side idempotency is the source of truth,
+  /// but this saves a duplicate network round trip and keeps the UI sane.
   Future<InsurancePayment> createPayment({
     required String insuranceId,
     required String policyNumber,
     required double amount,
     required PaymentMethod paymentMethod,
+    String? currency,
   }) async {
+    final dedupKey = '$insuranceId:${amount.toStringAsFixed(2)}';
+    final existing = _inFlightPayments[dedupKey];
+    if (existing != null) return existing;
+
+    // Currency precedence: caller-supplied (policy currency) → active
+    // locale's currency from LocaleManager → NGN as the Nigerian default.
+    // The previous hardcoded 'USD' showed dollars to NGN-locale users.
+    final effectiveCurrency = (currency != null && currency.isNotEmpty)
+        ? currency
+        : (CurrencySymbols.currentCurrency.isNotEmpty
+            ? CurrencySymbols.currentCurrency
+            : 'NGN');
+
     final payment = InsurancePayment(
       id: '',
       insuranceId: insuranceId,
       policyNumber: policyNumber,
       amount: amount,
-      currency: 'USD',
+      currency: effectiveCurrency,
       paymentMethod: paymentMethod,
       status: PaymentStatus.pending,
       paymentDate: DateTime.now(),
@@ -296,7 +466,13 @@ class InsuranceCubit extends Cubit<InsuranceState> {
       userId: currentUserId,
     );
 
-    return await repository.createPayment(payment);
+    final future = repository.createPayment(payment);
+    _inFlightPayments[dedupKey] = future;
+    try {
+      return await future;
+    } finally {
+      _inFlightPayments.remove(dedupKey);
+    }
   }
 
   /// Submit an insurance claim
@@ -663,4 +839,11 @@ class InsuranceCubit extends Cubit<InsuranceState> {
       emit(InsuranceError(_friendlyError(e, 'Failed to cancel policy. Please try again.')));
     }
   }
-} 
+
+  @override
+  Future<void> close() {
+    _purchaseEventSub?.cancel();
+    _purchaseEventSub = null;
+    return super.close();
+  }
+}

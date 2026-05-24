@@ -200,16 +200,57 @@ class InsuranceProductsLoaded extends CreatePolicyState {
   final String locale;
   final bool isStale;
 
+  // Slice 4 pagination flags. hasMore = there's a next page to load.
+  // isLoadingMore = a load-more fetch is in-flight (UI shows footer spinner).
+  // currentPage = last page successfully appended; defaults to 1 for the
+  // legacy single-shot path so existing callers don't need updates.
+  final bool hasMore;
+  final bool isLoadingMore;
+  final int currentPage;
+
   const InsuranceProductsLoaded({
     required this.products,
     required this.categories,
     this.selectedCategory,
     required this.locale,
     this.isStale = false,
+    this.hasMore = false,
+    this.isLoadingMore = false,
+    this.currentPage = 1,
   });
 
+  /// copyWith for the pagination flags. Used by the cubit to toggle
+  /// isLoadingMore around a fetch without losing the current product list.
+  InsuranceProductsLoaded copyWith({
+    List<InsuranceProduct>? products,
+    bool? hasMore,
+    bool? isLoadingMore,
+    int? currentPage,
+    bool? isStale,
+  }) {
+    return InsuranceProductsLoaded(
+      products: products ?? this.products,
+      categories: categories,
+      selectedCategory: selectedCategory,
+      locale: locale,
+      isStale: isStale ?? this.isStale,
+      hasMore: hasMore ?? this.hasMore,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      currentPage: currentPage ?? this.currentPage,
+    );
+  }
+
   @override
-  List<Object?> get props => [products, categories, selectedCategory, locale, isStale];
+  List<Object?> get props => [
+        products,
+        categories,
+        selectedCategory,
+        locale,
+        isStale,
+        hasMore,
+        isLoadingMore,
+        currentPage,
+      ];
 }
 
 /// State when a product is selected and its form fields are shown
@@ -258,6 +299,7 @@ class InsuranceQuoteLoaded extends CreatePolicyState {
 enum InsuranceProcessingStep {
   initiated,
   validatingPin,
+  uploadingDocuments,
   holdingFunds,
   purchasingPolicy,
   completed,

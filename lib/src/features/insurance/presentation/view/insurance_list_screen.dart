@@ -5,9 +5,9 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/cache/swr_cache_manager.dart';
-import 'package:lazervault/core/offline/mutation_queue.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import '../../domain/entities/insurance_entity.dart';
@@ -15,7 +15,6 @@ import '../../domain/repositories/insurance_repository.dart';
 import '../cubit/insurance_cubit.dart';
 import '../cubit/insurance_state.dart';
 import '../cubit/create_policy_cubit.dart';
-import '../widgets/insurance_voice_agent_button.dart';
 import 'create_insurance_policy_carousel.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
@@ -92,19 +91,9 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
   Widget _buildInsuranceScreen() {
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF1A1A3E),
-              const Color(0xFF0A0E27),
-              const Color(0xFF0F0F23),
-            ],
-          ),
-        ),
-        child: SafeArea(
+      body: SafeArea(
+        child: Container(
+          color: const Color(0xFF0A0A0A),
           child: Column(
             children: [
               _buildHeader(),
@@ -155,32 +144,12 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
             ],
           ),
         ),
-      ),
-      floatingActionButton: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          InsuranceVoiceAgentButton(
-            accessToken: _getAccessToken(),
-            onConnected: () {
-              // Optional: Handle connection
-            },
-            onDisconnected: () {
-              // Optional: Handle disconnection
-            },
-          ),
-          SizedBox(height: 16.h),
-          _buildFAB(),
-        ],
-      ),
+      ),  // SafeArea
+      // FAB voice button removed — the appbar already exposes a mic
+      // (ServiceVoiceButton) at top-right, so the floating mic was a
+      // duplicate. Keeping only the primary "New Insurance" CTA.
+      floatingActionButton: _buildFAB(),
     );
-  }
-
-  String? _getAccessToken() {
-    final authState = context.read<AuthenticationCubit>().state;
-    if (authState is AuthenticationSuccess) {
-      return authState.profile.session.accessToken;
-    }
-    return null;
   }
 
   Widget _buildHeader() {
@@ -202,41 +171,117 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
           ),
           SizedBox(width: 10.w),
           Expanded(
-            child: Text(
-              'Insurance',
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w700,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Insurance',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  'Cover what matters',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF),
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ],
             ),
           ),
-          ServiceVoiceButton(serviceName: 'insurance'),
+          // Inline mic + chat + overflow — sized to match each other so
+          // they read as a row of equal-weight controls.
+          ServiceVoiceButton(
+            serviceName: 'insurance',
+            buttonSize: 38.w,
+            iconSize: 18.sp,
+          ),
           SizedBox(width: 6.w),
-          MicroserviceChatIcon(serviceName: 'Insurance', sourceContext: 'insurance'),
+          MicroserviceChatIcon(
+            serviceName: 'Insurance',
+            sourceContext: 'insurance',
+            size: 38.w,
+            iconSize: 18.sp,
+          ),
           SizedBox(width: 6.w),
-          _buildHeaderIcon(Icons.help_outline, () => Get.toNamed(AppRoutes.insuranceFaq)),
-          SizedBox(width: 6.w),
-          _buildHeaderIcon(Icons.menu_book_outlined, () => Get.toNamed(AppRoutes.insuranceGuide)),
-          SizedBox(width: 6.w),
-          _buildHeaderIcon(Icons.settings_outlined, () => Get.toNamed(AppRoutes.insuranceManagement)),
+          _buildHeaderOverflowMenu(),
         ],
       ),
     );
   }
 
-  Widget _buildHeaderIcon(IconData icon, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 32.w,
-        height: 32.w,
+  // 3-dot overflow menu for low-frequency insurance utilities.
+  // Sized to match the mic + chat row to keep visual weight even.
+  Widget _buildHeaderOverflowMenu() {
+    return PopupMenuButton<String>(
+      icon: Container(
+        width: 38.w,
+        height: 38.w,
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(19.r),
         ),
-        child: Icon(icon, color: Colors.white70, size: 16.sp),
+        child: Icon(Icons.more_vert, color: Colors.white70, size: 18.sp),
       ),
+      color: const Color(0xFF1F1F1F),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10.r),
+        side: const BorderSide(color: Color(0xFF2D2D2D)),
+      ),
+      onSelected: (value) {
+        switch (value) {
+          case 'faq':
+            Get.toNamed(AppRoutes.insuranceFaq);
+            break;
+          case 'guide':
+            Get.toNamed(AppRoutes.insuranceGuide);
+            break;
+        }
+      },
+      itemBuilder: (_) => [
+        PopupMenuItem<String>(
+          value: 'faq',
+          child: Row(
+            children: [
+              Icon(Icons.help_outline,
+                  color: Colors.white70, size: 16.sp),
+              SizedBox(width: 10.w),
+              Text(
+                'FAQ',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+        PopupMenuItem<String>(
+          value: 'guide',
+          child: Row(
+            children: [
+              Icon(Icons.menu_book_outlined,
+                  color: Colors.white70, size: 16.sp),
+              SizedBox(width: 10.w),
+              Text(
+                'Guide',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -246,9 +291,16 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
     final expiredPolicies = state.insurances.where((i) => i.status == InsuranceStatus.expired).toList();
 
     return RefreshIndicator(
-      onRefresh: () async => context.read<InsuranceCubit>().loadInsurances(),
+      // Wrap so an underlying RPC failure doesn't leave the
+      // RefreshIndicator spinner stuck. Errors are already surfaced
+      // through cubit state — this just makes sure the spinner clears.
+      onRefresh: () async {
+        try {
+          await context.read<InsuranceCubit>().loadInsurances();
+        } catch (_) {/* state listener surfaces the error */}
+      },
       backgroundColor: const Color(0xFF1F1F1F),
-      color: const Color(0xFF6366F1),
+      color: const Color.fromARGB(255, 78, 3, 208),
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -263,18 +315,43 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
             _buildStatusChips(activePolicies.length, pendingPolicies.length, expiredPolicies.length),
             SizedBox(height: 20.h),
 
-            // Policies preview (max 3) with View All
+            // Policies preview (max 3) with View All — surfaced for any
+            // non-empty count so newly-purchased policies are always one
+            // tap away from the full paginated screen.
             _buildSectionHeader('Your Policies', state.insurances.length),
             SizedBox(height: 10.h),
-            _buildInsurancesList(state.insurances.take(3).toList()),
-            if (state.insurances.length > 3) ...[
-              SizedBox(height: 8.h),
-              _buildViewAllButton('View All ${state.insurances.length} Policies', null),
-            ],
+            if (state.insurances.isEmpty)
+              _buildEmptyPoliciesCard()
+            else
+              _buildInsurancesList(state.insurances.take(3).toList()),
             SizedBox(height: 20.h),
 
-            // Recent activity section
-            _buildRecentActivity(state.insurances),
+            // Visual segmentation — the "Manage" header makes it
+            // clear these CTAs are distinct from the "Your Policies"
+            // preview above. Without a header they read as if they
+            // were policy cards.
+            _buildSimpleSectionHeader('Manage'),
+            SizedBox(height: 10.h),
+            _buildShortcutTile(
+              icon: Icons.assignment_outlined,
+              label: 'My Claims',
+              subtitle: 'Track and file insurance claims',
+              color: const Color(0xFFFB923C),
+              onTap: () => Get.toNamed(AppRoutes.insuranceMyClaims),
+            ),
+            SizedBox(height: 10.h),
+            _buildShortcutTile(
+              icon: Icons.receipt_long_outlined,
+              label: 'Purchase History',
+              subtitle: 'Receipts, certificates & past purchases',
+              color: const Color(0xFF10B981),
+              onTap: () => Get.toNamed(AppRoutes.insurancePurchaseHistory),
+            ),
+            // "Activity & Alerts" was removed: the signals it surfaced
+            // (recently-added / expiring-soon / payment-due) are already
+            // visible on each policy card's daysUntilExpiry chip and via
+            // the Renew FAB on the policy detail screen. The two CTAs
+            // above are the supported entry points for claims + receipts.
             SizedBox(height: 100.h),
           ],
         ),
@@ -282,44 +359,68 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
     );
   }
 
+  // Hero stats card — matches Group Funds (#4E03D0 purple gradient with
+  // soft shadow). Three columns split by faint white dividers, icons
+  // tinted white-on-purple so it reads as a single coloured block.
   Widget _buildCompactStats(Map<String, dynamic> statistics, int totalPolicies) {
     final activePolicies = statistics['activePolicies'] ?? 0;
     final totalCoverage = (statistics['totalCoverageAmount'] ?? 0.0) as double;
+    // Render the coverage total in the user's current locale currency
+    // — pulled from LocaleManager via CurrencySymbols.currentSymbol —
+    // not a hardcoded `$`. A user on NGN now sees `₦`, USD users see
+    // `$`, etc. The amount itself is whatever the cubit/statistics
+    // path passed in; we don't convert it here (the backend returns
+    // amounts in the user's account currency already).
+    final currencySymbol = CurrencySymbols.currentSymbol;
+    final coverageStr = totalCoverage >= 1000
+        ? '$currencySymbol${(totalCoverage / 1000).toStringAsFixed(0)}K'
+        : '$currencySymbol${totalCoverage.toStringAsFixed(0)}';
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F1F35).withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(14.r),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color.fromARGB(255, 78, 3, 208),
+            const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.8),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: [
+          BoxShadow(
+            color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
       child: Row(
         children: [
-          _buildCompactStatItem(Icons.shield_outlined, '$activePolicies', 'Active', const Color(0xFF10B981)),
+          Expanded(child: _buildCompactStatItem(Icons.shield_outlined, '$activePolicies', 'Active')),
           _buildStatDivider(),
-          _buildCompactStatItem(Icons.policy_outlined, '$totalPolicies', 'Total', const Color(0xFF6366F1)),
+          Expanded(child: _buildCompactStatItem(Icons.policy_outlined, '$totalPolicies', 'Total')),
           _buildStatDivider(),
-          _buildCompactStatItem(Icons.account_balance_outlined,
-            totalCoverage >= 1000 ? '\$${(totalCoverage / 1000).toStringAsFixed(0)}K' : '\$${totalCoverage.toStringAsFixed(0)}',
-            'Coverage', const Color(0xFFFB923C)),
+          Expanded(child: _buildCompactStatItem(Icons.account_balance_outlined, coverageStr, 'Coverage')),
         ],
       ),
     );
   }
 
-  Widget _buildCompactStatItem(IconData icon, String value, String label, Color color) {
-    return Expanded(
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 18.sp),
-          SizedBox(height: 4.h),
-          Text(value, style: GoogleFonts.inter(fontSize: 16.sp, fontWeight: FontWeight.w700, color: Colors.white)),
-          Text(label, style: GoogleFonts.inter(fontSize: 10.sp, color: const Color(0xFF9CA3AF))),
-        ],
-      ),
+  Widget _buildCompactStatItem(IconData icon, String value, String label) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, color: Colors.white, size: 18.sp),
+        SizedBox(height: 4.h),
+        Text(value, style: GoogleFonts.inter(fontSize: 16.sp, fontWeight: FontWeight.w700, color: Colors.white)),
+        Text(label, style: GoogleFonts.inter(fontSize: 10.sp, color: Colors.white.withValues(alpha: 0.85))),
+      ],
     );
   }
 
   Widget _buildStatDivider() {
-    return Container(width: 1, height: 36.h, color: Colors.white.withValues(alpha: 0.08));
+    return Container(width: 1, height: 36.h, color: Colors.white.withValues(alpha: 0.2));
   }
 
   Widget _buildStatusChips(int active, int pending, int expired) {
@@ -331,7 +432,10 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
           if (active > 0) _buildChip('Active ($active)', const Color(0xFF10B981), 'active'),
           if (pending > 0) _buildChip('Pending ($pending)', const Color(0xFFF59E0B), 'pending'),
           if (expired > 0) _buildChip('Expired ($expired)', const Color(0xFFEF4444), 'expired'),
-          _buildChip('View All', const Color(0xFF6366F1), null),
+          // "View All" was removed here. The "Your Policies" section
+          // header below already exposes a View All affordance for the
+          // full paginated list — duplicating it inside the status
+          // chip row was redundant and visually noisy.
         ],
       ),
     );
@@ -346,122 +450,130 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Text(label, style: GoogleFonts.inter(fontSize: 12.sp, fontWeight: FontWeight.w600, color: color)),
       ),
     );
   }
 
-  Widget _buildViewAllButton(String text, String? filter) {
+  // Phase D — compact action tile used for "My Claims" and "Purchase History".
+  Widget _buildShortcutTile({
+    required IconData icon,
+    required String label,
+    required String subtitle,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
-      onTap: () => Get.toNamed(AppRoutes.insuranceAllPolicies, arguments: filter),
+      onTap: onTap,
       child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.symmetric(vertical: 10.h),
+        padding: EdgeInsets.all(14.w),
         decoration: BoxDecoration(
-          color: const Color(0xFF6366F1).withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(10.r),
-        ),
-        child: Center(
-          child: Text(text, style: GoogleFonts.inter(
-            fontSize: 13.sp, fontWeight: FontWeight.w600, color: const Color(0xFF6366F1))),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRecentActivity(List<Insurance> insurances) {
-    // Show overdue, expiring soon, or recently added
-    final now = DateTime.now();
-    final expiringSoon = insurances
-        .where((i) => i.status == InsuranceStatus.active && i.daysUntilExpiry <= 30 && i.daysUntilExpiry > 0)
-        .toList();
-    final paymentDue = insurances.where((i) => i.isPaymentDue).toList();
-    final recentlyAdded = insurances.where((i) =>
-        now.difference(i.createdAt).inDays <= 7).toList();
-
-    if (expiringSoon.isEmpty && paymentDue.isEmpty && recentlyAdded.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Activity & Alerts', style: GoogleFonts.inter(
-          fontSize: 15.sp, fontWeight: FontWeight.w600, color: Colors.white)),
-        SizedBox(height: 10.h),
-
-        // Payment due alerts
-        ...paymentDue.map((i) => _buildActivityTile(
-          Icons.payment,
-          'Payment Due',
-          '${i.type.displayName} - ${i.policyNumber}',
-          const Color(0xFFF59E0B),
-          i,
-        )),
-
-        // Expiring soon alerts
-        ...expiringSoon.map((i) => _buildActivityTile(
-          Icons.timer_outlined,
-          'Expiring in ${i.daysUntilExpiry} days',
-          '${i.type.displayName} - ${i.provider}',
-          const Color(0xFFEF4444),
-          i,
-        )),
-
-        // Recently added
-        ...recentlyAdded.take(2).map((i) => _buildActivityTile(
-          Icons.new_releases_outlined,
-          'New Policy',
-          '${i.type.displayName} - ${i.provider}',
-          const Color(0xFF10B981),
-          i,
-        )),
-      ],
-    );
-  }
-
-  Widget _buildActivityTile(IconData icon, String title, String subtitle, Color color, Insurance insurance) {
-    return GestureDetector(
-      onTap: () => _navigateToInsuranceDetails(insurance),
-      child: Container(
-        margin: EdgeInsets.only(bottom: 8.h),
-        padding: EdgeInsets.all(12.w),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.06),
-          borderRadius: BorderRadius.circular(12.r),
-          border: Border.all(color: color.withValues(alpha: 0.15)),
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(14.r),
         ),
         child: Row(
           children: [
             Container(
-              width: 36.w, height: 36.w,
+              width: 40.w, height: 40.w,
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.15),
+                color: color.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(10.r),
               ),
-              child: Icon(icon, color: color, size: 18.sp),
+              child: Icon(icon, color: color, size: 20.sp),
             ),
-            SizedBox(width: 10.w),
+            SizedBox(width: 12.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600, color: color)),
-                  Text(subtitle, style: GoogleFonts.inter(fontSize: 11.sp, color: const Color(0xFF9CA3AF)),
-                    maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(
+                    label,
+                    style: GoogleFonts.inter(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.inter(
+                      fontSize: 11.sp,
+                      color: const Color(0xFF9CA3AF),
+                    ),
+                  ),
                 ],
               ),
             ),
-            Icon(Icons.chevron_right, color: const Color(0xFF9CA3AF), size: 18.sp),
+            Icon(Icons.chevron_right, color: const Color(0xFF6B7280), size: 20.sp),
           ],
         ),
       ),
     );
   }
 
+  // Empty-state card rendered in place of the policies preview when the
+  // user has zero policies. Mirrors the look of the shortcut tiles
+  // already on the page so the empty state feels intentional.
+  Widget _buildEmptyPoliciesCard() {
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(14.r),
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.shield_outlined,
+              color: const Color.fromARGB(255, 78, 3, 208), size: 28.sp),
+          SizedBox(height: 8.h),
+          Text(
+            'No policies yet',
+            style: GoogleFonts.inter(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(height: 4.h),
+          Text(
+            'Tap below to browse insurance products and create your first policy.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              fontSize: 12.sp,
+              color: const Color(0xFF9CA3AF),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Title on the left, "<count> policies · View All" pinned to the right.
+  // The View All inline sits next to the count so it doesn't waste a row
+  // and reads as a quiet utility link rather than a heavy button.
+  /// Lightweight section header — just the title, no count or
+  /// View-All. Used to group the operational CTAs (My Claims,
+  /// Purchase History) so they read as a distinct section, not as
+  /// additional policies under "Your Policies".
+  Widget _buildSimpleSectionHeader(String title) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 4.h),
+      child: Text(
+        title,
+        style: GoogleFonts.inter(
+          fontSize: 16.sp,
+          fontWeight: FontWeight.w600,
+          color: const Color(0xFF9CA3AF),
+          letterSpacing: 0.3,
+        ),
+      ),
+    );
+  }
+
   Widget _buildSectionHeader(String title, int count) {
+    final hasItems = count > 0;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -473,21 +585,45 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
             color: Colors.white,
           ),
         ),
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-          decoration: BoxDecoration(
-            color: const Color(0xFF6366F1).withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(20.r),
-            border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.3)),
-          ),
-          child: Text(
-            '$count ${count == 1 ? 'policy' : 'policies'}',
-            style: GoogleFonts.inter(
-              fontSize: 12.sp,
-              color: const Color(0xFF6366F1),
-              fontWeight: FontWeight.w600,
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+              decoration: BoxDecoration(
+                color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(20.r),
+              ),
+              child: Text(
+                '$count ${count == 1 ? 'policy' : 'policies'}',
+                style: GoogleFonts.inter(
+                  fontSize: 12.sp,
+                  color: const Color.fromARGB(255, 78, 3, 208),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
-          ),
+            if (hasItems) ...[
+              SizedBox(width: 8.w),
+              GestureDetector(
+                onTap: () => Get.toNamed(AppRoutes.insuranceAllPolicies),
+                behavior: HitTestBehavior.opaque,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 4.h, horizontal: 2.w),
+                  child: Text(
+                    'View all',
+                    style: GoogleFonts.inter(
+                      fontSize: 12.sp,
+                      color: const Color(0xFF9CA3AF),
+                      fontWeight: FontWeight.w400,
+                      decoration: TextDecoration.underline,
+                      decorationColor: const Color(0xFF9CA3AF).withValues(alpha: 0.4),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ],
         ),
       ],
     );
@@ -515,7 +651,6 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
         decoration: BoxDecoration(
           color: const Color(0xFF1F1F1F),
           borderRadius: BorderRadius.circular(14.r),
-          border: Border.all(color: const Color(0xFF2D2D2D)),
         ),
         child: Row(
           children: [
@@ -524,7 +659,12 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
               height: 42.w,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color.fromARGB(255, 78, 3, 208),
+                    Color.fromARGB(255, 48, 0, 140),
+                  ],
                 ),
                 borderRadius: BorderRadius.circular(12.r),
               ),
@@ -552,8 +692,21 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
                   SizedBox(height: 4.h),
                   Row(
                     children: [
-                      Text('\$${insurance.premiumAmount.toStringAsFixed(2)}',
-                        style: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w700, color: const Color(0xFF10B981))),
+                      // Each policy carries its OWN currency on the
+                      // Insurance entity (from the backend purchase
+                      // row), so format with that — not the user's
+                      // current locale — so a USD policy displays in
+                      // USD even after the user switches their default
+                      // locale to NGN. The two are independent: the
+                      // stats card up top uses LocaleManager (current
+                      // wallet currency), tiles use the policy's own.
+                      Text(
+                        CurrencySymbols.formatAmountWithCurrency(
+                          insurance.premiumAmount,
+                          insurance.currency,
+                        ),
+                        style: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w700, color: const Color(0xFF10B981)),
+                      ),
                       const Spacer(),
                       Text('Exp: ${insurance.endDate.day}/${insurance.endDate.month}/${insurance.endDate.year}',
                         style: GoogleFonts.inter(fontSize: 10.sp, color: const Color(0xFF9CA3AF))),
@@ -577,15 +730,23 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
         color = const Color(0xFF10B981);
         break;
       case InsuranceStatus.pending:
+      case InsuranceStatus.processing:
+      case InsuranceStatus.awaitingWebhook:
         color = const Color(0xFFF59E0B);
         break;
+      case InsuranceStatus.refundPending:
+        color = const Color(0xFFFB923C);
+        break;
       case InsuranceStatus.expired:
+      case InsuranceStatus.refundFailed:
         color = const Color(0xFFEF4444);
         break;
       case InsuranceStatus.cancelled:
+      case InsuranceStatus.refunded:
         color = const Color(0xFF6B7280);
         break;
       case InsuranceStatus.suspended:
+      case InsuranceStatus.manualReview:
         color = const Color.fromARGB(255, 78, 3, 208);
         break;
     }
@@ -593,9 +754,8 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Text(
         status.displayName,
@@ -619,7 +779,7 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  const Color(0xFF6366F1).withValues(alpha: 0.3),
+                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
                   const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
                 ],
               ),
@@ -628,7 +788,7 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
             child: Icon(
               Icons.shield_outlined,
               size: 40.sp,
-              color: const Color(0xFF6366F1),
+              color: const Color.fromARGB(255, 78, 3, 208),
             ),
           ),
           SizedBox(height: 24.h),
@@ -666,7 +826,7 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  const Color(0xFF6366F1).withValues(alpha: 0.3),
+                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
                   const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
                 ],
               ),
@@ -675,7 +835,7 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
             child: Icon(
               Icons.shield_outlined,
               size: 40.sp,
-              color: const Color(0xFF6366F1),
+              color: const Color.fromARGB(255, 78, 3, 208),
             ),
           ),
           SizedBox(height: 24.h),
@@ -705,10 +865,10 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
               'How does insurance work?',
               style: GoogleFonts.inter(
                 fontSize: 14.sp,
-                color: const Color(0xFF6366F1),
+                color: const Color.fromARGB(255, 78, 3, 208),
                 fontWeight: FontWeight.w500,
                 decoration: TextDecoration.underline,
-                decorationColor: const Color(0xFF6366F1),
+                decorationColor: const Color.fromARGB(255, 78, 3, 208),
               ),
             ),
           ),
@@ -732,7 +892,7 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
             ),
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFF6366F1)),
+              valueColor: AlwaysStoppedAnimation<Color>(const Color.fromARGB(255, 78, 3, 208)),
             ),
           ),
           SizedBox(height: 16.h),
@@ -791,7 +951,12 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
                 padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 14.h),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF6366F1), Color.fromARGB(255, 78, 3, 208)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color.fromARGB(255, 78, 3, 208),
+                      Color.fromARGB(255, 48, 0, 140),
+                    ],
                   ),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
@@ -813,10 +978,10 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
                 'Or browse insurance plans',
                 style: GoogleFonts.inter(
                   fontSize: 14.sp,
-                  color: const Color(0xFF6366F1),
+                  color: const Color.fromARGB(255, 78, 3, 208),
                   fontWeight: FontWeight.w500,
                   decoration: TextDecoration.underline,
-                  decorationColor: const Color(0xFF6366F1),
+                  decorationColor: const Color.fromARGB(255, 78, 3, 208),
                 ),
               ),
             ),
@@ -831,14 +996,14 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF6366F1),
+            const Color.fromARGB(255, 78, 3, 208),
             const Color.fromARGB(255, 78, 3, 208),
           ],
         ),
         borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+            color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -871,14 +1036,14 @@ class _InsuranceListScreenState extends State<InsuranceListScreen> with TickerPr
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF6366F1),
+            const Color.fromARGB(255, 78, 3, 208),
             const Color.fromARGB(255, 78, 3, 208),
           ],
         ),
         borderRadius: BorderRadius.circular(30.r),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+            color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),

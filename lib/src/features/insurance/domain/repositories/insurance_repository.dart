@@ -3,10 +3,19 @@ import '../entities/insurance_payment_entity.dart';
 import '../entities/insurance_claim_entity.dart';
 import '../entities/insurance_product_entity.dart';
 import '../entities/mycover_management_entities.dart';
+import '../entities/insurance_document_upload_url.dart';
 
 abstract class InsuranceRepository {
   // Insurance Policy Operations
   Future<List<Insurance>> getUserInsurances(String userId);
+
+  /// Paginated variant of getUserInsurances (Slice 4). Returns items +
+  /// pagination metadata for scroll-to-bottom infinite scroll.
+  Future<UserInsurancesPage> getUserInsurancesPage({
+    required String userId,
+    int page,
+    int limit,
+  });
   Future<Insurance?> getInsuranceById(String id);
   Future<Insurance> createInsurance(Insurance insurance);
   Future<Insurance> updateInsurance(Insurance insurance);
@@ -22,7 +31,16 @@ abstract class InsuranceRepository {
 
   // Claim Operations
   Future<List<InsuranceClaim>> getInsuranceClaims(String insuranceId);
-  Future<List<InsuranceClaim>> getUserClaims(String userId);
+  /// Paginated. The backend caps `limit` at 200 server-side, so requesting
+  /// more silently returns at most 200 rows. Callers should treat the
+  /// result as a single page: `result.length == limit` is the cubit's
+  /// signal that there's likely another page (the backend doesn't return
+  /// a total count today — see GetUserInsuranceClaimsResponse).
+  Future<List<InsuranceClaim>> getUserClaims(
+    String userId, {
+    int page,
+    int limit,
+  });
   Future<InsuranceClaim?> getClaimById(String id);
   Future<InsuranceClaim> createClaim(InsuranceClaim claim);
   Future<InsuranceClaim> updateClaim(InsuranceClaim claim);
@@ -37,7 +55,22 @@ abstract class InsuranceRepository {
 
   // MyCover.ai Marketplace Operations
   Future<List<InsuranceProduct>> getInsuranceProducts({required String locale, String? category});
+
+  /// Paginated variant (Slice 4). Returns total + items so the UI can do
+  /// scroll-to-bottom infinite scrolling without re-counting.
+  Future<InsuranceProductPage> getInsuranceProductsPage({
+    required String locale,
+    String? category,
+    int page,
+    int limit,
+  });
+
   Future<List<InsuranceCategoryInfo>> getInsuranceCategories({required String locale});
+
+  /// Admin-set hosted terms & conditions URL. Returns empty string when
+  /// not configured so the UI can render an "unavailable" state.
+  Future<String> getInsuranceTermsLink({required String locale});
+
   Future<InsuranceQuote> getInsuranceQuote({required String productId, required Map<String, String> formData, required String locale});
   Future<InsurancePurchaseResult> purchaseInsurance({
     required String quoteId,
@@ -55,6 +88,16 @@ abstract class InsuranceRepository {
   Future<String> uploadInsuranceDocument({
     required List<int> fileData,
     required String filename,
+    required String documentType,
+  });
+
+  /// Pre-construct the upload + public URL pair for a deferred upload.
+  /// Used by the purchase saga so the form_data carries the final
+  /// public URL before the bytes have finished uploading. See
+  /// [InsuranceDocumentUploadURL] for field semantics.
+  Future<InsuranceDocumentUploadURL> getInsuranceDocumentUploadURL({
+    required String filename,
+    required String contentType,
     required String documentType,
   });
 

@@ -356,22 +356,5 @@ class _PolicyReviewScreenState extends State<PolicyReviewScreen>
     );
   }
 
-  String _getTypeDisplayName(InsuranceType type) {
-    switch (type) {
-      case InsuranceType.health:
-        return 'Health Insurance';
-      case InsuranceType.auto:
-        return 'Auto Insurance';
-      case InsuranceType.home:
-        return 'Home Insurance';
-      case InsuranceType.life:
-        return 'Life Insurance';
-      case InsuranceType.travel:
-        return 'Travel Insurance';
-      case InsuranceType.business:
-        return 'Business Insurance';
-      case InsuranceType.gadget:
-        return 'Gadget Insurance';
-    }
-  }
+  String _getTypeDisplayName(InsuranceType type) => type.displayName;
 }

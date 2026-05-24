@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -8,7 +7,7 @@ import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/services/account_manager.dart';
-import 'package:lazervault/core/types/app_routes.dart';
+import '../insurance_terms_bottom_sheet.dart';
 import '../../../domain/entities/insurance_product_entity.dart';
 import '../../cubit/create_policy_cubit.dart';
 import '../../cubit/create_policy_state.dart';
@@ -185,7 +184,10 @@ class _InsurancePaymentConfirmScreenState extends State<InsurancePaymentConfirmS
                     ),
                     SizedBox(width: 8.w),
                     Expanded(child: GestureDetector(
-                      onTap: () => Get.toNamed(AppRoutes.insuranceTerms, arguments: product),
+                      onTap: () => InsuranceTermsBottomSheet.show(
+                        context,
+                        urlResolver: context.read<CreatePolicyCubit>().resolveTermsLink,
+                      ),
                       child: Text.rich(
                         TextSpan(
                           children: [
@@ -584,107 +586,6 @@ class _InsurancePaymentConfirmScreenState extends State<InsurancePaymentConfirmS
     );
   }
 
-  void _showAccountInfoSheet(
-    BuildContext context, {
-    required String accountName,
-    required String currency,
-    required double balance,
-    required double premium,
-  }) {
-    final formatter = NumberFormat('#,##0.00');
-    final remaining = balance - premium;
-    final hasSufficient = remaining >= 0;
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (_) => Container(
-        decoration: BoxDecoration(
-          color: const Color(0xFF1F1F1F),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              margin: EdgeInsets.only(top: 12.h),
-              width: 40.w, height: 4.h,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(2.r)),
-            ),
-            Padding(
-              padding: EdgeInsets.all(20.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(children: [
-                    Container(
-                      width: 48.w, height: 48.w,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: const Color(0xFF6366F1).withValues(alpha: 0.15),
-                      ),
-                      child: Icon(Icons.account_balance_wallet, size: 24.sp, color: const Color(0xFF6366F1)),
-                    ),
-                    SizedBox(width: 14.w),
-                    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text(accountName, style: GoogleFonts.inter(
-                        fontSize: 18.sp, fontWeight: FontWeight.w700, color: Colors.white)),
-                      SizedBox(height: 2.h),
-                      Text('$currency Account', style: GoogleFonts.inter(
-                        fontSize: 13.sp, color: const Color(0xFF9CA3AF))),
-                    ])),
-                  ]),
-                  SizedBox(height: 20.h),
-                  _buildInfoRow('Available Balance', '$currency ${formatter.format(balance)}',
-                    valueColor: const Color(0xFF10B981)),
-                  _buildInfoRow('Insurance Premium', '$currency ${formatter.format(premium)}',
-                    valueColor: const Color(0xFFFB923C)),
-                  Divider(color: const Color(0xFF2D2D2D), height: 20.h),
-                  _buildInfoRow('Balance After Payment',
-                    hasSufficient ? '$currency ${formatter.format(remaining)}' : 'Insufficient funds',
-                    valueColor: hasSufficient ? Colors.white : const Color(0xFFEF4444),
-                    isBold: true),
-                  if (!hasSufficient) ...[
-                    SizedBox(height: 12.h),
-                    Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.all(10.w),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEF4444).withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(8.r)),
-                      child: Row(children: [
-                        Icon(Icons.warning_amber, size: 16.sp, color: const Color(0xFFEF4444)),
-                        SizedBox(width: 8.w),
-                        Expanded(child: Text(
-                          'You need $currency ${formatter.format(premium - balance)} more to complete this purchase.',
-                          style: GoogleFonts.inter(fontSize: 12.sp, color: const Color(0xFFEF4444)),
-                        )),
-                      ]),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value, {Color? valueColor, bool isBold = false}) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 10.h),
-      child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        Text(label, style: GoogleFonts.inter(fontSize: 14.sp, color: const Color(0xFF9CA3AF))),
-        Text(value, style: GoogleFonts.inter(
-          fontSize: 14.sp,
-          fontWeight: isBold ? FontWeight.w700 : FontWeight.w500,
-          color: valueColor ?? Colors.white)),
-      ]),
-    );
-  }
 
   void _showProductInfoSheet(BuildContext context, InsuranceProduct product) {
     showModalBottomSheet(

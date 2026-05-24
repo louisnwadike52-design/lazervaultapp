@@ -24,6 +24,17 @@ class _InsuranceDocumentsScreenState extends State<InsuranceDocumentsScreen> {
   String? get _termsUrl =>
       widget.insurance.coverageDetails['termsUrl']?.toString();
 
+  /// MyCover stores the policy certificate URL on the policy itself
+  /// (per docs: `certificate_url`). The backend mirrors it into
+  /// coverageDetails so this getter doesn't need a separate fetch.
+  String? get _certificateUrl {
+    final raw = widget.insurance.coverageDetails['certificate_url'];
+    if (raw == null) return null;
+    final s = raw.toString().trim();
+    if (s.isEmpty || s == 'null') return null;
+    return s;
+  }
+
   Future<void> _launchUrl(String url) async {
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
@@ -113,7 +124,11 @@ class _InsuranceDocumentsScreenState extends State<InsuranceDocumentsScreen> {
                       title: 'Policy Certificate',
                       description:
                           'Your official insurance policy certificate',
-                      onView: () => _viewDocument(_termsUrl),
+                      // Certificate URL comes from MyCover.GetPolicyByID
+                      // (`certificate_url`). The previous code mistakenly
+                      // pointed this at `_termsUrl`, so users tapping
+                      // "Policy Certificate" got the T&C document.
+                      onView: () => _viewDocument(_certificateUrl),
                     ),
                     SizedBox(height: 12.h),
                     _buildDocumentCard(
@@ -122,7 +137,9 @@ class _InsuranceDocumentsScreenState extends State<InsuranceDocumentsScreen> {
                       title: 'Coverage Summary',
                       description:
                           'Detailed breakdown of your coverage',
-                      onView: () => _viewDocument(_termsUrl),
+                      // Coverage summary lives within Policy Details
+                      // (Coverage tab); no separate document exists.
+                      onView: () => _viewDocument(null),
                     ),
                     SizedBox(height: 12.h),
                     _buildDocumentCard(

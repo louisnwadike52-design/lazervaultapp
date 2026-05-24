@@ -11,6 +11,11 @@ import '../../domain/entities/insurance_payment_entity.dart';
 import '../../domain/entities/insurance_claim_entity.dart';
 import '../cubit/insurance_cubit.dart';
 import '../cubit/insurance_state.dart';
+import '../widgets/mycover_claim_bottom_sheet.dart';
+import '../widgets/insurance_terms_bottom_sheet.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
+import '../../domain/repositories/insurance_repository.dart';
 
 class InsuranceDetailsScreen extends StatefulWidget {
   final Insurance insurance;
@@ -426,15 +431,23 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
         color = const Color(0xFF10B981);
         break;
       case InsuranceStatus.pending:
+      case InsuranceStatus.processing:
+      case InsuranceStatus.awaitingWebhook:
         color = const Color(0xFFF59E0B);
         break;
+      case InsuranceStatus.refundPending:
+        color = const Color(0xFFFB923C);
+        break;
       case InsuranceStatus.expired:
+      case InsuranceStatus.refundFailed:
         color = const Color(0xFFEF4444);
         break;
+      case InsuranceStatus.refunded:
       case InsuranceStatus.cancelled:
         color = const Color(0xFF6B7280);
         break;
       case InsuranceStatus.suspended:
+      case InsuranceStatus.manualReview:
         color = const Color.fromARGB(255, 78, 3, 208);
         break;
     }
@@ -1039,18 +1052,26 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
     Color color;
     switch (status) {
       case ClaimStatus.approved:
+      case ClaimStatus.offerAccepted:
         color = const Color(0xFF10B981);
         break;
       case ClaimStatus.submitted:
         color = const Color(0xFF6366F1);
         break;
       case ClaimStatus.underReview:
+      case ClaimStatus.documented:
+      case ClaimStatus.inspectionSubmitted:
+      case ClaimStatus.repairEstimateRequested:
+      case ClaimStatus.repairEstimateProvided:
+      case ClaimStatus.offerSent:
         color = const Color(0xFFF59E0B);
         break;
       case ClaimStatus.rejected:
+      case ClaimStatus.offerRejected:
         color = const Color(0xFFEF4444);
         break;
       case ClaimStatus.settled:
+      case ClaimStatus.paid:
         color = const Color.fromARGB(255, 78, 3, 208);
         break;
       case ClaimStatus.cancelled:
@@ -1241,13 +1262,40 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
     return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
   }
 
+  // Pulls the backend-composed MyCover claim URL out of the policy
+  // metadata (extras → claim_url). Returns null when customer_id hasn't
+  // synced yet — the backend omits the field in that case so we can show
+  // a "still syncing" snackbar instead of opening a half-broken webview.
+  String? _claimUrlFor(Insurance insurance) {
+    final composed = insurance.coverageDetails['claim_url'];
+    if (composed == null) return null;
+    final s = composed.toString().trim();
+    if (s.isEmpty || s == 'null') return null;
+    return s;
+  }
+
+  void _openMyCoverClaim(Insurance insurance) {
+    final provider = insurance.coverageDetails['provider_name']?.toString() ??
+        insurance.provider;
+    // Bottom sheet handles its own loading + "not ready" UI inside its
+    // chrome — the resolver just hands it the cached URL (or null).
+    MyCoverClaimBottomSheet.show(
+      context,
+      policyLabel: insurance.policyNumber.isNotEmpty
+          ? insurance.policyNumber
+          : insurance.type.name,
+      providerName: provider.isNotEmpty ? provider : null,
+      urlResolver: () async => _claimUrlFor(insurance),
+    );
+  }
+
   void _handleMenuAction(String action, Insurance insurance) {
     switch (action) {
       case 'pay':
         Get.toNamed(AppRoutes.insurancePayment, arguments: insurance);
         break;
       case 'claim':
-        Get.toNamed(AppRoutes.createClaim, arguments: insurance.id);
+        _openMyCoverClaim(insurance);
         break;
       case 'documents':
         Get.toNamed(AppRoutes.insuranceDocuments, arguments: insurance);
@@ -1256,7 +1304,13 @@ class _InsuranceDetailsScreenState extends State<InsuranceDetailsScreen> with Ti
         Get.toNamed(AppRoutes.insuranceContact, arguments: insurance);
         break;
       case 'terms':
-        Get.toNamed(AppRoutes.insuranceTerms, arguments: insurance);
+        InsuranceTermsBottomSheet.show(
+          context,
+          urlResolver: () => serviceLocator<InsuranceRepository>()
+              .getInsuranceTermsLink(
+            locale: serviceLocator<LocaleManager>().currentCountry,
+          ),
+        );
         break;
     }
   }

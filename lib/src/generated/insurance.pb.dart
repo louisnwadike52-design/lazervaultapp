@@ -3115,6 +3115,9 @@ class InsuranceProductFormField extends $pb.GeneratedMessage {
     ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'validationRegex')
     ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'placeholder')
     ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'utilityId')
+    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dependsOn')
+    ..pc<InsuranceProductFormItemField>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'itemFields', $pb.PbFieldType.PM, subBuilder: InsuranceProductFormItemField.create)
     ..hasRequiredFields = false
   ;
 
@@ -3129,6 +3132,9 @@ class InsuranceProductFormField extends $pb.GeneratedMessage {
     $core.String? validationRegex,
     $core.String? placeholder,
     $core.String? description,
+    $core.String? utilityId,
+    $core.String? dependsOn,
+    $core.Iterable<InsuranceProductFormItemField>? itemFields,
   }) {
     final _result = create();
     if (name != null) {
@@ -3157,6 +3163,15 @@ class InsuranceProductFormField extends $pb.GeneratedMessage {
     }
     if (description != null) {
       _result.description = description;
+    }
+    if (utilityId != null) {
+      _result.utilityId = utilityId;
+    }
+    if (dependsOn != null) {
+      _result.dependsOn = dependsOn;
+    }
+    if (itemFields != null) {
+      _result.itemFields.addAll(itemFields);
     }
     return _result;
   }
@@ -3255,6 +3270,138 @@ class InsuranceProductFormField extends $pb.GeneratedMessage {
   $core.bool hasDescription() => $_has(8);
   @$pb.TagNumber(9)
   void clearDescription() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get utilityId => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set utilityId($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasUtilityId() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearUtilityId() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get dependsOn => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set dependsOn($core.String v) { $_setString(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasDependsOn() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearDependsOn() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.List<InsuranceProductFormItemField> get itemFields => $_getList(11);
+}
+
+class InsuranceProductFormItemField extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'InsuranceProductFormItemField', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'label')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'type')
+    ..aOB(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'required')
+    ..pPS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'options')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'placeholder')
+    ..hasRequiredFields = false
+  ;
+
+  InsuranceProductFormItemField._() : super();
+  factory InsuranceProductFormItemField({
+    $core.String? name,
+    $core.String? label,
+    $core.String? type,
+    $core.bool? required,
+    $core.Iterable<$core.String>? options,
+    $core.String? placeholder,
+  }) {
+    final _result = create();
+    if (name != null) {
+      _result.name = name;
+    }
+    if (label != null) {
+      _result.label = label;
+    }
+    if (type != null) {
+      _result.type = type;
+    }
+    if (required != null) {
+      _result.required = required;
+    }
+    if (options != null) {
+      _result.options.addAll(options);
+    }
+    if (placeholder != null) {
+      _result.placeholder = placeholder;
+    }
+    return _result;
+  }
+  factory InsuranceProductFormItemField.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory InsuranceProductFormItemField.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  InsuranceProductFormItemField clone() => InsuranceProductFormItemField()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  InsuranceProductFormItemField copyWith(void Function(InsuranceProductFormItemField) updates) => super.copyWith((message) => updates(message as InsuranceProductFormItemField)) as InsuranceProductFormItemField; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static InsuranceProductFormItemField create() => InsuranceProductFormItemField._();
+  InsuranceProductFormItemField createEmptyInstance() => create();
+  static $pb.PbList<InsuranceProductFormItemField> createRepeated() => $pb.PbList<InsuranceProductFormItemField>();
+  @$core.pragma('dart2js:noInline')
+  static InsuranceProductFormItemField getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<InsuranceProductFormItemField>(create);
+  static InsuranceProductFormItemField? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get name => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set name($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasName() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearName() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get label => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set label($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasLabel() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLabel() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get type => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set type($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasType() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearType() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.bool get required => $_getBF(3);
+  @$pb.TagNumber(4)
+  set required($core.bool v) { $_setBool(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasRequired() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearRequired() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.List<$core.String> get options => $_getList(4);
+
+  @$pb.TagNumber(6)
+  $core.String get placeholder => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set placeholder($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasPlaceholder() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearPlaceholder() => clearField(6);
 }
 
 class InsuranceProduct extends $pb.GeneratedMessage {
@@ -4145,6 +4292,7 @@ class GetInsuranceCategoriesResponse extends $pb.GeneratedMessage {
     ..pc<InsuranceCategory>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'categories', $pb.PbFieldType.PM, subBuilder: InsuranceCategory.create)
     ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'msg')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'termsLink')
     ..hasRequiredFields = false
   ;
 
@@ -4153,6 +4301,7 @@ class GetInsuranceCategoriesResponse extends $pb.GeneratedMessage {
     $core.Iterable<InsuranceCategory>? categories,
     $core.bool? success,
     $core.String? msg,
+    $core.String? termsLink,
   }) {
     final _result = create();
     if (categories != null) {
@@ -4163,6 +4312,9 @@ class GetInsuranceCategoriesResponse extends $pb.GeneratedMessage {
     }
     if (msg != null) {
       _result.msg = msg;
+    }
+    if (termsLink != null) {
+      _result.termsLink = termsLink;
     }
     return _result;
   }
@@ -4207,6 +4359,15 @@ class GetInsuranceCategoriesResponse extends $pb.GeneratedMessage {
   $core.bool hasMsg() => $_has(2);
   @$pb.TagNumber(3)
   void clearMsg() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get termsLink => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set termsLink($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasTermsLink() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearTermsLink() => clearField(4);
 }
 
 class GetInsuranceQuoteRequest extends $pb.GeneratedMessage {

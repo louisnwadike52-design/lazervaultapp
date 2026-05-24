@@ -1,3 +1,4 @@
+import 'package:grpc/grpc.dart' show CallOptions, GrpcError, StatusCode;
 import '../../../../generated/insurance.pbgrpc.dart' as pb;
 import '../../../../generated/financial-products.pbgrpc.dart' as fppb;
 import '../../../../core/network/grpc_client.dart';
@@ -6,12 +7,23 @@ import '../../domain/entities/insurance_payment_entity.dart';
 import '../../domain/entities/insurance_claim_entity.dart';
 import '../../domain/entities/insurance_product_entity.dart';
 import '../../domain/entities/mycover_management_entities.dart';
+import '../../domain/entities/insurance_document_upload_url.dart';
 
 abstract class InsuranceRemoteDataSource {
   Future<List<Insurance>> getUserInsurances({
     required String accessToken,
     int page = 1,
     int limit = 10,
+  });
+
+  /// Paginated variant of getUserInsurances (Slice 4). Surfaces the
+  /// pagination metadata (totalItems, hasNext) so UIs can drive
+  /// scroll-to-bottom infinite scroll without falling back to "list
+  /// shorter than limit = end" heuristics.
+  Future<UserInsurancesPage> getUserInsurancesPage({
+    required String accessToken,
+    int page = 1,
+    int limit = 15,
   });
 
   Future<Insurance> getInsuranceById({
@@ -124,7 +136,27 @@ abstract class InsuranceRemoteDataSource {
     String? category,
   });
 
+  /// Paginated variant of getInsuranceProducts (Slice 4). The underlying
+  /// gRPC RPC already supports page/limit (proto fields 3-4) and surfaces
+  /// `total` so callers can implement scroll-to-bottom infinite scroll.
+  Future<InsuranceProductPage> getInsuranceProductsPage({
+    required String accessToken,
+    required String locale,
+    String? category,
+    int page = 1,
+    int limit = 15,
+  });
+
   Future<List<InsuranceCategoryInfo>> getInsuranceCategories({
+    required String accessToken,
+    required String locale,
+  });
+
+  /// Admin-set hosted terms & conditions URL. Returns empty string when
+  /// not configured so callers can render an "unavailable" state. Backed
+  /// by the same `GetInsuranceMarketplaceCategories` response that ships
+  /// the categories list (the RPC is cached on the server for 4h).
+  Future<String> getInsuranceTermsLink({
     required String accessToken,
     required String locale,
   });
@@ -157,6 +189,20 @@ abstract class InsuranceRemoteDataSource {
     required String accessToken,
     required List<int> fileData,
     required String filename,
+    required String documentType,
+  });
+
+  /// Pre-construct the upload + public URL pair for a deferred
+  /// document upload. Backend returns:
+  ///   uploadUrl  — PUT bytes here (signed in prod, local route in dev)
+  ///   publicUrl  — deterministic GET URL safe to stamp into form_data
+  ///                BEFORE the upload completes
+  ///   storageKey — bookkeeping; not surfaced to MyCover
+  ///   expiresAt  — Unix-seconds when uploadUrl stops accepting writes
+  Future<InsuranceDocumentUploadURL> getInsuranceDocumentUploadURL({
+    required String accessToken,
+    required String filename,
+    required String contentType,
     required String documentType,
   });
 
@@ -266,6 +312,45 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
   pb.InsuranceServiceClient get _client => grpcClient.insuranceClient;
   fppb.FinancialProductsServiceClient get _fpClient => grpcClient.financialProductsClient;
 
+  /// Retries [op] on TRANSIENT gRPC connection failures only — the
+  /// HTTP/2 "connection is being forcefully terminated" / UNAVAILABLE
+  /// class that cold channels and mobile networks produce on a request
+  /// the user actually triggered (so they'd otherwise see a spurious
+  /// "Connection Error" on a product we showed them). Auth and
+  /// validation errors (UNAUTHENTICATED, INVALID_ARGUMENT, NOT_FOUND,
+  /// etc.) are NOT retried — only transport blips. Safe for the reads;
+  /// safe for the purchase too because it carries an idempotency key, so
+  /// a replay returns the original result instead of double-charging.
+  Future<T> _withTransientRetry<T>(Future<T> Function() op,
+      {int attempts = 3}) async {
+    for (var i = 0;; i++) {
+      try {
+        return await op();
+      } catch (e) {
+        if (!_isTransientConnectionError(e) || i >= attempts - 1) rethrow;
+        await Future<void>.delayed(Duration(milliseconds: 400 * (i + 1)));
+      }
+    }
+  }
+
+  bool _isTransientConnectionError(Object e) {
+    if (e is GrpcError) {
+      if (e.code == StatusCode.unavailable) return true;
+      if (e.code == StatusCode.unknown) {
+        final m = (e.message ?? '').toLowerCase();
+        return m.contains('connection') ||
+            m.contains('terminated') ||
+            m.contains('http/2') ||
+            m.contains('socket');
+      }
+      return false;
+    }
+    final s = e.toString().toLowerCase();
+    return s.contains('connection is being forcefully terminated') ||
+        s.contains('http/2 error') ||
+        s.contains('connection terminated');
+  }
+
   @override
   Future<List<Insurance>> getUserInsurances({
     required String accessToken,
@@ -277,9 +362,48 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
       ..limit = limit;
 
     final options = await grpcClient.callOptions;
-    final response = await _client.getUserInsurances(request, options: options);
+    // 12s cap so a wedged backend doesn't leave the My Insurances list
+    // stuck on a spinner forever.
+    final response = await _client
+        .getUserInsurances(request, options: options)
+        .timeout(
+          const Duration(seconds: 12),
+          onTimeout: () => throw Exception(
+              'Timed out loading policies. Pull to refresh and try again.'),
+        );
 
     return response.insurances.map((proto) => _insuranceFromProto(proto)).toList();
+  }
+
+  @override
+  Future<UserInsurancesPage> getUserInsurancesPage({
+    required String accessToken,
+    int page = 1,
+    int limit = 15,
+  }) async {
+    if (page < 1) page = 1;
+    if (limit < 1) limit = 15;
+    if (limit > 100) limit = 100;
+    final request = pb.GetUserInsurancesRequest()
+      ..page = page
+      ..limit = limit;
+    final options = await grpcClient.callOptions;
+    final response = await _client
+        .getUserInsurances(request, options: options)
+        .timeout(
+          const Duration(seconds: 12),
+          onTimeout: () => throw Exception(
+              'Timed out loading policies. Pull to refresh and try again.'),
+        );
+    final pagination = response.pagination;
+    return UserInsurancesPage(
+      insurances:
+          response.insurances.map((proto) => _insuranceFromProto(proto)).toList(),
+      totalItems: pagination.totalItems,
+      currentPage: pagination.currentPage > 0 ? pagination.currentPage : page,
+      totalPages: pagination.totalPages,
+      hasMore: pagination.hasNext,
+    );
   }
 
   @override
@@ -290,7 +414,14 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
     final request = pb.GetInsuranceByIdRequest()..id = id;
 
     final options = await grpcClient.callOptions;
-    final response = await _client.getInsuranceById(request, options: options);
+    // Policy detail load — 12s cap so detail screen doesn't spin forever.
+    final response = await _client
+        .getInsuranceById(request, options: options)
+        .timeout(
+          const Duration(seconds: 12),
+          onTimeout: () => throw Exception(
+              'Timed out loading policy details. Please try again.'),
+        );
 
     return _insuranceFromProto(response.insurance);
   }
@@ -408,7 +539,16 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
       ..payment = _paymentToProto(payment);
 
     final options = await grpcClient.callOptions;
-    final response = await _client.createPayment(request, options: options);
+    // 20s cap. Premium charges round-trip through the provider so this
+    // is the longest user-facing call in the insurance flow; bound it
+    // so the Pay button doesn't appear stuck on a wedged backend.
+    final response = await _client
+        .createPayment(request, options: options)
+        .timeout(
+          const Duration(seconds: 20),
+          onTimeout: () => throw Exception(
+              'Payment took too long. Please check your balance and try again.'),
+        );
 
     return _paymentFromProto(response.payment);
   }
@@ -585,9 +725,42 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
     }
 
     final options = await grpcClient.callOptions;
-    final response = await _client.getInsuranceProducts(request, options: options);
+    final response = await _withTransientRetry(
+        () => _client.getInsuranceProducts(request, options: options));
 
     return response.products.map((p) => _insuranceProductFromProto(p)).toList();
+  }
+
+  @override
+  Future<InsuranceProductPage> getInsuranceProductsPage({
+    required String accessToken,
+    required String locale,
+    String? category,
+    int page = 1,
+    int limit = 15,
+  }) async {
+    if (page < 1) page = 1;
+    if (limit < 1) limit = 15;
+    if (limit > 100) limit = 100;
+    final request = pb.GetInsuranceProductsRequest()
+      ..locale = locale
+      ..page = page
+      ..limit = limit;
+    if (category != null && category.isNotEmpty) {
+      request.category = category;
+    }
+
+    final options = await grpcClient.callOptions;
+    final response = await _withTransientRetry(
+        () => _client.getInsuranceProducts(request, options: options));
+    return InsuranceProductPage(
+      products: response.products
+          .map((p) => _insuranceProductFromProto(p))
+          .toList(),
+      total: response.total,
+      page: page,
+      limit: limit,
+    );
   }
 
   @override
@@ -610,6 +783,17 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
   }
 
   @override
+  Future<String> getInsuranceTermsLink({
+    required String accessToken,
+    required String locale,
+  }) async {
+    final request = pb.GetInsuranceCategoriesRequest()..locale = locale;
+    final options = await grpcClient.callOptions;
+    final response = await _client.getInsuranceCategories(request, options: options);
+    return response.termsLink.trim();
+  }
+
+  @override
   Future<InsuranceQuote> getInsuranceQuote({
     required String accessToken,
     required String productId,
@@ -622,7 +806,19 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
     request.formData.addAll(formData);
 
     final options = await grpcClient.callOptions;
-    final response = await _client.getInsuranceQuote(request, options: options);
+    // 60-second client cap. Quotes round-trip MyCover's pricing service,
+    // and slow providers — travel (compute-travel-premium) in particular —
+    // routinely take 30–50s (the travel BUY was measured at ~39s). An 18s
+    // cap surfaced a false "took too long" on those before the user could
+    // even pay. 60s sits under the backend's 75s MYCOVER_TIMEOUT so a
+    // genuinely-wedged backend still can't hang the CTA indefinitely.
+    final response = await _withTransientRetry(() => _client
+        .getInsuranceQuote(request, options: options)
+        .timeout(
+          const Duration(seconds: 60),
+          onTimeout: () => throw Exception(
+              'Quote took too long. Please try again.'),
+        ));
 
     return _quoteFromProto(response.quote);
   }
@@ -650,8 +846,27 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
 
     request.formData.addAll(formData);
 
-    final options = await grpcClient.callOptions;
-    final response = await _fpClient.purchaseMarketplaceInsurance(request, options: options);
+    // Purchase needs a longer deadline than the 30s channel default.
+    // The backend calls MyCover's /buy endpoint synchronously with a
+    // 75s provider timeout (MYCOVER_TIMEOUT), and slow providers —
+    // travel insurance in particular — routinely take 30–60s to issue
+    // a policy. With the default 30s the client deadline fires while
+    // the backend is mid-purchase, the user has already been debited,
+    // and the cancelled context can break the backend's refund path.
+    // Give the purchase RPC a 90s ceiling (75s provider + hop/processing
+    // buffer) so legitimate slow issuances complete instead of
+    // surfacing a false "took too long" to a user whose money has moved.
+    final baseOptions = await grpcClient.callOptions;
+    final options = baseOptions.mergedWith(
+      CallOptions(timeout: const Duration(seconds: 90)),
+    );
+    // Retry on transient connection blips only. Safe to replay: the
+    // request carries [idempotencyKey], so the backend's dual-layer
+    // idempotency returns the original purchase rather than charging
+    // twice. This keeps a user from seeing a spurious failure on a
+    // shown product when the channel resets mid-call.
+    final response = await _withTransientRetry(() =>
+        _fpClient.purchaseMarketplaceInsurance(request, options: options));
 
     return _marketplacePurchaseResultFromProto(response.result);
   }
@@ -688,6 +903,27 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
   }
 
   @override
+  Future<InsuranceDocumentUploadURL> getInsuranceDocumentUploadURL({
+    required String accessToken,
+    required String filename,
+    required String contentType,
+    required String documentType,
+  }) async {
+    final request = fppb.GetInsuranceDocumentUploadURLRequest()
+      ..filename = filename
+      ..contentType = contentType
+      ..documentType = documentType;
+    final options = await grpcClient.callOptions;
+    final response = await _fpClient.getInsuranceDocumentUploadURL(request, options: options);
+    return InsuranceDocumentUploadURL(
+      uploadUrl: response.uploadUrl,
+      publicUrl: response.publicUrl,
+      storageKey: response.storageKey,
+      expiresAt: response.expiresAt.toInt(),
+    );
+  }
+
+  @override
   Future<List<AuxiliaryItem>> getInsuranceAuxiliaryData({
     required String accessToken,
     required String utilityId,
@@ -700,7 +936,16 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
     }
 
     final options = await grpcClient.callOptions;
-    final response = await _client.getInsuranceAuxiliaryData(request, options: options);
+    // 12-second client cap so a stuck backend or unreachable MyCover
+    // doesn't leave the form's select dropdowns spinning forever. The
+    // form's retry UI handles surfacing the failure to the user.
+    final response = await _client
+        .getInsuranceAuxiliaryData(request, options: options)
+        .timeout(
+          const Duration(seconds: 12),
+          onTimeout: () => throw Exception(
+              'Timed out loading options. Please retry.'),
+        );
 
     return response.items.map((item) => AuxiliaryItem(
       label: item.label,
@@ -734,6 +979,18 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
         validationRegex: f.validationRegex,
         placeholder: f.placeholder,
         description: f.description,
+        utilityId: f.utilityId,
+        dependsOn: f.dependsOn,
+        itemFields: f.itemFields
+            .map((sf) => InsuranceProductFormItemField(
+                  name: sf.name,
+                  label: sf.label,
+                  type: sf.type,
+                  required: sf.required,
+                  options: sf.options.toList(),
+                  placeholder: sf.placeholder,
+                ))
+            .toList(),
       )).toList(),
       isActive: proto.isActive,
       purchaseRoute: proto.purchaseRoute,
@@ -760,6 +1017,9 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
   }
 
   InsurancePurchaseResult _purchaseResultFromProto(pb.InsurancePurchaseResult proto) {
+    // Legacy proto only carries the 5 core fields. The richer policy
+    // detail (certificate, premium, dates) flows through the marketplace
+    // path below.
     return InsurancePurchaseResult(
       policyId: proto.policyId,
       policyNumber: proto.policyNumber,
@@ -776,6 +1036,16 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
       reference: proto.reference,
       status: proto.status,
       providerReference: proto.providerReference,
+      certificateUrl: proto.certificateUrl,
+      premium: proto.hasPremium() ? proto.premium : null,
+      currency: proto.currency,
+      coverageAmount: proto.hasCoverageAmount() ? proto.coverageAmount : null,
+      startDate: proto.startDate.isNotEmpty
+          ? DateTime.tryParse(proto.startDate)
+          : null,
+      endDate: proto.endDate.isNotEmpty
+          ? DateTime.tryParse(proto.endDate)
+          : null,
     );
   }
 
@@ -940,10 +1210,17 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
   }
 
   InsuranceType _parseInsuranceType(String type) {
+    // Defaulting to `health` for unknown values made every marketplace
+    // policy render as "Health Insurance" because the backend sends the
+    // raw product UUID for marketplace rows. Fall back to `other` (which
+    // renders as "Insurance") so the label is at least not actively
+    // wrong. Auto / home / etc. still match when the backend sends the
+    // category name from local-table rows.
+    if (type.isEmpty) return InsuranceType.other;
     try {
       return InsuranceType.values.firstWhere((e) => e.name == type.toLowerCase());
-    } catch (e) {
-      return InsuranceType.health; // Default fallback
+    } catch (_) {
+      return InsuranceType.other;
     }
   }
 
@@ -1228,16 +1505,54 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
   }
 
   InsuranceStatus _parseInsuranceStatus(String status) {
+    // Backend uses snake_case for multi-word statuses
+    // (e.g. `refund_pending`, `manual_review`, `awaiting_webhook`);
+    // Dart enum names are camelCase (`refundPending`, `manualReview`,
+    // `awaitingWebhook`). Normalize before matching.
+    final wire = status.toLowerCase().trim();
+    final normalized = wire.replaceAllMapped(
+      RegExp(r'_(\w)'),
+      (m) => m.group(1)!.toUpperCase(),
+    );
+    // The marketplace `insurance_purchases.status` enum has no
+    // `active`/`expired` values — those are derived states.
+    // `completed` is the terminal "policy is live with the provider"
+    // state and should surface as Active. `failed` means the purchase
+    // never reached MyCover and is effectively a no-op for the user;
+    // surface it as Cancelled (refunded, not active). Active expiry is
+    // computed in Insurance.isExpired via the end_date, so we never
+    // need to map a wire status to `expired`.
+    const wireAlias = <String, InsuranceStatus>{
+      'completed': InsuranceStatus.active,
+      'failed': InsuranceStatus.cancelled,
+    };
+    if (wireAlias.containsKey(wire)) return wireAlias[wire]!;
     try {
-      return InsuranceStatus.values.firstWhere((e) => e.name == status.toLowerCase());
-    } catch (e) {
-      return InsuranceStatus.pending; // Default fallback
+      return InsuranceStatus.values.firstWhere((e) => e.name == normalized);
+    } catch (_) {
+      try {
+        return InsuranceStatus.values.firstWhere((e) => e.name == wire);
+      } catch (_) {
+        return InsuranceStatus.pending; // Default fallback
+      }
     }
   }
 
   PaymentMethod _parsePaymentMethod(String method) {
+    final normalized = method.toLowerCase().trim();
+    // Backend sends snake_case (e.g. "mycover_hosted_renewal"); enum names
+    // are camelCase. Map the known snake_case values explicitly, then fall
+    // back to a direct name match for the simple ones (wallet, card, ...).
+    switch (normalized) {
+      case 'mycover_hosted_renewal':
+        return PaymentMethod.mycoverHostedRenewal;
+      case 'bank_transfer':
+        return PaymentMethod.bankTransfer;
+      case 'mobile_money':
+        return PaymentMethod.mobileMoney;
+    }
     try {
-      return PaymentMethod.values.firstWhere((e) => e.name == method.toLowerCase());
+      return PaymentMethod.values.firstWhere((e) => e.name == normalized);
     } catch (e) {
       return PaymentMethod.wallet; // Default fallback
     }
@@ -1260,10 +1575,24 @@ class InsuranceRemoteDataSourceImpl implements InsuranceRemoteDataSource {
   }
 
   ClaimStatus _parseClaimStatus(String status) {
+    // Backend uses snake_case for multi-word statuses
+    // (e.g. `under_review`, `offer_sent`); Dart enum names are camelCase
+    // (`underReview`, `offerSent`). Normalize both sides before
+    // matching, and fall through to `submitted` for unknown values so a
+    // future MyCover state can't crash the deserialiser.
+    final wire = status.toLowerCase().trim();
+    final normalized = wire.replaceAllMapped(
+      RegExp(r'_(\w)'),
+      (m) => m.group(1)!.toUpperCase(),
+    );
     try {
-      return ClaimStatus.values.firstWhere((e) => e.name == status.toLowerCase());
-    } catch (e) {
-      return ClaimStatus.submitted; // Default fallback
+      return ClaimStatus.values.firstWhere((e) => e.name == normalized);
+    } catch (_) {
+      try {
+        return ClaimStatus.values.firstWhere((e) => e.name == wire);
+      } catch (_) {
+        return ClaimStatus.submitted;
+      }
     }
   }
 

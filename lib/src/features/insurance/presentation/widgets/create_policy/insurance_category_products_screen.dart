@@ -16,6 +16,35 @@ class InsuranceCategoryProductsScreen extends StatefulWidget {
 }
 
 class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProductsScreen> {
+  // Slice 4: scroll-to-bottom pagination. The controller listens for the
+  // user reaching the bottom of the product list and triggers
+  // loadMoreProducts on the cubit. Mirror's the canonical pattern at
+  // crowdfund_details_screen.dart:41–99.
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final pos = _scrollController.position;
+    if (pos.pixels < pos.maxScrollExtent - 240) return;
+    final cubit = context.read<CreatePolicyCubit>();
+    final s = cubit.state;
+    if (s is InsuranceProductsLoaded && s.hasMore && !s.isLoadingMore) {
+      cubit.loadMoreProducts();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +73,9 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
 
         if (state is InsuranceProductsLoaded) {
           return _buildWithProducts(context, cubit, state.products, false,
-              selectedCategory: state.selectedCategory);
+              selectedCategory: state.selectedCategory,
+              hasMore: state.hasMore,
+              isLoadingMore: state.isLoadingMore);
         }
 
         // When a product is selected, keep showing the products list
@@ -82,9 +113,15 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
             SizedBox(height: 24.h),
             GestureDetector(
               onTap: () {
-                // Retry the appropriate action based on what we already have
+                // Retry the appropriate action based on what we already have.
+                // Prefer the lossless info object so retry re-fires the
+                // exact category UUID the user originally picked.
                 if (cubit.categories.isNotEmpty) {
-                  cubit.loadProducts(category: cubit.selectedCategory);
+                  if (cubit.selectedCategoryInfo != null) {
+                    cubit.loadProductsPaginated(info: cubit.selectedCategoryInfo);
+                  } else {
+                    cubit.loadProductsPaginated(category: cubit.selectedCategory);
+                  }
                 } else {
                   cubit.loadCategories();
                 }
@@ -132,15 +169,21 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
   }
 
   Widget _buildWithProducts(BuildContext context, CreatePolicyCubit cubit, List<InsuranceProduct> products,
-      bool isLoading, {InsuranceProductCategory? selectedCategory}) {
+      bool isLoading, {InsuranceProductCategory? selectedCategory, bool hasMore = false, bool isLoadingMore = false}) {
     final selectedProductId = cubit.selectedProduct?.id;
     // Find the category info for the header
     final categoryInfo = cubit.selectedCategoryInfo;
     return RefreshIndicator(
-      onRefresh: () => cubit.loadProducts(category: selectedCategory),
+      // Refresh against the lossless info object so a tap on Health
+      // doesn't accidentally re-resolve to Agency Banking. Uses the
+      // paginated entry point so pull-to-refresh resets to page 1.
+      onRefresh: () => cubit.selectedCategoryInfo != null
+          ? cubit.loadProductsPaginated(info: cubit.selectedCategoryInfo)
+          : cubit.loadProductsPaginated(category: selectedCategory),
       color: const Color(0xFF3B82F6),
       backgroundColor: const Color(0xFF1F1F1F),
       child: SingleChildScrollView(
+        controller: _scrollController,
         physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.symmetric(horizontal: 20.w),
         child: Column(
@@ -159,6 +202,33 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
               _buildEmptyProducts()
             else
               ...products.map((p) => _buildProductCard(context, p, cubit, isSelected: p.id == selectedProductId)),
+            // Slice 4: scroll-load footer
+            if (isLoadingMore)
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 16.h),
+                child: const Center(
+                  child: SizedBox(
+                    width: 20, height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation(Color(0xFF6366F1)),
+                    ),
+                  ),
+                ),
+              )
+            else if (!isLoading && products.isNotEmpty && !hasMore)
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 12.h),
+                child: Center(
+                  child: Text(
+                    "You've reached the end",
+                    style: GoogleFonts.inter(
+                      fontSize: 12.sp,
+                      color: const Color(0xFF6B7280),
+                    ),
+                  ),
+                ),
+              ),
             SizedBox(height: 20.h),
           ],
         ),
@@ -168,18 +238,30 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
 
   Widget _buildCategoryGrid(BuildContext context, List<InsuranceCategoryInfo> categories,
       CreatePolicyCubit cubit, InsuranceProductCategory? selected) {
+    // Hide categories the backend reports as having zero stable products.
+    // MyCover.ai's /v2/products/categories returns Agency Banking and
+    // Credit Life with productCount=0 because none of their SKUs reach
+    // the 100% stability threshold; showing those tiles led users to
+    // an empty "No products available" screen.
+    final visible = categories.where((c) => c.productCount > 0).toList();
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3, crossAxisSpacing: 12.w, mainAxisSpacing: 12.h, childAspectRatio: 1.0),
-      itemCount: categories.length,
+      itemCount: visible.length,
       itemBuilder: (context, index) {
-        final cat = categories[index];
-        final category = cat.category;
-        final isSelected = selected == category;
+        final cat = visible[index];
+        // Compare by backend UUID (lossless) — comparing by the enum
+        // would alias `.other`-mapped categories (e.g. Agency Banking
+        // and any future unknown category) into a single selection.
+        final isSelected = cubit.selectedCategoryInfo?.id == cat.id;
         return GestureDetector(
-          onTap: () => cubit.loadProducts(category: category),
+          // Pass the full CategoryInfo so the cubit uses its UUID
+          // directly, instead of looking it up by the lossy enum.
+          // Routed through the paginated entry point so the first page
+          // surfaces with the next 14 cached for scroll-load.
+          onTap: () => cubit.loadProductsPaginated(info: cat),
           child: Container(
             decoration: BoxDecoration(
               color: isSelected ? const Color(0xFF6366F1).withValues(alpha: 0.15) : const Color(0xFF1F1F1F),
@@ -194,7 +276,7 @@ class _InsuranceCategoryProductsScreenState extends State<InsuranceCategoryProdu
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(category.icon, size: 28.sp,
+                      Icon(cat.category.icon, size: 28.sp,
                         color: isSelected ? const Color(0xFF6366F1) : const Color(0xFF9CA3AF)),
                       SizedBox(height: 8.h),
                       Text(cat.name, textAlign: TextAlign.center,

@@ -15,6 +15,12 @@ enum PaymentMethod {
   mobileMoney,
   crypto,
   wallet,
+  // A policy renewal paid entirely through MyCover's hosted webview — the
+  // money never moves through the LazerVault wallet. Backend sends
+  // payment_method = "mycover_hosted_renewal" (see insurance_webhook_consumer
+  // handlePolicyRenewed). Without this value a renewal row showed up as a
+  // generic "Digital Wallet" payment.
+  mycoverHostedRenewal,
 }
 
 extension PaymentStatusExtension on PaymentStatus {
@@ -49,6 +55,8 @@ extension PaymentMethodExtension on PaymentMethod {
         return 'Cryptocurrency';
       case PaymentMethod.wallet:
         return 'Digital Wallet';
+      case PaymentMethod.mycoverHostedRenewal:
+        return 'Renewal';
     }
   }
 
@@ -64,6 +72,8 @@ extension PaymentMethodExtension on PaymentMethod {
         return '₿';
       case PaymentMethod.wallet:
         return '💼';
+      case PaymentMethod.mycoverHostedRenewal:
+        return '🔄';
     }
   }
 }

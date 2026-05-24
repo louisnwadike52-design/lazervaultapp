@@ -340,27 +340,7 @@ class _InsuranceClaimTrackingScreenState
   }
 
   Widget _buildClaimStatusBadge(ClaimStatus status) {
-    Color color;
-    switch (status) {
-      case ClaimStatus.submitted:
-        color = const Color(0xFF6366F1);
-        break;
-      case ClaimStatus.underReview:
-        color = const Color(0xFFFB923C);
-        break;
-      case ClaimStatus.approved:
-        color = const Color(0xFF10B981);
-        break;
-      case ClaimStatus.rejected:
-        color = const Color(0xFFEF4444);
-        break;
-      case ClaimStatus.settled:
-        color = const Color.fromARGB(255, 78, 3, 208);
-        break;
-      case ClaimStatus.cancelled:
-        color = const Color(0xFF6B7280);
-        break;
-    }
+    final color = _claimStatusColor(status);
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
@@ -493,19 +473,40 @@ class _InsuranceClaimTrackingScreenState
   }
 
   int _getCurrentStepIndex() {
-    switch (_claim.status) {
+    final s = _claim.status;
+    if (s == ClaimStatus.submitted) return 0;
+    if (s == ClaimStatus.approved || s == ClaimStatus.rejected || s == ClaimStatus.offerRejected) return 3;
+    if (s == ClaimStatus.settled || s == ClaimStatus.paid) return 4;
+    if (s == ClaimStatus.cancelled) return 0;
+    // documented / inspection_submitted / repair estimate * / offer * /
+    // under_review all live in step 1 — the adjuster is working it.
+    return 1;
+  }
+
+  // Shared status → color mapping covering every state in the enum so
+  // no UI call site has to think about MyCover's mid-flight vocabulary.
+  Color _claimStatusColor(ClaimStatus status) {
+    switch (status) {
       case ClaimStatus.submitted:
-        return 0;
-      case ClaimStatus.underReview:
-        return 1;
+        return const Color(0xFF6366F1);
       case ClaimStatus.approved:
-        return 3;
+      case ClaimStatus.offerAccepted:
+        return const Color(0xFF10B981);
       case ClaimStatus.rejected:
-        return 3;
+      case ClaimStatus.offerRejected:
+        return const Color(0xFFEF4444);
       case ClaimStatus.settled:
-        return 4;
+      case ClaimStatus.paid:
+        return const Color.fromARGB(255, 78, 3, 208);
       case ClaimStatus.cancelled:
-        return 0;
+        return const Color(0xFF6B7280);
+      case ClaimStatus.underReview:
+      case ClaimStatus.documented:
+      case ClaimStatus.inspectionSubmitted:
+      case ClaimStatus.repairEstimateRequested:
+      case ClaimStatus.repairEstimateProvided:
+      case ClaimStatus.offerSent:
+        return const Color(0xFFFB923C);
     }
   }
 
