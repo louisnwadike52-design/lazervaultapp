@@ -35,6 +35,7 @@ import 'package:lazervault/src/features/crypto/data/models/crypto_wallet_model.d
 import 'package:lazervault/src/features/crypto/domain/entities/crypto_entity.dart';
 import 'package:lazervault/src/features/crypto/presentation/view/buy_crypto_screen.dart';
 import 'package:lazervault/src/features/crypto/presentation/view/crypto_screen.dart';
+import 'package:lazervault/src/core/grpc/crypto_grpc_client.dart';
 
 // -----------------------------------------------------------------------------
 // Test Configuration
@@ -540,6 +541,56 @@ void main() {
         print('   Note: Actual validation may occur at backend');
       },
       timeout: const Timeout(Duration(minutes: 1)),
+      skip: _testJwtToken.isEmpty,
+    );
+
+    // ================================================================
+    // Rate-quote regression: USDC/NGN + a fallback ticker
+    // ----------------------------------------------------------------
+    // Re-tests the "Rate unavailable" fix end-to-end via the real gRPC
+    // client. USDC/NGN routes through Quidax directly (non-zero
+    // spread); FLOKI/NGN has no Quidax market and must succeed via the
+    // CoinGecko fallback baked into GetCryptoFiatRate. If either path
+    // 404s or returns a zero rate, the buy screen's PriceQuoteCard
+    // would render "Rate unavailable" and we regress on this fix.
+    // ================================================================
+    test(
+      'Rate quote: USDC/NGN returns a positive rate (Quidax path)',
+      () async {
+        final client = serviceLocator<CryptoGrpcClient>();
+        final resp = await client.getExchangeRate(
+          cryptoId: 'usd-coin',
+          fiatCurrency: 'NGN',
+        );
+        print('💱 usd-coin/NGN rate=${resp.rate} fee=${resp.feePercentage} '
+            'spread=${resp.spread}');
+        expect(resp.rate, greaterThan(0),
+            reason: 'USDC/NGN must return a positive rate so the buy '
+                'screen never falls back to the "Rate unavailable" pill.');
+      },
+      timeout: const Timeout(Duration(seconds: 20)),
+      skip: _testJwtToken.isEmpty,
+    );
+
+    test(
+      'Rate quote: FLOKI/NGN succeeds via CoinGecko fallback',
+      () async {
+        final client = serviceLocator<CryptoGrpcClient>();
+        final resp = await client.getExchangeRate(
+          cryptoId: 'floki',
+          fiatCurrency: 'NGN',
+        );
+        print('💱 floki/NGN (fallback) rate=${resp.rate} '
+            'spread=${resp.spread}');
+        expect(resp.rate, greaterThan(0),
+            reason: 'Long-tail pairs Quidax does not list (FLOKI/NGN) '
+                'must still return a rate via the CoinGecko fallback.');
+        expect(resp.spread, equals(0),
+            reason: 'CoinGecko fallback has no order book, so spread '
+                'must be reported as 0 (this is how the UI knows the '
+                'rate is informational, not a tradable quote).');
+      },
+      timeout: const Timeout(Duration(seconds: 20)),
       skip: _testJwtToken.isEmpty,
     );
   });

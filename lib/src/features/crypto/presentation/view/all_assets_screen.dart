@@ -7,6 +7,7 @@ import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
 import '../../domain/entities/crypto_entity.dart';
+import '../widgets/asset_wallet_sheet.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 
 /// Controls what happens when an asset is tapped.
@@ -26,6 +27,11 @@ class _AllAssetsScreenState extends State<AllAssetsScreen> {
   String _searchQuery = '';
   String _selectedFilter = 'All';
   final List<String> _filters = ['All', 'Gainers', 'Losers'];
+  // Symbol of the currently expanded row, or null. We keep a single
+  // expansion at a time so the list stays tidy and the user clearly sees
+  // which asset's choices they're looking at. Tapping the same row
+  // collapses it; tapping a different row swaps the expansion.
+  String? _expandedSymbol;
 
   @override
   void initState() {
@@ -171,7 +177,10 @@ class _AllAssetsScreenState extends State<AllAssetsScreen> {
               ? GestureDetector(
                   onTap: () {
                     _searchController.clear();
-                    setState(() => _searchQuery = '');
+                    setState(() {
+                      _searchQuery = '';
+                      _expandedSymbol = null;
+                    });
                   },
                   child: Icon(Icons.close, color: Colors.white.withValues(alpha: 0.5), size: 18.sp),
                 )
@@ -184,7 +193,13 @@ class _AllAssetsScreenState extends State<AllAssetsScreen> {
           ),
           contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
         ),
-        onChanged: (value) => setState(() => _searchQuery = value),
+        onChanged: (value) => setState(() {
+          _searchQuery = value;
+          // If the user typed a query that hides the previously
+          // expanded asset, collapse it so the dangling chevron+CTAs
+          // don't sit detached from any row.
+          _expandedSymbol = null;
+        }),
       ),
     );
   }
@@ -200,7 +215,10 @@ class _AllAssetsScreenState extends State<AllAssetsScreen> {
           final filter = _filters[index];
           final isSelected = _selectedFilter == filter;
           return GestureDetector(
-            onTap: () => setState(() => _selectedFilter = filter),
+            onTap: () => setState(() {
+              _selectedFilter = filter;
+              _expandedSymbol = null;
+            }),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               margin: EdgeInsets.only(right: 8.w),
@@ -241,12 +259,60 @@ class _AllAssetsScreenState extends State<AllAssetsScreen> {
   Widget _buildAssetItem(Crypto crypto) {
     final change = crypto.priceChangePercentage24h;
     final isPositive = change >= 0;
+    // In browse mode, tapping a row expands it inline to reveal two
+    // CTAs: "Show wallet" (opens the wallet sheet) and "View details"
+    // (navigates to the full asset detail screen). Single-expansion
+    // policy: opening another row collapses the previous one. Buy/sell
+    // modes bypass the accordion entirely and use the original flow
+    // (caller expects an asset to be picked, not browsed).
+    final isExpanded = widget.mode == AssetSelectionMode.browse &&
+        _expandedSymbol == crypto.symbol;
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          // Use Get.toNamed with the registered route for consistency
+    // Brand orange used as the accordion accent. Solid pop on the
+    // dark sheet without competing with the global purple-primary.
+    const accent = Color(0xFFFB923C);
+    return Container(
+      margin: EdgeInsets.only(bottom: 10.h),
+      decoration: BoxDecoration(
+        // When expanded, tint the entire card a warm orange so the
+        // open state reads at a glance. Border picks up the same hue.
+        gradient: isExpanded
+            ? LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  accent.withValues(alpha: 0.18),
+                  accent.withValues(alpha: 0.08),
+                ],
+              )
+            : null,
+        color: isExpanded ? null : const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(14.r),
+        border: isExpanded ? Border.all(color: accent, width: 1.2) : null,
+        boxShadow: isExpanded
+            ? [
+                BoxShadow(
+                  color: accent.withValues(alpha: 0.18),
+                  blurRadius: 14,
+                  offset: const Offset(0, 6),
+                ),
+              ]
+            : null,
+      ),
+      child: Column(
+        children: [
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+          if (widget.mode == AssetSelectionMode.browse) {
+            setState(() {
+              _expandedSymbol = isExpanded ? null : crypto.symbol;
+            });
+            return;
+          }
+          // Buy / sell selection modes go straight to the details
+          // route as before (those callers select an asset to act on).
           Get.toNamed(
             AppRoutes.cryptoDetails,
             arguments: crypto,
@@ -254,12 +320,7 @@ class _AllAssetsScreenState extends State<AllAssetsScreen> {
         },
         borderRadius: BorderRadius.circular(14.r),
         child: Container(
-          margin: EdgeInsets.only(bottom: 10.h),
           padding: EdgeInsets.all(14.w),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1F1F1F),
-            borderRadius: BorderRadius.circular(14.r),
-          ),
           child: Row(
             children: [
             // Crypto icon
@@ -370,13 +431,123 @@ class _AllAssetsScreenState extends State<AllAssetsScreen> {
                     ],
                   ),
                 ),
+                if (widget.mode == AssetSelectionMode.browse) ...[
+                  SizedBox(height: 4.h),
+                  Icon(
+                    isExpanded
+                        ? Icons.keyboard_arrow_up_rounded
+                        : Icons.keyboard_arrow_down_rounded,
+                    color: Colors.white.withValues(alpha: 0.5),
+                    size: 18.sp,
+                  ),
+                ],
               ],
             ),
           ],
         ),
       ),
-    ),
-  );
+            ),
+          ),
+          // Inline accordion drawer. AnimatedSize keeps the toggle gentle.
+          AnimatedSize(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOut,
+            child: isExpanded
+                ? Padding(
+                    padding: EdgeInsets.fromLTRB(14.w, 0, 14.w, 14.h),
+                    child: Column(
+                      children: [
+                        Divider(
+                          color: Colors.white.withValues(alpha: 0.06),
+                          height: 12.h,
+                        ),
+                        Row(children: [
+                          Expanded(child: _accordionCta(
+                            label: 'Show wallet',
+                            icon: Icons.account_balance_wallet_outlined,
+                            onTap: () => _openWalletSheet(crypto),
+                          )),
+                          SizedBox(width: 10.w),
+                          Expanded(child: _accordionCta(
+                            label: 'View details',
+                            icon: Icons.bar_chart_rounded,
+                            primary: true,
+                            onTap: () => _openCryptoDetails(crypto),
+                          )),
+                        ]),
+                      ],
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openWalletSheet(Crypto crypto) {
+    showAssetWalletSheet(
+      context,
+      cryptoSymbol: crypto.symbol,
+      cryptoName: crypto.name,
+      currentPrice: crypto.currentPrice,
+      priceChange24hPct: crypto.priceChangePercentage24h,
+      imageUrl: crypto.image,
+      onViewDetails: () => _openCryptoDetails(crypto),
+    );
+  }
+
+  void _openCryptoDetails(Crypto crypto) {
+    Get.toNamed(AppRoutes.cryptoDetails, arguments: crypto);
+  }
+
+  Widget _accordionCta({
+    required String label,
+    required IconData icon,
+    required VoidCallback onTap,
+    bool primary = false,
+  }) {
+    // Orange-tinted CTAs to harmonize with the orange accordion
+    // background. Primary action gets solid fill; secondary keeps the
+    // softer tint so the two read as a hierarchy.
+    const accent = Color(0xFFFB923C);
+    final bg = primary ? accent : accent.withValues(alpha: 0.18);
+    final fg = primary
+        ? Colors.white.withValues(alpha: 0.98)
+        : accent;
+    final border = primary
+        ? null
+        : Border.all(color: accent.withValues(alpha: 0.45));
+    return Material(
+      color: bg,
+      borderRadius: BorderRadius.circular(10.r),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10.r),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10.r),
+            border: border,
+          ),
+          padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 12.w),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: fg, size: 16.sp),
+              SizedBox(width: 6.w),
+              Text(
+                label,
+                style: GoogleFonts.inter(
+                  color: fg,
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildSymbolFallback(String symbol) {

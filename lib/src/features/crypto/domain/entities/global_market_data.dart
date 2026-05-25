@@ -8,6 +8,9 @@ class GlobalMarketData extends Equatable {
   final int activeCryptocurrencies;
   final int markets;
   final DateTime updatedAt;
+  // Admin-configured crypto disclosure URL (system_settings key
+  // `crypto.disclosure_url`). Empty string = footer hides the CTA.
+  final String disclosureUrl;
 
   const GlobalMarketData({
     required this.totalMarketCap,
@@ -17,6 +20,7 @@ class GlobalMarketData extends Equatable {
     required this.activeCryptocurrencies,
     required this.markets,
     required this.updatedAt,
+    this.disclosureUrl = '',
   });
 
   @override
@@ -28,5 +32,6 @@ class GlobalMarketData extends Equatable {
         activeCryptocurrencies,
         markets,
         updatedAt,
+        disclosureUrl,
       ];
 }

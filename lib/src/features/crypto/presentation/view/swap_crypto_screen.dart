@@ -9,6 +9,7 @@ import '../../cubit/crypto_state.dart';
 import '../../domain/entities/crypto_entity.dart';
 import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
+import '../widgets/asset_wallet_sheet.dart';
 import '../widgets/price_quote_card.dart';
 import 'swap_flow_dispatcher.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
@@ -283,6 +284,47 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
 ],
             ),
           ),
+          // View wallet CTA — opens AssetWalletSheet for the from-side
+          // holding (address + QR + balance + market price). Lighter
+          // text/icon for high contrast against the dark header.
+          if (_fromHolding != null) ...[
+            GestureDetector(
+              onTap: () => showAssetWalletSheet(
+                context,
+                cryptoSymbol: _fromHolding!.cryptoSymbol,
+                cryptoName: _fromHolding!.cryptoName,
+                balance: _fromHolding!.quantity,
+                fiatValue: _fromHolding!.totalValue,
+                currentPrice: _fromHolding!.currentPrice,
+              ),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(255, 78, 3, 208)
+                      .withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(10.r),
+                  border: Border.all(
+                      color: const Color.fromARGB(255, 78, 3, 208)
+                          .withValues(alpha: 0.5)),
+                ),
+                child: Row(children: [
+                  Icon(Icons.account_balance_wallet_outlined,
+                      color: Colors.white.withValues(alpha: 0.92),
+                      size: 16.sp),
+                  SizedBox(width: 6.w),
+                  Text(
+                    'Wallet',
+                    style: GoogleFonts.inter(
+                      color: Colors.white.withValues(alpha: 0.92),
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ]),
+              ),
+            ),
+            SizedBox(width: 8.w),
+          ],
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
@@ -1383,6 +1425,7 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
           fiatAmount: fromAmount,
           description: 'Convert ${fromAmount.toStringAsFixed(6)} '
               '${fromSymbol.toUpperCase()} → ${toSymbol.toUpperCase()}',
+          transactionPin: verificationToken,
         );
 
         if (!mounted) return;

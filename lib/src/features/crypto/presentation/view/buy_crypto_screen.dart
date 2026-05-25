@@ -12,9 +12,13 @@ import '../../../transaction_pin/services/transaction_pin_service.dart';
 import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
 import '../../domain/entities/crypto_entity.dart';
+import '../widgets/asset_wallet_sheet.dart';
 import '../widgets/price_quote_card.dart';
 import 'swap_flow_dispatcher.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
+import '../../../account_cards_summary/domain/entities/account_summary_entity.dart';
 
 class BuyCryptoScreen extends StatefulWidget {
   final Crypto? selectedCrypto;
@@ -226,6 +230,55 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
               ],
             ),
           ),
+          // View wallet CTA — visible once a coin is selected, opens the
+          // shared AssetWalletSheet (deposit address + QR + balance +
+          // market price). Bright orange so it reads as a primary
+          // affordance even on the dark header.
+          if (_selectedCrypto != null) ...[
+            GestureDetector(
+              onTap: () => showAssetWalletSheet(
+                context,
+                cryptoSymbol: _selectedCrypto!.symbol,
+                cryptoName: _selectedCrypto!.name,
+                currentPrice: _selectedCrypto!.currentPrice,
+                priceChange24hPct: _selectedCrypto!.priceChangePercentage24h,
+                imageUrl: _selectedCrypto!.image,
+              ),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFFB923C), Color(0xFFEA580C)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(12.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFB923C).withValues(alpha: 0.45),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(children: [
+                  Icon(Icons.account_balance_wallet_rounded,
+                      color: Colors.white, size: 16.sp),
+                  SizedBox(width: 6.w),
+                  Text(
+                    'Wallet',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ]),
+              ),
+            ),
+            SizedBox(width: 8.w),
+          ],
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
@@ -576,6 +629,9 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
             final sym = CurrencySymbols.currentSymbol;
             final amounts = switch (CurrencySymbols.currentCurrency) {
               'NGN' => [5000, 10000, 25000, 50000],
+              'GHS' => [50, 100, 250, 500],
+              'KES' => [500, 1000, 2500, 5000],
+              'ZAR' => [100, 250, 500, 1000],
               'JPY' => [3000, 5000, 10000, 50000],
               'INR' => [2000, 5000, 10000, 25000],
               _ => [25, 50, 100, 500],
@@ -770,69 +826,133 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
             ],
           ),
           SizedBox(height: 16.h),
-          // LazerVault personal wallet — single payment source
-          Container(
-            padding: EdgeInsets.all(16.w),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
-                  const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(
-                color: const Color.fromARGB(255, 78, 3, 208),
-                width: 2,
-              ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: EdgeInsets.all(10.w),
-                  decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(10.r),
-                  ),
-                  child: Icon(
-                    Icons.account_balance_wallet,
-                    color: const Color.fromARGB(255, 78, 3, 208),
-                    size: 22.sp,
-                  ),
-                ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'LazerVault Wallet',
-                        style: GoogleFonts.inter(
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Text(
-                        'Personal ${CurrencySymbols.currentCurrency} Balance',
-                        style: GoogleFonts.inter(
-                          fontSize: 12.sp,
-                          color: Colors.white.withValues(alpha: 0.6),
-                        ),
-                      ),
+          // LazerVault personal wallet — single payment source. Listens
+          // to AccountCardsSummaryCubit so the spendable balance for
+          // the active fiat is shown live (no manual refresh needed).
+          BlocBuilder<AccountCardsSummaryCubit, AccountCardsSummaryState>(
+            builder: (context, accountState) {
+              final personal = _personalAccountForActiveCurrency(accountState);
+              final hasFunds =
+                  personal != null && personal.availableBalance > 0;
+              final available = personal?.availableBalance ?? 0.0;
+              final canCover =
+                  personal != null && available >= _fiatAmount && _fiatAmount > 0;
+              return Container(
+                padding: EdgeInsets.all(16.w),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.2),
+                      const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.1),
                     ],
                   ),
-                ),
-                Container(
-                  padding: EdgeInsets.all(4.w),
-                  decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(
                     color: const Color.fromARGB(255, 78, 3, 208),
-                    shape: BoxShape.circle,
+                    width: 2,
                   ),
-                  child: Icon(Icons.check, color: Colors.white, size: 14.sp),
                 ),
-              ],
-            ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(10.w),
+                      decoration: BoxDecoration(
+                        color: const Color.fromARGB(255, 78, 3, 208)
+                            .withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(10.r),
+                      ),
+                      child: Icon(
+                        Icons.account_balance_wallet,
+                        color: const Color.fromARGB(255, 78, 3, 208),
+                        size: 22.sp,
+                      ),
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  'LazerVault Wallet',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                              if (accountState is AccountCardsSummaryLoading)
+                                SizedBox(
+                                  width: 12.w,
+                                  height: 12.w,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 1.5,
+                                    valueColor: AlwaysStoppedAnimation(
+                                      Colors.white.withValues(alpha: 0.6),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          SizedBox(height: 2.h),
+                          Text(
+                            'Personal ${CurrencySymbols.currentCurrency} Balance',
+                            style: GoogleFonts.inter(
+                              fontSize: 12.sp,
+                              color: Colors.white.withValues(alpha: 0.6),
+                            ),
+                          ),
+                          SizedBox(height: 6.h),
+                          // Live balance — the number the user needs to
+                          // see before tapping "Buy". Falls back to
+                          // "Balance unavailable" when the cubit hasn't
+                          // hydrated yet (rare; layout still stable).
+                          Text(
+                            personal == null
+                                ? 'Balance unavailable'
+                                : '${CurrencySymbols.currentSymbol}${_formatMoney(available)}',
+                            style: GoogleFonts.inter(
+                              fontSize: 18.sp,
+                              fontWeight: FontWeight.w700,
+                              color: hasFunds
+                                  ? Colors.white
+                                  : Colors.white.withValues(alpha: 0.6),
+                              letterSpacing: -0.3,
+                            ),
+                          ),
+                          if (_fiatAmount > 0 && personal != null) ...[
+                            SizedBox(height: 4.h),
+                            Text(
+                              canCover
+                                  ? 'Enough to cover this purchase'
+                                  : 'Short by ${CurrencySymbols.currentSymbol}${_formatMoney(_fiatAmount - available)}',
+                              style: GoogleFonts.inter(
+                                fontSize: 11.sp,
+                                fontWeight: FontWeight.w600,
+                                color: canCover
+                                    ? const Color(0xFF10B981)
+                                    : const Color(0xFFEF4444),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: EdgeInsets.all(4.w),
+                      decoration: BoxDecoration(
+                        color: const Color.fromARGB(255, 78, 3, 208),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.check, color: Colors.white, size: 14.sp),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
           // Insufficient funds warning
           if (_fiatAmount > 0) ...[
@@ -1384,6 +1504,7 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
           cryptoSymbol: _selectedCrypto!.symbol,
           fiatAmount: fiat,
           description: 'Buy ${quantity.toStringAsFixed(6)} ${_selectedCrypto!.symbol.toUpperCase()}',
+          transactionPin: verificationToken,
         );
 
         if (!mounted) return;
@@ -1403,5 +1524,45 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
     if (!success && mounted) {
       setState(() => _isTransacting = false);
     }
+  }
+
+  // Pick the user's personal account whose currency matches the active
+  // locale fiat — that's the wallet this screen actually debits. Returns
+  // null while the cubit is still hydrating or if the user genuinely has
+  // no personal account for this fiat (rare; shows "Balance unavailable").
+  AccountSummaryEntity? _personalAccountForActiveCurrency(
+      AccountCardsSummaryState state) {
+    final accounts = switch (state) {
+      AccountCardsSummaryLoaded(:final accountSummaries) => accountSummaries,
+      AccountBalanceUpdated(:final accountSummaries) => accountSummaries,
+      _ => const <AccountSummaryEntity>[],
+    };
+    if (accounts.isEmpty) return null;
+    final wantedCcy = CurrencySymbols.currentCurrency.toUpperCase();
+    for (final a in accounts) {
+      if (a.isPersonalAccount && a.currency.toUpperCase() == wantedCcy) {
+        return a;
+      }
+    }
+    return null;
+  }
+
+  // Format a fiat amount with grouped thousands separators. We avoid
+  // the locale-aware NumberFormat here so the output stays consistent
+  // across the screen with the other fiat figures (which also use
+  // toStringAsFixed(2) + a manual symbol).
+  String _formatMoney(double amount) {
+    final neg = amount < 0;
+    final abs = amount.abs();
+    final fixed = abs.toStringAsFixed(2);
+    final parts = fixed.split('.');
+    final whole = parts[0];
+    final frac = parts.length > 1 ? parts[1] : '00';
+    final buf = StringBuffer();
+    for (int i = 0; i < whole.length; i++) {
+      if (i > 0 && (whole.length - i) % 3 == 0) buf.write(',');
+      buf.write(whole[i]);
+    }
+    return '${neg ? '-' : ''}${buf.toString()}.$frac';
   }
 } 

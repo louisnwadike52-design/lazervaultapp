@@ -162,6 +162,15 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
   bool _isLoadingDiscover = true;
   String? _discoverError;
 
+  // Lessons backed by crypto_learn_lessons (migration 031). Grouped
+  // client-side by `category` so the section headers reflect whatever
+  // categories ops has published. Static `_cryptoBasics` / `_tradingConcepts`
+  // arrays are retained only as a fallback when the backend returns
+  // empty (e.g. fresh DB, RPC down).
+  bool _isLoadingLessons = true;
+  String? _lessonsError;
+  Map<String, List<_Lesson>> _backendLessonsByCategory = {};
+
   @override
   void initState() {
     super.initState();
@@ -171,6 +180,97 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
         _loadDiscoverData();
       }
     });
+    _loadLessons();
+  }
+
+  Future<void> _loadLessons() async {
+    setState(() {
+      _isLoadingLessons = true;
+      _lessonsError = null;
+    });
+    try {
+      final res = await _grpcClient.getLearnLessons();
+      if (!mounted) return;
+      final grouped = <String, List<_Lesson>>{};
+      for (final l in res.lessons) {
+        grouped.putIfAbsent(l.category, () => []).add(_Lesson(
+              _iconForName(l.iconName),
+              l.title,
+              _firstLine(l.bodyMd),
+              l.bodyMd,
+            ));
+      }
+      setState(() {
+        _backendLessonsByCategory = grouped;
+        _isLoadingLessons = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _lessonsError = 'Unable to load lessons. Pull down to retry.';
+        _isLoadingLessons = false;
+      });
+    }
+  }
+
+  // Map admin-managed icon_name strings to Flutter Material icons.
+  // Falls back to Icons.school for unknown keys so a typo in the admin
+  // form doesn't blank out the card.
+  IconData _iconForName(String name) {
+    switch (name) {
+      case 'currency_bitcoin':
+        return Icons.currency_bitcoin;
+      case 'auto_awesome':
+        return Icons.auto_awesome;
+      case 'account_balance':
+        return Icons.account_balance;
+      case 'account_balance_wallet':
+        return Icons.account_balance_wallet;
+      case 'link':
+        return Icons.link;
+      case 'bar_chart':
+        return Icons.bar_chart;
+      case 'attach_money':
+        return Icons.attach_money;
+      case 'swap_vert':
+        return Icons.swap_vert;
+      case 'candlestick_chart':
+        return Icons.candlestick_chart;
+      case 'shopping_cart':
+        return Icons.shopping_cart;
+      case 'notifications_active':
+        return Icons.notifications_active;
+      case 'tune':
+        return Icons.tune;
+      case 'shield':
+        return Icons.shield;
+      case 'warning':
+        return Icons.warning;
+      case 'show_chart':
+        return Icons.show_chart;
+      case 'school':
+      default:
+        return Icons.school;
+    }
+  }
+
+  // Markdown body → first-line summary for the collapsed card. Strips
+  // common leading markdown markers so users see the gist, not "**".
+  // Capped at 140 chars + ellipsis — admin-managed bodies can have
+  // long single-line openings and the summary slot is two lines tall.
+  String _firstLine(String md) {
+    final first = md.trim().split('\n').first.trim();
+    final cleaned = first
+        .replaceAll(RegExp(r'^[#>*\-\s]+'), '')
+        .replaceAll(RegExp(r'[*_`]'), '');
+    if (cleaned.length <= 140) return cleaned;
+    return '${cleaned.substring(0, 137).trimRight()}…';
+  }
+
+  String _displayCategory(String cat) {
+    if (cat.isEmpty) return 'Other';
+    final cleaned = cat.replaceAll('_', ' ');
+    return cleaned[0].toUpperCase() + cleaned.substring(1);
   }
 
   @override
@@ -286,18 +386,71 @@ class _LearnEarnScreenState extends State<LearnEarnScreen>
   // LEARN TAB
   // ---------------------------------------------------------------------------
   Widget _buildLearnTab() {
-    return ListView(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
-      children: [
-        _sectionTitle('Crypto Basics', Icons.school),
-        SizedBox(height: 12.h),
-        ..._cryptoBasics.map(_buildLessonCard),
-        SizedBox(height: 28.h),
-        _sectionTitle('Trading Concepts', Icons.trending_up),
-        SizedBox(height: 12.h),
-        ..._tradingConcepts.map(_buildLessonCard),
-        SizedBox(height: 24.h),
-      ],
+    if (_isLoadingLessons && _backendLessonsByCategory.isEmpty) {
+      return const Center(child: CircularProgressIndicator(color: _kAccent));
+    }
+    // Section icon per category. Unknown categories get a generic icon.
+    IconData iconForCategory(String c) {
+      switch (c) {
+        case 'basics':
+          return Icons.school;
+        case 'trading':
+          return Icons.trending_up;
+        case 'security':
+          return Icons.shield;
+        default:
+          return Icons.menu_book;
+      }
+    }
+
+    final useBackend = _backendLessonsByCategory.isNotEmpty;
+    final children = <Widget>[];
+    if (_lessonsError != null && !useBackend) {
+      children.add(Padding(
+        padding: EdgeInsets.symmetric(vertical: 16.h),
+        child: Center(
+          child: Text(
+            _lessonsError!,
+            style: GoogleFonts.inter(color: _kTextSecondary, fontSize: 13.sp),
+          ),
+        ),
+      ));
+    }
+    if (useBackend) {
+      // Preserve a stable order: basics → trading → security → others.
+      final order = ['basics', 'trading', 'security'];
+      final keys = [
+        ...order.where(_backendLessonsByCategory.containsKey),
+        ..._backendLessonsByCategory.keys.where((k) => !order.contains(k)),
+      ];
+      for (final k in keys) {
+        children
+          ..add(_sectionTitle(_displayCategory(k), iconForCategory(k)))
+          ..add(SizedBox(height: 12.h))
+          ..addAll(_backendLessonsByCategory[k]!.map(_buildLessonCard))
+          ..add(SizedBox(height: 28.h));
+      }
+    } else {
+      // Fallback: hardcoded content (covers a fresh DB or an RPC outage).
+      children
+        ..add(_sectionTitle('Crypto Basics', Icons.school))
+        ..add(SizedBox(height: 12.h))
+        ..addAll(_cryptoBasics.map(_buildLessonCard))
+        ..add(SizedBox(height: 28.h))
+        ..add(_sectionTitle('Trading Concepts', Icons.trending_up))
+        ..add(SizedBox(height: 12.h))
+        ..addAll(_tradingConcepts.map(_buildLessonCard))
+        ..add(SizedBox(height: 24.h));
+    }
+    return RefreshIndicator(
+      color: _kAccent,
+      backgroundColor: _kCard,
+      onRefresh: _loadLessons,
+      child: ListView(
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: children,
+      ),
     );
   }
 

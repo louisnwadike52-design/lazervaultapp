@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -5,8 +6,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 
+import 'package:lazervault/core/services/locale_manager.dart';
+
 import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
+import '../../../authentication/cubit/authentication_cubit.dart';
+import '../../../authentication/cubit/authentication_state.dart';
 import '../../cubit/crypto_config_cubit.dart';
 import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
@@ -44,14 +49,31 @@ Future<SwapFlowResult> runSwapFlow({
   required String side, // "buy" | "sell" | "convert"
   required String cryptoSymbol, // e.g. "usdt"
   required double fiatAmount, // major units, e.g. 1000 NGN
-  String fiatCurrency = 'ngn', // Quidax convention is lowercase
+  // When empty, resolved from LocaleManager.currentCurrency below.
+  // Defaulting to a hardcoded "ngn" used to silently label every GHS
+  // user's trade as NGN — the user's active locale is the source of truth.
+  String fiatCurrency = '',
   // PR9d — for "convert" callers, this is the from-side crypto symbol.
   // The dispatcher then routes the saga as a crypto-to-crypto swap.
   String fromCryptoSymbol = '',
   String description = '',
+  // Transaction PIN (verification token from the PIN sheet). Held by the
+  // cubit and forwarded to ConfirmSwap for the server-side PIN gate.
+  String transactionPin = '',
 }) async {
   if (side != 'buy' && side != 'sell' && side != 'convert') {
     return const SwapFlowResult.error('Invalid side');
+  }
+  // Resolve fiat from the user's active locale when the caller didn't
+  // pass one explicitly. Quidax wants lowercase tickers.
+  if (fiatCurrency.trim().isEmpty) {
+    try {
+      fiatCurrency = GetIt.I<LocaleManager>().currentCurrency.toLowerCase();
+    } catch (_) {
+      fiatCurrency = 'ngn'; // last-resort fallback; only when DI isn't wired
+    }
+  } else {
+    fiatCurrency = fiatCurrency.toLowerCase();
   }
 
   // Min-order pre-check (PR5a.4 + PR5d.4). Read the per-currency floor from
@@ -134,16 +156,27 @@ Future<SwapFlowResult> runSwapFlow({
     toCurrency: toCurrency,
     fromAmountMinorUnits: fromAmountMinor,
     description: description,
+    transactionPin: transactionPin,
   );
 
   // Bail early if the create failed before the modal even opens.
   if (cubit.state is SwapFailed) {
     final st = cubit.state as SwapFailed;
+    // Compensation path: accounts-service released the hold (or never
+    // placed one). Refresh the balance card so the user sees the real
+    // state — otherwise stale "available" lingers from before the tap.
+    if (context.mounted) _kickAccountSummariesRefresh(context);
     return SwapFlowResult.error(st.message);
   }
   if (cubit.state is! SwapQuotePending) {
     return const SwapFlowResult.error('Unable to create swap quote.');
   }
+
+  // PR12 — no balance refresh here. CreateSwapQuote is display-only
+  // now; the user's NGN isn't touched until they tap Confirm and the
+  // saga places the hold + recomputes against Quidax. Refreshing the
+  // balance card after CreateSwapQuote would be a wasted RPC (and
+  // momentarily misleading — there's no hold to show).
 
   // Step 3 — modal: 15s timer, auto-refresh, Confirm/Cancel.
   if (!context.mounted) return const SwapFlowResult.initiated();
@@ -157,9 +190,25 @@ Future<SwapFlowResult> runSwapFlow({
   // terminal, then forwards to the crypto_receipt_screen.
   final terminal = cubit.state;
   if (terminal is SwapFailed) {
+    // PR14: saga persisted the failed row + enqueued a rollback record.
+    // Refresh transactions so the user sees "Trade failed" in history
+    // on return to dashboard. Holdings refresh is harmless here (no
+    // crypto moved on a failed buy) but cheap so we keep one call site.
+    if (context.mounted) {
+      unawaited(context.read<CryptoCubit>().refreshHoldingsAfterSwap());
+    }
+    // Compensation path: hold released by the saga, NGN restored. Same
+    // refresh story as the early-fail branch above.
+    if (context.mounted) _kickAccountSummariesRefresh(context);
     // Modal already closed; surface the error and let the screen recover.
     return SwapFlowResult.error(terminal.message);
   }
+
+  // Post-confirm balance refresh: on SwapCompleted the captureHold
+  // committed (balance debited; reserved cleared); on SwapPending the
+  // hold remains. Either way the user-visible figures have changed
+  // since the buy screen first loaded, so re-pull.
+  _kickAccountSummariesRefresh(context);
 
   // Build the details payload for the receipt UI. We don't have all the
   // server-known numbers yet (fees, exact fill); the receipt screen
@@ -300,6 +349,41 @@ String _formatMajor(double value, String currency) {
   }
   return value.toString();
 }
+
+// _kickAccountSummariesRefresh fires a non-blocking refresh of the
+// dashboard balance card. We call this at every swap state transition
+// where accounts-service mutates balances:
+//   • after CreateSwapQuote (hold placed)
+//   • after ConfirmSwap (hold captured → balance debited)
+//   • after SwapFailed (hold released → balance restored)
+// Without this the balance card lags until the user pulls-to-refresh
+// because HoldFunds / CaptureHold / ReleaseHold don't publish a
+// balance.changed Kafka event the BalanceWebSocketService listens to.
+//
+// Silent-on-error: a stale balance card is preferable to a thrown
+// exception derailing the swap flow. The next manual fetch (next
+// navigation / pull-to-refresh) will catch up.
+void _kickAccountSummariesRefresh(BuildContext context) {
+  try {
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) return;
+    final profile = authState.profile;
+    final userId = profile.user.id;
+    final accessToken = profile.session.accessToken;
+    if (userId.isEmpty || accessToken.isEmpty) return;
+    // Don't await — the caller is in a hot path and the balance card
+    // shouldn't block UI navigation.
+    unawaited(context.read<AccountCardsSummaryCubit>().fetchAccountSummaries(
+          userId: userId,
+          accessToken: accessToken,
+        ));
+  } catch (_) {
+    // Cubit/context not available (shouldn't happen — both are app-root
+    // providers). Swallow so we never poison the swap flow.
+  }
+}
+
+// (dart:async provides `unawaited` — no local shim needed.)
 
 // _toast and _backgroundPoll were removed when the post-modal flow moved
 // to CryptoSwapProcessingScreen. The processing screen owns the polling

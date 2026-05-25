@@ -361,6 +361,333 @@ class CryptoServiceClient extends $grpc.Client {
       ($12.GetUserCryptoFreezeRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
           $12.GetUserCryptoFreezeResponse.fromBuffer(value));
+  static final _$getCryptoConfig = $grpc.ClientMethod<
+          $12.GetCryptoConfigRequest, $12.GetCryptoConfigResponse>(
+      '/pb.CryptoService/GetCryptoConfig',
+      ($12.GetCryptoConfigRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.GetCryptoConfigResponse.fromBuffer(value));
+  static final _$withdraw =
+      $grpc.ClientMethod<$12.WithdrawRequest, $12.WithdrawResponse>(
+          '/pb.CryptoService/Withdraw',
+          ($12.WithdrawRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $12.WithdrawResponse.fromBuffer(value));
+  static final _$getCryptoWithdrawalStatus = $grpc.ClientMethod<
+          $12.GetCryptoWithdrawalStatusRequest,
+          $12.GetCryptoWithdrawalStatusResponse>(
+      '/pb.CryptoService/GetCryptoWithdrawalStatus',
+      ($12.GetCryptoWithdrawalStatusRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.GetCryptoWithdrawalStatusResponse.fromBuffer(value));
+  static final _$getUserCryptoWithdrawals = $grpc.ClientMethod<
+          $12.GetUserCryptoWithdrawalsRequest,
+          $12.GetUserCryptoWithdrawalsResponse>(
+      '/pb.CryptoService/GetUserCryptoWithdrawals',
+      ($12.GetUserCryptoWithdrawalsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.GetUserCryptoWithdrawalsResponse.fromBuffer(value));
+  static final _$getSupportedAssetNetworks = $grpc.ClientMethod<
+          $12.GetSupportedAssetNetworksRequest,
+          $12.GetSupportedAssetNetworksResponse>(
+      '/pb.CryptoService/GetSupportedAssetNetworks',
+      ($12.GetSupportedAssetNetworksRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.GetSupportedAssetNetworksResponse.fromBuffer(value));
+  static final _$ensureWalletAddress = $grpc.ClientMethod<
+          $12.EnsureWalletAddressRequest, $12.EnsureWalletAddressResponse>(
+      '/pb.CryptoService/EnsureWalletAddress',
+      ($12.EnsureWalletAddressRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.EnsureWalletAddressResponse.fromBuffer(value));
+  static final _$getUserCryptoDeposits = $grpc.ClientMethod<
+          $12.GetUserCryptoDepositsRequest, $12.GetUserCryptoDepositsResponse>(
+      '/pb.CryptoService/GetUserCryptoDeposits',
+      ($12.GetUserCryptoDepositsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.GetUserCryptoDepositsResponse.fromBuffer(value));
+  static final _$adminListAssetNetworks = $grpc.ClientMethod<
+          $12.AdminListAssetNetworksRequest,
+          $12.AdminListAssetNetworksResponse>(
+      '/pb.CryptoService/AdminListAssetNetworks',
+      ($12.AdminListAssetNetworksRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.AdminListAssetNetworksResponse.fromBuffer(value));
+  static final _$adminUpdateAssetNetwork = $grpc.ClientMethod<
+          $12.AdminUpdateAssetNetworkRequest,
+          $12.AdminUpdateAssetNetworkResponse>(
+      '/pb.CryptoService/AdminUpdateAssetNetwork',
+      ($12.AdminUpdateAssetNetworkRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.AdminUpdateAssetNetworkResponse.fromBuffer(value));
+  static final _$adminListSupportedMarkets = $grpc.ClientMethod<
+          $12.AdminListSupportedMarketsRequest,
+          $12.AdminListSupportedMarketsResponse>(
+      '/pb.CryptoService/AdminListSupportedMarkets',
+      ($12.AdminListSupportedMarketsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.AdminListSupportedMarketsResponse.fromBuffer(value));
+  static final _$adminUpdateSupportedMarket = $grpc.ClientMethod<
+          $12.AdminUpdateSupportedMarketRequest,
+          $12.AdminUpdateSupportedMarketResponse>(
+      '/pb.CryptoService/AdminUpdateSupportedMarket',
+      ($12.AdminUpdateSupportedMarketRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.AdminUpdateSupportedMarketResponse.fromBuffer(value));
+  static final _$adminListAssets = $grpc.ClientMethod<
+          $12.AdminListAssetsRequest, $12.AdminListAssetsResponse>(
+      '/pb.CryptoService/AdminListAssets',
+      ($12.AdminListAssetsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.AdminListAssetsResponse.fromBuffer(value));
+  static final _$adminSetAssetOverride = $grpc.ClientMethod<
+          $12.AdminSetAssetOverrideRequest, $12.AdminSetAssetOverrideResponse>(
+      '/pb.CryptoService/AdminSetAssetOverride',
+      ($12.AdminSetAssetOverrideRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.AdminSetAssetOverrideResponse.fromBuffer(value));
+  static final _$adminSetGlobalAssetVisibility = $grpc.ClientMethod<
+          $12.AdminSetGlobalAssetVisibilityRequest,
+          $12.AdminSetGlobalAssetVisibilityResponse>(
+      '/pb.CryptoService/AdminSetGlobalAssetVisibility',
+      ($12.AdminSetGlobalAssetVisibilityRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.AdminSetGlobalAssetVisibilityResponse.fromBuffer(value));
+  static final _$adminGetBridgeMetrics = $grpc.ClientMethod<
+          $12.AdminGetBridgeMetricsRequest, $12.AdminGetBridgeMetricsResponse>(
+      '/pb.CryptoService/AdminGetBridgeMetrics',
+      ($12.AdminGetBridgeMetricsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.AdminGetBridgeMetricsResponse.fromBuffer(value));
+  static final _$adminToggleBridge = $grpc.ClientMethod<
+          $12.AdminToggleBridgeRequest, $12.AdminToggleBridgeResponse>(
+      '/pb.CryptoService/AdminToggleBridge',
+      ($12.AdminToggleBridgeRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.AdminToggleBridgeResponse.fromBuffer(value));
+  static final _$adminListCompensations = $grpc.ClientMethod<
+          $12.AdminListCompensationsRequest,
+          $12.AdminListCompensationsResponse>(
+      '/pb.CryptoService/AdminListCompensations',
+      ($12.AdminListCompensationsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.AdminListCompensationsResponse.fromBuffer(value));
+  static final _$adminGetCompensationDetail = $grpc.ClientMethod<
+          $12.AdminGetCompensationDetailRequest,
+          $12.AdminGetCompensationDetailResponse>(
+      '/pb.CryptoService/AdminGetCompensationDetail',
+      ($12.AdminGetCompensationDetailRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.AdminGetCompensationDetailResponse.fromBuffer(value));
+  static final _$adminRetryCompensation = $grpc.ClientMethod<
+          $12.AdminRetryCompensationRequest,
+          $12.AdminRetryCompensationResponse>(
+      '/pb.CryptoService/AdminRetryCompensation',
+      ($12.AdminRetryCompensationRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.AdminRetryCompensationResponse.fromBuffer(value));
+  static final _$adminWriteOffCompensation = $grpc.ClientMethod<
+          $12.AdminWriteOffCompensationRequest,
+          $12.AdminWriteOffCompensationResponse>(
+      '/pb.CryptoService/AdminWriteOffCompensation',
+      ($12.AdminWriteOffCompensationRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.AdminWriteOffCompensationResponse.fromBuffer(value));
+  static final _$createSwapQuote = $grpc.ClientMethod<
+          $12.CreateSwapQuoteRequest, $12.CreateSwapQuoteResponse>(
+      '/pb.CryptoService/CreateSwapQuote',
+      ($12.CreateSwapQuoteRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.CreateSwapQuoteResponse.fromBuffer(value));
+  static final _$refreshSwapQuote = $grpc.ClientMethod<
+          $12.RefreshSwapQuoteRequest, $12.RefreshSwapQuoteResponse>(
+      '/pb.CryptoService/RefreshSwapQuote',
+      ($12.RefreshSwapQuoteRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.RefreshSwapQuoteResponse.fromBuffer(value));
+  static final _$confirmSwap =
+      $grpc.ClientMethod<$12.ConfirmSwapRequest, $12.ConfirmSwapResponse>(
+          '/pb.CryptoService/ConfirmSwap',
+          ($12.ConfirmSwapRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $12.ConfirmSwapResponse.fromBuffer(value));
+  static final _$getSwapStatus =
+      $grpc.ClientMethod<$12.GetSwapStatusRequest, $12.GetSwapStatusResponse>(
+          '/pb.CryptoService/GetSwapStatus',
+          ($12.GetSwapStatusRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $12.GetSwapStatusResponse.fromBuffer(value));
+  static final _$adminGetMasterFloat = $grpc.ClientMethod<
+          $12.AdminGetMasterFloatRequest, $12.AdminGetMasterFloatResponse>(
+      '/pb.CryptoService/AdminGetMasterFloat',
+      ($12.AdminGetMasterFloatRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.AdminGetMasterFloatResponse.fromBuffer(value));
+  static final _$adminTriggerMasterFloatRecon = $grpc.ClientMethod<
+          $12.AdminTriggerMasterFloatReconRequest,
+          $12.AdminTriggerMasterFloatReconResponse>(
+      '/pb.CryptoService/AdminTriggerMasterFloatRecon',
+      ($12.AdminTriggerMasterFloatReconRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.AdminTriggerMasterFloatReconResponse.fromBuffer(value));
+  static final _$adminPushMasterFloat = $grpc.ClientMethod<
+          $12.AdminPushMasterFloatRequest, $12.AdminPushMasterFloatResponse>(
+      '/pb.CryptoService/AdminPushMasterFloat',
+      ($12.AdminPushMasterFloatRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.AdminPushMasterFloatResponse.fromBuffer(value));
+  static final _$adminListSwapTransactions = $grpc.ClientMethod<
+          $12.AdminListSwapTransactionsRequest,
+          $12.AdminListSwapTransactionsResponse>(
+      '/pb.CryptoService/AdminListSwapTransactions',
+      ($12.AdminListSwapTransactionsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.AdminListSwapTransactionsResponse.fromBuffer(value));
+  static final _$adminGetSwapTransactionDetail = $grpc.ClientMethod<
+          $12.AdminGetSwapTransactionDetailRequest,
+          $12.AdminGetSwapTransactionDetailResponse>(
+      '/pb.CryptoService/AdminGetSwapTransactionDetail',
+      ($12.AdminGetSwapTransactionDetailRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.AdminGetSwapTransactionDetailResponse.fromBuffer(value));
+  static final _$adminListRollbacks = $grpc.ClientMethod<
+          $12.AdminListRollbacksRequest, $12.AdminListRollbacksResponse>(
+      '/pb.CryptoService/AdminListRollbacks',
+      ($12.AdminListRollbacksRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.AdminListRollbacksResponse.fromBuffer(value));
+  static final _$adminRetryRollbackPhase = $grpc.ClientMethod<
+          $12.AdminRetryRollbackPhaseRequest,
+          $12.AdminRetryRollbackPhaseResponse>(
+      '/pb.CryptoService/AdminRetryRollbackPhase',
+      ($12.AdminRetryRollbackPhaseRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.AdminRetryRollbackPhaseResponse.fromBuffer(value));
+  static final _$adminGetQuidaxConfig = $grpc.ClientMethod<
+          $12.AdminGetQuidaxConfigRequest, $12.AdminGetQuidaxConfigResponse>(
+      '/pb.CryptoService/AdminGetQuidaxConfig',
+      ($12.AdminGetQuidaxConfigRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.AdminGetQuidaxConfigResponse.fromBuffer(value));
+  static final _$adminUpdateQuidaxConfig = $grpc.ClientMethod<
+          $12.AdminUpdateQuidaxConfigRequest,
+          $12.AdminUpdateQuidaxConfigResponse>(
+      '/pb.CryptoService/AdminUpdateQuidaxConfig',
+      ($12.AdminUpdateQuidaxConfigRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.AdminUpdateQuidaxConfigResponse.fromBuffer(value));
+  static final _$adminGetSubAccount = $grpc.ClientMethod<
+          $12.AdminGetSubAccountRequest, $12.AdminGetSubAccountResponse>(
+      '/pb.CryptoService/AdminGetSubAccount',
+      ($12.AdminGetSubAccountRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.AdminGetSubAccountResponse.fromBuffer(value));
+  static final _$adminListSubAccounts = $grpc.ClientMethod<
+          $12.AdminListSubAccountsRequest, $12.AdminListSubAccountsResponse>(
+      '/pb.CryptoService/AdminListSubAccounts',
+      ($12.AdminListSubAccountsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.AdminListSubAccountsResponse.fromBuffer(value));
+  static final _$adminListDeposits = $grpc.ClientMethod<
+          $12.AdminListDepositsRequest, $12.AdminListDepositsResponse>(
+      '/pb.CryptoService/AdminListDeposits',
+      ($12.AdminListDepositsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.AdminListDepositsResponse.fromBuffer(value));
+  static final _$adminListWithdrawals = $grpc.ClientMethod<
+          $12.AdminListWithdrawalsRequest, $12.AdminListWithdrawalsResponse>(
+      '/pb.CryptoService/AdminListWithdrawals',
+      ($12.AdminListWithdrawalsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.AdminListWithdrawalsResponse.fromBuffer(value));
+  static final _$adminListOrphanWebhooks = $grpc.ClientMethod<
+          $12.AdminListOrphanWebhooksRequest,
+          $12.AdminListOrphanWebhooksResponse>(
+      '/pb.CryptoService/AdminListOrphanWebhooks',
+      ($12.AdminListOrphanWebhooksRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.AdminListOrphanWebhooksResponse.fromBuffer(value));
+  static final _$adminDropOrphanWebhook = $grpc.ClientMethod<
+          $12.AdminDropOrphanWebhookRequest,
+          $12.AdminDropOrphanWebhookResponse>(
+      '/pb.CryptoService/AdminDropOrphanWebhook',
+      ($12.AdminDropOrphanWebhookRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.AdminDropOrphanWebhookResponse.fromBuffer(value));
+  static final _$adminGetRollbackDetail = $grpc.ClientMethod<
+          $12.AdminGetRollbackDetailRequest,
+          $12.AdminGetRollbackDetailResponse>(
+      '/pb.CryptoService/AdminGetRollbackDetail',
+      ($12.AdminGetRollbackDetailRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.AdminGetRollbackDetailResponse.fromBuffer(value));
+  static final _$getPriceAlertWorkerStatus = $grpc.ClientMethod<
+          $12.GetPriceAlertWorkerStatusRequest,
+          $12.GetPriceAlertWorkerStatusResponse>(
+      '/pb.CryptoService/GetPriceAlertWorkerStatus',
+      ($12.GetPriceAlertWorkerStatusRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.GetPriceAlertWorkerStatusResponse.fromBuffer(value));
+  static final _$updatePriceAlertWorkerConfig = $grpc.ClientMethod<
+          $12.UpdatePriceAlertWorkerConfigRequest,
+          $12.UpdatePriceAlertWorkerConfigResponse>(
+      '/pb.CryptoService/UpdatePriceAlertWorkerConfig',
+      ($12.UpdatePriceAlertWorkerConfigRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.UpdatePriceAlertWorkerConfigResponse.fromBuffer(value));
+  static final _$triggerPriceAlertWorkerNow = $grpc.ClientMethod<
+          $12.TriggerPriceAlertWorkerNowRequest,
+          $12.TriggerPriceAlertWorkerNowResponse>(
+      '/pb.CryptoService/TriggerPriceAlertWorkerNow',
+      ($12.TriggerPriceAlertWorkerNowRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.TriggerPriceAlertWorkerNowResponse.fromBuffer(value));
+  static final _$adminListPriceAlerts = $grpc.ClientMethod<
+          $12.AdminListPriceAlertsRequest, $12.AdminListPriceAlertsResponse>(
+      '/pb.CryptoService/AdminListPriceAlerts',
+      ($12.AdminListPriceAlertsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.AdminListPriceAlertsResponse.fromBuffer(value));
+  static final _$adminForceTriggerPriceAlert = $grpc.ClientMethod<
+          $12.AdminForceTriggerPriceAlertRequest,
+          $12.AdminForceTriggerPriceAlertResponse>(
+      '/pb.CryptoService/AdminForceTriggerPriceAlert',
+      ($12.AdminForceTriggerPriceAlertRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.AdminForceTriggerPriceAlertResponse.fromBuffer(value));
+  static final _$adminDisablePriceAlert = $grpc.ClientMethod<
+          $12.AdminDisablePriceAlertRequest,
+          $12.AdminDisablePriceAlertResponse>(
+      '/pb.CryptoService/AdminDisablePriceAlert',
+      ($12.AdminDisablePriceAlertRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.AdminDisablePriceAlertResponse.fromBuffer(value));
+  static final _$getLearnLessons = $grpc.ClientMethod<
+          $12.GetLearnLessonsRequest, $12.GetLearnLessonsResponse>(
+      '/pb.CryptoService/GetLearnLessons',
+      ($12.GetLearnLessonsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.GetLearnLessonsResponse.fromBuffer(value));
+  static final _$adminListLearnLessons = $grpc.ClientMethod<
+          $12.AdminListLearnLessonsRequest, $12.AdminListLearnLessonsResponse>(
+      '/pb.CryptoService/AdminListLearnLessons',
+      ($12.AdminListLearnLessonsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.AdminListLearnLessonsResponse.fromBuffer(value));
+  static final _$adminUpsertLearnLesson = $grpc.ClientMethod<
+          $12.AdminUpsertLearnLessonRequest,
+          $12.AdminUpsertLearnLessonResponse>(
+      '/pb.CryptoService/AdminUpsertLearnLesson',
+      ($12.AdminUpsertLearnLessonRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.AdminUpsertLearnLessonResponse.fromBuffer(value));
+  static final _$adminDeleteLearnLesson = $grpc.ClientMethod<
+          $12.AdminDeleteLearnLessonRequest,
+          $12.AdminDeleteLearnLessonResponse>(
+      '/pb.CryptoService/AdminDeleteLearnLesson',
+      ($12.AdminDeleteLearnLessonRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $12.AdminDeleteLearnLessonResponse.fromBuffer(value));
 
   CryptoServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -714,6 +1041,338 @@ class CryptoServiceClient extends $grpc.Client {
       $12.GetUserCryptoFreezeRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getUserCryptoFreeze, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.GetCryptoConfigResponse> getCryptoConfig(
+      $12.GetCryptoConfigRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getCryptoConfig, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.WithdrawResponse> withdraw(
+      $12.WithdrawRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$withdraw, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.GetCryptoWithdrawalStatusResponse>
+      getCryptoWithdrawalStatus($12.GetCryptoWithdrawalStatusRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getCryptoWithdrawalStatus, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$12.GetUserCryptoWithdrawalsResponse>
+      getUserCryptoWithdrawals($12.GetUserCryptoWithdrawalsRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getUserCryptoWithdrawals, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$12.GetSupportedAssetNetworksResponse>
+      getSupportedAssetNetworks($12.GetSupportedAssetNetworksRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getSupportedAssetNetworks, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$12.EnsureWalletAddressResponse> ensureWalletAddress(
+      $12.EnsureWalletAddressRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$ensureWalletAddress, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.GetUserCryptoDepositsResponse> getUserCryptoDeposits(
+      $12.GetUserCryptoDepositsRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getUserCryptoDeposits, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.AdminListAssetNetworksResponse>
+      adminListAssetNetworks($12.AdminListAssetNetworksRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminListAssetNetworks, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$12.AdminUpdateAssetNetworkResponse>
+      adminUpdateAssetNetwork($12.AdminUpdateAssetNetworkRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminUpdateAssetNetwork, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$12.AdminListSupportedMarketsResponse>
+      adminListSupportedMarkets($12.AdminListSupportedMarketsRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminListSupportedMarkets, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$12.AdminUpdateSupportedMarketResponse>
+      adminUpdateSupportedMarket($12.AdminUpdateSupportedMarketRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminUpdateSupportedMarket, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$12.AdminListAssetsResponse> adminListAssets(
+      $12.AdminListAssetsRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminListAssets, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.AdminSetAssetOverrideResponse> adminSetAssetOverride(
+      $12.AdminSetAssetOverrideRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminSetAssetOverride, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.AdminSetGlobalAssetVisibilityResponse>
+      adminSetGlobalAssetVisibility(
+          $12.AdminSetGlobalAssetVisibilityRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminSetGlobalAssetVisibility, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$12.AdminGetBridgeMetricsResponse> adminGetBridgeMetrics(
+      $12.AdminGetBridgeMetricsRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminGetBridgeMetrics, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.AdminToggleBridgeResponse> adminToggleBridge(
+      $12.AdminToggleBridgeRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminToggleBridge, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.AdminListCompensationsResponse>
+      adminListCompensations($12.AdminListCompensationsRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminListCompensations, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$12.AdminGetCompensationDetailResponse>
+      adminGetCompensationDetail($12.AdminGetCompensationDetailRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminGetCompensationDetail, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$12.AdminRetryCompensationResponse>
+      adminRetryCompensation($12.AdminRetryCompensationRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminRetryCompensation, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$12.AdminWriteOffCompensationResponse>
+      adminWriteOffCompensation($12.AdminWriteOffCompensationRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminWriteOffCompensation, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$12.CreateSwapQuoteResponse> createSwapQuote(
+      $12.CreateSwapQuoteRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$createSwapQuote, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.RefreshSwapQuoteResponse> refreshSwapQuote(
+      $12.RefreshSwapQuoteRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$refreshSwapQuote, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.ConfirmSwapResponse> confirmSwap(
+      $12.ConfirmSwapRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$confirmSwap, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.GetSwapStatusResponse> getSwapStatus(
+      $12.GetSwapStatusRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getSwapStatus, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.AdminGetMasterFloatResponse> adminGetMasterFloat(
+      $12.AdminGetMasterFloatRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminGetMasterFloat, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.AdminTriggerMasterFloatReconResponse>
+      adminTriggerMasterFloatRecon(
+          $12.AdminTriggerMasterFloatReconRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminTriggerMasterFloatRecon, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$12.AdminPushMasterFloatResponse> adminPushMasterFloat(
+      $12.AdminPushMasterFloatRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminPushMasterFloat, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.AdminListSwapTransactionsResponse>
+      adminListSwapTransactions($12.AdminListSwapTransactionsRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminListSwapTransactions, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$12.AdminGetSwapTransactionDetailResponse>
+      adminGetSwapTransactionDetail(
+          $12.AdminGetSwapTransactionDetailRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminGetSwapTransactionDetail, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$12.AdminListRollbacksResponse> adminListRollbacks(
+      $12.AdminListRollbacksRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminListRollbacks, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.AdminRetryRollbackPhaseResponse>
+      adminRetryRollbackPhase($12.AdminRetryRollbackPhaseRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminRetryRollbackPhase, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$12.AdminGetQuidaxConfigResponse> adminGetQuidaxConfig(
+      $12.AdminGetQuidaxConfigRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminGetQuidaxConfig, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.AdminUpdateQuidaxConfigResponse>
+      adminUpdateQuidaxConfig($12.AdminUpdateQuidaxConfigRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminUpdateQuidaxConfig, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$12.AdminGetSubAccountResponse> adminGetSubAccount(
+      $12.AdminGetSubAccountRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminGetSubAccount, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.AdminListSubAccountsResponse> adminListSubAccounts(
+      $12.AdminListSubAccountsRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminListSubAccounts, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.AdminListDepositsResponse> adminListDeposits(
+      $12.AdminListDepositsRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminListDeposits, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.AdminListWithdrawalsResponse> adminListWithdrawals(
+      $12.AdminListWithdrawalsRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminListWithdrawals, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.AdminListOrphanWebhooksResponse>
+      adminListOrphanWebhooks($12.AdminListOrphanWebhooksRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminListOrphanWebhooks, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$12.AdminDropOrphanWebhookResponse>
+      adminDropOrphanWebhook($12.AdminDropOrphanWebhookRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminDropOrphanWebhook, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$12.AdminGetRollbackDetailResponse>
+      adminGetRollbackDetail($12.AdminGetRollbackDetailRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminGetRollbackDetail, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$12.GetPriceAlertWorkerStatusResponse>
+      getPriceAlertWorkerStatus($12.GetPriceAlertWorkerStatusRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getPriceAlertWorkerStatus, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$12.UpdatePriceAlertWorkerConfigResponse>
+      updatePriceAlertWorkerConfig(
+          $12.UpdatePriceAlertWorkerConfigRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$updatePriceAlertWorkerConfig, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$12.TriggerPriceAlertWorkerNowResponse>
+      triggerPriceAlertWorkerNow($12.TriggerPriceAlertWorkerNowRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$triggerPriceAlertWorkerNow, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$12.AdminListPriceAlertsResponse> adminListPriceAlerts(
+      $12.AdminListPriceAlertsRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminListPriceAlerts, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.AdminForceTriggerPriceAlertResponse>
+      adminForceTriggerPriceAlert(
+          $12.AdminForceTriggerPriceAlertRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminForceTriggerPriceAlert, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$12.AdminDisablePriceAlertResponse>
+      adminDisablePriceAlert($12.AdminDisablePriceAlertRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminDisablePriceAlert, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$12.GetLearnLessonsResponse> getLearnLessons(
+      $12.GetLearnLessonsRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getLearnLessons, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.AdminListLearnLessonsResponse> adminListLearnLessons(
+      $12.AdminListLearnLessonsRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminListLearnLessons, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$12.AdminUpsertLearnLessonResponse>
+      adminUpsertLearnLesson($12.AdminUpsertLearnLessonRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminUpsertLearnLesson, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$12.AdminDeleteLearnLessonResponse>
+      adminDeleteLearnLesson($12.AdminDeleteLearnLessonRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminDeleteLearnLesson, request,
+        options: options);
   }
 }
 
@@ -1233,6 +1892,468 @@ abstract class CryptoServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $12.GetUserCryptoFreezeRequest.fromBuffer(value),
         ($12.GetUserCryptoFreezeResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.GetCryptoConfigRequest,
+            $12.GetCryptoConfigResponse>(
+        'GetCryptoConfig',
+        getCryptoConfig_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.GetCryptoConfigRequest.fromBuffer(value),
+        ($12.GetCryptoConfigResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.WithdrawRequest, $12.WithdrawResponse>(
+        'Withdraw',
+        withdraw_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $12.WithdrawRequest.fromBuffer(value),
+        ($12.WithdrawResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.GetCryptoWithdrawalStatusRequest,
+            $12.GetCryptoWithdrawalStatusResponse>(
+        'GetCryptoWithdrawalStatus',
+        getCryptoWithdrawalStatus_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.GetCryptoWithdrawalStatusRequest.fromBuffer(value),
+        ($12.GetCryptoWithdrawalStatusResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.GetUserCryptoWithdrawalsRequest,
+            $12.GetUserCryptoWithdrawalsResponse>(
+        'GetUserCryptoWithdrawals',
+        getUserCryptoWithdrawals_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.GetUserCryptoWithdrawalsRequest.fromBuffer(value),
+        ($12.GetUserCryptoWithdrawalsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.GetSupportedAssetNetworksRequest,
+            $12.GetSupportedAssetNetworksResponse>(
+        'GetSupportedAssetNetworks',
+        getSupportedAssetNetworks_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.GetSupportedAssetNetworksRequest.fromBuffer(value),
+        ($12.GetSupportedAssetNetworksResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.EnsureWalletAddressRequest,
+            $12.EnsureWalletAddressResponse>(
+        'EnsureWalletAddress',
+        ensureWalletAddress_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.EnsureWalletAddressRequest.fromBuffer(value),
+        ($12.EnsureWalletAddressResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.GetUserCryptoDepositsRequest,
+            $12.GetUserCryptoDepositsResponse>(
+        'GetUserCryptoDeposits',
+        getUserCryptoDeposits_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.GetUserCryptoDepositsRequest.fromBuffer(value),
+        ($12.GetUserCryptoDepositsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.AdminListAssetNetworksRequest,
+            $12.AdminListAssetNetworksResponse>(
+        'AdminListAssetNetworks',
+        adminListAssetNetworks_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.AdminListAssetNetworksRequest.fromBuffer(value),
+        ($12.AdminListAssetNetworksResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.AdminUpdateAssetNetworkRequest,
+            $12.AdminUpdateAssetNetworkResponse>(
+        'AdminUpdateAssetNetwork',
+        adminUpdateAssetNetwork_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.AdminUpdateAssetNetworkRequest.fromBuffer(value),
+        ($12.AdminUpdateAssetNetworkResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.AdminListSupportedMarketsRequest,
+            $12.AdminListSupportedMarketsResponse>(
+        'AdminListSupportedMarkets',
+        adminListSupportedMarkets_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.AdminListSupportedMarketsRequest.fromBuffer(value),
+        ($12.AdminListSupportedMarketsResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.AdminUpdateSupportedMarketRequest,
+            $12.AdminUpdateSupportedMarketResponse>(
+        'AdminUpdateSupportedMarket',
+        adminUpdateSupportedMarket_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.AdminUpdateSupportedMarketRequest.fromBuffer(value),
+        ($12.AdminUpdateSupportedMarketResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.AdminListAssetsRequest,
+            $12.AdminListAssetsResponse>(
+        'AdminListAssets',
+        adminListAssets_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.AdminListAssetsRequest.fromBuffer(value),
+        ($12.AdminListAssetsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.AdminSetAssetOverrideRequest,
+            $12.AdminSetAssetOverrideResponse>(
+        'AdminSetAssetOverride',
+        adminSetAssetOverride_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.AdminSetAssetOverrideRequest.fromBuffer(value),
+        ($12.AdminSetAssetOverrideResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.AdminSetGlobalAssetVisibilityRequest,
+            $12.AdminSetGlobalAssetVisibilityResponse>(
+        'AdminSetGlobalAssetVisibility',
+        adminSetGlobalAssetVisibility_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.AdminSetGlobalAssetVisibilityRequest.fromBuffer(value),
+        ($12.AdminSetGlobalAssetVisibilityResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.AdminGetBridgeMetricsRequest,
+            $12.AdminGetBridgeMetricsResponse>(
+        'AdminGetBridgeMetrics',
+        adminGetBridgeMetrics_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.AdminGetBridgeMetricsRequest.fromBuffer(value),
+        ($12.AdminGetBridgeMetricsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.AdminToggleBridgeRequest,
+            $12.AdminToggleBridgeResponse>(
+        'AdminToggleBridge',
+        adminToggleBridge_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.AdminToggleBridgeRequest.fromBuffer(value),
+        ($12.AdminToggleBridgeResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.AdminListCompensationsRequest,
+            $12.AdminListCompensationsResponse>(
+        'AdminListCompensations',
+        adminListCompensations_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.AdminListCompensationsRequest.fromBuffer(value),
+        ($12.AdminListCompensationsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.AdminGetCompensationDetailRequest,
+            $12.AdminGetCompensationDetailResponse>(
+        'AdminGetCompensationDetail',
+        adminGetCompensationDetail_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.AdminGetCompensationDetailRequest.fromBuffer(value),
+        ($12.AdminGetCompensationDetailResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.AdminRetryCompensationRequest,
+            $12.AdminRetryCompensationResponse>(
+        'AdminRetryCompensation',
+        adminRetryCompensation_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.AdminRetryCompensationRequest.fromBuffer(value),
+        ($12.AdminRetryCompensationResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.AdminWriteOffCompensationRequest,
+            $12.AdminWriteOffCompensationResponse>(
+        'AdminWriteOffCompensation',
+        adminWriteOffCompensation_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.AdminWriteOffCompensationRequest.fromBuffer(value),
+        ($12.AdminWriteOffCompensationResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.CreateSwapQuoteRequest,
+            $12.CreateSwapQuoteResponse>(
+        'CreateSwapQuote',
+        createSwapQuote_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.CreateSwapQuoteRequest.fromBuffer(value),
+        ($12.CreateSwapQuoteResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.RefreshSwapQuoteRequest,
+            $12.RefreshSwapQuoteResponse>(
+        'RefreshSwapQuote',
+        refreshSwapQuote_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.RefreshSwapQuoteRequest.fromBuffer(value),
+        ($12.RefreshSwapQuoteResponse value) => value.writeToBuffer()));
+    $addMethod(
+        $grpc.ServiceMethod<$12.ConfirmSwapRequest, $12.ConfirmSwapResponse>(
+            'ConfirmSwap',
+            confirmSwap_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $12.ConfirmSwapRequest.fromBuffer(value),
+            ($12.ConfirmSwapResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.GetSwapStatusRequest,
+            $12.GetSwapStatusResponse>(
+        'GetSwapStatus',
+        getSwapStatus_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.GetSwapStatusRequest.fromBuffer(value),
+        ($12.GetSwapStatusResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.AdminGetMasterFloatRequest,
+            $12.AdminGetMasterFloatResponse>(
+        'AdminGetMasterFloat',
+        adminGetMasterFloat_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.AdminGetMasterFloatRequest.fromBuffer(value),
+        ($12.AdminGetMasterFloatResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.AdminTriggerMasterFloatReconRequest,
+            $12.AdminTriggerMasterFloatReconResponse>(
+        'AdminTriggerMasterFloatRecon',
+        adminTriggerMasterFloatRecon_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.AdminTriggerMasterFloatReconRequest.fromBuffer(value),
+        ($12.AdminTriggerMasterFloatReconResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.AdminPushMasterFloatRequest,
+            $12.AdminPushMasterFloatResponse>(
+        'AdminPushMasterFloat',
+        adminPushMasterFloat_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.AdminPushMasterFloatRequest.fromBuffer(value),
+        ($12.AdminPushMasterFloatResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.AdminListSwapTransactionsRequest,
+            $12.AdminListSwapTransactionsResponse>(
+        'AdminListSwapTransactions',
+        adminListSwapTransactions_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.AdminListSwapTransactionsRequest.fromBuffer(value),
+        ($12.AdminListSwapTransactionsResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.AdminGetSwapTransactionDetailRequest,
+            $12.AdminGetSwapTransactionDetailResponse>(
+        'AdminGetSwapTransactionDetail',
+        adminGetSwapTransactionDetail_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.AdminGetSwapTransactionDetailRequest.fromBuffer(value),
+        ($12.AdminGetSwapTransactionDetailResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.AdminListRollbacksRequest,
+            $12.AdminListRollbacksResponse>(
+        'AdminListRollbacks',
+        adminListRollbacks_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.AdminListRollbacksRequest.fromBuffer(value),
+        ($12.AdminListRollbacksResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.AdminRetryRollbackPhaseRequest,
+            $12.AdminRetryRollbackPhaseResponse>(
+        'AdminRetryRollbackPhase',
+        adminRetryRollbackPhase_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.AdminRetryRollbackPhaseRequest.fromBuffer(value),
+        ($12.AdminRetryRollbackPhaseResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.AdminGetQuidaxConfigRequest,
+            $12.AdminGetQuidaxConfigResponse>(
+        'AdminGetQuidaxConfig',
+        adminGetQuidaxConfig_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.AdminGetQuidaxConfigRequest.fromBuffer(value),
+        ($12.AdminGetQuidaxConfigResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.AdminUpdateQuidaxConfigRequest,
+            $12.AdminUpdateQuidaxConfigResponse>(
+        'AdminUpdateQuidaxConfig',
+        adminUpdateQuidaxConfig_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.AdminUpdateQuidaxConfigRequest.fromBuffer(value),
+        ($12.AdminUpdateQuidaxConfigResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.AdminGetSubAccountRequest,
+            $12.AdminGetSubAccountResponse>(
+        'AdminGetSubAccount',
+        adminGetSubAccount_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.AdminGetSubAccountRequest.fromBuffer(value),
+        ($12.AdminGetSubAccountResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.AdminListSubAccountsRequest,
+            $12.AdminListSubAccountsResponse>(
+        'AdminListSubAccounts',
+        adminListSubAccounts_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.AdminListSubAccountsRequest.fromBuffer(value),
+        ($12.AdminListSubAccountsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.AdminListDepositsRequest,
+            $12.AdminListDepositsResponse>(
+        'AdminListDeposits',
+        adminListDeposits_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.AdminListDepositsRequest.fromBuffer(value),
+        ($12.AdminListDepositsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.AdminListWithdrawalsRequest,
+            $12.AdminListWithdrawalsResponse>(
+        'AdminListWithdrawals',
+        adminListWithdrawals_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.AdminListWithdrawalsRequest.fromBuffer(value),
+        ($12.AdminListWithdrawalsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.AdminListOrphanWebhooksRequest,
+            $12.AdminListOrphanWebhooksResponse>(
+        'AdminListOrphanWebhooks',
+        adminListOrphanWebhooks_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.AdminListOrphanWebhooksRequest.fromBuffer(value),
+        ($12.AdminListOrphanWebhooksResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.AdminDropOrphanWebhookRequest,
+            $12.AdminDropOrphanWebhookResponse>(
+        'AdminDropOrphanWebhook',
+        adminDropOrphanWebhook_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.AdminDropOrphanWebhookRequest.fromBuffer(value),
+        ($12.AdminDropOrphanWebhookResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.AdminGetRollbackDetailRequest,
+            $12.AdminGetRollbackDetailResponse>(
+        'AdminGetRollbackDetail',
+        adminGetRollbackDetail_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.AdminGetRollbackDetailRequest.fromBuffer(value),
+        ($12.AdminGetRollbackDetailResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.GetPriceAlertWorkerStatusRequest,
+            $12.GetPriceAlertWorkerStatusResponse>(
+        'GetPriceAlertWorkerStatus',
+        getPriceAlertWorkerStatus_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.GetPriceAlertWorkerStatusRequest.fromBuffer(value),
+        ($12.GetPriceAlertWorkerStatusResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.UpdatePriceAlertWorkerConfigRequest,
+            $12.UpdatePriceAlertWorkerConfigResponse>(
+        'UpdatePriceAlertWorkerConfig',
+        updatePriceAlertWorkerConfig_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.UpdatePriceAlertWorkerConfigRequest.fromBuffer(value),
+        ($12.UpdatePriceAlertWorkerConfigResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.TriggerPriceAlertWorkerNowRequest,
+            $12.TriggerPriceAlertWorkerNowResponse>(
+        'TriggerPriceAlertWorkerNow',
+        triggerPriceAlertWorkerNow_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.TriggerPriceAlertWorkerNowRequest.fromBuffer(value),
+        ($12.TriggerPriceAlertWorkerNowResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.AdminListPriceAlertsRequest,
+            $12.AdminListPriceAlertsResponse>(
+        'AdminListPriceAlerts',
+        adminListPriceAlerts_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.AdminListPriceAlertsRequest.fromBuffer(value),
+        ($12.AdminListPriceAlertsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.AdminForceTriggerPriceAlertRequest,
+            $12.AdminForceTriggerPriceAlertResponse>(
+        'AdminForceTriggerPriceAlert',
+        adminForceTriggerPriceAlert_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.AdminForceTriggerPriceAlertRequest.fromBuffer(value),
+        ($12.AdminForceTriggerPriceAlertResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.AdminDisablePriceAlertRequest,
+            $12.AdminDisablePriceAlertResponse>(
+        'AdminDisablePriceAlert',
+        adminDisablePriceAlert_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.AdminDisablePriceAlertRequest.fromBuffer(value),
+        ($12.AdminDisablePriceAlertResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.GetLearnLessonsRequest,
+            $12.GetLearnLessonsResponse>(
+        'GetLearnLessons',
+        getLearnLessons_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.GetLearnLessonsRequest.fromBuffer(value),
+        ($12.GetLearnLessonsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.AdminListLearnLessonsRequest,
+            $12.AdminListLearnLessonsResponse>(
+        'AdminListLearnLessons',
+        adminListLearnLessons_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.AdminListLearnLessonsRequest.fromBuffer(value),
+        ($12.AdminListLearnLessonsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.AdminUpsertLearnLessonRequest,
+            $12.AdminUpsertLearnLessonResponse>(
+        'AdminUpsertLearnLesson',
+        adminUpsertLearnLesson_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.AdminUpsertLearnLessonRequest.fromBuffer(value),
+        ($12.AdminUpsertLearnLessonResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$12.AdminDeleteLearnLessonRequest,
+            $12.AdminDeleteLearnLessonResponse>(
+        'AdminDeleteLearnLesson',
+        adminDeleteLearnLesson_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $12.AdminDeleteLearnLessonRequest.fromBuffer(value),
+        ($12.AdminDeleteLearnLessonResponse value) => value.writeToBuffer()));
   }
 
   $async.Future<$12.GetCryptosResponse> getCryptos_Pre($grpc.ServiceCall call,
@@ -1573,6 +2694,312 @@ abstract class CryptoServiceBase extends $grpc.Service {
     return getUserCryptoFreeze(call, await request);
   }
 
+  $async.Future<$12.GetCryptoConfigResponse> getCryptoConfig_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.GetCryptoConfigRequest> request) async {
+    return getCryptoConfig(call, await request);
+  }
+
+  $async.Future<$12.WithdrawResponse> withdraw_Pre($grpc.ServiceCall call,
+      $async.Future<$12.WithdrawRequest> request) async {
+    return withdraw(call, await request);
+  }
+
+  $async.Future<$12.GetCryptoWithdrawalStatusResponse>
+      getCryptoWithdrawalStatus_Pre($grpc.ServiceCall call,
+          $async.Future<$12.GetCryptoWithdrawalStatusRequest> request) async {
+    return getCryptoWithdrawalStatus(call, await request);
+  }
+
+  $async.Future<$12.GetUserCryptoWithdrawalsResponse>
+      getUserCryptoWithdrawals_Pre($grpc.ServiceCall call,
+          $async.Future<$12.GetUserCryptoWithdrawalsRequest> request) async {
+    return getUserCryptoWithdrawals(call, await request);
+  }
+
+  $async.Future<$12.GetSupportedAssetNetworksResponse>
+      getSupportedAssetNetworks_Pre($grpc.ServiceCall call,
+          $async.Future<$12.GetSupportedAssetNetworksRequest> request) async {
+    return getSupportedAssetNetworks(call, await request);
+  }
+
+  $async.Future<$12.EnsureWalletAddressResponse> ensureWalletAddress_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.EnsureWalletAddressRequest> request) async {
+    return ensureWalletAddress(call, await request);
+  }
+
+  $async.Future<$12.GetUserCryptoDepositsResponse> getUserCryptoDeposits_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.GetUserCryptoDepositsRequest> request) async {
+    return getUserCryptoDeposits(call, await request);
+  }
+
+  $async.Future<$12.AdminListAssetNetworksResponse> adminListAssetNetworks_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.AdminListAssetNetworksRequest> request) async {
+    return adminListAssetNetworks(call, await request);
+  }
+
+  $async.Future<$12.AdminUpdateAssetNetworkResponse>
+      adminUpdateAssetNetwork_Pre($grpc.ServiceCall call,
+          $async.Future<$12.AdminUpdateAssetNetworkRequest> request) async {
+    return adminUpdateAssetNetwork(call, await request);
+  }
+
+  $async.Future<$12.AdminListSupportedMarketsResponse>
+      adminListSupportedMarkets_Pre($grpc.ServiceCall call,
+          $async.Future<$12.AdminListSupportedMarketsRequest> request) async {
+    return adminListSupportedMarkets(call, await request);
+  }
+
+  $async.Future<$12.AdminUpdateSupportedMarketResponse>
+      adminUpdateSupportedMarket_Pre($grpc.ServiceCall call,
+          $async.Future<$12.AdminUpdateSupportedMarketRequest> request) async {
+    return adminUpdateSupportedMarket(call, await request);
+  }
+
+  $async.Future<$12.AdminListAssetsResponse> adminListAssets_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.AdminListAssetsRequest> request) async {
+    return adminListAssets(call, await request);
+  }
+
+  $async.Future<$12.AdminSetAssetOverrideResponse> adminSetAssetOverride_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.AdminSetAssetOverrideRequest> request) async {
+    return adminSetAssetOverride(call, await request);
+  }
+
+  $async.Future<$12.AdminSetGlobalAssetVisibilityResponse>
+      adminSetGlobalAssetVisibility_Pre(
+          $grpc.ServiceCall call,
+          $async.Future<$12.AdminSetGlobalAssetVisibilityRequest>
+              request) async {
+    return adminSetGlobalAssetVisibility(call, await request);
+  }
+
+  $async.Future<$12.AdminGetBridgeMetricsResponse> adminGetBridgeMetrics_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.AdminGetBridgeMetricsRequest> request) async {
+    return adminGetBridgeMetrics(call, await request);
+  }
+
+  $async.Future<$12.AdminToggleBridgeResponse> adminToggleBridge_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.AdminToggleBridgeRequest> request) async {
+    return adminToggleBridge(call, await request);
+  }
+
+  $async.Future<$12.AdminListCompensationsResponse> adminListCompensations_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.AdminListCompensationsRequest> request) async {
+    return adminListCompensations(call, await request);
+  }
+
+  $async.Future<$12.AdminGetCompensationDetailResponse>
+      adminGetCompensationDetail_Pre($grpc.ServiceCall call,
+          $async.Future<$12.AdminGetCompensationDetailRequest> request) async {
+    return adminGetCompensationDetail(call, await request);
+  }
+
+  $async.Future<$12.AdminRetryCompensationResponse> adminRetryCompensation_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.AdminRetryCompensationRequest> request) async {
+    return adminRetryCompensation(call, await request);
+  }
+
+  $async.Future<$12.AdminWriteOffCompensationResponse>
+      adminWriteOffCompensation_Pre($grpc.ServiceCall call,
+          $async.Future<$12.AdminWriteOffCompensationRequest> request) async {
+    return adminWriteOffCompensation(call, await request);
+  }
+
+  $async.Future<$12.CreateSwapQuoteResponse> createSwapQuote_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.CreateSwapQuoteRequest> request) async {
+    return createSwapQuote(call, await request);
+  }
+
+  $async.Future<$12.RefreshSwapQuoteResponse> refreshSwapQuote_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.RefreshSwapQuoteRequest> request) async {
+    return refreshSwapQuote(call, await request);
+  }
+
+  $async.Future<$12.ConfirmSwapResponse> confirmSwap_Pre($grpc.ServiceCall call,
+      $async.Future<$12.ConfirmSwapRequest> request) async {
+    return confirmSwap(call, await request);
+  }
+
+  $async.Future<$12.GetSwapStatusResponse> getSwapStatus_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.GetSwapStatusRequest> request) async {
+    return getSwapStatus(call, await request);
+  }
+
+  $async.Future<$12.AdminGetMasterFloatResponse> adminGetMasterFloat_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.AdminGetMasterFloatRequest> request) async {
+    return adminGetMasterFloat(call, await request);
+  }
+
+  $async.Future<$12.AdminTriggerMasterFloatReconResponse>
+      adminTriggerMasterFloatRecon_Pre(
+          $grpc.ServiceCall call,
+          $async.Future<$12.AdminTriggerMasterFloatReconRequest>
+              request) async {
+    return adminTriggerMasterFloatRecon(call, await request);
+  }
+
+  $async.Future<$12.AdminPushMasterFloatResponse> adminPushMasterFloat_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.AdminPushMasterFloatRequest> request) async {
+    return adminPushMasterFloat(call, await request);
+  }
+
+  $async.Future<$12.AdminListSwapTransactionsResponse>
+      adminListSwapTransactions_Pre($grpc.ServiceCall call,
+          $async.Future<$12.AdminListSwapTransactionsRequest> request) async {
+    return adminListSwapTransactions(call, await request);
+  }
+
+  $async.Future<$12.AdminGetSwapTransactionDetailResponse>
+      adminGetSwapTransactionDetail_Pre(
+          $grpc.ServiceCall call,
+          $async.Future<$12.AdminGetSwapTransactionDetailRequest>
+              request) async {
+    return adminGetSwapTransactionDetail(call, await request);
+  }
+
+  $async.Future<$12.AdminListRollbacksResponse> adminListRollbacks_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.AdminListRollbacksRequest> request) async {
+    return adminListRollbacks(call, await request);
+  }
+
+  $async.Future<$12.AdminRetryRollbackPhaseResponse>
+      adminRetryRollbackPhase_Pre($grpc.ServiceCall call,
+          $async.Future<$12.AdminRetryRollbackPhaseRequest> request) async {
+    return adminRetryRollbackPhase(call, await request);
+  }
+
+  $async.Future<$12.AdminGetQuidaxConfigResponse> adminGetQuidaxConfig_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.AdminGetQuidaxConfigRequest> request) async {
+    return adminGetQuidaxConfig(call, await request);
+  }
+
+  $async.Future<$12.AdminUpdateQuidaxConfigResponse>
+      adminUpdateQuidaxConfig_Pre($grpc.ServiceCall call,
+          $async.Future<$12.AdminUpdateQuidaxConfigRequest> request) async {
+    return adminUpdateQuidaxConfig(call, await request);
+  }
+
+  $async.Future<$12.AdminGetSubAccountResponse> adminGetSubAccount_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.AdminGetSubAccountRequest> request) async {
+    return adminGetSubAccount(call, await request);
+  }
+
+  $async.Future<$12.AdminListSubAccountsResponse> adminListSubAccounts_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.AdminListSubAccountsRequest> request) async {
+    return adminListSubAccounts(call, await request);
+  }
+
+  $async.Future<$12.AdminListDepositsResponse> adminListDeposits_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.AdminListDepositsRequest> request) async {
+    return adminListDeposits(call, await request);
+  }
+
+  $async.Future<$12.AdminListWithdrawalsResponse> adminListWithdrawals_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.AdminListWithdrawalsRequest> request) async {
+    return adminListWithdrawals(call, await request);
+  }
+
+  $async.Future<$12.AdminListOrphanWebhooksResponse>
+      adminListOrphanWebhooks_Pre($grpc.ServiceCall call,
+          $async.Future<$12.AdminListOrphanWebhooksRequest> request) async {
+    return adminListOrphanWebhooks(call, await request);
+  }
+
+  $async.Future<$12.AdminDropOrphanWebhookResponse> adminDropOrphanWebhook_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.AdminDropOrphanWebhookRequest> request) async {
+    return adminDropOrphanWebhook(call, await request);
+  }
+
+  $async.Future<$12.AdminGetRollbackDetailResponse> adminGetRollbackDetail_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.AdminGetRollbackDetailRequest> request) async {
+    return adminGetRollbackDetail(call, await request);
+  }
+
+  $async.Future<$12.GetPriceAlertWorkerStatusResponse>
+      getPriceAlertWorkerStatus_Pre($grpc.ServiceCall call,
+          $async.Future<$12.GetPriceAlertWorkerStatusRequest> request) async {
+    return getPriceAlertWorkerStatus(call, await request);
+  }
+
+  $async.Future<$12.UpdatePriceAlertWorkerConfigResponse>
+      updatePriceAlertWorkerConfig_Pre(
+          $grpc.ServiceCall call,
+          $async.Future<$12.UpdatePriceAlertWorkerConfigRequest>
+              request) async {
+    return updatePriceAlertWorkerConfig(call, await request);
+  }
+
+  $async.Future<$12.TriggerPriceAlertWorkerNowResponse>
+      triggerPriceAlertWorkerNow_Pre($grpc.ServiceCall call,
+          $async.Future<$12.TriggerPriceAlertWorkerNowRequest> request) async {
+    return triggerPriceAlertWorkerNow(call, await request);
+  }
+
+  $async.Future<$12.AdminListPriceAlertsResponse> adminListPriceAlerts_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.AdminListPriceAlertsRequest> request) async {
+    return adminListPriceAlerts(call, await request);
+  }
+
+  $async.Future<$12.AdminForceTriggerPriceAlertResponse>
+      adminForceTriggerPriceAlert_Pre($grpc.ServiceCall call,
+          $async.Future<$12.AdminForceTriggerPriceAlertRequest> request) async {
+    return adminForceTriggerPriceAlert(call, await request);
+  }
+
+  $async.Future<$12.AdminDisablePriceAlertResponse> adminDisablePriceAlert_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.AdminDisablePriceAlertRequest> request) async {
+    return adminDisablePriceAlert(call, await request);
+  }
+
+  $async.Future<$12.GetLearnLessonsResponse> getLearnLessons_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.GetLearnLessonsRequest> request) async {
+    return getLearnLessons(call, await request);
+  }
+
+  $async.Future<$12.AdminListLearnLessonsResponse> adminListLearnLessons_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.AdminListLearnLessonsRequest> request) async {
+    return adminListLearnLessons(call, await request);
+  }
+
+  $async.Future<$12.AdminUpsertLearnLessonResponse> adminUpsertLearnLesson_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.AdminUpsertLearnLessonRequest> request) async {
+    return adminUpsertLearnLesson(call, await request);
+  }
+
+  $async.Future<$12.AdminDeleteLearnLessonResponse> adminDeleteLearnLesson_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$12.AdminDeleteLearnLessonRequest> request) async {
+    return adminDeleteLearnLesson(call, await request);
+  }
+
   $async.Future<$12.GetCryptosResponse> getCryptos(
       $grpc.ServiceCall call, $12.GetCryptosRequest request);
   $async.Future<$12.GetCryptoByIdResponse> getCryptoById(
@@ -1690,4 +3117,118 @@ abstract class CryptoServiceBase extends $grpc.Service {
       $grpc.ServiceCall call, $12.SetUserCryptoFreezeRequest request);
   $async.Future<$12.GetUserCryptoFreezeResponse> getUserCryptoFreeze(
       $grpc.ServiceCall call, $12.GetUserCryptoFreezeRequest request);
+  $async.Future<$12.GetCryptoConfigResponse> getCryptoConfig(
+      $grpc.ServiceCall call, $12.GetCryptoConfigRequest request);
+  $async.Future<$12.WithdrawResponse> withdraw(
+      $grpc.ServiceCall call, $12.WithdrawRequest request);
+  $async.Future<$12.GetCryptoWithdrawalStatusResponse>
+      getCryptoWithdrawalStatus(
+          $grpc.ServiceCall call, $12.GetCryptoWithdrawalStatusRequest request);
+  $async.Future<$12.GetUserCryptoWithdrawalsResponse> getUserCryptoWithdrawals(
+      $grpc.ServiceCall call, $12.GetUserCryptoWithdrawalsRequest request);
+  $async.Future<$12.GetSupportedAssetNetworksResponse>
+      getSupportedAssetNetworks(
+          $grpc.ServiceCall call, $12.GetSupportedAssetNetworksRequest request);
+  $async.Future<$12.EnsureWalletAddressResponse> ensureWalletAddress(
+      $grpc.ServiceCall call, $12.EnsureWalletAddressRequest request);
+  $async.Future<$12.GetUserCryptoDepositsResponse> getUserCryptoDeposits(
+      $grpc.ServiceCall call, $12.GetUserCryptoDepositsRequest request);
+  $async.Future<$12.AdminListAssetNetworksResponse> adminListAssetNetworks(
+      $grpc.ServiceCall call, $12.AdminListAssetNetworksRequest request);
+  $async.Future<$12.AdminUpdateAssetNetworkResponse> adminUpdateAssetNetwork(
+      $grpc.ServiceCall call, $12.AdminUpdateAssetNetworkRequest request);
+  $async.Future<$12.AdminListSupportedMarketsResponse>
+      adminListSupportedMarkets(
+          $grpc.ServiceCall call, $12.AdminListSupportedMarketsRequest request);
+  $async.Future<$12.AdminUpdateSupportedMarketResponse>
+      adminUpdateSupportedMarket($grpc.ServiceCall call,
+          $12.AdminUpdateSupportedMarketRequest request);
+  $async.Future<$12.AdminListAssetsResponse> adminListAssets(
+      $grpc.ServiceCall call, $12.AdminListAssetsRequest request);
+  $async.Future<$12.AdminSetAssetOverrideResponse> adminSetAssetOverride(
+      $grpc.ServiceCall call, $12.AdminSetAssetOverrideRequest request);
+  $async.Future<$12.AdminSetGlobalAssetVisibilityResponse>
+      adminSetGlobalAssetVisibility($grpc.ServiceCall call,
+          $12.AdminSetGlobalAssetVisibilityRequest request);
+  $async.Future<$12.AdminGetBridgeMetricsResponse> adminGetBridgeMetrics(
+      $grpc.ServiceCall call, $12.AdminGetBridgeMetricsRequest request);
+  $async.Future<$12.AdminToggleBridgeResponse> adminToggleBridge(
+      $grpc.ServiceCall call, $12.AdminToggleBridgeRequest request);
+  $async.Future<$12.AdminListCompensationsResponse> adminListCompensations(
+      $grpc.ServiceCall call, $12.AdminListCompensationsRequest request);
+  $async.Future<$12.AdminGetCompensationDetailResponse>
+      adminGetCompensationDetail($grpc.ServiceCall call,
+          $12.AdminGetCompensationDetailRequest request);
+  $async.Future<$12.AdminRetryCompensationResponse> adminRetryCompensation(
+      $grpc.ServiceCall call, $12.AdminRetryCompensationRequest request);
+  $async.Future<$12.AdminWriteOffCompensationResponse>
+      adminWriteOffCompensation(
+          $grpc.ServiceCall call, $12.AdminWriteOffCompensationRequest request);
+  $async.Future<$12.CreateSwapQuoteResponse> createSwapQuote(
+      $grpc.ServiceCall call, $12.CreateSwapQuoteRequest request);
+  $async.Future<$12.RefreshSwapQuoteResponse> refreshSwapQuote(
+      $grpc.ServiceCall call, $12.RefreshSwapQuoteRequest request);
+  $async.Future<$12.ConfirmSwapResponse> confirmSwap(
+      $grpc.ServiceCall call, $12.ConfirmSwapRequest request);
+  $async.Future<$12.GetSwapStatusResponse> getSwapStatus(
+      $grpc.ServiceCall call, $12.GetSwapStatusRequest request);
+  $async.Future<$12.AdminGetMasterFloatResponse> adminGetMasterFloat(
+      $grpc.ServiceCall call, $12.AdminGetMasterFloatRequest request);
+  $async.Future<$12.AdminTriggerMasterFloatReconResponse>
+      adminTriggerMasterFloatRecon($grpc.ServiceCall call,
+          $12.AdminTriggerMasterFloatReconRequest request);
+  $async.Future<$12.AdminPushMasterFloatResponse> adminPushMasterFloat(
+      $grpc.ServiceCall call, $12.AdminPushMasterFloatRequest request);
+  $async.Future<$12.AdminListSwapTransactionsResponse>
+      adminListSwapTransactions(
+          $grpc.ServiceCall call, $12.AdminListSwapTransactionsRequest request);
+  $async.Future<$12.AdminGetSwapTransactionDetailResponse>
+      adminGetSwapTransactionDetail($grpc.ServiceCall call,
+          $12.AdminGetSwapTransactionDetailRequest request);
+  $async.Future<$12.AdminListRollbacksResponse> adminListRollbacks(
+      $grpc.ServiceCall call, $12.AdminListRollbacksRequest request);
+  $async.Future<$12.AdminRetryRollbackPhaseResponse> adminRetryRollbackPhase(
+      $grpc.ServiceCall call, $12.AdminRetryRollbackPhaseRequest request);
+  $async.Future<$12.AdminGetQuidaxConfigResponse> adminGetQuidaxConfig(
+      $grpc.ServiceCall call, $12.AdminGetQuidaxConfigRequest request);
+  $async.Future<$12.AdminUpdateQuidaxConfigResponse> adminUpdateQuidaxConfig(
+      $grpc.ServiceCall call, $12.AdminUpdateQuidaxConfigRequest request);
+  $async.Future<$12.AdminGetSubAccountResponse> adminGetSubAccount(
+      $grpc.ServiceCall call, $12.AdminGetSubAccountRequest request);
+  $async.Future<$12.AdminListSubAccountsResponse> adminListSubAccounts(
+      $grpc.ServiceCall call, $12.AdminListSubAccountsRequest request);
+  $async.Future<$12.AdminListDepositsResponse> adminListDeposits(
+      $grpc.ServiceCall call, $12.AdminListDepositsRequest request);
+  $async.Future<$12.AdminListWithdrawalsResponse> adminListWithdrawals(
+      $grpc.ServiceCall call, $12.AdminListWithdrawalsRequest request);
+  $async.Future<$12.AdminListOrphanWebhooksResponse> adminListOrphanWebhooks(
+      $grpc.ServiceCall call, $12.AdminListOrphanWebhooksRequest request);
+  $async.Future<$12.AdminDropOrphanWebhookResponse> adminDropOrphanWebhook(
+      $grpc.ServiceCall call, $12.AdminDropOrphanWebhookRequest request);
+  $async.Future<$12.AdminGetRollbackDetailResponse> adminGetRollbackDetail(
+      $grpc.ServiceCall call, $12.AdminGetRollbackDetailRequest request);
+  $async.Future<$12.GetPriceAlertWorkerStatusResponse>
+      getPriceAlertWorkerStatus(
+          $grpc.ServiceCall call, $12.GetPriceAlertWorkerStatusRequest request);
+  $async.Future<$12.UpdatePriceAlertWorkerConfigResponse>
+      updatePriceAlertWorkerConfig($grpc.ServiceCall call,
+          $12.UpdatePriceAlertWorkerConfigRequest request);
+  $async.Future<$12.TriggerPriceAlertWorkerNowResponse>
+      triggerPriceAlertWorkerNow($grpc.ServiceCall call,
+          $12.TriggerPriceAlertWorkerNowRequest request);
+  $async.Future<$12.AdminListPriceAlertsResponse> adminListPriceAlerts(
+      $grpc.ServiceCall call, $12.AdminListPriceAlertsRequest request);
+  $async.Future<$12.AdminForceTriggerPriceAlertResponse>
+      adminForceTriggerPriceAlert($grpc.ServiceCall call,
+          $12.AdminForceTriggerPriceAlertRequest request);
+  $async.Future<$12.AdminDisablePriceAlertResponse> adminDisablePriceAlert(
+      $grpc.ServiceCall call, $12.AdminDisablePriceAlertRequest request);
+  $async.Future<$12.GetLearnLessonsResponse> getLearnLessons(
+      $grpc.ServiceCall call, $12.GetLearnLessonsRequest request);
+  $async.Future<$12.AdminListLearnLessonsResponse> adminListLearnLessons(
+      $grpc.ServiceCall call, $12.AdminListLearnLessonsRequest request);
+  $async.Future<$12.AdminUpsertLearnLessonResponse> adminUpsertLearnLesson(
+      $grpc.ServiceCall call, $12.AdminUpsertLearnLessonRequest request);
+  $async.Future<$12.AdminDeleteLearnLessonResponse> adminDeleteLearnLesson(
+      $grpc.ServiceCall call, $12.AdminDeleteLearnLessonRequest request);
 }

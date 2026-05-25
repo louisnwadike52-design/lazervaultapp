@@ -1,3 +1,4 @@
+import 'package:fixnum/fixnum.dart';
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import '../../generated/crypto.pbgrpc.dart';
@@ -159,16 +160,198 @@ class CryptoGrpcClient {
 
   /// Get user's crypto holdings
   ///
-  /// Returns list of user's cryptocurrency holdings with current values
-  Future<GetCryptoHoldingsResponse> getHoldings() async {
+  /// Returns list of user's cryptocurrency holdings with current values.
+  /// When [unitsOnly] is true the server skips per-asset CoinGecko/Quidax
+  /// price lookups and returns FiatValue=0 — callers fan out per-asset
+  /// rate fetches to fill in fiat values progressively.
+  Future<GetCryptoHoldingsResponse> getHoldings({bool unitsOnly = false}) async {
     final options = await _callOptionsHelper.withAuth();
     try {
-      final request = GetCryptoHoldingsRequest();
+      final request = GetCryptoHoldingsRequest()..unitsOnly = unitsOnly;
       final response = await _client.getCryptoHoldings(request, options: options);
       return response;
     } catch (e) {
       rethrow;
     }
+  }
+
+  /// Provisions the Quidax sub-account (if missing) and creates zero-balance
+  /// wallet mirrors for every supported asset. Idempotent on the server side.
+  /// Used by the crypto landing-page fallback when holdings come back empty.
+  Future<BatchCreateWalletsResponse> batchCreateWallets() async {
+    final options = await _callOptionsHelper.withAuth();
+    final request = BatchCreateWalletsRequest();
+    return await _client.batchCreateWallets(request, options: options);
+  }
+
+  /// Fetch server-driven crypto runtime config (min orders, currency
+  /// decimals, quick amounts, supported currencies, default spread). The
+  /// CryptoConfigCubit calls this at app start + on pull-to-refresh so the
+  /// buy/sell flow stops carrying hardcoded values (PR5d.5).
+  Future<GetCryptoConfigResponse> getCryptoConfig() async {
+    final options = await _callOptionsHelper.withAuth();
+    final request = GetCryptoConfigRequest();
+    return await _client.getCryptoConfig(request, options: options);
+  }
+
+  // ============================================================
+  // SEND CRYPTO (PR6) — user-initiated withdrawal
+  // ============================================================
+
+  /// Withdraw initiates a Quidax send. Returns `Processing` (or terminal
+  /// `Done` for synchronous internal transfers); the terminal external state
+  /// arrives via the `withdraw.successful` / `withdraw.rejected` webhook.
+  Future<WithdrawResponse> withdraw({
+    required String accountId,
+    required String recipientType, // "coin_address" | "internal"
+    required String currency,
+    required Int64 amountMinorUnits,
+    required String fundUid,
+    required String clientIntentId,
+    String network = '',
+    String destinationTag = '',
+    String transactionNote = '',
+    String narration = '',
+    String transactionPin = '',
+  }) async {
+    final options = await _callOptionsHelper.withAuth();
+    final request = WithdrawRequest()
+      ..accountId = accountId
+      ..recipientType = recipientType
+      ..currency = currency
+      ..amountMinorUnits = amountMinorUnits
+      ..fundUid = fundUid
+      ..network = network
+      ..destinationTag = destinationTag
+      ..transactionNote = transactionNote
+      ..narration = narration
+      ..clientIntentId = clientIntentId
+      ..transactionPin = transactionPin;
+    return await _client.withdraw(request, options: options);
+  }
+
+  Future<GetCryptoWithdrawalStatusResponse> getCryptoWithdrawalStatus(String transactionId) async {
+    final options = await _callOptionsHelper.withAuth();
+    final request = GetCryptoWithdrawalStatusRequest()..transactionId = transactionId;
+    return await _client.getCryptoWithdrawalStatus(request, options: options);
+  }
+
+  Future<GetUserCryptoWithdrawalsResponse> getUserCryptoWithdrawals({
+    int page = 1,
+    int perPage = 25,
+    String status = '',
+    String currency = '',
+  }) async {
+    final options = await _callOptionsHelper.withAuth();
+    final request = GetUserCryptoWithdrawalsRequest()
+      ..page = page
+      ..perPage = perPage
+      ..status = status
+      ..currency = currency;
+    return await _client.getUserCryptoWithdrawals(request, options: options);
+  }
+
+  // ============================================================
+  // RECEIVE / DEPOSIT (PR7)
+  // ============================================================
+
+  /// Returns the per-currency, per-network catalogue (deposit_enabled,
+  /// withdraw_enabled, min_deposit, default network). Drives the Receive
+  /// network dropdown and the Send network picker.
+  Future<GetSupportedAssetNetworksResponse> getSupportedAssetNetworks({String currency = ''}) async {
+    final options = await _callOptionsHelper.withAuth();
+    final request = GetSupportedAssetNetworksRequest()..currency = currency;
+    return await _client.getSupportedAssetNetworks(request, options: options);
+  }
+
+  /// Idempotently provisions a deposit address. Quidax generates async — the
+  /// initial call may return `ready=false`; the actual address arrives via
+  /// the `wallet.address.generated` webhook (forwarded to Flutter via WS).
+  Future<EnsureWalletAddressResponse> ensureWalletAddress({
+    required String currency,
+    String network = '',
+  }) async {
+    final options = await _callOptionsHelper.withAuth();
+    final request = EnsureWalletAddressRequest()
+      ..currency = currency
+      ..network = network;
+    return await _client.ensureWalletAddress(request, options: options);
+  }
+
+  /// User-scoped read of crypto_deposits — pending + recent deposits with
+  /// confirmation progress, status, txid, etc.
+  Future<GetUserCryptoDepositsResponse> getUserCryptoDeposits({
+    int page = 1,
+    int perPage = 25,
+    String status = '',
+    String currency = '',
+  }) async {
+    final options = await _callOptionsHelper.withAuth();
+    final request = GetUserCryptoDepositsRequest()
+      ..page = page
+      ..perPage = perPage
+      ..status = status
+      ..currency = currency;
+    return await _client.getUserCryptoDeposits(request, options: options);
+  }
+
+  // ============================================================================
+  // Swap-quotation flow (PR3) — Quidax SEC-licensed Buy/Sell pipeline
+  // ============================================================================
+  //
+  // CreateSwapQuote: client picks side/from/to/amount + a uuid intent id.
+  //   Server holds the user's funds, pushes liquidity to the sub-account, and
+  //   returns a 15-second locked quote.
+  // ConfirmSwap: must be called before quote.expiresAt; CAS-locks the saga and
+  //   commits the swap on Quidax. Final state arrives via webhook (the timer UI
+  //   then polls GetSwapStatus once on receipt screen render).
+
+  Future<CreateSwapQuoteResponse> createSwapQuote({
+    required String accountId,
+    required String side,
+    required String fromCurrency,
+    required String toCurrency,
+    required Int64 fromAmountMinorUnits,
+    required String clientIntentId,
+    String description = '',
+  }) async {
+    final options = await _callOptionsHelper.withAuth();
+    final request = CreateSwapQuoteRequest()
+      ..accountId = accountId
+      ..side = side
+      ..fromCurrency = fromCurrency
+      ..toCurrency = toCurrency
+      ..fromAmountMinorUnits = fromAmountMinorUnits
+      ..clientIntentId = clientIntentId
+      ..description = description;
+    return await _client.createSwapQuote(request, options: options);
+  }
+
+  Future<RefreshSwapQuoteResponse> refreshSwapQuote(String transactionId) async {
+    final options = await _callOptionsHelper.withAuth();
+    final request = RefreshSwapQuoteRequest()..transactionId = transactionId;
+    return await _client.refreshSwapQuote(request, options: options);
+  }
+
+  Future<ConfirmSwapResponse> confirmSwap(String transactionId,
+      {String? transactionPin}) async {
+    var options = await _callOptionsHelper.withAuth();
+    // Carry the transaction PIN (verification token) as x-transaction-pin
+    // metadata — the backend ConfirmSwap handler verifies it server-side
+    // (the gateway forwards it; metadata values are never logged). Same
+    // token the legacy buy/sell path passes as transactionPin.
+    if (transactionPin != null && transactionPin.isNotEmpty) {
+      options = options.mergedWith(
+          CallOptions(metadata: {'x-transaction-pin': transactionPin}));
+    }
+    final request = ConfirmSwapRequest()..transactionId = transactionId;
+    return await _client.confirmSwap(request, options: options);
+  }
+
+  Future<GetSwapStatusResponse> getSwapStatus(String transactionId) async {
+    final options = await _callOptionsHelper.withAuth();
+    final request = GetSwapStatusRequest()..transactionId = transactionId;
+    return await _client.getSwapStatus(request, options: options);
   }
 
   /// Get user's crypto transaction history
@@ -498,6 +681,20 @@ class CryptoGrpcClient {
     try {
       final request = DeletePriceAlertRequest()..alertId = alertId;
       return await _client.deletePriceAlert(request, options: options);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Fetch published Learn & Earn lessons. Backed by the
+  /// crypto_learn_lessons table (migration 031). Public read — no auth
+  /// required, but we still attach standard call options so the gateway
+  /// can log who fetched what.
+  Future<GetLearnLessonsResponse> getLearnLessons({String category = ''}) async {
+    final options = await _callOptionsHelper.withAuth();
+    try {
+      final request = GetLearnLessonsRequest()..category = category;
+      return await _client.getLearnLessons(request, options: options);
     } catch (e) {
       rethrow;
     }

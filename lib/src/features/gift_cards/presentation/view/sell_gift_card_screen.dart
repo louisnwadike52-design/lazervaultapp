@@ -18,6 +18,7 @@ import '../../../transaction_pin/mixins/transaction_pin_mixin.dart';
 import '../../../transaction_pin/services/transaction_pin_service.dart';
 import '../../../../../core/types/app_routes.dart';
 import 'widgets/gift_card_error_widget.dart';
+import 'widgets/sell_rejection_reasons_sheet.dart';
 
 class SellGiftCardScreen extends StatefulWidget {
   final SellableCard? preselectedCard;
@@ -2074,6 +2075,30 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
                         fontSize: 14.sp,
                         color: Colors.white,
                         height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 12.h),
+              // "Why was this rejected?" → full-width modal listing the
+              // standard processor rejection reasons + how to fix/resubmit.
+              GestureDetector(
+                key: const ValueKey('sell_rejection_reasons_cta'),
+                onTap: () => showSellRejectionReasonsSheet(context,
+                    highlightReason: rejectionReason),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.help_outline, color: accentColor, size: 16.sp),
+                    SizedBox(width: 6.w),
+                    Text(
+                      'Why was this rejected?',
+                      style: GoogleFonts.inter(
+                        color: accentColor,
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w600,
+                        decoration: TextDecoration.underline,
                       ),
                     ),
                   ],

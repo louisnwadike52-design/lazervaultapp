@@ -17,18 +17,20 @@ import 'package:lazervault/core/types/app_routes.dart';
 import '../../../../../core/services/injection_container.dart';
 import '../../../../core/grpc/voice_grpc_client.dart';
 import 'swap_crypto_screen.dart';
+import 'send_crypto_screen.dart';
 import 'user_holdings_screen.dart';
 import 'price_alerts_screen.dart';
-import 'lazervault_card_screen.dart';
 import 'crypto_transaction_history_screen.dart';
-import 'crypto_confirmation_screen.dart';
 import 'crypto_receipt_screen.dart';
 import 'smart_trading_screen.dart';
+import '../../../lifestyle/presentation/screens/partner_webview_screen.dart';
 import 'secure_wallet_screen.dart';
 import 'pro_exchange_screen.dart';
 import 'learn_earn_screen.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import '../widgets/crypto_shimmer_loading.dart';
+import '../widgets/watchlist_manager_sheet.dart';
+import '../../../../generated/crypto.pb.dart' show PriceAlert;
 
 class CryptoScreen extends StatefulWidget {
   const CryptoScreen({super.key});
@@ -37,28 +39,29 @@ class CryptoScreen extends StatefulWidget {
   State<CryptoScreen> createState() => _CryptoScreenState();
 }
 
-class _CryptoScreenState extends State<CryptoScreen>
-    with TickerProviderStateMixin {
-  late TabController _tabController;
+class _CryptoScreenState extends State<CryptoScreen> {
   final TextEditingController _searchController = TextEditingController();
   bool _showGainers = true;
-
-  // Transactions are loaded from the backend via CryptosCubit state
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
-    
-    // Load initial data
     context.read<CryptoCubit>().loadCryptos();
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _onPullToRefresh() async {
+    // Pull-to-refresh triggers a fresh CryptoCubit.load() — re-fetches
+    // markets, watchlists, holdings, and re-runs the wallet-provisioning
+    // backstop (server side spawns the address reconciler too). Returns
+    // the cubit's load Future so the spinner stays visible until done.
+    final cubit = context.read<CryptoCubit>();
+    await cubit.loadCryptos();
   }
 
   @override
@@ -68,8 +71,13 @@ class _CryptoScreenState extends State<CryptoScreen>
       body: SafeArea(
         child: BlocBuilder<CryptoCubit, CryptoState>(
           builder: (context, state) {
-            return SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
+            return RefreshIndicator(
+              onRefresh: _onPullToRefresh,
+              color: const Color.fromARGB(255, 78, 3, 208),
+              backgroundColor: const Color(0xFF1F1F1F),
+              child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics()),
         child: Column(
           children: [
                   _buildTopBar(),
@@ -82,8 +90,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                     _buildWatchlistSection(state),
                     _buildRecentTransactionsSection(state.transactions),
                     _buildLazerVaultServices(),
-                    _buildPriceAlertsSection(),
-                    _buildLazerVaultCard(),
+                    _buildPriceAlertsSection(state),
                     _buildCryptoCardsRow(state),
                     _buildTopMoversSection(state),
                     _buildFooter(),
@@ -94,6 +101,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                   ],
                   SizedBox(height: 100.h),
                 ],
+              ),
               ),
             );
           },
@@ -222,6 +230,11 @@ class _CryptoScreenState extends State<CryptoScreen>
     final totalGainLoss = state.holdings.fold(0.0, (sum, holding) => sum + holding.totalGainLoss);
     final gainLossPercentage = totalValue > 0 ? (totalGainLoss / (totalValue - totalGainLoss)) * 100 : 0.0;
     final isPositive = totalGainLoss >= 0;
+    // Lazy-loading: when ANY held asset is still awaiting its fiat rate,
+    // the running total is a partial sum. The UI renders a subtle
+    // "loading" hint next to the value so users don't mistake a half-
+    // populated total for the truth.
+    final hasPriceLoading = state.holdings.any((h) => h.priceLoading);
 
     return Container(
       margin: EdgeInsets.all(16.w),
@@ -266,6 +279,17 @@ class _CryptoScreenState extends State<CryptoScreen>
                   letterSpacing: -1,
                 ),
               ),
+              if (hasPriceLoading) ...[
+                SizedBox(width: 8.w),
+                SizedBox(
+                  width: 14.w,
+                  height: 14.w,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 1.6,
+                    valueColor: AlwaysStoppedAnimation(Colors.white.withValues(alpha: 0.55)),
+                  ),
+                ),
+              ],
               SizedBox(width: 12.w),
               if (gainLossPercentage != 0)
                 Container(
@@ -315,6 +339,9 @@ class _CryptoScreenState extends State<CryptoScreen>
   }
 
   Widget _buildQuickActions() {
+    // 4-up row of equal-width buttons. Send routes to the existing
+    // SendCryptoScreen (Quidax create-withdrawal flow): picks an asset
+    // from holdings, then a network, recipient, amount, PIN, submit.
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w),
       child: Row(
@@ -326,7 +353,7 @@ class _CryptoScreenState extends State<CryptoScreen>
               Colors.green,
             ),
           ),
-          SizedBox(width: 12.w),
+          SizedBox(width: 8.w),
           Expanded(
             child: _buildQuickActionButton(
               'Sell',
@@ -334,7 +361,15 @@ class _CryptoScreenState extends State<CryptoScreen>
               Colors.red,
             ),
           ),
-          SizedBox(width: 12.w),
+          SizedBox(width: 8.w),
+          Expanded(
+            child: _buildQuickActionButton(
+              'Send',
+              Icons.send_rounded,
+              const Color(0xFFFB923C),
+            ),
+          ),
+          SizedBox(width: 8.w),
           Expanded(
             child: _buildQuickActionButton(
               'Swap',
@@ -369,6 +404,32 @@ class _CryptoScreenState extends State<CryptoScreen>
               Get.snackbar(
                 'No Holdings',
                 "You don't have any crypto holdings to sell yet. Buy some crypto first!",
+                backgroundColor: const Color(0xFF1F1F1F),
+                colorText: Colors.white,
+                snackPosition: SnackPosition.TOP,
+                duration: const Duration(seconds: 3),
+              );
+            }
+            break;
+          case 'Send':
+            // Sending requires a non-zero balance — a user who sold all
+            // their crypto still has holding rows with quantity=0, so
+            // .isNotEmpty alone would let them through to a dead-end
+            // SendCryptoScreen. Filter for spendable holdings before
+            // navigating.
+            final state = cryptoCubit.state;
+            final spendable = state is CryptosLoaded
+                ? state.holdings.where((h) => h.quantity > 0).toList()
+                : const [];
+            if (spendable.isNotEmpty) {
+              Get.to(() => BlocProvider.value(
+                value: cryptoCubit,
+                child: const SendCryptoScreen(),
+              ));
+            } else {
+              Get.snackbar(
+                'No Holdings',
+                "You don't have any crypto to send yet. Buy or receive crypto first.",
                 backgroundColor: const Color(0xFF1F1F1F),
                 colorText: Colors.white,
                 snackPosition: SnackPosition.TOP,
@@ -453,7 +514,14 @@ class _CryptoScreenState extends State<CryptoScreen>
     );
   }
 
-  Widget _buildPriceAlertsSection() {
+  Widget _buildPriceAlertsSection(CryptosLoaded state) {
+    // Real alerts via PriceAlertWorker → gateway → crypto-service.
+    // Preview up to 3 active rows; full management lives on
+    // PriceAlertsScreen (FAB + delete + sentiment views).
+    final active = state.priceAlerts.where((a) => a.isActive && !a.isTriggered).toList();
+    final preview = active.take(3).toList();
+    final accent = const Color.fromARGB(255, 78, 3, 208);
+
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       padding: EdgeInsets.all(20.w),
@@ -475,48 +543,82 @@ class _CryptoScreenState extends State<CryptoScreen>
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              IconButton(
-                icon: Icon(Icons.add_alert_rounded, color: const Color.fromARGB(255, 78, 3, 208)),
-                onPressed: () => Get.to(() => const PriceAlertsScreen()),
-              ),
+              Row(children: [
+                if (active.length > 3)
+                  GestureDetector(
+                    onTap: () async {
+                      await Get.to(() => const PriceAlertsScreen());
+                      // Refresh on return so deletions/creates show.
+                      if (mounted) context.read<CryptoCubit>().loadCryptos();
+                    },
+                    child: Text(
+                      'View All (${active.length})',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                IconButton(
+                  icon: Icon(Icons.add_alert_rounded, color: accent),
+                  onPressed: () async {
+                    await Get.to(() => const PriceAlertsScreen());
+                    if (mounted) context.read<CryptoCubit>().loadCryptos();
+                  },
+                ),
+              ]),
             ],
           ),
-          SizedBox(height: 16.h),
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 8.h),
-            child: Text(
-              'No price alerts set. Tap + to create one.',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.5),
-                fontSize: 14.sp,
+          SizedBox(height: 12.h),
+          if (preview.isEmpty)
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 8.h),
+              child: Text(
+                'No price alerts set. Tap + to create one.',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.5),
+                  fontSize: 14.sp,
+                ),
               ),
-            ),
-          ),
+            )
+          else
+            for (int i = 0; i < preview.length; i++)
+              Padding(
+                padding: EdgeInsets.only(bottom: i < preview.length - 1 ? 10.h : 0),
+                child: _buildPriceAlertRow(preview[i], accent),
+              ),
         ],
-            ),
-          );
-        }
+      ),
+    );
+  }
 
-  Widget _buildPriceAlert(String coin, String type, String price, bool isActive) {
+  Widget _buildPriceAlertRow(PriceAlert alert, Color accent) {
+    final isAbove = alert.direction.toLowerCase() == 'above';
+    // Defensive defaults — legacy rows or partial responses can have
+    // empty symbol / fiat, which would render as blank space. Fall
+    // back to the crypto_id and the active locale currency so the row
+    // always reads cleanly.
+    final symbol = alert.cryptoSymbol.isNotEmpty
+        ? alert.cryptoSymbol.toUpperCase()
+        : alert.cryptoId.toUpperCase();
+    final fiat = alert.fiatCurrency.isNotEmpty
+        ? alert.fiatCurrency.toUpperCase()
+        : CurrencySymbols.currentCurrency.toUpperCase();
+    final priceStr = alert.targetPrice >= 1
+        ? alert.targetPrice.toStringAsFixed(2)
+        : alert.targetPrice.toStringAsFixed(6);
     return Container(
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-        
       ),
       child: Row(
-              children: [
-                Icon(
-            type == 'Above' ? Icons.arrow_upward : Icons.arrow_downward,
-            color: isActive ? const Color.fromARGB(255, 78, 3, 208) : Colors.grey,
+        children: [
+          Icon(
+            isAbove ? Icons.arrow_upward : Icons.arrow_downward,
+            color: accent,
             size: 20.sp,
           ),
           SizedBox(width: 12.w),
@@ -525,7 +627,7 @@ class _CryptoScreenState extends State<CryptoScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '$coin $type $price',
+                  '$symbol ${isAbove ? "above" : "below"} $fiat $priceStr',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 14.sp,
@@ -533,24 +635,24 @@ class _CryptoScreenState extends State<CryptoScreen>
                   ),
                 ),
                 Text(
-                  isActive ? 'Active' : 'Inactive',
+                  alert.isTriggered ? 'Triggered' : 'Active',
                   style: TextStyle(
-                    color: isActive ? const Color.fromARGB(255, 78, 3, 208) : Colors.grey,
+                    color: alert.isTriggered ? Colors.grey : accent,
                     fontSize: 12.sp,
                   ),
                 ),
               ],
             ),
           ),
-          Switch(
-            value: isActive,
-            onChanged: (value) {},
-            activeThumbColor: const Color.fromARGB(255, 78, 3, 208),
-                ),
-              ],
-            ),
-          );
-        }
+          IconButton(
+            icon: Icon(Icons.delete_outline, color: Colors.grey, size: 18.sp),
+            tooltip: 'Delete alert',
+            onPressed: () => context.read<CryptoCubit>().removePriceAlert(alert.id),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildWatchlistSection(CryptosLoaded state) {
     // Resolve watchlist crypto IDs to actual Crypto objects
@@ -595,15 +697,25 @@ class _CryptoScreenState extends State<CryptoScreen>
                 ),
               ),
               TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  final cubit = context.read<CryptoCubit>();
+                  Get.bottomSheet(
+                    BlocProvider.value(
+                      value: cubit,
+                      child: const WatchlistManagerSheet(),
+                    ),
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                  );
+                },
                 child: Text(
                   'Edit',
                   style: TextStyle(
                     color: const Color.fromARGB(255, 78, 3, 208),
                     fontSize: 14.sp,
-                    ),
                   ),
                 ),
+              ),
             ],
           ),
           SizedBox(height: 16.h),
@@ -1166,9 +1278,14 @@ class _CryptoScreenState extends State<CryptoScreen>
       case CryptoTransactionStatus.completed:
         return Colors.green;
       case CryptoTransactionStatus.pending:
+      case CryptoTransactionStatus.verifying:
         return Colors.orange;
       case CryptoTransactionStatus.failed:
         return Colors.red;
+      case CryptoTransactionStatus.refunded:
+        return const Color(0xFF9CA3AF);
+      case CryptoTransactionStatus.manualReview:
+        return const Color(0xFFFB923C);
     }
   }
 
@@ -1735,179 +1852,109 @@ class _CryptoScreenState extends State<CryptoScreen>
     );
   }
 
-  Widget _buildLazerVaultCard() {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-      padding: EdgeInsets.all(24.w),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color.fromARGB(255, 78, 3, 208),
-            const Color(0xFF1A237E),
-          ],
+  // Horizontal-scrolling spotlight row that sits just above Top Movers.
+  // Surfaces the user's tradable assets with sparkline + current price +
+  // 24h change. Defaults to the top 10 supported assets by market cap;
+  // user can tap any card to jump straight to the asset detail screen.
+  Widget _buildCryptoCardsRow(CryptosLoaded state) {
+    // Prefer supported assets (the ones tradable via Quidax) so taps
+    // don't dead-end on unsupported coins. Fall back to overall market
+    // when the supported list hasn't hydrated yet (very rare).
+    final pool = state.supportedAssets.isNotEmpty
+        ? state.supportedAssets
+        : state.cryptos;
+    if (pool.isEmpty) return SizedBox(height: 8.h);
+
+    // Pin BTC + ETH to the front when present, then top market-cap
+    // assets after. Keeps the row feeling familiar across runs.
+    final priorities = ['BTC', 'ETH', 'USDT', 'USDC', 'SOL', 'XRP'];
+    final byPriority = <Crypto>[];
+    final remainder = <Crypto>[];
+    for (final c in pool) {
+      if (priorities.contains(c.symbol.toUpperCase())) {
+        byPriority.add(c);
+      } else {
+        remainder.add(c);
+      }
+    }
+    byPriority.sort((a, b) => priorities
+        .indexOf(a.symbol.toUpperCase())
+        .compareTo(priorities.indexOf(b.symbol.toUpperCase())));
+    final cards = [...byPriority, ...remainder].take(30).toList();
+
+    final sym = CurrencySymbols.currentSymbol;
+    return Padding(
+      padding: EdgeInsets.only(top: 4.h, bottom: 4.h),
+      child: SizedBox(
+        height: 168.h,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          physics: const BouncingScrollPhysics(),
+          itemCount: cards.length,
+          separatorBuilder: (_, __) => SizedBox(width: 10.w),
+          itemBuilder: (context, i) {
+            final crypto = cards[i];
+            final color = _accentForSymbol(crypto.symbol);
+            return SizedBox(
+              width: 160.w,
+              child: _buildCryptoCard(
+                crypto,
+                crypto.symbol.toUpperCase(),
+                '$sym${crypto.currentPrice.toStringAsFixed(2)}',
+                crypto.priceChangePercentage24h,
+                _sparklineFromCrypto(crypto),
+                color,
+              ),
+            );
+          },
         ),
-        borderRadius: BorderRadius.circular(20.r),
-        boxShadow: [
-          BoxShadow(
-            color: const Color.fromARGB(255, 78, 3, 208).withValues(alpha: 0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-          Text(
-                    'LazerVault Card',
-            style: GoogleFonts.inter(
-                      fontSize: 20.sp,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-                  SizedBox(height: 4.h),
-          Text(
-                    'Spend your crypto anywhere',
-            style: GoogleFonts.inter(
-              fontSize: 14.sp,
-                      color: Colors.white.withValues(alpha: 0.9),
-                    ),
-                  ),
-                ],
-              ),
-              Container(
-                padding: EdgeInsets.all(12.w),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                child: Icon(
-                  Icons.credit_card,
-                  color: Colors.white,
-                  size: 24.sp,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 20.h),
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '✓ Zero transaction fees',
-                      style: GoogleFonts.inter(
-                        fontSize: 12.sp,
-                        color: Colors.white.withValues(alpha: 0.9),
-                      ),
-                    ),
-                    SizedBox(height: 4.h),
-                    Text(
-                      '✓ Instant crypto conversion',
-                      style: GoogleFonts.inter(
-                        fontSize: 12.sp,
-                        color: Colors.white.withValues(alpha: 0.9),
-                      ),
-                    ),
-                    SizedBox(height: 4.h),
-                    Text(
-                      '✓ Global acceptance',
-                      style: GoogleFonts.inter(
-                        fontSize: 12.sp,
-                        color: Colors.white.withValues(alpha: 0.9),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              GestureDetector(
-                onTap: () => Get.to(() => const LazerVaultCardScreen()),
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20.r),
-                  ),
-                  child: Text(
-                    'Apply Now',
-                    style: GoogleFonts.inter(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w600,
-                      color: const Color.fromARGB(255, 78, 3, 208),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }
 
-  Widget _buildCryptoCardsRow(CryptosLoaded state) {
-    // Find BTC and ETH from loaded cryptos
-    final btc = state.cryptos.cast<Crypto?>().firstWhere(
-      (c) => c?.symbol.toUpperCase() == 'BTC', orElse: () => state.cryptos.isNotEmpty ? state.cryptos[0] : null);
-    final eth = state.cryptos.cast<Crypto?>().firstWhere(
-      (c) => c?.symbol.toUpperCase() == 'ETH', orElse: () => state.cryptos.length > 1 ? state.cryptos[1] : null);
-
-    // Generate sparkline from price history or derive from 24h change
-    List<double> sparklineFromCrypto(Crypto? crypto) {
-      if (crypto == null) return [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5];
-      if (crypto.priceHistory.isNotEmpty) {
-        final points = crypto.priceHistory.take(7).map((p) => p.price).toList();
-        if (points.isEmpty) return [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5];
-        final minP = points.reduce((a, b) => a < b ? a : b);
-        final maxP = points.reduce((a, b) => a > b ? a : b);
-        final range = maxP - minP;
-        if (range == 0) return List.filled(points.length, 0.5);
-        return points.map((p) => (p - minP) / range).toList();
-      }
-      // Derive from 24h change direction
-      final change = crypto.priceChangePercentage24h;
-      if (change >= 0) return [0.3, 0.35, 0.4, 0.45, 0.5, 0.6, 0.7];
-      return [0.7, 0.6, 0.5, 0.45, 0.4, 0.35, 0.3];
+  // Stable color per ticker so the row reads as the same asset across
+  // refreshes (not deterministic from the data itself, just symbol).
+  Color _accentForSymbol(String symbol) {
+    switch (symbol.toUpperCase()) {
+      case 'BTC':
+        return const Color(0xFFF7931A);
+      case 'ETH':
+        return const Color(0xFF627EEA);
+      case 'USDT':
+        return const Color(0xFF26A17B);
+      case 'USDC':
+        return const Color(0xFF2775CA);
+      case 'SOL':
+        return const Color(0xFF9945FF);
+      case 'XRP':
+        return const Color(0xFF23292F);
+      case 'BNB':
+        return const Color(0xFFF3BA2F);
+      case 'ADA':
+        return const Color(0xFF0033AD);
+      case 'DOGE':
+        return const Color(0xFFC2A633);
+      default:
+        return const Color.fromARGB(255, 78, 3, 208);
     }
+  }
 
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 8.w),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildCryptoCard(
-              btc,
-              btc?.symbol.toUpperCase() ?? 'BTC',
-              btc != null ? '${CurrencySymbols.currentSymbol}${btc.currentPrice.toStringAsFixed(2)}' : '--',
-              btc?.priceChangePercentage24h ?? 0.0,
-              sparklineFromCrypto(btc),
-              Colors.orange,
-            ),
-          ),
-          Expanded(
-            child: _buildCryptoCard(
-              eth,
-              eth?.symbol.toUpperCase() ?? 'ETH',
-              eth != null ? '${CurrencySymbols.currentSymbol}${eth.currentPrice.toStringAsFixed(2)}' : '--',
-              eth?.priceChangePercentage24h ?? 0.0,
-              sparklineFromCrypto(eth),
-              const Color.fromARGB(255, 78, 3, 208),
-            ),
-          ),
-        ],
-      ),
-    );
+  // Normalize the latest 7 price points to [0,1] for the chart, or fall
+  // back to a directional ramp when no price history is available.
+  List<double> _sparklineFromCrypto(Crypto crypto) {
+    if (crypto.priceHistory.isNotEmpty) {
+      final points = crypto.priceHistory.take(7).map((p) => p.price).toList();
+      if (points.isEmpty) return [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5];
+      final minP = points.reduce((a, b) => a < b ? a : b);
+      final maxP = points.reduce((a, b) => a > b ? a : b);
+      final range = maxP - minP;
+      if (range == 0) return List.filled(points.length, 0.5);
+      return points.map((p) => (p - minP) / range).toList();
+    }
+    final change = crypto.priceChangePercentage24h;
+    if (change >= 0) return [0.3, 0.35, 0.4, 0.45, 0.5, 0.6, 0.7];
+    return [0.7, 0.6, 0.5, 0.45, 0.4, 0.35, 0.3];
   }
 
   Widget _buildTopMoversSection(CryptosLoaded state) {
@@ -2008,16 +2055,75 @@ class _CryptoScreenState extends State<CryptoScreen>
   }
 
   Widget _buildFooter() {
-    return Padding(
-      padding: EdgeInsets.all(16.w),
-      child: Text(
-        'Service provided by LazerVault Ltd. View Crypto Disclosures.',
-        style: TextStyle(
-          color: Colors.grey[400],
-          fontSize: 12.sp,
-        ),
-        textAlign: TextAlign.center,
-      ),
+    return BlocBuilder<CryptoCubit, CryptoState>(
+      builder: (context, state) {
+        // Disclosure URL is admin-managed via system_settings
+        // (`crypto.disclosure_url`). Hide the CTA entirely when ops
+        // hasn't set a URL so the footer never opens a dead link.
+        final url = state is CryptosLoaded
+            ? (state.globalMarketData?.disclosureUrl ?? '')
+            : '';
+        return Padding(
+          padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 16.h),
+          child: Column(
+            children: [
+              Text(
+                'Service provided by LazerVault Ltd.',
+                style: GoogleFonts.inter(
+                  color: Colors.white.withValues(alpha: 0.45),
+                  fontSize: 11.sp,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              if (url.isNotEmpty) ...[
+                SizedBox(height: 10.h),
+                GestureDetector(
+                  onTap: () => Get.to(
+                    () => PartnerWebViewScreen(
+                      url: url,
+                      title: 'Crypto Disclosure',
+                    ),
+                  ),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: 14.w, vertical: 10.h),
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 78, 3, 208)
+                          .withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(10.r),
+                      border: Border.all(
+                        color: const Color.fromARGB(255, 78, 3, 208)
+                            .withValues(alpha: 0.35),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.gavel_rounded,
+                            color: Colors.white.withValues(alpha: 0.85),
+                            size: 14.sp),
+                        SizedBox(width: 8.w),
+                        Text(
+                          'View crypto disclosure',
+                          style: GoogleFonts.inter(
+                            color: Colors.white.withValues(alpha: 0.92),
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        SizedBox(width: 8.w),
+                        Icon(Icons.open_in_new_rounded,
+                            color: Colors.white.withValues(alpha: 0.65),
+                            size: 12.sp),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+      },
     );
   }
 

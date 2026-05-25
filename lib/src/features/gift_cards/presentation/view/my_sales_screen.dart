@@ -9,6 +9,7 @@ import '../../cubit/gift_card_cubit.dart';
 import '../../cubit/gift_card_state.dart';
 import '../../domain/entities/gift_card_entity.dart';
 import 'widgets/gift_card_error_widget.dart';
+import 'widgets/sell_rejection_reasons_sheet.dart';
 
 class MySalesScreen extends StatefulWidget {
   const MySalesScreen({super.key});
@@ -384,6 +385,28 @@ class _MySalesScreenState extends State<MySalesScreen>
                               fontSize: 13.sp,
                               color: Colors.white,
                               height: 1.4,
+                            ),
+                          ),
+                          SizedBox(height: 10.h),
+                          GestureDetector(
+                            onTap: () => showSellRejectionReasonsSheet(context,
+                                highlightReason: displaySale.rejectionReason),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.help_outline,
+                                    color: const Color(0xFFEF4444), size: 15.sp),
+                                SizedBox(width: 6.w),
+                                Text(
+                                  'Why was this rejected?',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFFEF4444),
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],

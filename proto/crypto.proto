@@ -170,6 +170,11 @@ message GetGlobalMarketDataResponse {
   int32 active_cryptocurrencies = 5;
   int32 markets = 6;
   google.protobuf.Timestamp updated_at = 7;
+  // Admin-configurable crypto disclosure URL (system_settings key
+  // `crypto.disclosure_url`). Piggybacks on this landing-page call so
+  // the Flutter footer can render a tap-to-open CTA without a separate
+  // RPC round-trip.
+  string disclosure_url = 8;
 }
 
 // ============================================================================
@@ -198,6 +203,11 @@ message GetCryptoFiatRateResponse {
 
 message GetCryptoHoldingsRequest {
   string user_id = 1;
+  // When true, skip per-asset CoinGecko/Quidax price lookups and return
+  // balances only. Flutter uses this to render units fast on the landing
+  // page, then fans out parallel GetCryptoFiatRate calls per held asset
+  // to populate fiat values progressively.
+  bool units_only = 2;
 }
 
 message GetCryptoHolding {
@@ -1028,10 +1038,1064 @@ message MarkSettlementsPaidRequest {
   string paid_by = 2;          // Admin user ID
 }
 
+// ============================================================================
+// Quidax admin RPCs (PR4.6) — operate the master-float, swap pipeline, rollback
+// queue and crypto.* / quidax.* system_settings. Caller MUST set
+// x-admin-user-id metadata; crypto-service uses it for the audit trail.
+// ============================================================================
+
+// AdminGetMasterFloat returns per-currency drift snapshot + recent transfers.
+message AdminGetMasterFloatRequest {}
+
+message AdminMasterFloatBalance {
+  string currency                     = 1;  // "NGN" / "USDT"
+  int64  local_balance_minor_units    = 2;
+  int64  quidax_balance_minor_units   = 3;
+  int64  drift_minor_units            = 4;
+  int64  drift_tolerance_minor_units  = 5;
+  string last_synced_at               = 6;  // RFC3339 or empty
+  string last_drift_alert_at          = 7;
+}
+
+message AdminMasterFloatTransfer {
+  string id                  = 1;
+  string reference           = 2;
+  string direction           = 3;  // master_to_sub | sub_to_master | external_send
+  string currency            = 4;
+  int64  amount_minor_units  = 5;
+  string status              = 6;  // pending | submitted | done | rejected | failed
+  string quidax_withdraw_id  = 7;
+  string created_at          = 8;
+  string done_at             = 9;
+}
+
+message AdminGetMasterFloatResponse {
+  repeated AdminMasterFloatBalance  balances          = 1;
+  repeated AdminMasterFloatTransfer pending_transfers = 2;  // last ~20 non-done rows
+  string                            data_source        = 3;  // "live" — the stub fallback is dashboard-side
+}
+
+// AdminTriggerMasterFloatRecon forces a MasterFloatReconciler tick.
+message AdminTriggerMasterFloatReconRequest {}
+message AdminTriggerMasterFloatReconResponse { string status = 1; }
+
+// AdminPushMasterFloat manually pushes fiat into a sub-account (treasury op).
+message AdminPushMasterFloatRequest {
+  string currency           = 1;
+  int64  amount_minor_units = 2;
+  string target_quidax_uid  = 3;
+  string reference          = 4;  // idempotent
+  string narration          = 5;
+}
+message AdminPushMasterFloatResponse {
+  string transfer_id = 1;
+  string status      = 2;
+}
+
+// AdminListSwapTransactions lists swap pipeline rows with optional status filter.
+message AdminListSwapTransactionsRequest {
+  string status   = 1;  // optional filter
+  int32  page     = 2;
+  int32  per_page = 3;  // max 200
+}
+
+message AdminSwapTransactionListItem {
+  string id              = 1;
+  string reference       = 2;
+  string user_id         = 3;
+  string side            = 4;
+  string from_currency   = 5;
+  string to_currency     = 6;
+  string from_amount     = 7;
+  string to_amount       = 8;
+  string status          = 9;
+  int32  spread_bps      = 10;
+  string quidax_swap_id  = 11;
+  string created_at      = 12;
+  string completed_at    = 13;
+}
+
+message AdminListSwapTransactionsResponse {
+  repeated AdminSwapTransactionListItem transactions = 1;
+  int32                                 total        = 2;
+}
+
+// AdminGetSwapTransactionDetail returns full lifecycle for a single row.
+message AdminGetSwapTransactionDetailRequest { string id = 1; }
+
+message AdminGetSwapTransactionDetailResponse {
+  AdminSwapTransactionListItem header                 = 1;
+  string                       quote_id               = 2;
+  string                       quoted_price           = 3;
+  int64                        spread_minor_units     = 4;
+  string                       accounts_hold_id       = 5;
+  string                       float_push_reference   = 6;
+  string                       float_pull_reference   = 7;
+  string                       last_error             = 8;
+  int32                        recon_attempts         = 9;
+  int32                        version                = 10;
+  // PR5c.4 — append-only timeline events for the dashboard renderer.
+  repeated AdminSwapTimelineEvent timeline             = 11;
+}
+
+// AdminSwapTimelineEvent — one row from crypto_swap_event_logs (PR5c.4).
+message AdminSwapTimelineEvent {
+  string id          = 1;
+  string event_type  = 2;  // quote_created, quote_refreshed, swap_confirmed, status_changed, webhook_received, rollback_phase_*
+  string source      = 3;  // saga | supervisor | webhook | rollback_processor | admin
+  string message     = 4;
+  string from_status = 5;  // populated for status_changed events
+  string to_status   = 6;
+  string event_data  = 7;  // raw JSON string for the renderer to expand
+  string occurred_at = 8;  // RFC3339Nano
+}
+
+// AdminListRollbacks returns the 3-phase rollback queue.
+message AdminListRollbacksRequest {
+  string status   = 1;
+  int32  page     = 2;
+  int32  per_page = 3;
+}
+
+message AdminRollbackListItem {
+  string id                              = 1;
+  string swap_transaction_id             = 2;
+  string user_id                         = 3;
+  string status                          = 4;
+  string reason                          = 5;
+  string provider_verification_status    = 6;
+  string internal_refund_status          = 7;
+  string reversal_status                 = 8;
+  int32  retry_count                     = 9;
+  int32  max_retries                     = 10;
+  string created_at                      = 11;
+  string updated_at                      = 12;
+}
+
+message AdminListRollbacksResponse {
+  repeated AdminRollbackListItem rollbacks = 1;
+  int32                          total     = 2;
+}
+
+// AdminRetryRollbackPhase re-arms a stuck rollback row.
+message AdminRetryRollbackPhaseRequest {
+  string rollback_id = 1;
+  string phase       = 2;  // provider_verification | internal_refund | reversing_settlement
+}
+message AdminRetryRollbackPhaseResponse { string status = 1; }
+
+// AdminGetRollbackDetail — per-row drilldown for /crypto/rollbacks/[id].
+// Returns the rollback header, the linked swap row for context, and the
+// full audit-log timeline (crypto_swap_rollback_audit_logs).
+message AdminGetRollbackDetailRequest { string id = 1; }
+
+// AdminRollbackAuditEvent — one row from crypto_swap_rollback_audit_logs.
+// Same shape philosophy as AdminSwapTimelineEvent: stable, opaque JSON
+// payloads the dashboard renderer can pretty-print.
+message AdminRollbackAuditEvent {
+  string id                = 1;
+  string phase             = 2;  // provider_verification | internal_refund | reversing_settlement | manual_review
+  string action            = 3;  // skip_quidax_lookup | release_hold | pull_fiat | escalate_manual_review | sell_settlement_exhausted | ...
+  string outcome           = 4;  // success | failure | escalate
+  string request_payload   = 5;  // jsonb, stringified
+  string response_payload  = 6;  // jsonb, stringified
+  string error_message     = 7;
+  string actor             = 8;
+  string created_at        = 9;
+}
+
+message AdminGetRollbackDetailResponse {
+  AdminRollbackListItem        header    = 1;
+  AdminSwapTransactionListItem swap      = 2;
+  repeated AdminRollbackAuditEvent audit = 3;
+}
+
+// AdminOrphanWebhookItem — one row from crypto_orphan_webhooks
+// (migration 018). All optional Quidax-ID fields are emitted as empty
+// strings when NULL on the row — proto3 has no nullable-string semantics
+// so callers must check for "" to distinguish "no value" from valid.
+message AdminOrphanWebhookItem {
+  string id                = 1;
+  string event_type        = 2;
+  string quidax_event_id   = 3;
+  string quidax_user_id    = 4;
+  string quidax_swap_id    = 5;
+  string reference         = 6;
+  string market            = 7;
+  string side              = 8;
+  string amount_decimal    = 9;
+  string currency          = 10;
+  string occurred_at       = 11;  // RFC3339Nano
+  string raw_payload       = 12;  // jsonb, stringified
+  string status            = 13;  // pending | matched | dropped | manual_review
+  string matched_swap_id   = 14;
+  string matched_at        = 15;
+  string matched_by        = 16;  // supervisor_match | admin:{email} | ...
+  int32  match_attempts    = 17;
+  string next_match_at     = 18;
+  string last_match_error  = 19;
+  string created_at        = 20;
+  string updated_at        = 21;
+}
+
+message AdminListOrphanWebhooksRequest {
+  string status   = 1;  // pending | matched | dropped | manual_review | ""=all
+  int32  page     = 2;
+  int32  per_page = 3;
+}
+
+message AdminListOrphanWebhooksResponse {
+  repeated AdminOrphanWebhookItem orphans = 1;
+  int32                           total   = 2;
+}
+
+// AdminDropOrphanWebhook — admin action that marks a pending row as
+// dropped (no further automated matching). Used for dev artefacts /
+// webhooks for trades that legitimately don't belong to a LazerVault
+// user. The reason is stamped in last_match_error for audit.
+message AdminDropOrphanWebhookRequest {
+  string id     = 1;
+  string reason = 2;
+}
+message AdminDropOrphanWebhookResponse { string status = 1; }
+
+// AdminGetQuidaxConfig returns every crypto.* / quidax.* system_settings row.
+message AdminGetQuidaxConfigRequest {}
+
+message AdminQuidaxConfigEntry {
+  string setting_key   = 1;
+  string setting_value = 2;
+  string description   = 3;
+  string updated_at    = 4;
+}
+
+message AdminGetQuidaxConfigResponse {
+  repeated AdminQuidaxConfigEntry settings = 1;
+}
+
+// AdminUpdateQuidaxConfig writes one row and invalidates the resolver.
+message AdminUpdateQuidaxConfigRequest {
+  string key   = 1;
+  string value = 2;
+}
+message AdminUpdateQuidaxConfigResponse {
+  string key   = 1;
+  string value = 2;
+}
+
+// ----------------------------------------------------------------------------
+// PR5c.1 — Quidax sub-account admin observability
+// ----------------------------------------------------------------------------
+//
+// AdminGetSubAccount: search-by-user-id (LazerVault user UUID) OR by quidax id.
+// AdminListSubAccounts: paginated list ordered by most recent creation; used
+// by the /crypto/sub-accounts admin tab for triage and master-float deeplink.
+
+message AdminQuidaxSubAccount {
+  string id              = 1;  // quidax_sub_accounts.id (internal UUID)
+  string user_id         = 2;  // LazerVault user UUID
+  string quidax_user_id  = 3;  // Quidax sub-account id
+  string quidax_sn       = 4;  // Quidax sub-account SN
+  string email           = 5;  // synthetic email used at provisioning
+  string first_name      = 6;
+  string last_name       = 7;
+  string created_at      = 8;  // RFC3339Nano
+  string updated_at      = 9;
+  // Convenience counts — calculated server-side from related tables, so the
+  // admin page can render badges without N additional RPCs.
+  int32  wallet_count    = 10; // crypto_wallets rows for this sub-account
+  int32  recent_swap_count = 11; // crypto_swap_transactions in last 30d
+}
+
+message AdminGetSubAccountRequest {
+  // Exactly one of these must be set. Search is exact-match (not LIKE).
+  string user_id        = 1;  // LazerVault user UUID
+  string quidax_user_id = 2;  // Quidax id
+  string email          = 3;  // synthetic provisioning email
+}
+
+message AdminGetSubAccountResponse {
+  AdminQuidaxSubAccount sub_account = 1;
+  bool                  found       = 2;
+}
+
+message AdminListSubAccountsRequest {
+  int32 page     = 1; // 1-indexed; defaults to 1
+  int32 per_page = 2; // capped server-side at 100
+  // Optional filter: substring match against user_id / quidax_user_id / email.
+  // Empty = no filter.
+  string query   = 3;
+}
+
+message AdminListSubAccountsResponse {
+  repeated AdminQuidaxSubAccount sub_accounts = 1;
+  int64                          total        = 2;
+  int32                          page         = 3;
+  int32                          per_page     = 4;
+}
+
+// ----------------------------------------------------------------------------
+// PR5c.2 — Quidax deposit observability
+// ----------------------------------------------------------------------------
+
+message AdminQuidaxDeposit {
+  string id                       = 1;
+  string provider_event_id        = 2;
+  string quidax_deposit_id        = 3;
+  string lazervault_user_id       = 4;
+  string quidax_user_id           = 5;
+  string type                     = 6;  // coin_address | internal
+  string currency                 = 7;
+  int64  amount_minor_units       = 8;
+  string amount_decimal           = 9;
+  int64  fee_minor_units          = 10;
+  string status                   = 11; // submitted | confirmed | accepted | on_hold | failed_aml | rejected | checked
+  string txid                     = 12;
+  string address                  = 13;
+  string network                  = 14;
+  int32  confirmations            = 15;
+  int32  required_confirmations   = 16;
+  string failure_reason           = 17;
+  string created_at               = 18;
+  string updated_at               = 19;
+  string done_at                  = 20;
+}
+
+message AdminListDepositsRequest {
+  string status   = 1; // optional exact-match filter
+  string currency = 2; // optional lowercase ccy filter
+  string user_id  = 3; // optional LazerVault user UUID
+  string type     = 4; // optional coin_address / internal
+  int32  page     = 5;
+  int32  per_page = 6;
+}
+
+message AdminListDepositsResponse {
+  repeated AdminQuidaxDeposit deposits = 1;
+  int64                       total    = 2;
+  int32                       page     = 3;
+  int32                       per_page = 4;
+}
+
+// ----------------------------------------------------------------------------
+// PR5c.3 — Withdrawal observability
+// ----------------------------------------------------------------------------
+//
+// Backed by crypto_master_float_transfers (covers both master↔sub liquidity
+// pushes and external send-crypto withdrawals when those land). Status is
+// Quidax-capitalized (Processing/Done/Rejected) when sourced from Quidax,
+// lowercase (pending/submitted/failed) for our own in-flight rows.
+
+message AdminQuidaxWithdrawal {
+  string id                  = 1;
+  string reference           = 2;
+  string direction           = 3; // master_to_sub | sub_to_master | external_send
+  string currency            = 4;
+  int64  amount_minor_units  = 5;
+  string source_quidax_uid   = 6;
+  string target_fund_uid     = 7;
+  string network             = 8;
+  string status              = 9;
+  string fail_reason         = 10;
+  string quidax_withdraw_id  = 11;
+  string related_user_id     = 12;
+  string related_swap_id     = 13;
+  int32  recon_attempts      = 14;
+  string submitted_at        = 15;
+  string done_at             = 16;
+  string created_at          = 17;
+  string updated_at          = 18;
+}
+
+message AdminListWithdrawalsRequest {
+  string status    = 1; // optional exact-match filter
+  string currency  = 2; // optional lowercase ccy filter
+  string direction = 3; // optional master_to_sub / sub_to_master / external_send
+  int32  page      = 4;
+  int32  per_page  = 5;
+}
+
+message AdminListWithdrawalsResponse {
+  repeated AdminQuidaxWithdrawal withdrawals = 1;
+  int64                          total       = 2;
+  int32                          page        = 3;
+  int32                          per_page    = 4;
+}
+
+// ============================================================================
+// Swap-quotation flow (PR3) — Quidax SEC-licensed retail Buy/Sell pipeline
+// ============================================================================
+
+// CreateSwapQuoteRequest initiates a quote+lock for a buy/sell trade.
+// Exactly one of from_amount_minor_units / to_amount_minor_units must be set.
+message CreateSwapQuoteRequest {
+  string account_id            = 1;  // accounts-service account_id holding from-currency balance
+  string side                  = 2;  // "buy" | "sell"
+  string from_currency         = 3;  // e.g. "ngn"
+  string to_currency           = 4;  // e.g. "usdt"
+  int64  from_amount_minor_units = 5;
+  int64  to_amount_minor_units = 6;
+  string client_intent_id      = 7;  // client-generated UUID for idempotency
+  string description           = 8;
+}
+
+message CreateSwapQuoteResponse {
+  string transaction_id = 1;            // crypto_swap_transactions.id
+  string reference      = 2;            // CRYPTO-{uuid}
+  string quote_id       = 3;            // Quidax swap_quotation.id (leg-1 for bridged)
+  string expires_at     = 4;            // ISO-8601; 15s window
+  string from_currency  = 5;
+  string to_currency    = 6;
+  string from_amount    = 7;            // decimal string in from_currency
+  string to_amount      = 8;            // decimal string in to_currency
+  string quoted_price   = 9;            // effective rate (stacked for bridged)
+  int32  spread_bps     = 10;           // stacked when route_kind='bridge_via_usdt'
+  int64  spread_minor_units = 11;       // platform fee in from_currency minor
+  bool   is_idempotent_hit  = 12;       // true if matched an existing intent
+
+  // Bridge metadata (migration 035). 'direct' for single-leg trades;
+  // 'bridge_via_usdt' for two-leg routes (NGN<->USDT<->XYZ).
+  string route_kind            = 13;
+  string intermediate_currency = 14;    // empty for direct; "usdt" for bridge
+
+  // Leg-1 fields (NGN->USDT on buy / XYZ->USDT on sell). For direct routes
+  // these mirror the top-level fields.
+  string leg_1_quote_id       = 15;
+  string leg_1_from_currency  = 16;
+  string leg_1_to_currency    = 17;
+  string leg_1_from_amount    = 18;
+  string leg_1_to_amount      = 19;
+  string leg_1_quoted_price   = 20;
+  int32  leg_1_spread_bps     = 21;
+
+  // Leg-2 fields (USDT->XYZ on buy / USDT->NGN on sell). Empty for direct.
+  string leg_2_quote_id       = 22;
+  string leg_2_from_currency  = 23;
+  string leg_2_to_currency    = 24;
+  string leg_2_from_amount    = 25;
+  string leg_2_to_amount      = 26;
+  string leg_2_quoted_price   = 27;
+  int32  leg_2_spread_bps     = 28;
+}
+
+// RefreshSwapQuoteRequest renews the 15-second window when the client UI
+// counter approaches expiry. quoted_price may change.
+message RefreshSwapQuoteRequest {
+  string transaction_id = 1;
+}
+
+// RefreshSwapQuoteResponse mirrors CreateSwapQuoteResponse (the quote_id may
+// be re-issued by Quidax on refresh — check expires_at).
+message RefreshSwapQuoteResponse {
+  string quote_id     = 1;
+  string expires_at   = 2;
+  string quoted_price = 3;
+  string from_amount  = 4;
+  string to_amount    = 5;
+}
+
+// ConfirmSwapRequest commits the quoted trade: CAS quote_pending → swap_pending,
+// then call Quidax confirm. Final state lands via webhook.
+message ConfirmSwapRequest {
+  string transaction_id = 1;
+}
+
+message ConfirmSwapResponse {
+  string transaction_id   = 1;
+  string status           = 2;  // swap_pending | completed | failed
+  string quidax_swap_id   = 3;  // leg-1 id for bridged trades
+  string received_amount  = 4;  // populated when Quidax returns terminal inline
+  string execution_price  = 5;
+
+  // Bridge metadata (migration 035). Echoed back so the client knows
+  // whether to render a single-leg or two-leg processing UI.
+  string route_kind          = 6;
+  string leg_1_quidax_swap_id = 7;
+  string leg_2_quidax_swap_id = 8;
+}
+
+// GetSwapStatusRequest is the long-poll / receipt query used after webhook
+// arrival or while the chain supervisor finalises a stuck swap.
+message GetSwapStatusRequest {
+  string transaction_id = 1;
+}
+
+message GetSwapStatusResponse {
+  string transaction_id   = 1;
+  string reference        = 2;
+  string status           = 3;  // any value from CryptoSwapTransactionModel state machine
+  string from_currency    = 4;
+  string to_currency      = 5;
+  string from_amount      = 6;
+  string to_amount        = 7;
+  string received_amount  = 8;
+  string execution_price  = 9;
+  int32  spread_bps       = 10;
+  int64  spread_minor_units = 11;
+  string quidax_swap_id   = 12;
+  string last_error       = 13;
+  string created_at       = 14;
+  string completed_at     = 15;
+
+  // Bridge surface (migration 035).
+  string route_kind            = 16;
+  string leg_1_quidax_swap_id  = 17;
+  string leg_2_quidax_swap_id  = 18;
+  string leg_1_status          = 19;
+  string leg_2_status          = 20;
+  string leg_1_received_amount = 21;
+  string leg_2_received_amount = 22;
+  string compensation_status   = 23;  // non-empty when leg-2 failure was/being recovered
+  int64  compensation_shortfall_minor = 24;
+}
+
 message MarkSettlementsPaidResponse {
   int32 marked_count = 1;
   string message = 2;
 }
+
+// ============================================================================
+// GetCryptoConfig — server-driven runtime config for Flutter (PR5d.5)
+// ============================================================================
+//
+// Flutter calls this once at app start and again on pull-to-refresh. The
+// values come from CryptoWorkerConfigResolver (single source of truth,
+// hot-reloaded server-side from system_settings every 10s). All Flutter
+// hardcoded values for min order, quick amounts, precision, supported
+// quote currencies, etc. read this response.
+
+message GetCryptoConfigRequest {}
+
+message GetCryptoConfigResponse {
+  // Currency → minimum order in minor units. e.g. {"ngn": 100000, "usdt": 900000}.
+  map<string, int64> min_order_minor_units = 1;
+
+  // Currency → number of decimal places. e.g. {"ngn": 0, "usdt": 2, "btc": 5}.
+  map<string, int32> currency_decimals = 2;
+
+  // Currency → CSV of quick-amount buttons in MAJOR units (UI display value).
+  // Server returns CSV so Flutter can render exactly the strings the operator typed.
+  map<string, string> quick_amounts_csv = 3;
+
+  // Spread to apply when the server's per-pair spread is missing in a quote.
+  // Currently 50 bps default; admin can override per pair via system_settings.
+  int32 default_spread_bps = 4;
+
+  // Hard quote expiry from Quidax (15s). Surfaced so client timers stay in sync.
+  int32 quote_expiry_seconds = 5;
+
+  // Refresh threshold: client refreshes when t < quote_expiry_seconds - refresh_grace_seconds.
+  int32 refresh_grace_seconds = 6;
+
+  // Currencies supported as the QUOTE side of a swap (e.g. "ngn", "usdt").
+  repeated string supported_quote_currencies = 7;
+
+  // Display-only fallback fee shown before the server returns a real quote.
+  // Lives here so it can be tuned without an app release.
+  int32 fee_display_fallback_bps = 8;
+}
+
+// ============================================================================
+// Send-crypto flow (PR6) — user-initiated withdrawals
+// ============================================================================
+//
+// The user picks an asset and a network, supplies an address (or a
+// LazerVault recipient id for an internal transfer), and signs with their
+// transaction PIN. The saga holds funds, calls Quidax POST /withdraws, and
+// awaits the withdraw.successful / withdraw.rejected webhook.
+
+message WithdrawRequest {
+  // accounts-service account to debit. Server cross-checks account.currency
+  // against the requested currency.
+  string account_id            = 1;
+  // "coin_address" for external sends; "internal" for LazerVault-to-LazerVault.
+  string recipient_type        = 2;
+  // Lowercase Quidax ticker (e.g. "usdt", "trx", "btc").
+  string currency              = 3;
+  int64  amount_minor_units    = 4;
+  // External: an on-chain address. Internal: the recipient's LazerVault user_id.
+  string fund_uid              = 5;
+  // Required for multi-network assets (e.g. trc20 / erc20 for USDT). Empty
+  // for internal transfers and currencies with a single network.
+  string network               = 6;
+  // Optional memo (XRP-style destination tag, etc.).
+  string destination_tag       = 7;
+  // Optional user-supplied note (forwarded to Quidax as transaction_note).
+  string transaction_note      = 8;
+  // Optional user-facing narration.
+  string narration             = 9;
+  // Client-generated UUID for idempotency. Re-sending the same intent_id
+  // returns the existing transaction.
+  string client_intent_id      = 10;
+  // PIN supplied via the bottom-sheet on Flutter.
+  string transaction_pin       = 11;
+}
+
+message WithdrawResponse {
+  string transaction_id        = 1;
+  string reference             = 2;   // CRYPTO-SEND-{uuid}
+  string status                = 3;   // pending | submitted | Processing
+  string quidax_withdraw_id    = 4;   // present once Quidax accepts
+  bool   is_idempotent_hit     = 5;
+}
+
+message GetCryptoWithdrawalStatusRequest {
+  string transaction_id        = 1;
+}
+
+message GetCryptoWithdrawalStatusResponse {
+  string transaction_id        = 1;
+  string reference             = 2;
+  string status                = 3;
+  string currency              = 4;
+  string amount_decimal        = 5;
+  string fee_decimal           = 6;
+  string total_decimal         = 7;
+  string recipient_type        = 8;
+  string fund_uid              = 9;
+  string network               = 10;
+  string txid                  = 11;
+  string quidax_withdraw_id    = 12;
+  string fail_reason           = 13;
+  string created_at            = 14;
+  string done_at               = 15;
+}
+
+message GetUserCryptoWithdrawalsRequest {
+  int32 page     = 1;
+  int32 per_page = 2;
+  // Optional filters.
+  string status   = 3;
+  string currency = 4;
+}
+
+message GetUserCryptoWithdrawalsResponse {
+  repeated GetCryptoWithdrawalStatusResponse withdrawals = 1;
+  int64                                       total       = 2;
+  int32                                       page        = 3;
+  int32                                       per_page    = 4;
+}
+
+// ============================================================================
+// Receive (Deposit) flow (PR7)
+// ============================================================================
+
+message QuidaxAssetNetwork {
+  string currency                  = 1;
+  string network                   = 2;
+  string network_name              = 3;
+  bool   deposit_enabled           = 4;
+  bool   withdraw_enabled          = 5;
+  string min_deposit_decimal       = 6;
+  int64  min_deposit_minor_units   = 7;
+  string withdraw_fee_decimal      = 8;
+  int64  withdraw_fee_minor_units  = 9;
+  bool   is_default                = 10;
+  string notes                     = 11;
+}
+
+message GetSupportedAssetNetworksRequest {
+  // Optional. Empty returns all networks across all assets.
+  string currency = 1;
+}
+
+message GetSupportedAssetNetworksResponse {
+  repeated QuidaxAssetNetwork networks = 1;
+}
+
+message EnsureWalletAddressRequest {
+  string currency = 1;
+  string network  = 2; // optional; empty = use the default network
+}
+
+message EnsureWalletAddressResponse {
+  string currency        = 1;
+  string network         = 2;
+  string address         = 3; // empty when generation is still async
+  string destination_tag = 4;
+  bool   ready           = 5; // true once Quidax returned a concrete address
+  string creation_status = 6;
+}
+
+message GetUserCryptoDepositsRequest {
+  int32 page     = 1;
+  int32 per_page = 2;
+  // Optional filters.
+  string status   = 3;
+  string currency = 4;
+}
+
+message UserCryptoDeposit {
+  string id                    = 1;
+  string type                  = 2;  // coin_address | internal
+  string currency              = 3;
+  string amount_decimal        = 4;
+  string status                = 5;
+  string txid                  = 6;
+  string address               = 7;
+  string network               = 8;
+  int32  confirmations         = 9;
+  int32  required_confirmations = 10;
+  string failure_reason        = 11;
+  string created_at            = 12;
+  string done_at               = 13;
+}
+
+message GetUserCryptoDepositsResponse {
+  repeated UserCryptoDeposit deposits = 1;
+  int64                      total    = 2;
+  int32                      page     = 3;
+  int32                      per_page = 4;
+}
+
+// === Admin asset-network management (PR11) ===
+
+message AdminListAssetNetworksRequest {
+  string currency = 1;
+}
+
+message AdminListAssetNetworksResponse {
+  repeated QuidaxAssetNetwork networks = 1;
+}
+
+message AdminUpdateAssetNetworkRequest {
+  string currency             = 1;
+  string network              = 2;
+  // Optional fields — only present in the wire payload are updated. Server
+  // reads `has_*` companion bools to disambiguate "set to false" vs "leave alone".
+  bool   has_deposit_enabled  = 3;
+  bool   deposit_enabled      = 4;
+  bool   has_withdraw_enabled = 5;
+  bool   withdraw_enabled     = 6;
+  bool   has_min_deposit      = 7;
+  string min_deposit_decimal  = 8;
+  bool   has_withdraw_fee     = 9;
+  string withdraw_fee_decimal = 10;
+  bool   has_notes            = 11;
+  string notes                = 12;
+  bool   has_is_default       = 13;
+  bool   is_default           = 14;
+}
+
+message AdminUpdateAssetNetworkResponse {
+  QuidaxAssetNetwork network = 1;
+}
+
+// === Markets management (PR11d) ===
+
+message QuidaxSupportedMarket {
+  string market_id      = 1;
+  string base_currency  = 2;
+  string quote_currency = 3;
+  string market_name    = 4;
+  double maker_fee      = 5;
+  double taker_fee      = 6;
+  bool   is_active      = 7;
+  string last_synced_at = 8;
+  string updated_at     = 9;
+  // bridge_enabled — only meaningful when quote_currency='usdt'. When true,
+  // the saga's resolveSwapRoute is allowed to use this market as the
+  // crypto leg of a USDT-bridged trade. Migration 035.
+  bool   bridge_enabled = 10;
+}
+
+message AdminListSupportedMarketsRequest {}
+message AdminListSupportedMarketsResponse {
+  repeated QuidaxSupportedMarket markets = 1;
+}
+
+message AdminUpdateSupportedMarketRequest {
+  string market_id          = 1;
+  bool   has_is_active      = 2;
+  bool   is_active          = 3;
+  bool   has_maker_fee      = 4;
+  double maker_fee          = 5;
+  bool   has_taker_fee      = 6;
+  double taker_fee          = 7;
+  bool   has_bridge_enabled = 8;
+  bool   bridge_enabled     = 9;
+}
+
+message AdminUpdateSupportedMarketResponse {
+  QuidaxSupportedMarket market = 1;
+}
+
+// ============================================================================
+// ASSET VISIBILITY (per-asset + global toggles) — migration 037
+// ============================================================================
+// The Flutter "all assets" list filters Quidax base currencies by two rules:
+//   1. GLOBAL: crypto.assets.hide_non_pairable — when TRUE, hide any base
+//      with no tradable route to user's locale fiat.
+//   2. PER-ASSET: crypto_asset_overrides.display_enabled — admin can hide
+//      a specific base regardless of route.
+// Admins manage both via the dashboard's Assets tab.
+
+message AdminAsset {
+  string base_currency             = 1;   // lowercase symbol, e.g. "btc"
+  bool   has_ngn_direct            = 2;   // direct NGN market active
+  bool   has_usdt_bridge           = 3;   // USDT bridge route eligible (bridge_enabled gate already applied)
+  bool   display_enabled           = 4;   // false when admin hid this asset
+  string display_disabled_reason   = 5;   // when display_enabled=false
+  string updated_by                = 6;   // last admin who changed the override
+  string updated_at                = 7;   // RFC3339
+}
+
+message AdminListAssetsRequest {}
+message AdminListAssetsResponse {
+  repeated AdminAsset assets             = 1;
+  bool                bridge_enabled     = 2; // current value of crypto.bridge.enabled
+  bool                hide_non_pairable  = 3; // current value of crypto.assets.hide_non_pairable
+}
+
+message AdminSetAssetOverrideRequest {
+  string base_currency             = 1;
+  bool   display_enabled           = 2;
+  string display_disabled_reason   = 3;
+}
+
+message AdminSetAssetOverrideResponse {
+  AdminAsset asset = 1;
+}
+
+message AdminSetGlobalAssetVisibilityRequest {
+  bool hide_non_pairable = 1;
+}
+
+message AdminSetGlobalAssetVisibilityResponse {
+  bool hide_non_pairable = 1;
+}
+
+// ============================================================================
+// BRIDGE ADMIN — kill switch, daily counters, compensation records
+// ============================================================================
+
+message BridgeMetrics {
+  bool   enabled                                = 1;
+  int64  daily_volume_minor_ngn                 = 2;  // sum of bridged trades in last 24h (kobo)
+  int64  daily_volume_cap_minor_ngn             = 3;
+  int64  daily_shortfall_minor_ngn              = 4;  // sum of compensation_shortfall_minor in last 24h
+  int64  daily_shortfall_cap_minor_ngn          = 5;
+  int64  per_trade_cap_minor_ngn                = 6;
+  int32  compensations_pending                  = 7;
+  int32  compensations_completed_24h            = 8;
+  int32  compensations_manual_review            = 9;
+  string intermediate_currency                  = 10;
+  int32  leg_drift_tolerance_bps                = 11;
+}
+
+message AdminGetBridgeMetricsRequest {}
+message AdminGetBridgeMetricsResponse {
+  BridgeMetrics metrics = 1;
+}
+
+message AdminToggleBridgeRequest {
+  bool enabled = 1;
+  string reason = 2;  // optional, recorded in system_settings.updated_by
+}
+
+message AdminToggleBridgeResponse {
+  bool enabled = 1;
+}
+
+message BridgeCompensation {
+  string swap_transaction_id   = 1;
+  string lazervault_user_id    = 2;
+  string from_currency         = 3;
+  string to_currency           = 4;
+  string from_amount           = 5;
+  string leg_1_quidax_swap_id  = 6;
+  string leg_1_received_amount = 7;
+  string compensation_status   = 8;
+  string compensation_quidax_id = 9;
+  string compensation_received_amount = 10;
+  int64  compensation_shortfall_minor = 11;
+  int32  compensation_attempts = 12;
+  string compensation_attempted_at = 13;  // RFC3339
+  string compensation_completed_at = 14;
+  string compensation_failure_reason = 15;
+  string created_at             = 16;
+}
+
+message AdminListCompensationsRequest {
+  string status_filter = 1;   // empty = all; "pending" | "in_progress" | "swap_pending" | "completed" | "failed" | "manual_review"
+  int32  page          = 2;
+  int32  per_page      = 3;
+}
+
+message AdminListCompensationsResponse {
+  repeated BridgeCompensation compensations = 1;
+  int32 total_items                          = 2;
+  int32 current_page                         = 3;
+  int32 total_pages                          = 4;
+}
+
+message AdminGetCompensationDetailRequest {
+  string swap_transaction_id = 1;
+}
+
+message AdminGetCompensationDetailResponse {
+  BridgeCompensation compensation = 1;
+}
+
+message AdminRetryCompensationRequest {
+  string swap_transaction_id = 1;
+}
+
+message AdminRetryCompensationResponse {
+  bool   queued = 1;
+  string status = 2;
+}
+
+message AdminWriteOffCompensationRequest {
+  string swap_transaction_id = 1;
+  string reason              = 2;
+}
+
+message AdminWriteOffCompensationResponse {
+  bool   ok     = 1;
+  string status = 2;
+}
+
+// ============================================================================
+// PRICE-ALERT WORKER OBSERVABILITY + ADMIN ACTIONS
+// ============================================================================
+// One row per PriceAlertWorker tick (table: price_alert_worker_runs).
+// Driven by repository.GetPriceAlertWorkerRuns; consumed by the admin
+// price-alerts page for the "last N runs" panel.
+message PriceAlertWorkerRun {
+  string id = 1;
+  google.protobuf.Timestamp started_at = 2;
+  google.protobuf.Timestamp finished_at = 3;
+  int32 evaluated = 4;
+  int32 fired = 5;
+  int32 errors = 6;
+  repeated string error_msgs = 7;
+  int32 duration_ms = 8;
+}
+
+message GetPriceAlertWorkerStatusRequest {
+  int32 limit = 1; // recent runs to return (default 50, max 200)
+}
+message GetPriceAlertWorkerStatusResponse {
+  bool enabled = 1;
+  int32 poll_interval_seconds = 2;
+  int32 batch_size = 3;
+  int32 total_active_alerts = 4;
+  PriceAlertWorkerRun last_run = 5;
+  repeated PriceAlertWorkerRun recent_runs = 6;
+}
+
+// Partial-update semantics: only set the has_* flag for the field you
+// want to change. Validates poll_interval to [30, 600] and batch_size
+// to [1, 1000] server-side; rejected values are clamped.
+message UpdatePriceAlertWorkerConfigRequest {
+  bool  has_enabled = 1;
+  bool  enabled = 2;
+  bool  has_poll_interval_seconds = 3;
+  int32 poll_interval_seconds = 4;
+  bool  has_batch_size = 5;
+  int32 batch_size = 6;
+}
+message UpdatePriceAlertWorkerConfigResponse {
+  bool  enabled = 1;
+  int32 poll_interval_seconds = 2;
+  int32 batch_size = 3;
+}
+
+message TriggerPriceAlertWorkerNowRequest {}
+message TriggerPriceAlertWorkerNowResponse {
+  PriceAlertWorkerRun run = 1;
+}
+
+// Admin view of a price alert — same fields as PriceAlert plus user_id
+// (user-facing PriceAlert hides user_id because each user only sees
+// their own alerts).
+message AdminPriceAlertRecord {
+  string id = 1;
+  string user_id = 2;
+  string crypto_id = 3;
+  string crypto_symbol = 4;
+  double target_price = 5;
+  string direction = 6;
+  string fiat_currency = 7;
+  bool is_active = 8;
+  bool is_triggered = 9;
+  google.protobuf.Timestamp created_at = 10;
+  google.protobuf.Timestamp triggered_at = 11;
+}
+
+message AdminListPriceAlertsRequest {
+  string user_id = 1;  // optional exact match
+  string symbol = 2;   // optional case-insensitive prefix on crypto_symbol
+  string status = 3;   // "all" | "active" | "triggered" (default "all")
+  int32 page = 4;      // 1-indexed; default 1
+  int32 per_page = 5;  // default 50, max 200
+}
+message AdminListPriceAlertsResponse {
+  repeated AdminPriceAlertRecord alerts = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 per_page = 4;
+}
+
+message AdminForceTriggerPriceAlertRequest { string alert_id = 1; }
+message AdminForceTriggerPriceAlertResponse { AdminPriceAlertRecord alert = 1; }
+
+message AdminDisablePriceAlertRequest { string alert_id = 1; }
+message AdminDisablePriceAlertResponse { AdminPriceAlertRecord alert = 1; }
+
+// ============================================================================
+// LEARN & EARN CMS
+// ============================================================================
+// Backing table: crypto_learn_lessons (migration 031). Lessons are
+// grouped client-side by `category` and ordered by `position`.
+message LearnLesson {
+  string id = 1;
+  string category = 2;       // 'basics' | 'trading' | 'security' | ...
+  string title = 3;
+  string body_md = 4;        // markdown body — Flutter renders via MarkdownBody
+  int32 duration_min = 5;
+  string difficulty = 6;     // 'beginner' | 'intermediate' | 'advanced'
+  string icon_name = 7;      // maps to a Flutter Material icon key
+  int32 position = 8;        // sort order within category
+  bool is_published = 9;
+  google.protobuf.Timestamp created_at = 10;
+  google.protobuf.Timestamp updated_at = 11;
+}
+
+message GetLearnLessonsRequest {
+  string category = 1; // optional filter; empty returns all categories
+}
+message GetLearnLessonsResponse {
+  repeated LearnLesson lessons = 1; // is_published=true only
+}
+
+message AdminListLearnLessonsRequest {
+  string category = 1;          // optional
+  bool   include_unpublished = 2;
+}
+message AdminListLearnLessonsResponse {
+  repeated LearnLesson lessons = 1;
+}
+
+// Upsert: empty id = create; non-empty id = update existing row.
+message AdminUpsertLearnLessonRequest {
+  string id = 1;
+  string category = 2;
+  string title = 3;
+  string body_md = 4;
+  int32 duration_min = 5;
+  string difficulty = 6;
+  string icon_name = 7;
+  int32 position = 8;
+  bool is_published = 9;
+}
+message AdminUpsertLearnLessonResponse {
+  LearnLesson lesson = 1;
+}
+
+message AdminDeleteLearnLessonRequest { string id = 1; }
+message AdminDeleteLearnLessonResponse { bool success = 1; }
 
 // ============================================================================
 // SERVICE DEFINITION
@@ -1111,4 +2175,103 @@ service CryptoService {
   rpc GetTradingSuspension(GetTradingSuspensionRequest) returns (GetTradingSuspensionResponse);
   rpc SetUserCryptoFreeze(SetUserCryptoFreezeRequest) returns (SetUserCryptoFreezeResponse);
   rpc GetUserCryptoFreeze(GetUserCryptoFreezeRequest) returns (GetUserCryptoFreezeResponse);
+
+  // Server-driven crypto runtime config for Flutter (PR5d.5).
+  // De-hardcodes min order, precision, quick amounts, supported currencies.
+  rpc GetCryptoConfig(GetCryptoConfigRequest) returns (GetCryptoConfigResponse);
+
+  // Send-crypto flow (PR6). Initiates a Quidax withdrawal — async, terminal
+  // state arrives via the withdraw.successful / withdraw.rejected webhook.
+  rpc Withdraw(WithdrawRequest) returns (WithdrawResponse);
+  rpc GetCryptoWithdrawalStatus(GetCryptoWithdrawalStatusRequest) returns (GetCryptoWithdrawalStatusResponse);
+  rpc GetUserCryptoWithdrawals(GetUserCryptoWithdrawalsRequest) returns (GetUserCryptoWithdrawalsResponse);
+
+  // Receive (Deposit) flow (PR7). Per-asset network catalogue + on-demand
+  // wallet address generation.
+  rpc GetSupportedAssetNetworks(GetSupportedAssetNetworksRequest) returns (GetSupportedAssetNetworksResponse);
+  rpc EnsureWalletAddress(EnsureWalletAddressRequest) returns (EnsureWalletAddressResponse);
+  rpc GetUserCryptoDeposits(GetUserCryptoDepositsRequest) returns (GetUserCryptoDepositsResponse);
+
+  // Admin: edit quidax_asset_networks rows (PR11 Networks tab).
+  rpc AdminListAssetNetworks(AdminListAssetNetworksRequest) returns (AdminListAssetNetworksResponse);
+  rpc AdminUpdateAssetNetwork(AdminUpdateAssetNetworkRequest) returns (AdminUpdateAssetNetworkResponse);
+
+  // Admin: enable/disable trading pairs + edit fees (PR11d Markets tab).
+  rpc AdminListSupportedMarkets(AdminListSupportedMarketsRequest) returns (AdminListSupportedMarketsResponse);
+  rpc AdminUpdateSupportedMarket(AdminUpdateSupportedMarketRequest) returns (AdminUpdateSupportedMarketResponse);
+
+  // Admin: Assets tab — per-asset + global visibility toggles (migration 037).
+  rpc AdminListAssets(AdminListAssetsRequest) returns (AdminListAssetsResponse);
+  rpc AdminSetAssetOverride(AdminSetAssetOverrideRequest) returns (AdminSetAssetOverrideResponse);
+  rpc AdminSetGlobalAssetVisibility(AdminSetGlobalAssetVisibilityRequest) returns (AdminSetGlobalAssetVisibilityResponse);
+
+  // Admin: USDT-bridge controls + compensation observability (PR-bridge).
+  rpc AdminGetBridgeMetrics(AdminGetBridgeMetricsRequest) returns (AdminGetBridgeMetricsResponse);
+  rpc AdminToggleBridge(AdminToggleBridgeRequest) returns (AdminToggleBridgeResponse);
+  rpc AdminListCompensations(AdminListCompensationsRequest) returns (AdminListCompensationsResponse);
+  rpc AdminGetCompensationDetail(AdminGetCompensationDetailRequest) returns (AdminGetCompensationDetailResponse);
+  rpc AdminRetryCompensation(AdminRetryCompensationRequest) returns (AdminRetryCompensationResponse);
+  rpc AdminWriteOffCompensation(AdminWriteOffCompensationRequest) returns (AdminWriteOffCompensationResponse);
+
+  // Swap-quotation flow (PR3). Production retail Buy/Sell against Quidax's
+  // 15-second swap_quotation + confirm-swap API. The legacy BuyCrypto /
+  // SellCrypto RPCs stay live behind the `crypto.trade_path` system_setting.
+  rpc CreateSwapQuote(CreateSwapQuoteRequest)   returns (CreateSwapQuoteResponse);
+  rpc RefreshSwapQuote(RefreshSwapQuoteRequest) returns (RefreshSwapQuoteResponse);
+  rpc ConfirmSwap(ConfirmSwapRequest)           returns (ConfirmSwapResponse);
+  rpc GetSwapStatus(GetSwapStatusRequest)       returns (GetSwapStatusResponse);
+
+  // Quidax admin RPCs (PR4.6). Caller must set x-admin-user-id metadata.
+  rpc AdminGetMasterFloat(AdminGetMasterFloatRequest)                             returns (AdminGetMasterFloatResponse);
+  rpc AdminTriggerMasterFloatRecon(AdminTriggerMasterFloatReconRequest)           returns (AdminTriggerMasterFloatReconResponse);
+  rpc AdminPushMasterFloat(AdminPushMasterFloatRequest)                           returns (AdminPushMasterFloatResponse);
+  rpc AdminListSwapTransactions(AdminListSwapTransactionsRequest)                 returns (AdminListSwapTransactionsResponse);
+  rpc AdminGetSwapTransactionDetail(AdminGetSwapTransactionDetailRequest)         returns (AdminGetSwapTransactionDetailResponse);
+  rpc AdminListRollbacks(AdminListRollbacksRequest)                               returns (AdminListRollbacksResponse);
+  rpc AdminRetryRollbackPhase(AdminRetryRollbackPhaseRequest)                     returns (AdminRetryRollbackPhaseResponse);
+  rpc AdminGetQuidaxConfig(AdminGetQuidaxConfigRequest)                           returns (AdminGetQuidaxConfigResponse);
+  rpc AdminUpdateQuidaxConfig(AdminUpdateQuidaxConfigRequest)                     returns (AdminUpdateQuidaxConfigResponse);
+
+  // Quidax sub-account observability (PR5c.1). Search-by-user-id or list
+  // recent sub-accounts; pre-fills the master-float push form via deeplink.
+  rpc AdminGetSubAccount(AdminGetSubAccountRequest)     returns (AdminGetSubAccountResponse);
+  rpc AdminListSubAccounts(AdminListSubAccountsRequest) returns (AdminListSubAccountsResponse);
+
+  // Deposits + withdrawals observability (PR5c.2 / PR5c.3). Both backed by
+  // separate tables (crypto_deposits, crypto_master_float_transfers).
+  rpc AdminListDeposits(AdminListDepositsRequest)       returns (AdminListDepositsResponse);
+  rpc AdminListWithdrawals(AdminListWithdrawalsRequest) returns (AdminListWithdrawalsResponse);
+
+  // Orphan-webhook admin surface (migration 018). When the webhook
+  // consumer can't match an incoming Quidax event to a local
+  // crypto_swap_transactions row, it stashes the raw event in
+  // crypto_orphan_webhooks. The supervisor matches what it can; the
+  // residual lands here for ops.
+  rpc AdminListOrphanWebhooks(AdminListOrphanWebhooksRequest) returns (AdminListOrphanWebhooksResponse);
+  rpc AdminDropOrphanWebhook(AdminDropOrphanWebhookRequest)   returns (AdminDropOrphanWebhookResponse);
+
+  // Rollback detail page — header + linked swap + audit log timeline.
+  // The existing AdminListRollbacks RPC powers the list view; this is
+  // the per-row drilldown the dashboard's /crypto/rollbacks/[id] route
+  // needs.
+  rpc AdminGetRollbackDetail(AdminGetRollbackDetailRequest)   returns (AdminGetRollbackDetailResponse);
+
+  // Price-alert worker observability + admin actions. Powers the
+  // admin price-alerts page (worker card + alert-list card with
+  // force-trigger / disable). Worker config (interval, batch_size,
+  // enabled) writes through to system_settings; cached resolver
+  // re-reads within 10s so changes apply without a restart.
+  rpc GetPriceAlertWorkerStatus(GetPriceAlertWorkerStatusRequest)         returns (GetPriceAlertWorkerStatusResponse);
+  rpc UpdatePriceAlertWorkerConfig(UpdatePriceAlertWorkerConfigRequest)   returns (UpdatePriceAlertWorkerConfigResponse);
+  rpc TriggerPriceAlertWorkerNow(TriggerPriceAlertWorkerNowRequest)       returns (TriggerPriceAlertWorkerNowResponse);
+  rpc AdminListPriceAlerts(AdminListPriceAlertsRequest)                   returns (AdminListPriceAlertsResponse);
+  rpc AdminForceTriggerPriceAlert(AdminForceTriggerPriceAlertRequest)     returns (AdminForceTriggerPriceAlertResponse);
+  rpc AdminDisablePriceAlert(AdminDisablePriceAlertRequest)               returns (AdminDisablePriceAlertResponse);
+
+  // Learn & Earn CMS. User-facing GetLearnLessons returns published
+  // rows only; admin variants allow draft management.
+  rpc GetLearnLessons(GetLearnLessonsRequest)                             returns (GetLearnLessonsResponse);
+  rpc AdminListLearnLessons(AdminListLearnLessonsRequest)                 returns (AdminListLearnLessonsResponse);
+  rpc AdminUpsertLearnLesson(AdminUpsertLearnLessonRequest)               returns (AdminUpsertLearnLessonResponse);
+  rpc AdminDeleteLearnLesson(AdminDeleteLearnLessonRequest)               returns (AdminDeleteLearnLessonResponse);
 }

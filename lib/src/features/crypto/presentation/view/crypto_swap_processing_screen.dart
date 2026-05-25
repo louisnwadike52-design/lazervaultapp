@@ -184,6 +184,15 @@ class _CryptoSwapProcessingScreenState extends State<CryptoSwapProcessingScreen>
       _terminalReached = true;
       _executionPrice = state.executionPrice;
       _receivedAmount = state.receivedAmount;
+      // Schedule a silent re-fetch of holdings + transactions BEFORE we
+      // navigate, so the dashboard the user lands on after dismissing
+      // the receipt already shows: (a) the new crypto for a buy, (b) the
+      // crypto debit for a sell, (c) the txn history entry for both.
+      // Non-blocking — refresh races the navigation animation; the
+      // CryptosLoaded copyWith never emits Loading so it can't flash
+      // the dashboard. PR15 covers the matching fiat-side refresh via
+      // _kickAccountSummariesRefresh in swap_flow_dispatcher.
+      unawaited(context.read<CryptoCubit>().refreshHoldingsAfterSwap());
       _navigateToReceipt(CryptoTransactionStatus.completed);
     } else if (state is SwapPending && state.transactionId == widget.transactionId) {
       // Still pending; surface the swap_pending headline to the user.
@@ -192,6 +201,14 @@ class _CryptoSwapProcessingScreenState extends State<CryptoSwapProcessingScreen>
       setState(() => _currentStatus = 'swap_pending');
     } else if (state is SwapFailed && state.transactionId == widget.transactionId) {
       _terminalReached = true;
+      // PR14 — the saga now persists the failed swap row + a rollback
+      // record on every post-hold failure. Refresh transactions so the
+      // user sees the "Trade failed — refund processed" entry in their
+      // history when they navigate back. The fiat hold itself is
+      // released either inline by the saga or by the rollback worker;
+      // _kickAccountSummariesRefresh in swap_flow_dispatcher already
+      // covers the available_balance restore.
+      unawaited(context.read<CryptoCubit>().refreshHoldingsAfterSwap());
       // Distinguish refunded vs hard-failed when the cubit surfaces the
       // reason. Reason strings from the saga: 'quidax_rejected',
       // 'quote_expired', 'sell_settlement_exhausted', etc.

@@ -1,3 +1,4 @@
+import 'package:fixnum/fixnum.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:uuid/uuid.dart';
 
@@ -159,10 +160,12 @@ class CryptoRepositoryImpl implements CryptoRepository {
   }
 
   @override
-  Future<List<CryptoHolding>> getHoldings() async {
-    // Fetch real holdings from backend via gRPC
+  Future<List<CryptoHolding>> getHoldings({bool unitsOnly = false}) async {
+    // Fetch real holdings from backend via gRPC. When unitsOnly is true,
+    // the server skips price lookups and returns FiatValue=0; callers fan
+    // out parallel rate fetches to fill in totals progressively.
     try {
-      final response = await grpcClient.getHoldings();
+      final response = await grpcClient.getHoldings(unitsOnly: unitsOnly);
       return response.holdings.map((h) {
         final price = h.balance > 0 ? h.fiatValue / h.balance : 0.0;
         return CryptoHolding(
@@ -178,6 +181,9 @@ class CryptoRepositoryImpl implements CryptoRepository {
           totalGainLossPercentage: 0.0,
           purchaseDate: DateTime.fromMillisecondsSinceEpoch(h.acquiredAt.toDateTime().millisecondsSinceEpoch),
           lastUpdated: DateTime.now(),
+          // When the backend skipped price lookups, the fiat fields are
+          // not yet computed — mark each holding as awaiting price hydration.
+          priceLoading: unitsOnly && h.balance > 0,
         );
       }).toList();
     } catch (e) {
@@ -364,5 +370,111 @@ class CryptoRepositoryImpl implements CryptoRepository {
     } catch (e) {
       return [];
     }
+  }
+
+  @override
+  Future<bool> ensureUserWallets() async {
+    try {
+      final response = await grpcClient.batchCreateWallets();
+      return response.createdCount > 0;
+    } catch (e) {
+      developer.log(
+        'ensureUserWallets failed (non-fatal): $e',
+        name: 'CryptoRepositoryImpl',
+      );
+      return false;
+    }
+  }
+
+  // --- PR3 swap-quotation flow ---
+
+  @override
+  Future<SwapQuoteReceipt> createSwapQuote({
+    required String accountId,
+    required String side,
+    required String fromCurrency,
+    required String toCurrency,
+    required int fromAmountMinorUnits,
+    required String clientIntentId,
+    String description = '',
+  }) async {
+    final resp = await grpcClient.createSwapQuote(
+      accountId: accountId,
+      side: side,
+      fromCurrency: fromCurrency,
+      toCurrency: toCurrency,
+      fromAmountMinorUnits: Int64(fromAmountMinorUnits),
+      clientIntentId: clientIntentId,
+      description: description,
+    );
+    return SwapQuoteReceipt(
+      transactionId: resp.transactionId,
+      reference: resp.reference,
+      quoteId: resp.quoteId,
+      expiresAt: DateTime.tryParse(resp.expiresAt) ?? DateTime.now().toUtc().add(const Duration(seconds: 15)),
+      fromCurrency: resp.fromCurrency,
+      toCurrency: resp.toCurrency,
+      fromAmount: resp.fromAmount,
+      toAmount: resp.toAmount,
+      quotedPrice: resp.quotedPrice,
+      spreadBps: resp.spreadBps,
+      spreadMinorUnits: resp.spreadMinorUnits.toInt(),
+      isIdempotentHit: resp.isIdempotentHit,
+    );
+  }
+
+  @override
+  Future<SwapQuoteReceipt> refreshSwapQuote(String transactionId) async {
+    final resp = await grpcClient.refreshSwapQuote(transactionId);
+    return SwapQuoteReceipt(
+      transactionId: transactionId,
+      reference: '',
+      quoteId: resp.quoteId,
+      expiresAt: DateTime.tryParse(resp.expiresAt) ?? DateTime.now().toUtc().add(const Duration(seconds: 15)),
+      fromCurrency: '',
+      toCurrency: '',
+      fromAmount: resp.fromAmount,
+      toAmount: resp.toAmount,
+      quotedPrice: resp.quotedPrice,
+      spreadBps: 0,
+      spreadMinorUnits: 0,
+      isIdempotentHit: false,
+    );
+  }
+
+  @override
+  Future<SwapConfirmReceipt> confirmSwap(String transactionId,
+      {String? transactionPin}) async {
+    final resp =
+        await grpcClient.confirmSwap(transactionId, transactionPin: transactionPin);
+    return SwapConfirmReceipt(
+      transactionId: resp.transactionId,
+      status: resp.status,
+      quidaxSwapId: resp.quidaxSwapId,
+      receivedAmount: resp.receivedAmount,
+      executionPrice: resp.executionPrice,
+    );
+  }
+
+  @override
+  Future<SwapStatusReceipt> getSwapStatus(String transactionId) async {
+    final resp = await grpcClient.getSwapStatus(transactionId);
+    return SwapStatusReceipt(
+      transactionId: resp.transactionId,
+      reference: resp.reference,
+      status: resp.status,
+      fromCurrency: resp.fromCurrency,
+      toCurrency: resp.toCurrency,
+      fromAmount: resp.fromAmount,
+      toAmount: resp.toAmount,
+      receivedAmount: resp.receivedAmount,
+      executionPrice: resp.executionPrice,
+      spreadBps: resp.spreadBps,
+      spreadMinorUnits: resp.spreadMinorUnits.toInt(),
+      quidaxSwapId: resp.quidaxSwapId,
+      lastError: resp.lastError,
+      createdAt: DateTime.tryParse(resp.createdAt),
+      completedAt: DateTime.tryParse(resp.completedAt),
+    );
   }
 }

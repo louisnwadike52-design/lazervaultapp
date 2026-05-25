@@ -3,6 +3,7 @@ import '../data/models/crypto_wallet_model.dart';
 import '../domain/entities/crypto_entity.dart';
 import '../domain/entities/global_market_data.dart';
 import '../domain/entities/price_point.dart';
+import '../../../generated/crypto.pb.dart' show PriceAlert;
 
 abstract class CryptoState extends Equatable {
   const CryptoState();
@@ -24,6 +25,10 @@ class CryptosLoaded extends CryptoState {
   final List<CryptoHolding> holdings;
   final List<CryptoTransaction> transactions;
   final List<CryptoWalletModel> wallets;
+  // Price alerts (PriceAlertWorker source of truth). Wired via gateway
+  // proxy; landing page renders a 3-row preview, full management lives
+  // on PriceAlertsScreen.
+  final List<PriceAlert> priceAlerts;
   final GlobalMarketData? globalMarketData;
   final String? searchQuery;
   final bool isSearching;
@@ -37,6 +42,7 @@ class CryptosLoaded extends CryptoState {
     this.holdings = const [],
     this.transactions = const [],
     this.wallets = const [],
+    this.priceAlerts = const [],
     this.globalMarketData,
     this.searchQuery,
     this.isSearching = false,
@@ -52,6 +58,7 @@ class CryptosLoaded extends CryptoState {
         holdings,
         transactions,
         wallets,
+        priceAlerts,
         globalMarketData,
         searchQuery,
         isSearching,
@@ -68,6 +75,7 @@ class CryptosLoaded extends CryptoState {
     List<CryptoHolding>? holdings,
     List<CryptoTransaction>? transactions,
     List<CryptoWalletModel>? wallets,
+    List<PriceAlert>? priceAlerts,
     GlobalMarketData? globalMarketData,
     String? searchQuery,
     bool clearSearchQuery = false,
@@ -82,6 +90,7 @@ class CryptosLoaded extends CryptoState {
       holdings: holdings ?? this.holdings,
       transactions: transactions ?? this.transactions,
       wallets: wallets ?? this.wallets,
+      priceAlerts: priceAlerts ?? this.priceAlerts,
       globalMarketData: globalMarketData ?? this.globalMarketData,
       searchQuery: clearSearchQuery ? null : (searchQuery ?? this.searchQuery),
       isSearching: isSearching ?? this.isSearching,
@@ -196,4 +205,109 @@ class CryptoError extends CryptoState {
 
   @override
   List<Object> get props => [message];
-} 
+}
+
+/// SwapQuotePending wraps the active 15s quote returned by CreateSwapQuote.
+/// Emitted while the QuoteTimerCard counts down; auto-refreshes at expiresAt-2s.
+class SwapQuotePending extends CryptoState {
+  final String transactionId;
+  final String reference;
+  final String quoteId;
+  final DateTime expiresAt;
+  final String fromCurrency;
+  final String toCurrency;
+  final String fromAmount;
+  final String toAmount;
+  final String quotedPrice;
+  final int spreadBps;
+  final int spreadMinorUnits;
+
+  const SwapQuotePending({
+    required this.transactionId,
+    required this.reference,
+    required this.quoteId,
+    required this.expiresAt,
+    required this.fromCurrency,
+    required this.toCurrency,
+    required this.fromAmount,
+    required this.toAmount,
+    required this.quotedPrice,
+    required this.spreadBps,
+    required this.spreadMinorUnits,
+  });
+
+  @override
+  List<Object?> get props => [
+        transactionId,
+        quoteId,
+        expiresAt,
+        fromAmount,
+        toAmount,
+        quotedPrice,
+        spreadBps,
+        spreadMinorUnits,
+      ];
+}
+
+/// SwapPending is emitted after ConfirmSwap returns; the swap is now committed
+/// on Quidax and we're waiting for the swap_transaction.completed webhook.
+class SwapPending extends CryptoState {
+  final String transactionId;
+  final String quidaxSwapId;
+  final String fromCurrency;
+  final String toCurrency;
+  final String fromAmount;
+  final String toAmount;
+
+  const SwapPending({
+    required this.transactionId,
+    required this.quidaxSwapId,
+    required this.fromCurrency,
+    required this.toCurrency,
+    required this.fromAmount,
+    required this.toAmount,
+  });
+
+  @override
+  List<Object?> get props => [transactionId, quidaxSwapId];
+}
+
+/// SwapCompleted is the terminal-success state — receipt screen renders this.
+class SwapCompleted extends CryptoState {
+  final String transactionId;
+  final String quidaxSwapId;
+  final String fromCurrency;
+  final String toCurrency;
+  final String fromAmount;
+  final String receivedAmount;
+  final String executionPrice;
+
+  const SwapCompleted({
+    required this.transactionId,
+    required this.quidaxSwapId,
+    required this.fromCurrency,
+    required this.toCurrency,
+    required this.fromAmount,
+    required this.receivedAmount,
+    required this.executionPrice,
+  });
+
+  @override
+  List<Object?> get props => [transactionId, receivedAmount];
+}
+
+/// SwapFailed surfaces categorised failure reasons from the saga.
+class SwapFailed extends CryptoState {
+  final String transactionId;
+  final String reason; // quote_expired | swap_failed | swap_reversed | provider_error | other
+  final String message;
+
+  const SwapFailed({
+    required this.transactionId,
+    required this.reason,
+    required this.message,
+  });
+
+  @override
+  List<Object?> get props => [transactionId, reason, message];
+}

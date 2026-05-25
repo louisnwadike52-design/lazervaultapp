@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart' hide Transition;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:lazervault/core/services/locale_manager.dart';
 import '../../../../../core/services/injection_container.dart';
 import '../../../../core/grpc/crypto_grpc_client.dart';
 import '../../../../generated/crypto.pb.dart';
@@ -19,9 +20,30 @@ const _txt = Colors.white;
 const _txt2 = Color(0xFF9CA3AF);
 const _div = Color(0xFF2D2D2D);
 
-const _markets = {'btcngn': 'BTC/NGN', 'ethngn': 'ETH/NGN', 'usdtngn': 'USDT/NGN', 'solngn': 'SOL/NGN', 'xrpngn': 'XRP/NGN'};
-const _mktId = {'btcngn': 'bitcoin', 'ethngn': 'ethereum', 'usdtngn': 'tether', 'solngn': 'solana', 'xrpngn': 'ripple'};
+// PR9b — pair list is built dynamically from GetSupportedAssets at mount.
+// The user's fiat is read from LocaleManager so a Ghana operator sees
+// BTC/GHS pairs without a release. Symbol → CoinGecko id mapping comes
+// from each Crypto's `id` field in the response (Quidax /markets exposes
+// the same id-symbol relationship we mirror server-side).
+
 const _tfDays = {'1H': 1, '4H': 1, '1D': 1, '1W': 7, '1M': 30};
+
+// _MarketEntry pairs the wire key (e.g. "btcngn") with the human label
+// ("BTC/NGN") and the CoinGecko id ("bitcoin") that getOHLCV expects.
+class _MarketEntry {
+  final String key; // wire key for getOrderBook / getRecentTrades
+  final String label; // "BTC/NGN"
+  final String coingeckoId; // "bitcoin"
+  final String symbol; // "btc"
+  final String fiat; // "ngn"
+  const _MarketEntry({
+    required this.key,
+    required this.label,
+    required this.coingeckoId,
+    required this.symbol,
+    required this.fiat,
+  });
+}
 
 TextStyle _inter(double sz, {FontWeight w = FontWeight.w400, Color c = _txt}) =>
     GoogleFonts.inter(fontSize: sz, fontWeight: w, color: c);
@@ -35,12 +57,15 @@ class ProExchangeScreen extends StatefulWidget {
 class _ProExchangeScreenState extends State<ProExchangeScreen> with TickerProviderStateMixin {
   late final TabController _tab;
   late final CryptoGrpcClient _client;
-  String _market = 'btcngn';
+  late final LocaleManager _localeManager;
+  List<_MarketEntry> _markets = const [];
+  String _market = '';
   String _tf = '1D';
   List<OHLCVPoint> _ohlcv = [];
   GetOrderBookResponse? _book;
   List<TradeEntry> _trades = [];
   bool _cLoad = true, _bLoad = true, _tLoad = true;
+  bool _marketsLoading = true;
   String? _cErr, _bErr, _tErr;
 
   @override
@@ -48,7 +73,56 @@ class _ProExchangeScreenState extends State<ProExchangeScreen> with TickerProvid
     super.initState();
     _tab = TabController(length: 3, vsync: this);
     _client = serviceLocator<CryptoGrpcClient>();
-    _loadAll();
+    _localeManager = serviceLocator<LocaleManager>();
+    _bootstrapMarkets();
+  }
+
+  Future<void> _bootstrapMarkets() async {
+    setState(() {
+      _marketsLoading = true;
+    });
+    try {
+      // Pull a generous page of supported assets in the user's fiat. The
+      // server-side endpoint already filters to Quidax-tradeable assets +
+      // adds CoinGecko enrichment, so each item has both `symbol` and `id`.
+      final fiat = _localeManager.currentCurrency.toLowerCase().isNotEmpty
+          ? _localeManager.currentCurrency.toLowerCase()
+          : 'ngn';
+      final resp = await _client.getSupportedAssets(vsCurrency: fiat, page: 1, perPage: 50);
+      final markets = <_MarketEntry>[];
+      for (final asset in resp.assets) {
+        final symbol = asset.symbol.toLowerCase();
+        if (symbol.isEmpty) continue;
+        markets.add(_MarketEntry(
+          key: '$symbol$fiat',
+          label: '${symbol.toUpperCase()}/${fiat.toUpperCase()}',
+          coingeckoId: asset.id.isNotEmpty ? asset.id : symbol,
+          symbol: symbol,
+          fiat: fiat,
+        ));
+      }
+      if (!mounted) return;
+      setState(() {
+        _markets = markets;
+        _market = markets.isNotEmpty ? markets.first.key : '';
+        _marketsLoading = false;
+      });
+      if (_market.isNotEmpty) {
+        _loadAll();
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _marketsLoading = false;
+      });
+    }
+  }
+
+  _MarketEntry? get _selectedMarket {
+    for (final m in _markets) {
+      if (m.key == _market) return m;
+    }
+    return _markets.isNotEmpty ? _markets.first : null;
   }
 
   @override
@@ -57,9 +131,15 @@ class _ProExchangeScreenState extends State<ProExchangeScreen> with TickerProvid
   Future<void> _loadAll() => Future.wait([_loadChart(), _loadBook(), _loadTrades()]);
 
   Future<void> _loadChart() async {
+    final m = _selectedMarket;
+    if (m == null) return;
     setState(() { _cLoad = true; _cErr = null; });
     try {
-      final r = await _client.getOHLCV(cryptoId: _mktId[_market] ?? 'bitcoin', vsCurrency: 'ngn', days: _tfDays[_tf] ?? 1);
+      final r = await _client.getOHLCV(
+        cryptoId: m.coingeckoId,
+        vsCurrency: m.fiat,
+        days: _tfDays[_tf] ?? 1,
+      );
       if (!mounted) return;
       setState(() { _ohlcv = r.points.toList(); _cLoad = false; });
     } catch (_) { if (mounted) setState(() { _cErr = 'Failed to load chart'; _cLoad = false; }); }
@@ -126,10 +206,12 @@ class _ProExchangeScreenState extends State<ProExchangeScreen> with TickerProvid
         padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
         decoration: BoxDecoration(color: _card, borderRadius: BorderRadius.circular(8.r), border: Border.all(color: _div)),
         child: DropdownButtonHideUnderline(child: DropdownButton<String>(
-          value: _market, dropdownColor: _card,
+          value: _market.isEmpty ? null : _market,
+          dropdownColor: _card,
           icon: Icon(Icons.keyboard_arrow_down, color: _accent, size: 18.sp),
           style: _inter(13.sp, w: FontWeight.w600),
-          items: _markets.entries.map((e) => DropdownMenuItem(value: e.key, child: Text(e.value))).toList(),
+          hint: Text(_marketsLoading ? 'Loading…' : 'No markets', style: _inter(13.sp, c: _txt2)),
+          items: _markets.map((m) => DropdownMenuItem(value: m.key, child: Text(m.label))).toList(),
           onChanged: _setMarket,
         )),
       ),

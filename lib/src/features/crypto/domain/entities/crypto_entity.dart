@@ -224,6 +224,10 @@ class CryptoHolding extends Equatable {
   final double totalGainLossPercentage;
   final DateTime purchaseDate;
   final DateTime lastUpdated;
+  /// True while the per-asset fiat rate is still being fetched in the
+  /// lazy-load flow. UI uses this to render a skeleton placeholder
+  /// instead of "₦0" for assets whose live price hasn't landed yet.
+  final bool priceLoading;
 
   const CryptoHolding({
     required this.id,
@@ -238,7 +242,40 @@ class CryptoHolding extends Equatable {
     required this.totalGainLossPercentage,
     required this.purchaseDate,
     required this.lastUpdated,
+    this.priceLoading = false,
   });
+
+  CryptoHolding copyWith({
+    String? id,
+    String? cryptoId,
+    String? cryptoSymbol,
+    String? cryptoName,
+    double? quantity,
+    double? averagePrice,
+    double? currentPrice,
+    double? totalValue,
+    double? totalGainLoss,
+    double? totalGainLossPercentage,
+    DateTime? purchaseDate,
+    DateTime? lastUpdated,
+    bool? priceLoading,
+  }) {
+    return CryptoHolding(
+      id: id ?? this.id,
+      cryptoId: cryptoId ?? this.cryptoId,
+      cryptoSymbol: cryptoSymbol ?? this.cryptoSymbol,
+      cryptoName: cryptoName ?? this.cryptoName,
+      quantity: quantity ?? this.quantity,
+      averagePrice: averagePrice ?? this.averagePrice,
+      currentPrice: currentPrice ?? this.currentPrice,
+      totalValue: totalValue ?? this.totalValue,
+      totalGainLoss: totalGainLoss ?? this.totalGainLoss,
+      totalGainLossPercentage: totalGainLossPercentage ?? this.totalGainLossPercentage,
+      purchaseDate: purchaseDate ?? this.purchaseDate,
+      lastUpdated: lastUpdated ?? this.lastUpdated,
+      priceLoading: priceLoading ?? this.priceLoading,
+    );
+  }
 
   @override
   List<Object> get props => [
@@ -254,6 +291,7 @@ class CryptoHolding extends Equatable {
         totalGainLossPercentage,
         purchaseDate,
         lastUpdated,
+        priceLoading,
       ];
 }
 

@@ -123,6 +123,7 @@ class CryptoRemoteDataSourceImpl implements CryptoRemoteDataSource {
         updatedAt: response.hasUpdatedAt()
             ? response.updatedAt.toDateTime()
             : DateTime.now(),
+        disclosureUrl: response.disclosureUrl,
       );
     } catch (e) {
       // Global market data is non-critical - return null on failure

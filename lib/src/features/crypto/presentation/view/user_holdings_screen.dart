@@ -233,24 +233,40 @@ class _UserHoldingsScreenState extends State<UserHoldingsScreen> {
   Widget _buildHoldingItem(CryptoHolding holding, CryptosLoaded state) {
     final pnlColor =
         holding.totalGainLossPercentage >= 0 ? Colors.green : Colors.red;
+    final hasBalance = holding.quantity > 0;
 
     return GestureDetector(
       onTap: () {
         final crypto = _resolveCrypto(holding, state);
-        if (crypto != null) {
-          Get.to(
-            () => BlocProvider(
-              create: (_) => serviceLocator<CryptoCubit>(),
-              child: CryptoDetailScreen(
-                crypto: crypto,
-                entryMode: CryptoDetailEntryMode.sellOnly,
-              ),
-            ),
-            transition: Transition.rightToLeft,
+        if (crypto == null) return;
+        if (!hasBalance) {
+          // Zero balance — disable Sell entry but still let the user
+          // open the asset detail so they can Buy or view the receive
+          // address.
+          Get.snackbar(
+            'No ${holding.cryptoSymbol.toUpperCase()} balance',
+            'Buy or receive ${holding.cryptoSymbol.toUpperCase()} first; the Sell action unlocks once you have a balance.',
+            backgroundColor: const Color(0xFF1F1F1F),
+            colorText: Colors.white,
+            snackPosition: SnackPosition.TOP,
+            duration: const Duration(seconds: 3),
           );
+          return;
         }
+        Get.to(
+          () => BlocProvider(
+            create: (_) => serviceLocator<CryptoCubit>(),
+            child: CryptoDetailScreen(
+              crypto: crypto,
+              entryMode: CryptoDetailEntryMode.sellOnly,
+            ),
+          ),
+          transition: Transition.rightToLeft,
+        );
       },
-      child: Container(
+      child: Opacity(
+        opacity: hasBalance ? 1.0 : 0.55,
+        child: Container(
         margin: EdgeInsets.only(bottom: 10.h),
         padding: EdgeInsets.all(14.w),
         decoration: BoxDecoration(
@@ -309,18 +325,30 @@ class _UserHoldingsScreenState extends State<UserHoldingsScreen> {
               ),
             ),
 
-            // Value + P&L
+            // Value + P&L. While the lazy fiat fetch is in-flight, render
+            // a thin skeleton bar in place of "₦0.00" so users don't
+            // misread a missing rate as a zero balance.
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(
-                  '${CurrencySymbols.currentSymbol}${holding.totalValue.toStringAsFixed(2)}',
-                  style: GoogleFonts.inter(
-                    fontSize: 15.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                if (holding.priceLoading)
+                  Container(
+                    width: 64.w,
+                    height: 14.h,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(4.r),
+                    ),
+                  )
+                else
+                  Text(
+                    '${CurrencySymbols.currentSymbol}${holding.totalValue.toStringAsFixed(2)}',
+                    style: GoogleFonts.inter(
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
                   ),
-                ),
                 SizedBox(height: 2.h),
                 Container(
                   padding:
@@ -358,6 +386,7 @@ class _UserHoldingsScreenState extends State<UserHoldingsScreen> {
             Icon(Icons.chevron_right,
                 color: Colors.white.withValues(alpha: 0.4), size: 20.sp),
           ],
+        ),
         ),
       ),
     );

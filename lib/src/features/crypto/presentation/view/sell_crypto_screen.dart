@@ -12,6 +12,7 @@ import '../../cubit/crypto_config_cubit.dart';
 import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
 import '../../domain/entities/crypto_entity.dart';
+import '../widgets/asset_wallet_sheet.dart';
 import '../widgets/price_quote_card.dart';
 import 'swap_flow_dispatcher.dart';
 import 'package:lazervault/core/types/app_routes.dart';
@@ -226,6 +227,47 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
               ],
             ),
           ),
+          // View wallet CTA — opens AssetWalletSheet for the active
+          // holding (deposit address + QR + balance + market price).
+          // Lighter text/icon for high contrast against the dark header.
+          if (_selectedHolding != null) ...[
+            GestureDetector(
+              onTap: () => showAssetWalletSheet(
+                context,
+                cryptoSymbol: _selectedHolding!.cryptoSymbol,
+                cryptoName: _selectedHolding!.cryptoName,
+                balance: _selectedHolding!.quantity,
+                fiatValue: _selectedHolding!.totalValue,
+                currentPrice: _selectedHolding!.currentPrice,
+              ),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 8.h),
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(255, 78, 3, 208)
+                      .withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(10.r),
+                  border: Border.all(
+                      color: const Color.fromARGB(255, 78, 3, 208)
+                          .withValues(alpha: 0.5)),
+                ),
+                child: Row(children: [
+                  Icon(Icons.account_balance_wallet_outlined,
+                      color: Colors.white.withValues(alpha: 0.92),
+                      size: 16.sp),
+                  SizedBox(width: 6.w),
+                  Text(
+                    'Wallet',
+                    style: GoogleFonts.inter(
+                      color: Colors.white.withValues(alpha: 0.92),
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ]),
+              ),
+            ),
+            SizedBox(width: 8.w),
+          ],
           Container(
             padding: EdgeInsets.all(8.w),
             decoration: BoxDecoration(
@@ -1315,6 +1357,7 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
           cryptoSymbol: _selectedHolding!.cryptoSymbol,
           fiatAmount: netProceeds,
           description: 'Sell ${quantity.toStringAsFixed(6)} ${_selectedHolding!.cryptoSymbol.toUpperCase()}',
+          transactionPin: verificationToken,
         );
 
         if (!mounted) return;

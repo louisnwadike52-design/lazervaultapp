@@ -28,7 +28,7 @@ Use this checklist to track the migration from mock data to full gRPC integratio
 
 #### A. Crypto Microservice
 - [ ] Ensure crypto-service is running on port 50063
-- [ ] Configure exchange API keys (MEXC, OKX, Quidax) in `microservices/crypto-service/app.env`
+- [ ] Configure exchange API keys (MEXC, OKX, Quidax) in `microservices/crypto-service/.env` (seeded via `cp env.dev .env`)
 - [ ] Verify service is accessible from Flutter app
 - [ ] Test with grpcurl: `grpcurl -plaintext localhost:50063 list`
 
