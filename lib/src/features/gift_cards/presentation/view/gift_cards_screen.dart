@@ -611,6 +611,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
 
   Widget _buildBrandCard(GiftCardBrand brand) {
     return GestureDetector(
+      key: Key('giftcard_brand_card_${brand.id}'),
       onTap: () => Get.toNamed(AppRoutes.purchaseGiftCard, arguments: brand),
       child: Container(
         decoration: BoxDecoration(
@@ -845,6 +846,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
           children: [
             Expanded(
               child: GestureDetector(
+                key: const Key('giftcards_buy_tab'),
                 onTap: () {
                   if (_currentTab != 0) {
                     _searchController.clear();
@@ -876,6 +878,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
             ),
             Expanded(
               child: GestureDetector(
+                key: const Key('giftcards_sell_tab'),
                 onTap: () {
                   if (_currentTab != 1) {
                     _searchController.clear();
@@ -964,6 +967,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
 
   Widget _buildSellableCardTile(SellableCard card) {
     return GestureDetector(
+      key: Key('sellable_card_tile_${card.cardType}'),
       onTap: () => Get.toNamed(AppRoutes.sellGiftCard, arguments: card),
       child: Container(
         decoration: BoxDecoration(

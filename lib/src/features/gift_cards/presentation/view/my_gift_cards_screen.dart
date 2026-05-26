@@ -267,6 +267,7 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
 
   Tab _tabFor({required IconData icon, required String label}) {
     return Tab(
+      key: Key('mygiftcards_tab_${label.toLowerCase().replaceAll(' ', '_')}'),
       height: 40.h,
       child: FittedBox(
         fit: BoxFit.scaleDown,
@@ -369,6 +370,7 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
 
   Widget _buildGiftCardItem(GiftCard card) {
     return GestureDetector(
+      key: Key('mygiftcards_item_${card.id}'),
       onTap: () => _showCardActionsSheet(card),
       child: Container(
         margin: EdgeInsets.only(bottom: 8.h),

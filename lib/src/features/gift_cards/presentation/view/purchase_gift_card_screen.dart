@@ -456,6 +456,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
               senderPrice = _estimateSenderAmount(amount);
             }
             return GestureDetector(
+              key: Key('giftcard_denom_pill_$idx'),
               onTap: () {
                 setState(() {
                   _selectedAmount = amount;
@@ -833,6 +834,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
     return SizedBox(
       width: double.infinity,
       child: GestureDetector(
+        key: const Key('purchase_giftcard_button'),
         onTap: isValid && !_isPurchasing ? _purchaseGiftCard : null,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),

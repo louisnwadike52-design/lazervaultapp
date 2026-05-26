@@ -161,19 +161,23 @@ class _GiftCardSellProcessingScreenState
           children: [
             SizedBox(height: 80.h),
             Center(
-              child: SizedBox(
+              child: Container(
                 width: 80.w,
                 height: 80.w,
-                child: const CircularProgressIndicator(
-                  strokeWidth: 3,
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                decoration: const BoxDecoration(
+                  color: Color(0x1A10B981), // success green @ 10%
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.check_circle_outline,
+                  color: const Color(0xFF10B981),
+                  size: 44.sp,
                 ),
               ),
             ),
             SizedBox(height: 32.h),
             Text(
-              'Submitting your card…',
+              'Submitted for review',
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
                 color: Colors.white,
@@ -183,7 +187,7 @@ class _GiftCardSellProcessingScreenState
             ),
             SizedBox(height: 12.h),
             Text(
-              'Our provider is verifying your gift card. This usually takes a few minutes; you can leave this screen and we will notify you when it is paid out.',
+              'Your gift card was submitted successfully and is now being verified by our provider. We will notify you when it is paid out — you can safely leave this screen.',
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
                 color: const Color(0xFF9CA3AF),

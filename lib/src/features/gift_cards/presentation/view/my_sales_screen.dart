@@ -93,7 +93,13 @@ class _MySalesScreenState extends State<MySalesScreen>
           indicatorSize: TabBarIndicatorSize.label,
           labelStyle: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600),
           unselectedLabelStyle: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w500),
-          tabs: _tabs.map((t) => Tab(text: t)).toList(),
+          tabs: _tabs
+              .map((t) => Tab(
+                    key: Key(
+                        'mysales_tab_${t.toLowerCase().replaceAll(' ', '_')}'),
+                    text: t,
+                  ))
+              .toList(),
         ),
       ),
       body: BlocBuilder<GiftCardCubit, GiftCardState>(
@@ -151,6 +157,7 @@ class _MySalesScreenState extends State<MySalesScreen>
 
   Widget _buildSaleCard(GiftCardSale sale) {
     return GestureDetector(
+      key: Key('mysales_item_${sale.id}'),
       onTap: () => _showSaleDetails(sale),
       child: Container(
       margin: EdgeInsets.only(bottom: 12.h),

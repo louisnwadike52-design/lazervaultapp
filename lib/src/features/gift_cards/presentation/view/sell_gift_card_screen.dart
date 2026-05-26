@@ -222,15 +222,17 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
       Get.back();
       return;
     }
-    if (_currentStep > 1 && _currentStep < 4) {
+    if (_currentStep == 3) {
+      // Confirm → back to Card Details (step 1). The payout-currency step
+      // (old step 2) was removed; payout follows the active-locale currency.
       setState(() {
-        if (_currentStep == 3) {
-          // Reset disclaimer when leaving the confirm step so the user
-          // re-acknowledges if they edit anything upstream.
-          _disclaimerAccepted = false;
-        }
-        _currentStep--;
+        _disclaimerAccepted = false;
+        _currentStep = 1;
       });
+      return;
+    }
+    if (_currentStep > 1 && _currentStep < 4) {
+      setState(() => _currentStep--);
     } else if (_currentStep == 4) {
       Get.offAllNamed(AppRoutes.giftCards);
     } else {
@@ -454,7 +456,10 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
       case 1:
         return _buildStep1CardDetailsAndImages();
       case 2:
-        return _buildStep2PayoutMethod(state);
+        // Payout-currency selection screen removed — payout follows the
+        // active-locale currency (dashboard default). Defensive: a stale
+        // step==2 renders confirm rather than a deleted screen.
+        return _buildStep3Confirm();
       case 3:
         return _buildStep3Confirm();
       case 4:
@@ -849,6 +854,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
             children: [
               Expanded(
                 child: GestureDetector(
+                  key: const Key('sell_format_ecode'),
                   onTap: () => setState(() => _selectedFormat = 'ecode'),
                   child: Container(
                     padding: EdgeInsets.symmetric(vertical: 12.h),
@@ -868,6 +874,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
               SizedBox(width: 12.w),
               Expanded(
                 child: GestureDetector(
+                  key: const Key('sell_format_physical'),
                   onTap: () => setState(() => _selectedFormat = 'physical'),
                   child: Container(
                     padding: EdgeInsets.symmetric(vertical: 12.h),
@@ -898,6 +905,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
           _buildFieldLabel('Card Number', hasOcr: _ocrCardNumber.isNotEmpty),
           SizedBox(height: 8.h),
           _buildTextField(
+            fieldKey: const Key('sell_card_number_field'),
             controller: _cardNumberController,
             hintText: 'XXXX-XXXX-XXXX-XXXX',
             keyboardType: TextInputType.text,
@@ -925,6 +933,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
           _buildFieldLabel('Card PIN', hasOcr: _ocrPin.isNotEmpty),
           SizedBox(height: 8.h),
           _buildTextField(
+            fieldKey: const Key('sell_card_pin_field'),
             controller: _cardPinController,
             hintText: 'Enter gift card PIN',
             keyboardType: TextInputType.text,
@@ -1045,6 +1054,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
             width: double.infinity,
             height: 52.h,
             child: ElevatedButton(
+              key: const Key('sell_get_rate_button'),
               onPressed: _canGetRate() ? _onGetRate : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: InvoiceThemeColors.primaryPurple,
@@ -1093,6 +1103,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
     final isBusy = isUploading || isPicking;
 
     return GestureDetector(
+      key: Key('sell_image_slot_$index'),
       onTap: isBusy ? null : () => _showImagePickerOptions(index),
       child: Container(
         height: 160.h,
@@ -1211,6 +1222,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
+                key: const Key('sell_pick_camera'),
                 leading: const Icon(Icons.camera_alt, color: InvoiceThemeColors.primaryPurple),
                 title: Text('Take Photo',
                     style: GoogleFonts.inter(color: Colors.white)),
@@ -1220,6 +1232,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
                 },
               ),
               ListTile(
+                key: const Key('sell_pick_gallery'),
                 leading: const Icon(Icons.photo_library, color: InvoiceThemeColors.primaryPurple),
                 title: Text('Choose from Gallery',
                     style: GoogleFonts.inter(color: Colors.white)),
@@ -1546,197 +1559,17 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
   void _onGetRate() {
     if (!_validateCardFields()) return;
 
-    // Kick off the rate fetch in parallel with the payout-method fetch
-    // — both feed the eventual confirm step. The user lands on the new
-    // payout-method picker (step 2); the rate result lands by the time
-    // they advance to confirm (step 3).
+    // Fetch the sell rate, and load payout methods in the background only
+    // to auto-resolve the payout currency from the dashboard default
+    // (DefaultPayoutMethod, e.g. NAIRA for the NGN locale). No payout-
+    // currency selection screen exists; the active-locale currency drives
+    // payout end to end, so advance straight to confirm (step 3).
     context.read<GiftCardCubit>().getSellRate(
       cardType: _selectedCard!.cardType,
       denomination: _selectedDenomination!,
     );
     context.read<GiftCardCubit>().loadPayoutMethods();
-    setState(() => _currentStep = 2);
-  }
-
-  // ============================================
-  // STEP 2: Payout Method
-  // ============================================
-
-  Widget _buildStep2PayoutMethod(GiftCardState state) {
-    final isLoading = state is PayoutMethodsLoading;
-    final List<PayoutMethodEntity> methods =
-        state is PayoutMethodsLoaded ? state.methods : const [];
-    final hasError = state is PayoutMethodsError;
-
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(16.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'How would you like to be paid?',
-            style: GoogleFonts.inter(
-              color: Colors.white,
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          SizedBox(height: 6.h),
-          Text(
-            'Pick the wallet currency your payout lands in. Methods are sourced live from the gift-card processor — only options you can actually receive are shown.',
-            style: GoogleFonts.inter(
-              color: const Color(0xFF9CA3AF),
-              fontSize: 12.sp,
-              height: 1.4,
-            ),
-          ),
-          SizedBox(height: 20.h),
-          if (isLoading)
-            Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 32.h),
-                child: const CircularProgressIndicator(
-                  color: InvoiceThemeColors.primaryPurple,
-                ),
-              ),
-            )
-          else if (hasError)
-            Container(
-              padding: EdgeInsets.all(14.w),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEF4444).withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(10.r),
-                border: Border.all(color: const Color(0xFFEF4444)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.error_outline, color: Color(0xFFEF4444)),
-                  SizedBox(width: 10.w),
-                  Expanded(
-                    child: Text(
-                      state.message,
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 12.sp,
-                      ),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () =>
-                        context.read<GiftCardCubit>().loadPayoutMethods(),
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ),
-            )
-          else if (methods.isEmpty)
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 24.h),
-              child: Text(
-                'No payout methods available right now. Please try again in a moment.',
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF9CA3AF),
-                  fontSize: 13.sp,
-                ),
-              ),
-            )
-          else
-            Column(
-              children: methods.map((m) {
-                final selected = m.name == _selectedPayoutMethod;
-                return GestureDetector(
-                  onTap: () => setState(() => _selectedPayoutMethod = m.name),
-                  child: Container(
-                    margin: EdgeInsets.only(bottom: 10.h),
-                    padding: EdgeInsets.all(14.w),
-                    decoration: BoxDecoration(
-                      color: selected
-                          ? InvoiceThemeColors.primaryPurple
-                              .withValues(alpha: 0.15)
-                          : const Color(0xFF1F1F1F),
-                      borderRadius: BorderRadius.circular(12.r),
-                      border: Border.all(
-                        color: selected
-                            ? InvoiceThemeColors.primaryPurple
-                            : const Color(0xFF2D2D2D),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.account_balance_wallet_rounded,
-                          color: selected
-                              ? InvoiceThemeColors.primaryPurple
-                              : const Color(0xFF9CA3AF),
-                          size: 22.sp,
-                        ),
-                        SizedBox(width: 12.w),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                m.name,
-                                style: GoogleFonts.inter(
-                                  color: Colors.white,
-                                  fontSize: 14.sp,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              if (m.currency.isNotEmpty)
-                                Padding(
-                                  padding: EdgeInsets.only(top: 2.h),
-                                  child: Text(
-                                    'Pays out in ${m.currency}',
-                                    style: GoogleFonts.inter(
-                                      color: const Color(0xFF9CA3AF),
-                                      fontSize: 11.sp,
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                        if (selected)
-                          const Icon(
-                            Icons.check_circle_rounded,
-                            color: InvoiceThemeColors.primaryPurple,
-                          ),
-                      ],
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          SizedBox(height: 24.h),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _selectedPayoutMethod.isEmpty
-                  ? null
-                  : () => setState(() => _currentStep = 3),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: InvoiceThemeColors.primaryPurple,
-                disabledBackgroundColor:
-                    InvoiceThemeColors.primaryPurple.withValues(alpha: 0.4),
-                padding: EdgeInsets.symmetric(vertical: 14.h),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10.r),
-                ),
-              ),
-              child: Text(
-                'Continue',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+    setState(() => _currentStep = 3);
   }
 
   // ============================================
@@ -1765,7 +1598,8 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
                 _buildSummaryRow('Card Number', _cardNumberController.text.trim()),
                 SizedBox(height: 10.h),
                 _buildSummaryRow('Denomination',
-                    '${_selectedCard!.currencies.isNotEmpty ? _selectedCard!.currencies.first : "USD"} ${_selectedDenomination?.toStringAsFixed(0) ?? "-"}'),
+                    '${_currencySymbolFor(_faceCurrencyCode())} ${_faceCurrencyCode()} ${_selectedDenomination?.toStringAsFixed(0) ?? "-"}',
+                    valueKey: const Key('sell_summary_denomination')),
                 if (_uploadedImageUrls.isNotEmpty) ...[
                   SizedBox(height: 10.h),
                   _buildSummaryRow('Images', '${_uploadedImageUrls.length} uploaded'),
@@ -1837,6 +1671,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
           _buildSellLegalDisclaimer(),
           SizedBox(height: 12.h),
           GestureDetector(
+            key: const Key('sell_disclaimer_checkbox'),
             onTap: () => setState(() => _disclaimerAccepted = !_disclaimerAccepted),
             behavior: HitTestBehavior.opaque,
             child: Container(
@@ -1883,6 +1718,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
             width: double.infinity,
             height: 52.h,
             child: ElevatedButton(
+              key: const Key('sell_submit_button'),
               onPressed: (_currentRate != null && _disclaimerAccepted)
                   ? _onSubmitSell
                   : null,
@@ -1957,7 +1793,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
     );
   }
 
-  Widget _buildSummaryRow(String label, String value) {
+  Widget _buildSummaryRow(String label, String value, {Key? valueKey}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -1971,6 +1807,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
         Flexible(
           child: Text(
             value,
+            key: valueKey,
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 14.sp,
@@ -2267,6 +2104,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildTextField(
+            fieldKey: const Key('sell_denomination_field'),
             controller: _denominationController,
             hintText: hint,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -2359,6 +2197,68 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
       ),
       child: Column(
         children: [
+          // Face-value currency (code + symbol) and the live FX rate
+          // (NGN per foreign unit). Prestmit's catalogue omits the
+          // currency code, so _faceCurrencyCode() infers it from the
+          // card's region; the symbol comes from the same map the rest
+          // of the app uses. The FX figure is derived from the live
+          // GetSellRate payout (payout / denomination = NGN per unit).
+          Builder(builder: (_) {
+            final code = _faceCurrencyCode();
+            final symbol = _currencySymbolFor(code);
+            final denom = _selectedDenomination ?? _currentRate!.denomination;
+            final fxPerUnit = (denom > 0)
+                ? _currentRate!.payoutAmount / denom
+                : 0.0;
+            return Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Card currency',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF9CA3AF),
+                        fontSize: 14.sp,
+                      ),
+                    ),
+                    Text(
+                      '$symbol $code',
+                      key: const Key('sell_face_currency'),
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 8.h),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Exchange rate',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF9CA3AF),
+                        fontSize: 14.sp,
+                      ),
+                    ),
+                    Text(
+                      '$symbol 1 = ${_formatCurrency(fxPerUnit)}',
+                      key: const Key('sell_fx_rate'),
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 8.h),
+              ],
+            );
+          }),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -2371,6 +2271,7 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
               ),
               Text(
                 '${_currentRate!.ratePercentage.toStringAsFixed(0)}%',
+                key: const Key('sell_rate_percentage'),
                 style: GoogleFonts.inter(
                   color: const Color(0xFF10B981),
                   fontSize: 16.sp,
@@ -2449,12 +2350,14 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
     String? errorText,
     List<TextInputFormatter>? inputFormatters,
     ValueChanged<String>? onChanged,
+    Key? fieldKey,
   }) {
     final hasError = errorText != null && errorText.isNotEmpty;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TextField(
+          key: fieldKey,
           controller: controller,
           keyboardType: keyboardType,
           inputFormatters: inputFormatters,
@@ -2714,12 +2617,10 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
           );
           setState(() {
             _currentRate = null;
-            // Step numbering changed — send the user back to the
-            // payout-method step (step 2) since the rate fetch is
-            // re-issued from there. The user re-confirms their pick
-            // and a fresh rate is requested by _onGetRate-equivalent
-            // logic on advance to confirm.
-            _currentStep = 2;
+            // Rate expired — send the user back to Card Details (step 1)
+            // to re-fetch a fresh rate. The payout-currency step was
+            // removed; payout follows the active-locale currency.
+            _currentStep = 1;
             _disclaimerAccepted = false;
           });
           return;
@@ -2805,6 +2706,57 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
       )}';
     }
     return 'NGN ${amount.toStringAsFixed(2)}';
+  }
+
+  // ============================================
+  // FACE-CURRENCY HELPERS (Task B)
+  // ============================================
+
+  // Symbol for a currency code. Mirrors the platform-wide map in
+  // core/utils/chat_edge_case_utils.dart so the sell flow shows the
+  // same glyphs the rest of the app uses. Falls back to the code
+  // itself for anything not in the table.
+  static const _kCurrencySymbols = <String, String>{
+    'NGN': '₦',
+    'USD': '\$',
+    'GBP': '£',
+    'EUR': '€',
+    'CAD': 'C\$',
+    'AUD': 'A\$',
+    'JPY': '¥',
+    'ZAR': 'R',
+    'GHS': 'GH₵',
+    'KES': 'KSh',
+  };
+
+  String _currencySymbolFor(String code) =>
+      _kCurrencySymbols[code.toUpperCase()] ?? code.toUpperCase();
+
+  // Resolve the card's FACE-VALUE currency code. Prestmit's catalogue
+  // ships an empty `currencies` list, so we prefer the structured field
+  // when present (future providers / Reloadly populate it) and otherwise
+  // infer from the region tag in the display name — the only currency
+  // signal the Prestmit sandbox actually surfaces ("USA Amazon",
+  // "UK Amazon", "Germany/EURO ...", "Canada ...", "Australia ...").
+  // Defaults to USD, matching the denomination-chip fallback above.
+  String _faceCurrencyCode() {
+    final card = _selectedCard;
+    if (card == null) return 'USD';
+    if (card.currencies.isNotEmpty && card.currencies.first.trim().isNotEmpty) {
+      return card.currencies.first.trim().toUpperCase();
+    }
+    final hay = '${card.displayName} ${card.country} ${card.category}'.toLowerCase();
+    if (hay.contains('uk ') || hay.contains('united kingdom') || hay.contains('britain')) {
+      return 'GBP';
+    }
+    if (hay.contains('euro') || hay.contains('germany') || hay.contains('france') ||
+        hay.contains('spain') || hay.contains('italy') || hay.contains('netherlands')) {
+      return 'EUR';
+    }
+    if (hay.contains('canada')) return 'CAD';
+    if (hay.contains('australia')) return 'AUD';
+    if (hay.contains('ghana')) return 'GHS';
+    return 'USD';
   }
 }
 
