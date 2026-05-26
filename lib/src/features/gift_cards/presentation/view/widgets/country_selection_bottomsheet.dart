@@ -283,6 +283,9 @@ class _CountrySelectionBottomsheetState extends State<CountrySelectionBottomshee
     required bool isSelected,
   }) {
     return GestureDetector(
+      // Keyed for integration tests: "All Countries" (empty code) →
+      // country_option_ALL; specific countries → country_option_<ISO>.
+      key: Key('country_option_${country.code.isEmpty ? 'ALL' : country.code.toUpperCase()}'),
       onTap: () {
         widget.onCountrySelected(country.code, country.name);
         Navigator.pop(context);

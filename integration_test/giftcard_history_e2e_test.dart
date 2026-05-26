@@ -640,11 +640,19 @@ Future<void> _testMyGiftCards(WidgetTester tester, _Results results) async {
 
   // Each tab buckets CLIENT-side. Tab labels → (key suffix, predicate name,
   // expected seeded ref, matcher on a GiftCard).
+  // Mirrors the screen's _isExpired EXACTLY (see my_gift_cards_screen.dart):
+  // the backend serialises a missing expiry as its zero-time default
+  // (0001-01-01T00:00:00Z), a NON-empty string that parses to year 1. Pending
+  // and failed cards carry that sentinel and must NOT bucket under Expired, so
+  // a parsed year <= 1 is treated as "no expiry" (not expired). Only a real
+  // past expiry (or status=='expired') counts as expired.
   bool isExpired(GiftCard c) {
     if (c.status == 'expired') return true;
     if (c.expiryDate.isEmpty) return false;
     final p = DateTime.tryParse(c.expiryDate);
-    return p != null && p.isBefore(DateTime.now());
+    if (p == null) return false;
+    if (p.year <= 1) return false;
+    return p.isBefore(DateTime.now());
   }
 
   final buckets = <(String, String, String, bool Function(GiftCard))>[
@@ -725,6 +733,36 @@ Future<void> _testMyGiftCards(WidgetTester tester, _Results results) async {
     final bucketOk = expectedIds.isNotEmpty &&
         visibleIds.length == expectedIds.length &&
         visibleIds.containsAll(expectedIds);
+
+    if (label == 'Expired') {
+      // POST-FIX EXPECTATION: only the truly-expired card buckets here. The
+      // pending + failed cards carry the backend zero-time expiry default
+      // (0001-01-01 → year 1), which the corrected _isExpired no longer treats
+      // as expired, so Expired must be EXACTLY 1 (the seeded EXPIRED card) and
+      // must NOT contain the pending/failed refs.
+      final pendingRef = _seededBuyRefByStatus['pending']!;
+      final failedRef = _seededBuyRefByStatus['failed']!;
+      final pendingOrFailedLeaked = st.giftCards.any((c) =>
+          (c.reference == pendingRef || c.reference == failedRef) &&
+          expectedIds.contains(c.id));
+      final expiredExactlyOne = expected.length == 1 &&
+          visibleIds.length == 1 &&
+          bucketOk &&
+          hasSeededRef;
+      if (expiredExactlyOne && !pendingOrFailedLeaked) {
+        results.ok('My Gift Cards [Expired]',
+            'shows EXACTLY the 1 truly-expired card (seeded ref $expectedRef); '
+            'pending/failed no longer leak into Expired (zero-time fix verified)');
+      } else {
+        results.fail('My Gift Cards [Expired]',
+            'expected exactly 1 truly-expired card (ref $expectedRef); '
+            'got visible=${visibleIds.length} expected=${expected.length} '
+            'pendingOrFailedLeaked=$pendingOrFailedLeaked '
+            'statuses=${expected.map((c) => c.status).toList()}');
+      }
+      continue;
+    }
+
     if (bucketOk) {
       results.ok('My Gift Cards [$label]',
           'shows exactly the ${visibleIds.length}-card bucket '

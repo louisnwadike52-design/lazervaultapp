@@ -288,7 +288,13 @@ class _MyGiftCardsScreenState extends State<MyGiftCardsScreen>
     if (card.status == 'expired') return true;
     if (card.expiryDate.isEmpty) return false;
     try {
-      return DateTime.parse(card.expiryDate).isBefore(DateTime.now());
+      final parsed = DateTime.parse(card.expiryDate);
+      // The backend serialises a missing expiry as its zero-time default
+      // (0001-01-01T00:00:00Z) — a NON-empty string that parses to year 1.
+      // Pending/failed cards carry no real expiry, so treat the sentinel as
+      // "no expiry" (not expired) rather than letting it bucket under Expired.
+      if (parsed.year <= 1) return false;
+      return parsed.isBefore(DateTime.now());
     } catch (_) {
       return false;
     }

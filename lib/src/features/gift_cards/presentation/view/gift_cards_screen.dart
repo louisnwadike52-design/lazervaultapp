@@ -339,6 +339,7 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
           SizedBox(width: 8.w),
           // Filter buttons on the right
           _buildFilterButton(
+            key: const Key('country_selector_button'),
             label: 'Country',
             value: countryLabel,
             emoji: flag,
@@ -390,8 +391,10 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
     required VoidCallback onTap,
     String? emoji,
     IconData? icon,
+    Key? key,
   }) {
     return GestureDetector(
+      key: key,
       onTap: onTap,
       child: Container(
         height: 44.h,

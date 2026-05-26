@@ -2290,20 +2290,33 @@ class _SellGiftCardScreenState extends State<SellGiftCardScreen>
           if (_currentRate!.hasRange) ...[
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  "You'll receive between",
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFF9CA3AF),
-                    fontSize: 14.sp,
+                Flexible(
+                  child: Text(
+                    "You'll receive between",
+                    key: const Key('sell_payout_range_label'),
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF9CA3AF),
+                      fontSize: 14.sp,
+                    ),
                   ),
                 ),
-                Text(
-                  '${_formatCurrency(_currentRate!.payoutLowerBound)} – ${_formatCurrency(_currentRate!.payoutUpperBound)}',
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w700,
+                SizedBox(width: 8.w),
+                // The range string ("NGN 95,337 – NGN 111,227") can be wider
+                // than the remaining row space for high-value cards; Flexible +
+                // right-aligned text lets it wrap instead of overflowing the
+                // RenderFlex (an overflow is treated as an error in tests).
+                Flexible(
+                  child: Text(
+                    '${_formatCurrency(_currentRate!.payoutLowerBound)} – ${_formatCurrency(_currentRate!.payoutUpperBound)}',
+                    key: const Key('sell_payout_range'),
+                    textAlign: TextAlign.end,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ],

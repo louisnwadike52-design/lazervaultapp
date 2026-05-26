@@ -724,6 +724,16 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Card-face currency (code + symbol). Surfaces the destination
+          // country's currency on the review so the buyer sees exactly
+          // which currency the card is denominated in (e.g. "$ USD",
+          // "£ GBP") before paying in their locale currency (NGN).
+          _buildPriceRow(
+            'Card currency',
+            '${_buyCurrencySymbolFor(_recipientCurrency)} $_recipientCurrency',
+            valueKey: const Key('buy_face_currency'),
+          ),
+          SizedBox(height: 6.h),
           // Card face value
           _buildPriceRow(
             'Gift Card Value',
@@ -751,6 +761,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
             _buildPriceRow(
               'Effective rate',
               '1 $_recipientCurrency = ${_formatAmount(total / amount)} $_senderCurrency',
+              valueKey: const Key('buy_fx_rate'),
             ),
           ],
           if (widget.brand.discountPercentage > 0) ...[
@@ -798,7 +809,8 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
     );
   }
 
-  Widget _buildPriceRow(String label, String amount, {bool isDiscount = false, bool isTotal = false}) {
+  Widget _buildPriceRow(String label, String amount,
+      {bool isDiscount = false, bool isTotal = false, Key? valueKey}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -812,6 +824,7 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
         ),
         Text(
           amount,
+          key: valueKey,
           style: GoogleFonts.inter(
             fontSize: isTotal ? 16.sp : 14.sp,
             fontWeight: isTotal ? FontWeight.w700 : FontWeight.w500,
@@ -823,6 +836,25 @@ class _PurchaseGiftCardScreenState extends State<PurchaseGiftCardScreen>
       ],
     );
   }
+
+  // Currency-symbol map for the card-face currency line (mirrors the
+  // sell screen's _currencySymbolFor). Lets the buy price summary surface
+  // the destination country's currency code AND symbol on the review.
+  static const Map<String, String> _kBuyCurrencySymbols = {
+    'NGN': '₦', // ₦
+    'USD': '\$',
+    'GBP': '£', // £
+    'EUR': '€', // €
+    'CAD': 'C\$',
+    'AUD': 'A\$',
+    'JPY': '¥', // ¥
+    'ZAR': 'R',
+    'GHS': 'GH₵', // GH₵
+    'KES': 'KSh',
+  };
+
+  String _buyCurrencySymbolFor(String code) =>
+      _kBuyCurrencySymbols[code.toUpperCase()] ?? code.toUpperCase();
 
   Widget _buildPurchaseButton() {
     final isValid = _selectedAmount != null && _selectedAmount! > 0;
