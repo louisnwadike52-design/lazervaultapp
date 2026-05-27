@@ -1835,8 +1835,17 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
     // Load auxiliary data if not cached and not in an error state
     // (otherwise we'd re-fire the request every rebuild on a flaky
     // network). Retry is wired to the inline error tap below.
+    // _loadAuxiliaryData calls setState — illegal during build — so DEFER it
+    // to just after this frame. Without this, any product whose form has an
+    // auxiliary/utility-backed select crashes on first render with
+    // "setState() called during build". Guarded by mounted + the idempotency
+    // check inside _loadAuxiliaryData (several frames can schedule a load
+    // before the first callback flips the loading flag).
     if (items == null && !isLoading && loadError == null) {
-      _loadAuxiliaryData(cacheKey, utilityId, _getDependentQuery(field, formData));
+      final depQuery = _getDependentQuery(field, formData);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _loadAuxiliaryData(cacheKey, utilityId, depQuery);
+      });
     }
 
     final options = items?.map((i) => i.value).toList() ?? field.options;
@@ -2059,6 +2068,12 @@ class _InsuranceFormScreenState extends State<InsuranceFormScreen> {
   }
 
   Future<void> _loadAuxiliaryData(String cacheKey, String utilityId, String? query) async {
+    // Idempotent: a single build can schedule several post-frame loads before
+    // the first flips the loading flag, so ignore re-entrant calls for a key
+    // that is already loading or already cached.
+    if ((_auxiliaryLoading[cacheKey] ?? false) || _auxiliaryCache[cacheKey] != null) {
+      return;
+    }
     setState(() {
       _auxiliaryLoading[cacheKey] = true;
       _auxiliaryError[cacheKey] = null;

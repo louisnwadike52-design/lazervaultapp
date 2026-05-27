@@ -1341,10 +1341,17 @@ void main() {
         // the ~29 that still need fixes. Re-enable a product by
         // removing it from _alreadySucceeded — e.g. after a backend
         // change that might affect previously-working products.
-        final filteredProducts = products
-            .where((p) => !_alreadySucceeded
-                .contains('$cat|${p.name.trim()}'))
-            .toList();
+        // RUN_ALL=true bypasses the skip-list entirely so EVERY enabled
+        // product is re-driven through the buy UI this run (use after a
+        // backend/MyCover change to re-confirm the full catalogue).
+        const runAll =
+            bool.fromEnvironment('RUN_ALL', defaultValue: false);
+        final filteredProducts = runAll
+            ? products
+            : products
+                .where((p) => !_alreadySucceeded
+                    .contains('$cat|${p.name.trim()}'))
+                .toList();
         final skipped = products.length - filteredProducts.length;
         if (skipped > 0) {
           results.ok('Exhaustive: $cat skipping prior successes',
