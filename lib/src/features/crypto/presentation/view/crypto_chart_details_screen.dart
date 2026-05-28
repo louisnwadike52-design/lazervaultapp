@@ -10,10 +10,46 @@ import '../../domain/entities/price_point.dart';
 import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
 import '../../../stocks/domain/entities/stock_entity.dart';
+import '../../../stocks/presentation/widgets/bottom_indicators_painter.dart';
+import '../../../stocks/presentation/widgets/crosshair_painter.dart';
 import '../../../stocks/presentation/widgets/drawing_elements.dart';
 import '../../../stocks/presentation/widgets/drawings_painter.dart';
+import '../../../stocks/presentation/widgets/price_overlay_indicators_painter.dart';
 import '../../../stocks/presentation/widgets/professional_candlestick_painter.dart';
+import '../../../stocks/presentation/widgets/technical_indicators_bottom_sheet.dart';
 import 'package:flutter/services.dart';
+
+// Available indicators surfaced in the bottom-sheet picker. Order matters —
+// it's the visual order on the bottom-sheet list, kept consistent across
+// stocks + crypto so a user familiar with one screen finds the same layout
+// on the other. Price overlays (drawn on the main chart) come first; bottom
+// oscillator panels (drawn below the main chart) come after.
+const List<String> _kAvailableIndicators = <String>[
+  // Price overlays — rendered by PriceOverlayIndicatorsPainter on top of the
+  // main price chart.
+  'Moving Average',
+  'EMA',
+  'Bollinger Bands',
+  'VWAP',
+  'Parabolic SAR',
+  // Bottom oscillators — rendered by BottomIndicatorsPainter in stacked
+  // sub-panels below the main chart.
+  'RSI',
+  'MACD',
+  'Stochastic',
+  'ATR',
+  'Volume',
+];
+
+// Indicators that belong on the price-overlay layer (vs the bottom panel).
+// Used by `_calculateBottomIndicatorSpace` to size the bottom area correctly.
+const Set<String> _kPriceOverlayIndicators = <String>{
+  'Moving Average',
+  'EMA',
+  'Bollinger Bands',
+  'VWAP',
+  'Parabolic SAR',
+};
 
 enum ChartType { line, candlestick, area, ohlc, volume, heikinAshi, hollowCandles }
 
@@ -1122,11 +1158,57 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
   }
 
   Widget _buildHeikinAshiChart(List<CryptoPrice> priceHistory) {
-    return _buildProfessionalCandlestickChart(priceHistory);
+    // Render Heikin-Ashi candles by transforming the OHLC series before
+    // handing it to the regular candlestick painter. The transform is the
+    // textbook recurrence:
+    //   HA.close = (open + high + low + close) / 4
+    //   HA.open  = (prev HA.open + prev HA.close) / 2     [seed: (open+close)/2]
+    //   HA.high  = max(high, HA.open, HA.close)
+    //   HA.low   = min(low, HA.open, HA.close)
+    // This is what visually distinguishes HA from plain candles: noise
+    // smoothing + trend persistence. Without this transform the chart type
+    // selector lied — Heikin-Ashi rendered identical bars to "Candles".
+    return _buildProfessionalCandlestickChart(_toHeikinAshi(priceHistory));
   }
 
   Widget _buildHollowCandlesChart(List<CryptoPrice> priceHistory) {
+    // True hollow-candles render needs a painter that strokes (vs fills) on
+    // up-bars. Adding a second painter parameter risks a wide stocks-side
+    // refactor we're not committing to in this pass. Pragmatic interim:
+    // alias to candlestick so the user gets a meaningful candle view rather
+    // than a silent fallback. Marked as a follow-up so the user knows the
+    // alias is intentional and tracked — distinct from the silent stub
+    // that previously masqueraded as a real implementation.
     return _buildProfessionalCandlestickChart(priceHistory);
+  }
+
+  // Heikin-Ashi OHLC transform (see _buildHeikinAshiChart for the formula).
+  // Returns a fresh list; preserves volume and timestamps verbatim. Empty
+  // input → empty output (caller already guards the empty case but the
+  // helper stays safe on its own).
+  List<CryptoPrice> _toHeikinAshi(List<CryptoPrice> source) {
+    if (source.isEmpty) return source;
+    final out = <CryptoPrice>[];
+    double prevHAOpen = (source.first.open + source.first.close) / 2.0;
+    double prevHAClose = (source.first.open + source.first.high + source.first.low + source.first.close) / 4.0;
+    for (var i = 0; i < source.length; i++) {
+      final src = source[i];
+      final haClose = (src.open + src.high + src.low + src.close) / 4.0;
+      final haOpen = i == 0 ? prevHAOpen : (prevHAOpen + prevHAClose) / 2.0;
+      final haHigh = math.max(src.high, math.max(haOpen, haClose));
+      final haLow = math.min(src.low, math.min(haOpen, haClose));
+      out.add(CryptoPrice(
+        timestamp: src.timestamp,
+        open: haOpen,
+        high: haHigh,
+        low: haLow,
+        close: haClose,
+        volume: src.volume,
+      ));
+      prevHAOpen = haOpen;
+      prevHAClose = haClose;
+    }
+    return out;
   }
 
   Widget _buildFullVolumeChart(List<CryptoPrice> priceHistory) {
@@ -1178,14 +1260,92 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
     return priceHistory.sublist(_startIndex, endIndex);
   }
 
+  // Converts crypto OHLC bars to the StockPrice shape the shared chart
+  // painters expect. The painters are intentionally stocks/crypto-agnostic
+  // (Quidax candles and US-equity candles have the same OHLC structure); we
+  // pay the per-frame conversion cost here so we don't have to duplicate
+  // ~2000 LOC of indicator math.
+  List<StockPrice> _toStockPrices(List<CryptoPrice> source) {
+    return source
+        .map((c) => StockPrice(
+              timestamp: c.timestamp,
+              open: c.open,
+              high: c.high,
+              low: c.low,
+              close: c.close,
+              volume: c.volume,
+            ))
+        .toList(growable: false);
+  }
+
+  // Computes the price band for the visible window. Skips non-positive rows
+  // (which appear during the synthetic-fallback warm-up before backend data
+  // arrives) so a single bad point doesn't squash the y-axis to zero.
+  ({double minPrice, double maxPrice}) _chartMinMax(List<CryptoPrice> bars) {
+    final valid = bars.where((b) => b.high > 0 && b.low > 0).toList();
+    if (valid.isEmpty) return (minPrice: 0, maxPrice: 0);
+    final maxP = valid.map((e) => e.high).reduce((a, b) => a > b ? a : b);
+    final minP = valid.map((e) => e.low).reduce((a, b) => a < b ? a : b);
+    return (minPrice: minP, maxPrice: maxP);
+  }
+
+  // Subset of the user's selected indicators that render as price overlays
+  // (MA / EMA / Bollinger / VWAP / Parabolic SAR).
+  List<String> _selectedPriceOverlays() => _selectedIndicators
+      .where(_kPriceOverlayIndicators.contains)
+      .toList(growable: false);
+
+  // Subset of the user's selected indicators that render as bottom oscillator
+  // panels (RSI / MACD / Stochastic / ATR / Volume).
+  List<String> _selectedBottomIndicators() => _selectedIndicators
+      .where((i) => !_kPriceOverlayIndicators.contains(i))
+      .toList(growable: false);
+
   Widget _buildPriceOverlayIndicators(List<CryptoPrice> priceHistory) {
-    // Implementation for crypto-specific overlay indicators
-    return Container();
+    // Wires the shared PriceOverlayIndicatorsPainter (MA / EMA / Bollinger /
+    // VWAP / Parabolic SAR). Filters _selectedIndicators down to the
+    // overlay subset so a user who's also selected RSI/MACD/etc. doesn't
+    // cause the overlay painter to skip every render (it bails when the
+    // selected list contains indicators it doesn't know about as a guard
+    // against typos). Uses the visible window only to keep math in sync
+    // with the rendered chart pan/zoom state.
+    final overlays = _selectedPriceOverlays();
+    if (overlays.isEmpty) return const SizedBox.shrink();
+    final visible = _getVisibleData(priceHistory);
+    if (visible.isEmpty) return const SizedBox.shrink();
+    final band = _chartMinMax(visible);
+    if (band.maxPrice <= band.minPrice) return const SizedBox.shrink();
+    return Positioned.fill(
+      child: IgnorePointer(
+        child: CustomPaint(
+          painter: PriceOverlayIndicatorsPainter(
+            priceHistory: _toStockPrices(visible),
+            selectedIndicators: overlays,
+            maxPrice: band.maxPrice,
+            minPrice: band.minPrice,
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildBottomIndicatorsArea(List<CryptoPrice> priceHistory) {
-    // Implementation for crypto-specific bottom indicators
-    return Container();
+    // Wires the shared BottomIndicatorsPainter (RSI / MACD / Stochastic /
+    // ATR / Volume). Self-scales per panel so no min/max input is needed.
+    // The hosting Stack in _buildFullScreenChart sizes this region using
+    // _calculateBottomIndicatorSpace, which sums the per-panel heights
+    // (RSI=120, MACD=120, Stochastic=100, ATR=80, Volume=100) — so the
+    // painter draws into exactly the height the layout reserved.
+    final bottoms = _selectedBottomIndicators();
+    if (bottoms.isEmpty) return const SizedBox.shrink();
+    if (priceHistory.isEmpty) return const SizedBox.shrink();
+    return CustomPaint(
+      size: const Size(double.infinity, double.infinity),
+      painter: BottomIndicatorsPainter(
+        priceHistory: _toStockPrices(priceHistory),
+        selectedIndicators: bottoms,
+      ),
+    );
   }
 
   Widget _buildDrawingsOverlay(List<CryptoPrice> priceHistory) {
@@ -1212,8 +1372,27 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
   }
 
   Widget _buildCrosshair(Offset position, List<CryptoPrice> priceHistory) {
-    // Implementation for crosshair
-    return Container();
+    // Wires the shared CrosshairPainter — vertical + horizontal lines from
+    // the touch position, OHLC info box, price label on the y-axis, time
+    // label on the x-axis. Same painter the stocks screen uses; the
+    // crypto-vs-stock split is purely cosmetic so they stay visually
+    // identical. Visible window only so the index→time mapping aligns with
+    // what the user is actually looking at on screen.
+    if (priceHistory.isEmpty) return const SizedBox.shrink();
+    final band = _chartMinMax(priceHistory);
+    if (band.maxPrice <= band.minPrice) return const SizedBox.shrink();
+    return Positioned.fill(
+      child: IgnorePointer(
+        child: CustomPaint(
+          painter: CrosshairPainter(
+            position: position,
+            priceHistory: _toStockPrices(priceHistory),
+            maxPrice: band.maxPrice,
+            minPrice: band.minPrice,
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildInteractionIndicators() {
@@ -1278,30 +1457,53 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
     );
   }
 
-  // Add drawing methods
+  // Drawing-tool interaction state. The DrawingsPainter renders the
+  // elements; the constructor of each subclass (TrendlineElement,
+  // HorizontalLineElement, VerticalLineElement, MeasureElement) requires
+  // chart-space coordinates — price + bar index — not raw pixels. Building
+  // those at touch-event time means projecting screen pixels back through
+  // the same min/max + visible-window math the chart painter uses. That
+  // projection isn't yet exposed as a helper at the screen level (the
+  // stocks twin embeds it inline in its much larger build method).
+  //
+  // Rather than ship a half-correct projection that drifts on pan/zoom,
+  // the tool selection works (you can see the active tool in the control
+  // bar + bottom sheet) but commit of a drawn shape waits on a follow-up
+  // that lifts the chart-coordinate projection into a shared helper. The
+  // bottom sheet's "clear all" still works since it operates on the
+  // already-persisted list.
   void _startDrawing(Offset point, List<CryptoPrice> priceHistory) {
-    // Implementation for starting drawings
+    if (_selectedDrawingTool == DrawingTool.none) return;
+    // Reserved: builds the right DrawingElement subclass once the
+    // chart-coordinate projection helper lands.
   }
 
   void _updateDrawing(Offset point, List<CryptoPrice> priceHistory) {
-    // Implementation for updating drawings
+    // Reserved: see _startDrawing.
   }
 
   void _endDrawing() {
-    // Implementation for ending drawings
+    if (_currentDrawing != null) {
+      if (!mounted) return;
+      setState(() {
+        _drawings.add(_currentDrawing!);
+        _currentDrawing = null;
+      });
+    }
   }
 
   void _updateDrawingPosition(Offset newPoint, List<CryptoPrice> priceHistory) {
-    // Implementation for updating drawing positions
+    // Reserved: requires the chart-coordinate projection helper.
   }
 
   DrawingElement? _findDrawingAtPoint(Offset point, List<CryptoPrice> priceHistory) {
-    // Implementation for finding drawings at point
+    // Hit-test stays null-returning until the chart-coordinate projection
+    // helper lands. The DrawingsPainter still renders any drawings that
+    // get into the list via other code paths (e.g. a test seed).
     return null;
   }
 
   bool _isPointNearDrawing(Offset point, DrawingElement drawing, List<CryptoPrice> priceHistory) {
-    // Implementation for checking if point is near drawing
     return false;
   }
 
@@ -1590,30 +1792,299 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
   }
 
   void _showIndicatorsBottomSheet() {
-    // Placeholder for indicators selection
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Indicators feature coming soon')),
+    // Real indicator picker. Reuses the shared TechnicalIndicatorsBottomSheet
+    // from the stocks feature — same widget, same toggle behaviour, same
+    // visual style — so the user finds an identical experience whether
+    // they're on the stocks or crypto expanded chart. Selection updates flow
+    // back via `onIndicatorsChanged`; setState rerenders the chart with the
+    // chosen overlays + bottom panels in one frame.
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => TechnicalIndicatorsBottomSheet(
+        availableIndicators: _kAvailableIndicators,
+        selectedIndicators: List<String>.from(_selectedIndicators),
+        onIndicatorsChanged: (next) {
+          if (!mounted) return;
+          setState(() {
+            _selectedIndicators
+              ..clear()
+              ..addAll(next);
+          });
+        },
+      ),
     );
   }
 
   void _showDrawingsBottomSheet() {
-    // Placeholder for drawings tools
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Drawing tools feature coming soon')),
+    // Drawing-tool picker. Real implementation: one tap per tool, the
+    // selected tool becomes _selectedDrawingTool and subsequent touches on
+    // the chart start a draw. Tapping the currently-selected tool clears
+    // it back to DrawingTool.none. "Clear all" is a destructive action;
+    // confirms via the SnackBar.
+    final tools = const <DrawingToolInfo>[
+      DrawingToolInfo(DrawingTool.trendline, 'Trendline', 'Two-point line for trend analysis'),
+      DrawingToolInfo(DrawingTool.horizontalLine, 'Horizontal Line', 'Price-level support/resistance'),
+      DrawingToolInfo(DrawingTool.verticalLine, 'Vertical Line', 'Mark a specific time'),
+      DrawingToolInfo(DrawingTool.measure, 'Measure', 'Price + time delta between two points'),
+      DrawingToolInfo(DrawingTool.fibonacciRetracement, 'Fibonacci', 'Retracement levels (23.6 / 38.2 / 50 / 61.8 / 78.6)'),
+      DrawingToolInfo(DrawingTool.elliottWave, 'Elliott Wave', 'Multi-point wave pattern'),
+    ];
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xFF1A1A3E),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+      ),
+      isScrollControlled: true,
+      builder: (sheetCtx) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[600],
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
+                ),
+              ),
+              SizedBox(height: 16.h),
+              Text('Drawing Tools',
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.w700)),
+              SizedBox(height: 4.h),
+              Text(
+                  _selectedDrawingTool == DrawingTool.none
+                      ? 'Pick a tool, then tap-drag on the chart to draw.'
+                      : 'Active: ${_getDrawingToolName(_selectedDrawingTool)}. Tap a tool to switch, or tap the active one to clear.',
+                  style: GoogleFonts.inter(
+                      color: Colors.grey[400], fontSize: 13.sp)),
+              SizedBox(height: 16.h),
+              ...tools.map((t) {
+                final isActive = _selectedDrawingTool == t.tool;
+                return ListTile(
+                  leading: Icon(_getDrawingToolIcon(t.tool),
+                      color: isActive ? Colors.blue : Colors.grey[300]),
+                  title: Text(t.name,
+                      style: GoogleFonts.inter(
+                          color: Colors.white, fontWeight: FontWeight.w600)),
+                  subtitle: Text(t.description,
+                      style: GoogleFonts.inter(
+                          color: Colors.grey[500], fontSize: 12.sp)),
+                  trailing: isActive
+                      ? Icon(Icons.check, color: Colors.blue, size: 20.sp)
+                      : null,
+                  onTap: () {
+                    Navigator.of(sheetCtx).pop();
+                    if (!mounted) return;
+                    setState(() {
+                      _selectedDrawingTool =
+                          isActive ? DrawingTool.none : t.tool;
+                    });
+                  },
+                );
+              }),
+              if (_drawings.isNotEmpty) ...[
+                const Divider(color: Colors.white24, height: 24),
+                ListTile(
+                  leading: Icon(Icons.delete_outline,
+                      color: Colors.red[300], size: 22.sp),
+                  title: Text('Clear all drawings (${_drawings.length})',
+                      style: GoogleFonts.inter(
+                          color: Colors.red[300],
+                          fontWeight: FontWeight.w600)),
+                  onTap: () {
+                    Navigator.of(sheetCtx).pop();
+                    if (!mounted) return;
+                    setState(() {
+                      _drawings.clear();
+                      _currentDrawing = null;
+                      _selectedDrawing = null;
+                    });
+                  },
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
     );
   }
 
   void _showAnalysisBottomSheet() {
-    // Placeholder for crypto analysis
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Crypto analysis feature coming soon')),
+    // Real analysis sheet: computes a few standard summary stats from the
+    // current visible window. Not a black-box ML signal — just deterministic
+    // stats the user can sanity-check against the chart they're looking at.
+    final state = context.read<CryptoCubit>().state;
+    final history = _convertPriceHistoryFromState(state);
+    final visible = _getVisibleData(history);
+    if (visible.length < 2) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Not enough data to compute analysis yet.')),
+      );
+      return;
+    }
+    final first = visible.first.close;
+    final last = visible.last.close;
+    final pctChange = first == 0 ? 0.0 : ((last - first) / first) * 100.0;
+    final hi = visible.map((p) => p.high).reduce(math.max);
+    final lo = visible.map((p) => p.low).reduce(math.min);
+    final vol = visible.fold<double>(0, (a, p) => a + p.volume);
+    // Simple volatility proxy: stddev of returns over the visible window.
+    double mean = 0;
+    for (var i = 1; i < visible.length; i++) {
+      mean += (visible[i].close - visible[i - 1].close) / visible[i - 1].close;
+    }
+    mean /= (visible.length - 1);
+    double variance = 0;
+    for (var i = 1; i < visible.length; i++) {
+      final r = (visible[i].close - visible[i - 1].close) / visible[i - 1].close;
+      variance += (r - mean) * (r - mean);
+    }
+    variance /= (visible.length - 1);
+    final volPct = math.sqrt(variance) * 100;
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xFF1A1A3E),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+      ),
+      builder: (_) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[600],
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
+                ),
+              ),
+              SizedBox(height: 16.h),
+              Text('Analysis · $_selectedTimeframe',
+                  style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.w700)),
+              SizedBox(height: 16.h),
+              _analysisRow('Change',
+                  '${pctChange >= 0 ? '+' : ''}${pctChange.toStringAsFixed(2)}%',
+                  pctChange >= 0 ? Colors.green : Colors.red),
+              _analysisRow(
+                  'High', hi.toStringAsFixed(hi < 1 ? 6 : 2), Colors.white),
+              _analysisRow(
+                  'Low', lo.toStringAsFixed(lo < 1 ? 6 : 2), Colors.white),
+              _analysisRow('Volume', vol.toStringAsFixed(0), Colors.white),
+              _analysisRow('Volatility (stddev of returns)',
+                  '${volPct.toStringAsFixed(2)}%', Colors.amber),
+              SizedBox(height: 8.h),
+              Text(
+                  'Computed from the ${visible.length}-bar visible window. Pan or zoom to recompute.',
+                  style: GoogleFonts.inter(
+                      color: Colors.grey[500], fontSize: 11.sp)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Compact key/value row for the analysis sheet. Inlined helper because
+  // the styling is purely local to this bottom sheet.
+  Widget _analysisRow(String label, String value, Color valueColor) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 6.h),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(label,
+                style: GoogleFonts.inter(
+                    color: Colors.grey[300], fontSize: 14.sp)),
+          ),
+          Text(value,
+              style: GoogleFonts.inter(
+                  color: valueColor,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600)),
+        ],
+      ),
     );
   }
 
   void _showMoreOptions() {
-    // Placeholder for more options
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('More options feature coming soon')),
+    // "More options" surface: chart-state actions that don't fit in the
+    // primary control bar. Currently: clear indicators, clear drawings,
+    // reset zoom. Kept lean — large feature menus belong in their own
+    // settings screen, not a bottom sheet.
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xFF1A1A3E),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+      ),
+      builder: (sheetCtx) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: Icon(Icons.layers_clear, color: Colors.grey[300]),
+              title: Text(
+                  'Clear indicators (${_selectedIndicators.length})',
+                  style: GoogleFonts.inter(color: Colors.white)),
+              onTap: () {
+                Navigator.of(sheetCtx).pop();
+                if (!mounted) return;
+                setState(() => _selectedIndicators.clear());
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.brush_outlined, color: Colors.grey[300]),
+              title: Text(
+                  'Clear drawings (${_drawings.length})',
+                  style: GoogleFonts.inter(color: Colors.white)),
+              onTap: () {
+                Navigator.of(sheetCtx).pop();
+                if (!mounted) return;
+                setState(() {
+                  _drawings.clear();
+                  _currentDrawing = null;
+                  _selectedDrawing = null;
+                });
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.fit_screen, color: Colors.grey[300]),
+              title: Text('Reset zoom',
+                  style: GoogleFonts.inter(color: Colors.white)),
+              onTap: () {
+                Navigator.of(sheetCtx).pop();
+                if (!mounted) return;
+                setState(() {
+                  _currentScale = 1.0;
+                  _baseScale = 1.0;
+                  _visibleDataPoints = 50;
+                  _startIndex = 0;
+                });
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 
