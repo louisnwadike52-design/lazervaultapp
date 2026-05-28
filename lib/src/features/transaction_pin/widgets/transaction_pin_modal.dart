@@ -227,7 +227,12 @@ class TransactionPinModalState extends State<TransactionPinModal>
   }
 
   Widget _buildPinEntryContent() {
-    final remainingAttempts = _maxAttempts - _currentAttempt;
+    // Tries remaining INCLUDING the current attempt. _currentAttempt is
+    // 1-indexed and only advances AFTER a failed attempt, so on the first
+    // failure (currentAttempt becomes 2) the user still has _maxAttempts-1
+    // tries left, and on the final try (currentAttempt == _maxAttempts) exactly
+    // 1 remains.
+    final remainingAttempts = _maxAttempts - _currentAttempt + 1;
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
@@ -356,8 +361,10 @@ class TransactionPinModalState extends State<TransactionPinModal>
             ),
           ],
 
-          // Attempts warning
-          if (remainingAttempts > 0 && remainingAttempts < _maxAttempts) ...[
+          // Attempts warning — standard practice: surface "N attempts
+          // remaining" ONLY after the first failed attempt (currentAttempt
+          // advances past 1), never on the initial PIN entry.
+          if (_currentAttempt > 1 && remainingAttempts > 0) ...[
             SizedBox(height: 8.h),
             Container(
               width: double.infinity,
@@ -395,6 +402,7 @@ class TransactionPinModalState extends State<TransactionPinModal>
                 height: 60.h,
                 margin: EdgeInsets.symmetric(horizontal: 6.w),
                 child: TextField(
+                  key: Key('transaction_pin_digit_$index'),
                   controller: _pinControllers[index],
                   focusNode: _pinFocusNodes[index],
                   textAlign: TextAlign.center,
