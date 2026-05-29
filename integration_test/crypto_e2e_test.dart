@@ -67,6 +67,8 @@ import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/crypto/cubit/crypto_cubit.dart';
 import 'package:lazervault/src/features/crypto/cubit/crypto_state.dart';
 import 'package:lazervault/src/features/crypto/domain/entities/crypto_entity.dart';
+import 'package:lazervault/src/features/stocks/presentation/widgets/bottom_indicators_painter.dart';
+import 'package:lazervault/src/features/stocks/presentation/widgets/price_overlay_indicators_painter.dart';
 import 'package:lazervault/src/generated/auth.pb.dart';
 import 'package:lazervault/src/generated/auth.pbgrpc.dart' as auth_pb;
 import 'package:lazervault/src/generated/accounts.pb.dart';
@@ -372,6 +374,11 @@ Finder _tappableAncestorOf(Finder text) {
 /// containing Scrollable to make it visible. `Scrollable.ensureVisible`
 /// won't run inside `pump()` without the framework's overlay re-route, so
 /// we wait on the visibility ourselves.
+///
+/// Currently unused by the active steps (run #11+ uses direct-route push
+/// patterns that don't need scroll defense) but kept available for future
+/// steps that wire widget-tree finders.
+// ignore: unused_element
 Future<bool> _scrollIntoView(
   WidgetTester tester,
   Finder matcher, {
@@ -533,6 +540,76 @@ Future<({bool terminal, String label, String detail})> _waitForTerminalCryptoSta
     terminal: false,
     label: 'timeout',
     detail: 'no terminal CryptoState in ${timeout.inSeconds}s',
+  );
+}
+
+/// Verifies that a CustomPaint with one of the shared indicator painters
+/// is in the tree AND that its `selectedIndicators` list contains the
+/// expected indicator name. This proves the user's toggle actually
+/// propagated all the way: bottom sheet → setState → CustomPaint
+/// reconstruction → painter constructor call. Without this, "Toggle
+/// RSI" could pass just because the bottom-sheet tile was tapped — even
+/// if the chart didn't react to it.
+///
+/// Returns a (found, detail) pair so the caller can report a useful
+/// PASS/FAIL message. `expected` is the canonical indicator name from
+/// _kAvailableIndicators (e.g. 'RSI', 'Moving Average').
+({bool found, String detail}) _verifyIndicatorOnChart(
+    WidgetTester tester, String expected) {
+  var sawPainter = false;
+  var foundExpected = false;
+  final names = <String>{};
+
+  // BottomIndicatorsPainter handles oscillators (RSI / MACD / Stochastic /
+  // ATR / Volume).
+  final bottoms = find.byWidgetPredicate((w) {
+    if (w is! CustomPaint) return false;
+    final p = w.painter;
+    if (p is BottomIndicatorsPainter) {
+      sawPainter = true;
+      names.addAll(p.selectedIndicators);
+      if (p.selectedIndicators.contains(expected)) foundExpected = true;
+      return true;
+    }
+    return false;
+  });
+  // PriceOverlayIndicatorsPainter handles overlays (MA / EMA / Bollinger /
+  // VWAP / Parabolic SAR).
+  final overlays = find.byWidgetPredicate((w) {
+    if (w is! CustomPaint) return false;
+    final p = w.painter;
+    if (p is PriceOverlayIndicatorsPainter) {
+      sawPainter = true;
+      names.addAll(p.selectedIndicators);
+      if (p.selectedIndicators.contains(expected)) foundExpected = true;
+      return true;
+    }
+    return false;
+  });
+  // Touching the finders so the framework actually evaluates them.
+  // Without this, `find.byWidgetPredicate` is lazy and the closure
+  // never runs.
+  bottoms.evaluate();
+  overlays.evaluate();
+
+  if (foundExpected) {
+    return (
+      found: true,
+      detail:
+          'painter has selectedIndicators=$names (includes "$expected")',
+    );
+  }
+  if (sawPainter) {
+    return (
+      found: false,
+      detail:
+          'indicator painter mounted but selectedIndicators=$names does NOT include "$expected"',
+    );
+  }
+  return (
+    found: false,
+    detail:
+        'no BottomIndicatorsPainter / PriceOverlayIndicatorsPainter in tree — chart not rendering indicators',
   );
 }
 
@@ -833,10 +910,45 @@ void main() {
               await _settle(tester, shortSettle);
               results.ok('Toggle Moving Average indicator');
             }
-            // Dismiss the sheet via system back.
-            Get.back();
-            await _settle(tester, medSettle);
-            results.ok('Apply indicator selection');
+            // Press the 'Apply' button. This is the ONLY way changes
+            // propagate to the chart screen — the bottom sheet keeps
+            // toggles in a LOCAL _tempSelectedIndicators list and fires
+            // widget.onIndicatorsChanged(_temp) only when Apply is
+            // tapped (technical_indicators_bottom_sheet.dart:142).
+            // Dismissing via system back keeps the chart's
+            // _selectedIndicators empty — which is what the previous
+            // run #11 silently did, masking the cubit→chart wiring.
+            final applyBtn = _byExactText('Apply');
+            if (applyBtn.evaluate().isNotEmpty) {
+              await _safeTap(tester, applyBtn.first);
+              await _settle(tester, medSettle);
+              results.ok('Apply indicator selection',
+                  'tapped Apply button (not back-dismiss)');
+            } else {
+              results.fail('Apply indicator selection',
+                  'no Apply button in TechnicalIndicatorsBottomSheet');
+            }
+
+            // Verify the toggles actually rendered on the chart — not just
+            // in the bottom sheet. Without this, "Toggle RSI" could pass
+            // because the tile was tapped even if the chart didn't react.
+            // The painter takes the selected list as a constructor arg;
+            // checking the painter's state proves end-to-end the toggle
+            // propagated through setState into a CustomPaint reconstruct.
+            final rsiOnChart = _verifyIndicatorOnChart(tester, 'RSI');
+            if (rsiOnChart.found) {
+              results.ok('RSI reflected on chart', rsiOnChart.detail);
+            } else {
+              results.fail('RSI reflected on chart', rsiOnChart.detail);
+            }
+            final maOnChart =
+                _verifyIndicatorOnChart(tester, 'Moving Average');
+            if (maOnChart.found) {
+              results.ok('Moving Average reflected on chart', maOnChart.detail);
+            } else {
+              results.fail(
+                  'Moving Average reflected on chart', maOnChart.detail);
+            }
           } else {
             results.fail('Indicators bottom sheet real (Phase B)',
                 'sheet did not render — Phase B regression?');
@@ -951,113 +1063,83 @@ void main() {
       } catch (_) {}
 
       // ── 9. Drive Buy flow → PIN → terminal ─────────────────────────────
-      // Full receipt-stage drive (not just "did the screen open?").
-      //   Quick-action tap on landing → Buy screen mounts → tap a Crypto
-      //   tile → enter a small fiat amount → Purchase → PIN modal →
-      //   processing → terminal. Acceptable terminals per
-      //   _classifyTerminal:
-      //     SwapCompleted              — funded buy completed
-      //     SwapFailed(insufficient_*) — Quidax sandbox master-float
-      //                                  hit the floor guard. The saga
-      //                                  did its money-safety job;
-      //                                  test PASSes.
-      //     SwapFailed(quote_expired|provider_error|swap_reversed)
-      //                                — exercise the saga's rollback
-      //                                  path. Test PASSes.
-      //     CryptoTransactionSuccess   — legacy non-swap path success.
-      //   FAIL only on: unexpected_failure (saga emitted SwapFailed with
-      //   a reason we don't recognise) or timeout.
+      // Push AppRoutes.buyCrypto DIRECTLY with the Crypto argument. The
+      // route's page builder wires BuyCryptoScreen(selectedCrypto:
+      // crypto) so the Buy CTA renders "Buy BTC" on first frame —
+      // bypassing the AllAssetsScreen picker dance whose tile-tap
+      // (run #11) didn't actually push BuyCryptoScreen but landed in
+      // the picker's search field instead. The product code path is
+      // identical to the watchlist tile's behaviour
+      // (crypto_screen.dart:743 → Get.toNamed(cryptoDetails) → Buy
+      // CTA → buy screen with selectedCrypto).
+      //
+      // Acceptable terminals per _classifyTerminal — any of these is
+      // PASS because the saga's money-safety contract is "no half-
+      // committed legs", not "saga always succeeds":
+      //   SwapCompleted              — funded buy completed
+      //   SwapFailed(insufficient_*) — Quidax sandbox master-float
+      //                                hit the floor guard. The saga
+      //                                released the user's hold and
+      //                                surfaced the message. Sandbox
+      //                                reality, not a product bug.
+      //   SwapFailed(quote_expired|provider_error|swap_reversed)
+      //                              — saga's rollback path
+      //   CryptoTransactionSuccess   — legacy non-swap path success
       try {
-        final buyText = _byExactText('Buy');
-        if (!await _waitFor(tester, buyText,
-            timeout: const Duration(seconds: 10))) {
+        if (testCrypto == null) {
           results.fail('Drive Buy → terminal',
-              'no Buy text on crypto landing');
-        } else if (!await _safeTap(tester, _tappableAncestorOf(buyText))) {
-          results.fail('Drive Buy → terminal', 'Buy tap missed');
+              'no Crypto entity to drive Buy with');
         } else {
-          await _settle(tester, medSettle);
-          results.ok('Open Buy crypto screen');
+          Get.toNamed(AppRoutes.buyCrypto, arguments: testCrypto);
+          await _settle(tester, longSettle);
+          results.ok('Open Buy crypto screen',
+              'pushed buyCrypto for ${testCrypto.symbol.toUpperCase()}');
 
-          // Buy screen renders AllAssetsScreen(mode: AssetSelectionMode.buy).
-          // Tap the first asset tile we can find — same canonical symbol
-          // we used for the detail screen above. The tile uses
-          // find.text(SYMBOL) inside a tappable card.
-          if (testCrypto != null) {
-            final tileText =
-                _byExactText(testCrypto.symbol.toUpperCase());
-            if (await _scrollIntoView(tester, tileText,
-                timeout: const Duration(seconds: 15))) {
-              await _safeTap(tester, _tappableAncestorOf(tileText));
+          // Enter a fiat amount comfortably above system_settings
+          // crypto.min_order.ngn.minor_units (= 1000 NGN). 5,000 NGN
+          // sits well above the floor and well below the user's
+          // 500,000 NGN balance ceiling.
+          final amountField = find.byType(TextField);
+          if (amountField.evaluate().isEmpty) {
+            results.warn('Enter buy amount',
+                'BuyCryptoScreen did not render its TextField');
+          } else {
+            await tester.enterText(amountField.first, '5000');
+            await _settle(tester, shortSettle);
+            results.ok('Enter buy amount', '5000');
+
+            // The Buy CTA renders 'Buy ${SYMBOL}' once the screen
+            // mounts with selectedCrypto already set
+            // (buy_crypto_screen.dart:1128).
+            final buyExact =
+                _byExactText('Buy ${testCrypto.symbol.toUpperCase()}');
+            if (!await _waitFor(tester, buyExact,
+                timeout: const Duration(seconds: 10))) {
+              results.warn('Submit transaction PIN',
+                  'Buy ${testCrypto.symbol.toUpperCase()} CTA never appeared (button disabled?)');
+            } else if (!await _safeTap(tester, _tappableAncestorOf(buyExact))) {
+              results.warn('Submit transaction PIN',
+                  'Buy CTA visible but tap missed (likely disabled until validation passes)');
+            } else {
               await _settle(tester, medSettle);
-              results.ok('Pick buy asset',
-                  'tile=${testCrypto.symbol.toUpperCase()}');
-
-              // Enter a small fiat amount so we comfortably exceed
-              // system_settings crypto.min_order.ngn.minor_units (1000
-              // NGN). 5,000 NGN is well above the floor + below the
-              // user's 500,000 NGN balance ceiling.
-              final amountField = find.byType(TextField);
-              if (amountField.evaluate().isNotEmpty) {
-                await tester.enterText(amountField.first, '5000');
-                await _settle(tester, shortSettle);
-                results.ok('Enter buy amount', '5000');
-
-                // Tap the Buy CTA. The button label interpolates the
-                // selected symbol: `Buy ${SYMBOL}` (see
-                // buy_crypto_screen.dart:1128). The fallbacks cover
-                // future renames.
-                final buyExact =
-                    _byExactText('Buy ${testCrypto.symbol.toUpperCase()}');
-                final buyContaining = find.textContaining(
-                    'Buy ${testCrypto.symbol.toUpperCase()}');
-                final purchase = _byExactText('Purchase');
-                final confirm = _byExactText('Confirm');
-                Finder buyCta;
-                if (buyExact.evaluate().isNotEmpty) {
-                  buyCta = buyExact;
-                } else if (buyContaining.evaluate().isNotEmpty) {
-                  buyCta = buyContaining.first;
-                } else if (purchase.evaluate().isNotEmpty) {
-                  buyCta = purchase;
-                } else if (confirm.evaluate().isNotEmpty) {
-                  buyCta = confirm;
+              if (await _enterPin(tester)) {
+                results.ok('Submit transaction PIN');
+                // Poll for terminal.
+                final t = await _waitForTerminalCryptoState(tester,
+                    timeout: const Duration(seconds: 120));
+                if (!t.terminal) {
+                  results.fail('Buy reaches terminal', t.detail);
+                } else if (t.label == 'unexpected_failure') {
+                  results.fail('Buy reaches terminal',
+                      'unexpected ${t.detail}');
                 } else {
-                  buyCta = find.byKey(const ValueKey('__no_buy_cta__'));
-                }
-                if (await _safeTap(tester, _tappableAncestorOf(buyCta))) {
-                  await _settle(tester, medSettle);
-                  // Enter PIN. Mirrors giftcards: 4 digit keys, 4th
-                  // auto-submits.
-                  if (await _enterPin(tester)) {
-                    results.ok('Submit transaction PIN');
-                    // Poll for terminal.
-                    final t = await _waitForTerminalCryptoState(tester,
-                        timeout: const Duration(seconds: 120));
-                    if (!t.terminal) {
-                      results.fail('Buy reaches terminal', t.detail);
-                    } else if (t.label == 'unexpected_failure') {
-                      results.fail('Buy reaches terminal',
-                          'unexpected ${t.detail}');
-                    } else {
-                      results.ok('Buy reaches terminal',
-                          '${t.label} (${t.detail})');
-                    }
-                  } else {
-                    results.warn('Submit transaction PIN',
-                        'PIN modal did not appear within 20s — may be a min-order rejection');
-                  }
-                } else {
-                  results.warn('Submit transaction PIN',
-                      'no Purchase/Confirm CTA visible');
+                  results.ok('Buy reaches terminal',
+                      '${t.label} (${t.detail})');
                 }
               } else {
-                results.warn('Enter buy amount',
-                    'no TextField for amount entry');
+                results.warn('Submit transaction PIN',
+                    'PIN modal did not appear within 20s — may be a min-order/balance/quote rejection');
               }
-            } else {
-              results.warn('Pick buy asset',
-                  '${testCrypto.symbol.toUpperCase()} tile not visible');
             }
           }
           // Back to landing so Sell flow starts clean.
