@@ -68,33 +68,74 @@ class _PriceQuoteCardState extends State<PriceQuoteCard> {
     }
   }
 
+  // Number of attempts a single _load call will make before showing the
+  // error widget. With 350ms + 1.2s backoff between attempts, three tries
+  // ride out the typical CoinGecko 429 / Quidax-timeout blip the user
+  // reported as "couldn't fetch rate" — the previous one-shot policy
+  // failed loudly on the first transient blip.
+  static const int _maxAttempts = 3;
+  static const List<Duration> _backoff = [
+    Duration(milliseconds: 350),
+    Duration(milliseconds: 1200),
+  ];
+
+  // Holds the most recently-fetched successful rate so a transient blip
+  // on auto-refresh keeps the previous reading on screen instead of
+  // wiping it back to "Rate unavailable". The card auto-refreshes every
+  // 30s; better to show a 30s-old number than nothing.
+  double? _lastGoodPrice;
+
   Future<void> _load() async {
     if (!mounted) return;
     setState(() {
       _loading = true;
       _error = null;
     });
-    try {
-      final resp = await _client.getExchangeRate(
-        cryptoId: widget.cryptoId,
-        fiatCurrency: _fiat.toUpperCase(),
-      );
-      if (!mounted) return;
-      setState(() {
-        _price = resp.rate;
-        // GetCryptoFiatRate doesn't expose 24h change today; surface the
-        // spread basis points instead so the user sees the fee built into
-        // the rate. When the server learns to return change24h, swap here.
-        _change24h = null;
-        _loading = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _error = 'Rate unavailable';
-        _loading = false;
-      });
+    Object? lastErr;
+    for (int attempt = 0; attempt < _maxAttempts; attempt++) {
+      try {
+        final resp = await _client.getExchangeRate(
+          cryptoId: widget.cryptoId,
+          fiatCurrency: _fiat.toUpperCase(),
+        );
+        if (!mounted) return;
+        setState(() {
+          _price = resp.rate;
+          _lastGoodPrice = resp.rate;
+          // GetCryptoFiatRate doesn't expose 24h change today; surface the
+          // spread basis points instead so the user sees the fee built into
+          // the rate. When the server learns to return change24h, swap here.
+          _change24h = null;
+          _loading = false;
+        });
+        return;
+      } catch (e) {
+        lastErr = e;
+        if (attempt + 1 < _maxAttempts) {
+          await Future<void>.delayed(_backoff[attempt]);
+          if (!mounted) return;
+        }
+      }
     }
+    if (!mounted) return;
+    // Prefer to keep the last good reading visible if we have one — gives
+    // the user a "this is a few seconds stale" experience instead of a
+    // blank error. The error string still surfaces below for transparency.
+    setState(() {
+      _price = _lastGoodPrice;
+      _error = _lastGoodPrice != null
+          ? 'Rate paused — retrying'
+          : 'Rate unavailable';
+      _loading = false;
+    });
+    // Swallow the last error explicitly so the analyzer is happy and the
+    // intent is clear: we've surfaced what the user needs to see.
+    assert(() {
+      if (lastErr != null) {
+        debugPrint('PriceQuoteCard load failed after $_maxAttempts attempts: $lastErr');
+      }
+      return true;
+    }());
   }
 
   @override
@@ -105,14 +146,44 @@ class _PriceQuoteCardState extends State<PriceQuoteCard> {
             style: GoogleFonts.inter(color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
       );
     }
-    if (_error != null || _price == null) {
+    // Hard error: no rate at all, and no prior reading to fall back on.
+    // Surfaces "Rate unavailable" plus a Retry button so the user can
+    // recover without bouncing back to the asset picker.
+    if (_error != null && _price == null) {
       return _container(
         child: Row(children: [
-          Icon(Icons.error_outline, color: const Color(0xFFEF4444), size: 14.sp),
+          Icon(Icons.error_outline,
+              color: const Color(0xFFEF4444), size: 14.sp),
           SizedBox(width: 6.w),
-          Text(_error ?? 'No price',
-              style: GoogleFonts.inter(color: const Color(0xFFEF4444), fontSize: 12.sp)),
+          Expanded(
+            child: Text(_error!,
+                style: GoogleFonts.inter(
+                    color: const Color(0xFFEF4444), fontSize: 12.sp)),
+          ),
+          GestureDetector(
+            onTap: _load,
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+              child: Row(children: [
+                Icon(Icons.refresh,
+                    color: const Color(0xFF3B82F6), size: 14.sp),
+                SizedBox(width: 4.w),
+                Text('Retry',
+                    style: GoogleFonts.inter(
+                        color: const Color(0xFF3B82F6),
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600)),
+              ]),
+            ),
+          ),
         ]),
+      );
+    }
+    if (_price == null) {
+      return _container(
+        child: Text('No price',
+            style: GoogleFonts.inter(
+                color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
       );
     }
     final priceStr = _formatPrice(_price!);
@@ -122,23 +193,49 @@ class _PriceQuoteCardState extends State<PriceQuoteCard> {
     final changeColor = (_change24h ?? 0) >= 0
         ? const Color(0xFF10B981)
         : const Color(0xFFEF4444);
-    return _container(
-      child: Row(children: [
-        Text('1 ${widget.cryptoSymbol.toUpperCase()}',
-            style: GoogleFonts.inter(
-                color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
-        SizedBox(width: 6.w),
-        Text('≈ $priceStr ${_fiat.toUpperCase()}',
-            style: GoogleFonts.inter(
-                color: Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w600)),
-        const Spacer(),
-        if (changeStr.isNotEmpty)
-          Text(changeStr,
+    // When we're showing a stale-but-good price (current refresh failed,
+    // last known reading still on screen), expose that to the user with
+    // a subtle "paused" tag and a tap-to-retry, instead of pretending the
+    // figure is fresh. The previous version either showed the figure as
+    // live OR an error widget with no figure — never the honest middle
+    // ground.
+    final isStale = _error != null;
+    return GestureDetector(
+      onTap: isStale ? _load : null,
+      child: _container(
+        child: Row(children: [
+          Text('1 ${widget.cryptoSymbol.toUpperCase()}',
               style: GoogleFonts.inter(
-                  color: changeColor,
-                  fontSize: 12.sp,
+                  color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
+          SizedBox(width: 6.w),
+          Text('≈ $priceStr ${_fiat.toUpperCase()}',
+              style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 13.sp,
                   fontWeight: FontWeight.w600)),
-      ]),
+          if (isStale) ...[
+            SizedBox(width: 6.w),
+            Icon(Icons.pause_circle_outline,
+                color: const Color(0xFFFB923C), size: 12.sp),
+            SizedBox(width: 3.w),
+            Text('paused',
+                style: GoogleFonts.inter(
+                    color: const Color(0xFFFB923C), fontSize: 11.sp)),
+          ],
+          const Spacer(),
+          if (changeStr.isNotEmpty)
+            Text(changeStr,
+                style: GoogleFonts.inter(
+                    color: changeColor,
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w600)),
+          if (isStale) ...[
+            SizedBox(width: 6.w),
+            Icon(Icons.refresh,
+                color: const Color(0xFF3B82F6), size: 14.sp),
+          ],
+        ]),
+      ),
     );
   }
 

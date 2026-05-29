@@ -7,6 +7,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import '../../cubit/crypto_cubit.dart';
 import '../../cubit/crypto_state.dart';
+import '../../cubit/crypto_withdraw_cubit.dart';
 import '../../domain/entities/crypto_entity.dart';
 import '../models/crypto_transaction_models.dart';
 import 'all_assets_screen.dart';
@@ -419,8 +420,22 @@ class _CryptoScreenState extends State<CryptoScreen> {
             // and-stay UX was a dead-end: the user saw a fleeting
             // toast then nothing happened, with no path forward to fix
             // the situation.
-            Get.to(() => BlocProvider.value(
-              value: cryptoCubit,
+            //
+            // MultiBlocProvider supplies BOTH cubits the screen needs:
+            //   - CryptoCubit (existing instance, .value) drives the
+            //     empty-state branch + asset picker.
+            //   - CryptoWithdrawCubit (factory-fetched via GetIt) drives
+            //     the submit → processing → terminal pipeline. Without
+            //     this, the screen's BlocConsumer<CryptoWithdrawCubit>
+            //     throws ProviderNotFoundException the moment it
+            //     mounts.
+            Get.to(() => MultiBlocProvider(
+              providers: [
+                BlocProvider.value(value: cryptoCubit),
+                BlocProvider<CryptoWithdrawCubit>(
+                  create: (_) => serviceLocator<CryptoWithdrawCubit>(),
+                ),
+              ],
               child: const SendCryptoScreen(),
             ));
             break;
