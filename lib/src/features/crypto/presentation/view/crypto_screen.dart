@@ -412,30 +412,17 @@ class _CryptoScreenState extends State<CryptoScreen> {
             }
             break;
           case 'Send':
-            // Sending requires a non-zero balance — a user who sold all
-            // their crypto still has holding rows with quantity=0, so
-            // .isNotEmpty alone would let them through to a dead-end
-            // SendCryptoScreen. Filter for spendable holdings before
-            // navigating.
-            final state = cryptoCubit.state;
-            final spendable = state is CryptosLoaded
-                ? state.holdings.where((h) => h.quantity > 0).toList()
-                : const [];
-            if (spendable.isNotEmpty) {
-              Get.to(() => BlocProvider.value(
-                value: cryptoCubit,
-                child: const SendCryptoScreen(),
-              ));
-            } else {
-              Get.snackbar(
-                'No Holdings',
-                "You don't have any crypto to send yet. Buy or receive crypto first.",
-                backgroundColor: const Color(0xFF1F1F1F),
-                colorText: Colors.white,
-                snackPosition: SnackPosition.TOP,
-                duration: const Duration(seconds: 3),
-              );
-            }
+            // Always open SendCryptoScreen — it handles its own empty
+            // state ("You don't have any crypto to send yet. Tap Buy
+            // or Receive to fund a wallet first.") with primary CTAs
+            // routing the user to Buy / Receive. The previous snackbar-
+            // and-stay UX was a dead-end: the user saw a fleeting
+            // toast then nothing happened, with no path forward to fix
+            // the situation.
+            Get.to(() => BlocProvider.value(
+              value: cryptoCubit,
+              child: const SendCryptoScreen(),
+            ));
             break;
           case 'Swap':
             Get.to(() => BlocProvider.value(

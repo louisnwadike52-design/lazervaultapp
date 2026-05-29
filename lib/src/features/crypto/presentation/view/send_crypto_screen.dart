@@ -9,7 +9,10 @@ import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/crypto/cubit/crypto_config_cubit.dart';
+import 'package:lazervault/src/features/crypto/cubit/crypto_cubit.dart';
+import 'package:lazervault/src/features/crypto/cubit/crypto_state.dart';
 import 'package:lazervault/src/features/crypto/cubit/crypto_withdraw_cubit.dart';
 import 'package:lazervault/src/features/crypto/domain/entities/crypto_entity.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
@@ -176,6 +179,17 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
       body: BlocConsumer<CryptoWithdrawCubit, CryptoWithdrawState>(
         listener: _onWithdrawState,
         builder: (context, state) {
+          // Read the user's holdings from the CryptoCubit (passed in by
+          // the route's BlocProvider.value). If the user has no
+          // spendable balance, render an empty-state instead of the
+          // form — gives them a path forward (Buy / Receive) rather
+          // than a dead-end input they can't fill out.
+          final cryptoState = context.watch<CryptoCubit>().state;
+          final hasSpendable = cryptoState is CryptosLoaded &&
+              cryptoState.holdings.any((h) => h.quantity > 0);
+          if (!hasSpendable) {
+            return _buildEmptyState();
+          }
           return SafeArea(
             child: Padding(
               padding: EdgeInsets.all(16.w),
@@ -262,6 +276,95 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
       default:
         break;
     }
+  }
+
+  /// Empty-state render when the user has zero spendable holdings.
+  /// Replaces the prior crypto-screen snackbar dead-end with an
+  /// actionable screen: explains the situation, then routes the user
+  /// to Buy or Receive (the two paths that produce a spendable
+  /// balance). Mirrors the empty-state UX the giftcards screens already
+  /// use for new users.
+  Widget _buildEmptyState() {
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 32.h),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Icon(
+              Icons.account_balance_wallet_outlined,
+              size: 72.sp,
+              color: Colors.white.withValues(alpha: 0.35),
+            ),
+            SizedBox(height: 24.h),
+            Text(
+              'No crypto to send yet',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 22.sp,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            SizedBox(height: 12.h),
+            Text(
+              'To send crypto, you first need a balance to send from. '
+              'Buy crypto with your wallet or receive it from an external address.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                color: const Color(0xFF9CA3AF),
+                fontSize: 14.sp,
+                height: 1.4,
+              ),
+            ),
+            SizedBox(height: 32.h),
+            ElevatedButton(
+              onPressed: () {
+                Get.back();
+                Get.toNamed(AppRoutes.buyCrypto);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF3B82F6),
+                padding: EdgeInsets.symmetric(vertical: 14.h),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r)),
+              ),
+              child: Text(
+                'Buy crypto',
+                style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16.sp),
+              ),
+            ),
+            SizedBox(height: 12.h),
+            OutlinedButton(
+              onPressed: () {
+                // Receive is reached via the crypto landing's
+                // wallets/receive section. Bouncing back to the
+                // landing puts the user in the right place to find
+                // it without inventing a parallel deep-link route.
+                Get.back();
+              },
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Color(0xFF3B82F6)),
+                padding: EdgeInsets.symmetric(vertical: 14.h),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r)),
+              ),
+              child: Text(
+                'Receive crypto',
+                style: GoogleFonts.inter(
+                    color: const Color(0xFF3B82F6),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16.sp),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildAssetTile() {
