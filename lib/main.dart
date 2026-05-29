@@ -29,6 +29,8 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart'; // Added device_info_plus
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:lazervault/core/services/quick_actions_service.dart';
+import 'package:lazervault/src/core/services/deep_link_service.dart';
+import 'dart:async';
 
 Future<void> _checkPermissions() async {
   var status = await Permission.bluetooth.request();
@@ -92,8 +94,18 @@ void main() async {
   final dbHelper = DatabaseHelper();
   await dbHelper.database;
 
-  await _checkPermissions();
-  await _initializeAndroidAudioSettings();
+  // Permissions + audio settings are fire-and-forget: they don't gate
+  // anything on first frame (the permission check just logs on denial;
+  // audio init wires WebRTC for voice/video which the user only reaches
+  // after navigating into a voice session). Awaiting them here blocked
+  // runApp behind a platform permission prompt — in production that's a
+  // visible "blank screen for 1-2s" UX papercut; in integration tests
+  // there's no UI for the prompt at all, so the await never resolves
+  // and the GetMaterialApp/Navigator never mounts. unawaited() lets the
+  // splash → home transition land on first frame and the perm prompt
+  // appears alongside the home UI as it should.
+  unawaited(_checkPermissions());
+  unawaited(_initializeAndroidAudioSettings());
 
   // Set global status bar style for dark screens
   SystemChrome.setSystemUIOverlayStyle(
@@ -268,9 +280,79 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  StreamSubscription<DeepLinkData>? _deepLinkSub;
+
   @override
   void initState() {
     super.initState();
+    _bootstrapDeepLinks();
+  }
+
+  @override
+  void dispose() {
+    _deepLinkSub?.cancel();
+    super.dispose();
+  }
+
+  /// Initializes the global deep-link service and wires the listeners.
+  ///
+  /// We handle two arrival paths:
+  ///   1. **Cold start** — the app was launched by tapping a deep link.
+  ///      `getInitialLink()` resolves once after the first frame settles.
+  ///   2. **Warm receive** — the app is already running when the OS
+  ///      hands us a new URL (foreground/background). `linkStream`
+  ///      delivers these in real time.
+  ///
+  /// On a `familyInvite` URL we navigate to the invitations screen.
+  /// If the user is unauthenticated, the auth-check screen still owns
+  /// the initial route — they'll see login first and can manually open
+  /// the Invitations tab from the dashboard banner once signed in.
+  Future<void> _bootstrapDeepLinks() async {
+    final svc = DeepLinkService.instance;
+    if (!svc.isInitialized) {
+      await svc.initialize();
+    }
+    _deepLinkSub = svc.linkStream.listen(_handleDeepLink);
+
+    // Cold-start link: defer navigation to the next frame so GetMaterialApp
+    // has finished mounting and Get.toNamed has a navigator to push onto.
+    final initial = await svc.getInitialLink();
+    if (initial != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _handleDeepLink(initial);
+      });
+    }
+  }
+
+  void _handleDeepLink(DeepLinkData data) {
+    switch (data.type) {
+      case DeepLinkType.familyInvite:
+        // Defer to a post-frame so we don't race the in-flight build.
+        // Get.toNamed (rather than offNamed) so the user can navigate
+        // back to whatever they were doing if they bail.
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          // Token is informational for now — the screen lists all the
+          // user's pending invites; the deep-linked one will be there.
+          // Future: pass it as args and have the screen highlight/scroll.
+          Get.toNamed(
+            AppRoutes.familyInvitations,
+            arguments: {
+              if (data.familyInviteToken != null)
+                'invitationToken': data.familyInviteToken,
+            },
+          );
+        });
+        break;
+      case DeepLinkType.depositCallback:
+      case DeepLinkType.paymentCallback:
+      case DeepLinkType.quickAction:
+      case DeepLinkType.unknown:
+        // Handled (or intentionally ignored) elsewhere — depositCallback /
+        // paymentCallback are listened to by the respective payment
+        // flows; quickAction is handled by QuickActionsService.
+        break;
+    }
   }
 
   @override

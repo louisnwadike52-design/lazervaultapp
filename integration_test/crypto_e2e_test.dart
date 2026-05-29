@@ -598,23 +598,42 @@ void main() {
       }
 
       // ── 4. Open expanded chart from detail screen ─────────────────────
-      // Detail screen wires an IconButton(Icons.fullscreen) that pushes
-      // AppRoutes.cryptoChartDetails. Confirmed via grep on
-      // crypto_detail_screen.dart:550.
+      // The detail screen mounts a TabBarView with 3 tabs: Overview /
+      // Stats / News. Default index is 0 (Overview), which renders the
+      // chart Container at the top. The "Expand" CTA lives in that
+      // chart Container header (crypto_detail_screen.dart:538-565).
+      //
+      // Two-step verification:
+      //   (a) wait for the "Price Chart" header text — proves the detail
+      //       screen finished its async data load and the chart panel
+      //       has actually mounted (not just routed).
+      //   (b) scroll the Expand CTA into view + tap it. The chart
+      //       Container is at the top but the page is a scrollable, so
+      //       scroll defense is cheap insurance against future layout
+      //       reflows pushing it below the fold.
       try {
-        final fullscreenBtn = find.byIcon(Icons.fullscreen);
-        if (await _waitFor(tester, fullscreenBtn,
-            timeout: const Duration(seconds: 15))) {
-          if (await _safeTap(tester, fullscreenBtn.first)) {
-            await _settle(tester, medSettle);
-            results.ok('Open expanded chart view');
+        final chartHeader = _byExactText('Price Chart');
+        if (!await _waitFor(tester, chartHeader,
+            timeout: const Duration(seconds: 20))) {
+          results.fail('Open expanded chart view',
+              'detail screen never rendered Price Chart header — '
+              'BTC tap may not have navigated');
+        } else {
+          final expandBtn = _byExactText('Expand');
+          if (await _scrollIntoView(tester, expandBtn,
+              timeout: const Duration(seconds: 10))) {
+            if (await _safeTap(tester, _tappableAncestorOf(expandBtn))) {
+              await _settle(tester, longSettle);
+              results.ok('Open expanded chart view', 'tapped Expand');
+            } else {
+              results.fail('Open expanded chart view',
+                  'Expand visible but tap missed');
+            }
           } else {
             results.fail('Open expanded chart view',
-                'fullscreen icon visible but tap missed');
+                'Price Chart header visible but Expand CTA not findable — '
+                'layout change?');
           }
-        } else {
-          results.fail('Open expanded chart view',
-              'no Icons.fullscreen on detail screen — route changed?');
         }
       } catch (e) {
         results.fail('Open expanded chart view', '$e');
@@ -653,7 +672,7 @@ void main() {
               results.ok('Toggle Moving Average indicator');
             }
             // Dismiss the sheet via system back.
-            await tester.pageBack();
+            Get.back();
             await _settle(tester, medSettle);
             results.ok('Apply indicator selection');
           } else {
@@ -688,7 +707,7 @@ void main() {
             // Picker may have rendered behind a sub-menu (mobile menu
             // hierarchies). Walk back and warn rather than fail because
             // the variant is platform-dependent.
-            await tester.pageBack();
+            Get.back();
             await _settle(tester, shortSettle);
             results.warn('Heikin-Ashi chart type renders',
                 'option not visible in chart-type picker');
@@ -723,7 +742,7 @@ void main() {
             results.fail('Analysis bottom sheet real (Phase B)',
                 'sheet did not render');
           }
-          await tester.pageBack();
+          Get.back();
           await _settle(tester, shortSettle);
         } else {
           results.warn('Analysis bottom sheet real (Phase B)',
@@ -751,7 +770,7 @@ void main() {
             results.fail('Drawing tools bottom sheet real (Phase B)',
                 'sheet did not render');
           }
-          await tester.pageBack();
+          Get.back();
           await _settle(tester, shortSettle);
         } else {
           results.warn('Drawing tools bottom sheet real (Phase B)',
@@ -763,9 +782,9 @@ void main() {
 
       // Pop expanded chart → detail screen → crypto landing.
       try {
-        await tester.pageBack();
+        Get.back();
         await _settle(tester, medSettle);
-        await tester.pageBack();
+        Get.back();
         await _settle(tester, medSettle);
       } catch (_) {}
 
@@ -781,7 +800,7 @@ void main() {
           if (await _safeTap(tester, _tappableAncestorOf(buyText))) {
             await _settle(tester, medSettle);
             results.ok('Open Buy crypto screen');
-            await tester.pageBack();
+            Get.back();
             await _settle(tester, medSettle);
           } else {
             results.fail('Open Buy crypto screen', 'Buy tap missed');
@@ -806,7 +825,7 @@ void main() {
             await _settle(tester, medSettle);
             results.ok('Open Sell crypto screen',
                 'tap handled (sell screen OR no-holdings snackbar)');
-            await tester.pageBack();
+            Get.back();
             await _settle(tester, medSettle);
           } else {
             results.fail('Open Sell crypto screen', 'Sell tap missed');
