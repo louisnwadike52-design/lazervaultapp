@@ -2002,8 +2002,16 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      // 7 chart types (Line, Candles, Area, Bars, Volume, Heikin-Ashi,
+      // Hollow) plus the header. At ~56dp per ListTile + 50dp header
+      // we need ~440dp; a 300dp sheet clipped the bottom two options
+      // ("Heikin-Ashi" + "Hollow") below the fold on most emulators and
+      // they could not be tapped without first scrolling. Using
+      // isScrollControlled + ~55% of screen lets the sheet size to
+      // content on tall phones and still scrolls on small ones.
+      isScrollControlled: true,
       builder: (context) => Container(
-        height: 300.h,
+        height: MediaQuery.of(context).size.height * 0.55,
           decoration: BoxDecoration(
             color: Colors.grey[900],
             borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
