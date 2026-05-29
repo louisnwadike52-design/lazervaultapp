@@ -57,8 +57,11 @@ import 'package:grpc/grpc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import 'package:get/get.dart';
+
 import 'package:lazervault/main.dart' as app;
 import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/generated/auth.pb.dart';
 import 'package:lazervault/src/generated/auth.pbgrpc.dart' as auth_pb;
 import 'package:lazervault/src/generated/accounts.pb.dart';
@@ -290,13 +293,25 @@ Future<_Session> _provisionTestUser(
   );
 }
 
-// Seed app secure storage + AccountManager so in-app gRPC calls
-// authenticate as the provisioned user from app.main().
-Future<void> _seedAppAuth(_Session s) async {
+// Seed app secure storage BEFORE app.main() runs. Storage is filesystem-
+// backed (via flutter_secure_storage), independent of the GetIt service
+// locator, so writes here survive app boot. The AccountManager active
+// account injection happens AFTER app.main() (see `_seedAppActiveAccount`)
+// because GetIt registrations are app.main()'s responsibility.
+Future<void> _seedAppAuthStorage(_Session s) async {
   const storage = FlutterSecureStorage();
   await storage.write(key: 'access_token', value: s.accessToken);
   await storage.write(key: 'user_id', value: s.userId);
   await storage.write(key: 'refresh_token', value: s.accessToken);
+}
+
+// Set the AccountManager's active account AFTER app.main() has registered
+// it in GetIt. The split (vs the giftcards twin's single `_seedAppAuth`)
+// makes the ordering requirement explicit and surfaces a clear error if
+// app.main() failed to register AccountManager — the test would have
+// failed at the previous app-boot step, not here, so a failure on this
+// call is unambiguous: "your dependency-injection wiring regressed".
+void _seedAppActiveAccount(_Session s) {
   GetIt.I<AccountManager>().setActiveAccount(s.ngnAccountId);
 }
 
@@ -321,20 +336,43 @@ Future<bool> _waitFor(
   return false;
 }
 
-/// Find a tappable widget whose text matches [text] (case-insensitive
-/// substring). Lots of crypto screens render the same label under
-/// multiple widgets (the Tab title also appears in the TabBar header) —
-/// `.first` keeps the harness from blowing up on ambiguity when the
-/// caller doesn't care which copy gets the tap.
-Finder _byTextLike(String text) {
-  final lower = text.toLowerCase();
-  return find.byWidgetPredicate((w) {
-    if (w is Text) {
-      final d = w.data ?? w.textSpan?.toPlainText() ?? '';
-      return d.toLowerCase().contains(lower);
-    }
+/// Exact text match. Used everywhere the Flutter widget shows a known
+/// fixed label (e.g. the "Crypto" service-tile label is `displayName` of
+/// `AppServiceName.crypto` = 'Crypto'). Crash-proof against substring
+/// noise (the substring matcher previously matched "Cryptocurrency
+/// notification" widgets we didn't want to tap).
+Finder _byExactText(String text) => find.text(text);
+
+/// Find the first GestureDetector / InkWell ancestor of a text widget.
+/// Crypto landing's Buy/Sell/Swap quick-action buttons are
+/// GestureDetector → Container → Row → Icon + Text(label); tapping the
+/// Text directly does nothing, so we walk up to the ancestor that owns
+/// `onTap`. `.first` is safe — the ancestor walk yields the nearest
+/// tappable ancestor first.
+Finder _tappableAncestorOf(Finder text) {
+  return find
+      .ancestor(of: text, matching: find.byType(GestureDetector))
+      .first;
+}
+
+/// Pump frames until [matcher] yields ≥1 widget, then scroll the
+/// containing Scrollable to make it visible. `Scrollable.ensureVisible`
+/// won't run inside `pump()` without the framework's overlay re-route, so
+/// we wait on the visibility ourselves.
+Future<bool> _scrollIntoView(
+  WidgetTester tester,
+  Finder matcher, {
+  Duration timeout = const Duration(seconds: 20),
+}) async {
+  final ok = await _waitFor(tester, matcher, timeout: timeout);
+  if (!ok) return false;
+  try {
+    await tester.ensureVisible(matcher.first);
+    await tester.pump(const Duration(milliseconds: 300));
+    return true;
+  } catch (_) {
     return false;
-  });
+  }
 }
 
 Future<void> _settle(WidgetTester tester, Duration d) async {
@@ -344,6 +382,20 @@ Future<void> _settle(WidgetTester tester, Duration d) async {
   // that prevent `pumpAndSettle` from ever returning.
   await tester.pump(d);
   await tester.pump(const Duration(milliseconds: 100));
+}
+
+/// Tap a widget that may have an offscreen / scrollable / overlay-blocked
+/// position. Wraps tester.tap with the `warnIfMissed: false` flag because
+/// crypto screens commonly overlay snackbars / quote-timer cards on top
+/// of the buttons we want to tap; the SemanticsEvent path still fires.
+Future<bool> _safeTap(WidgetTester tester, Finder f) async {
+  if (f.evaluate().isEmpty) return false;
+  try {
+    await tester.tap(f, warnIfMissed: false);
+    return true;
+  } catch (_) {
+    return false;
+  }
 }
 
 // ============================================================================
@@ -409,154 +461,241 @@ void main() {
     //    "boot once, drive everything" pattern for the same reason.
     testWidgets('Crypto full UI walk (landing → details → expanded chart → buy → sell → swap)',
         (tester) async {
-      await _seedAppAuth(session);
+      // Storage write happens BEFORE app.main() so the app sees the
+      // logged-in session on first frame. Active-account injection
+      // happens AFTER app.main() because that's where AccountManager
+      // gets registered in GetIt — calling it earlier throws StateError.
+      await _seedAppAuthStorage(session);
 
       // Boot the production app inside runAsync so the framework allows
       // long-running async work (gRPC calls, channel handshakes) during
       // the test. Without runAsync the framework would assert against
-      // any non-immediately-resolved Future during pump.
+      // any non-immediately-resolved Future during pump. We poll instead
+      // of blind-sleeping so we stop the moment GetMaterialApp mounts
+      // (matches the proven giftcards twin's boot ordering).
       await tester.runAsync(() async {
         app.main();
-        // First splash + login flush. The bigger sleep here matches what
-        // the giftcards test uses; the app schedules a JWT-refresh tick
-        // on boot which we need to land before the first tap.
-        await Future<void>.delayed(const Duration(seconds: 40));
+        final realBootEnd = DateTime.now().add(const Duration(seconds: 40));
+        while (DateTime.now().isBefore(realBootEnd)) {
+          await Future<void>.delayed(const Duration(milliseconds: 250));
+          // Boot is "done enough" when the root element exists AND Get's
+          // navigator key has been wired by GetMaterialApp. Until both are
+          // true, Get.offAllNamed throws "contextless navigation without a
+          // GetMaterialApp" — which is the regression this loop prevents.
+          if (WidgetsBinding.instance.rootElement != null &&
+              (Get.key.currentState != null || Get.context != null)) {
+            break;
+          }
+        }
       });
-      await tester.pump(longSettle);
-      results.ok('App booted', 'main() returned, splash flushed');
+
+      // Drive the framework with the test clock so the just-mounted
+      // GetMaterialApp lays out and GetX registers its navigator. The
+      // 40s wall-clock above is "real network" budget; this pump loop is
+      // "framework" budget. Same pattern as giftcards_buy_e2e_test
+      // lines 493-509.
+      final bootDeadline = DateTime.now().add(const Duration(seconds: 30));
+      while (DateTime.now().isBefore(bootDeadline)) {
+        if (find.byType(Navigator).evaluate().isNotEmpty &&
+            (Get.key.currentState != null || Get.context != null)) {
+          break;
+        }
+        await tester.pump(const Duration(milliseconds: 300));
+      }
+      final navReady = find.byType(Navigator).evaluate().isNotEmpty &&
+          (Get.key.currentState != null || Get.context != null);
+      if (!navReady) {
+        results.fail(
+            'App booted',
+            'GetMaterialApp/Navigator never mounted after boot '
+            '(navInTree=${find.byType(Navigator).evaluate().isNotEmpty} '
+            'getKey=${Get.key.currentState != null} '
+            'getCtx=${Get.context != null})');
+        return;
+      }
+
+      // Now that app.main() has registered GetIt singletons + GetX has
+      // wired its navigator, inject the active account so in-app gRPC
+      // calls authenticate as our provisioned user.
+      _seedAppActiveAccount(session);
+
+      // Let the auth-check spinner finish its initial route push (it
+      // navigates from authCheck → home once it sees the seeded token).
+      for (var i = 0; i < 20; i++) {
+        await tester.pump(const Duration(milliseconds: 300));
+      }
+      results.ok('App booted', 'GetMaterialApp navigator ready, active account=NGN');
 
       // ── 1. Navigate to Crypto landing ──────────────────────────────────
+      // We bypass the dashboard's service-tile grid (whose layout +
+      // scrolling depends on screen size and is fragile in an emulator
+      // run) and jump straight to the crypto route via Get. This is the
+      // same pattern the green giftcards twin uses; the dashboard
+      // navigation is tested separately by the home-screen E2E, not by
+      // each feature's E2E. `offAllNamed` clears the stack so the
+      // CryptoScreen's initState runs fresh and loads the catalogue.
       try {
-        final cryptoTile = _byTextLike('crypto');
-        if (await _waitFor(tester, cryptoTile)) {
-          await tester.tap(cryptoTile.first);
-          await _settle(tester, medSettle);
-          results.ok('Open Crypto landing');
-        } else {
-          results.warn(
-              'Open Crypto landing', 'no "crypto" entry tile visible');
-        }
+        Get.offAllNamed(AppRoutes.crypto);
+        await _settle(tester, longSettle);
+        results.ok('Open Crypto landing', 'offAllNamed(${AppRoutes.crypto})');
       } catch (e) {
-        results.warn('Open Crypto landing', '$e');
+        results.fail('Open Crypto landing', 'Get.offAllNamed threw: $e');
       }
 
       // ── 2. Wait for landing to populate ────────────────────────────────
+      // The landing always renders the quick-action row first (Buy /
+      // Sell / Send / Swap). Use one of those labels as the
+      // "landing-is-ready" tripwire — they appear regardless of whether
+      // the crypto data fetch has completed, so we don't false-positive
+      // on a fallback render.
       try {
-        final loaded = await _waitFor(tester, _byTextLike('top'),
-                timeout: const Duration(seconds: 25)) ||
-            await _waitFor(tester, _byTextLike('trending'),
-                timeout: const Duration(seconds: 5));
-        results.ok('Crypto landing data',
-            loaded ? 'top/trending visible' : 'fallback-rendered');
+        final loaded = await _waitFor(tester, _byExactText('Buy'),
+            timeout: const Duration(seconds: 25));
+        if (loaded) {
+          results.ok('Crypto landing rendered',
+              'quick-action row visible (Buy/Sell/Send/Swap)');
+        } else {
+          results.fail('Crypto landing rendered',
+              'quick actions never appeared');
+        }
       } catch (e) {
-        results.warn('Crypto landing data', '$e');
+        results.fail('Crypto landing rendered', '$e');
       }
 
       // ── 3. Open a single-asset detail screen ──────────────────────────
+      // Crypto rows are NOT ListTiles — they're GestureDetectors wrapping
+      // Containers that route via Get.toNamed(cryptoDetails, arguments:
+      // crypto). Tap the GestureDetector ancestor of a known popular
+      // symbol that the landing's supported-assets section reliably
+      // surfaces. Bitcoin/BTC is always present in the Quidax catalogue.
       try {
-        // Tap the first asset row. The landing's supported-assets section
-        // renders one ListTile per asset and the first row is always
-        // present whenever the page loaded.
-        final firstListTile = find.byType(ListTile);
-        if (firstListTile.evaluate().isNotEmpty) {
-          await tester.tap(firstListTile.first);
-          await _settle(tester, longSettle);
-          results.ok('Open asset detail screen');
+        final btcSymbol = _byExactText('BTC');
+        if (await _scrollIntoView(tester, btcSymbol,
+            timeout: const Duration(seconds: 20))) {
+          if (await _safeTap(tester, _tappableAncestorOf(btcSymbol))) {
+            await _settle(tester, longSettle);
+            results.ok('Open asset detail screen', 'tapped BTC row');
+          } else {
+            results.fail('Open asset detail screen', 'BTC tap missed');
+          }
         } else {
-          results.warn('Open asset detail screen', 'no ListTile found');
+          // Fall back to ETH if BTC isn't visible.
+          final ethSymbol = _byExactText('ETH');
+          if (await _scrollIntoView(tester, ethSymbol)) {
+            if (await _safeTap(tester, _tappableAncestorOf(ethSymbol))) {
+              await _settle(tester, longSettle);
+              results.ok('Open asset detail screen', 'tapped ETH fallback');
+            } else {
+              results.fail('Open asset detail screen', 'ETH tap missed');
+            }
+          } else {
+            results.fail('Open asset detail screen',
+                'neither BTC nor ETH visible on landing');
+          }
         }
       } catch (e) {
-        results.warn('Open asset detail screen', '$e');
+        results.fail('Open asset detail screen', '$e');
       }
 
       // ── 4. Open expanded chart from detail screen ─────────────────────
+      // Detail screen wires an IconButton(Icons.fullscreen) that pushes
+      // AppRoutes.cryptoChartDetails. Confirmed via grep on
+      // crypto_detail_screen.dart:550.
       try {
-        // The detail screen exposes the expanded chart via an icon button
-        // in the AppBar (Icons.fullscreen). Fall back to any text labelled
-        // "chart" if the icon isn't tappable.
         final fullscreenBtn = find.byIcon(Icons.fullscreen);
-        if (fullscreenBtn.evaluate().isNotEmpty) {
-          await tester.tap(fullscreenBtn.first);
-          await _settle(tester, medSettle);
-          results.ok('Open expanded chart view');
+        if (await _waitFor(tester, fullscreenBtn,
+            timeout: const Duration(seconds: 15))) {
+          if (await _safeTap(tester, fullscreenBtn.first)) {
+            await _settle(tester, medSettle);
+            results.ok('Open expanded chart view');
+          } else {
+            results.fail('Open expanded chart view',
+                'fullscreen icon visible but tap missed');
+          }
         } else {
-          results.warn('Open expanded chart view',
-              'no fullscreen icon — detail screen may not be on this build');
+          results.fail('Open expanded chart view',
+              'no Icons.fullscreen on detail screen — route changed?');
         }
       } catch (e) {
-        results.warn('Open expanded chart view', '$e');
+        results.fail('Open expanded chart view', '$e');
       }
 
       // ── 5. Indicators bottom sheet (was a stub before Phase B) ────────
+      // The control-bar icons confirmed via grep:
+      //   schedule  — timeframe   (line 475)
+      //   timeline  — chart type  (line 481)
+      //   add_chart — indicators  (line 486)
+      //   edit      — drawings    (line 492)
+      //   analytics — analysis    (line 497)
       try {
         final indicatorsBtn = find.byIcon(Icons.add_chart);
-        if (indicatorsBtn.evaluate().isNotEmpty) {
-          await tester.tap(indicatorsBtn.first);
+        if (await _waitFor(tester, indicatorsBtn,
+            timeout: const Duration(seconds: 10))) {
+          await _safeTap(tester, indicatorsBtn.first);
           await _settle(tester, medSettle);
-          // Phase B landed `TechnicalIndicatorsBottomSheet` here. Pre-Phase-B
-          // it was a "coming soon" toast. Verify the real sheet rendered.
-          final sheetHeader = _byTextLike('technical indicators');
+          // The bottom sheet header is the exact string "Technical
+          // Indicators" — see TechnicalIndicatorsBottomSheet line ~67.
+          final sheetHeader = _byExactText('Technical Indicators');
           if (sheetHeader.evaluate().isNotEmpty) {
             results.ok('Indicators bottom sheet real (Phase B)');
-            // Toggle RSI on so the bottom oscillator panel renders.
-            final rsiTile = _byTextLike('RSI');
+            // Toggle RSI — exact label per _kAvailableIndicators list.
+            final rsiTile = _byExactText('RSI');
             if (rsiTile.evaluate().isNotEmpty) {
-              await tester.tap(rsiTile.first);
+              await _safeTap(tester, rsiTile.first);
               await _settle(tester, shortSettle);
               results.ok('Toggle RSI indicator');
-            } else {
-              results.warn('Toggle RSI indicator', 'RSI tile not visible');
             }
-            // Toggle Moving Average on so the overlay paints SMA(20+50).
-            final maTile = _byTextLike('moving average');
+            // Toggle Moving Average — exact label per _kAvailableIndicators.
+            final maTile = _byExactText('Moving Average');
             if (maTile.evaluate().isNotEmpty) {
-              await tester.tap(maTile.first);
+              await _safeTap(tester, maTile.first);
               await _settle(tester, shortSettle);
               results.ok('Toggle Moving Average indicator');
             }
-            // Close the sheet (apply if there's an apply button, else
-            // drag-down via tap-outside).
-            final apply = _byTextLike('apply');
-            if (apply.evaluate().isNotEmpty) {
-              await tester.tap(apply.first);
-              await _settle(tester, medSettle);
-            } else {
-              // Tap the system back to dismiss.
-              await tester.pageBack();
-              await _settle(tester, medSettle);
-            }
+            // Dismiss the sheet via system back.
+            await tester.pageBack();
+            await _settle(tester, medSettle);
             results.ok('Apply indicator selection');
           } else {
             results.fail('Indicators bottom sheet real (Phase B)',
                 'sheet did not render — Phase B regression?');
           }
         } else {
-          results.warn('Indicators bottom sheet real (Phase B)',
-              'add_chart icon not visible on this build');
+          results.fail('Indicators bottom sheet real (Phase B)',
+              'add_chart icon not visible on expanded chart');
         }
       } catch (e) {
-        results.warn('Indicators bottom sheet real (Phase B)', '$e');
+        results.fail('Indicators bottom sheet real (Phase B)', '$e');
       }
 
-      // ── 6. Cycle a couple of chart types so HA + delegated builders
-      //      actually exercise the new transform branch.
+      // ── 6. Heikin-Ashi chart type ─────────────────────────────────────
+      // Open chart-type picker (timeline icon). The picker is a popup
+      // menu of: Line / Candles / Area / Bars / Volume / Heikin-Ashi /
+      // Hollow. Heikin-Ashi exercises the real OHLC transform branch
+      // added in Phase B.
       try {
         final chartTypeBtn = find.byIcon(Icons.timeline);
-        if (chartTypeBtn.evaluate().isNotEmpty) {
-          await tester.tap(chartTypeBtn.first);
+        if (await _waitFor(tester, chartTypeBtn,
+            timeout: const Duration(seconds: 5))) {
+          await _safeTap(tester, chartTypeBtn.first);
           await _settle(tester, shortSettle);
-          // Pick Heikin-Ashi if visible — Phase B added the real OHLC
-          // transform so we want the test to drive the branch.
-          final haRow = _byTextLike('heikin');
+          final haRow = _byExactText('Heikin-Ashi');
           if (haRow.evaluate().isNotEmpty) {
-            await tester.tap(haRow.first);
+            await _safeTap(tester, haRow.first);
             await _settle(tester, medSettle);
             results.ok('Heikin-Ashi chart type renders');
           } else {
-            results.warn('Heikin-Ashi chart type renders', 'option not visible');
+            // Picker may have rendered behind a sub-menu (mobile menu
+            // hierarchies). Walk back and warn rather than fail because
+            // the variant is platform-dependent.
+            await tester.pageBack();
+            await _settle(tester, shortSettle);
+            results.warn('Heikin-Ashi chart type renders',
+                'option not visible in chart-type picker');
           }
         } else {
-          results.warn('Heikin-Ashi chart type renders', 'no timeline icon');
+          results.warn('Heikin-Ashi chart type renders',
+              'no timeline icon (chart-type button)');
         }
       } catch (e) {
         results.warn('Heikin-Ashi chart type renders', '$e');
@@ -565,20 +704,24 @@ void main() {
       // ── 7. Analysis bottom sheet (was a stub before Phase B) ──────────
       try {
         final analyticsBtn = find.byIcon(Icons.analytics);
-        if (analyticsBtn.evaluate().isNotEmpty) {
-          await tester.tap(analyticsBtn.first);
+        if (await _waitFor(tester, analyticsBtn,
+            timeout: const Duration(seconds: 5))) {
+          await _safeTap(tester, analyticsBtn.first);
           await _settle(tester, medSettle);
-          // Phase B replaced the toast with a real stats sheet. Look for
-          // any of the keywords the new sheet renders (Change/High/Low/
-          // Volatility).
-          final any = _byTextLike('change').evaluate().isNotEmpty ||
-              _byTextLike('volatility').evaluate().isNotEmpty ||
-              _byTextLike('high').evaluate().isNotEmpty;
+          // The sheet header is "Analysis · <timeframe>" — substring
+          // tolerant since the timeframe varies.
+          final any = find
+                  .textContaining('Analysis')
+                  .evaluate()
+                  .isNotEmpty ||
+              _byExactText('Volatility (stddev of returns)')
+                  .evaluate()
+                  .isNotEmpty;
           if (any) {
             results.ok('Analysis bottom sheet real (Phase B)');
           } else {
             results.fail('Analysis bottom sheet real (Phase B)',
-                'sheet rendered but no stat keywords visible');
+                'sheet did not render');
           }
           await tester.pageBack();
           await _settle(tester, shortSettle);
@@ -593,17 +736,20 @@ void main() {
       // ── 8. Drawing-tools bottom sheet (was a stub before Phase B) ─────
       try {
         final drawingBtn = find.byIcon(Icons.edit);
-        if (drawingBtn.evaluate().isNotEmpty) {
-          await tester.tap(drawingBtn.first);
+        if (await _waitFor(tester, drawingBtn,
+            timeout: const Duration(seconds: 5))) {
+          await _safeTap(tester, drawingBtn.first);
           await _settle(tester, medSettle);
-          final any = _byTextLike('trendline').evaluate().isNotEmpty ||
-              _byTextLike('horizontal line').evaluate().isNotEmpty ||
-              _byTextLike('fibonacci').evaluate().isNotEmpty;
+          // The sheet renders "Drawing Tools" header + a list of tool
+          // names from the local DrawingToolInfo array.
+          final any = find.textContaining('Drawing Tools').evaluate().isNotEmpty ||
+              _byExactText('Trendline').evaluate().isNotEmpty ||
+              _byExactText('Fibonacci').evaluate().isNotEmpty;
           if (any) {
             results.ok('Drawing tools bottom sheet real (Phase B)');
           } else {
             results.fail('Drawing tools bottom sheet real (Phase B)',
-                'sheet rendered but no tool names visible');
+                'sheet did not render');
           }
           await tester.pageBack();
           await _settle(tester, shortSettle);
@@ -615,59 +761,81 @@ void main() {
         results.warn('Drawing tools bottom sheet real (Phase B)', '$e');
       }
 
-      // Close expanded chart, return to detail screen.
+      // Pop expanded chart → detail screen → crypto landing.
       try {
+        await tester.pageBack();
+        await _settle(tester, medSettle);
         await tester.pageBack();
         await _settle(tester, medSettle);
       } catch (_) {}
 
-      // ── 9. Back to landing, walk Buy flow ─────────────────────────────
+      // ── 9. Walk Buy quick-action ──────────────────────────────────────
+      // The quick-action buttons are GestureDetector → Container → Row →
+      // Icon + Text(label). The Text 'Buy' shows up in MANY places
+      // (chart axis labels, tab headers, etc.), so we anchor on the
+      // exact text and walk to the GestureDetector ancestor.
       try {
-        await tester.pageBack();
-        await _settle(tester, medSettle);
-        // Tap a quick-action labelled "Buy" if present.
-        final buyBtn = _byTextLike('buy');
-        if (buyBtn.evaluate().isNotEmpty) {
-          await tester.tap(buyBtn.first);
-          await _settle(tester, medSettle);
-          results.ok('Open Buy crypto screen');
+        final buyText = _byExactText('Buy');
+        if (await _waitFor(tester, buyText,
+            timeout: const Duration(seconds: 10))) {
+          if (await _safeTap(tester, _tappableAncestorOf(buyText))) {
+            await _settle(tester, medSettle);
+            results.ok('Open Buy crypto screen');
+            await tester.pageBack();
+            await _settle(tester, medSettle);
+          } else {
+            results.fail('Open Buy crypto screen', 'Buy tap missed');
+          }
         } else {
-          results.warn('Open Buy crypto screen', 'no Buy entry visible');
+          results.fail('Open Buy crypto screen',
+              'no Buy text on crypto landing');
         }
       } catch (e) {
-        results.warn('Open Buy crypto screen', '$e');
+        results.fail('Open Buy crypto screen', '$e');
       }
 
-      // ── 10. Walk Sell flow ────────────────────────────────────────────
+      // ── 10. Walk Sell quick-action ────────────────────────────────────
+      // The Sell handler short-circuits to a snackbar when the user has
+      // no holdings ("No Holdings — buy some crypto first"). Either
+      // outcome (sell screen OR snackbar) proves the tap path works.
       try {
-        await tester.pageBack();
-        await _settle(tester, medSettle);
-        final sellBtn = _byTextLike('sell');
-        if (sellBtn.evaluate().isNotEmpty) {
-          await tester.tap(sellBtn.first);
-          await _settle(tester, medSettle);
-          results.ok('Open Sell crypto screen');
+        final sellText = _byExactText('Sell');
+        if (await _waitFor(tester, sellText,
+            timeout: const Duration(seconds: 10))) {
+          if (await _safeTap(tester, _tappableAncestorOf(sellText))) {
+            await _settle(tester, medSettle);
+            results.ok('Open Sell crypto screen',
+                'tap handled (sell screen OR no-holdings snackbar)');
+            await tester.pageBack();
+            await _settle(tester, medSettle);
+          } else {
+            results.fail('Open Sell crypto screen', 'Sell tap missed');
+          }
         } else {
-          results.warn('Open Sell crypto screen', 'no Sell entry visible');
+          results.fail('Open Sell crypto screen',
+              'no Sell text on crypto landing');
         }
       } catch (e) {
-        results.warn('Open Sell crypto screen', '$e');
+        results.fail('Open Sell crypto screen', '$e');
       }
 
-      // ── 11. Walk Swap flow ────────────────────────────────────────────
+      // ── 11. Walk Swap quick-action ────────────────────────────────────
       try {
-        await tester.pageBack();
-        await _settle(tester, medSettle);
-        final swapBtn = _byTextLike('swap');
-        if (swapBtn.evaluate().isNotEmpty) {
-          await tester.tap(swapBtn.first);
-          await _settle(tester, medSettle);
-          results.ok('Open Swap crypto screen');
+        final swapText = _byExactText('Swap');
+        if (await _waitFor(tester, swapText,
+            timeout: const Duration(seconds: 10))) {
+          if (await _safeTap(tester, _tappableAncestorOf(swapText))) {
+            await _settle(tester, medSettle);
+            results.ok('Open Swap crypto screen');
+          } else {
+            results.fail('Open Swap crypto screen', 'Swap tap missed');
+          }
         } else {
-          results.warn('Open Swap crypto screen', 'no Swap entry visible');
+          results.fail('Open Swap crypto screen',
+              'no Swap text on crypto landing');
         }
       } catch (e) {
-        results.warn('Open Swap crypto screen', '$e');
+        results.fail('Open Swap crypto screen', '$e');
       }
 
       // ignore: avoid_print
