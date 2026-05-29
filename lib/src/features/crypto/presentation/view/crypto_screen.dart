@@ -2359,7 +2359,14 @@ class _CryptoScreenState extends State<CryptoScreen> {
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(16.r),
         ),
+        // Bug #150 fix: mainAxisSize.min so the Column doesn't try to fill
+        // the parent's intrinsic height. The 60h sparkline (LineChart) + the
+        // header row + price row otherwise overflowed by 81px on smaller
+        // emulator screens, raising "A RenderFlex overflowed" yellow-black
+        // stripes. The card content is naturally small; explicit min sizing
+        // also avoids future regressions when a tighter parent is used.
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(

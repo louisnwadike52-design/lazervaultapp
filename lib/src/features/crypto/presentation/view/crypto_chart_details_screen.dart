@@ -873,14 +873,24 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
               child: _buildMainChartArea(_getVisibleData(priceHistory)),
             ),
             
-            // Bottom indicators area
+            // Bottom indicators area.
+            //
+            // Pass the FULL priceHistory (not _getVisibleData) — the painter
+            // needs the complete series to compute RSI/MACD/Stochastic/ATR
+            // correctly (RSI(14) alone needs ≥14 candles of history) and
+            // self-clamps the draw window via its own indexing. The earlier
+            // `_getVisibleData(...)` arg caused an intermittent
+            // `priceHistory.isEmpty → SizedBox.shrink()` short-circuit during
+            // initial render and pan-to-edge — which the reflective e2e
+            // check (`_verifyIndicatorOnChart`) caught as the painter
+            // never mounting in the widget tree even after Apply. Bug #135.
             if (bottomIndicatorSpace > 0)
               Positioned(
                 bottom: bottomControlsHeight + MediaQuery.of(context).padding.bottom,
                 left: 0,
                 right: 0,
                 height: bottomIndicatorSpace,
-                child: _buildBottomIndicatorsArea(_getVisibleData(priceHistory)),
+                child: _buildBottomIndicatorsArea(priceHistory),
               ),
             
             // Drawings overlay
@@ -1307,19 +1317,27 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
     // overlay subset so a user who's also selected RSI/MACD/etc. doesn't
     // cause the overlay painter to skip every render (it bails when the
     // selected list contains indicators it doesn't know about as a guard
-    // against typos). Uses the visible window only to keep math in sync
-    // with the rendered chart pan/zoom state.
+    // against typos).
+    //
+    // Bug #135 fix: pass the FULL priceHistory (not visible-subset) so the
+    // indicator math has enough history (Moving Average(20+50) needs at
+    // least 50 candles; RSI(14)/MACD(26) similar). The visible-subset
+    // version short-circuited with SizedBox.shrink() during pan-to-edge
+    // and intermittent first-frame renders, never mounting the painter
+    // at all — which the reflective e2e check (`_verifyIndicatorOnChart`)
+    // surfaced. Min/max for the y-axis still uses visible to stay aligned
+    // with the candle chart's current vertical scale.
     final overlays = _selectedPriceOverlays();
     if (overlays.isEmpty) return const SizedBox.shrink();
+    if (priceHistory.isEmpty) return const SizedBox.shrink();
     final visible = _getVisibleData(priceHistory);
-    if (visible.isEmpty) return const SizedBox.shrink();
-    final band = _chartMinMax(visible);
+    final band = visible.isEmpty ? _chartMinMax(priceHistory) : _chartMinMax(visible);
     if (band.maxPrice <= band.minPrice) return const SizedBox.shrink();
     return Positioned.fill(
       child: IgnorePointer(
         child: CustomPaint(
           painter: PriceOverlayIndicatorsPainter(
-            priceHistory: _toStockPrices(visible),
+            priceHistory: _toStockPrices(priceHistory),
             selectedIndicators: overlays,
             maxPrice: band.maxPrice,
             minPrice: band.minPrice,
@@ -1336,6 +1354,10 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
     // _calculateBottomIndicatorSpace, which sums the per-panel heights
     // (RSI=120, MACD=120, Stochastic=100, ATR=80, Volume=100) — so the
     // painter draws into exactly the height the layout reserved.
+    //
+    // Bug #135 fix: caller now passes the FULL priceHistory (see
+    // _buildFullScreenChart). The internal isEmpty guard stays in case
+    // an upstream cubit transition emits an empty list mid-fetch.
     final bottoms = _selectedBottomIndicators();
     if (bottoms.isEmpty) return const SizedBox.shrink();
     if (priceHistory.isEmpty) return const SizedBox.shrink();
