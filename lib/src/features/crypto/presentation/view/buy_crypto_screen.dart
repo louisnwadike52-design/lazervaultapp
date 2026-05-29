@@ -881,21 +881,22 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
     );
   }
 
-  /// Error-state body: tells the user the summary is intentionally
-  /// blank because no rate is currently available. Retry happens via
-  /// PriceQuoteCard above, which has its own visible Retry button —
-  /// duplicating it here would be noise.
+  /// Error-state body. The display rate is offline but Buy itself is
+  /// still allowed — CreateSwapQuote will fetch a fresh Quidax-live
+  /// rate and lock it on the confirm screen. Tell the user that
+  /// honestly instead of pretending we know what they'll pay.
   Widget _buildOrderSummaryError() {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(Icons.info_outline,
+        Icon(Icons.lock_clock,
             color: const Color(0xFFFB923C), size: 14.sp),
         SizedBox(width: 8.w),
         Expanded(
           child: Text(
-            "We can't show a quote without a live rate. Tap Retry on the price card above.",
+            "Live display rate is paused. Your binding rate will be locked from Quidax when you tap Buy — you'll see it on the confirm screen before paying.",
             style: GoogleFonts.inter(
-                color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+                color: const Color(0xFF9CA3AF), fontSize: 12.sp, height: 1.4),
           ),
         ),
       ],
@@ -1173,16 +1174,22 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
   }
 
   Widget _buildBuyButton() {
-    // Block Buy while we don't have a live rate. The CreateSwapQuote
-    // call doesn't strictly need our display rate (the saga pulls its
-    // own Quidax quote), but submitting against an unknown / failed
-    // rate is a terrible UX — the user can't see what they're about
-    // to commit to. Gate them at the button so they retry the rate
-    // first.
+    // Quidax-as-source-of-truth: the binding rate is the one
+    // CreateSwapQuote locks on the server side via Quidax merchant
+    // API; the display rate from PriceQuoteCard is informational. So
+    // we DON'T block the CTA on display-rate health — a transient
+    // CoinGecko 429 or gateway channel reset shouldn't stop the user
+    // from initiating Buy. The saga will fetch its own Quidax-live
+    // rate, return the locked quote, and the user gets a confirm
+    // screen with the real binding numbers. If Quidax is genuinely
+    // down the saga itself will surface that on the confirm step.
+    //
+    // We still surface a note when the display rate is unavailable
+    // so the user understands the OrderSummary is sparse — but the
+    // tap path is unblocked.
     final isEnabled = _selectedCrypto != null &&
                      _amountController.text.isNotEmpty &&
                      (double.tryParse(_amountController.text) ?? 0.0) > 0 &&
-                     (_effectiveRate ?? 0) > 0 &&
                      !_isTransacting;
 
     // Build validation error message
@@ -1193,10 +1200,6 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
       validationError = 'Please enter an amount';
     } else if ((double.tryParse(_amountController.text) ?? 0.0) <= 0) {
       validationError = 'Please enter a valid amount';
-    } else if ((_effectiveRate ?? 0) <= 0) {
-      validationError = _isRateLoading
-          ? 'Waiting for live rate…'
-          : 'Tap Retry on the price card to refresh the rate';
     }
 
     return Column(
