@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -8,6 +9,7 @@ import 'dart:math' as math;
 import '../../domain/entities/crypto_entity.dart';
 import '../../domain/entities/price_point.dart';
 import '../../cubit/crypto_cubit.dart';
+import '../../cubit/crypto_chart_tick_cubit.dart';
 import '../../cubit/crypto_state.dart';
 import '../../../stocks/domain/entities/stock_entity.dart';
 import '../../../stocks/presentation/widgets/bottom_indicators_painter.dart';
@@ -136,6 +138,20 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
   bool _showCrosshair = false;
   Offset? _crosshairPosition;
 
+  // Real-time tick stream (Binance public WS kline). One cubit per
+  // chart screen, opened in initState + closed in dispose.
+  // `_liveOverlayHistory` is the cubit-emitted priceHistory with the
+  // rightmost candle overwritten on each WS message; consumed by
+  // `_convertPriceHistoryFromState` so painters + chart see fresh
+  // ticks without the BlocBuilder having to fire on every WS message.
+  // `_baselinePriceHistory` is the most recent
+  // CryptoDetailsLoaded.priceHistory we copied in (used as the seed
+  // for `_liveOverlayHistory` when the cubit hasn't pushed yet).
+  CryptoChartTickCubit? _tickCubit;
+  StreamSubscription<ChartTickState>? _tickSub;
+  List<CryptoPrice>? _liveOverlayHistory;
+  List<CryptoPrice>? _baselinePriceHistory;
+
   final List<String> _timeframes = ['1m', '5m', '15m', '30m', '1H', '4H', '1D', '1W', '1M'];
 
   @override
@@ -144,6 +160,19 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
     _initializeChart();
     // Load real price history from backend
     _loadChartData();
+    // Open the real-time tick stream. CryptoChartTickCubit owns one
+    // Binance kline WebSocket per mounted chart screen and emits
+    // ChartTick events on each sub-second update. The listener below
+    // mutates the rightmost candle in `_liveOverlayHistory` and
+    // setState — same UX as the Binance / Coinbase mobile apps where
+    // the candle wick stretches up/down in real time.
+    _tickCubit = CryptoChartTickCubit(
+      cryptoSymbol: widget.crypto.symbol.toLowerCase(),
+      vsCurrency: 'usdt', // Binance public stream uses USDT pairs
+      interval: _binanceInterval(_selectedTimeframe),
+    );
+    _tickCubit!.start();
+    _tickSub = _tickCubit!.stream.listen(_onTick);
   }
 
   void _initializeChart() {
@@ -160,6 +189,74 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
     );
   }
 
+  /// Maps the chart screen's UI timeframe string to the kline
+  /// interval Binance accepts on its public WebSocket. Binance
+  /// supports: 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d,
+  /// 3d, 1w, 1M. UI strings like '1H' / '4H' / '1D' / '1W' / '1M'
+  /// translate one-for-one; lowercase letters where needed.
+  String _binanceInterval(String tf) {
+    switch (tf) {
+      case '1m':
+      case '5m':
+      case '15m':
+      case '30m':
+        return tf;
+      case '1H':
+        return '1h';
+      case '4H':
+        return '4h';
+      case '1D':
+        return '1d';
+      case '1W':
+        return '1w';
+      case '1M':
+        return '1M';
+      default:
+        return '1m';
+    }
+  }
+
+  /// Apply a real-time tick to `_liveOverlayHistory` by mutating the
+  /// rightmost candle in place (or appending a new candle when
+  /// the previous one closed). The chart's BlocBuilder rebuilds via
+  /// setState; the painters consume `_liveOverlayHistory` if present,
+  /// falling back to the cubit-state priceHistory otherwise.
+  void _onTick(ChartTickState s) {
+    final tick = s.latest;
+    if (tick == null) return;
+    if (!mounted) return;
+    final base = _liveOverlayHistory ?? _baselinePriceHistory;
+    if (base == null || base.isEmpty) return;
+    final updated = List<CryptoPrice>.from(base);
+    final lastIdx = updated.length - 1;
+    final last = updated[lastIdx];
+    // If the new tick belongs to a fresh candle (timestamp moved past
+    // the existing last candle's window), append; else overlay HLCV
+    // onto the rightmost candle.
+    if (tick.openTime.isAfter(last.timestamp.add(const Duration(seconds: 30)))) {
+      updated.add(CryptoPrice(
+        timestamp: tick.openTime,
+        open: tick.open,
+        high: tick.high,
+        low: tick.low,
+        close: tick.close,
+        volume: tick.volume,
+      ));
+    } else {
+      updated[lastIdx] = CryptoPrice(
+        timestamp: last.timestamp,
+        open: last.open == 0 ? tick.open : last.open,
+        high: tick.high > last.high ? tick.high : last.high,
+        low: (last.low == 0 || tick.low < last.low) ? tick.low : last.low,
+        close: tick.close,
+        volume: tick.volume,
+      );
+    }
+    setState(() {
+      _liveOverlayHistory = updated;
+    });
+  }
+
   String _timeframeToRange(String timeframe) {
     switch (timeframe) {
       case '1m': return '1';
@@ -173,6 +270,15 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
       case '1M': return '365';
       default: return '30';
     }
+  }
+
+  @override
+  void dispose() {
+    // Tear down the real-time tick stream FIRST so we don't process
+    // a stale WS message after the State unmounts.
+    _tickSub?.cancel();
+    _tickCubit?.close();
+    super.dispose();
   }
 
   @override
@@ -564,10 +670,22 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
     );
   }
 
-  // Convert real price history from CryptoDetailsLoaded state to CryptoPrice list
+  // Convert real price history from CryptoDetailsLoaded state to CryptoPrice list.
+  //
+  // Real-time overlay (task #157): when the chart-tick cubit has
+  // already pushed at least one WS message into `_liveOverlayHistory`,
+  // we serve that list instead of re-mapping the cubit state. The
+  // overlay's rightmost candle reflects sub-second Binance ticks
+  // (the chart visually pulses on every kline event), while the
+  // historical candles to its left come from the original
+  // CryptoDetailsLoaded.priceHistory snapshot. The seed is refreshed
+  // whenever the backend cubit emits new data — `_baselinePriceHistory`
+  // tracks the latest baseline so the tick overlay always builds on
+  // top of the freshest historical context.
   List<CryptoPrice> _convertPriceHistoryFromState(CryptoState state) {
+    List<CryptoPrice> baseline;
     if (state is CryptoDetailsLoaded && state.priceHistory.isNotEmpty) {
-      return state.priceHistory.map((point) => CryptoPrice(
+      baseline = state.priceHistory.map((point) => CryptoPrice(
         timestamp: point.timestamp,
         open: point.open ?? point.price,
         high: point.high ?? point.price,
@@ -575,9 +693,24 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
         close: point.close ?? point.price,
         volume: point.volume ?? 0.0,
       )).toList();
+    } else {
+      // Fallback: generate from current price if no data available
+      // yet. Removing this entirely is tracked separately (#156); for
+      // now the synthetic fill keeps the chart from rendering empty
+      // while the cubit's first fetch is in flight.
+      baseline = _generateFallbackPriceHistory();
     }
-    // Fallback: generate from current price if no data available yet
-    return _generateFallbackPriceHistory();
+    // Stash the freshest baseline so the tick overlay can build on it
+    // when the next WS message arrives.
+    _baselinePriceHistory = baseline;
+    // Prefer the WS-overlaid copy when one exists AND was seeded from
+    // a baseline of compatible length (handles timeframe-change cubit
+    // re-fetches by dropping a stale overlay).
+    final overlay = _liveOverlayHistory;
+    if (overlay != null && overlay.length >= baseline.length) {
+      return overlay;
+    }
+    return baseline;
   }
 
   // Fallback price history when backend data is not yet available
