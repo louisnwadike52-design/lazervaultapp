@@ -557,47 +557,60 @@ Future<({bool terminal, String label, String detail})> _waitForTerminalCryptoSta
 /// _kAvailableIndicators (e.g. 'RSI', 'Moving Average').
 ({bool found, String detail}) _verifyIndicatorOnChart(
     WidgetTester tester, String expected) {
+  // Find painters by Key first (deterministic across binding versions);
+  // fall back to widget-predicate walker if the Keyed lookup misses
+  // (the chart screen may not yet have hot-loaded the Keys constant).
   var sawPainter = false;
   var foundExpected = false;
   final names = <String>{};
 
-  // BottomIndicatorsPainter handles oscillators (RSI / MACD / Stochastic /
-  // ATR / Volume).
-  final bottoms = find.byWidgetPredicate((w) {
-    if (w is! CustomPaint) return false;
-    final p = w.painter;
+  void inspect(CustomPaint cp) {
+    final p = cp.painter;
     if (p is BottomIndicatorsPainter) {
       sawPainter = true;
       names.addAll(p.selectedIndicators);
       if (p.selectedIndicators.contains(expected)) foundExpected = true;
-      return true;
-    }
-    return false;
-  });
-  // PriceOverlayIndicatorsPainter handles overlays (MA / EMA / Bollinger /
-  // VWAP / Parabolic SAR).
-  final overlays = find.byWidgetPredicate((w) {
-    if (w is! CustomPaint) return false;
-    final p = w.painter;
-    if (p is PriceOverlayIndicatorsPainter) {
+    } else if (p is PriceOverlayIndicatorsPainter) {
       sawPainter = true;
       names.addAll(p.selectedIndicators);
       if (p.selectedIndicators.contains(expected)) foundExpected = true;
-      return true;
     }
-    return false;
-  });
-  // Touching the finders so the framework actually evaluates them.
-  // Without this, `find.byWidgetPredicate` is lazy and the closure
-  // never runs.
-  bottoms.evaluate();
-  overlays.evaluate();
+  }
+
+  // Key-based — the chart screen tags each indicator CustomPaint with
+  // a stable ValueKey so the test never depends on widget-tree walk
+  // order (which can elide widgets behind RepaintBoundary or
+  // OffstageStack on some binding versions).
+  for (final keyName in const [
+    'crypto_chart_bottom_indicators_painter',
+    'crypto_chart_price_overlay_painter',
+  ]) {
+    final f = find.byKey(ValueKey(keyName));
+    if (f.evaluate().isNotEmpty) {
+      final w = tester.widget(f.first);
+      if (w is CustomPaint) inspect(w);
+    }
+  }
+
+  // Widget-predicate walker fallback for the rare case where the Key
+  // attribute isn't propagated (e.g., during a hot-reload race).
+  if (!sawPainter) {
+    final bottoms = find.byWidgetPredicate((w) {
+      if (w is! CustomPaint) return false;
+      final p = w.painter;
+      if (p is BottomIndicatorsPainter || p is PriceOverlayIndicatorsPainter) {
+        inspect(w);
+        return true;
+      }
+      return false;
+    });
+    bottoms.evaluate();
+  }
 
   if (foundExpected) {
     return (
       found: true,
-      detail:
-          'painter has selectedIndicators=$names (includes "$expected")',
+      detail: 'painter has selectedIndicators=$names (includes "$expected")',
     );
   }
   if (sawPainter) {

@@ -1886,7 +1886,14 @@ class _CryptoScreenState extends State<CryptoScreen> {
     return Padding(
       padding: EdgeInsets.only(top: 4.h, bottom: 4.h),
       child: SizedBox(
-        height: 168.h,
+        // Bug #150 follow-up: card content (header + price + change row
+        // + 60h sparkline + spacers + 16w padding + 8w margin top/bottom)
+        // intrinsics to ~248h on the test emulator. 220h was 28px over;
+        // 260h gives ~12px breathing room which absorbs cross-device
+        // font-metric variance without making the cards row sit awkwardly
+        // tall (the surrounding screen layout reflows fine — the cards
+        // row is between the "Top movers" header and the next section).
+        height: 260.h,
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           padding: EdgeInsets.symmetric(horizontal: 16.w),

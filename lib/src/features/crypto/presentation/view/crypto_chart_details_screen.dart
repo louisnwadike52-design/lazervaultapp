@@ -1455,6 +1455,14 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
       .where((i) => !_kPriceOverlayIndicators.contains(i))
       .toList(growable: false);
 
+  // Key used by integration_test `_verifyIndicatorOnChart` to locate
+  // the overlay painter unambiguously (find.byKey is more robust than
+  // find.byWidgetPredicate when an indicator painter mounts inside a
+  // Positioned.fill → IgnorePointer wrapper — the predicate walker
+  // can miss it on some test-binding versions).
+  static const _kPriceOverlayPainterKey = ValueKey('crypto_chart_price_overlay_painter');
+  static const _kBottomIndicatorsPainterKey = ValueKey('crypto_chart_bottom_indicators_painter');
+
   Widget _buildPriceOverlayIndicators(List<CryptoPrice> priceHistory) {
     // Wires the shared PriceOverlayIndicatorsPainter (MA / EMA / Bollinger /
     // VWAP / Parabolic SAR). Filters _selectedIndicators down to the
@@ -1480,6 +1488,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
     return Positioned.fill(
       child: IgnorePointer(
         child: CustomPaint(
+          key: _kPriceOverlayPainterKey,
           painter: PriceOverlayIndicatorsPainter(
             priceHistory: _toStockPrices(priceHistory),
             selectedIndicators: overlays,
@@ -1506,6 +1515,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
     if (bottoms.isEmpty) return const SizedBox.shrink();
     if (priceHistory.isEmpty) return const SizedBox.shrink();
     return CustomPaint(
+      key: _kBottomIndicatorsPainterKey,
       size: const Size(double.infinity, double.infinity),
       painter: BottomIndicatorsPainter(
         priceHistory: _toStockPrices(priceHistory),
