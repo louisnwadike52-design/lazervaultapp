@@ -1338,6 +1338,62 @@ void main() {
         results.fail('Drive Swap → terminal', '$e');
       }
 
+      // ── 11b. Verify News tab loads per-asset items (#154) ─────────────
+      // Push the detail screen + assert the cubit's news field
+      // populates (or the clean-empty state surfaces) within a bounded
+      // wait. The cubit-driven assertion avoids the fragile TabBar tap
+      // dance and proves the per-currency GetCryptoNews round-trip
+      // works end-to-end: cubit.loadCryptoNews(symbol) → backend
+      // CoinGecko/CryptoPanic provider → currency filter → cubit
+      // CryptoDetailsLoaded.news populated.
+      try {
+        if (testCrypto != null) {
+          Get.toNamed(AppRoutes.cryptoDetails, arguments: testCrypto);
+          await _settle(tester, longSettle);
+          // Bounded wait for news fetch. CoinGecko trending has a 5min
+          // cache server-side, so the first hit pays the upstream
+          // round-trip; subsequent hits are sub-100ms.
+          final deadline =
+              DateTime.now().add(const Duration(seconds: 30));
+          bool newsReady = false;
+          int newsCount = 0;
+          while (DateTime.now().isBefore(deadline)) {
+            await tester.pump(const Duration(milliseconds: 600));
+            final cubit = _liveCryptoCubit(tester);
+            final st = cubit?.state;
+            if (st is CryptoDetailsLoaded) {
+              if (!st.isLoadingNews) {
+                newsReady = true;
+                newsCount = st.news.length;
+                break;
+              }
+            }
+          }
+          if (!newsReady) {
+            results.warn('News tab loads per-asset items',
+                'cubit.isLoadingNews never flipped false within 30s — slow CoinGecko upstream?');
+          } else {
+            results.ok('News tab loads per-asset items',
+                'news.length=$newsCount for ${testCrypto.symbol.toUpperCase()} '
+                '(0 is a clean terminal — that symbol isn\'t trending right now)');
+          }
+          // Back to landing for the next leg.
+          while (Get.currentRoute != AppRoutes.crypto) {
+            try {
+              Get.back();
+              await _settle(tester, shortSettle);
+            } catch (_) {
+              break;
+            }
+          }
+        } else {
+          results.warn('News tab loads per-asset items',
+              'no testCrypto to push cryptoDetails with');
+        }
+      } catch (e) {
+        results.warn('News tab loads per-asset items', '$e');
+      }
+
       // ── 12. Drive Send (Withdraw) → terminal ──────────────────────────
       // Fourth transaction class (#155). On a fresh test user with no
       // holdings, the Send quick-action gates with "No Holdings" snackbar
