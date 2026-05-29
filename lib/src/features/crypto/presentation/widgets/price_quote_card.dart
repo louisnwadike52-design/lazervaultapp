@@ -22,11 +22,19 @@ class PriceQuoteCard extends StatefulWidget {
   final String cryptoSymbol; // ticker (e.g. "btc")
   final String? overrideFiat; // optional override; defaults to LocaleManager
 
+  /// Fires whenever the live rate state changes — successful fetch (rate
+  /// in major fiat units per 1 crypto), or null when the card is loading
+  /// or in error with no fallback. The parent uses this to bind its own
+  /// summary widgets (Order Summary, You Pay / You Receive) to the live
+  /// rate instead of stale entity fields. Optional.
+  final ValueChanged<double?>? onRateUpdated;
+
   const PriceQuoteCard({
     super.key,
     required this.cryptoId,
     required this.cryptoSymbol,
     this.overrideFiat,
+    this.onRateUpdated,
   });
 
   @override
@@ -85,12 +93,21 @@ class _PriceQuoteCardState extends State<PriceQuoteCard> {
   // 30s; better to show a 30s-old number than nothing.
   double? _lastGoodPrice;
 
+  // Surface the current effective rate to the parent. Null = loading
+  // OR error-with-no-fallback. Non-null = live or stale-but-usable.
+  void _notifyRate() {
+    widget.onRateUpdated?.call(_price);
+  }
+
   Future<void> _load() async {
     if (!mounted) return;
     setState(() {
       _loading = true;
       _error = null;
     });
+    // Tell the parent we're back in loading state so its OrderSummary
+    // can clear any prior cached calculation while we refetch.
+    _notifyRate();
     Object? lastErr;
     for (int attempt = 0; attempt < _maxAttempts; attempt++) {
       try {
@@ -108,6 +125,7 @@ class _PriceQuoteCardState extends State<PriceQuoteCard> {
           _change24h = null;
           _loading = false;
         });
+        _notifyRate();
         return;
       } catch (e) {
         lastErr = e;
@@ -128,6 +146,7 @@ class _PriceQuoteCardState extends State<PriceQuoteCard> {
           : 'Rate unavailable';
       _loading = false;
     });
+    _notifyRate();
     // Swallow the last error explicitly so the analyzer is happy and the
     // intent is clear: we've surfaced what the user needs to see.
     assert(() {

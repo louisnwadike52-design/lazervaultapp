@@ -104,12 +104,47 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
     setState(() {});
   }
 
+  /// Live exchange rate from PriceQuoteCard's onRateUpdated callback.
+  /// Null = the card is loading or in error with no fallback. The
+  /// OrderSummary section binds to this; when null we render a
+  /// loading/error skeleton instead of the misleading old behaviour
+  /// of computing against `_selectedCrypto.currentPrice` (a stale
+  /// entity field hydrated at landing-page load time, often hours
+  /// or days old when the user finally opens Buy).
+  double? _liveRate;
+
+  /// Effective rate used to drive computed amounts. Picks the live
+  /// rate when available; otherwise null (so callers can render a
+  /// loading-state skeleton instead of fake numbers).
+  double? get _effectiveRate => _liveRate;
+
+  /// True iff we have enough data to compute a meaningful summary.
+  /// The user has picked an asset, typed an amount, and we have a
+  /// live rate to multiply / divide by.
+  bool get _isSummaryReady =>
+      _selectedCrypto != null &&
+      _amountController.text.isNotEmpty &&
+      (_effectiveRate ?? 0) > 0;
+
+  /// True while the rate fetch is in flight with no fallback to show.
+  /// Drives the OrderSummary's loading-skeleton render.
+  bool get _isRateLoading =>
+      _selectedCrypto != null &&
+      _amountController.text.isNotEmpty &&
+      _liveRate == null;
+
   double get _fiatAmount {
     if (_amountController.text.isEmpty) return 0.0;
     final amount = double.tryParse(_amountController.text) ?? 0.0;
-    if (_isAmountInCrypto && _selectedCrypto != null) {
-      return amount * _selectedCrypto!.currentPrice;
+    if (_isAmountInCrypto) {
+      // Crypto-input mode: multiply by the live rate to get the fiat
+      // equivalent. Without a live rate we honestly return 0 so the
+      // caller knows there's nothing trustworthy to display.
+      final r = _effectiveRate;
+      if (r == null || r <= 0) return 0.0;
+      return amount * r;
     }
+    // Fiat-input mode: the user typed the fiat number directly.
     return amount;
   }
 
@@ -119,8 +154,11 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
     if (_isAmountInCrypto) {
       return amount;
     }
-    if (_selectedCrypto!.currentPrice <= 0) return 0.0; // Guard division by zero
-    return amount / _selectedCrypto!.currentPrice;
+    // Fiat-input mode: divide by the live rate to get the crypto
+    // amount. Same honesty: return 0 when rate is unknown.
+    final r = _effectiveRate;
+    if (r == null || r <= 0) return 0.0;
+    return amount / r;
   }
 
   @override
@@ -159,6 +197,11 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
                             PriceQuoteCard(
                               cryptoId: _selectedCrypto!.id,
                               cryptoSymbol: _selectedCrypto!.symbol,
+                              onRateUpdated: (rate) {
+                                if (!mounted) return;
+                                if (rate == _liveRate) return;
+                                setState(() => _liveRate = rate);
+                              },
                             ),
                           ],
                           SizedBox(height: 24.h),
@@ -681,64 +724,53 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
   }
 
   Widget _buildOrderSummary() {
-    // Fee shown as a display estimate; the real fee comes from the server
-    // quote response. Rate sourced from CryptoConfigCubit (PR5d.4) which
-    // mirrors `crypto.fee_display.fallback_bps` system_setting — no
-    // hardcoded percentages.
-    final feeRate = _feeDisplayRate();
-    final fee = _fiatAmount * feeRate;
-    final networkFee = fee * 0.3;
-    final tradingFee = fee * 0.7;
-    final total = _fiatAmount + fee;
+    // The card chrome is the same across all three states (header +
+    // gradient + container). Body content branches on whether we have:
+    //   • Empty:   no asset picked or no amount typed — nothing to show
+    //   • Loading: rate fetch in flight, no fallback to compute against
+    //   • Error:   rate fetch failed AND no stale price to fall back on
+    //   • Loaded:  computed amounts derived from the live rate
+    //
+    // The previous version always ran the computation and rendered
+    // numbers, using `_selectedCrypto.currentPrice` which is a stale
+    // entity field hydrated at landing-page load time — so even when
+    // PriceQuoteCard showed "Rate unavailable" the summary still
+    // showed confident numbers, which is the misleading UX the user
+    // flagged. Now the summary only renders trustable numbers when
+    // _isSummaryReady, and otherwise tells the user what's happening.
+    final symbol = _selectedCrypto?.symbol.toUpperCase() ?? '';
 
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.green.withValues(alpha: 0.1),
-            const Color(0xFF1F1F1F),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20.r),        boxShadow: [
-          BoxShadow(
-            color: Colors.green.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
+    Widget body;
+    if (!_isSummaryReady && _isRateLoading) {
+      body = _buildOrderSummaryLoading();
+    } else if (!_isSummaryReady) {
+      // _liveRate is null AND we aren't loading — means PriceQuoteCard
+      // gave up. Surface a compact error so the user knows the summary
+      // is intentionally blank; PriceQuoteCard above has the Retry
+      // button so we don't duplicate it.
+      body = _buildOrderSummaryError();
+    } else {
+      // Loaded — compute against the live rate. Fee is a display
+      // estimate; the real one comes back from CreateSwapQuote.
+      final feeRate = _feeDisplayRate();
+      final fee = _fiatAmount * feeRate;
+      final networkFee = fee * 0.3;
+      final tradingFee = fee * 0.7;
+      final total = _fiatAmount + fee;
+      body = Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(
-                Icons.receipt_long,
-                color: Colors.green,
-                size: 20.sp,
-              ),
-              SizedBox(width: 8.w),
-              Text(
-                'Order Summary',
-                style: GoogleFonts.inter(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 16.h),
-          _buildSummaryRow('You pay', '${CurrencySymbols.currentSymbol}${_fiatAmount.toStringAsFixed(2)}'),
+          _buildSummaryRow('You pay',
+              '${CurrencySymbols.currentSymbol}${_fiatAmount.toStringAsFixed(2)}'),
           SizedBox(height: 8.h),
-          _buildSummaryRow('Network fee', '${CurrencySymbols.currentSymbol}${networkFee.toStringAsFixed(2)}'),
+          _buildSummaryRow('Network fee',
+              '${CurrencySymbols.currentSymbol}${networkFee.toStringAsFixed(2)}'),
           SizedBox(height: 8.h),
-          _buildSummaryRow('Trading fee', '${CurrencySymbols.currentSymbol}${tradingFee.toStringAsFixed(2)}'),
+          _buildSummaryRow('Trading fee',
+              '${CurrencySymbols.currentSymbol}${tradingFee.toStringAsFixed(2)}'),
           SizedBox(height: 8.h),
-          _buildSummaryRow('You receive', '${_cryptoAmount.toStringAsFixed(6)} ${_selectedCrypto!.symbol.toUpperCase()}'),
+          _buildSummaryRow('You receive',
+              '${_cryptoAmount.toStringAsFixed(6)} $symbol'),
           SizedBox(height: 12.h),
           Container(
             height: 1.h,
@@ -753,9 +785,120 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
             ),
           ),
           SizedBox(height: 12.h),
-          _buildSummaryRow('Total', '${CurrencySymbols.currentSymbol}${total.toStringAsFixed(2)}', isTotal: true),
+          _buildSummaryRow('Total',
+              '${CurrencySymbols.currentSymbol}${total.toStringAsFixed(2)}',
+              isTotal: true),
+        ],
+      );
+    }
+
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.green.withValues(alpha: 0.1),
+            const Color(0xFF1F1F1F),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.green.withValues(alpha: 0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.receipt_long, color: Colors.green, size: 20.sp),
+              SizedBox(width: 8.w),
+              Text(
+                'Order Summary',
+                style: GoogleFonts.inter(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16.h),
+          body,
+        ],
+      ),
+    );
+  }
+
+  /// Loading-state body: skeleton rows so the user sees the summary
+  /// is coming, not just an empty card. Three rows roughly mirroring
+  /// the loaded layout so the card doesn't jank when the rate lands.
+  Widget _buildOrderSummaryLoading() {
+    Widget skeleton(double w) => Container(
+          width: w,
+          height: 12.h,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(4.r),
+          ),
+        );
+    Widget skeletonRow(double leftW, double rightW) => Padding(
+          padding: EdgeInsets.only(bottom: 10.h),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [skeleton(leftW), skeleton(rightW)],
+          ),
+        );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        skeletonRow(60.w, 90.w),
+        skeletonRow(70.w, 80.w),
+        skeletonRow(60.w, 70.w),
+        skeletonRow(80.w, 100.w),
+        SizedBox(height: 4.h),
+        Row(
+          children: [
+            SizedBox(
+              width: 14.sp,
+              height: 14.sp,
+              child: const CircularProgressIndicator(
+                  strokeWidth: 2, color: Color(0xFF9CA3AF)),
+            ),
+            SizedBox(width: 8.w),
+            Text('Fetching live rate…',
+                style: GoogleFonts.inter(
+                    color: const Color(0xFF9CA3AF), fontSize: 12.sp)),
+          ],
+        ),
+      ],
+    );
+  }
+
+  /// Error-state body: tells the user the summary is intentionally
+  /// blank because no rate is currently available. Retry happens via
+  /// PriceQuoteCard above, which has its own visible Retry button —
+  /// duplicating it here would be noise.
+  Widget _buildOrderSummaryError() {
+    return Row(
+      children: [
+        Icon(Icons.info_outline,
+            color: const Color(0xFFFB923C), size: 14.sp),
+        SizedBox(width: 8.w),
+        Expanded(
+          child: Text(
+            "We can't show a quote without a live rate. Tap Retry on the price card above.",
+            style: GoogleFonts.inter(
+                color: const Color(0xFF9CA3AF), fontSize: 12.sp),
+          ),
+        ),
+      ],
     );
   }
 
@@ -1030,9 +1173,16 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
   }
 
   Widget _buildBuyButton() {
+    // Block Buy while we don't have a live rate. The CreateSwapQuote
+    // call doesn't strictly need our display rate (the saga pulls its
+    // own Quidax quote), but submitting against an unknown / failed
+    // rate is a terrible UX — the user can't see what they're about
+    // to commit to. Gate them at the button so they retry the rate
+    // first.
     final isEnabled = _selectedCrypto != null &&
                      _amountController.text.isNotEmpty &&
                      (double.tryParse(_amountController.text) ?? 0.0) > 0 &&
+                     (_effectiveRate ?? 0) > 0 &&
                      !_isTransacting;
 
     // Build validation error message
@@ -1043,6 +1193,10 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
       validationError = 'Please enter an amount';
     } else if ((double.tryParse(_amountController.text) ?? 0.0) <= 0) {
       validationError = 'Please enter a valid amount';
+    } else if ((_effectiveRate ?? 0) <= 0) {
+      validationError = _isRateLoading
+          ? 'Waiting for live rate…'
+          : 'Tap Retry on the price card to refresh the rate';
     }
 
     return Column(
@@ -1342,6 +1496,11 @@ class _BuyCryptoScreenState extends State<BuyCryptoScreen>
             onTap: () {
               setState(() {
                 _selectedCrypto = crypto;
+                // Reset the live rate so the OrderSummary shows its
+                // loading state until PriceQuoteCard reports a new
+                // rate for the freshly-picked asset. Otherwise the
+                // user briefly sees BTC's rate applied to ETH input.
+                _liveRate = null;
               });
               _searchController.clear();
               Get.back();
