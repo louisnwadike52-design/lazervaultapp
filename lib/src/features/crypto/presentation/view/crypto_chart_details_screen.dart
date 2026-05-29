@@ -1107,25 +1107,28 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
     }
   }
 
-  Widget _buildProfessionalCandlestickChart(List<CryptoPrice> priceHistory) {
+  Widget _buildProfessionalCandlestickChart(
+    List<CryptoPrice> priceHistory, {
+    bool hollow = false,
+  }) {
     try {
       if (priceHistory.isEmpty) return _buildEmptyChart();
-      
-      final validPrices = priceHistory.where((p) => 
+
+      final validPrices = priceHistory.where((p) =>
         p.high > 0 && p.low > 0 && p.open > 0 && p.close > 0 &&
         p.high >= p.low && p.high >= p.open && p.high >= p.close &&
         p.low <= p.open && p.low <= p.close
       ).toList();
-      
+
       if (validPrices.isEmpty) return _buildEmptyChart();
-      
+
       final maxPrice = validPrices.map((e) => e.high).reduce((a, b) => a > b ? a : b);
       final minPrice = validPrices.map((e) => e.low).reduce((a, b) => a < b ? a : b);
-      
+
       if (maxPrice <= 0 || minPrice <= 0 || maxPrice == minPrice) {
         return _buildEmptyChart();
       }
-      
+
       // Convert CryptoPrice to StockPrice for the painter
       final stockPrices = validPrices.map((crypto) => StockPrice(
         timestamp: crypto.timestamp,
@@ -1135,7 +1138,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
         close: crypto.close,
         volume: crypto.volume,
       )).toList();
-      
+
       return SizedBox(
         width: double.infinity,
         height: double.infinity,
@@ -1149,6 +1152,7 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
             gridColor: Colors.grey.withValues(alpha: 0.1),
             bullishColor: _getCryptoColor(),
             bearishColor: const Color(0xFFEF5350),
+            hollow: hollow,
           ),
         ),
       );
@@ -1315,14 +1319,21 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
   }
 
   Widget _buildHollowCandlesChart(List<CryptoPrice> priceHistory) {
-    // True hollow-candles render needs a painter that strokes (vs fills) on
-    // up-bars. Adding a second painter parameter risks a wide stocks-side
-    // refactor we're not committing to in this pass. Pragmatic interim:
-    // alias to candlestick so the user gets a meaningful candle view rather
-    // than a silent fallback. Marked as a follow-up so the user knows the
-    // alias is intentional and tracked — distinct from the silent stub
-    // that previously masqueraded as a real implementation.
-    return _buildProfessionalCandlestickChart(priceHistory);
+    // Real hollow-candles render — bug #143 follow-up landed.
+    //
+    // The shared ProfessionalCandlestickPainter now exposes a `hollow`
+    // flag (stocks/.../professional_candlestick_painter.dart). When
+    // true:
+    //   * Bullish (close >= open) candles render as a stroke-only
+    //     outline. No fill at all — visible difference from the
+    //     light-tinted bullish body of the regular Candles type.
+    //   * Bearish (close < open) candles stay fully filled — same
+    //     red body the standard view uses.
+    // Matches the canonical "hollow candles" presentation (Investopedia
+    // / TradingView): traders read up-bars at a glance as "open
+    // rectangles", down-bars as "solid rectangles", regardless of
+    // the colour palette.
+    return _buildProfessionalCandlestickChart(priceHistory, hollow: true);
   }
 
   // Heikin-Ashi OHLC transform (see _buildHeikinAshiChart for the formula).
@@ -1612,29 +1623,148 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
     );
   }
 
-  // Drawing-tool interaction state. The DrawingsPainter renders the
-  // elements; the constructor of each subclass (TrendlineElement,
-  // HorizontalLineElement, VerticalLineElement, MeasureElement) requires
-  // chart-space coordinates — price + bar index — not raw pixels. Building
-  // those at touch-event time means projecting screen pixels back through
-  // the same min/max + visible-window math the chart painter uses. That
-  // projection isn't yet exposed as a helper at the screen level (the
-  // stocks twin embeds it inline in its much larger build method).
+  // Drawing-tool interaction (#143 commit fix).
   //
-  // Rather than ship a half-correct projection that drifts on pan/zoom,
-  // the tool selection works (you can see the active tool in the control
-  // bar + bottom sheet) but commit of a drawn shape waits on a follow-up
-  // that lifts the chart-coordinate projection into a shared helper. The
-  // bottom sheet's "clear all" still works since it operates on the
-  // already-persisted list.
-  void _startDrawing(Offset point, List<CryptoPrice> priceHistory) {
-    if (_selectedDrawingTool == DrawingTool.none) return;
-    // Reserved: builds the right DrawingElement subclass once the
-    // chart-coordinate projection helper lands.
+  // The DrawingElement subclasses (TrendlineElement, HorizontalLineElement,
+  // VerticalLineElement, MeasureElement) require chart-space coordinates
+  // — price + bar index — not raw pixels, so their lines stay anchored
+  // to the data through pan/zoom. The projection helper below mirrors
+  // the exact math ProfessionalCandlestickPainter uses for its own
+  // candle placement, so a touched price-line tracks the candle the
+  // user pointed at across every redraw.
+  //
+  // _startDrawing creates the right subclass at the touch-down point.
+  // _updateDrawing slides the second endpoint as the user drags.
+  // _endDrawing commits to _drawings on lift (already implemented).
+  // _findDrawingAtPoint hit-tests an existing drawing on tap-without-drag
+  // so the user can select + drag-reposition or delete.
+
+  /// Projects a touch point in widget-local pixels back to chart space:
+  /// returns the (price, barIndex) that the user actually pointed at.
+  /// Mirrors ProfessionalCandlestickPainter's layout math at lines 33-71:
+  ///   chartHeight = height × 0.85, chartTop = height × 0.075
+  ///   availableWidth = width × 0.9, chartLeft = width × 0.05
+  ///   chartPriceRange has 10% padding top + bottom of (max - min).
+  ({double price, int barIndex}) _projectToChartSpace(
+      Offset point, List<CryptoPrice> visibleData) {
+    final mq = MediaQuery.of(context);
+    final size = Size(mq.size.width, mq.size.height * 0.9);
+    final band = _chartMinMax(visibleData);
+    final actualRange = band.maxPrice - band.minPrice;
+    final padding = actualRange * 0.1;
+    final chartMinPrice = band.minPrice - padding;
+    final chartMaxPrice = band.maxPrice + padding;
+    final chartPriceRange = chartMaxPrice - chartMinPrice;
+
+    final chartHeight = size.height * 0.85;
+    final chartTop = size.height * 0.075;
+    final chartLeft = size.width * 0.05;
+    final availableWidth = size.width * 0.9;
+    final n = visibleData.length;
+    final candleSpacing = n > 0 ? availableWidth / n : availableWidth;
+
+    final priceFromY = chartPriceRange > 0
+        ? chartMaxPrice - ((point.dy - chartTop) / chartHeight) * chartPriceRange
+        : 0.0;
+    final rawIndex = ((point.dx - chartLeft) / candleSpacing).round();
+    final clampedIndex = rawIndex.clamp(0, n > 0 ? n - 1 : 0);
+    return (price: priceFromY, barIndex: clampedIndex);
   }
 
+  /// Begin a new drawing at the touch-down point. Constructs the
+  /// DrawingElement subclass matching the active tool — Trendline,
+  /// HorizontalLine, VerticalLine, Measure. Fibonacci + Elliott Wave
+  /// fall back to a Trendline shape for now (their elaborated multi-
+  /// point variants are a future polish).
+  void _startDrawing(Offset point, List<CryptoPrice> priceHistory) {
+    if (_selectedDrawingTool == DrawingTool.none) return;
+    if (!mounted) return;
+    final visible = _getVisibleData(priceHistory);
+    if (visible.isEmpty) return;
+    final coord = _projectToChartSpace(point, visible);
+    setState(() {
+      switch (_selectedDrawingTool) {
+        case DrawingTool.horizontalLine:
+          _currentDrawing = HorizontalLineElement(
+            value: coord.price,
+            yPosition: point.dy,
+          );
+          break;
+        case DrawingTool.verticalLine:
+          final ts = coord.barIndex < visible.length
+              ? visible[coord.barIndex].timestamp
+              : DateTime.now();
+          _currentDrawing = VerticalLineElement(
+            index: coord.barIndex,
+            xPosition: point.dx,
+            timestamp: ts,
+          );
+          break;
+        case DrawingTool.measure:
+          _currentDrawing = MeasureElement(
+            startPoint: point,
+            endPoint: point,
+            startValue: coord.price,
+            endValue: coord.price,
+            startIndex: coord.barIndex,
+            endIndex: coord.barIndex,
+          );
+          break;
+        case DrawingTool.trendline:
+        case DrawingTool.fibonacciRetracement:
+        case DrawingTool.elliottWave:
+        case DrawingTool.none:
+          _currentDrawing = TrendlineElement(
+            startPoint: point,
+            endPoint: point,
+            startValue: coord.price,
+            endValue: coord.price,
+            startIndex: coord.barIndex,
+            endIndex: coord.barIndex,
+          );
+          break;
+      }
+    });
+  }
+
+  /// Slide the second endpoint of the in-progress drawing as the user
+  /// drags. Horizontal + vertical lines don't have a second endpoint —
+  /// they stay a single-touch placement, so a drag past their start
+  /// point is a no-op. Trendline / Measure / Trendline-variants get
+  /// their endPoint + endValue + endIndex updated.
   void _updateDrawing(Offset point, List<CryptoPrice> priceHistory) {
-    // Reserved: see _startDrawing.
+    final current = _currentDrawing;
+    if (current == null) return;
+    if (!mounted) return;
+    final visible = _getVisibleData(priceHistory);
+    if (visible.isEmpty) return;
+    final coord = _projectToChartSpace(point, visible);
+    setState(() {
+      if (current is TrendlineElement) {
+        _currentDrawing = TrendlineElement(
+          startPoint: current.startPoint,
+          endPoint: point,
+          startValue: current.startValue,
+          endValue: coord.price,
+          startIndex: current.startIndex,
+          endIndex: coord.barIndex,
+          color: current.color,
+          strokeWidth: current.strokeWidth,
+        );
+      } else if (current is MeasureElement) {
+        _currentDrawing = MeasureElement(
+          startPoint: current.startPoint,
+          endPoint: point,
+          startValue: current.startValue,
+          endValue: coord.price,
+          startIndex: current.startIndex,
+          endIndex: coord.barIndex,
+          color: current.color,
+          strokeWidth: current.strokeWidth,
+        );
+      }
+      // HorizontalLine + VerticalLine are single-anchor; ignore drag.
+    });
   }
 
   void _endDrawing() {
@@ -1647,19 +1777,126 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
     }
   }
 
-  void _updateDrawingPosition(Offset newPoint, List<CryptoPrice> priceHistory) {
-    // Reserved: requires the chart-coordinate projection helper.
+  /// Drag a selected drawing by translating ALL its anchor points by
+  /// the delta from `_dragStartPoint`. Touches the same DrawingElement
+  /// subclasses copyWith, so each subclass's own immutability semantics
+  /// are preserved.
+  void _updateDrawingPosition(
+      Offset newPoint, List<CryptoPrice> priceHistory) {
+    final selected = _selectedDrawing;
+    final dragStart = _dragStartPoint;
+    if (selected == null || dragStart == null) return;
+    if (!mounted) return;
+    final visible = _getVisibleData(priceHistory);
+    if (visible.isEmpty) return;
+    final newCoord = _projectToChartSpace(newPoint, visible);
+    final dx = newPoint.dx - dragStart.dx;
+    final dy = newPoint.dy - dragStart.dy;
+
+    DrawingElement? updated;
+    if (selected is TrendlineElement) {
+      updated = TrendlineElement(
+        startPoint:
+            selected.startPoint.translate(dx, dy),
+        endPoint: selected.endPoint.translate(dx, dy),
+        startValue: newCoord.price,
+        endValue: newCoord.price,
+        startIndex: newCoord.barIndex,
+        endIndex: newCoord.barIndex,
+        color: selected.color,
+        strokeWidth: selected.strokeWidth,
+      );
+    } else if (selected is MeasureElement) {
+      updated = MeasureElement(
+        startPoint: selected.startPoint.translate(dx, dy),
+        endPoint: selected.endPoint.translate(dx, dy),
+        startValue: newCoord.price,
+        endValue: newCoord.price,
+        startIndex: newCoord.barIndex,
+        endIndex: newCoord.barIndex,
+        color: selected.color,
+        strokeWidth: selected.strokeWidth,
+      );
+    } else if (selected is HorizontalLineElement) {
+      updated = HorizontalLineElement(
+        value: newCoord.price,
+        yPosition: newPoint.dy,
+        color: selected.color,
+        strokeWidth: selected.strokeWidth,
+      );
+    } else if (selected is VerticalLineElement) {
+      updated = VerticalLineElement(
+        index: newCoord.barIndex,
+        xPosition: newPoint.dx,
+        timestamp: visible.isNotEmpty
+            ? visible[newCoord.barIndex.clamp(0, visible.length - 1)]
+                .timestamp
+            : selected.timestamp,
+        color: selected.color,
+        strokeWidth: selected.strokeWidth,
+      );
+    }
+    if (updated == null) return;
+    setState(() {
+      final idx = _drawings.indexOf(selected);
+      if (idx >= 0) _drawings[idx] = updated!;
+      _selectedDrawing = updated;
+      _dragStartPoint = newPoint;
+    });
   }
 
-  DrawingElement? _findDrawingAtPoint(Offset point, List<CryptoPrice> priceHistory) {
-    // Hit-test stays null-returning until the chart-coordinate projection
-    // helper lands. The DrawingsPainter still renders any drawings that
-    // get into the list via other code paths (e.g. a test seed).
+  /// Newest-on-top hit-test. Walks _drawings in reverse order so a
+  /// drawing painted later (on top) gets selected before an older one
+  /// underneath.
+  DrawingElement? _findDrawingAtPoint(
+      Offset point, List<CryptoPrice> priceHistory) {
+    for (var i = _drawings.length - 1; i >= 0; i--) {
+      if (_isPointNearDrawing(point, _drawings[i], priceHistory)) {
+        return _drawings[i];
+      }
+    }
     return null;
   }
 
-  bool _isPointNearDrawing(Offset point, DrawingElement drawing, List<CryptoPrice> priceHistory) {
+  /// 8-pixel hit slop — generous enough for fingertip use, tight enough
+  /// that drawings clustered close together stay individually selectable.
+  bool _isPointNearDrawing(
+      Offset point, DrawingElement drawing, List<CryptoPrice> priceHistory) {
+    const double slop = 8.0;
+    if (drawing is HorizontalLineElement) {
+      return (point.dy - drawing.yPosition).abs() <= slop;
+    }
+    if (drawing is VerticalLineElement) {
+      return (point.dx - drawing.xPosition).abs() <= slop;
+    }
+    if (drawing is TrendlineElement) {
+      return _distanceToSegment(
+              point, drawing.startPoint, drawing.endPoint) <=
+          slop;
+    }
+    if (drawing is MeasureElement) {
+      return _distanceToSegment(
+              point, drawing.startPoint, drawing.endPoint) <=
+          slop;
+    }
     return false;
+  }
+
+  /// Perpendicular distance from a point to a line segment. Standard
+  /// closed-form: project the point onto the infinite line, clamp the
+  /// parameter to [0,1] so points off the segment ends measure to the
+  /// nearer endpoint rather than the infinite-line projection.
+  double _distanceToSegment(Offset p, Offset a, Offset b) {
+    final dx = b.dx - a.dx;
+    final dy = b.dy - a.dy;
+    if (dx == 0 && dy == 0) {
+      return (p - a).distance;
+    }
+    var t = ((p.dx - a.dx) * dx + (p.dy - a.dy) * dy) / (dx * dx + dy * dy);
+    t = t.clamp(0.0, 1.0);
+    final cx = a.dx + t * dx;
+    final cy = a.dy + t * dy;
+    return ((p - Offset(cx, cy))).distance;
   }
 
   void _showTimeframeBottomSheet() {

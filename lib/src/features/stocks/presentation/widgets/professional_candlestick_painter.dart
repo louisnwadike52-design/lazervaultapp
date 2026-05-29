@@ -11,6 +11,15 @@ class ProfessionalCandlestickPainter extends CustomPainter {
   final Color bullishColor;
   final Color bearishColor;
 
+  /// When true, render bullish candles as stroke-only outlines (no fill).
+  /// Bearish candles stay filled. Matches the standard "hollow candles"
+  /// trading chart style (see Investopedia / TradingView definitions).
+  /// Default false preserves the established bullish-tinted-fill look.
+  /// Wired by [_buildHollowCandlesChart] in
+  /// `crypto_chart_details_screen.dart` and the equivalent stocks
+  /// screen — bug #143 (hollow candles silent-fallback fix).
+  final bool hollow;
+
   ProfessionalCandlestickPainter({
     required this.priceHistory,
     required this.maxPrice,
@@ -20,6 +29,7 @@ class ProfessionalCandlestickPainter extends CustomPainter {
     this.gridColor = Colors.grey,
     this.bullishColor = Colors.green,
     this.bearishColor = Colors.red,
+    this.hollow = false,
   });
 
   @override
@@ -105,12 +115,16 @@ class ProfessionalCandlestickPainter extends CustomPainter {
       
       // Draw candlestick body
       if (isBullish) {
-        // Bullish candle - filled with light color or hollow
-        bodyPaint.style = PaintingStyle.fill;
-        bodyPaint.color = color.withValues(alpha: 0.1);
-        canvas.drawRect(bodyRect, bodyPaint);
-        
-        // Draw border
+        if (!hollow) {
+          // Standard bullish — light fill + border (default behaviour
+          // preserved for the regular Candles chart type).
+          bodyPaint.style = PaintingStyle.fill;
+          bodyPaint.color = color.withValues(alpha: 0.1);
+          canvas.drawRect(bodyRect, bodyPaint);
+        }
+        // Hollow bullish — stroke-only outline, no fill. This is the
+        // canonical "hollow candles" presentation traders expect from
+        // the Hollow chart type.
         bodyPaint.style = PaintingStyle.stroke;
         bodyPaint.color = color;
         bodyPaint.strokeWidth = 1.5;
