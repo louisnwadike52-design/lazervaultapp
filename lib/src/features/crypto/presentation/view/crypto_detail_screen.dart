@@ -246,11 +246,24 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
           priceHistory = state.priceHistory;
         }
 
+        // Distinguish loading from empty: while CryptoLoading is in
+        // flight (initial load or timeframe-change refetch) we should
+        // render a skeleton spinner, not "Chart data unavailable". The
+        // empty-data branch only fires when Loaded with an honestly-
+        // empty priceHistory.
+        final isChartLoading =
+            state is CryptoLoading || state is CryptoInitial;
+        final isChartError = state is CryptoError;
+
         return SingleChildScrollView(
           child: Column(
             children: [
               _buildPriceHeader(),
-              _buildAdvancedChart(priceHistory),
+              _buildAdvancedChart(
+                priceHistory,
+                isLoading: isChartLoading,
+                isError: isChartError,
+              ),
               _buildActionButtons(),
               SizedBox(height: 8.h),
               _buildKeyDataPoints(),
@@ -462,10 +475,24 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
     );
   }
 
-  Widget _buildAdvancedChart(List<PricePoint> priceHistory) {
+  Widget _buildAdvancedChart(
+    List<PricePoint> priceHistory, {
+    bool isLoading = false,
+    bool isError = false,
+  }) {
     final chartData = _generateChartData(priceHistory);
 
-    if (chartData.isEmpty) {
+    // Three distinct states the user needs to be able to tell apart:
+    //   - LOADING: fetch in flight (initial load or timeframe change).
+    //              Spinner + "Loading chart…" copy. Never the same UX
+    //              as "no data" — the user has no way to tell a slow
+    //              network from a silent backend if both render the
+    //              same.
+    //   - ERROR  : explicit CryptoError — show a Retry chip.
+    //   - EMPTY  : load completed cleanly with zero points (asset
+    //              has no Quidax/Binance/CoinGecko OHLCV — rare but
+    //              real; new listings, suspended pairs).
+    if (isLoading || isError || chartData.isEmpty) {
       return Container(
         margin: EdgeInsets.symmetric(horizontal: 16.w),
         height: 320.h,
@@ -477,19 +504,80 @@ class _CryptoDetailScreenState extends State<CryptoDetailScreen> with TickerProv
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.show_chart,
-                size: 48.sp,
-                color: Colors.grey[600],
-              ),
-              SizedBox(height: 12.h),
-              Text(
-                'Chart data unavailable',
-                style: GoogleFonts.inter(
-                  color: Colors.grey[400],
-                  fontSize: 14.sp,
+              if (isLoading) ...[
+                SizedBox(
+                  width: 32.sp,
+                  height: 32.sp,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    color: _getCryptoColor(),
+                  ),
                 ),
-              ),
+                SizedBox(height: 12.h),
+                Text(
+                  'Loading chart…',
+                  style: GoogleFonts.inter(
+                    color: Colors.grey[300],
+                    fontSize: 14.sp,
+                  ),
+                ),
+              ] else if (isError) ...[
+                Icon(
+                  Icons.error_outline,
+                  size: 48.sp,
+                  color: const Color(0xFFFB923C),
+                ),
+                SizedBox(height: 12.h),
+                Text(
+                  "Couldn't load chart",
+                  style: GoogleFonts.inter(
+                    color: Colors.grey[300],
+                    fontSize: 14.sp,
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                GestureDetector(
+                  onTap: _loadCryptoDetails,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: 12.w, vertical: 6.h),
+                    decoration: BoxDecoration(
+                      color: _getCryptoColor().withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(6.r),
+                    ),
+                    child: Text(
+                      'Retry',
+                      style: GoogleFonts.inter(
+                        color: _getCryptoColor(),
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ] else ...[
+                Icon(
+                  Icons.show_chart,
+                  size: 48.sp,
+                  color: Colors.grey[600],
+                ),
+                SizedBox(height: 12.h),
+                Text(
+                  'No price history yet',
+                  style: GoogleFonts.inter(
+                    color: Colors.grey[400],
+                    fontSize: 14.sp,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  'This asset has no recent OHLCV from Quidax',
+                  style: GoogleFonts.inter(
+                    color: Colors.grey[600],
+                    fontSize: 11.sp,
+                  ),
+                ),
+              ],
             ],
           ),
         ),

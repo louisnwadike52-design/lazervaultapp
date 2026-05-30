@@ -64,6 +64,15 @@ class _SellCryptoScreenState extends State<SellCryptoScreen>
     _selectedHolding = widget.selectedHolding;
     _amountController.addListener(_onAmountChanged);
     _setupAnimations();
+    // Quidax-as-source-of-truth: refresh holdings from the backend
+    // (which itself overlays Quidax-live balances on the mirror), so
+    // an external-deposit crypto that arrived since the user opened
+    // the app shows up in the Sell picker without a manual refresh.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      // ignore: use_build_context_synchronously
+      context.read<CryptoCubit>().refreshHoldingsLive();
+    });
   }
 
   void _setupAnimations() {

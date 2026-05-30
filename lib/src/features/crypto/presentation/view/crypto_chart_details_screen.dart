@@ -287,8 +287,72 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
       backgroundColor: Colors.black,
       body: BlocBuilder<CryptoCubit, CryptoState>(
         builder: (context, state) {
-          if (state is CryptoLoading) {
-            return const Center(child: CircularProgressIndicator());
+          if (state is CryptoLoading || state is CryptoInitial) {
+            // Explicit loading state — distinct from the "no data"
+            // branch below so the user can tell a slow network from
+            // a silent backend. The expanded chart was previously a
+            // bare CircularProgressIndicator on a black void; the
+            // explicit copy + 'Fetching from Quidax' line makes the
+            // architecture obvious.
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    width: 40.sp,
+                    height: 40.sp,
+                    child: const CircularProgressIndicator(
+                        strokeWidth: 2.5, color: Color(0xFF3B82F6)),
+                  ),
+                  SizedBox(height: 16.h),
+                  Text(
+                    'Loading chart…',
+                    style: GoogleFonts.inter(
+                      color: Colors.white.withValues(alpha: 0.85),
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    'Fetching OHLCV from Quidax',
+                    style: GoogleFonts.inter(
+                      color: Colors.white.withValues(alpha: 0.45),
+                      fontSize: 11.sp,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+          if (state is CryptoError) {
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.error_outline,
+                      color: const Color(0xFFFB923C), size: 48.sp),
+                  SizedBox(height: 12.h),
+                  Text(
+                    "Couldn't load chart",
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    state.message,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      color: Colors.white.withValues(alpha: 0.55),
+                      fontSize: 12.sp,
+                    ),
+                  ),
+                ],
+              ),
+            );
           }
 
           // Use real price history from gRPC backend

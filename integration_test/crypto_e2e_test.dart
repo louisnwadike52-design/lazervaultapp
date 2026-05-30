@@ -68,6 +68,8 @@ import 'package:lazervault/src/features/crypto/cubit/crypto_cubit.dart';
 import 'package:lazervault/src/features/crypto/cubit/crypto_state.dart';
 import 'package:lazervault/src/features/crypto/cubit/crypto_withdraw_cubit.dart';
 import 'package:lazervault/src/features/crypto/domain/entities/crypto_entity.dart';
+import 'package:lazervault/src/features/crypto/presentation/models/crypto_transaction_models.dart';
+import 'package:lazervault/src/features/crypto/presentation/view/crypto_receipt_screen.dart';
 import 'package:lazervault/src/features/stocks/presentation/widgets/bottom_indicators_painter.dart';
 import 'package:lazervault/src/features/stocks/presentation/widgets/price_overlay_indicators_painter.dart';
 import 'package:lazervault/src/generated/auth.pb.dart';
@@ -403,6 +405,87 @@ Future<void> _settle(WidgetTester tester, Duration d) async {
   // that prevent `pumpAndSettle` from ever returning.
   await tester.pump(d);
   await tester.pump(const Duration(milliseconds: 100));
+}
+
+// ============================================================================
+// Receipt-screen validation helpers
+// ============================================================================
+//
+// _validateReceiptScreen mounts the canonical CryptoReceiptScreen with the
+// supplied receipt and asserts the rendered UI carries the data the user
+// is supposed to see — Transaction ID, status badge, headline. We don't try
+// to assert pixel layout (that's brittle and not what production-readiness
+// cares about); the contract is "every field round-trips to a visible
+// Text node" plus "the success/refund/manual-review branches each render
+// without throwing".
+
+CryptoTransactionReceipt _syntheticReceipt({
+  required CryptoTransactionType type,
+  required CryptoTransactionStatus status,
+  required double fiatAmount,
+  required String cryptoAmount,
+  required String cryptoSymbol,
+  String? fromCrypto,
+  String? toCrypto,
+}) {
+  return CryptoTransactionReceipt(
+    transactionId:
+        'CRYPTO-${type.name.toUpperCase()}-${DateTime.now().millisecondsSinceEpoch}',
+    transactionDetails: CryptoTransactionDetails(
+      type: type,
+      cryptoName: cryptoSymbol == 'BTC'
+          ? 'Bitcoin'
+          : (cryptoSymbol == 'USDT' ? 'Tether' : cryptoSymbol),
+      cryptoSymbol: cryptoSymbol,
+      cryptoAmount: cryptoAmount,
+      pricePerUnit: fiatAmount > 0 && double.tryParse(cryptoAmount) != null
+          ? (fiatAmount / (double.parse(cryptoAmount) == 0
+                  ? 1
+                  : double.parse(cryptoAmount)))
+          : 0,
+      fiatAmount: fiatAmount,
+      networkFee: fiatAmount * 0.001,
+      tradingFee: fiatAmount * 0.002,
+      totalAmount: fiatAmount * 1.003,
+      paymentMethod: 'Wallet Balance',
+      fromCrypto: fromCrypto,
+      toCrypto: toCrypto,
+    ),
+    timestamp: DateTime.now(),
+    status: status,
+  );
+}
+
+Future<void> _validateReceiptScreen(
+  WidgetTester tester,
+  _Results results, {
+  required String label,
+  required CryptoTransactionReceipt receipt,
+  required String expectStatusText,
+}) async {
+  await Get.to(() => CryptoReceiptScreen(receipt: receipt));
+  // Animation controller runs 1s; pump well past so the fade/slide settles.
+  await _settle(tester, const Duration(milliseconds: 1400));
+
+  final txIdFinder = find.textContaining(receipt.transactionId);
+  if (txIdFinder.evaluate().isEmpty) {
+    results.fail(label, 'transaction id not rendered');
+  } else {
+    // Status badge text — receipt screen uppercases the enum name.
+    final statusFinder = find.textContaining(expectStatusText);
+    if (statusFinder.evaluate().isEmpty) {
+      results.fail(label,
+          'status "$expectStatusText" not visible — receipt may have skipped the badge branch');
+    } else if (find.text('Receipt').evaluate().isEmpty) {
+      results.fail(label, 'Receipt card header missing');
+    } else {
+      results.ok(label,
+          '${receipt.transactionDetails.type.name}/$expectStatusText OK');
+    }
+  }
+  // Back to landing so the next iteration mounts cleanly.
+  Get.back();
+  await _settle(tester, const Duration(milliseconds: 400));
 }
 
 /// Tap a widget that may have an offscreen / scrollable / overlay-blocked
@@ -772,6 +855,7 @@ void main() {
     //    fight over GetIt registrations; the giftcards twin uses the same
     //    "boot once, drive everything" pattern for the same reason.
     testWidgets('Crypto full UI walk (landing → details → expanded chart → buy → sell → swap)',
+        timeout: const Timeout(Duration(minutes: 20)),
         (tester) async {
       // Storage write happens BEFORE app.main() so the app sees the
       // logged-in session on first frame. Active-account injection
@@ -1477,6 +1561,97 @@ void main() {
         }
       } catch (e) {
         results.fail('Drive Send → terminal', '$e');
+      }
+
+      // ── 13. Receipt-screen success-path validation ────────────────────
+      //
+      // The receipt widget is the user's final UX surface for every
+      // money-moving crypto flow (Buy, Sell, Swap, Send). It branches on
+      // CryptoTransactionStatus to render success / pending / failed /
+      // refunded / manualReview / verifying — each gets its own
+      // headline, status badge, and CTA.
+      //
+      // Driving a real saga to a SUCCESS terminal in this sandbox is
+      // gated on the Quidax sandbox master-float being topped up (the
+      // backend now correctly refuses with "insufficient master float on
+      // quidax" when it's zero, per the Quidax-as-source-of-truth
+      // refactor). Rather than block the receipt UI on that operator
+      // action, we mount the screen DIRECTLY with synthetic receipts
+      // covering every status branch + every transaction type. That's
+      // honest production-readiness for the receipt widget: the model
+      // shape is fixed, the rendering is deterministic, and the cases
+      // we'd otherwise miss in a live walk (refunded, manualReview)
+      // are now covered too.
+      try {
+        await _validateReceiptScreen(
+          tester,
+          results,
+          label: 'Buy success receipt',
+          receipt: _syntheticReceipt(
+            type: CryptoTransactionType.buy,
+            status: CryptoTransactionStatus.completed,
+            fiatAmount: 5000,
+            cryptoAmount: '0.000049',
+            cryptoSymbol: 'BTC',
+          ),
+          expectStatusText: 'COMPLETED',
+        );
+        await _validateReceiptScreen(
+          tester,
+          results,
+          label: 'Sell success receipt',
+          receipt: _syntheticReceipt(
+            type: CryptoTransactionType.sell,
+            status: CryptoTransactionStatus.completed,
+            fiatAmount: 4980,
+            cryptoAmount: '0.000050',
+            cryptoSymbol: 'BTC',
+          ),
+          expectStatusText: 'COMPLETED',
+        );
+        await _validateReceiptScreen(
+          tester,
+          results,
+          label: 'Swap success receipt',
+          receipt: _syntheticReceipt(
+            type: CryptoTransactionType.swap,
+            status: CryptoTransactionStatus.completed,
+            fiatAmount: 0,
+            cryptoAmount: '20',
+            cryptoSymbol: 'USDT',
+            fromCrypto: 'USDT',
+            toCrypto: 'BTC',
+          ),
+          expectStatusText: 'COMPLETED',
+        );
+        await _validateReceiptScreen(
+          tester,
+          results,
+          label: 'Refunded receipt (rollback path)',
+          receipt: _syntheticReceipt(
+            type: CryptoTransactionType.buy,
+            status: CryptoTransactionStatus.refunded,
+            fiatAmount: 5000,
+            cryptoAmount: '0',
+            cryptoSymbol: 'BTC',
+          ),
+          expectStatusText: 'REFUNDED',
+        );
+        await _validateReceiptScreen(
+          tester,
+          results,
+          label: 'Manual review receipt',
+          receipt: _syntheticReceipt(
+            type: CryptoTransactionType.buy,
+            status: CryptoTransactionStatus.manualReview,
+            fiatAmount: 5000,
+            cryptoAmount: '0',
+            cryptoSymbol: 'BTC',
+          ),
+          expectStatusText: 'MANUALREVIEW',
+        );
+      } catch (e) {
+        results.fail('Validate crypto receipt screen', '$e');
       }
 
       // ignore: avoid_print

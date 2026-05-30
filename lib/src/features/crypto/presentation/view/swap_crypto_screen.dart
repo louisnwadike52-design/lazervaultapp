@@ -73,6 +73,13 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
     final cubit = context.read<CryptoCubit>();
     if (cubit.state is! CryptosLoaded) {
       cubit.loadCryptos();
+    } else {
+      // Already loaded — still ask the backend for the latest holdings
+      // (it overlays Quidax-live balances on the mirror) so an external
+      // deposit that landed on Quidax since the last landing-page load
+      // shows up here without a manual refresh. Quidax is the source
+      // of truth.
+      cubit.refreshHoldingsLive();
     }
   }
 

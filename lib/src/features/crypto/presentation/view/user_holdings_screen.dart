@@ -24,6 +24,19 @@ class _UserHoldingsScreenState extends State<UserHoldingsScreen> {
   String _searchQuery = '';
 
   @override
+  void initState() {
+    super.initState();
+    // Quidax-as-source-of-truth: refresh holdings on every mount via
+    // the backend's Quidax-live overlay, so external deposits to the
+    // user's Quidax sub-account surface in the picker immediately.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      // ignore: use_build_context_synchronously
+      context.read<CryptoCubit>().refreshHoldingsLive();
+    });
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();

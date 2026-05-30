@@ -189,6 +189,40 @@ class CryptoCubit extends Cubit<CryptoState> {
   /// No-op when the cubit isn't in CryptosLoaded (the receipt screen owns
   /// its own state for swaps started from a non-dashboard entry like
   /// voice agent).
+  /// Refresh ONLY the holdings list from the backend (which itself
+  /// overlays Quidax-live balances on top of the mirror via
+  /// `WalletService.GetUserWallets` — see crypto-service for the
+  /// regulatory framing). Intended for screens that gate user action
+  /// on what they currently hold (Send, Sell, Swap, holdings picker)
+  /// so a deposit that landed on Quidax via an external transfer
+  /// surfaces immediately on next screen mount, instead of waiting
+  /// for the periodic landing-page refresh.
+  ///
+  /// Light enough to be called on every screen `initState` — bypasses
+  /// the full `loadCryptos` ten-call fan-out and avoids touching
+  /// `transactions` (the Send/Sell screens don't display them).
+  ///
+  /// Silent on failure so a transient gateway blip never blanks out a
+  /// working holdings card.
+  Future<void> refreshHoldingsLive() async {
+    final current = state;
+    if (current is! CryptosLoaded) return;
+    try {
+      final freshHoldings = await repository.getHoldings(unitsOnly: true);
+      if (isClosed) return;
+      final s = state;
+      if (s is! CryptosLoaded) return;
+      emit(s.copyWith(holdings: freshHoldings));
+      // Kick lazy fiat hydration so totals update without blocking
+      // the screen mount on N serial provider lookups.
+      unawaited(_hydrateHoldingFiatValues(freshHoldings));
+    } catch (_) {
+      // Silent — the next landing-page pull-to-refresh will pick
+      // up the truth; we never want a refresh blip to blank out a
+      // working holdings UI.
+    }
+  }
+
   Future<void> refreshHoldingsAfterSwap() async {
     final current = state;
     if (current is! CryptosLoaded) return;

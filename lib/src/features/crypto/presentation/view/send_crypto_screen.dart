@@ -60,6 +60,18 @@ class _SendCryptoScreenState extends State<SendCryptoScreen>
   void initState() {
     super.initState();
     _selected = widget.preselectedHolding;
+    // Quidax-as-source-of-truth: refresh holdings from the backend
+    // (which itself overlays Quidax-live balances) on every mount,
+    // so a deposit that landed on the user's Quidax sub-account from
+    // an external wallet shows up here immediately. Without this the
+    // screen could read a stale CryptoCubit snapshot from the last
+    // landing-page load and miss assets the user can legitimately
+    // send.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      // ignore: use_build_context_synchronously
+      context.read<CryptoCubit>().refreshHoldingsLive();
+    });
   }
 
   @override
