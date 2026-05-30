@@ -49,6 +49,8 @@
 //     --dart-define=TEST_BACKEND_HOST=10.0.2.2 \
 //     --timeout=30m
 
+import 'dart:async';
+
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -463,7 +465,13 @@ Future<void> _validateReceiptScreen(
   required CryptoTransactionReceipt receipt,
   required String expectStatusText,
 }) async {
-  await Get.to(() => CryptoReceiptScreen(receipt: receipt));
+  // CRITICAL: do NOT await Get.to — its returned Future resolves on
+  // route-POP, not on push. Awaiting here blocks until we eventually
+  // call Get.back below, but the test never pumps frames in the
+  // meantime, so the navigation never lands. The previous version hung
+  // here for the entire receipt-validation block. Fire-and-forget the
+  // navigation, then pump to let the push animation settle.
+  unawaited(Get.to(() => CryptoReceiptScreen(receipt: receipt)));
   // Animation controller runs 1s; pump well past so the fade/slide settles.
   await _settle(tester, const Duration(milliseconds: 1400));
 
