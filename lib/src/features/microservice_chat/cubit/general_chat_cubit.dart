@@ -287,6 +287,94 @@ Just ask me anything naturally! I'll understand your intent and help you.''',
     }
   }
 
+  /// Submit a PIN verification token in response to a pin_prompt the
+  /// agent emitted. Sends a follow-up chat message with
+  /// metadata.pin_verification_token + the original callback_intent +
+  /// callback_args; the chat gateway forwards these as `entities` to
+  /// the downstream chat service, whose agent re-invokes the bound
+  /// callback tool with the token (NOT the raw PIN) attached. The PIN
+  /// never leaves the native modal, never enters the LLM context, and
+  /// never lands in chat history.
+  ///
+  /// Surfaces as a near-empty assistant message (or a ReceiptCard) on
+  /// success; on failure the agent returns a user-facing error string.
+  Future<void> submitPinVerification({
+    required String verificationToken,
+    required String callbackIntent,
+    Map<String, dynamic> callbackArgs = const {},
+    String userPromptText = '',
+  }) async {
+    if (verificationToken.isEmpty || _isSending) return;
+    _isSending = true;
+    try {
+      final authState = authCubit.state;
+      if (authState is! AuthenticationSuccess) return;
+
+      // We don't emit a user bubble for the PIN submission — the user
+      // already tapped through a native modal; another bubble showing
+      // "submitted PIN" would clutter the conversation. Just go straight
+      // to loading + the bot response.
+      emit(GeneralChatLoading(messages: List.from(_currentMessages)));
+
+      final locale = serviceLocator<LocaleManager>().currentLocale;
+
+      // The downstream chat-*-service reads pin_verification_token,
+      // callback_intent and callback_args from `entities`; the gateway
+      // copies them out of metadata into entities (see chat-agent-gateway
+      // main.py). userPromptText is what the LLM sees as the "user
+      // message" — usually empty / a token sentinel so the agent
+      // recognises this is a PIN-callback turn rather than a fresh ask.
+      final result = await sendMessageUseCase(
+        message: userPromptText.isEmpty
+            ? '__pin_verified__'  // sentinel the agent's prompt recognises
+            : userPromptText,
+        sessionId: _sessionId,
+        userId: authState.profile.user.id,
+        accessToken: '',
+        sourceContext: 'general',
+        language: 'en',
+        locale: locale,
+        metadata: {
+          'pin_verification_token': verificationToken,
+          'callback_intent': callbackIntent,
+          'callback_args': callbackArgs,
+          'execute': true,
+        },
+      );
+
+      result.fold(
+        (failure) {
+          emit(GeneralChatError(
+            errorMessage: failure.message,
+            messages: List.from(_currentMessages),
+          ));
+        },
+        (response) {
+          final responseMeta = response.metadata ?? const {};
+          final botMessage = GeneralChatMessageEntity(
+            text: response.response,
+            isUser: false,
+            timestamp: DateTime.now(),
+            serviceRoutedTo: response.serviceRoutedTo,
+            metadata: {
+              ...responseMeta,
+              if (response.receiptData != null)
+                'receipt_data': response.receiptData,
+            },
+          );
+          _currentMessages.add(botMessage);
+          emit(GeneralChatSuccess(
+            messages: List.from(_currentMessages),
+            currentService: _currentService,
+            conversationServices: List.from(_conversationServices),
+          ));
+        },
+      );
+    } finally {
+      _isSending = false;
+    }
+  }
+
   /// Maximum media file size (10MB for images, 25MB for audio).
   static const int _maxImageSize = 10 * 1024 * 1024;
   static const int _maxAudioSize = 25 * 1024 * 1024;
