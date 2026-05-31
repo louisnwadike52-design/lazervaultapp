@@ -340,7 +340,12 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
 
   // ── Session Start ──
 
-  Future<void> startVoiceSession({required String? accessToken, String? serviceName}) async {
+  Future<void> startVoiceSession({
+    required String? accessToken,
+    String? serviceName,
+    String? accountId,
+    String? currency,
+  }) async {
     if (isClosed) return;
     emit(VoiceSessionLoadingCredentials());
 
@@ -356,6 +361,16 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
       final requestBody = <String, dynamic>{};
       if (serviceName != null && serviceName.isNotEmpty) {
         requestBody['serviceName'] = serviceName;
+      }
+      // Per-screen active account pin (e.g. user picked a non-primary
+      // source account on select_recipients before opening voice).
+      // Optional — backend falls back to primary account lookup when
+      // unset, so the general dashboard mic still works without it.
+      if (accountId != null && accountId.isNotEmpty) {
+        requestBody['accountId'] = accountId;
+      }
+      if (currency != null && currency.isNotEmpty) {
+        requestBody['currency'] = currency;
       }
       // Include language and voice preference in room metadata
       if (_selectedLanguageCode != null) {
@@ -861,6 +876,33 @@ class VoiceSessionCubit extends Cubit<VoiceSessionState> {
       'success': success,
       if (reference != null) 'reference': reference,
       if (error != null) 'error': error,
+    });
+    if (_room != null && !isClosed) {
+      emit(VoiceSessionAgentProcessing(_room!));
+    }
+  }
+
+  /// Single-use PIN verification round-trip — matches the chat path's
+  /// `submitPinVerification` shape so voice and chat share the same
+  /// agent-resume contract.
+  ///
+  /// Caller (VoicePinSheetLauncher) passes the verification_token from
+  /// TransactionPinMixin AND the callback_intent + callback_args that
+  /// were attached to the agent's PinPromptIntent. The bridge then
+  /// re-calls the same tool with the token in entities, the saga
+  /// spends the token (atomic single-use), and a ReceiptCard comes
+  /// back to the user.
+  Future<void> submitPinVerification({
+    required String verificationToken,
+    required String callbackIntent,
+    Map<String, dynamic>? callbackArgs,
+  }) async {
+    _isVisualFeedbackActive = false;
+    await sendToVoiceAgent('pin_verified', {
+      'verification_token': verificationToken,
+      'callback_intent': callbackIntent,
+      if (callbackArgs != null && callbackArgs.isNotEmpty)
+        'callback_args': callbackArgs,
     });
     if (_room != null && !isClosed) {
       emit(VoiceSessionAgentProcessing(_room!));

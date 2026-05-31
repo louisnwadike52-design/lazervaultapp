@@ -10,8 +10,8 @@ import '../../cubit/gift_card_cubit.dart';
 import '../../cubit/gift_card_state.dart';
 import '../../domain/entities/gift_card_entity.dart';
 import '../../../../../core/types/app_routes.dart';
-import '../../../voice_session/widgets/voice_command_sheet.dart';
 import '../../../microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import '../../../widgets/service_voice_button.dart';
 import 'widgets/country_selection_bottomsheet.dart';
 import 'widgets/gift_card_error_widget.dart';
 
@@ -169,21 +169,16 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
               ),
             ),
           ),
-          Container(
-            width: 44.w,
-            height: 44.w,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color.fromARGB(255, 78, 3, 208), Color(0xFF6366F1)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(22.r),
-            ),
-            child: IconButton(
-              icon: Icon(Icons.mic, color: Colors.white, size: 20.sp),
-              onPressed: () => _showVoiceAgentSheet(),
-            ),
+          // Voice button routes through ServiceVoiceButton so that
+          //   1. VoiceSetupGuard gates enrollment + high-risk verify
+          //   2. VoiceCommandSheet opens with serviceName='giftcards',
+          //      pinning the LLM router to the gift-cards agent (the
+          //      previous inline mic opened the sheet without a service,
+          //      so the agent defaulted to the general router).
+          ServiceVoiceButton(
+            serviceName: 'giftcards',
+            buttonSize: 44.w,
+            iconSize: 20.sp,
           ),
           SizedBox(width: 8.w),
           MicroserviceChatIcon(
@@ -197,16 +192,6 @@ class _GiftCardsScreenState extends State<GiftCardsScreen> {
     );
   }
 
-  void _showVoiceAgentSheet() {
-    Get.bottomSheet(
-      FractionallySizedBox(
-        heightFactor: 0.85,
-        child: VoiceCommandSheet(),
-      ),
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-    );
-  }
 
   // Quick actions section — My Cards + Sales History
   Widget _buildQuickActions() {

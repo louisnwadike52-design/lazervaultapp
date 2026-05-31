@@ -20,6 +20,7 @@ import 'package:lazervault/src/features/funds/presentation/widgets/directpay_pro
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 
 class DepositFundsScreen extends StatefulWidget {
   final Map<String, dynamic> selectedCard;
@@ -1099,9 +1100,19 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
             });
           },
         ),
+            // serviceName='deposits' so the voice agent routes to the
+            // deposit-funds tools (the previous 'loans' string was a
+            // copy-paste leftover that sent the agent to the wrong
+            // service). Chat icon follows so users can also drive the
+            // same flow via text.
             ServiceVoiceButton(
-        serviceName: 'loans',
-      ),
+              serviceName: 'deposits',
+            ),
+            SizedBox(width: 8.w),
+            MicroserviceChatIcon(
+              serviceName: 'Deposits',
+              sourceContext: 'deposits',
+            ),
 ],
     );
   }

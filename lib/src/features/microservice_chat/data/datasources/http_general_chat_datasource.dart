@@ -10,6 +10,13 @@ class GeneralChatRequest {
   final String sourceContext;
   final String language;
   final String locale;
+  // Identity + active-account fields, mirrored from the direct chat
+  // request so the general (bottom-nav) path matches per-service parity.
+  // Empty string defaults preserve backwards compat: the gateway already
+  // resolves primary account when accountId is blank.
+  final String accountId;
+  final String currency;
+  final String userCountry;
   final Map<String, dynamic> metadata;
   final String? mediaBase64;
   final String? mediaType; // 'image' | 'voice'
@@ -23,6 +30,9 @@ class GeneralChatRequest {
     this.sourceContext = 'general',
     this.language = 'en',
     this.locale = 'en-NG',
+    this.accountId = '',
+    this.currency = '',
+    this.userCountry = '',
     this.metadata = const {},
     this.mediaBase64,
     this.mediaType,
@@ -38,6 +48,12 @@ class GeneralChatRequest {
       'source_context': sourceContext,
       'language': language,
       'locale': locale,
+      // Only forward when non-empty so backend's default-resolution
+      // fallbacks (primary account lookup, NGN currency assumption)
+      // still kick in for legacy callers.
+      if (accountId.isNotEmpty) 'account_id': accountId,
+      if (currency.isNotEmpty) 'currency': currency,
+      if (userCountry.isNotEmpty) 'user_country': userCountry,
       if (metadata.isNotEmpty) 'metadata': metadata,
       if (mediaBase64 != null && mediaBase64!.isNotEmpty) 'media_base64': mediaBase64,
       if (mediaType != null && mediaType!.isNotEmpty) 'media_type': mediaType,

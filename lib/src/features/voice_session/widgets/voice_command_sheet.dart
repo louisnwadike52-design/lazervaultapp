@@ -15,10 +15,12 @@ import 'package:lazervault/src/features/voice_session/widgets/voice_language_pic
 import 'package:lazervault/src/features/voice_session/widgets/voice_customization_sheet.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_user_search_dialog.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_transfer_summary_card.dart';
-import 'package:lazervault/src/features/voice_session/widgets/voice_pin_entry_dialog.dart';
+import 'package:lazervault/src/features/voice_session/widgets/voice_pin_sheet_launcher.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_caption_box.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_conversation_context_bar.dart';
 import 'package:lazervault/src/features/voice_session/widgets/voice_chat_history_sheet.dart';
+import 'package:lazervault/src/features/voice/cubit/per_service_voice_settings_cubit.dart';
+import 'package:lazervault/src/features/voice/screens/per_service_voice_settings_screen.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
 import 'package:lazervault/core/services/injection_container.dart';
@@ -620,10 +622,17 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
     );
   }
 
-  /// Settings button to open voice settings screen
+  /// Settings button.
+  ///
+  /// When this sheet was opened for a specific service (`serviceName`
+  /// non-null), the gear routes to the per-service settings screen so
+  /// the user lands on language + voice + prompt-hint controls scoped
+  /// to that flow. When the sheet is the general dashboard mic
+  /// (`serviceName == null`), we keep the existing route to the global
+  /// voice settings screen so behaviour stays unchanged for that path.
   Widget _buildSettingsButton() {
     return GestureDetector(
-      onTap: () => Get.toNamed('/voice/settings'),
+      onTap: _openSettings,
       child: Container(
         width: 36.w,
         height: 36.w,
@@ -635,6 +644,29 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
           Icons.settings_rounded,
           color: Colors.white.withValues(alpha: 0.5),
           size: 18.sp,
+        ),
+      ),
+    );
+  }
+
+  void _openSettings() {
+    final service = widget.serviceName;
+    if (service == null || service.isEmpty) {
+      Get.toNamed(AppRoutes.voiceSettings);
+      return;
+    }
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => BlocProvider<PerServiceVoiceSettingsCubit>(
+          create: (_) {
+            final cubit = PerServiceVoiceSettingsCubit(
+              serviceName: service,
+              storage: SharedPrefsPerServiceVoiceSettingsStorage(),
+            );
+            cubit.load();
+            return cubit;
+          },
+          child: PerServiceVoiceSettingsScreen(serviceName: service),
         ),
       ),
     );
@@ -2024,20 +2056,45 @@ class _VoiceCommandSheetState extends State<VoiceCommandSheet>
         ? authState.profile.session.accessToken
         : '';
 
+    // Voice + chat share the SAME canonical PIN bottom sheet via
+    // TransactionPinMixin. The launcher auto-opens the sheet on mount
+    // and surfaces the single-use verification_token on success so the
+    // voice agent can resume the original PinPromptIntent.callback_intent
+    // through the same round-trip the chat path uses.
+    final callbackIntent =
+        (payload['callback_intent'] ?? '').toString();
+    final callbackArgs =
+        payload['callback_args'] is Map<String, dynamic>
+            ? Map<String, dynamic>.from(payload['callback_args'] as Map)
+            : <String, dynamic>{};
+
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => VoicePinEntryDialog(
+      builder: (_) => VoicePinSheetLauncher(
         transactionPayload: payload,
         accessToken: token,
-        onComplete: (success, {reference, error}) {
+        onPinVerified: (verificationToken) async {
           _isDialogShowing = false;
-          Navigator.of(context).pop();
+          if (callbackIntent.isNotEmpty) {
+            await context.read<VoiceSessionCubit>().submitPinVerification(
+                  verificationToken: verificationToken,
+                  callbackIntent: callbackIntent,
+                  callbackArgs: callbackArgs,
+                );
+          } else {
+            // Legacy payload without callback intent — fall back to
+            // the old binary success signal so existing voice flows
+            // that don't yet send PinPromptIntent still resume.
+            await context.read<VoiceSessionCubit>().notifyPinCompleted(true);
+          }
+        },
+        onCancelled: () {
+          _isDialogShowing = false;
           context.read<VoiceSessionCubit>().notifyPinCompleted(
-            success,
-            reference: reference,
-            error: error,
-          );
+                false,
+                error: 'pin_entry_cancelled',
+              );
         },
       ),
     ).whenComplete(() {

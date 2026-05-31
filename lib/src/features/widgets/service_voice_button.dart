@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:lazervault/core/types/app_routes.dart';
+import 'package:get_it/get_it.dart';
+
+import 'package:lazervault/src/features/dashboard/managers/voice_setup_manager.dart';
+import 'package:lazervault/src/features/voice/guards/voice_setup_guard.dart';
+import 'package:lazervault/src/features/voice/managers/voice_activation_manager.dart';
+
 import '../voice_session/widgets/voice_command_sheet.dart';
-import 'voice_suggestions.dart';
 
 /// Reusable voice button widget for service screens
 ///
@@ -78,21 +82,20 @@ class ServiceVoiceButton extends StatelessWidget {
   }
 
   void _showVoiceCommandSheet(BuildContext context) async {
-    // Check voice enrollment status before showing voice command sheet
-    // TODO: Replace with actual enrollment status check from your backend
-    final isEnrolled = await _checkVoiceEnrollment(context);
-
-    if (!isEnrolled) {
-      // Show enrollment required dialog
-      if (context.mounted) {
-        _showEnrollmentRequiredDialog(context);
-      }
-      return;
-    }
-
-    // Get service-specific suggestions
-    final serviceSuggestions = suggestions ??
-        VoiceSuggestions.getSuggestions(serviceName);
+    // Gate every per-service voice session on the SAME setup guard the
+    // general dashboard mic uses. Mirrors:
+    //   1. logged-in check
+    //   2. biometric-enrollment check (voice-biometrics-service)
+    //   3. high-risk feature → mandatory voice verification before entry
+    //
+    // The guard's dialog handles "not enrolled" → navigate to enrollment
+    // → re-check on return. We only open the command sheet when canAccess
+    // returns true, so dropouts at any step abort cleanly without burning
+    // a half-loaded voice session.
+    final guard = _resolveGuard();
+    final allowed = await guard.canAccessVoiceFeature(context, serviceName);
+    if (!allowed) return;
+    if (!context.mounted) return;
 
     Get.bottomSheet(
       FractionallySizedBox(
@@ -108,89 +111,23 @@ class ServiceVoiceButton extends StatelessWidget {
     );
   }
 
-  // Check if user has voice biometrics enrolled
-  Future<bool> _checkVoiceEnrollment(BuildContext context) async {
-    try {
-      // TODO: Implement actual enrollment status check
-      // This should call your voice biometrics service to check enrollment status
-      // For now, return false to enforce enrollment requirement
-      return false;
-    } catch (e) {
-      print('Error checking voice enrollment: $e');
-      return false;
+  /// Resolve the shared VoiceSetupGuard from GetIt, lazy-constructing it
+  /// the first time. Mirrors how `DashboardScreen` builds the guard
+  /// today (`VoiceSetupManager(voiceManager: VoiceActivationManager())`),
+  /// so this widget keeps working in any host without requiring a
+  /// dedicated DI registration.
+  VoiceSetupGuard _resolveGuard() {
+    if (GetIt.I.isRegistered<VoiceSetupGuard>()) {
+      return GetIt.I<VoiceSetupGuard>();
     }
-  }
-
-  // Show dialog prompting user to enroll voice
-  void _showEnrollmentRequiredDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext dialogContext) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(
-              Icons.mic_rounded,
-              color: Theme.of(context).primaryColor,
-            ),
-            const SizedBox(width: 12),
-            const Text('Voice Setup Required'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Before using voice commands, you need to set up voice recognition for secure access.',
-              style: TextStyle(fontSize: 14),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Voice enrollment takes about 30 seconds and:',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 8),
-            ...const [
-              '✓ Protects your account with voice biometrics',
-              '✓ Required for all voice transactions',
-              '✓ Quick one-time setup',
-            ].map((text) => Padding(
-              padding: const EdgeInsets.only(left: 8, bottom: 4),
-              child: Text(
-                text,
-                style: const TextStyle(fontSize: 12),
-              ),
-            )),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-              _navigateToEnrollment(context);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).primaryColor,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Set Up Voice'),
-          ),
-        ],
-      ),
+    final manager = VoiceActivationManager();
+    final setupMgr = VoiceSetupManager(voiceManager: manager);
+    final guard = VoiceSetupGuard(
+      voiceManager: manager,
+      setupManager: setupMgr,
     );
-  }
-
-  // Navigate to voice enrollment screen
-  void _navigateToEnrollment(BuildContext context) {
-    Get.toNamed(AppRoutes.voiceEnrollment);
+    GetIt.I.registerSingleton<VoiceSetupGuard>(guard);
+    return guard;
   }
 }
 

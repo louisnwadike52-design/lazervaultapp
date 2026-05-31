@@ -17,6 +17,7 @@ import '../widgets/invoice_voice_agent_button.dart';
 import '../widgets/invoice_shimmer.dart';
 import '../widgets/invoice_pagination_bar.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_cubit.dart';
 import '../../../account_cards_summary/cubit/account_cards_summary_state.dart';
 import 'package:get_it/get_it.dart';
@@ -233,6 +234,15 @@ class _InvoiceHomeScreenState extends State<InvoiceHomeScreen>
               ),
             ),
           ),
+          // Per-service voice agent (pinned to invoices). Honours
+          // VoiceSetupGuard so enrollment is required before use, and
+          // routes the agent to chat-products-service invoice tools.
+          ServiceVoiceButton(
+            serviceName: 'invoices',
+            buttonSize: 38.w,
+            iconSize: 18.sp,
+          ),
+          SizedBox(width: 8.w),
           MicroserviceChatIcon(
             serviceName: 'Invoices',
             sourceContext: 'invoices',
