@@ -17,6 +17,8 @@ import 'bill_receipt_deeplink.dart';
 import 'chat_media_bubble.dart';
 import 'chat_media_input_bar.dart';
 import 'chat_receipt_card.dart';
+import 'chat_receipt_card_v2.dart';
+import 'chat_pin_prompt_card.dart';
 import 'quick_action_chips.dart';
 
 class MicroserviceChatContent extends StatefulWidget {
@@ -362,6 +364,40 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
     );
   }
 
+  /// Render the generic ReceiptCard V2 payload (single dict or list).
+  /// See chat_services_shared/receipt_protocol.py for the schema.
+  Widget _buildReceiptCardV2(dynamic payload) {
+    if (payload is List) {
+      return ChatReceiptCardV2List(payloads: payload);
+    }
+    if (payload is Map) {
+      return ChatReceiptCardV2(payload: Map<String, dynamic>.from(payload));
+    }
+    return const SizedBox.shrink();
+  }
+
+  /// Render the PIN-prompt card. On successful PIN verification it
+  /// rounds-trips the verification token back via the cubit's
+  /// submitPinVerification method so the agent's bound callback tool
+  /// fires with the token (NOT the raw PIN).
+  Widget _buildPinPromptCard(Map<String, dynamic> payload) {
+    final callbackIntent = payload['callback_intent']?.toString() ?? '';
+    final callbackArgsRaw = payload['callback_args'];
+    final callbackArgs = callbackArgsRaw is Map
+        ? Map<String, dynamic>.from(callbackArgsRaw)
+        : <String, dynamic>{};
+    return ChatPinPromptCard(
+      payload: payload,
+      onPinVerified: (verificationToken) async {
+        await context.read<MicroserviceChatCubit>().submitPinVerification(
+              verificationToken: verificationToken,
+              callbackIntent: callbackIntent,
+              callbackArgs: callbackArgs,
+            );
+      },
+    );
+  }
+
   /// Safely parse receipt_data and build a ChatReceiptCard.
   /// Returns SizedBox.shrink() if the data is malformed or not a valid map.
   Widget _buildReceiptCard(dynamic receiptData) {
@@ -501,6 +537,22 @@ class _MicroserviceChatContentState extends State<MicroserviceChatContent>
                   // Inline receipt card for successful transfers (lazy — PDF generated on tap)
                   if (!isUser && message.metadata?['receipt_data'] != null)
                     _buildReceiptCard(message.metadata!['receipt_data']),
+                  // ReceiptCard V2 — generic shape emitted by
+                  // chat_services_shared/receipt_protocol.py. Single
+                  // dict OR list (batch transfer produces N cards).
+                  if (!isUser && message.metadata?['receipt_card'] != null)
+                    _buildReceiptCardV2(message.metadata!['receipt_card']),
+                  // PinPromptIntent — money-moving tools emit this
+                  // when they need the user's PIN. The card opens the
+                  // native TransactionPinMixin modal; on success the
+                  // cubit rounds-trips the verification token back to
+                  // the agent so the raw PIN never enters chat context.
+                  if (!isUser && message.metadata?['pin_prompt'] is Map)
+                    _buildPinPromptCard(
+                      Map<String, dynamic>.from(
+                        message.metadata!['pin_prompt'] as Map,
+                      ),
+                    ),
                   // "Open full receipt" deep-link under any bill purchase.
                   if (!isUser &&
                       message.metadata?['bill_type'] is String &&

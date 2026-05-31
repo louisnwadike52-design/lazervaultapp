@@ -191,6 +191,13 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
                 .toList(growable: false);
             final billType = _entities['last_bill_type'] as String?;
             final lastPaymentId = _entities['last_payment_id'] as String?;
+            // New chat protocol — pin_prompt + receipt_card sentinels
+            // from chat_services_shared/protocol_emit.py. Direct gRPC
+            // path doesn't carry top-level metadata so we read straight
+            // off entities under the sentinel keys. Strip them so the
+            // next round-trip doesn't re-send.
+            final pinPrompt = _entities.remove('_pin_prompt_pending');
+            final receiptCard = _entities.remove('_receipt_card_pending');
 
             final messageMetadata = <String, dynamic>{};
             if (receiptData is Map<String, dynamic>) {
@@ -205,6 +212,14 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
             }
             if (lastPaymentId != null && lastPaymentId.isNotEmpty) {
               messageMetadata['last_payment_id'] = lastPaymentId;
+            }
+            if (pinPrompt is Map) {
+              messageMetadata['pin_prompt'] =
+                  Map<String, dynamic>.from(pinPrompt);
+            }
+            if (receiptCard != null) {
+              messageMetadata['receipt_card'] = receiptCard;
+              _invalidateTransferRelatedCaches();
             }
 
             final botMessage = MicroserviceChatMessageEntity(
@@ -252,6 +267,9 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
               .toList(growable: false);
           final billType = responseEntities['last_bill_type'] as String?;
           final lastPaymentId = responseEntities['last_payment_id'] as String?;
+          // New chat protocol — pin_prompt + receipt_card sentinels.
+          final pinPrompt = responseEntities.remove('_pin_prompt_pending');
+          final receiptCard = responseEntities.remove('_receipt_card_pending');
 
           final messageMetadata = <String, dynamic>{};
           if (receiptData is Map<String, dynamic>) {
@@ -267,6 +285,14 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
           if (lastPaymentId != null && lastPaymentId.isNotEmpty) {
             messageMetadata['last_payment_id'] = lastPaymentId;
           }
+          if (pinPrompt is Map) {
+            messageMetadata['pin_prompt'] =
+                Map<String, dynamic>.from(pinPrompt);
+          }
+          if (receiptCard != null) {
+            messageMetadata['receipt_card'] = receiptCard;
+            _invalidateTransferRelatedCaches();
+          }
 
           final botMessage = MicroserviceChatMessageEntity(
             text: chatResponse.response,
@@ -277,6 +303,151 @@ class MicroserviceChatCubit extends Cubit<MicroserviceChatState> {
           _currentMessages.add(botMessage);
 
           emit(MicroserviceChatMessageSuccess(messages: List.from(_currentMessages)));
+        },
+      );
+    } finally {
+      _isSending = false;
+    }
+  }
+
+  /// Round-trip a PIN verification token back to the agent after the
+  /// user tapped through the native modal (PinPromptIntent protocol).
+  ///
+  /// Used by the chat-pin-prompt-card widget. The raw PIN never enters
+  /// the LLM context — the native modal hands us a single-use token
+  /// that the chat-*-service's bound callback tool consumes via
+  /// `extract_verification_token` and spends on the saga's
+  /// /verify-pincode + execute endpoints.
+  ///
+  /// On the direct gRPC path the token + intent + args ride along in
+  /// `entities` so the agent's tool reads them out of
+  /// accumulated_entities. On the Python gateway path the gateway
+  /// already moves these from request.metadata into outbound entities
+  /// (see chat-agent-gateway/main.py).
+  Future<void> submitPinVerification({
+    required String verificationToken,
+    required String callbackIntent,
+    Map<String, dynamic> callbackArgs = const {},
+  }) async {
+    if (verificationToken.isEmpty || _isSending) return;
+    _isSending = true;
+    try {
+      final authState = authCubit.state;
+      if (authState is! AuthenticationSuccess) return;
+
+      // No user bubble for the PIN submission — the user already
+      // tapped through a native modal; another bubble would clutter.
+      emit(MicroserviceChatMessageLoading(messages: List.from(_currentMessages)));
+
+      final locale = serviceLocator<LocaleManager>().currentLocale;
+
+      // Inject the protocol fields into the cubit's entities map so
+      // the direct path (which forwards entities) carries them.
+      final outboundEntities = <String, dynamic>{
+        ..._entities,
+        'pin_verification_token': verificationToken,
+        'pin_callback_intent': callbackIntent,
+        'pin_callback_args': callbackArgs,
+      };
+
+      if (isDirect && directMessageUseCase != null) {
+        final result = await directMessageUseCase!(
+          message: '__pin_verified__', // sentinel — agent recognises this
+          sessionId: _sessionId,
+          userId: authState.profile.user.id,
+          accessToken: '',
+          sourceContext: sourceContext,
+          entities: outboundEntities,
+          accountId: '',
+          userCountry: authState.profile.user.country ?? '',
+          currency: authState.profile.user.currency ?? '',
+          language: 'en',
+          locale: locale,
+        );
+        if (isClosed) return;
+        result.fold(
+          (failure) {
+            emit(MicroserviceChatMessageError(
+              errorMessage: failure.message,
+              messages: List.from(_currentMessages),
+            ));
+          },
+          (chatResponse) {
+            // Re-use the same extraction path the regular sendMessage
+            // walks — emit a bot message with extracted metadata.
+            _entities = Map<String, dynamic>.from(chatResponse.entities);
+            final receiptData = _entities.remove('_receipt_data');
+            final receiptCard = _entities.remove('_receipt_card_pending');
+            final pinPrompt = _entities.remove('_pin_prompt_pending');
+            final messageMetadata = <String, dynamic>{};
+            if (receiptData is Map<String, dynamic>) {
+              messageMetadata['receipt_data'] = receiptData;
+              _invalidateTransferRelatedCaches();
+            }
+            if (receiptCard != null) {
+              messageMetadata['receipt_card'] = receiptCard;
+              _invalidateTransferRelatedCaches();
+            }
+            if (pinPrompt is Map) {
+              messageMetadata['pin_prompt'] =
+                  Map<String, dynamic>.from(pinPrompt);
+            }
+            final botMessage = MicroserviceChatMessageEntity(
+              text: chatResponse.response,
+              isUser: false,
+              timestamp: DateTime.now(),
+              serviceRoutedTo: chatResponse.serviceRoutedTo,
+              metadata: messageMetadata.isEmpty ? null : messageMetadata,
+            );
+            _currentMessages.add(botMessage);
+            emit(MicroserviceChatMessageSuccess(
+              messages: List.from(_currentMessages),
+            ));
+          },
+        );
+        return;
+      }
+
+      // Python gateway fallback path — sendMessageUseCase doesn't
+      // accept entities today, so the token rides via the gateway's
+      // request.metadata bridge (see chat-agent-gateway/main.py which
+      // moves metadata.pin_verification_token into outbound entities).
+      final result = await sendMessageUseCase(
+        message: '__pin_verified__',
+        sessionId: _sessionId,
+        userId: authState.profile.user.id,
+        accessToken: '',
+        sourceContext: sourceContext,
+        language: 'en',
+        locale: locale,
+      );
+      if (isClosed) return;
+      result.fold(
+        (failure) {
+          emit(MicroserviceChatMessageError(
+            errorMessage: failure.message,
+            messages: List.from(_currentMessages),
+          ));
+        },
+        (chatResponse) {
+          final responseEntities =
+              Map<String, dynamic>.from(chatResponse.entities);
+          final receiptCard = responseEntities.remove('_receipt_card_pending');
+          final messageMetadata = <String, dynamic>{};
+          if (receiptCard != null) {
+            messageMetadata['receipt_card'] = receiptCard;
+            _invalidateTransferRelatedCaches();
+          }
+          final botMessage = MicroserviceChatMessageEntity(
+            text: chatResponse.response,
+            isUser: false,
+            timestamp: DateTime.now(),
+            metadata: messageMetadata.isEmpty ? null : messageMetadata,
+          );
+          _currentMessages.add(botMessage);
+          emit(MicroserviceChatMessageSuccess(
+            messages: List.from(_currentMessages),
+          ));
         },
       );
     } finally {
