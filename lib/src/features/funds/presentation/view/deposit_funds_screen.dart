@@ -17,6 +17,13 @@ import 'package:lazervault/src/features/funds/presentation/widgets/pay_by_transf
 import 'package:lazervault/src/features/funds/presentation/widgets/recurring_access_toggle.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/directpay_authorization_sheet.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/directpay_progress_bottomsheet.dart';
+// Beam mandate widgets — single canonical mandate UX shared between the
+// move_money (Beam) feature and deposits. Mandates are per-(user,
+// linked_account) so the same row backs both flows; reusing the Beam
+// MandateCubit + bottom-sheet keeps the UX identical and avoids
+// per-feature drift.
+import 'package:lazervault/src/features/move_money/cubit/mandate_cubit.dart';
+import 'package:lazervault/src/features/move_money/presentation/widgets/mandate_setup_bottomsheet.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:lazervault/src/features/widgets/service_voice_button.dart';
@@ -255,6 +262,10 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       providers: [
         BlocProvider(create: (_) => serviceLocator<DepositCubit>()),
         BlocProvider.value(value: serviceLocator<OpenBankingCubit>()),
+        // MandateCubit is registered as a singleton in injection_container —
+        // sharing it across Beam + deposits + linked-accounts keeps a
+        // single source of truth for mandate state (the in-cubit cache).
+        BlocProvider.value(value: serviceLocator<MandateCubit>()),
       ],
       child: BlocConsumer<AuthenticationCubit, AuthenticationState>(
         listener: (context, authState) {
@@ -892,11 +903,18 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       // Update progress to initiating stage
       _progressController.updateStage(DirectPayStage.initiating);
 
-      // For all currencies (including NGN), initiate the deposit after linking
-      // The Mono Connect SDK only LINKS the account - we must call InitiateDeposit
-      // to trigger the Mono DirectPay API which debits the user's bank
-      debugPrint('[Deposit] Calling _proceedWithMonoDeposit with linkedAccountId: $_linkedAccountId');
-      _proceedWithMonoDeposit(context);
+      // If the user opted in to recurring access on the toggle, offer the
+      // Beam-pattern mandate setup BEFORE proceeding with the first deposit.
+      // Same canonical bottom sheet the move_money feature uses — single
+      // mandate row backs both flows. User can opt in (CreateMandate +
+      // open authorization URL) or "Not Now" (fall through to one-time
+      // DirectPay for this deposit).
+      if (_useRecurringAccess) {
+        _offerMandateSetupThenProceed(context, state);
+      } else {
+        debugPrint('[Deposit] Calling _proceedWithMonoDeposit (one-time DirectPay)');
+        _proceedWithMonoDeposit(context);
+      }
     } else if (state is DepositInitiated) {
       // Deposit initiated - check if DirectPay authorization is needed
       final deposit = state.deposit;
@@ -1805,6 +1823,68 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     }
 
     return null;
+  }
+
+  /// Offer the Beam-pattern mandate setup sheet right after the user's
+  /// Mono Connect linking completes. Reuses the canonical
+  /// move_money/mandate_setup_bottomsheet so the UX is identical across
+  /// Beam (transfers) + deposits. After the sheet closes — whether the
+  /// user enabled the mandate or chose "Not Now" — we proceed with the
+  /// underlying deposit so the user gets value from this session even
+  /// when they decline recurring access.
+  Future<void> _offerMandateSetupThenProceed(
+    BuildContext context,
+    AccountLinked state,
+  ) async {
+    // Dismiss the progress sheet briefly so the mandate sheet has a
+    // clean stage (re-shown after the user decides).
+    if (_isProgressSheetShown && Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+      _isProgressSheetShown = false;
+    }
+
+    final authState = context.read<AuthenticationCubit>().state;
+    final userId = authState is AuthenticationSuccess ? authState.profile.user.id : '';
+    final user = authState is AuthenticationSuccess ? authState.profile.user : null;
+
+    bool enabled = false;
+    try {
+      enabled = await showMandateSetupBottomSheet(
+        context: context,
+        linkedAccountId: state.account.id,
+        userId: userId,
+        bankName: state.account.bankName,
+        accountName: state.account.accountName,
+        userEmail: user?.email,
+        userName: user != null
+            ? '${user.firstName} ${user.lastName}'.trim()
+            : null,
+        // phone is captured by the backend MonoCustomer record on first
+        // mandate creation; we don't ship one from Flutter today.
+      );
+    } catch (e) {
+      debugPrint('[Deposit] MandateSetupBottomsheet error: $e');
+    }
+    debugPrint('[Deposit] MandateSetupBottomsheet returned: enabled=$enabled');
+
+    if (!mounted) return;
+
+    // Re-show the progress sheet for the (now-resumed) deposit flow.
+    final parsedAmount = double.tryParse(_amountController.text) ?? 0.0;
+    _progressController.show(
+      bankName: state.account.bankName,
+      amount: parsedAmount,
+      currency: _currency,
+    );
+    _showProgressBottomsheet(context);
+    _progressController.updateStage(DirectPayStage.initiating);
+
+    // Whether the user enabled the mandate or chose Not Now, kick off the
+    // deposit. If they enabled a mandate that needs e-mandate / signed
+    // authorization, the first deposit STILL uses DirectPay because the
+    // mandate isn't ready yet — that's fine, the next deposit will pick
+    // up the active mandate automatically.
+    _proceedWithMonoDeposit(context);
   }
 
   /// Proceed with deposit after account is linked
