@@ -859,9 +859,17 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       _linkedAccountId = null;
     });
 
-    // Navigate back
-    if (mounted && Navigator.canPop(context)) {
-      Navigator.of(context).pop();
+    // Pop back to the app root (the dashboard shell with the bottom nav).
+    // A bare Navigator.pop() only goes one level back — which is wherever
+    // the deposit screen was pushed from (a card-detail screen, etc.), NOT
+    // the dashboard. Get.until(isFirst) reliably returns to the root.
+    if (!mounted) return;
+    try {
+      Get.until((route) => route.isFirst);
+    } catch (_) {
+      if (Navigator.canPop(context)) {
+        Navigator.of(context).pop();
+      }
     }
   }
 
@@ -923,13 +931,22 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     // async gap + the DirectPay sheet teardown).
     final openBankingCubit = serviceLocator<OpenBankingCubit>();
 
-    // Poll up to ~12 times over ~36s. The DepositStatusUpdated listener
-    // advances/closes the sheet on a terminal status, so we stop early.
-    for (var attempt = 0; attempt < 12; attempt++) {
+    // Poll up to ~20 times over ~60s. The backend flips the deposit to
+    // `successful` shortly after crediting, but settlement bookkeeping can
+    // lag a few seconds, so we poll generously. The DepositStatusUpdated
+    // listener advances/closes the sheet on a terminal status; we stop
+    // early once that happens. Each iteration is guarded so a transient
+    // error (e.g. the progress controller disposed) doesn't kill the loop.
+    for (var attempt = 0; attempt < 20; attempt++) {
       if (!mounted) return;
-      // Stop once the sheet has reached a terminal stage.
-      final stage = _progressController.stage;
-      if (stage == DirectPayStage.success || stage == DirectPayStage.failed) {
+      try {
+        // Stop once the sheet has reached a terminal stage.
+        final stage = _progressController.stage;
+        if (stage == DirectPayStage.success || stage == DirectPayStage.failed) {
+          return;
+        }
+      } catch (_) {
+        // controller disposed → the flow already ended; stop polling.
         return;
       }
       await Future<void>.delayed(const Duration(seconds: 3));
@@ -937,12 +954,17 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       debugPrint('[Deposit] Polling deposit settlement (attempt ${attempt + 1}) id=$depositId');
       // Fire-and-forget; the cubit emits DepositStatusUpdated which the
       // listener handles.
-      openBankingCubit.checkDepositStatus(
-        depositId: depositId,
-        userId: userId,
-        accessToken: accessToken,
-      );
+      try {
+        openBankingCubit.checkDepositStatus(
+          depositId: depositId,
+          userId: userId,
+          accessToken: accessToken,
+        );
+      } catch (e) {
+        debugPrint('[Deposit] poll checkDepositStatus threw (continuing): $e');
+      }
     }
+    debugPrint('[Deposit] Polling budget exhausted for $depositId (no terminal status)');
   }
 
   /// Handle open banking state changes
@@ -1021,6 +1043,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     } else if (state is DepositStatusUpdated) {
       // Check deposit status
       final deposit = state.deposit;
+      debugPrint('[Deposit] DepositStatusUpdated: status=${deposit.status}');
       if (deposit.status == DepositStatus.successful) {
         // Deposit completed - refresh balances
         _refreshAccountBalances(context);
@@ -1035,6 +1058,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
           errorMessage: deposit.failureReason ?? 'The deposit could not be completed.',
         );
       }
+      // pending/processing → keep the sheet on "processing"; the poll
+      // continues until a terminal status arrives.
     } else if (state is OpenBankingError) {
       debugPrint('[Deposit] OpenBankingError: ${state.message}, operation: ${state.operation}');
       _progressController.updateStage(
