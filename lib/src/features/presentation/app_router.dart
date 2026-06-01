@@ -1295,11 +1295,24 @@ class AppRouter {
     GetPage(
       name: AppRoutes.depositFunds,
       page: () {
-        final args = Get.arguments as Map<String, dynamic>;
+        // Resolve the selected-card argument resiliently. Callers may pass
+        // it nested under `selectedCard` (the canonical shape) OR pass the
+        // card fields directly as the arguments map. A null/absent value
+        // must NOT reach the GetIt factory param (it's non-nullable and
+        // throws "Cannot use parameter value of type 'Null'"). Fall back to
+        // the args map itself, then to an empty map.
+        final rawArgs = Get.arguments;
+        final args = rawArgs is Map<String, dynamic>
+            ? rawArgs
+            : <String, dynamic>{};
+        final selectedCard = args['selectedCard'] is Map<String, dynamic>
+            ? args['selectedCard'] as Map<String, dynamic>
+            : args.isNotEmpty
+                ? args
+                : <String, dynamic>{};
         return BlocProvider(
           create: (_) => serviceLocator<DepositCubit>(),
-          child:
-              serviceLocator<DepositFundsScreen>(param1: args['selectedCard']),
+          child: serviceLocator<DepositFundsScreen>(param1: selectedCard),
         );
       },
       transition: Transition.leftToRightWithFade,

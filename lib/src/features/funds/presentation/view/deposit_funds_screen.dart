@@ -1135,6 +1135,18 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     );
   }
 
+  /// Safely coerce the selected-card balance to a double. The card map can
+  /// arrive with balance as a double, int, numeric string, or absent
+  /// entirely (e.g. when navigated to with a sparse card). Never let a null
+  /// or wrong-typed value crash `.toStringAsFixed`.
+  double _cardBalance() {
+    final raw = widget.selectedCard['balance'];
+    if (raw is double) return raw;
+    if (raw is int) return raw.toDouble();
+    if (raw is String) return double.tryParse(raw) ?? 0.0;
+    return 0.0;
+  }
+
   Widget _buildSelectedCardSummary() {
     return Container(
       padding: EdgeInsets.all(20.w),
@@ -1163,7 +1175,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                widget.selectedCard['accountType'],
+                widget.selectedCard['accountType']?.toString() ?? 'Account',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 16.sp,
@@ -1180,7 +1192,9 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Text(
-                  widget.selectedCard['accountNumber'],
+                  widget.selectedCard['accountNumber']?.toString() ??
+                      widget.selectedCard['account_number']?.toString() ??
+                      '••••',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 14.sp,
@@ -1192,7 +1206,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
           ),
           SizedBox(height: 20.h),
           Text(
-            "$_currencySymbol${widget.selectedCard['balance'].toStringAsFixed(2)}",
+            "$_currencySymbol${_cardBalance().toStringAsFixed(2)}",
             style: TextStyle(
               color: Colors.white,
               fontSize: 32.sp,
@@ -1209,15 +1223,15 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
                   vertical: 6.h,
                 ),
                 decoration: BoxDecoration(
-                  color: widget.selectedCard['isUp']
+                  color: (widget.selectedCard['isUp'] == true)
                       ? Colors.green.withValues(alpha: 0.2)
                       : Colors.red.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Text(
-                  widget.selectedCard['trend'],
+                  widget.selectedCard['trend']?.toString() ?? '—',
                   style: TextStyle(
-                    color: widget.selectedCard['isUp']
+                    color: (widget.selectedCard['isUp'] == true)
                         ? Colors.green[300]
                         : Colors.red[300],
                     fontSize: 12.sp,

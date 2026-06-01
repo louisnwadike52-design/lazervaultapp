@@ -88,7 +88,7 @@ String get adminGatewayHttp =>
 String get bankingHttp =>
     const String.fromEnvironment('BANKING_HTTP', defaultValue: '').isNotEmpty
         ? const String.fromEnvironment('BANKING_HTTP')
-        : 'http://$grpcHost:8073';
+        : 'http://$grpcHost:8082';
 
 const String testPassword = r'Password1\$';
 const String monoSandboxBvn = '12345678901';
@@ -418,14 +418,21 @@ void main() {
 
       // Navigate directly to the deposit screen with the NGN account
       // pre-selected (skip onboarding/dashboard nav which can be flaky
-      // on a fresh emulator). The screen takes a `selectedCard` arg.
+      // on a fresh emulator). The router reads the card from the
+      // `selectedCard` key (canonical shape) and passes it to the
+      // DepositFundsScreen GetIt factory param.
       Get.toNamed(AppRoutes.depositFunds, arguments: {
-        'id': session.ngnAccountId,
-        'accountNumber': '0000000000',
-        'accountName': 'Deposit Tester',
-        'bankName': 'LazerVault',
-        'balance': 0.0,
-        'currency': 'NGN',
+        'selectedCard': {
+          'id': session.ngnAccountId,
+          'accountNumber': '0000000000',
+          'accountName': 'Deposit Tester',
+          'accountType': 'NGN Wallet',
+          'bankName': 'LazerVault',
+          'balance': 0.0,
+          'currency': 'NGN',
+          'isUp': true,
+          'trend': '+0.0%',
+        },
       });
       await tester.pumpAndSettle(const Duration(seconds: 1));
       await _settle(tester, medSettle);
