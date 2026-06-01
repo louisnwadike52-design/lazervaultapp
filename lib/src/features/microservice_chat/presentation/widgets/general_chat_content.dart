@@ -505,6 +505,65 @@ class _GeneralChatContentState extends State<GeneralChatContent>
     );
   }
 
+  /// Pacing banner under any assistant message that returned from
+  /// the gateway-level tool_rate_limiter. Soft tone — this isn't a
+  /// failure, just a deliberate slow-down on money-move dispatch.
+  Widget _buildRateLimitBanner(int retryAfterSeconds) {
+    return Container(
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: const Color(0xFFFB923C).withValues(alpha: 0.6),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFB923C).withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: const Icon(
+              Icons.timer_outlined,
+              size: 16,
+              color: Color(0xFFFB923C),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Pacing money-move requests',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Try again in about $retryAfterSeconds seconds. This protects you from accidental double-sends.',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.7),
+                    fontSize: 11,
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPinPromptCard(Map<String, dynamic> payload) {
     final callbackIntent = payload['callback_intent']?.toString() ?? '';
     final callbackArgsRaw = payload['callback_args'];
@@ -686,6 +745,24 @@ class _GeneralChatContentState extends State<GeneralChatContent>
                   if (!isUser && message.metadata?['llm_error_code'] is String)
                     _buildLlmErrorBanner(
                       message.metadata!['llm_error_code'] as String,
+                    ),
+                  // Gateway-level tool rate-limit banner — surfaces when
+                  // the chat-agent-gateway's tool_rate_limiter snubbed
+                  // the dispatch (e.g. 4th money-move within 60s). The
+                  // assistant text already carries the "pacing money-move
+                  // requests" message; this is the chrome that ties it
+                  // to a clear retry timer.
+                  if (!isUser &&
+                      (message.metadata?['service_response']
+                              is Map<String, dynamic>) &&
+                      (message.metadata!['service_response']
+                              as Map<String, dynamic>)['rate_limited'] ==
+                          true)
+                    _buildRateLimitBanner(
+                      (message.metadata!['service_response']
+                              as Map<String, dynamic>)['retry_after_seconds']
+                          as int? ??
+                          30,
                     ),
                   if (message.serviceRoutedTo != null && message.serviceRoutedTo != 'gateway') ...[
                     const SizedBox(height: 4),
