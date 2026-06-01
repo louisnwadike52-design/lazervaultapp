@@ -900,6 +900,12 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
   /// Poll the deposit's settlement status until it reaches a terminal state
   /// or we exhaust the budget. The backend's GetDepositStatus verifies with
   /// Mono + credits on poll, so this drives both settlement AND the UI.
+  ///
+  /// IMPORTANT: capture the OpenBankingCubit + auth values SYNCHRONOUSLY up
+  /// front. After the first `await`, the DirectPay sheet's context is gone
+  /// and `context.read<OpenBankingCubit>()` throws "Could not find the
+  /// correct Provider". The cubit is a GetIt singleton, so resolve it from
+  /// serviceLocator instead of via the widget tree.
   Future<void> _pollDepositSettlement(BuildContext context) async {
     final depositId = _currentDepositId;
     if (depositId == null || depositId.isEmpty) {
@@ -912,6 +918,10 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     final userId =
         authState is AuthenticationSuccess ? authState.profile.user.id : '';
     if (accessToken.isEmpty || userId.isEmpty) return;
+
+    // Resolve the singleton cubit once (NOT through context — survives the
+    // async gap + the DirectPay sheet teardown).
+    final openBankingCubit = serviceLocator<OpenBankingCubit>();
 
     // Poll up to ~12 times over ~36s. The DepositStatusUpdated listener
     // advances/closes the sheet on a terminal status, so we stop early.
@@ -927,12 +937,11 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       debugPrint('[Deposit] Polling deposit settlement (attempt ${attempt + 1}) id=$depositId');
       // Fire-and-forget; the cubit emits DepositStatusUpdated which the
       // listener handles.
-      // ignore: use_build_context_synchronously
-      context.read<OpenBankingCubit>().checkDepositStatus(
-            depositId: depositId,
-            userId: userId,
-            accessToken: accessToken,
-          );
+      openBankingCubit.checkDepositStatus(
+        depositId: depositId,
+        userId: userId,
+        accessToken: accessToken,
+      );
     }
   }
 
