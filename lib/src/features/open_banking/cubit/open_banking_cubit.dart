@@ -396,6 +396,8 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
     String? narration,
     required String accessToken,
     bool useRecurringAccess = false, // false = DirectPay (one-time), true = Mandate (recurring)
+    String? currency, // destination wallet currency (e.g. NGN)
+    String? countryCode, // derived country (e.g. NG) — routes NGN to Mono
   }) async {
     if (isClosed) return;
     emit(OpenBankingLoading());
@@ -415,6 +417,8 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
           narration: narration,
           idempotencyKey: idempotencyKey,
           useRecurringAccess: useRecurringAccess,
+          currency: currency,
+          countryCode: countryCode,
         );
       } else {
         // Fallback to REST

@@ -271,6 +271,8 @@ class OpenBankingGrpcDataSource {
     String? narration,
     String? idempotencyKey,
     bool useRecurringAccess = false, // false = DirectPay (one-time), true = Mandate
+    String? currency, // destination wallet currency
+    String? countryCode, // derived country — routes NGN to Mono
   }) async {
     return await RetryPolicy.critical.execute(
       () async {
@@ -282,6 +284,8 @@ class OpenBankingGrpcDataSource {
           narration: narration ?? 'Deposit to LazerVault',
           idempotencyKey: idempotencyKey ?? _uuid.v4(),
           useRecurringAccess: useRecurringAccess,
+          countryCode: countryCode ?? '',
+          currency: currency ?? '',
         );
 
         try {

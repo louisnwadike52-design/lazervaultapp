@@ -1157,6 +1157,28 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     );
   }
 
+  /// Map a wallet currency to its ISO country code so the deposit request
+  /// carries a country (NGN → NG → Mono). Mirrors the backend
+  /// countryCodeForCurrency. Defaults to NG (the primary Mono market).
+  String _countryCodeForCurrency(String currency) {
+    switch (currency.toUpperCase()) {
+      case 'NGN':
+        return 'NG';
+      case 'GHS':
+        return 'GH';
+      case 'KES':
+        return 'KE';
+      case 'ZAR':
+        return 'ZA';
+      case 'USD':
+        return 'US';
+      case 'GBP':
+        return 'GB';
+      default:
+        return 'NG';
+    }
+  }
+
   /// Safely coerce the selected-card balance to a double. The card map can
   /// arrive with balance as a double, int, numeric string, or absent
   /// entirely (e.g. when navigated to with a sparse card). Never let a null
@@ -1987,7 +2009,10 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
 
     debugPrint('[Deposit] Initiating deposit: userId=$userId, linkedAccountId=$_linkedAccountId, destAccountId=$destinationAccountId, amount=$amount');
 
-    // Initiate deposit via open banking
+    // Initiate deposit via open banking. Pass the destination wallet's
+    // currency + derived country so the backend routes NGN → Mono instead
+    // of falling through to Flutterwave (which rejects an empty country
+    // with "country  is not supported for Flutterwave deposits").
     buildContext.read<OpenBankingCubit>().initiateDeposit(
       userId: userId,
       linkedAccountId: _linkedAccountId!,
@@ -1995,6 +2020,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       amount: amount,
       narration: 'Deposit from $_selectedBank to LazerVault',
       accessToken: accessToken,
+      currency: _currency,
+      countryCode: _countryCodeForCurrency(_currency),
     );
   }
 
