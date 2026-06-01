@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 
 import 'package:lazervault/src/features/dashboard/managers/voice_setup_manager.dart';
+import 'package:lazervault/src/features/voice/cubit/per_service_voice_settings_cubit.dart';
 import 'package:lazervault/src/features/voice/guards/voice_setup_guard.dart';
 import 'package:lazervault/src/features/voice/managers/voice_activation_manager.dart';
+import 'package:lazervault/src/features/voice/screens/per_service_voice_settings_screen.dart';
 
 import '../voice_session/widgets/voice_command_sheet.dart';
 
@@ -67,16 +70,46 @@ class ServiceVoiceButton extends StatelessWidget {
           width: 1,
         ),
       ),
-      child: IconButton(
-        icon: Icon(
-          Icons.mic_rounded,
-          color: iconColor ?? Colors.white,
-          size: iconSz,
+      // Tap → voice command sheet. Long-press → per-service voice
+      // settings (language, voice, prompt hint). Long-press is a
+      // discoverable shortcut for users who want to configure WITHOUT
+      // going through the mic interaction first (Phase 9 user-facing
+      // direct route to PerServiceVoiceSettingsScreen).
+      child: GestureDetector(
+        onLongPress: () => _openVoiceSettings(context),
+        child: IconButton(
+          icon: Icon(
+            Icons.mic_rounded,
+            color: iconColor ?? Colors.white,
+            size: iconSz,
+          ),
+          onPressed: () => _showVoiceCommandSheet(context),
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+          tooltip: 'Voice commands for $serviceName (long-press for settings)',
         ),
-        onPressed: () => _showVoiceCommandSheet(context),
-        padding: EdgeInsets.zero,
-        constraints: const BoxConstraints(),
-        tooltip: 'Voice commands for $serviceName',
+      ),
+    );
+  }
+
+  void _openVoiceSettings(BuildContext context) {
+    // Direct path to PerServiceVoiceSettingsScreen without going through
+    // the command sheet. Same construction the gear icon inside
+    // VoiceCommandSheet uses — single canonical entry path keeps
+    // settings cubit lifecycle predictable.
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => BlocProvider<PerServiceVoiceSettingsCubit>(
+          create: (_) {
+            final cubit = PerServiceVoiceSettingsCubit(
+              serviceName: serviceName,
+              storage: SharedPrefsPerServiceVoiceSettingsStorage(),
+            );
+            cubit.load();
+            return cubit;
+          },
+          child: PerServiceVoiceSettingsScreen(serviceName: serviceName),
+        ),
       ),
     );
   }

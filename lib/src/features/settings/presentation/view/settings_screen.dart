@@ -27,6 +27,8 @@ import 'package:lazervault/src/features/settings/presentation/view/card_settings
 import 'package:lazervault/src/features/statements/presentation/view/download_statements_screen.dart';
 import 'package:lazervault/src/features/statements/presentation/cubit/statement_cubit.dart';
 import 'package:lazervault/src/features/account_cards_summary/cubit/account_cards_summary_cubit.dart';
+import 'package:lazervault/src/features/voice/cubit/per_service_voice_settings_cubit.dart';
+import 'package:lazervault/src/features/voice/screens/per_service_voice_settings_screen.dart';
 import 'package:lazervault/src/features/authentication/cubit/email_verification_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/phone_verification_cubit.dart';
 import 'package:lazervault/src/features/authentication/presentation/views/email_verification_screen.dart';
@@ -138,6 +140,15 @@ class _SettingsViewState extends State<_SettingsView> {
 
                       // Preferences Section
                       _buildPreferencesSection(state),
+
+                      SizedBox(height: 16.h),
+
+                      // Voice & Chat Assistant Section — Phase 9 direct
+                      // entry to PerServiceVoiceSettingsScreen for every
+                      // money-moving feature. Complements the mic-long-press
+                      // shortcut on ServiceVoiceButton + the gear icon in
+                      // VoiceCommandSheet.
+                      _buildVoiceAssistantSection(),
 
                       SizedBox(height: 16.h),
 
@@ -860,6 +871,61 @@ class _SettingsViewState extends State<_SettingsView> {
     );
   }
 
+  Widget _buildVoiceAssistantSection() {
+    // Money-moving features get a direct settings entry (Phase 9).
+    // Each tile routes to PerServiceVoiceSettingsScreen pinned to that
+    // service — same screen the VoiceCommandSheet gear icon opens, same
+    // screen the long-press shortcut on ServiceVoiceButton opens. Three
+    // entry paths all converge on one canonical settings UI.
+    const services = <_VoiceServiceTile>[
+      _VoiceServiceTile(slug: 'transfers',   label: 'Transfers',     icon: Icons.swap_horiz_rounded),
+      _VoiceServiceTile(slug: 'crypto',      label: 'Crypto',        icon: Icons.currency_bitcoin),
+      _VoiceServiceTile(slug: 'exchange',    label: 'Currency Exchange', icon: Icons.swap_calls_rounded),
+      _VoiceServiceTile(slug: 'insurance',   label: 'Insurance',     icon: Icons.shield_outlined),
+      _VoiceServiceTile(slug: 'expenses',    label: 'Expenses',      icon: Icons.receipt_long_outlined),
+      _VoiceServiceTile(slug: 'business',    label: 'Business',      icon: Icons.business_center_outlined),
+      _VoiceServiceTile(slug: 'investments', label: 'Investments',   icon: Icons.trending_up_rounded),
+      _VoiceServiceTile(slug: 'banking',     label: 'Banking',       icon: Icons.account_balance_outlined),
+    ];
+
+    return _buildSection(
+      title: 'Voice & Chat Assistant',
+      icon: Icons.record_voice_over_outlined,
+      children: [
+        for (final s in services)
+          _buildSettingsTile(
+            icon: s.icon,
+            title: s.label,
+            subtitle: 'Language, voice, and prompt hints',
+            trailing: Icon(
+              Icons.arrow_forward_ios,
+              size: 16.sp,
+              color: const Color(0xFF9CA3AF),
+            ),
+            onTap: () => _openVoiceSettingsFor(s.slug),
+          ),
+      ],
+    );
+  }
+
+  void _openVoiceSettingsFor(String serviceName) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => BlocProvider<PerServiceVoiceSettingsCubit>(
+          create: (_) {
+            final cubit = PerServiceVoiceSettingsCubit(
+              serviceName: serviceName,
+              storage: SharedPrefsPerServiceVoiceSettingsStorage(),
+            );
+            cubit.load();
+            return cubit;
+          },
+          child: PerServiceVoiceSettingsScreen(serviceName: serviceName),
+        ),
+      ),
+    );
+  }
+
   Widget _buildHelpSupportSection() {
     return _buildSection(
       title: 'Help & Support',
@@ -1142,4 +1208,15 @@ class _SettingsViewState extends State<_SettingsView> {
       },
     );
   }
+}
+
+class _VoiceServiceTile {
+  final String slug;
+  final String label;
+  final IconData icon;
+  const _VoiceServiceTile({
+    required this.slug,
+    required this.label,
+    required this.icon,
+  });
 }
