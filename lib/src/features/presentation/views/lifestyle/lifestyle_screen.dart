@@ -3,6 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:shimmer/shimmer.dart';
 
 class LifeStyleScreen extends StatefulWidget {
@@ -425,6 +427,24 @@ class _LifeStyleScreenState extends State<LifeStyleScreen> {
           padding: EdgeInsets.only(top: 20.h),
           child: Row(
             children: [
+              // Per-service voice + chat icons — pin every session
+              // opened from the Lifestyle tab to chat-lifestyle-
+              // service via DIRECT_ROUTES['lifestyle']. Same
+              // canonical pattern used across all other dashboard
+              // surfaces.
+              ServiceVoiceButton(
+                serviceName: 'lifestyle',
+                iconColor: Colors.white,
+                backgroundColor: const Color(0xFF1A237E),
+              ),
+              SizedBox(width: 4.w),
+              MicroserviceChatIcon(
+                serviceName: 'Lifestyle',
+                sourceContext: 'lifestyle',
+                icon: Icons.chat_bubble_outline,
+                iconColor: Colors.white,
+              ),
+              SizedBox(width: 4.w),
               IconButton(
                 icon: Stack(
                   children: [

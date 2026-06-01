@@ -13,7 +13,9 @@ import 'package:lazervault/src/features/statistics/cubit/budget_state.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
 import 'package:lazervault/src/features/open_banking/domain/entities/linked_bank_account.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/service_categories.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/src/generated/accounts.pb.dart' as accounts_pb;
 import 'package:lazervault/core/utils/currency_formatter.dart';
 import 'package:lazervault/core/services/injection_container.dart';
@@ -405,6 +407,23 @@ class _StatisticsState extends State<Statistics> {
                 ),
               ],
             ),
+            // Per-service voice + chat icons — pin every session
+            // opened from the Statistics tab to chat-statistics-service
+            // via DIRECT_ROUTES['statistics']. Mirrors the canonical
+            // pair used across all other dashboard quick services.
+            ServiceVoiceButton(
+              serviceName: 'statistics',
+              iconColor: const Color(0xFF10B981),
+              backgroundColor: const Color(0xFF10B981),
+            ),
+            SizedBox(width: 8.w),
+            MicroserviceChatIcon(
+              serviceName: 'Statistics',
+              sourceContext: 'statistics',
+              icon: Icons.chat_bubble_outline,
+              iconColor: const Color(0xFF10B981),
+            ),
+            SizedBox(width: 8.w),
             _buildAccountSelector(),
           ],
         ),

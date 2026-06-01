@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/core/config/mono_config.dart';
 import 'package:lazervault/src/features/ai_scan_to_pay/presentation/widgets/mono_connect_widget.dart';
@@ -191,6 +193,24 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
           ),
         ),
         centerTitle: true,
+        actions: [
+          // Per-service voice + chat icons — Beam moves money so
+          // pins the session to chat-transfers-service via
+          // DIRECT_ROUTES['transfers']. Canonical pattern.
+          ServiceVoiceButton(
+            serviceName: 'transfers',
+            iconColor: const Color(0xFF3B82F6),
+            backgroundColor: const Color(0xFF3B82F6),
+          ),
+          SizedBox(width: 8.w),
+          MicroserviceChatIcon(
+            serviceName: 'Beam',
+            sourceContext: 'transfers',
+            icon: Icons.chat_bubble_outline,
+            iconColor: const Color(0xFF3B82F6),
+          ),
+          SizedBox(width: 12.w),
+        ],
       ),
       body: MultiBlocListener(
         listeners: [
