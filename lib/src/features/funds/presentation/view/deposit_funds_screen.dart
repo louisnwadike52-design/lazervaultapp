@@ -57,6 +57,10 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
   // Linked bank account ID (if user has linked an account)
   String? _linkedAccountId;
 
+  // The in-flight deposit id, captured on DepositInitiated so we can poll
+  // its settlement status after DirectPay authorization.
+  String? _currentDepositId;
+
   // DirectPay vs Mandate toggle (NGN accounts)
   // false = DirectPay (one-time authorization per transaction)
   // true = Mandate (authorize once for recurring access)
@@ -878,14 +882,57 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       debugPrint('[DirectPay] Authorization successful');
       // Update progress to processing stage
       _progressController.updateStage(DirectPayStage.processing);
-      // Refresh balances after successful authorization
-      _refreshAccountBalances(context);
+      // Poll the deposit settlement status. The backend verifies with Mono
+      // and credits on poll (so this works even when Mono's webhook can't
+      // reach us — local dev, or a delayed webhook in prod). Each poll
+      // emits DepositStatusUpdated which advances the progress sheet to
+      // success → onSuccess → dashboard redirect.
+      _pollDepositSettlement(context);
     } else {
       debugPrint('[DirectPay] Authorization failed: ${result.errorMessage}');
       _progressController.updateStage(
         DirectPayStage.failed,
         errorMessage: result.errorMessage ?? 'Payment authorization was cancelled',
       );
+    }
+  }
+
+  /// Poll the deposit's settlement status until it reaches a terminal state
+  /// or we exhaust the budget. The backend's GetDepositStatus verifies with
+  /// Mono + credits on poll, so this drives both settlement AND the UI.
+  Future<void> _pollDepositSettlement(BuildContext context) async {
+    final depositId = _currentDepositId;
+    if (depositId == null || depositId.isEmpty) {
+      debugPrint('[Deposit] _pollDepositSettlement: no deposit id; skipping');
+      return;
+    }
+    final authState = context.read<AuthenticationCubit>().state;
+    final accessToken =
+        authState is AuthenticationSuccess ? authState.profile.session.accessToken : '';
+    final userId =
+        authState is AuthenticationSuccess ? authState.profile.user.id : '';
+    if (accessToken.isEmpty || userId.isEmpty) return;
+
+    // Poll up to ~12 times over ~36s. The DepositStatusUpdated listener
+    // advances/closes the sheet on a terminal status, so we stop early.
+    for (var attempt = 0; attempt < 12; attempt++) {
+      if (!mounted) return;
+      // Stop once the sheet has reached a terminal stage.
+      final stage = _progressController.stage;
+      if (stage == DirectPayStage.success || stage == DirectPayStage.failed) {
+        return;
+      }
+      await Future<void>.delayed(const Duration(seconds: 3));
+      if (!mounted) return;
+      debugPrint('[Deposit] Polling deposit settlement (attempt ${attempt + 1}) id=$depositId');
+      // Fire-and-forget; the cubit emits DepositStatusUpdated which the
+      // listener handles.
+      // ignore: use_build_context_synchronously
+      context.read<OpenBankingCubit>().checkDepositStatus(
+            depositId: depositId,
+            userId: userId,
+            accessToken: accessToken,
+          );
     }
   }
 
@@ -941,6 +988,10 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       // Deposit initiated - check if DirectPay authorization is needed
       final deposit = state.deposit;
       debugPrint('[Deposit] Deposit initiated: ${deposit.id}');
+      // Remember the deposit id so we can poll its settlement status after
+      // DirectPay authorization (the backend settles on poll when Mono's
+      // webhook can't reach us).
+      _currentDepositId = deposit.id;
 
       if (deposit.requiresAuthorization &&
           deposit.paymentUrl != null &&
@@ -953,8 +1004,10 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
           deposit.paymentId ?? deposit.id,
         );
       } else {
-        // No authorization needed (mandate already approved or instant)
+        // No authorization needed (mandate already approved or instant).
+        // Poll for settlement so the UI advances + dashboard redirects.
         _progressController.updateStage(DirectPayStage.processing);
+        _pollDepositSettlement(context);
       }
     } else if (state is DepositStatusUpdated) {
       // Check deposit status
