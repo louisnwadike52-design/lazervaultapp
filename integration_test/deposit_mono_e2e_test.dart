@@ -436,6 +436,16 @@ void main() {
       });
       await tester.pumpAndSettle(const Duration(seconds: 1));
       await _settle(tester, medSettle);
+      // Hold on the deposit screen so it stays visible on the emulator
+      // long enough to capture / observe (env-gated; default off).
+      final holdSecs =
+          int.tryParse(const String.fromEnvironment('DEPOSIT_SCREEN_HOLD_SECONDS', defaultValue: '0')) ?? 0;
+      if (holdSecs > 0) {
+        for (var s = 0; s < holdSecs; s++) {
+          await tester.pump(const Duration(seconds: 1));
+          await Future<void>.delayed(const Duration(seconds: 1));
+        }
+      }
     });
 
     // Assertion 1 — deposit screen actually rendered (look for the

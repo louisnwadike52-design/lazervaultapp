@@ -915,6 +915,28 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         debugPrint('[Deposit] Calling _proceedWithMonoDeposit (one-time DirectPay)');
         _proceedWithMonoDeposit(context);
       }
+    } else if (state is AccountLinkedWithMandate) {
+      // Account linked AND a mandate was auto-created (GSM for personal
+      // accounts). Without this branch the progress sheet hangs at
+      // "Linking Account" forever — the cubit emits AccountLinkedWithMandate
+      // (NOT AccountLinked) when auto-mandate is on, and the old listener
+      // only handled AccountLinked.
+      debugPrint('[Deposit] Account linked WITH mandate: ${state.account.id}, '
+          'mandateFailed=${state.mandateFailed}, mandate=${state.mandate?.id}');
+      setState(() {
+        _linkedAccountId = state.account.id;
+      });
+      _progressController.updateStage(DirectPayStage.initiating);
+
+      if (state.mandateFailed) {
+        // Mandate creation failed but the account IS linked — fall back to
+        // a one-time DirectPay deposit so the user isn't blocked.
+        debugPrint('[Deposit] Mandate failed (${state.mandateError}); '
+            'falling back to one-time DirectPay');
+      }
+      // Whether the mandate succeeded (frictionless future debits) or
+      // failed (this deposit uses DirectPay), proceed with the deposit now.
+      _proceedWithMonoDeposit(context);
     } else if (state is DepositInitiated) {
       // Deposit initiated - check if DirectPay authorization is needed
       final deposit = state.deposit;
