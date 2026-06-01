@@ -168,25 +168,24 @@ import 'package:lazervault/src/features/group_account/domain/entities/group_enti
 import 'package:lazervault/src/features/insurance/presentation/cubit/insurance_cubit.dart';
 import 'package:lazervault/src/features/insurance/presentation/view/insurance_list_screen.dart';
 import 'package:lazervault/src/features/insurance/presentation/view/insurance_policy_detail_view.dart';
-import 'package:lazervault/src/features/insurance/presentation/view/edit_insurance_policy_view.dart';
 import 'package:lazervault/src/features/insurance/presentation/view/insurance_payment_screen.dart';
 import 'package:lazervault/src/features/insurance/presentation/view/insurance_payment_confirmation_screen.dart';
-import 'package:lazervault/src/features/insurance/presentation/view/create_claim_screen.dart';
 import 'package:lazervault/src/features/insurance/domain/entities/insurance_entity.dart';
 import 'package:lazervault/src/features/insurance/domain/entities/insurance_payment_entity.dart';
-import 'package:lazervault/src/features/insurance/domain/entities/insurance_product_entity.dart';
 import 'package:lazervault/src/features/insurance/domain/entities/insurance_claim_entity.dart';
-import 'package:lazervault/src/features/insurance/presentation/view/insurance_terms_screen.dart';
 import 'package:lazervault/src/features/insurance/presentation/view/insurance_guide_screen.dart';
 import 'package:lazervault/src/features/insurance/presentation/view/insurance_faq_screen.dart';
 import 'package:lazervault/src/features/insurance/presentation/view/insurance_contact_screen.dart';
 import 'package:lazervault/src/features/insurance/presentation/view/insurance_documents_screen.dart';
 import 'package:lazervault/src/features/insurance/presentation/view/insurance_claim_tracking_screen.dart';
 import 'package:lazervault/src/features/insurance/presentation/view/insurance_how_it_works_screen.dart';
-import 'package:lazervault/src/features/insurance/presentation/view/mycover_management_screen.dart';
 import 'package:lazervault/src/features/insurance/presentation/view/file_credit_life_claim_screen.dart';
-import 'package:lazervault/src/features/insurance/presentation/view/mycover_notification_prefs_screen.dart';
 import 'package:lazervault/src/features/insurance/presentation/view/insurance_all_policies_screen.dart';
+import 'package:lazervault/src/features/insurance/presentation/view/my_claims_screen.dart';
+import 'package:lazervault/src/features/insurance/presentation/view/purchase_history_screen.dart';
+import 'package:lazervault/src/features/insurance/presentation/view/purchase_detail_user_screen.dart';
+import 'package:lazervault/src/features/insurance/presentation/cubit/my_claims_cubit.dart';
+import 'package:lazervault/src/features/insurance/presentation/cubit/purchase_history_cubit.dart';
 
 // Airtime imports
 import 'package:lazervault/src/features/airtime/presentation/cubit/airtime_cubit.dart';
@@ -234,12 +233,19 @@ import 'package:lazervault/src/features/autosave/presentation/views/autosave_tra
 
 // Batch Transfer imports
 import 'package:lazervault/src/features/funds/cubit/batch_transfer_cubit.dart';
+import 'package:lazervault/src/features/funds/cubit/saved_batches_cubit.dart';
+import 'package:lazervault/src/features/funds/cubit/saved_batch_detail_cubit.dart';
+import 'package:lazervault/src/features/funds/cubit/batch_receipt_cubit.dart';
 import 'package:lazervault/src/features/funds/presentation/view/batch_transfer/batch_transfer_screen.dart';
 import 'package:lazervault/src/features/funds/presentation/view/batch_transfer/batch_transfer_review_screen.dart';
 import 'package:lazervault/src/features/funds/presentation/view/batch_transfer/batch_transfer_processing_screen.dart';
 import 'package:lazervault/src/features/funds/presentation/view/batch_transfer/batch_transfer_receipt_screen.dart';
 import 'package:lazervault/src/features/funds/presentation/view/batch_transfer/batch_transfer_history_screen.dart';
 import 'package:lazervault/src/features/funds/presentation/view/batch_transfer/batch_transfer_detail_screen.dart';
+import 'package:lazervault/src/features/funds/presentation/view/batch_transfer/saved_batches_screen.dart';
+import 'package:lazervault/src/features/funds/presentation/view/batch_transfer/saved_batch_detail_screen.dart';
+import 'package:lazervault/src/features/funds/presentation/view/batch_transfer/batch_receipt_detailed_screen.dart';
+import 'package:lazervault/src/features/funds/presentation/view/batch_transfer/batch_item_receipt_screen.dart';
 import 'package:lazervault/src/features/funds/cubit/recurring_transfer_cubit.dart';
 import 'package:lazervault/src/features/funds/presentation/view/recurring_transfers/recurring_transfers_list_screen.dart';
 import 'package:lazervault/src/features/funds/presentation/view/recurring_transfers/recurring_transfer_detail_screen.dart';
@@ -452,6 +458,7 @@ import 'package:lazervault/src/features/subscriptions/presentation/screens/subsc
 
 // Currency Exchange imports (BLoC/Cubit)
 import 'package:lazervault/src/features/currency_exchange/presentation/cubit/exchange_cubit.dart';
+import 'package:lazervault/src/features/currency_exchange/presentation/cubit/exchange_prediction_cubit.dart';
 import 'package:lazervault/src/features/currency_exchange/presentation/views/exchange_home_screen.dart';
 import 'package:lazervault/src/features/currency_exchange/presentation/views/exchange_processing_screen.dart';
 import 'package:lazervault/src/features/currency_exchange/presentation/views/exchange_recipient_screen.dart';
@@ -510,6 +517,11 @@ import 'package:lazervault/src/features/customers/presentation/views/customer_li
 import 'package:lazervault/src/features/customers/presentation/views/add_customer_screen.dart';
 import 'package:lazervault/src/features/customers/presentation/views/customer_details_screen.dart';
 import 'package:lazervault/src/features/customers/presentation/views/edit_customer_screen.dart';
+import 'package:lazervault/src/features/expenses/domain/entities/expense_entity.dart';
+import 'package:lazervault/src/features/expenses/presentation/cubit/expense_cubit.dart';
+import 'package:lazervault/src/features/expenses/presentation/views/expenses_list_screen.dart';
+import 'package:lazervault/src/features/expenses/presentation/views/add_expense_screen.dart';
+import 'package:lazervault/src/features/expenses/presentation/views/expense_details_screen.dart';
 import 'package:lazervault/src/features/customers/domain/entities/customer_entity.dart';
 
 // Inventory Enhanced Imports (Business)
@@ -566,6 +578,7 @@ import 'package:lazervault/src/features/family_account/presentation/views/family
 import 'package:lazervault/src/features/family_account/presentation/views/family_edit_member_limits_screen.dart';
 import 'package:lazervault/src/features/family_account/presentation/views/family_accounts_list_screen.dart';
 import 'package:lazervault/src/features/family_account/presentation/views/family_pending_invitations_screen.dart';
+import 'package:lazervault/src/features/family_account/presentation/views/family_sent_invitations_screen.dart';
 
 // Transaction History imports (Redesigned)
 import 'package:lazervault/core/types/unified_transaction.dart';
@@ -1319,8 +1332,15 @@ class AppRouter {
     ),
     GetPage(
       name: AppRoutes.exchangeRecipient,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<ExchangeCubit>(),
+      page: () => MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => serviceLocator<ExchangeCubit>()),
+          // Informational, READ-ONLY exchange success prediction. Lives at the
+          // route so the recipient screen can drive it from its own state once
+          // bank + account are known, and so the widget never has to resolve
+          // its cubit out of the GetIt container at build time.
+          BlocProvider(create: (_) => serviceLocator<ExchangePredictionCubit>()),
+        ],
         child: const ExchangeRecipientScreen(),
       ),
       transition: Transition.rightToLeft,
@@ -1739,17 +1759,9 @@ class AppRouter {
       },
       transition: Transition.rightToLeft,
     ),
-    GetPage(
-      name: AppRoutes.insuranceEdit,
-      page: () {
-        final insurance = Get.arguments as Insurance;
-        return BlocProvider(
-          create: (_) => serviceLocator<InsuranceCubit>(),
-          child: EditInsurancePolicyView(insurance: insurance),
-        );
-      },
-      transition: Transition.rightToLeft,
-    ),
+    // AppRoutes.insuranceEdit removed: MyCover.ai has no policy-update
+    // endpoint, so the "Edit Policy" screen wrote to local state only and
+    // misled users. Renewal / cancellation are the supported actions.
     GetPage(
       name: AppRoutes.insurancePayment,
       page: () {
@@ -1779,44 +1791,15 @@ class AppRouter {
       },
       transition: Transition.rightToLeft,
     ),
-    GetPage(
-      name: AppRoutes.createClaim,
-      page: () {
-        final insuranceId = Get.arguments as String;
-        return BlocProvider(
-          create: (_) => serviceLocator<InsuranceCubit>(),
-          child: CreateClaimScreen(insuranceId: insuranceId),
-        );
-      },
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
-      name: AppRoutes.insuranceTerms,
-      page: () {
-        final arg = Get.arguments;
-        if (arg is InsuranceProduct) {
-          return InsuranceTermsScreen(product: arg);
-        }
-        final insurance = arg as Insurance;
-        return InsuranceTermsScreen(
-          product: InsuranceProduct(
-            id: insurance.id,
-            name: insurance.type.displayName,
-            description: insurance.description ?? '',
-            category: InsuranceProductCategory.fromString(insurance.type.name),
-            providerName: insurance.provider,
-            providerLogo: insurance.providerLogo,
-            minPremium: insurance.premiumAmount,
-            maxPremium: insurance.premiumAmount,
-            currency: insurance.currency,
-            benefits: insurance.coverageDetails.entries
-                .map((e) => '${e.key}: ${e.value}')
-                .toList(),
-          ),
-        );
-      },
-      transition: Transition.rightToLeft,
-    ),
+    // AppRoutes.createClaim removed: claims are filed via the
+    // provider's hosted webview (MyCoverClaimBottomSheet) so they always
+    // carry the customer_id + policy_id payload MyCover needs to tie
+    // the claim back to the user. The legacy in-app form let users
+    // create orphan claims with no customer scope.
+    // AppRoutes.insuranceTerms removed: terms are now shown in an
+    // in-app webview bottom sheet (InsuranceTermsBottomSheet) sourced
+    // from the admin-configured terms link. The legacy hardcoded
+    // route + screen has been deleted.
     GetPage(
       name: AppRoutes.insuranceGuide,
       page: () => const InsuranceGuideScreen(),
@@ -1857,14 +1840,6 @@ class AppRouter {
       transition: Transition.rightToLeft,
     ),
     GetPage(
-      name: AppRoutes.insuranceManagement,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<InsuranceCubit>(),
-        child: const MyCoverManagementScreen(),
-      ),
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
       name: AppRoutes.insuranceCreditLifeClaim,
       page: () {
         final args = Get.arguments as Map<String, dynamic>;
@@ -1879,20 +1854,36 @@ class AppRouter {
       transition: Transition.rightToLeft,
     ),
     GetPage(
-      name: AppRoutes.insuranceNotificationPrefs,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<InsuranceCubit>(),
-        child: const MyCoverNotificationPrefsScreen(),
-      ),
-      transition: Transition.rightToLeft,
-    ),
-
-    GetPage(
       name: AppRoutes.insuranceAllPolicies,
       page: () => BlocProvider(
         create: (_) => serviceLocator<InsuranceCubit>(),
         child: const InsuranceAllPoliciesScreen(),
       ),
+      transition: Transition.rightToLeft,
+    ),
+    // Phase D — user-facing operational APIs
+    GetPage(
+      name: AppRoutes.insuranceMyClaims,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<MyClaimsCubit>(),
+        child: const MyClaimsScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.insurancePurchaseHistory,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<PurchaseHistoryCubit>(),
+        child: const PurchaseHistoryScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.insurancePurchaseDetail,
+      page: () {
+        final id = (Get.arguments as String?) ?? '';
+        return PurchaseDetailUserScreen(purchaseId: id);
+      },
       transition: Transition.rightToLeft,
     ),
 
@@ -2236,6 +2227,42 @@ GetPage(
       page: () => BlocProvider(
         create: (_) => serviceLocator<BatchTransferCubit>(),
         child: const BatchTransferDetailScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+
+    // Saved Batches (drafts) routes
+    GetPage(
+      name: AppRoutes.savedBatches,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<SavedBatchesCubit>(),
+        child: const SavedBatchesScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.savedBatchDetail,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<SavedBatchDetailCubit>(),
+        child: const SavedBatchDetailScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+
+    // Detailed batch receipt + per-item drilldown
+    GetPage(
+      name: AppRoutes.batchReceiptDetailed,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<BatchReceiptCubit>(),
+        child: const BatchReceiptDetailedScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.batchItemReceipt,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<BatchReceiptCubit>(),
+        child: const BatchItemReceiptScreen(),
       ),
       transition: Transition.rightToLeft,
     ),
@@ -3109,6 +3136,21 @@ GetPage(
       transition: Transition.rightToLeft,
     ),
     GetPage(
+      name: AppRoutes.familySentInvitations,
+      page: () {
+        // Optional familyId narrows the inviter-side history to a single
+        // family; otherwise the screen aggregates across every family
+        // the user admins. Caller passes via Get.arguments.
+        final args = Get.arguments as Map<String, dynamic>?;
+        final familyId = args?['familyId'] as String?;
+        return BlocProvider(
+          create: (_) => serviceLocator<FamilyAccountCubit>(),
+          child: FamilySentInvitationsScreen(familyId: familyId),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
       name: AppRoutes.familySetup,
       page: () => BlocProvider(
         create: (_) => serviceLocator<FamilyAccountCubit>(),
@@ -3240,8 +3282,6 @@ GetPage(
           create: (_) => serviceLocator<KYCCubit>(),
           child: IdVerificationScreen(
             targetTier: args['targetTier'] as KYCTier? ?? KYCTier.tier2,
-            preferredIdType: args['preferredIdType'] as IDType?,
-            countryCode: args['countryCode'] as String?,
           ),
         );
       },
@@ -4090,6 +4130,46 @@ GetPage(
         return BlocProvider(
           create: (_) => serviceLocator<CustomerCubit>(),
           child: EditCustomerScreen(customer: customer),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+
+    // ================== Expenses Routes (Business — Phase 5) ==================
+    GetPage(
+      name: AppRoutes.expenses,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<ExpenseCubit>(),
+        child: const ExpensesListScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.addExpense,
+      page: () => BlocProvider(
+        create: (_) => serviceLocator<ExpenseCubit>(),
+        child: const AddExpenseScreen(),
+      ),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.expenseDetails,
+      page: () {
+        final expense = Get.arguments as ExpenseEntity;
+        return BlocProvider(
+          create: (_) => serviceLocator<ExpenseCubit>(),
+          child: ExpenseDetailsScreen(expense: expense),
+        );
+      },
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.editExpense,
+      page: () {
+        final expense = Get.arguments as ExpenseEntity;
+        return BlocProvider(
+          create: (_) => serviceLocator<ExpenseCubit>(),
+          child: AddExpenseScreen(existing: expense),
         );
       },
       transition: Transition.rightToLeft,

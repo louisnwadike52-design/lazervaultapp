@@ -29,6 +29,7 @@ import 'secure_wallet_screen.dart';
 import 'pro_exchange_screen.dart';
 import 'learn_earn_screen.dart';
 import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import '../widgets/crypto_shimmer_loading.dart';
 import '../widgets/watchlist_manager_sheet.dart';
 import '../../../../generated/crypto.pb.dart' show PriceAlert;
@@ -164,18 +165,15 @@ class _CryptoScreenState extends State<CryptoScreen> {
           // Action buttons row
           Row(
             children: [
-              // Voice Command Button
-              Container(
-                height: 40.h,
-                width: 40.w,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1F1F1F),
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                child: IconButton(
-                  icon: Icon(Icons.mic, color: const Color.fromARGB(255, 78, 3, 208), size: 20.sp),
-                  onPressed: _showVoiceInputBottomSheet,
-                ),
+              // Canonical per-service voice button — pins the
+              // session to crypto via DIRECT_ROUTES['crypto'] →
+              // SERVICE_AGENTS['crypto'] → chat-investments-service.
+              // Replaces the previous custom IconButton mic that
+              // bypassed per-service routing.
+              ServiceVoiceButton(
+                serviceName: 'crypto',
+                iconColor: const Color.fromARGB(255, 78, 3, 208),
+                backgroundColor: const Color.fromARGB(255, 78, 3, 208),
               ),
               SizedBox(width: 12.w),
               // Chat Button

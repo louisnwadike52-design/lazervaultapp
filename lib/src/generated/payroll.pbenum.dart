@@ -303,3 +303,76 @@ class SupplierStatus extends $pb.ProtobufEnum {
   const SupplierStatus._($core.int v, $core.String n) : super(v, n);
 }
 
+class ExpenseCategory extends $pb.ProtobufEnum {
+  static const ExpenseCategory EXPENSE_CATEGORY_OFFICE = ExpenseCategory._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'EXPENSE_CATEGORY_OFFICE');
+  static const ExpenseCategory EXPENSE_CATEGORY_TRAVEL = ExpenseCategory._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'EXPENSE_CATEGORY_TRAVEL');
+  static const ExpenseCategory EXPENSE_CATEGORY_MEALS = ExpenseCategory._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'EXPENSE_CATEGORY_MEALS');
+  static const ExpenseCategory EXPENSE_CATEGORY_MARKETING = ExpenseCategory._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'EXPENSE_CATEGORY_MARKETING');
+  static const ExpenseCategory EXPENSE_CATEGORY_UTILITIES = ExpenseCategory._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'EXPENSE_CATEGORY_UTILITIES');
+  static const ExpenseCategory EXPENSE_CATEGORY_PAYROLL = ExpenseCategory._(5, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'EXPENSE_CATEGORY_PAYROLL');
+  static const ExpenseCategory EXPENSE_CATEGORY_PROFESSIONAL = ExpenseCategory._(6, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'EXPENSE_CATEGORY_PROFESSIONAL');
+  static const ExpenseCategory EXPENSE_CATEGORY_SOFTWARE = ExpenseCategory._(7, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'EXPENSE_CATEGORY_SOFTWARE');
+  static const ExpenseCategory EXPENSE_CATEGORY_INVENTORY = ExpenseCategory._(8, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'EXPENSE_CATEGORY_INVENTORY');
+  static const ExpenseCategory EXPENSE_CATEGORY_TAXES = ExpenseCategory._(9, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'EXPENSE_CATEGORY_TAXES');
+  static const ExpenseCategory EXPENSE_CATEGORY_OTHER = ExpenseCategory._(10, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'EXPENSE_CATEGORY_OTHER');
+
+  static const $core.List<ExpenseCategory> values = <ExpenseCategory> [
+    EXPENSE_CATEGORY_OFFICE,
+    EXPENSE_CATEGORY_TRAVEL,
+    EXPENSE_CATEGORY_MEALS,
+    EXPENSE_CATEGORY_MARKETING,
+    EXPENSE_CATEGORY_UTILITIES,
+    EXPENSE_CATEGORY_PAYROLL,
+    EXPENSE_CATEGORY_PROFESSIONAL,
+    EXPENSE_CATEGORY_SOFTWARE,
+    EXPENSE_CATEGORY_INVENTORY,
+    EXPENSE_CATEGORY_TAXES,
+    EXPENSE_CATEGORY_OTHER,
+  ];
+
+  static final $core.Map<$core.int, ExpenseCategory> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static ExpenseCategory? valueOf($core.int value) => _byValue[value];
+
+  const ExpenseCategory._($core.int v, $core.String n) : super(v, n);
+}
+
+class ExpenseStatus extends $pb.ProtobufEnum {
+  static const ExpenseStatus EXPENSE_STATUS_PENDING = ExpenseStatus._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'EXPENSE_STATUS_PENDING');
+  static const ExpenseStatus EXPENSE_STATUS_APPROVED = ExpenseStatus._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'EXPENSE_STATUS_APPROVED');
+  static const ExpenseStatus EXPENSE_STATUS_REIMBURSED = ExpenseStatus._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'EXPENSE_STATUS_REIMBURSED');
+  static const ExpenseStatus EXPENSE_STATUS_REJECTED = ExpenseStatus._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'EXPENSE_STATUS_REJECTED');
+
+  static const $core.List<ExpenseStatus> values = <ExpenseStatus> [
+    EXPENSE_STATUS_PENDING,
+    EXPENSE_STATUS_APPROVED,
+    EXPENSE_STATUS_REIMBURSED,
+    EXPENSE_STATUS_REJECTED,
+  ];
+
+  static final $core.Map<$core.int, ExpenseStatus> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static ExpenseStatus? valueOf($core.int value) => _byValue[value];
+
+  const ExpenseStatus._($core.int v, $core.String n) : super(v, n);
+}
+
+class ExpensePaymentMethod extends $pb.ProtobufEnum {
+  static const ExpensePaymentMethod EXPENSE_PAYMENT_METHOD_CASH = ExpensePaymentMethod._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'EXPENSE_PAYMENT_METHOD_CASH');
+  static const ExpensePaymentMethod EXPENSE_PAYMENT_METHOD_CARD = ExpensePaymentMethod._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'EXPENSE_PAYMENT_METHOD_CARD');
+  static const ExpensePaymentMethod EXPENSE_PAYMENT_METHOD_BANK_TRANSFER = ExpensePaymentMethod._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'EXPENSE_PAYMENT_METHOD_BANK_TRANSFER');
+  static const ExpensePaymentMethod EXPENSE_PAYMENT_METHOD_CHEQUE = ExpensePaymentMethod._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'EXPENSE_PAYMENT_METHOD_CHEQUE');
+  static const ExpensePaymentMethod EXPENSE_PAYMENT_METHOD_OTHER = ExpensePaymentMethod._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'EXPENSE_PAYMENT_METHOD_OTHER');
+
+  static const $core.List<ExpensePaymentMethod> values = <ExpensePaymentMethod> [
+    EXPENSE_PAYMENT_METHOD_CASH,
+    EXPENSE_PAYMENT_METHOD_CARD,
+    EXPENSE_PAYMENT_METHOD_BANK_TRANSFER,
+    EXPENSE_PAYMENT_METHOD_CHEQUE,
+    EXPENSE_PAYMENT_METHOD_OTHER,
+  ];
+
+  static final $core.Map<$core.int, ExpensePaymentMethod> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static ExpensePaymentMethod? valueOf($core.int value) => _byValue[value];
+
+  const ExpensePaymentMethod._($core.int v, $core.String n) : super(v, n);
+}
+

@@ -155,6 +155,8 @@ import 'package:lazervault/src/features/currency_exchange/domain/exchange_featur
 import 'package:lazervault/src/features/currency_exchange/domain/repositories/i_exchange_repository.dart';
 import 'package:lazervault/src/features/currency_exchange/presentation/cubit/exchange_cubit.dart';
 import 'package:lazervault/src/features/currency_exchange/presentation/cubit/dashboard_rates_cubit.dart';
+import 'package:lazervault/src/features/currency_exchange/presentation/cubit/exchange_prediction_cubit.dart';
+import 'package:lazervault/src/features/currency_exchange/data/datasources/exchange_prediction_remote_data_source.dart';
 import 'package:lazervault/src/features/voice_enrollment/data/voice_enrollment_repository_impl.dart';
 import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/cb_currency_exchange_screen.dart';
 import 'package:lazervault/src/features/presentation/views/cb_currency_exchange/currency_deposit_screen.dart';
@@ -192,6 +194,7 @@ import 'package:lazervault/src/generated/withdraw.pbgrpc.dart';
 
 import 'package:lazervault/src/features/funds/data/datasources/payments_transfer_data_source.dart';
 import 'package:lazervault/src/features/funds/cubit/transfer_cubit.dart';
+import 'package:lazervault/src/features/funds/cubit/transfer_prediction_cubit.dart';
 
 // Batch Transfer imports
 import 'package:lazervault/src/features/funds/data/datasources/batch_transfer_remote_data_source.dart';
@@ -199,6 +202,14 @@ import 'package:lazervault/src/features/funds/data/repositories/batch_transfer_r
 import 'package:lazervault/src/features/funds/domain/repositories/i_batch_transfer_repository.dart';
 import 'package:lazervault/src/features/funds/domain/usecases/initiate_batch_transfer_usecase.dart';
 import 'package:lazervault/src/features/funds/cubit/batch_transfer_cubit.dart';
+import 'package:lazervault/src/features/funds/data/datasources/saved_batch_remote_data_source.dart';
+import 'package:lazervault/src/features/funds/data/repositories/saved_batch_repository_impl.dart';
+import 'package:lazervault/src/features/funds/domain/repositories/i_saved_batch_repository.dart';
+import 'package:lazervault/src/features/funds/cubit/saved_batches_cubit.dart';
+import 'package:lazervault/src/features/funds/cubit/saved_batch_detail_cubit.dart';
+import 'package:lazervault/src/features/funds/cubit/batch_receipt_cubit.dart';
+import 'package:lazervault/src/generated/payments_saved_batches.pbgrpc.dart'
+    as saved_batches_grpc;
 
 // Recurring Transfer imports
 import 'package:lazervault/src/features/funds/data/datasources/recurring_transfer_data_source.dart';
@@ -326,6 +337,8 @@ import 'package:lazervault/src/features/crypto/data/repositories/crypto_reposito
 import 'package:lazervault/src/features/crypto/domain/repositories/crypto_repository.dart';
 import 'package:lazervault/src/features/crypto/domain/entities/crypto_entity.dart';
 import 'package:lazervault/src/features/crypto/cubit/crypto_cubit.dart';
+import 'package:lazervault/src/features/crypto/cubit/crypto_config_cubit.dart';
+import 'package:lazervault/src/features/crypto/cubit/crypto_withdraw_cubit.dart';
 import 'package:lazervault/src/features/crypto/presentation/view/crypto_screen.dart' as CryptoFeature;
 import 'package:lazervault/src/features/crypto/presentation/view/crypto_chart_details_screen.dart';
 import 'package:lazervault/src/features/crypto/presentation/view/crypto_detail_screen.dart';
@@ -563,6 +576,8 @@ import 'package:lazervault/src/features/insurance/data/repositories/insurance_re
 import 'package:lazervault/src/features/insurance/domain/repositories/insurance_repository.dart';
 import 'package:lazervault/src/features/insurance/presentation/cubit/insurance_cubit.dart';
 import 'package:lazervault/src/features/insurance/presentation/cubit/create_policy_cubit.dart';
+import 'package:lazervault/src/features/insurance/presentation/cubit/my_claims_cubit.dart';
+import 'package:lazervault/src/features/insurance/presentation/cubit/purchase_history_cubit.dart';
 import 'package:lazervault/src/features/insurance/presentation/view/insurance_list_screen.dart';
 
 // Lock Funds Feature
@@ -661,6 +676,9 @@ import 'package:lazervault/src/features/inventory/presentation/cubit/inventory_c
 import 'package:lazervault/src/features/customers/data/repositories/customer_repository_grpc_impl.dart';
 import 'package:lazervault/src/features/customers/domain/repositories/customer_repository.dart';
 import 'package:lazervault/src/features/customers/presentation/cubit/customer_cubit.dart';
+import 'package:lazervault/src/features/expenses/data/repositories/expense_repository_grpc_impl.dart';
+import 'package:lazervault/src/features/expenses/domain/repositories/expense_repository.dart';
+import 'package:lazervault/src/features/expenses/presentation/cubit/expense_cubit.dart';
 // End Customer Imports
 
 // Tax Management Imports (Business)
@@ -1215,6 +1233,24 @@ Future<void> init() async {
     repository: serviceLocator<IExchangeRepository>(),
   ));
 
+  // Exchange-recipient trust / prediction (informational, READ-ONLY).
+  // Mirrors the transfer prediction shape: the data source returns null on
+  // any failure (UNIMPLEMENTED, timeout, parse error) so the cubit lands on
+  // ExchangePredictionUnavailable and the host widget renders a neutral
+  // card — never blocking the transfer. See
+  // currency_exchange/data/datasources/exchange_prediction_remote_data_source.dart
+  // for the pending backend contract.
+  serviceLocator.registerLazySingleton<IExchangePredictionRemoteDataSource>(
+    () => ExchangePredictionRemoteDataSourceImpl(
+      client: serviceLocator<ExchangeServiceClient>(),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+    ),
+  );
+
+  serviceLocator.registerFactory(() => ExchangePredictionCubit(
+        dataSource: serviceLocator<IExchangePredictionRemoteDataSource>(),
+      ));
+
   // ================== Feature: Multi-Country ==================
 
   // gRPC Client - routes through core-gateway (default channel)
@@ -1483,6 +1519,11 @@ Future<void> init() async {
     mutationQueue: serviceLocator<MutationQueue>(),
   ));
 
+  // Informational, READ-ONLY transfer success prediction (non-blocking).
+  serviceLocator.registerFactory(() => TransferPredictionCubit(
+    paymentsTransferDataSource: serviceLocator<IPaymentsTransferDataSource>(),
+  ));
+
 
   // ================== Feature: Funds (Batch Transfer) ==================
 
@@ -1510,6 +1551,47 @@ Future<void> init() async {
     getBatchTransfersUseCase: serviceLocator<GetBatchTransfersUseCase>(),
     getBatchTransferDetailUseCase: serviceLocator<GetBatchTransferDetailUseCase>(),
   ));
+
+
+  // ================== Feature: Saved Batches (drafts) + Batch Receipts ==================
+
+  // gRPC client (saved-batches RPCs live on the same PaymentsService —
+  // see proto. Registered separately because the existing generated
+  // PaymentsServiceClient does not yet include these methods.)
+  serviceLocator
+      .registerLazySingleton<saved_batches_grpc.SavedBatchesClient>(
+    () => saved_batches_grpc.SavedBatchesClient(
+      serviceLocator<ClientChannel>(instanceName: 'transferChannel'),
+    ),
+  );
+
+  // Data source
+  serviceLocator.registerLazySingleton<ISavedBatchRemoteDataSource>(
+    () => SavedBatchRemoteDataSourceImpl(
+      serviceLocator<saved_batches_grpc.SavedBatchesClient>(),
+      serviceLocator<GrpcCallOptionsHelper>(),
+    ),
+  );
+
+  // Repository
+  serviceLocator.registerLazySingleton<ISavedBatchRepository>(
+    () => SavedBatchRepositoryImpl(
+        remoteDataSource: serviceLocator<ISavedBatchRemoteDataSource>()),
+  );
+
+  // Cubits (factories — each screen instance gets its own)
+  serviceLocator.registerFactory(
+    () => SavedBatchesCubit(
+        repository: serviceLocator<ISavedBatchRepository>()),
+  );
+  serviceLocator.registerFactory(
+    () => SavedBatchDetailCubit(
+        repository: serviceLocator<ISavedBatchRepository>()),
+  );
+  serviceLocator.registerFactory(
+    () => BatchReceiptCubit(
+        repository: serviceLocator<ISavedBatchRepository>()),
+  );
 
 
   // ================== Feature: Recurring Transfers ==================
@@ -1702,6 +1784,20 @@ Future<void> init() async {
     repository: serviceLocator<CryptoRepository>(),
   ));
 
+  // Crypto runtime config cubit — single source of truth for min orders,
+  // currency decimals, quick amounts, default spread, supported currencies.
+  // Lazy singleton so any screen can `read<CryptoConfigCubit>()` and get the
+  // same snapshot (PR5d.5).
+  serviceLocator.registerLazySingleton<CryptoConfigCubit>(() => CryptoConfigCubit(
+    client: serviceLocator<CryptoGrpcClient>(),
+  ));
+
+  // PR6 — Send-crypto cubit. Factory because each Send flow gets its own
+  // state machine; screens dispose on pop.
+  serviceLocator.registerFactory<CryptoWithdrawCubit>(() => CryptoWithdrawCubit(
+    client: serviceLocator<CryptoGrpcClient>(),
+  ));
+
 
   // ================== Feature: Multi-Asset (T-Bills, Mutual Funds, FX Quotes) ==================
 
@@ -1794,6 +1890,8 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton(() => SearchCrowdfundsUseCase(serviceLocator<CrowdfundRepository>()));
   serviceLocator.registerLazySingleton(() => UpdateCrowdfundUseCase(serviceLocator<CrowdfundRepository>()));
   serviceLocator.registerLazySingleton(() => DeleteCrowdfundUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() => CancelCrowdfundUseCase(serviceLocator<CrowdfundRepository>()));
+  serviceLocator.registerLazySingleton(() => ListCrowdfundRefundsUseCase(serviceLocator<CrowdfundRepository>()));
   serviceLocator.registerLazySingleton(() => MakeDonationUseCase(serviceLocator<CrowdfundRepository>()));
   serviceLocator.registerLazySingleton(() => GetCrowdfundDonationsUseCase(serviceLocator<CrowdfundRepository>()));
   serviceLocator.registerLazySingleton(() => GetUserDonationsUseCase(serviceLocator<CrowdfundRepository>()));
@@ -1827,6 +1925,8 @@ Future<void> init() async {
     searchCrowdfundsUseCase: serviceLocator<SearchCrowdfundsUseCase>(),
     updateCrowdfundUseCase: serviceLocator<UpdateCrowdfundUseCase>(),
     deleteCrowdfundUseCase: serviceLocator<DeleteCrowdfundUseCase>(),
+    cancelCrowdfundUseCase: serviceLocator<CancelCrowdfundUseCase>(),
+    listCrowdfundRefundsUseCase: serviceLocator<ListCrowdfundRefundsUseCase>(),
     makeDonationUseCase: serviceLocator<MakeDonationUseCase>(),
     getCrowdfundDonationsUseCase: serviceLocator<GetCrowdfundDonationsUseCase>(),
     getUserDonationsUseCase: serviceLocator<GetUserDonationsUseCase>(),
@@ -2731,6 +2831,7 @@ Future<void> init() async {
   serviceLocator.registerFactory<InsuranceCubit>(
     () => InsuranceCubit(
       repository: serviceLocator<InsuranceRepository>(),
+      wsService: serviceLocator<BalanceWebSocketService>(),
     ),
   );
 
@@ -2740,6 +2841,17 @@ Future<void> init() async {
       cacheManager: serviceLocator<SWRCacheManager>(),
       localeManager: serviceLocator<LocaleManager>(),
     ),
+  );
+
+  // Phase D — user-facing operational-API surfaces.
+  serviceLocator.registerFactory<MyClaimsCubit>(
+    () => MyClaimsCubit(
+      serviceLocator<InsuranceRepository>(),
+      wsService: serviceLocator<BalanceWebSocketService>(),
+    ),
+  );
+  serviceLocator.registerFactory<PurchaseHistoryCubit>(
+    () => PurchaseHistoryCubit(serviceLocator<InsuranceRepository>()),
   );
 
 
@@ -2999,6 +3111,8 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton(() => ProcessMemberContributionUseCase(serviceLocator<FamilyAccountRepository>()));
   serviceLocator.registerLazySingleton(() => SetupFamilyAccountUseCase(serviceLocator<FamilyAccountRepository>()));
   serviceLocator.registerLazySingleton(() => UpdateFundDistributionModeUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => GetMyInvitationHistoryUseCase(serviceLocator<FamilyAccountRepository>()));
+  serviceLocator.registerLazySingleton(() => GetSentInvitationsUseCase(serviceLocator<FamilyAccountRepository>()));
 
   // Blocs/Cubits
   serviceLocator.registerFactory<FamilyAccountCubit>(
@@ -3021,6 +3135,8 @@ Future<void> init() async {
       processMemberContribution: serviceLocator<ProcessMemberContributionUseCase>(),
       setupFamilyAccount: serviceLocator<SetupFamilyAccountUseCase>(),
       updateFundDistributionMode: serviceLocator<UpdateFundDistributionModeUseCase>(),
+      getMyInvitationHistory: serviceLocator<GetMyInvitationHistoryUseCase>(),
+      getSentInvitations: serviceLocator<GetSentInvitationsUseCase>(),
     ),
   );
 
@@ -3340,6 +3456,28 @@ Future<void> init() async {
   // Blocs/Cubits
   serviceLocator.registerFactory(() => CustomerCubit(
     repository: serviceLocator<CustomerRepository>(),
+  ));
+
+  // ================== Feature: Expenses (Business — Phase 5) ==================
+
+  // ExpenseServiceClient - via Business Gateway (shared connection)
+  serviceLocator.registerLazySingleton<payroll_pb.ExpenseServiceClient>(
+    () => payroll_pb.ExpenseServiceClient(
+      serviceLocator<ClientChannel>(instanceName: 'businessChannel'),
+    ),
+  );
+
+  // Repository
+  serviceLocator.registerLazySingleton<ExpenseRepository>(
+    () => ExpenseRepositoryGrpcImpl(
+      client: serviceLocator<payroll_pb.ExpenseServiceClient>(),
+      callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
+    ),
+  );
+
+  // Cubit
+  serviceLocator.registerFactory(() => ExpenseCubit(
+    repository: serviceLocator<ExpenseRepository>(),
   ));
 
   // ================== Feature: Tax Management (Business) ==================

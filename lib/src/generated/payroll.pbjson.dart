@@ -211,6 +211,53 @@ const SupplierStatus$json = const {
 
 /// Descriptor for `SupplierStatus`. Decode as a `google.protobuf.EnumDescriptorProto`.
 final $typed_data.Uint8List supplierStatusDescriptor = $convert.base64Decode('Cg5TdXBwbGllclN0YXR1cxIaChZTVVBQTElFUl9TVEFUVVNfQUNUSVZFEAASHAoYU1VQUExJRVJfU1RBVFVTX0lOQUNUSVZFEAE=');
+@$core.Deprecated('Use expenseCategoryDescriptor instead')
+const ExpenseCategory$json = const {
+  '1': 'ExpenseCategory',
+  '2': const [
+    const {'1': 'EXPENSE_CATEGORY_OFFICE', '2': 0},
+    const {'1': 'EXPENSE_CATEGORY_TRAVEL', '2': 1},
+    const {'1': 'EXPENSE_CATEGORY_MEALS', '2': 2},
+    const {'1': 'EXPENSE_CATEGORY_MARKETING', '2': 3},
+    const {'1': 'EXPENSE_CATEGORY_UTILITIES', '2': 4},
+    const {'1': 'EXPENSE_CATEGORY_PAYROLL', '2': 5},
+    const {'1': 'EXPENSE_CATEGORY_PROFESSIONAL', '2': 6},
+    const {'1': 'EXPENSE_CATEGORY_SOFTWARE', '2': 7},
+    const {'1': 'EXPENSE_CATEGORY_INVENTORY', '2': 8},
+    const {'1': 'EXPENSE_CATEGORY_TAXES', '2': 9},
+    const {'1': 'EXPENSE_CATEGORY_OTHER', '2': 10},
+  ],
+};
+
+/// Descriptor for `ExpenseCategory`. Decode as a `google.protobuf.EnumDescriptorProto`.
+final $typed_data.Uint8List expenseCategoryDescriptor = $convert.base64Decode('Cg9FeHBlbnNlQ2F0ZWdvcnkSGwoXRVhQRU5TRV9DQVRFR09SWV9PRkZJQ0UQABIbChdFWFBFTlNFX0NBVEVHT1JZX1RSQVZFTBABEhoKFkVYUEVOU0VfQ0FURUdPUllfTUVBTFMQAhIeChpFWFBFTlNFX0NBVEVHT1JZX01BUktFVElORxADEh4KGkVYUEVOU0VfQ0FURUdPUllfVVRJTElUSUVTEAQSHAoYRVhQRU5TRV9DQVRFR09SWV9QQVlST0xMEAUSIQodRVhQRU5TRV9DQVRFR09SWV9QUk9GRVNTSU9OQUwQBhIdChlFWFBFTlNFX0NBVEVHT1JZX1NPRlRXQVJFEAcSHgoaRVhQRU5TRV9DQVRFR09SWV9JTlZFTlRPUlkQCBIaChZFWFBFTlNFX0NBVEVHT1JZX1RBWEVTEAkSGgoWRVhQRU5TRV9DQVRFR09SWV9PVEhFUhAK');
+@$core.Deprecated('Use expenseStatusDescriptor instead')
+const ExpenseStatus$json = const {
+  '1': 'ExpenseStatus',
+  '2': const [
+    const {'1': 'EXPENSE_STATUS_PENDING', '2': 0},
+    const {'1': 'EXPENSE_STATUS_APPROVED', '2': 1},
+    const {'1': 'EXPENSE_STATUS_REIMBURSED', '2': 2},
+    const {'1': 'EXPENSE_STATUS_REJECTED', '2': 3},
+  ],
+};
+
+/// Descriptor for `ExpenseStatus`. Decode as a `google.protobuf.EnumDescriptorProto`.
+final $typed_data.Uint8List expenseStatusDescriptor = $convert.base64Decode('Cg1FeHBlbnNlU3RhdHVzEhoKFkVYUEVOU0VfU1RBVFVTX1BFTkRJTkcQABIbChdFWFBFTlNFX1NUQVRVU19BUFBST1ZFRBABEh0KGUVYUEVOU0VfU1RBVFVTX1JFSU1CVVJTRUQQAhIbChdFWFBFTlNFX1NUQVRVU19SRUpFQ1RFRBAD');
+@$core.Deprecated('Use expensePaymentMethodDescriptor instead')
+const ExpensePaymentMethod$json = const {
+  '1': 'ExpensePaymentMethod',
+  '2': const [
+    const {'1': 'EXPENSE_PAYMENT_METHOD_CASH', '2': 0},
+    const {'1': 'EXPENSE_PAYMENT_METHOD_CARD', '2': 1},
+    const {'1': 'EXPENSE_PAYMENT_METHOD_BANK_TRANSFER', '2': 2},
+    const {'1': 'EXPENSE_PAYMENT_METHOD_CHEQUE', '2': 3},
+    const {'1': 'EXPENSE_PAYMENT_METHOD_OTHER', '2': 4},
+  ],
+};
+
+/// Descriptor for `ExpensePaymentMethod`. Decode as a `google.protobuf.EnumDescriptorProto`.
+final $typed_data.Uint8List expensePaymentMethodDescriptor = $convert.base64Decode('ChRFeHBlbnNlUGF5bWVudE1ldGhvZBIfChtFWFBFTlNFX1BBWU1FTlRfTUVUSE9EX0NBU0gQABIfChtFWFBFTlNFX1BBWU1FTlRfTUVUSE9EX0NBUkQQARIoCiRFWFBFTlNFX1BBWU1FTlRfTUVUSE9EX0JBTktfVFJBTlNGRVIQAhIhCh1FWFBFTlNFX1BBWU1FTlRfTUVUSE9EX0NIRVFVRRADEiAKHEVYUEVOU0VfUEFZTUVOVF9NRVRIT0RfT1RIRVIQBA==');
 @$core.Deprecated('Use employeeDescriptor instead')
 const Employee$json = const {
   '1': 'Employee',
@@ -2117,3 +2164,288 @@ const GetExpiryAlertsResponse$json = const {
 
 /// Descriptor for `GetExpiryAlertsResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getExpiryAlertsResponseDescriptor = $convert.base64Decode('ChdHZXRFeHBpcnlBbGVydHNSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USJwoGYWxlcnRzGAMgAygLMg8ucGIuRXhwaXJ5QWxlcnRSBmFsZXJ0cw==');
+@$core.Deprecated('Use expenseDescriptor instead')
+const Expense$json = const {
+  '1': 'Expense',
+  '2': const [
+    const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    const {'1': 'business_id', '3': 2, '4': 1, '5': 9, '10': 'businessId'},
+    const {'1': 'description', '3': 3, '4': 1, '5': 9, '10': 'description'},
+    const {'1': 'amount', '3': 4, '4': 1, '5': 3, '10': 'amount'},
+    const {'1': 'currency', '3': 5, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'category', '3': 6, '4': 1, '5': 14, '6': '.pb.ExpenseCategory', '10': 'category'},
+    const {'1': 'status', '3': 7, '4': 1, '5': 14, '6': '.pb.ExpenseStatus', '10': 'status'},
+    const {'1': 'payment_method', '3': 8, '4': 1, '5': 14, '6': '.pb.ExpensePaymentMethod', '10': 'paymentMethod'},
+    const {'1': 'expense_date', '3': 9, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'expenseDate'},
+    const {'1': 'vendor', '3': 10, '4': 1, '5': 9, '10': 'vendor'},
+    const {'1': 'reference', '3': 11, '4': 1, '5': 9, '10': 'reference'},
+    const {'1': 'receipt_url', '3': 12, '4': 1, '5': 9, '10': 'receiptUrl'},
+    const {'1': 'tags', '3': 13, '4': 3, '5': 9, '10': 'tags'},
+    const {'1': 'notes', '3': 14, '4': 1, '5': 9, '10': 'notes'},
+    const {'1': 'created_by', '3': 15, '4': 1, '5': 9, '10': 'createdBy'},
+    const {'1': 'approved_by', '3': 16, '4': 1, '5': 9, '10': 'approvedBy'},
+    const {'1': 'approved_at', '3': 17, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'approvedAt'},
+    const {'1': 'reimbursed_at', '3': 18, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'reimbursedAt'},
+    const {'1': 'created_at', '3': 19, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    const {'1': 'updated_at', '3': 20, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
+  ],
+};
+
+/// Descriptor for `Expense`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List expenseDescriptor = $convert.base64Decode('CgdFeHBlbnNlEg4KAmlkGAEgASgJUgJpZBIfCgtidXNpbmVzc19pZBgCIAEoCVIKYnVzaW5lc3NJZBIgCgtkZXNjcmlwdGlvbhgDIAEoCVILZGVzY3JpcHRpb24SFgoGYW1vdW50GAQgASgDUgZhbW91bnQSGgoIY3VycmVuY3kYBSABKAlSCGN1cnJlbmN5Ei8KCGNhdGVnb3J5GAYgASgOMhMucGIuRXhwZW5zZUNhdGVnb3J5UghjYXRlZ29yeRIpCgZzdGF0dXMYByABKA4yES5wYi5FeHBlbnNlU3RhdHVzUgZzdGF0dXMSPwoOcGF5bWVudF9tZXRob2QYCCABKA4yGC5wYi5FeHBlbnNlUGF5bWVudE1ldGhvZFINcGF5bWVudE1ldGhvZBI9CgxleHBlbnNlX2RhdGUYCSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgtleHBlbnNlRGF0ZRIWCgZ2ZW5kb3IYCiABKAlSBnZlbmRvchIcCglyZWZlcmVuY2UYCyABKAlSCXJlZmVyZW5jZRIfCgtyZWNlaXB0X3VybBgMIAEoCVIKcmVjZWlwdFVybBISCgR0YWdzGA0gAygJUgR0YWdzEhQKBW5vdGVzGA4gASgJUgVub3RlcxIdCgpjcmVhdGVkX2J5GA8gASgJUgljcmVhdGVkQnkSHwoLYXBwcm92ZWRfYnkYECABKAlSCmFwcHJvdmVkQnkSOwoLYXBwcm92ZWRfYXQYESABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgphcHByb3ZlZEF0Ej8KDXJlaW1idXJzZWRfYXQYEiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgxyZWltYnVyc2VkQXQSOQoKY3JlYXRlZF9hdBgTIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCWNyZWF0ZWRBdBI5Cgp1cGRhdGVkX2F0GBQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIJdXBkYXRlZEF0');
+@$core.Deprecated('Use expenseSummaryDescriptor instead')
+const ExpenseSummary$json = const {
+  '1': 'ExpenseSummary',
+  '2': const [
+    const {'1': 'total_expenses', '3': 1, '4': 1, '5': 3, '10': 'totalExpenses'},
+    const {'1': 'total_pending', '3': 2, '4': 1, '5': 3, '10': 'totalPending'},
+    const {'1': 'total_approved', '3': 3, '4': 1, '5': 3, '10': 'totalApproved'},
+    const {'1': 'total_reimbursed', '3': 4, '4': 1, '5': 3, '10': 'totalReimbursed'},
+    const {'1': 'total_rejected', '3': 5, '4': 1, '5': 3, '10': 'totalRejected'},
+    const {'1': 'expense_count', '3': 6, '4': 1, '5': 5, '10': 'expenseCount'},
+    const {'1': 'pending_count', '3': 7, '4': 1, '5': 5, '10': 'pendingCount'},
+    const {'1': 'approved_count', '3': 8, '4': 1, '5': 5, '10': 'approvedCount'},
+    const {'1': 'reimbursed_count', '3': 9, '4': 1, '5': 5, '10': 'reimbursedCount'},
+    const {'1': 'rejected_count', '3': 10, '4': 1, '5': 5, '10': 'rejectedCount'},
+    const {'1': 'currency', '3': 11, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'by_category', '3': 12, '4': 3, '5': 11, '6': '.pb.ExpenseCategoryTotal', '10': 'byCategory'},
+    const {'1': 'by_month', '3': 13, '4': 3, '5': 11, '6': '.pb.ExpenseMonthlyTotal', '10': 'byMonth'},
+  ],
+};
+
+/// Descriptor for `ExpenseSummary`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List expenseSummaryDescriptor = $convert.base64Decode('Cg5FeHBlbnNlU3VtbWFyeRIlCg50b3RhbF9leHBlbnNlcxgBIAEoA1INdG90YWxFeHBlbnNlcxIjCg10b3RhbF9wZW5kaW5nGAIgASgDUgx0b3RhbFBlbmRpbmcSJQoOdG90YWxfYXBwcm92ZWQYAyABKANSDXRvdGFsQXBwcm92ZWQSKQoQdG90YWxfcmVpbWJ1cnNlZBgEIAEoA1IPdG90YWxSZWltYnVyc2VkEiUKDnRvdGFsX3JlamVjdGVkGAUgASgDUg10b3RhbFJlamVjdGVkEiMKDWV4cGVuc2VfY291bnQYBiABKAVSDGV4cGVuc2VDb3VudBIjCg1wZW5kaW5nX2NvdW50GAcgASgFUgxwZW5kaW5nQ291bnQSJQoOYXBwcm92ZWRfY291bnQYCCABKAVSDWFwcHJvdmVkQ291bnQSKQoQcmVpbWJ1cnNlZF9jb3VudBgJIAEoBVIPcmVpbWJ1cnNlZENvdW50EiUKDnJlamVjdGVkX2NvdW50GAogASgFUg1yZWplY3RlZENvdW50EhoKCGN1cnJlbmN5GAsgASgJUghjdXJyZW5jeRI5CgtieV9jYXRlZ29yeRgMIAMoCzIYLnBiLkV4cGVuc2VDYXRlZ29yeVRvdGFsUgpieUNhdGVnb3J5EjIKCGJ5X21vbnRoGA0gAygLMhcucGIuRXhwZW5zZU1vbnRobHlUb3RhbFIHYnlNb250aA==');
+@$core.Deprecated('Use expenseCategoryTotalDescriptor instead')
+const ExpenseCategoryTotal$json = const {
+  '1': 'ExpenseCategoryTotal',
+  '2': const [
+    const {'1': 'category', '3': 1, '4': 1, '5': 14, '6': '.pb.ExpenseCategory', '10': 'category'},
+    const {'1': 'total_amount', '3': 2, '4': 1, '5': 3, '10': 'totalAmount'},
+    const {'1': 'expense_count', '3': 3, '4': 1, '5': 5, '10': 'expenseCount'},
+  ],
+};
+
+/// Descriptor for `ExpenseCategoryTotal`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List expenseCategoryTotalDescriptor = $convert.base64Decode('ChRFeHBlbnNlQ2F0ZWdvcnlUb3RhbBIvCghjYXRlZ29yeRgBIAEoDjITLnBiLkV4cGVuc2VDYXRlZ29yeVIIY2F0ZWdvcnkSIQoMdG90YWxfYW1vdW50GAIgASgDUgt0b3RhbEFtb3VudBIjCg1leHBlbnNlX2NvdW50GAMgASgFUgxleHBlbnNlQ291bnQ=');
+@$core.Deprecated('Use expenseMonthlyTotalDescriptor instead')
+const ExpenseMonthlyTotal$json = const {
+  '1': 'ExpenseMonthlyTotal',
+  '2': const [
+    const {'1': 'period', '3': 1, '4': 1, '5': 9, '10': 'period'},
+    const {'1': 'total_amount', '3': 2, '4': 1, '5': 3, '10': 'totalAmount'},
+    const {'1': 'expense_count', '3': 3, '4': 1, '5': 5, '10': 'expenseCount'},
+  ],
+};
+
+/// Descriptor for `ExpenseMonthlyTotal`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List expenseMonthlyTotalDescriptor = $convert.base64Decode('ChNFeHBlbnNlTW9udGhseVRvdGFsEhYKBnBlcmlvZBgBIAEoCVIGcGVyaW9kEiEKDHRvdGFsX2Ftb3VudBgCIAEoA1ILdG90YWxBbW91bnQSIwoNZXhwZW5zZV9jb3VudBgDIAEoBVIMZXhwZW5zZUNvdW50');
+@$core.Deprecated('Use createExpenseRequestDescriptor instead')
+const CreateExpenseRequest$json = const {
+  '1': 'CreateExpenseRequest',
+  '2': const [
+    const {'1': 'description', '3': 1, '4': 1, '5': 9, '10': 'description'},
+    const {'1': 'amount', '3': 2, '4': 1, '5': 3, '10': 'amount'},
+    const {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'category', '3': 4, '4': 1, '5': 14, '6': '.pb.ExpenseCategory', '10': 'category'},
+    const {'1': 'payment_method', '3': 5, '4': 1, '5': 14, '6': '.pb.ExpensePaymentMethod', '10': 'paymentMethod'},
+    const {'1': 'expense_date', '3': 6, '4': 1, '5': 9, '10': 'expenseDate'},
+    const {'1': 'vendor', '3': 7, '4': 1, '5': 9, '10': 'vendor'},
+    const {'1': 'reference', '3': 8, '4': 1, '5': 9, '10': 'reference'},
+    const {'1': 'receipt_url', '3': 9, '4': 1, '5': 9, '10': 'receiptUrl'},
+    const {'1': 'tags', '3': 10, '4': 3, '5': 9, '10': 'tags'},
+    const {'1': 'notes', '3': 11, '4': 1, '5': 9, '10': 'notes'},
+  ],
+};
+
+/// Descriptor for `CreateExpenseRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List createExpenseRequestDescriptor = $convert.base64Decode('ChRDcmVhdGVFeHBlbnNlUmVxdWVzdBIgCgtkZXNjcmlwdGlvbhgBIAEoCVILZGVzY3JpcHRpb24SFgoGYW1vdW50GAIgASgDUgZhbW91bnQSGgoIY3VycmVuY3kYAyABKAlSCGN1cnJlbmN5Ei8KCGNhdGVnb3J5GAQgASgOMhMucGIuRXhwZW5zZUNhdGVnb3J5UghjYXRlZ29yeRI/Cg5wYXltZW50X21ldGhvZBgFIAEoDjIYLnBiLkV4cGVuc2VQYXltZW50TWV0aG9kUg1wYXltZW50TWV0aG9kEiEKDGV4cGVuc2VfZGF0ZRgGIAEoCVILZXhwZW5zZURhdGUSFgoGdmVuZG9yGAcgASgJUgZ2ZW5kb3ISHAoJcmVmZXJlbmNlGAggASgJUglyZWZlcmVuY2USHwoLcmVjZWlwdF91cmwYCSABKAlSCnJlY2VpcHRVcmwSEgoEdGFncxgKIAMoCVIEdGFncxIUCgVub3RlcxgLIAEoCVIFbm90ZXM=');
+@$core.Deprecated('Use createExpenseResponseDescriptor instead')
+const CreateExpenseResponse$json = const {
+  '1': 'CreateExpenseResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    const {'1': 'expense', '3': 3, '4': 1, '5': 11, '6': '.pb.Expense', '10': 'expense'},
+  ],
+};
+
+/// Descriptor for `CreateExpenseResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List createExpenseResponseDescriptor = $convert.base64Decode('ChVDcmVhdGVFeHBlbnNlUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdlEiUKB2V4cGVuc2UYAyABKAsyCy5wYi5FeHBlbnNlUgdleHBlbnNl');
+@$core.Deprecated('Use updateExpenseRequestDescriptor instead')
+const UpdateExpenseRequest$json = const {
+  '1': 'UpdateExpenseRequest',
+  '2': const [
+    const {'1': 'expense_id', '3': 1, '4': 1, '5': 9, '10': 'expenseId'},
+    const {'1': 'description', '3': 2, '4': 1, '5': 9, '10': 'description'},
+    const {'1': 'amount', '3': 3, '4': 1, '5': 3, '10': 'amount'},
+    const {'1': 'currency', '3': 4, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'category', '3': 5, '4': 1, '5': 14, '6': '.pb.ExpenseCategory', '10': 'category'},
+    const {'1': 'payment_method', '3': 6, '4': 1, '5': 14, '6': '.pb.ExpensePaymentMethod', '10': 'paymentMethod'},
+    const {'1': 'status', '3': 7, '4': 1, '5': 14, '6': '.pb.ExpenseStatus', '10': 'status'},
+    const {'1': 'expense_date', '3': 8, '4': 1, '5': 9, '10': 'expenseDate'},
+    const {'1': 'vendor', '3': 9, '4': 1, '5': 9, '10': 'vendor'},
+    const {'1': 'reference', '3': 10, '4': 1, '5': 9, '10': 'reference'},
+    const {'1': 'receipt_url', '3': 11, '4': 1, '5': 9, '10': 'receiptUrl'},
+    const {'1': 'tags', '3': 12, '4': 3, '5': 9, '10': 'tags'},
+    const {'1': 'notes', '3': 13, '4': 1, '5': 9, '10': 'notes'},
+  ],
+};
+
+/// Descriptor for `UpdateExpenseRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List updateExpenseRequestDescriptor = $convert.base64Decode('ChRVcGRhdGVFeHBlbnNlUmVxdWVzdBIdCgpleHBlbnNlX2lkGAEgASgJUglleHBlbnNlSWQSIAoLZGVzY3JpcHRpb24YAiABKAlSC2Rlc2NyaXB0aW9uEhYKBmFtb3VudBgDIAEoA1IGYW1vdW50EhoKCGN1cnJlbmN5GAQgASgJUghjdXJyZW5jeRIvCghjYXRlZ29yeRgFIAEoDjITLnBiLkV4cGVuc2VDYXRlZ29yeVIIY2F0ZWdvcnkSPwoOcGF5bWVudF9tZXRob2QYBiABKA4yGC5wYi5FeHBlbnNlUGF5bWVudE1ldGhvZFINcGF5bWVudE1ldGhvZBIpCgZzdGF0dXMYByABKA4yES5wYi5FeHBlbnNlU3RhdHVzUgZzdGF0dXMSIQoMZXhwZW5zZV9kYXRlGAggASgJUgtleHBlbnNlRGF0ZRIWCgZ2ZW5kb3IYCSABKAlSBnZlbmRvchIcCglyZWZlcmVuY2UYCiABKAlSCXJlZmVyZW5jZRIfCgtyZWNlaXB0X3VybBgLIAEoCVIKcmVjZWlwdFVybBISCgR0YWdzGAwgAygJUgR0YWdzEhQKBW5vdGVzGA0gASgJUgVub3Rlcw==');
+@$core.Deprecated('Use updateExpenseResponseDescriptor instead')
+const UpdateExpenseResponse$json = const {
+  '1': 'UpdateExpenseResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    const {'1': 'expense', '3': 3, '4': 1, '5': 11, '6': '.pb.Expense', '10': 'expense'},
+  ],
+};
+
+/// Descriptor for `UpdateExpenseResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List updateExpenseResponseDescriptor = $convert.base64Decode('ChVVcGRhdGVFeHBlbnNlUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdlEiUKB2V4cGVuc2UYAyABKAsyCy5wYi5FeHBlbnNlUgdleHBlbnNl');
+@$core.Deprecated('Use deleteExpenseRequestDescriptor instead')
+const DeleteExpenseRequest$json = const {
+  '1': 'DeleteExpenseRequest',
+  '2': const [
+    const {'1': 'expense_id', '3': 1, '4': 1, '5': 9, '10': 'expenseId'},
+  ],
+};
+
+/// Descriptor for `DeleteExpenseRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List deleteExpenseRequestDescriptor = $convert.base64Decode('ChREZWxldGVFeHBlbnNlUmVxdWVzdBIdCgpleHBlbnNlX2lkGAEgASgJUglleHBlbnNlSWQ=');
+@$core.Deprecated('Use deleteExpenseResponseDescriptor instead')
+const DeleteExpenseResponse$json = const {
+  '1': 'DeleteExpenseResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `DeleteExpenseResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List deleteExpenseResponseDescriptor = $convert.base64Decode('ChVEZWxldGVFeHBlbnNlUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
+@$core.Deprecated('Use getExpenseRequestDescriptor instead')
+const GetExpenseRequest$json = const {
+  '1': 'GetExpenseRequest',
+  '2': const [
+    const {'1': 'expense_id', '3': 1, '4': 1, '5': 9, '10': 'expenseId'},
+  ],
+};
+
+/// Descriptor for `GetExpenseRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getExpenseRequestDescriptor = $convert.base64Decode('ChFHZXRFeHBlbnNlUmVxdWVzdBIdCgpleHBlbnNlX2lkGAEgASgJUglleHBlbnNlSWQ=');
+@$core.Deprecated('Use getExpenseResponseDescriptor instead')
+const GetExpenseResponse$json = const {
+  '1': 'GetExpenseResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    const {'1': 'expense', '3': 3, '4': 1, '5': 11, '6': '.pb.Expense', '10': 'expense'},
+  ],
+};
+
+/// Descriptor for `GetExpenseResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getExpenseResponseDescriptor = $convert.base64Decode('ChJHZXRFeHBlbnNlUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdlEiUKB2V4cGVuc2UYAyABKAsyCy5wYi5FeHBlbnNlUgdleHBlbnNl');
+@$core.Deprecated('Use listExpensesRequestDescriptor instead')
+const ListExpensesRequest$json = const {
+  '1': 'ListExpensesRequest',
+  '2': const [
+    const {'1': 'page', '3': 1, '4': 1, '5': 5, '10': 'page'},
+    const {'1': 'limit', '3': 2, '4': 1, '5': 5, '10': 'limit'},
+    const {'1': 'search', '3': 3, '4': 1, '5': 9, '10': 'search'},
+    const {'1': 'category', '3': 4, '4': 1, '5': 14, '6': '.pb.ExpenseCategory', '10': 'category'},
+    const {'1': 'status', '3': 5, '4': 1, '5': 14, '6': '.pb.ExpenseStatus', '10': 'status'},
+    const {'1': 'start_date', '3': 6, '4': 1, '5': 9, '10': 'startDate'},
+    const {'1': 'end_date', '3': 7, '4': 1, '5': 9, '10': 'endDate'},
+    const {'1': 'tag', '3': 8, '4': 1, '5': 9, '10': 'tag'},
+    const {'1': 'min_amount', '3': 9, '4': 1, '5': 3, '10': 'minAmount'},
+    const {'1': 'max_amount', '3': 10, '4': 1, '5': 3, '10': 'maxAmount'},
+  ],
+};
+
+/// Descriptor for `ListExpensesRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List listExpensesRequestDescriptor = $convert.base64Decode('ChNMaXN0RXhwZW5zZXNSZXF1ZXN0EhIKBHBhZ2UYASABKAVSBHBhZ2USFAoFbGltaXQYAiABKAVSBWxpbWl0EhYKBnNlYXJjaBgDIAEoCVIGc2VhcmNoEi8KCGNhdGVnb3J5GAQgASgOMhMucGIuRXhwZW5zZUNhdGVnb3J5UghjYXRlZ29yeRIpCgZzdGF0dXMYBSABKA4yES5wYi5FeHBlbnNlU3RhdHVzUgZzdGF0dXMSHQoKc3RhcnRfZGF0ZRgGIAEoCVIJc3RhcnREYXRlEhkKCGVuZF9kYXRlGAcgASgJUgdlbmREYXRlEhAKA3RhZxgIIAEoCVIDdGFnEh0KCm1pbl9hbW91bnQYCSABKANSCW1pbkFtb3VudBIdCgptYXhfYW1vdW50GAogASgDUgltYXhBbW91bnQ=');
+@$core.Deprecated('Use listExpensesResponseDescriptor instead')
+const ListExpensesResponse$json = const {
+  '1': 'ListExpensesResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    const {'1': 'expenses', '3': 3, '4': 3, '5': 11, '6': '.pb.Expense', '10': 'expenses'},
+    const {'1': 'pagination', '3': 4, '4': 1, '5': 11, '6': '.pb.PayrollPaginationInfo', '10': 'pagination'},
+  ],
+};
+
+/// Descriptor for `ListExpensesResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List listExpensesResponseDescriptor = $convert.base64Decode('ChRMaXN0RXhwZW5zZXNSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USJwoIZXhwZW5zZXMYAyADKAsyCy5wYi5FeHBlbnNlUghleHBlbnNlcxI5CgpwYWdpbmF0aW9uGAQgASgLMhkucGIuUGF5cm9sbFBhZ2luYXRpb25JbmZvUgpwYWdpbmF0aW9u');
+@$core.Deprecated('Use getExpenseSummaryRequestDescriptor instead')
+const GetExpenseSummaryRequest$json = const {
+  '1': 'GetExpenseSummaryRequest',
+  '2': const [
+    const {'1': 'start_date', '3': 1, '4': 1, '5': 9, '10': 'startDate'},
+    const {'1': 'end_date', '3': 2, '4': 1, '5': 9, '10': 'endDate'},
+  ],
+};
+
+/// Descriptor for `GetExpenseSummaryRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getExpenseSummaryRequestDescriptor = $convert.base64Decode('ChhHZXRFeHBlbnNlU3VtbWFyeVJlcXVlc3QSHQoKc3RhcnRfZGF0ZRgBIAEoCVIJc3RhcnREYXRlEhkKCGVuZF9kYXRlGAIgASgJUgdlbmREYXRl');
+@$core.Deprecated('Use getExpenseSummaryResponseDescriptor instead')
+const GetExpenseSummaryResponse$json = const {
+  '1': 'GetExpenseSummaryResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    const {'1': 'summary', '3': 3, '4': 1, '5': 11, '6': '.pb.ExpenseSummary', '10': 'summary'},
+  ],
+};
+
+/// Descriptor for `GetExpenseSummaryResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getExpenseSummaryResponseDescriptor = $convert.base64Decode('ChlHZXRFeHBlbnNlU3VtbWFyeVJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRIsCgdzdW1tYXJ5GAMgASgLMhIucGIuRXhwZW5zZVN1bW1hcnlSB3N1bW1hcnk=');
+@$core.Deprecated('Use approveExpenseRequestDescriptor instead')
+const ApproveExpenseRequest$json = const {
+  '1': 'ApproveExpenseRequest',
+  '2': const [
+    const {'1': 'expense_id', '3': 1, '4': 1, '5': 9, '10': 'expenseId'},
+    const {'1': 'approval_notes', '3': 2, '4': 1, '5': 9, '10': 'approvalNotes'},
+  ],
+};
+
+/// Descriptor for `ApproveExpenseRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List approveExpenseRequestDescriptor = $convert.base64Decode('ChVBcHByb3ZlRXhwZW5zZVJlcXVlc3QSHQoKZXhwZW5zZV9pZBgBIAEoCVIJZXhwZW5zZUlkEiUKDmFwcHJvdmFsX25vdGVzGAIgASgJUg1hcHByb3ZhbE5vdGVz');
+@$core.Deprecated('Use approveExpenseResponseDescriptor instead')
+const ApproveExpenseResponse$json = const {
+  '1': 'ApproveExpenseResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    const {'1': 'expense', '3': 3, '4': 1, '5': 11, '6': '.pb.Expense', '10': 'expense'},
+  ],
+};
+
+/// Descriptor for `ApproveExpenseResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List approveExpenseResponseDescriptor = $convert.base64Decode('ChZBcHByb3ZlRXhwZW5zZVJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRIlCgdleHBlbnNlGAMgASgLMgsucGIuRXhwZW5zZVIHZXhwZW5zZQ==');
+@$core.Deprecated('Use markExpenseReimbursedRequestDescriptor instead')
+const MarkExpenseReimbursedRequest$json = const {
+  '1': 'MarkExpenseReimbursedRequest',
+  '2': const [
+    const {'1': 'expense_id', '3': 1, '4': 1, '5': 9, '10': 'expenseId'},
+    const {'1': 'reimbursement_reference', '3': 2, '4': 1, '5': 9, '10': 'reimbursementReference'},
+  ],
+};
+
+/// Descriptor for `MarkExpenseReimbursedRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List markExpenseReimbursedRequestDescriptor = $convert.base64Decode('ChxNYXJrRXhwZW5zZVJlaW1idXJzZWRSZXF1ZXN0Eh0KCmV4cGVuc2VfaWQYASABKAlSCWV4cGVuc2VJZBI3ChdyZWltYnVyc2VtZW50X3JlZmVyZW5jZRgCIAEoCVIWcmVpbWJ1cnNlbWVudFJlZmVyZW5jZQ==');
+@$core.Deprecated('Use markExpenseReimbursedResponseDescriptor instead')
+const MarkExpenseReimbursedResponse$json = const {
+  '1': 'MarkExpenseReimbursedResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    const {'1': 'expense', '3': 3, '4': 1, '5': 11, '6': '.pb.Expense', '10': 'expense'},
+  ],
+};
+
+/// Descriptor for `MarkExpenseReimbursedResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List markExpenseReimbursedResponseDescriptor = $convert.base64Decode('Ch1NYXJrRXhwZW5zZVJlaW1idXJzZWRSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEhgKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USJQoHZXhwZW5zZRgDIAEoCzILLnBiLkV4cGVuc2VSB2V4cGVuc2U=');

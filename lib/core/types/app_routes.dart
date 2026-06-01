@@ -296,24 +296,29 @@ static const String incomingTaggedInvoices = '/invoice/incoming-tagged';
   // Insurance Routes
   static const String insurance = '/insurance';
   static const String insuranceDetails = '/insurance/details';
-  static const String insuranceEdit = '/insurance/edit';
+  // insuranceEdit removed: MyCover.ai has no policy-update endpoint.
   static const String createInsurance = '/insurance/create';
   static const String insurancePayment = '/insurance/payment';
   static const String insurancePaymentProcessing = '/insurance/payment-processing';
   static const String insurancePaymentConfirmation = '/insurance/payment-confirmation';
   static const String insuranceClaims = '/insurance/claims';
-  static const String createClaim = '/insurance/create-claim';
-  static const String insuranceTerms = '/insurance/terms';
+  // createClaim removed: claims are filed via the provider's hosted
+  // webview only, scoped to customer_id + policy_id.
+  // insuranceTerms route removed — terms now load in an in-app webview
+  // bottom sheet (InsuranceTermsBottomSheet) sourced from the admin-set
+  // link. The static InsuranceTermsScreen has been deleted.
   static const String insuranceGuide = '/insurance/guide';
   static const String insuranceContact = '/insurance/contact';
   static const String insuranceFaq = '/insurance/faq';
   static const String insuranceDocuments = '/insurance/documents';
   static const String insuranceClaimTracking = '/insurance/claim-tracking';
   static const String insuranceHowItWorks = '/insurance/how-it-works';
-  static const String insuranceManagement = '/insurance/management';
   static const String insuranceCreditLifeClaim = '/insurance/credit-life-claim';
-  static const String insuranceNotificationPrefs = '/insurance/notification-preferences';
   static const String insuranceAllPolicies = '/insurance/all-policies';
+  // Slice 4 / Phase D — user-facing CTAs
+  static const String insuranceMyClaims = '/insurance/my-claims';
+  static const String insurancePurchaseHistory = '/insurance/purchase-history';
+  static const String insurancePurchaseDetail = '/insurance/purchase-detail';
 
   // Airtime Routes
   static const String airtime = '/airtime';
@@ -374,6 +379,15 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   static const String batchTransferReceipt = '/batch-transfer-receipt';
   static const String batchTransferHistory = '/batch-transfer-history';
   static const String batchTransferDetail = '/batch-transfer-detail';
+
+  // Saved Batches (drafts) Routes — drafts NEVER move money; execution
+  // delegates to the existing batch-transfer money path.
+  static const String savedBatches = '/saved-batches';
+  static const String savedBatchDetail = '/saved-batches/detail';
+
+  // Batch Receipt Routes (full collective + per-item drilldown).
+  static const String batchReceiptDetailed = '/batch-transfer-receipt-detailed';
+  static const String batchItemReceipt = '/batch-transfer-item-receipt';
 
   // Recurring Transfer Routes
   static const String recurringTransfers = '/recurring-transfers';
@@ -488,6 +502,7 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   static const String familyDetails = '/family/details';
   static const String familyEditMemberLimits = '/family/edit-limits';
   static const String familyInvitations = '/family/invitations';
+  static const String familySentInvitations = '/family/sent-invitations';
   static const String familySettings = '/family/settings';
   static const String familyActivationSetup = '/family/activation-setup';
 
@@ -531,6 +546,12 @@ static const String batchTransferProcessing = '/batch-transfer-processing';
   static const String addCustomer = '/customers/add';
   static const String customerDetails = '/customers/details';
   static const String editCustomer = '/customers/edit';
+
+  // Expense Tracking Routes (Business — Phase 5)
+  static const String expenses = '/expenses';
+  static const String addExpense = '/expenses/add';
+  static const String expenseDetails = '/expenses/details';
+  static const String editExpense = '/expenses/edit';
 
   // Tax Management Routes (Business)
   static const String taxDashboard = '/tax/dashboard';

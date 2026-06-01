@@ -11,6 +11,8 @@ import '../widgets/scan_history_card.dart';
 import '../widgets/ai_chat_bottom_sheet.dart';
 import 'ai_scan_camera_screen.dart';
 import '../../../presentation/views/dashboard/dashboard_screen.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 
 class AiScanToPayScreen extends StatefulWidget {
   const AiScanToPayScreen({super.key});
@@ -66,6 +68,24 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen> {
         ),
         centerTitle: true,
         actions: [
+          // Per-service voice + chat icons — pin every session to
+          // the AI-scan flow on chat-transfers-service via
+          // DIRECT_ROUTES['ai-scan'] → primary 'transfers'. Same
+          // pattern as crowdfund / autosave / lock-funds / tax /
+          // customers / inventory / per-bill landings.
+          ServiceVoiceButton(
+            serviceName: 'ai-scan',
+            iconColor: const Color.fromARGB(255, 78, 3, 208),
+            backgroundColor: const Color.fromARGB(255, 78, 3, 208),
+          ),
+          SizedBox(width: 8.w),
+          MicroserviceChatIcon(
+            serviceName: 'AI Scan to Pay',
+            sourceContext: 'ai-scan',
+            icon: Icons.chat_bubble_outline,
+            iconColor: const Color.fromARGB(255, 78, 3, 208),
+          ),
+          SizedBox(width: 8.w),
           IconButton(
             onPressed: () => context.read<AiScanCubit>().loadScanHistory(),
             icon: Container(
@@ -80,7 +100,7 @@ class _AiScanToPayScreenState extends State<AiScanToPayScreen> {
             offset: Offset(0, 2),
           ),
         ],
-        
+
               ),
               child: Icon(
                 Icons.history,

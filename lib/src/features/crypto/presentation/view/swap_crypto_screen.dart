@@ -12,7 +12,9 @@ import '../../../transaction_pin/services/transaction_pin_service.dart';
 import '../widgets/asset_wallet_sheet.dart';
 import '../widgets/price_quote_card.dart';
 import 'swap_flow_dispatcher.dart';
-import 'package:lazervault/src/features/widgets/service_voice_button.dart';
+// Removed ServiceVoiceButton import per #212 — voice icons live on
+// the parent crypto landing only; sub-screens like the swap detail
+// inherit the session pinned by the landing's canonical button.
 import 'package:lazervault/core/utils/currency_formatter.dart';
 
 class SwapCryptoScreen extends StatefulWidget {
@@ -285,10 +287,7 @@ class _SwapCryptoScreenState extends State<SwapCryptoScreen>
                     color: Colors.white.withValues(alpha: 0.7),
                   ),
                 ),
-                            ServiceVoiceButton(
-                serviceName: 'crypto',
-              ),
-],
+              ],
             ),
           ),
           // View wallet CTA — opens AssetWalletSheet for the from-side

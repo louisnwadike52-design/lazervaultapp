@@ -106,8 +106,7 @@ class _AppServiceBuilderState extends State<AppServiceBuilder> {
         Get.toNamed(AppRoutes.taxDashboard);
         break;
       case AppServiceName.expenses:
-        // TODO: Phase 5 - Expense Tracking
-        Get.toNamed(AppRoutes.businessDashboard);
+        Get.toNamed(AppRoutes.expenses);
         break;
     }
   }

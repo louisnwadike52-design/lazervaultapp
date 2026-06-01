@@ -1741,3 +1741,248 @@ abstract class InventoryEnhancedServiceBase extends $grpc.Service {
   $async.Future<$0.GetExpiryAlertsResponse> getExpiryAlerts(
       $grpc.ServiceCall call, $0.GetExpiryAlertsRequest request);
 }
+
+class ExpenseServiceClient extends $grpc.Client {
+  static final _$createExpense =
+      $grpc.ClientMethod<$0.CreateExpenseRequest, $0.CreateExpenseResponse>(
+          '/pb.ExpenseService/CreateExpense',
+          ($0.CreateExpenseRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.CreateExpenseResponse.fromBuffer(value));
+  static final _$updateExpense =
+      $grpc.ClientMethod<$0.UpdateExpenseRequest, $0.UpdateExpenseResponse>(
+          '/pb.ExpenseService/UpdateExpense',
+          ($0.UpdateExpenseRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.UpdateExpenseResponse.fromBuffer(value));
+  static final _$deleteExpense =
+      $grpc.ClientMethod<$0.DeleteExpenseRequest, $0.DeleteExpenseResponse>(
+          '/pb.ExpenseService/DeleteExpense',
+          ($0.DeleteExpenseRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.DeleteExpenseResponse.fromBuffer(value));
+  static final _$getExpense =
+      $grpc.ClientMethod<$0.GetExpenseRequest, $0.GetExpenseResponse>(
+          '/pb.ExpenseService/GetExpense',
+          ($0.GetExpenseRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.GetExpenseResponse.fromBuffer(value));
+  static final _$listExpenses =
+      $grpc.ClientMethod<$0.ListExpensesRequest, $0.ListExpensesResponse>(
+          '/pb.ExpenseService/ListExpenses',
+          ($0.ListExpensesRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.ListExpensesResponse.fromBuffer(value));
+  static final _$getExpenseSummary = $grpc.ClientMethod<
+          $0.GetExpenseSummaryRequest, $0.GetExpenseSummaryResponse>(
+      '/pb.ExpenseService/GetExpenseSummary',
+      ($0.GetExpenseSummaryRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.GetExpenseSummaryResponse.fromBuffer(value));
+  static final _$approveExpense =
+      $grpc.ClientMethod<$0.ApproveExpenseRequest, $0.ApproveExpenseResponse>(
+          '/pb.ExpenseService/ApproveExpense',
+          ($0.ApproveExpenseRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.ApproveExpenseResponse.fromBuffer(value));
+  static final _$markExpenseReimbursed = $grpc.ClientMethod<
+          $0.MarkExpenseReimbursedRequest, $0.MarkExpenseReimbursedResponse>(
+      '/pb.ExpenseService/MarkExpenseReimbursed',
+      ($0.MarkExpenseReimbursedRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.MarkExpenseReimbursedResponse.fromBuffer(value));
+
+  ExpenseServiceClient($grpc.ClientChannel channel,
+      {$grpc.CallOptions? options,
+      $core.Iterable<$grpc.ClientInterceptor>? interceptors})
+      : super(channel, options: options, interceptors: interceptors);
+
+  $grpc.ResponseFuture<$0.CreateExpenseResponse> createExpense(
+      $0.CreateExpenseRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$createExpense, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.UpdateExpenseResponse> updateExpense(
+      $0.UpdateExpenseRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$updateExpense, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.DeleteExpenseResponse> deleteExpense(
+      $0.DeleteExpenseRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$deleteExpense, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetExpenseResponse> getExpense(
+      $0.GetExpenseRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getExpense, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.ListExpensesResponse> listExpenses(
+      $0.ListExpensesRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$listExpenses, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetExpenseSummaryResponse> getExpenseSummary(
+      $0.GetExpenseSummaryRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getExpenseSummary, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.ApproveExpenseResponse> approveExpense(
+      $0.ApproveExpenseRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$approveExpense, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.MarkExpenseReimbursedResponse> markExpenseReimbursed(
+      $0.MarkExpenseReimbursedRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$markExpenseReimbursed, request, options: options);
+  }
+}
+
+abstract class ExpenseServiceBase extends $grpc.Service {
+  $core.String get $name => 'pb.ExpenseService';
+
+  ExpenseServiceBase() {
+    $addMethod(
+        $grpc.ServiceMethod<$0.CreateExpenseRequest, $0.CreateExpenseResponse>(
+            'CreateExpense',
+            createExpense_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $0.CreateExpenseRequest.fromBuffer(value),
+            ($0.CreateExpenseResponse value) => value.writeToBuffer()));
+    $addMethod(
+        $grpc.ServiceMethod<$0.UpdateExpenseRequest, $0.UpdateExpenseResponse>(
+            'UpdateExpense',
+            updateExpense_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $0.UpdateExpenseRequest.fromBuffer(value),
+            ($0.UpdateExpenseResponse value) => value.writeToBuffer()));
+    $addMethod(
+        $grpc.ServiceMethod<$0.DeleteExpenseRequest, $0.DeleteExpenseResponse>(
+            'DeleteExpense',
+            deleteExpense_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $0.DeleteExpenseRequest.fromBuffer(value),
+            ($0.DeleteExpenseResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetExpenseRequest, $0.GetExpenseResponse>(
+        'GetExpense',
+        getExpense_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetExpenseRequest.fromBuffer(value),
+        ($0.GetExpenseResponse value) => value.writeToBuffer()));
+    $addMethod(
+        $grpc.ServiceMethod<$0.ListExpensesRequest, $0.ListExpensesResponse>(
+            'ListExpenses',
+            listExpenses_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $0.ListExpensesRequest.fromBuffer(value),
+            ($0.ListExpensesResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetExpenseSummaryRequest,
+            $0.GetExpenseSummaryResponse>(
+        'GetExpenseSummary',
+        getExpenseSummary_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetExpenseSummaryRequest.fromBuffer(value),
+        ($0.GetExpenseSummaryResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.ApproveExpenseRequest,
+            $0.ApproveExpenseResponse>(
+        'ApproveExpense',
+        approveExpense_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.ApproveExpenseRequest.fromBuffer(value),
+        ($0.ApproveExpenseResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.MarkExpenseReimbursedRequest,
+            $0.MarkExpenseReimbursedResponse>(
+        'MarkExpenseReimbursed',
+        markExpenseReimbursed_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.MarkExpenseReimbursedRequest.fromBuffer(value),
+        ($0.MarkExpenseReimbursedResponse value) => value.writeToBuffer()));
+  }
+
+  $async.Future<$0.CreateExpenseResponse> createExpense_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.CreateExpenseRequest> request) async {
+    return createExpense(call, await request);
+  }
+
+  $async.Future<$0.UpdateExpenseResponse> updateExpense_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.UpdateExpenseRequest> request) async {
+    return updateExpense(call, await request);
+  }
+
+  $async.Future<$0.DeleteExpenseResponse> deleteExpense_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.DeleteExpenseRequest> request) async {
+    return deleteExpense(call, await request);
+  }
+
+  $async.Future<$0.GetExpenseResponse> getExpense_Pre($grpc.ServiceCall call,
+      $async.Future<$0.GetExpenseRequest> request) async {
+    return getExpense(call, await request);
+  }
+
+  $async.Future<$0.ListExpensesResponse> listExpenses_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.ListExpensesRequest> request) async {
+    return listExpenses(call, await request);
+  }
+
+  $async.Future<$0.GetExpenseSummaryResponse> getExpenseSummary_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.GetExpenseSummaryRequest> request) async {
+    return getExpenseSummary(call, await request);
+  }
+
+  $async.Future<$0.ApproveExpenseResponse> approveExpense_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.ApproveExpenseRequest> request) async {
+    return approveExpense(call, await request);
+  }
+
+  $async.Future<$0.MarkExpenseReimbursedResponse> markExpenseReimbursed_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.MarkExpenseReimbursedRequest> request) async {
+    return markExpenseReimbursed(call, await request);
+  }
+
+  $async.Future<$0.CreateExpenseResponse> createExpense(
+      $grpc.ServiceCall call, $0.CreateExpenseRequest request);
+  $async.Future<$0.UpdateExpenseResponse> updateExpense(
+      $grpc.ServiceCall call, $0.UpdateExpenseRequest request);
+  $async.Future<$0.DeleteExpenseResponse> deleteExpense(
+      $grpc.ServiceCall call, $0.DeleteExpenseRequest request);
+  $async.Future<$0.GetExpenseResponse> getExpense(
+      $grpc.ServiceCall call, $0.GetExpenseRequest request);
+  $async.Future<$0.ListExpensesResponse> listExpenses(
+      $grpc.ServiceCall call, $0.ListExpensesRequest request);
+  $async.Future<$0.GetExpenseSummaryResponse> getExpenseSummary(
+      $grpc.ServiceCall call, $0.GetExpenseSummaryRequest request);
+  $async.Future<$0.ApproveExpenseResponse> approveExpense(
+      $grpc.ServiceCall call, $0.ApproveExpenseRequest request);
+  $async.Future<$0.MarkExpenseReimbursedResponse> markExpenseReimbursed(
+      $grpc.ServiceCall call, $0.MarkExpenseReimbursedRequest request);
+}

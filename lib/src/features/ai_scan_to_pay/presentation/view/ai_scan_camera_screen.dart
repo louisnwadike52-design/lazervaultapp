@@ -10,7 +10,9 @@ import '../../domain/entities/scan_entities.dart';
 import '../cubit/ai_scan_cubit.dart';
 import '../cubit/ai_scan_state.dart';
 import 'ai_scan_to_pay_screen.dart';
-import 'package:lazervault/src/features/widgets/service_voice_button.dart';
+// Removed ServiceVoiceButton import per #212 — voice icon lives on
+// the AI Scan landing only; this camera sub-screen inherits the
+// session pinned from the parent.
 
 class AiScanCameraScreen extends StatefulWidget {
   const AiScanCameraScreen({super.key});
@@ -370,10 +372,7 @@ class _AiScanCameraScreenState extends State<AiScanCameraScreen>
                         color: Colors.white,
                       ),
                     ),
-                                    ServiceVoiceButton(
-                    serviceName: 'ai-scan',
-                  ),
-],
+                  ],
                 ),
               ),
               SizedBox(height: 16.h),
