@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lazervault/core/types/services.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
 import 'package:lazervault/src/features/widgets/notifications_builder.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 
 final List<NotificationService> notifications = [
   NotificationService(
@@ -113,6 +115,23 @@ class _NotificationScreenState extends State<NotificationScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
+          // Per-service voice + chat icons — pin every session to
+          // chat-notifications-service via DIRECT_ROUTES['notifications'].
+          // Lets users say "mark all read" / "show unread" / "update
+          // notification preferences" via voice or chat.
+          ServiceVoiceButton(
+            serviceName: 'notifications',
+            iconColor: const Color.fromARGB(255, 78, 3, 208),
+            backgroundColor: const Color.fromARGB(255, 78, 3, 208),
+          ),
+          SizedBox(width: 8.w),
+          MicroserviceChatIcon(
+            serviceName: 'Notifications',
+            sourceContext: 'notifications',
+            icon: Icons.chat_bubble_outline,
+            iconColor: const Color.fromARGB(255, 78, 3, 208),
+          ),
+          SizedBox(width: 4.w),
           IconButton(
             icon: Icon(
               Icons.settings_outlined,

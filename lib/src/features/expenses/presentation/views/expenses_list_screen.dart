@@ -104,6 +104,7 @@ class _ExpensesListScreenState extends State<ExpensesListScreen> {
           children: [
             _buildSearchBar(),
             _buildStatusFilters(),
+            _buildCategoryFilters(),
             Expanded(child: _buildBody()),
           ],
         ),
@@ -160,6 +161,101 @@ class _ExpensesListScreenState extends State<ExpensesListScreen> {
                   _load();
                 }))
             .toList(),
+      ),
+    );
+  }
+
+  /// Per-category filter pills. Cubit + backend already accept the
+  /// category param — this surfaces the selector that was missing.
+  /// Lives directly below the status pills so the filter chain reads
+  /// status-then-category top-to-bottom. "All" clears the filter.
+  Widget _buildCategoryFilters() {
+    // Display only the categories the user is most likely to slice
+    // by — full 11-value enum would push the list off-screen. Power
+    // users can also drive this via voice/chat ("show me my travel
+    // expenses this month") which passes the full enum value.
+    final filters = <String, ExpenseCategory?>{
+      'All': null,
+      'Office': ExpenseCategory.office,
+      'Travel': ExpenseCategory.travel,
+      'Meals': ExpenseCategory.meals,
+      'Marketing': ExpenseCategory.marketing,
+      'Utilities': ExpenseCategory.utilities,
+      'Software': ExpenseCategory.software,
+      'Professional': ExpenseCategory.professional,
+      'Inventory': ExpenseCategory.inventory,
+      'Taxes': ExpenseCategory.taxes,
+      'Other': ExpenseCategory.other,
+    };
+    return Padding(
+      padding: EdgeInsets.only(top: 4.h, bottom: 4.h),
+      child: SizedBox(
+        height: 36.h,
+        child: ListView(
+          scrollDirection: Axis.horizontal,
+          padding: EdgeInsets.symmetric(horizontal: 20.w),
+          children: filters.entries
+              .map((e) => _categoryPill(
+                    e.key,
+                    e.value,
+                    _categoryFilter == e.value,
+                    () {
+                      setState(() => _categoryFilter = e.value);
+                      _load();
+                    },
+                  ))
+              .toList(),
+        ),
+      ),
+    );
+  }
+
+  /// Smaller pill style for category — secondary filter row, so it
+  /// reads less dominant than the status row. Includes the category's
+  /// icon when applicable.
+  Widget _categoryPill(
+    String label,
+    ExpenseCategory? value,
+    bool selected,
+    VoidCallback onTap,
+  ) {
+    return Padding(
+      padding: EdgeInsets.only(right: 6.w),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+          decoration: BoxDecoration(
+            color: selected
+                ? const Color(0xFF3B82F6).withValues(alpha: 0.25)
+                : const Color(0xFF1F1F1F),
+            borderRadius: BorderRadius.circular(14.r),
+            border: Border.all(
+              color: selected
+                  ? const Color(0xFF3B82F6)
+                  : Colors.transparent,
+              width: 1,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (value != null) ...[
+                Icon(value.icon, color: Colors.white, size: 13.sp),
+                SizedBox(width: 6.w),
+              ],
+              Text(
+                label,
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 12.sp,
+                  fontWeight:
+                      selected ? FontWeight.w600 : FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
