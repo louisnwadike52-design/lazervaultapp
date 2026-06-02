@@ -10,6 +10,8 @@ import 'package:uuid/uuid.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/core/config/mono_config.dart';
+import 'package:lazervault/src/features/ai_scan_to_pay/presentation/widgets/mono_connect_widget.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
@@ -56,6 +58,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
   LinkedBankAccount? _selected;
   bool _loadingAccounts = true;
   bool _submitting = false;
+  bool _linking = false;
 
   String get _sourceAccountId =>
       (widget.selectedCard['id'] ?? widget.selectedCard['accountId'] ?? '')
@@ -98,6 +101,50 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
       userId: authState.profile.user.id,
       accessToken: authState.profile.session.accessToken,
     );
+  }
+
+  /// Link a new bank via Mono Connect, then pick it as the destination.
+  /// autoCreateMandate is false — a payout destination needs no debit mandate.
+  Future<void> _linkNewBank() async {
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) return;
+    if (!MonoConfig.isEnabled) {
+      _snack('Bank linking is not available right now.', _error);
+      return;
+    }
+    final user = authState.profile.user;
+    final name = '${user.firstName} ${user.lastName}'.trim();
+
+    final result = await showMonoConnectBottomSheet(
+      context: context,
+      publicKey: MonoConfig.publicKey,
+      customerName: name.isNotEmpty ? name : null,
+      customerEmail: user.email.isNotEmpty ? user.email : null,
+      reference: 'lzv_withdraw_link_${DateTime.now().millisecondsSinceEpoch}',
+    );
+    if (result == null || !mounted) return;
+
+    setState(() => _linking = true);
+    serviceLocator<OpenBankingCubit>().linkAccount(
+      userId: user.id,
+      code: result.code,
+      accessToken: authState.profile.session.accessToken,
+      autoCreateMandate: false,
+    );
+  }
+
+  void _onAccountLinked(LinkedBankAccount account) {
+    setState(() {
+      _linking = false;
+      final i = _linkedAccounts.indexWhere((a) => a.id == account.id);
+      if (i >= 0) {
+        _linkedAccounts[i] = account;
+      } else {
+        _linkedAccounts.insert(0, account);
+      }
+      _selected = account;
+    });
+    _snack('${account.bankName} linked.', _success);
   }
 
   // ===== Fee (mirrors banking-service CalculateWithdrawalFee NIP tiers) =====
@@ -294,9 +341,17 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
                     orElse: () => _linkedAccounts.first);
               }
             });
-          } else if (state is OpenBankingError &&
-              state.operation == 'fetchLinkedAccounts') {
-            setState(() => _loadingAccounts = false);
+          } else if (state is AccountLinked) {
+            _onAccountLinked(state.account);
+          } else if (state is AccountLinkedWithMandate) {
+            _onAccountLinked(state.account);
+          } else if (state is OpenBankingError) {
+            if (state.operation == 'fetchLinkedAccounts') {
+              setState(() => _loadingAccounts = false);
+            } else if (state.operation == 'linkAccount') {
+              setState(() => _linking = false);
+              _snack('Could not link the bank. Please try again.', _error);
+            }
           }
         },
         child: Scaffold(
@@ -308,7 +363,9 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
                 style: TextStyle(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w700)),
             iconTheme: const IconThemeData(color: Colors.white),
           ),
-          body: SafeArea(
+          body: Stack(
+            children: [
+              SafeArea(
             child: Column(
               children: [
                 Expanded(
@@ -323,11 +380,8 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
                         SizedBox(height: 24.h),
                         Text('Withdraw to',
                             style: TextStyle(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w700)),
-                        SizedBox(height: 4.h),
-                        Text('Choose one of your linked banks',
-                            style: TextStyle(color: _textSecondary, fontSize: 12.sp)),
                         SizedBox(height: 12.h),
-                        _buildAccountPicker(),
+                        _buildDestinationSelector(),
                       ],
                     ),
                   ),
@@ -335,6 +389,15 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
                 _buildBottomBar(),
               ],
             ),
+          ),
+              if (_linking)
+                const Positioned.fill(
+                  child: ColoredBox(
+                    color: Color(0x99000000),
+                    child: Center(child: CircularProgressIndicator(color: _accent)),
+                  ),
+                ),
+            ],
           ),
         ),
       ),
@@ -413,55 +476,116 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
     );
   }
 
-  Widget _buildAccountPicker() {
-    if (_loadingAccounts) {
-      return Padding(
-        padding: EdgeInsets.symmetric(vertical: 24.h),
-        child: const Center(child: CircularProgressIndicator(color: _accent)),
-      );
-    }
-    if (_linkedAccounts.isEmpty) {
-      return Container(
-        width: double.infinity,
-        padding: EdgeInsets.all(20.w),
+  /// Tappable destination row — opens the bank picker bottomsheet.
+  Widget _buildDestinationSelector() {
+    final acct = _selected;
+    return GestureDetector(
+      onTap: _loadingAccounts ? null : _openAccountSheet,
+      child: Container(
+        padding: EdgeInsets.all(14.w),
         decoration: BoxDecoration(
           color: _card,
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: _divider),
+          border: Border.all(color: acct != null ? _accent.withValues(alpha: 0.4) : _divider),
         ),
-        child: Column(
+        child: Row(
           children: [
-            Icon(Icons.account_balance_outlined, color: _textSecondary, size: 32.sp),
-            SizedBox(height: 10.h),
-            Text('No linked banks yet',
-                style: TextStyle(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w600)),
-            SizedBox(height: 4.h),
-            Text('Link a bank from the Deposit screen to withdraw to it.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: _textSecondary, fontSize: 12.sp)),
+            if (_loadingAccounts)
+              SizedBox(width: 42.w, height: 42.w, child: const Center(child: CircularProgressIndicator(color: _accent, strokeWidth: 2)))
+            else if (acct != null)
+              _bankLogoAvatar(acct.bankName)
+            else
+              Container(
+                width: 42.w, height: 42.w,
+                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(12.r)),
+                child: Icon(Icons.account_balance_outlined, color: _textSecondary, size: 20.sp),
+              ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(acct != null ? acct.bankName : 'Select a bank',
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w700)),
+                  SizedBox(height: 3.h),
+                  Text(
+                    acct != null ? acct.displayAccountNumber : 'Choose or link a bank to withdraw to',
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: Colors.white.withValues(alpha: 0.55), fontSize: 12.sp),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.keyboard_arrow_down, color: _textSecondary, size: 22.sp),
           ],
         ),
-      );
-    }
-    return Column(
-      children: _linkedAccounts.map(_buildAccountTile).toList(),
+      ),
     );
   }
 
-  Widget _buildAccountTile(LinkedBankAccount account) {
+  /// Bank picker bottomsheet: linked banks (tap to select) + "Link a new bank".
+  void _openAccountSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) => Container(
+        constraints: BoxConstraints(maxHeight: MediaQuery.of(sheetCtx).size.height * 0.8),
+        decoration: BoxDecoration(
+          color: const Color(0xFF26262E),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 12.h),
+              Center(
+                child: Container(
+                  width: 44.w, height: 4.h,
+                  decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.25), borderRadius: BorderRadius.circular(2.r)),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(22.w, 18.h, 22.w, 10.h),
+                child: Text('Withdraw to',
+                    style: TextStyle(color: Colors.white, fontSize: 19.sp, fontWeight: FontWeight.w700)),
+              ),
+              Flexible(
+                child: ListView(
+                  shrinkWrap: true,
+                  padding: EdgeInsets.fromLTRB(18.w, 0, 18.w, 8.h),
+                  children: [
+                    ..._linkedAccounts.map((a) => _buildSheetAccountTile(sheetCtx, a)),
+                    _buildLinkNewBankTile(sheetCtx),
+                  ],
+                ),
+              ),
+              SizedBox(height: 12.h),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSheetAccountTile(BuildContext sheetCtx, LinkedBankAccount account) {
     final selected = _selected?.id == account.id;
     return GestureDetector(
-      onTap: () => setState(() => _selected = account),
+      onTap: () {
+        setState(() => _selected = account);
+        Navigator.of(sheetCtx).pop();
+      },
       child: Container(
         margin: EdgeInsets.only(bottom: 10.h),
         padding: EdgeInsets.all(13.w),
         decoration: BoxDecoration(
-          color: selected ? _accent.withValues(alpha: 0.12) : Colors.white.withValues(alpha: 0.05),
+          color: selected ? _accent.withValues(alpha: 0.14) : Colors.white.withValues(alpha: 0.06),
           borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(
-            color: selected ? _accent : Colors.white.withValues(alpha: 0.08),
-            width: selected ? 1.5 : 1,
-          ),
+          border: Border.all(color: selected ? _accent : Colors.white.withValues(alpha: 0.08), width: selected ? 1.5 : 1),
         ),
         child: Row(
           children: [
@@ -482,6 +606,47 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
             ),
             Icon(selected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
                 color: selected ? _accent : _textSecondary, size: 20.sp),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLinkNewBankTile(BuildContext sheetCtx) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(sheetCtx).pop();
+        _linkNewBank();
+      },
+      child: Container(
+        margin: EdgeInsets.only(top: 2.h, bottom: 6.h),
+        padding: EdgeInsets.all(14.w),
+        decoration: BoxDecoration(
+          color: _accent.withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: _accent.withValues(alpha: 0.4)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 42.w, height: 42.w,
+              decoration: BoxDecoration(color: _accent.withValues(alpha: 0.18), borderRadius: BorderRadius.circular(12.r)),
+              child: Icon(Icons.add, color: _accent, size: 22.sp),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Link a new bank',
+                      style: TextStyle(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w700)),
+                  SizedBox(height: 3.h),
+                  Text('Securely connect a bank to withdraw to',
+                      style: TextStyle(color: Colors.white.withValues(alpha: 0.55), fontSize: 12.sp)),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right, color: _accent, size: 20.sp),
           ],
         ),
       ),
