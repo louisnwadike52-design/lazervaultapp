@@ -9,13 +9,13 @@ import 'package:uuid/uuid.dart';
 
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
-import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/core/config/mono_config.dart';
 import 'package:lazervault/src/features/ai_scan_to_pay/presentation/widgets/mono_connect_widget.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
+import 'package:lazervault/src/features/funds/presentation/view/withdrawal_receipt_screen.dart';
 import 'package:lazervault/src/features/open_banking/domain/entities/linked_bank_account.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
@@ -209,7 +209,6 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
   Future<void> _submit(LinkedBankAccount account, double amount,
       String transactionId, String verificationToken) async {
     setState(() => _submitting = true);
-    _showProcessing(account.bankName);
     try {
       final req = banking_pb.InitiateWithdrawalRequest()
         ..sourceAccountId = _sourceAccountId
@@ -228,65 +227,30 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
       final resp = await client.initiateWithdrawal(req, options: callOptions);
 
       if (!mounted) return;
-      Navigator.of(context, rootNavigator: true).pop(); // close processing
 
       if (resp.success) {
-        Get.offAllNamed(AppRoutes.dashboard);
-        Get.snackbar(
-          'Withdrawal started',
-          'Sending ${_money(amount)} to ${account.bankName}.',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: _success.withValues(alpha: 0.95),
-          colorText: Colors.white,
-          margin: EdgeInsets.all(12.w),
-        );
+        final fee = _feeFor(amount);
+        // Straight to the receipt — no intermediate processing modal.
+        Get.off(() => WithdrawalReceiptScreen(
+              amount: amount,
+              fee: fee,
+              totalDebited: amount + fee,
+              bankName: account.bankName.isNotEmpty ? account.bankName : 'Bank',
+              accountNumber: account.displayAccountNumber,
+              reference: resp.withdrawal.reference,
+              currencySymbol: _currencySymbol,
+              status: resp.withdrawal.status,
+            ));
       } else {
         _snack(resp.errorMessage.isNotEmpty ? resp.errorMessage : 'Withdrawal failed', _error);
       }
     } catch (e) {
       if (mounted) {
-        Navigator.of(context, rootNavigator: true).pop();
         _snack('Withdrawal failed. Please try again.', _error);
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
-  }
-
-  void _showProcessing(String bankName) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      barrierColor: Colors.black.withValues(alpha: 0.6),
-      builder: (_) => Center(
-        child: Container(
-          padding: EdgeInsets.all(24.w),
-          margin: EdgeInsets.symmetric(horizontal: 48.w),
-          decoration: BoxDecoration(
-            color: _card,
-            borderRadius: BorderRadius.circular(20.r),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(
-                width: 44.w,
-                height: 44.w,
-                child: const CircularProgressIndicator(color: _accent, strokeWidth: 3),
-              ),
-              SizedBox(height: 18.h),
-              Text('Sending to $bankName',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w600)),
-              SizedBox(height: 6.h),
-              Text('Securely processing your withdrawal',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: _textSecondary, fontSize: 12.sp)),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   void _snack(String msg, Color color) {
