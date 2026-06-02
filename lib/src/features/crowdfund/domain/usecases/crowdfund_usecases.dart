@@ -100,6 +100,8 @@ class UpdateCrowdfundUseCase {
     CrowdfundStatus? status,
     String? imageUrl,
     Map<String, dynamic>? metadata,
+    String? category,
+    double? targetAmount,
   }) {
     return repository.updateCrowdfund(
       crowdfundId: crowdfundId,
@@ -110,8 +112,46 @@ class UpdateCrowdfundUseCase {
       status: status,
       imageUrl: imageUrl,
       metadata: metadata,
+      category: category,
+      targetAmount: targetAmount,
     );
   }
+}
+
+class CancelCrowdfundUseCase {
+  final CrowdfundRepository repository;
+  CancelCrowdfundUseCase(this.repository);
+
+  Future<CancelCrowdfundResult> call({
+    required String crowdfundId,
+    required String reason,
+    required String transactionPin,
+    required String transactionId,
+  }) =>
+      repository.cancelCrowdfund(
+        crowdfundId: crowdfundId,
+        reason: reason,
+        transactionPin: transactionPin,
+        transactionId: transactionId,
+      );
+}
+
+class ListCrowdfundRefundsUseCase {
+  final CrowdfundRepository repository;
+  ListCrowdfundRefundsUseCase(this.repository);
+
+  Future<List<CrowdfundRefund>> call({
+    required String crowdfundId,
+    String? status,
+    int page = 1,
+    int pageSize = 50,
+  }) =>
+      repository.listCrowdfundRefunds(
+        crowdfundId: crowdfundId,
+        status: status,
+        page: page,
+        pageSize: pageSize,
+      );
 }
 
 class DeleteCrowdfundUseCase {

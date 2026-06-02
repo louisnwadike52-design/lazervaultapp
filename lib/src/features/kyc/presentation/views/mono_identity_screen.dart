@@ -35,11 +35,13 @@ class MonoIdentityScreen extends StatefulWidget {
 }
 
 class _MonoIdentityScreenState extends State<MonoIdentityScreen> {
-  // Theme colors
-  static const _background = Color(0xFF0A0A0A);
-  static const _cardBackground = Color(0xFF1F1F1F);
+  // Light-theme palette — matches signup / BVN / id_verification.
+  // (Previously dark: 0xFF0A0A0A / 0xFF1F1F1F.)
+  static const _background = Colors.white;
+  static const _cardBackground = Color(0xFFF5F5F5);
   static const _primary = Color(0xFF3B82F6);
-  static const _textSecondary = Color(0xFF9CA3AF);
+  static const _textPrimary = Colors.black;
+  static const _textSecondary = Colors.black54;
   static const _success = Color(0xFF10B981);
   static const _error = Color(0xFFEF4444);
 
@@ -196,6 +198,17 @@ class _MonoIdentityScreenState extends State<MonoIdentityScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _background,
@@ -205,13 +218,13 @@ class _MonoIdentityScreenState extends State<MonoIdentityScreen> {
         title: const Text(
           'BVN Verification',
           style: TextStyle(
-            color: Colors.white,
+            color: _textPrimary,
             fontSize: 18,
             fontWeight: FontWeight.w600,
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+          icon: const Icon(Icons.arrow_back_ios, color: _textPrimary, size: 20),
           onPressed: widget.onClose,
         ),
       ),
@@ -246,7 +259,7 @@ class _MonoIdentityScreenState extends State<MonoIdentityScreen> {
                 child: Text(
                   'Verify Your Identity with BVN',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: _textPrimary,
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
                   ),
@@ -400,7 +413,7 @@ class _MonoIdentityScreenState extends State<MonoIdentityScreen> {
                 Text(
                   title,
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: _textPrimary,
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                   ),

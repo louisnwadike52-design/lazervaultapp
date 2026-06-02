@@ -14,6 +14,8 @@ import '../cubit/electricity_bill_state.dart';
 import '../cubit/beneficiary_cubit.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/services/locale_manager.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import 'package:lazervault/core/theme/invoice_theme_colors.dart';
 import '../../utils/meter_validation.dart';
 import '../../../../../core/widgets/bill_history_item.dart';
@@ -361,6 +363,21 @@ class _ElectricityHomeScreenState extends State<ElectricityBillHomeScreen> {
                 fontWeight: FontWeight.w600,
               ),
             ),
+          ),
+          // Per-bill voice + chat icons — pin every session to the
+          // electricity flow on chat-products-service
+          // (DIRECT_ROUTES['electricity'] → primary 'utility').
+          ServiceVoiceButton(
+            serviceName: 'electricity',
+            iconColor: const Color(0xFFFB923C),
+            backgroundColor: const Color(0xFFFB923C),
+          ),
+          SizedBox(width: 8.w),
+          MicroserviceChatIcon(
+            serviceName: 'Electricity',
+            sourceContext: 'electricity',
+            icon: Icons.chat_bubble_outline,
+            iconColor: const Color(0xFFFB923C),
           ),
         ],
       ),

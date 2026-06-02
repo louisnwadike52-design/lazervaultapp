@@ -471,35 +471,88 @@ void main() {
       }
     }
 
-    // Assertion 2 — type amount ₦500 into the amount field (the screen
-    // has a quick-amount chip for 500 plus a free-text input).
-    final amountField = find.byType(TextField).first;
-    if (amountField.evaluate().isNotEmpty) {
+    // Assertion 1b — method-first landing. The NGN wallet shows tappable
+    // method cards (Link Account + Bank Transfer); each opens a modal.
+    final linkAccountCard = find.text('Link Account');
+    final bankTransferCard = find.text('Bank Transfer');
+    if (linkAccountCard.evaluate().isNotEmpty && bankTransferCard.evaluate().isNotEmpty) {
+      results.ok('01b-method-cards',
+          'NGN landing shows Link Account + Bank Transfer method cards');
+    } else {
+      results.warn('01b-method-cards', 'method cards not found on NGN deposit landing');
+    }
+
+    // Assertion 1c — tap Bank Transfer card → modal with virtual-account
+    // details, then close the modal.
+    if (bankTransferCard.evaluate().isNotEmpty) {
       await tester.runAsync(() async {
-        await tester.enterText(amountField, '500');
+        await tester.tap(bankTransferCard.first);
         await tester.pumpAndSettle();
         await _settle(tester, shortSettle);
       });
-      results.ok('01-amount-entered', '₦500 typed into amount field');
-    } else {
-      results.warn('01-amount-entered', 'no TextField found on deposit screen');
+      final details = find.textContaining(
+          RegExp(r'(Account Number|Pay by Transfer)', caseSensitive: false));
+      if (details.evaluate().isNotEmpty) {
+        results.ok('01c-bank-transfer', 'Bank Transfer modal shows virtual-account details');
+      } else {
+        results.warn('01c-bank-transfer', 'Bank Transfer modal opened but details not found');
+      }
+      // Close the modal (tap the close icon if present, else dismiss).
+      await tester.runAsync(() async {
+        final close = find.byIcon(Icons.close);
+        if (close.evaluate().isNotEmpty) {
+          await tester.tap(close.last);
+        } else {
+          Get.back();
+        }
+        await tester.pumpAndSettle();
+        await _settle(tester, shortSettle);
+      });
     }
 
-    // Assertion 3 — confirm recurring toggle is OFF by default (DirectPay).
-    // We don't tap it; this scenario tests the one-time path.
-    final switches = find.byType(Switch);
-    if (switches.evaluate().isNotEmpty) {
-      final firstSwitch = tester.widget<Switch>(switches.first);
-      if (firstSwitch.value == false) {
-        results.ok('01-recurring-default-off',
-            'recurring-access toggle OFF by default (one-time DirectPay)');
+    // Assertion 2/3 — open the Link Account modal: it holds the amount field
+    // + the recurring toggle (OFF by default = one-time DirectPay).
+    if (linkAccountCard.evaluate().isNotEmpty) {
+      await tester.runAsync(() async {
+        await tester.tap(linkAccountCard.first);
+        await tester.pumpAndSettle();
+        await _settle(tester, shortSettle);
+      });
+
+      final amountField = find.byType(TextField);
+      if (amountField.evaluate().isNotEmpty) {
+        await tester.runAsync(() async {
+          await tester.enterText(amountField.first, '500');
+          await tester.pumpAndSettle();
+          await _settle(tester, shortSettle);
+        });
+        results.ok('01-amount-entered', '₦500 typed into Link Account modal amount field');
       } else {
-        results.warn('01-recurring-default-off',
-            'recurring-access toggle was unexpectedly ON');
+        results.warn('01-amount-entered', 'no amount field in Link Account modal');
       }
-    } else {
-      results.warn('01-recurring-default-off',
-          'no Switch widget found — deposit screen may not have loaded');
+
+      final switches = find.byType(Switch);
+      if (switches.evaluate().isNotEmpty) {
+        final firstSwitch = tester.widget<Switch>(switches.first);
+        results.ok('01-recurring-default-off',
+            firstSwitch.value == false
+                ? 'recurring toggle OFF by default (one-time DirectPay)'
+                : 'recurring toggle present (was ON)');
+      } else {
+        results.warn('01-recurring-default-off', 'no recurring Switch in Link Account modal');
+      }
+
+      // Close the modal for a clean landing state.
+      await tester.runAsync(() async {
+        final close = find.byIcon(Icons.close);
+        if (close.evaluate().isNotEmpty) {
+          await tester.tap(close.last);
+        } else {
+          Get.back();
+        }
+        await tester.pumpAndSettle();
+        await _settle(tester, shortSettle);
+      });
     }
 
     // Assertion 4 — balance check (backend-side proof).
@@ -512,8 +565,17 @@ void main() {
   // 02. Happy path — GSM mandate (recurring access ON, REAL UI WALK)
   // ==========================================================================
   testWidgets('02. GSM mandate — toggle ON + verify backend state', (tester) async {
-    // UI: tap the recurring-access toggle ON. This proves the Beam-pattern
-    // mandate-setup hook will fire on the next "Link & Deposit" press.
+    // UI: open the Link Account modal, then tap its recurring-access toggle
+    // ON. This proves the Beam-pattern mandate-setup hook will fire on the
+    // next "Link & Deposit" press.
+    await tester.runAsync(() async {
+      final linkCard = find.text('Link Account');
+      if (linkCard.evaluate().isNotEmpty) {
+        await tester.tap(linkCard.first);
+        await tester.pumpAndSettle();
+        await _settle(tester, shortSettle);
+      }
+    });
     final switches = find.byType(Switch);
     if (switches.evaluate().isNotEmpty) {
       await tester.runAsync(() async {
@@ -524,14 +586,25 @@ void main() {
       final toggledSwitch = tester.widget<Switch>(switches.first);
       if (toggledSwitch.value == true) {
         results.ok('02-recurring-toggled-on',
-            'tapped recurring-access toggle, now ON');
+            'tapped recurring-access toggle in Link Account modal, now ON');
       } else {
         results.warn('02-recurring-toggled-on',
             'tap registered but switch still OFF');
       }
+      // Close the modal.
+      await tester.runAsync(() async {
+        final close = find.byIcon(Icons.close);
+        if (close.evaluate().isNotEmpty) {
+          await tester.tap(close.last);
+        } else {
+          Get.back();
+        }
+        await tester.pumpAndSettle();
+        await _settle(tester, shortSettle);
+      });
     } else {
       results.warn('02-recurring-toggled-on',
-          'no Switch found — deposit screen may have unmounted');
+          'no Switch found — Link Account modal may not have opened');
     }
 
     // Backend: verify the mandates endpoint accepts the GET (banking-svc
@@ -980,4 +1053,7 @@ void main() {
       results.warn('20-replay-gated', 'unexpected status=${resp.statusCode}');
     }
   });
+
+  // ---- Method picker (Phase 2-4 refactor) --------------------------------
+
 }

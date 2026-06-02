@@ -29,7 +29,7 @@ class _RecipientChipsBuilderState extends State<RecipientChipsBuilder> {
     RecipientFilterChip(text: 'All', filterType: RecipientFilterType.all, isSelected: true),
     RecipientFilterChip(text: 'Recent', filterType: RecipientFilterType.recent, isSelected: false),
     RecipientFilterChip(text: 'Favorites', filterType: RecipientFilterType.favorites, isSelected: false),
-    RecipientFilterChip(text: 'Bank', filterType: RecipientFilterType.bank, isSelected: false),
+    RecipientFilterChip(text: 'Recurring', filterType: RecipientFilterType.recurring, isSelected: false),
   ];
 
   @override

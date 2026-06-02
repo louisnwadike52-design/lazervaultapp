@@ -249,7 +249,7 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
         );
       }
 
-      // Update local cache
+      // Update local cache (unlink)
       _linkedAccounts.removeWhere((a) => a.id == accountId);
       if (_defaultAccount?.id == accountId) {
         _defaultAccount = _linkedAccounts.isNotEmpty ? _linkedAccounts.first : null;

@@ -9,7 +9,7 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/struct.pb.dart' as $49;
+import 'google/protobuf/struct.pb.dart' as $50;
 
 class SendDirectMessageRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SendDirectMessageRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'directchat'), createEmptyInstance: create)
@@ -21,7 +21,7 @@ class SendDirectMessageRequest extends $pb.GeneratedMessage {
     ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountId')
     ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userCountry')
     ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOM<$49.Struct>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'entities', subBuilder: $49.Struct.create)
+    ..aOM<$50.Struct>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'entities', subBuilder: $50.Struct.create)
     ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'responseStyleInstruction')
     ..hasRequiredFields = false
   ;
@@ -36,7 +36,7 @@ class SendDirectMessageRequest extends $pb.GeneratedMessage {
     $core.String? accountId,
     $core.String? userCountry,
     $core.String? currency,
-    $49.Struct? entities,
+    $50.Struct? entities,
     $core.String? responseStyleInstruction,
   }) {
     final _result = create();
@@ -166,15 +166,15 @@ class SendDirectMessageRequest extends $pb.GeneratedMessage {
   void clearCurrency() => clearField(8);
 
   @$pb.TagNumber(9)
-  $49.Struct get entities => $_getN(8);
+  $50.Struct get entities => $_getN(8);
   @$pb.TagNumber(9)
-  set entities($49.Struct v) { setField(9, v); }
+  set entities($50.Struct v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasEntities() => $_has(8);
   @$pb.TagNumber(9)
   void clearEntities() => clearField(9);
   @$pb.TagNumber(9)
-  $49.Struct ensureEntities() => $_ensure(8);
+  $50.Struct ensureEntities() => $_ensure(8);
 
   @$pb.TagNumber(10)
   $core.String get responseStyleInstruction => $_getSZ(9);
@@ -192,7 +192,7 @@ class SendDirectMessageResponse extends $pb.GeneratedMessage {
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'response')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'serviceRoutedTo')
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sessionId')
-    ..aOM<$49.Struct>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'entities', subBuilder: $49.Struct.create)
+    ..aOM<$50.Struct>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'entities', subBuilder: $50.Struct.create)
     ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'conversationState')
     ..hasRequiredFields = false
   ;
@@ -203,7 +203,7 @@ class SendDirectMessageResponse extends $pb.GeneratedMessage {
     $core.String? response,
     $core.String? serviceRoutedTo,
     $core.String? sessionId,
-    $49.Struct? entities,
+    $50.Struct? entities,
     $core.String? conversationState,
   }) {
     final _result = create();
@@ -285,15 +285,15 @@ class SendDirectMessageResponse extends $pb.GeneratedMessage {
   void clearSessionId() => clearField(4);
 
   @$pb.TagNumber(5)
-  $49.Struct get entities => $_getN(4);
+  $50.Struct get entities => $_getN(4);
   @$pb.TagNumber(5)
-  set entities($49.Struct v) { setField(5, v); }
+  set entities($50.Struct v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasEntities() => $_has(4);
   @$pb.TagNumber(5)
   void clearEntities() => clearField(5);
   @$pb.TagNumber(5)
-  $49.Struct ensureEntities() => $_ensure(4);
+  $50.Struct ensureEntities() => $_ensure(4);
 
   @$pb.TagNumber(6)
   $core.String get conversationState => $_getSZ(5);
@@ -415,7 +415,7 @@ class DirectChatHistoryMessage extends $pb.GeneratedMessage {
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'service')
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceContext')
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt')
-    ..aOM<$49.Struct>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'entities', subBuilder: $49.Struct.create)
+    ..aOM<$50.Struct>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'entities', subBuilder: $50.Struct.create)
     ..hasRequiredFields = false
   ;
 
@@ -426,7 +426,7 @@ class DirectChatHistoryMessage extends $pb.GeneratedMessage {
     $core.String? service,
     $core.String? sourceContext,
     $core.String? createdAt,
-    $49.Struct? entities,
+    $50.Struct? entities,
   }) {
     final _result = create();
     if (role != null) {
@@ -516,15 +516,15 @@ class DirectChatHistoryMessage extends $pb.GeneratedMessage {
   void clearCreatedAt() => clearField(5);
 
   @$pb.TagNumber(6)
-  $49.Struct get entities => $_getN(5);
+  $50.Struct get entities => $_getN(5);
   @$pb.TagNumber(6)
-  set entities($49.Struct v) { setField(6, v); }
+  set entities($50.Struct v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasEntities() => $_has(5);
   @$pb.TagNumber(6)
   void clearEntities() => clearField(6);
   @$pb.TagNumber(6)
-  $49.Struct ensureEntities() => $_ensure(5);
+  $50.Struct ensureEntities() => $_ensure(5);
 }
 
 class GetDirectChatHistoryResponse extends $pb.GeneratedMessage {

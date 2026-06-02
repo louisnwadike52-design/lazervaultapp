@@ -17,11 +17,13 @@ const CrowdfundStatus$json = const {
     const {'1': 'CROWDFUND_STATUS_PAUSED', '2': 2},
     const {'1': 'CROWDFUND_STATUS_COMPLETED', '2': 3},
     const {'1': 'CROWDFUND_STATUS_CANCELLED', '2': 4},
+    const {'1': 'CROWDFUND_STATUS_CANCELLING', '2': 5},
+    const {'1': 'CROWDFUND_STATUS_EXPIRED', '2': 6},
   ],
 };
 
 /// Descriptor for `CrowdfundStatus`. Decode as a `google.protobuf.EnumDescriptorProto`.
-final $typed_data.Uint8List crowdfundStatusDescriptor = $convert.base64Decode('Cg9Dcm93ZGZ1bmRTdGF0dXMSIAocQ1JPV0RGVU5EX1NUQVRVU19VTlNQRUNJRklFRBAAEhsKF0NST1dERlVORF9TVEFUVVNfQUNUSVZFEAESGwoXQ1JPV0RGVU5EX1NUQVRVU19QQVVTRUQQAhIeChpDUk9XREZVTkRfU1RBVFVTX0NPTVBMRVRFRBADEh4KGkNST1dERlVORF9TVEFUVVNfQ0FOQ0VMTEVEEAQ=');
+final $typed_data.Uint8List crowdfundStatusDescriptor = $convert.base64Decode('Cg9Dcm93ZGZ1bmRTdGF0dXMSIAocQ1JPV0RGVU5EX1NUQVRVU19VTlNQRUNJRklFRBAAEhsKF0NST1dERlVORF9TVEFUVVNfQUNUSVZFEAESGwoXQ1JPV0RGVU5EX1NUQVRVU19QQVVTRUQQAhIeChpDUk9XREZVTkRfU1RBVFVTX0NPTVBMRVRFRBADEh4KGkNST1dERlVORF9TVEFUVVNfQ0FOQ0VMTEVEEAQSHwobQ1JPV0RGVU5EX1NUQVRVU19DQU5DRUxMSU5HEAUSHAoYQ1JPV0RGVU5EX1NUQVRVU19FWFBJUkVEEAY=');
 @$core.Deprecated('Use crowdfundVisibilityDescriptor instead')
 const CrowdfundVisibility$json = const {
   '1': 'CrowdfundVisibility',
@@ -155,11 +157,19 @@ const CrowdfundMessage$json = const {
     const {'1': 'created_at', '3': 19, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
     const {'1': 'updated_at', '3': 20, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
     const {'1': 'recent_donations', '3': 21, '4': 3, '5': 11, '6': '.pb.CrowdfundDonationMessage', '10': 'recentDonations'},
+    const {'1': 'cancel_reason', '3': 22, '4': 1, '5': 9, '10': 'cancelReason'},
+    const {'1': 'cancel_initiated_by', '3': 23, '4': 1, '5': 9, '10': 'cancelInitiatedBy'},
+    const {'1': 'cancel_initiator_user_id', '3': 24, '4': 1, '5': 9, '10': 'cancelInitiatorUserId'},
+    const {'1': 'cancelled_at', '3': 25, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'cancelledAt'},
+    const {'1': 'refunds_pending', '3': 26, '4': 1, '5': 5, '10': 'refundsPending'},
+    const {'1': 'refunds_completed', '3': 27, '4': 1, '5': 5, '10': 'refundsCompleted'},
+    const {'1': 'refunds_failed', '3': 28, '4': 1, '5': 5, '10': 'refundsFailed'},
+    const {'1': 'total_refunded', '3': 29, '4': 1, '5': 4, '10': 'totalRefunded'},
   ],
 };
 
 /// Descriptor for `CrowdfundMessage`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List crowdfundMessageDescriptor = $convert.base64Decode('ChBDcm93ZGZ1bmRNZXNzYWdlEg4KAmlkGAEgASgJUgJpZBImCg9jcmVhdG9yX3VzZXJfaWQYAiABKARSDWNyZWF0b3JVc2VySWQSNQoHY3JlYXRvchgDIAEoCzIbLnBiLkNyb3dkZnVuZENyZWF0b3JNZXNzYWdlUgdjcmVhdG9yEhQKBXRpdGxlGAQgASgJUgV0aXRsZRIgCgtkZXNjcmlwdGlvbhgFIAEoCVILZGVzY3JpcHRpb24SFAoFc3RvcnkYBiABKAlSBXN0b3J5EiUKDmNyb3dkZnVuZF9jb2RlGAcgASgJUg1jcm93ZGZ1bmRDb2RlEiMKDXRhcmdldF9hbW91bnQYCCABKARSDHRhcmdldEFtb3VudBIlCg5jdXJyZW50X2Ftb3VudBgJIAEoBFINY3VycmVudEFtb3VudBIaCghjdXJyZW5jeRgKIAEoCVIIY3VycmVuY3kSNgoIZGVhZGxpbmUYCyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUghkZWFkbGluZRIaCghjYXRlZ29yeRgMIAEoCVIIY2F0ZWdvcnkSKwoGc3RhdHVzGA0gASgOMhMucGIuQ3Jvd2RmdW5kU3RhdHVzUgZzdGF0dXMSGwoJaW1hZ2VfdXJsGA4gASgJUghpbWFnZVVybBI3Cgp2aXNpYmlsaXR5GA8gASgOMhcucGIuQ3Jvd2RmdW5kVmlzaWJpbGl0eVIKdmlzaWJpbGl0eRIaCghtZXRhZGF0YRgQIAEoCVIIbWV0YWRhdGESHwoLZG9ub3JfY291bnQYESABKAVSCmRvbm9yQ291bnQSLwoTcHJvZ3Jlc3NfcGVyY2VudGFnZRgSIAEoAVIScHJvZ3Jlc3NQZXJjZW50YWdlEjkKCmNyZWF0ZWRfYXQYEyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgljcmVhdGVkQXQSOQoKdXBkYXRlZF9hdBgUIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCXVwZGF0ZWRBdBJHChByZWNlbnRfZG9uYXRpb25zGBUgAygLMhwucGIuQ3Jvd2RmdW5kRG9uYXRpb25NZXNzYWdlUg9yZWNlbnREb25hdGlvbnM=');
+final $typed_data.Uint8List crowdfundMessageDescriptor = $convert.base64Decode('ChBDcm93ZGZ1bmRNZXNzYWdlEg4KAmlkGAEgASgJUgJpZBImCg9jcmVhdG9yX3VzZXJfaWQYAiABKARSDWNyZWF0b3JVc2VySWQSNQoHY3JlYXRvchgDIAEoCzIbLnBiLkNyb3dkZnVuZENyZWF0b3JNZXNzYWdlUgdjcmVhdG9yEhQKBXRpdGxlGAQgASgJUgV0aXRsZRIgCgtkZXNjcmlwdGlvbhgFIAEoCVILZGVzY3JpcHRpb24SFAoFc3RvcnkYBiABKAlSBXN0b3J5EiUKDmNyb3dkZnVuZF9jb2RlGAcgASgJUg1jcm93ZGZ1bmRDb2RlEiMKDXRhcmdldF9hbW91bnQYCCABKARSDHRhcmdldEFtb3VudBIlCg5jdXJyZW50X2Ftb3VudBgJIAEoBFINY3VycmVudEFtb3VudBIaCghjdXJyZW5jeRgKIAEoCVIIY3VycmVuY3kSNgoIZGVhZGxpbmUYCyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUghkZWFkbGluZRIaCghjYXRlZ29yeRgMIAEoCVIIY2F0ZWdvcnkSKwoGc3RhdHVzGA0gASgOMhMucGIuQ3Jvd2RmdW5kU3RhdHVzUgZzdGF0dXMSGwoJaW1hZ2VfdXJsGA4gASgJUghpbWFnZVVybBI3Cgp2aXNpYmlsaXR5GA8gASgOMhcucGIuQ3Jvd2RmdW5kVmlzaWJpbGl0eVIKdmlzaWJpbGl0eRIaCghtZXRhZGF0YRgQIAEoCVIIbWV0YWRhdGESHwoLZG9ub3JfY291bnQYESABKAVSCmRvbm9yQ291bnQSLwoTcHJvZ3Jlc3NfcGVyY2VudGFnZRgSIAEoAVIScHJvZ3Jlc3NQZXJjZW50YWdlEjkKCmNyZWF0ZWRfYXQYEyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgljcmVhdGVkQXQSOQoKdXBkYXRlZF9hdBgUIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCXVwZGF0ZWRBdBJHChByZWNlbnRfZG9uYXRpb25zGBUgAygLMhwucGIuQ3Jvd2RmdW5kRG9uYXRpb25NZXNzYWdlUg9yZWNlbnREb25hdGlvbnMSIwoNY2FuY2VsX3JlYXNvbhgWIAEoCVIMY2FuY2VsUmVhc29uEi4KE2NhbmNlbF9pbml0aWF0ZWRfYnkYFyABKAlSEWNhbmNlbEluaXRpYXRlZEJ5EjcKGGNhbmNlbF9pbml0aWF0b3JfdXNlcl9pZBgYIAEoCVIVY2FuY2VsSW5pdGlhdG9yVXNlcklkEj0KDGNhbmNlbGxlZF9hdBgZIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSC2NhbmNlbGxlZEF0EicKD3JlZnVuZHNfcGVuZGluZxgaIAEoBVIOcmVmdW5kc1BlbmRpbmcSKwoRcmVmdW5kc19jb21wbGV0ZWQYGyABKAVSEHJlZnVuZHNDb21wbGV0ZWQSJQoOcmVmdW5kc19mYWlsZWQYHCABKAVSDXJlZnVuZHNGYWlsZWQSJQoOdG90YWxfcmVmdW5kZWQYHSABKARSDXRvdGFsUmVmdW5kZWQ=');
 @$core.Deprecated('Use crowdfundDonorMessageDescriptor instead')
 const CrowdfundDonorMessage$json = const {
   '1': 'CrowdfundDonorMessage',
@@ -327,11 +337,13 @@ const UpdateCrowdfundRequest$json = const {
     const {'1': 'status', '3': 6, '4': 1, '5': 14, '6': '.pb.CrowdfundStatus', '10': 'status'},
     const {'1': 'image_url', '3': 7, '4': 1, '5': 9, '10': 'imageUrl'},
     const {'1': 'metadata', '3': 8, '4': 1, '5': 9, '10': 'metadata'},
+    const {'1': 'category', '3': 9, '4': 1, '5': 9, '10': 'category'},
+    const {'1': 'target_amount', '3': 10, '4': 1, '5': 4, '10': 'targetAmount'},
   ],
 };
 
 /// Descriptor for `UpdateCrowdfundRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateCrowdfundRequestDescriptor = $convert.base64Decode('ChZVcGRhdGVDcm93ZGZ1bmRSZXF1ZXN0EiEKDGNyb3dkZnVuZF9pZBgBIAEoCVILY3Jvd2RmdW5kSWQSFAoFdGl0bGUYAiABKAlSBXRpdGxlEiAKC2Rlc2NyaXB0aW9uGAMgASgJUgtkZXNjcmlwdGlvbhIUCgVzdG9yeRgEIAEoCVIFc3RvcnkSNgoIZGVhZGxpbmUYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUghkZWFkbGluZRIrCgZzdGF0dXMYBiABKA4yEy5wYi5Dcm93ZGZ1bmRTdGF0dXNSBnN0YXR1cxIbCglpbWFnZV91cmwYByABKAlSCGltYWdlVXJsEhoKCG1ldGFkYXRhGAggASgJUghtZXRhZGF0YQ==');
+final $typed_data.Uint8List updateCrowdfundRequestDescriptor = $convert.base64Decode('ChZVcGRhdGVDcm93ZGZ1bmRSZXF1ZXN0EiEKDGNyb3dkZnVuZF9pZBgBIAEoCVILY3Jvd2RmdW5kSWQSFAoFdGl0bGUYAiABKAlSBXRpdGxlEiAKC2Rlc2NyaXB0aW9uGAMgASgJUgtkZXNjcmlwdGlvbhIUCgVzdG9yeRgEIAEoCVIFc3RvcnkSNgoIZGVhZGxpbmUYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUghkZWFkbGluZRIrCgZzdGF0dXMYBiABKA4yEy5wYi5Dcm93ZGZ1bmRTdGF0dXNSBnN0YXR1cxIbCglpbWFnZV91cmwYByABKAlSCGltYWdlVXJsEhoKCG1ldGFkYXRhGAggASgJUghtZXRhZGF0YRIaCghjYXRlZ29yeRgJIAEoCVIIY2F0ZWdvcnkSIwoNdGFyZ2V0X2Ftb3VudBgKIAEoBFIMdGFyZ2V0QW1vdW50');
 @$core.Deprecated('Use updateCrowdfundResponseDescriptor instead')
 const UpdateCrowdfundResponse$json = const {
   '1': 'UpdateCrowdfundResponse',
@@ -763,6 +775,84 @@ const CrowdfundReceiptPaginationInfo$json = const {
 
 /// Descriptor for `CrowdfundReceiptPaginationInfo`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List crowdfundReceiptPaginationInfoDescriptor = $convert.base64Decode('Ch5Dcm93ZGZ1bmRSZWNlaXB0UGFnaW5hdGlvbkluZm8SIQoMY3VycmVudF9wYWdlGAEgASgFUgtjdXJyZW50UGFnZRIfCgt0b3RhbF9wYWdlcxgCIAEoBVIKdG90YWxQYWdlcxIfCgt0b3RhbF9pdGVtcxgDIAEoBVIKdG90YWxJdGVtcxIkCg5pdGVtc19wZXJfcGFnZRgEIAEoBVIMaXRlbXNQZXJQYWdlEhkKCGhhc19uZXh0GAUgASgIUgdoYXNOZXh0EhkKCGhhc19wcmV2GAYgASgIUgdoYXNQcmV2');
+@$core.Deprecated('Use cancelCrowdfundRequestDescriptor instead')
+const CancelCrowdfundRequest$json = const {
+  '1': 'CancelCrowdfundRequest',
+  '2': const [
+    const {'1': 'crowdfund_id', '3': 1, '4': 1, '5': 9, '10': 'crowdfundId'},
+    const {'1': 'reason', '3': 2, '4': 1, '5': 9, '10': 'reason'},
+    const {'1': 'transaction_pin', '3': 3, '4': 1, '5': 9, '10': 'transactionPin'},
+    const {'1': 'transaction_id', '3': 4, '4': 1, '5': 9, '10': 'transactionId'},
+  ],
+};
+
+/// Descriptor for `CancelCrowdfundRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List cancelCrowdfundRequestDescriptor = $convert.base64Decode('ChZDYW5jZWxDcm93ZGZ1bmRSZXF1ZXN0EiEKDGNyb3dkZnVuZF9pZBgBIAEoCVILY3Jvd2RmdW5kSWQSFgoGcmVhc29uGAIgASgJUgZyZWFzb24SJwoPdHJhbnNhY3Rpb25fcGluGAMgASgJUg50cmFuc2FjdGlvblBpbhIlCg50cmFuc2FjdGlvbl9pZBgEIAEoCVINdHJhbnNhY3Rpb25JZA==');
+@$core.Deprecated('Use cancelCrowdfundResponseDescriptor instead')
+const CancelCrowdfundResponse$json = const {
+  '1': 'CancelCrowdfundResponse',
+  '2': const [
+    const {'1': 'crowdfund', '3': 1, '4': 1, '5': 11, '6': '.pb.CrowdfundMessage', '10': 'crowdfund'},
+    const {'1': 'total_contributions', '3': 2, '4': 1, '5': 5, '10': 'totalContributions'},
+    const {'1': 'refunds_queued', '3': 3, '4': 1, '5': 5, '10': 'refundsQueued'},
+    const {'1': 'total_refund_amount', '3': 4, '4': 1, '5': 4, '10': 'totalRefundAmount'},
+    const {'1': 'message', '3': 5, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `CancelCrowdfundResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List cancelCrowdfundResponseDescriptor = $convert.base64Decode('ChdDYW5jZWxDcm93ZGZ1bmRSZXNwb25zZRIyCgljcm93ZGZ1bmQYASABKAsyFC5wYi5Dcm93ZGZ1bmRNZXNzYWdlUgljcm93ZGZ1bmQSLwoTdG90YWxfY29udHJpYnV0aW9ucxgCIAEoBVISdG90YWxDb250cmlidXRpb25zEiUKDnJlZnVuZHNfcXVldWVkGAMgASgFUg1yZWZ1bmRzUXVldWVkEi4KE3RvdGFsX3JlZnVuZF9hbW91bnQYBCABKARSEXRvdGFsUmVmdW5kQW1vdW50EhgKB21lc3NhZ2UYBSABKAlSB21lc3NhZ2U=');
+@$core.Deprecated('Use crowdfundRefundRecordDescriptor instead')
+const CrowdfundRefundRecord$json = const {
+  '1': 'CrowdfundRefundRecord',
+  '2': const [
+    const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    const {'1': 'contribution_id', '3': 2, '4': 1, '5': 9, '10': 'contributionId'},
+    const {'1': 'crowdfund_id', '3': 3, '4': 1, '5': 9, '10': 'crowdfundId'},
+    const {'1': 'contributor_user_id', '3': 4, '4': 1, '5': 4, '10': 'contributorUserId'},
+    const {'1': 'contributor_display_name', '3': 5, '4': 1, '5': 9, '10': 'contributorDisplayName'},
+    const {'1': 'destination_account_id', '3': 6, '4': 1, '5': 9, '10': 'destinationAccountId'},
+    const {'1': 'amount', '3': 7, '4': 1, '5': 4, '10': 'amount'},
+    const {'1': 'currency', '3': 8, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'status', '3': 9, '4': 1, '5': 9, '10': 'status'},
+    const {'1': 'initiated_by', '3': 10, '4': 1, '5': 9, '10': 'initiatedBy'},
+    const {'1': 'reason', '3': 11, '4': 1, '5': 9, '10': 'reason'},
+    const {'1': 'attempt_count', '3': 12, '4': 1, '5': 5, '10': 'attemptCount'},
+    const {'1': 'last_error', '3': 13, '4': 1, '5': 9, '10': 'lastError'},
+    const {'1': 'created_at', '3': 14, '4': 1, '5': 9, '10': 'createdAt'},
+    const {'1': 'updated_at', '3': 15, '4': 1, '5': 9, '10': 'updatedAt'},
+  ],
+};
+
+/// Descriptor for `CrowdfundRefundRecord`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List crowdfundRefundRecordDescriptor = $convert.base64Decode('ChVDcm93ZGZ1bmRSZWZ1bmRSZWNvcmQSDgoCaWQYASABKAlSAmlkEicKD2NvbnRyaWJ1dGlvbl9pZBgCIAEoCVIOY29udHJpYnV0aW9uSWQSIQoMY3Jvd2RmdW5kX2lkGAMgASgJUgtjcm93ZGZ1bmRJZBIuChNjb250cmlidXRvcl91c2VyX2lkGAQgASgEUhFjb250cmlidXRvclVzZXJJZBI4Chhjb250cmlidXRvcl9kaXNwbGF5X25hbWUYBSABKAlSFmNvbnRyaWJ1dG9yRGlzcGxheU5hbWUSNAoWZGVzdGluYXRpb25fYWNjb3VudF9pZBgGIAEoCVIUZGVzdGluYXRpb25BY2NvdW50SWQSFgoGYW1vdW50GAcgASgEUgZhbW91bnQSGgoIY3VycmVuY3kYCCABKAlSCGN1cnJlbmN5EhYKBnN0YXR1cxgJIAEoCVIGc3RhdHVzEiEKDGluaXRpYXRlZF9ieRgKIAEoCVILaW5pdGlhdGVkQnkSFgoGcmVhc29uGAsgASgJUgZyZWFzb24SIwoNYXR0ZW1wdF9jb3VudBgMIAEoBVIMYXR0ZW1wdENvdW50Eh0KCmxhc3RfZXJyb3IYDSABKAlSCWxhc3RFcnJvchIdCgpjcmVhdGVkX2F0GA4gASgJUgljcmVhdGVkQXQSHQoKdXBkYXRlZF9hdBgPIAEoCVIJdXBkYXRlZEF0');
+@$core.Deprecated('Use listCrowdfundRefundsRequestDescriptor instead')
+const ListCrowdfundRefundsRequest$json = const {
+  '1': 'ListCrowdfundRefundsRequest',
+  '2': const [
+    const {'1': 'crowdfund_id', '3': 1, '4': 1, '5': 9, '10': 'crowdfundId'},
+    const {'1': 'status', '3': 2, '4': 1, '5': 9, '10': 'status'},
+    const {'1': 'page', '3': 3, '4': 1, '5': 5, '10': 'page'},
+    const {'1': 'page_size', '3': 4, '4': 1, '5': 5, '10': 'pageSize'},
+  ],
+};
+
+/// Descriptor for `ListCrowdfundRefundsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List listCrowdfundRefundsRequestDescriptor = $convert.base64Decode('ChtMaXN0Q3Jvd2RmdW5kUmVmdW5kc1JlcXVlc3QSIQoMY3Jvd2RmdW5kX2lkGAEgASgJUgtjcm93ZGZ1bmRJZBIWCgZzdGF0dXMYAiABKAlSBnN0YXR1cxISCgRwYWdlGAMgASgFUgRwYWdlEhsKCXBhZ2Vfc2l6ZRgEIAEoBVIIcGFnZVNpemU=');
+@$core.Deprecated('Use listCrowdfundRefundsResponseDescriptor instead')
+const ListCrowdfundRefundsResponse$json = const {
+  '1': 'ListCrowdfundRefundsResponse',
+  '2': const [
+    const {'1': 'refunds', '3': 1, '4': 3, '5': 11, '6': '.pb.CrowdfundRefundRecord', '10': 'refunds'},
+    const {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
+    const {'1': 'page', '3': 3, '4': 1, '5': 5, '10': 'page'},
+    const {'1': 'page_size', '3': 4, '4': 1, '5': 5, '10': 'pageSize'},
+    const {'1': 'has_more', '3': 5, '4': 1, '5': 8, '10': 'hasMore'},
+  ],
+};
+
+/// Descriptor for `ListCrowdfundRefundsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List listCrowdfundRefundsResponseDescriptor = $convert.base64Decode('ChxMaXN0Q3Jvd2RmdW5kUmVmdW5kc1Jlc3BvbnNlEjMKB3JlZnVuZHMYASADKAsyGS5wYi5Dcm93ZGZ1bmRSZWZ1bmRSZWNvcmRSB3JlZnVuZHMSFAoFdG90YWwYAiABKAVSBXRvdGFsEhIKBHBhZ2UYAyABKAVSBHBhZ2USGwoJcGFnZV9zaXplGAQgASgFUghwYWdlU2l6ZRIZCghoYXNfbW9yZRgFIAEoCFIHaGFzTW9yZQ==');
 @$core.Deprecated('Use notificationChannelMessageDescriptor instead')
 const NotificationChannelMessage$json = const {
   '1': 'NotificationChannelMessage',

@@ -31,11 +31,12 @@ class KYCProviderWebViewScreen extends StatefulWidget {
 }
 
 class _KYCProviderWebViewScreenState extends State<KYCProviderWebViewScreen> {
-  // Theme colors
-  static const _background = Color(0xFF0A0A0A);
-  static const _cardBackground = Color(0xFF1F1F1F);
+  // Light-theme palette — matches signup / BVN / id_verification / Mono.
+  static const _background = Colors.white;
+  static const _cardBackground = Color(0xFFF5F5F5);
   static const _primary = Color(0xFF3B82F6);
-  static const _textSecondary = Color(0xFF9CA3AF);
+  static const _textPrimary = Colors.black;
+  static const _textSecondary = Colors.black54;
   static const _error = Color(0xFFEF4444);
 
   late final WebViewController _controller;
@@ -253,13 +254,13 @@ class _KYCProviderWebViewScreenState extends State<KYCProviderWebViewScreen> {
           title: Text(
             _providerDisplayName,
             style: const TextStyle(
-              color: Colors.white,
+              color: _textPrimary,
               fontSize: 18,
               fontWeight: FontWeight.w600,
             ),
           ),
           leading: IconButton(
-            icon: const Icon(Icons.close, color: Colors.white),
+            icon: const Icon(Icons.close, color: _textPrimary),
             onPressed: () async {
               final shouldPop = await _onWillPop();
               if (shouldPop && context.mounted) {
@@ -310,7 +311,7 @@ class _KYCProviderWebViewScreenState extends State<KYCProviderWebViewScreen> {
             const Text(
               'Failed to Load',
               style: TextStyle(
-                color: Colors.white,
+                color: _textPrimary,
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
               ),

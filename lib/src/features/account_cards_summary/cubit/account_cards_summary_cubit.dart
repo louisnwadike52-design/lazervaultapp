@@ -187,6 +187,27 @@ class AccountCardsSummaryCubit extends Cubit<AccountCardsSummaryState> {
     return _currentUserId == userId && _currentSummaries.isNotEmpty;
   }
 
+  /// Switch the active account. Surfaces a single public entry point so any
+  /// screen that lets the user toggle accounts (crypto swap, transfer, etc.)
+  /// goes through the cubit instead of grabbing AccountManager directly.
+  ///
+  /// Validates the new id corresponds to one of the loaded summaries — silent
+  /// no-op if not, so callers can't accidentally drop us into an invalid
+  /// account state.
+  void setActiveAccount(String accountId) {
+    if (accountId.isEmpty) return;
+    final exists = _currentSummaries.any((s) => s.id == accountId);
+    if (!exists) {
+      print('AccountCardsSummaryCubit.setActiveAccount: account $accountId not in loaded summaries; ignored');
+      return;
+    }
+    _accountManager.setActiveAccount(accountId);
+  }
+
+  /// The currently active account id as known by AccountManager. Returns null
+  /// if no account has been selected yet (e.g. before the first load).
+  String? get activeAccountId => _accountManager.activeAccountId;
+
   /// Builds animation info from the tracking maps.
   /// Returns a map of accountId → (from, to) balance pairs for accounts
   /// that have pending WebSocket updates not yet consumed.

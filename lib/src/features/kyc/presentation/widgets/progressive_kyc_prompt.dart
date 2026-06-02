@@ -26,6 +26,9 @@ class ProgressiveKYCPromptScreen extends StatelessWidget {
     return KYCTier.tier1;
   }
 
+  // Retained for reference; the ID screen is BVN-only post-refactor so this
+  // helper is no longer wired into navigation. Safe to delete in a follow-up.
+  // ignore: unused_element
   IDType? _getPreferredIdType() {
     switch (countryCode) {
       case 'NG':
@@ -198,13 +201,11 @@ class ProgressiveKYCPromptScreen extends StatelessWidget {
                     elevation: 0,
                   ),
                   onPressed: () {
-                    // Navigate to ID verification screen
+                    // Navigate to ID verification screen. Only targetTier is
+                    // passed now; the screen is BVN-only and infers country.
                     Get.toNamed(
                       AppRoutes.kycVerifyId,
-                      arguments: {
-                        'targetTier': nextTier,
-                        'preferredIdType': _getPreferredIdType(),
-                      },
+                      arguments: {'targetTier': nextTier},
                     );
                   },
                   child: Row(
@@ -451,13 +452,10 @@ class ProgressiveKYCPromptScreen extends StatelessWidget {
       },
       onCancel: () {
         Get.back(); // Close dialog
-        // Navigate to verification
+        // Navigate to verification (BVN-only collapse — only targetTier needed).
         Get.toNamed(
           AppRoutes.kycVerifyId,
-          arguments: {
-            'targetTier': _getNextTier(),
-            'preferredIdType': _getPreferredIdType(),
-          },
+          arguments: {'targetTier': _getNextTier()},
         );
       },
       barrierDismissible: true,

@@ -42,6 +42,7 @@ class _LockFundDetailsScreenState extends State<LockFundDetailsScreen>
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
     _animationController.forward();
+    context.read<LockFundsCubit>().loadLockFundDetails(widget.lockFund.id);
   }
 
   @override

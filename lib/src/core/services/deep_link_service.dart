@@ -7,6 +7,7 @@ enum DeepLinkType {
   depositCallback,
   paymentCallback,
   quickAction,
+  familyInvite,
   unknown,
 }
 
@@ -17,11 +18,17 @@ class DeepLinkData {
   final Map<String, String> queryParams;
   final String? path;
 
+  /// For [DeepLinkType.familyInvite], the invitation token extracted
+  /// from the URL path (`lazervault://family/invite/<token>`). Null for
+  /// other types.
+  final String? familyInviteToken;
+
   const DeepLinkData({
     required this.type,
     required this.rawUri,
     required this.queryParams,
     this.path,
+    this.familyInviteToken,
   });
 
   /// Get a query parameter value
@@ -48,6 +55,9 @@ class DeepLinkData {
 /// Supports:
 /// - lazervault://deposit/callback - DirectPay authorization callback
 /// - lazervault://payment/callback - Generic payment callback
+/// - lazervault://family/invite/{token} - Family-account invitation
+///   (link minted by accounts-service in AddFamilyMember; opens the
+///    invitations screen so the invitee can accept or decline)
 /// - https://lazervault.app/... - Universal links
 ///
 /// Usage:
@@ -123,10 +133,35 @@ class DeepLinkService {
   }
 
   DeepLinkData _parseUri(Uri uri) {
+    // For custom-scheme URIs like `lazervault://family/invite/<token>`
+    // app_links sets `uri.host = 'family'` and `uri.path = '/invite/<token>'`.
+    // For universal-link URIs like `https://lazervault.app/family/invite/<token>`
+    // it's `uri.host = 'lazervault.app'` and `uri.path = '/family/invite/<token>'`.
+    // We normalize by inspecting the path-segment list, which works for both.
+    final segments = uri.pathSegments;
     final path = uri.path.isEmpty ? uri.host : uri.path;
     final queryParams = uri.queryParameters;
 
-    // Determine link type based on path
+    // Family invite: host=='family' + first-segment=='invite' + second-segment is the token.
+    // (Or, on universal link, segments == [family, invite, <token>])
+    final isFamilyInvite =
+        (uri.host == 'family' && segments.length >= 2 && segments[0] == 'invite') ||
+        (segments.length >= 3 && segments[0] == 'family' && segments[1] == 'invite');
+
+    if (isFamilyInvite) {
+      // Token is the last meaningful path segment. We don't validate UUID
+      // shape here — the backend's AcceptFamilyInvitation does that with
+      // uuid.Parse and returns InvalidArgument if malformed.
+      final token = uri.host == 'family' ? segments[1] : segments[2];
+      return DeepLinkData(
+        type: DeepLinkType.familyInvite,
+        rawUri: uri.toString(),
+        queryParams: queryParams,
+        path: path,
+        familyInviteToken: token,
+      );
+    }
+
     DeepLinkType type;
     if (path.contains('quick-action')) {
       type = DeepLinkType.quickAction;

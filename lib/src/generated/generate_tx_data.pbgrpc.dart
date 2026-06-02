@@ -10,25 +10,25 @@ import 'dart:async' as $async;
 import 'dart:core' as $core;
 
 import 'package:grpc/service_api.dart' as $grpc;
-import 'generate_tx_data.pb.dart' as $19;
+import 'generate_tx_data.pb.dart' as $20;
 export 'generate_tx_data.pb.dart';
 
 class GenerateTxDataServiceClient extends $grpc.Client {
   static final _$generateUserTxDataFile = $grpc.ClientMethod<
-          $19.GenerateUserTxDataFileRequest,
-          $19.GenerateUserTxDataFileResponse>(
+          $20.GenerateUserTxDataFileRequest,
+          $20.GenerateUserTxDataFileResponse>(
       '/pb.GenerateTxDataService/GenerateUserTxDataFile',
-      ($19.GenerateUserTxDataFileRequest value) => value.writeToBuffer(),
+      ($20.GenerateUserTxDataFileRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $19.GenerateUserTxDataFileResponse.fromBuffer(value));
+          $20.GenerateUserTxDataFileResponse.fromBuffer(value));
 
   GenerateTxDataServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
       $core.Iterable<$grpc.ClientInterceptor>? interceptors})
       : super(channel, options: options, interceptors: interceptors);
 
-  $grpc.ResponseFuture<$19.GenerateUserTxDataFileResponse>
-      generateUserTxDataFile($19.GenerateUserTxDataFileRequest request,
+  $grpc.ResponseFuture<$20.GenerateUserTxDataFileResponse>
+      generateUserTxDataFile($20.GenerateUserTxDataFileRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$generateUserTxDataFile, request,
         options: options);
@@ -39,23 +39,23 @@ abstract class GenerateTxDataServiceBase extends $grpc.Service {
   $core.String get $name => 'pb.GenerateTxDataService';
 
   GenerateTxDataServiceBase() {
-    $addMethod($grpc.ServiceMethod<$19.GenerateUserTxDataFileRequest,
-            $19.GenerateUserTxDataFileResponse>(
+    $addMethod($grpc.ServiceMethod<$20.GenerateUserTxDataFileRequest,
+            $20.GenerateUserTxDataFileResponse>(
         'GenerateUserTxDataFile',
         generateUserTxDataFile_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $19.GenerateUserTxDataFileRequest.fromBuffer(value),
-        ($19.GenerateUserTxDataFileResponse value) => value.writeToBuffer()));
+            $20.GenerateUserTxDataFileRequest.fromBuffer(value),
+        ($20.GenerateUserTxDataFileResponse value) => value.writeToBuffer()));
   }
 
-  $async.Future<$19.GenerateUserTxDataFileResponse> generateUserTxDataFile_Pre(
+  $async.Future<$20.GenerateUserTxDataFileResponse> generateUserTxDataFile_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$19.GenerateUserTxDataFileRequest> request) async {
+      $async.Future<$20.GenerateUserTxDataFileRequest> request) async {
     return generateUserTxDataFile(call, await request);
   }
 
-  $async.Future<$19.GenerateUserTxDataFileResponse> generateUserTxDataFile(
-      $grpc.ServiceCall call, $19.GenerateUserTxDataFileRequest request);
+  $async.Future<$20.GenerateUserTxDataFileResponse> generateUserTxDataFile(
+      $grpc.ServiceCall call, $20.GenerateUserTxDataFileRequest request);
 }

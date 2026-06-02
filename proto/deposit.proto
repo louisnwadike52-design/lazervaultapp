@@ -62,6 +62,10 @@ message InitiateDepositRequest {
   string source_bank_name = 4 [json_name = "source_bank_name"]; // Name of the originating bank
   string country_code = 5 [json_name = "country_code"]; // "NG", "GH", "KE", "ZA", "US", "GB"
   string locale = 6;            // BCP 47 locale (e.g., "en-GH", "en-KE")
+  // payment_method restricts the Flutterwave hosted checkout to a single rail.
+  // Empty = let Flutterwave decide. Known values: "apple_pay", "google_pay",
+  // "card", "bank_transfer", "ussd", "mobile_money".
+  string payment_method = 7 [json_name = "payment_method"];
 }
 
 // Response after initiating a deposit (acknowledgement)
@@ -98,14 +102,6 @@ message GetDepositDetailsResponse {
 
   // Updated account details are included only if the deposit status is COMPLETED.
   AccountDetails updated_account = 13 [json_name = "updated_account"];
-}
-
-// Request to simulate a test deposit (sandbox only)
-message SimulateTestDepositRequest {
-  string destination_account_id = 1 [json_name = "destination_account_id"];
-  uint64 amount = 2;
-  string currency = 3;
-  string country_code = 4 [json_name = "country_code"];
 }
 
 // Request to get available deposit methods for a country
@@ -165,22 +161,6 @@ service DepositService {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary: "Get Deposit Details"
       description: "Retrieves the current status and details of a specific deposit transaction by its ID."
-      tags: ["Deposits"]
-      security: {
-         security_requirement: { key: "bearer" }
-      }
-    };
-  }
-
-  // Simulate a test deposit (sandbox only)
-  rpc SimulateTestDeposit (SimulateTestDepositRequest) returns (InitiateDepositResponse) {
-    option (google.api.http) = {
-      post: "/v1/deposits/simulate"
-      body: "*"
-    };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary: "Simulate Test Deposit"
-      description: "Simulates a deposit for sandbox testing. Creates record and immediately credits account."
       tags: ["Deposits"]
       security: {
          security_requirement: { key: "bearer" }

@@ -1,9 +1,12 @@
+import 'package:fixnum/fixnum.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/funds/domain/entities/batch_transfer_entity.dart';
 import 'package:lazervault/src/features/funds/services/batch_transfer_pdf_service.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/batch_transfer/batch_transfer_theme.dart';
 
@@ -1401,9 +1404,185 @@ class _BatchTransferReceiptScreenState extends State<BatchTransferReceiptScreen>
                 ),
               ],
             ),
+            SizedBox(height: 10.h),
+            // Tertiary actions - server-driven detailed receipt + Repeat
+            Row(
+              children: [
+                Expanded(
+                  child: _buildActionButton(
+                    icon: Icons.fact_check_outlined,
+                    label: 'View detailed receipt',
+                    color: btBlue,
+                    onTap: _openDetailedReceipt,
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: _buildActionButton(
+                    icon: Icons.repeat_rounded,
+                    label: 'Repeat batch',
+                    color: btOrange,
+                    onTap: _openRepeatSheet,
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
+    );
+  }
+
+  /// Route to the detailed (server-fetched) batch receipt. Pulls
+  /// authoritative status from GetBatchReceipt rather than relying on
+  /// the in-memory execute response, so reconciler / webhook updates
+  /// are visible.
+  void _openDetailedReceipt() {
+    final batchId = receiptData['batchId']?.toString();
+    if (batchId == null || batchId.isEmpty) {
+      Get.snackbar('No batch id',
+          'Detailed receipt is unavailable for this batch yet.',
+          backgroundColor: btOrange,
+          colorText: btTextPrimary,
+          snackPosition: SnackPosition.TOP);
+      return;
+    }
+    Get.toNamed(AppRoutes.batchReceiptDetailed,
+        arguments: {'batchId': batchId});
+  }
+
+  /// Open a "Repeat with edits" sheet that pre-populates a fresh review
+  /// with the same recipient list. Optionally scales every recipient by
+  /// a multiplier so the user can repeat at, say, half the amount.
+  Future<void> _openRepeatSheet() async {
+    final transfers = receiptData['transfers'] as List<dynamic>? ?? [];
+    if (transfers.isEmpty) return;
+    final multiplierCtrl = TextEditingController(text: '1.0');
+    final ok = await showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return Padding(
+          padding: EdgeInsets.only(
+              bottom: MediaQuery.of(ctx).viewInsets.bottom),
+          child: Container(
+            padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 24.h),
+            decoration: BoxDecoration(
+              color: btCard,
+              borderRadius:
+                  BorderRadius.vertical(top: Radius.circular(24.r)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Repeat this batch',
+                    style: GoogleFonts.inter(
+                        color: btTextPrimary,
+                        fontSize: 17.sp,
+                        fontWeight: FontWeight.w700)),
+                SizedBox(height: 6.h),
+                Text(
+                    'Opens the review screen with the same recipients. You can edit amounts per recipient there. Use the multiplier below to scale everyone first.',
+                    style: GoogleFonts.inter(
+                        color: btTextSecondary, fontSize: 12.sp)),
+                SizedBox(height: 14.h),
+                TextField(
+                  controller: multiplierCtrl,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  style: GoogleFonts.inter(
+                      color: btTextPrimary, fontSize: 14.sp),
+                  decoration: InputDecoration(
+                    labelText: 'Multiplier (1.0 = same amounts)',
+                    labelStyle: GoogleFonts.inter(color: btTextSecondary),
+                    filled: true,
+                    fillColor: btBackground,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(
+                        RegExp(r'^\d*\.?\d{0,4}')),
+                  ],
+                ),
+                SizedBox(height: 16.h),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48.h,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.of(ctx).pop(true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: btBlue,
+                      foregroundColor: btTextPrimary,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14.r)),
+                    ),
+                    child: Text('Continue to review',
+                        style: GoogleFonts.inter(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+    if (ok != true || !mounted) return;
+
+    final multiplier = double.tryParse(multiplierCtrl.text) ?? 1.0;
+    final recipients = <BatchTransferRecipient>[];
+    final recipientNames = <String, String>{};
+    for (final raw in transfers) {
+      if (raw is! Map) continue;
+      final t = raw.cast<String, dynamic>();
+      final amt = (t['amount'] as num?)?.toDouble() ?? 0.0;
+      final accountNumber = (t['recipientAccount'] as String?) ??
+          (t['account'] as String?) ??
+          '';
+      if (accountNumber.isEmpty || amt <= 0) continue;
+      final adjusted = amt * multiplier;
+      final amtMinor = Int64((adjusted * 100).round());
+      final name = (t['recipientName'] as String?) ??
+          (t['beneficiaryName'] as String?) ??
+          '';
+      recipients.add(BatchTransferRecipient(
+        toAccountNumber: accountNumber,
+        amount: amtMinor,
+        reference: (t['reference'] as String?) ?? '',
+        beneficiaryName: name,
+        destinationBankCode: (t['destinationBankCode'] as String?) ?? '',
+        destinationBankName: (t['destinationBankName'] as String?) ?? '',
+      ));
+      if (name.isNotEmpty) recipientNames[accountNumber] = name;
+    }
+    if (recipients.isEmpty) {
+      Get.snackbar('Nothing to repeat',
+          'No reusable recipients found on this receipt.',
+          backgroundColor: btOrange,
+          colorText: btTextPrimary,
+          snackPosition: SnackPosition.TOP);
+      return;
+    }
+    Get.toNamed(
+      AppRoutes.batchTransferReview,
+      arguments: {
+        'recipients': recipients,
+        'recipientNames': recipientNames,
+        'fromAccountId': receiptData['fromAccountId'] ?? '',
+        'totalAmount': recipients.fold<double>(
+            0.0, (s, r) => s + r.amount.toDouble() / 100),
+        'currency': receiptData['currency'] ?? 'NGN',
+        'currencySymbol': receiptData['currencySymbol'] ?? '',
+        'description': receiptData['description'] ?? '',
+        'isRepeatTransaction': true,
+        'batchReference': receiptData['batchId'],
+      },
     );
   }
 

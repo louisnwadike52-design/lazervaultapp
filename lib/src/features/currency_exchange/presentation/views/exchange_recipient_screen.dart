@@ -11,10 +11,15 @@ import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_m
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import '../cubit/exchange_cubit.dart';
 import '../cubit/exchange_state.dart';
+import '../cubit/exchange_prediction_cubit.dart';
 import '../theme/exchange_theme.dart';
 import '../utils/exchange_validators.dart';
+import '../utils/exchange_error_classifier.dart';
+import '../widgets/exchange_prediction_alert.dart';
+import '../widgets/source_currency_picker.dart';
 import '../../data/flutterwave_country_rules.dart';
 import '../../domain/repositories/i_exchange_repository.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // ---------------------------------------------------------------------------
 // Currency → Country config (derived, no picker)
@@ -297,6 +302,12 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
   // backend would 400 at submit anyway.
   bool _corridorSupported = true;
 
+  // SharedPreferences key for international-flow source-currency stickiness.
+  // Mirrors the home screen so a user who lands on the recipient screen via
+  // a deep link gets their persisted choice respected if they swap source.
+  static const _prefsKeySourceInternational =
+      'last_exchange_source_currency_international';
+
   static const _purposes = [
     'Personal payment',
     'Family support',
@@ -497,6 +508,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
       curve: Curves.easeInOut,
     );
     setState(() => _currentPage = 1);
+    _fetchExchangePrediction();
   }
 
   void _goBackToStep1() {
@@ -506,6 +518,49 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
       curve: Curves.easeInOut,
     );
     setState(() => _currentPage = 0);
+  }
+
+  /// Best-effort, non-blocking fetch of the informational exchange success
+  /// prediction. Called when entering Step 2 (the confirmation page). Same
+  /// shape as the transfer prediction wiring: any failure resolves to a
+  /// neutral / hidden alert and the transfer flow proceeds unchanged.
+  ///
+  /// Skipped when source == destination currency (no-op conversion). Skipped
+  /// when we don't yet have a resolvable account identifier — the alert
+  /// simply doesn't render until we do.
+  void _fetchExchangePrediction() {
+    if (_fromCurrency.toUpperCase() == _toCurrency.toUpperCase()) {
+      context.read<ExchangePredictionCubit>().reset();
+      return;
+    }
+
+    // Resolve the wire-shaped account_or_iban: IBAN for EUR corridor,
+    // otherwise the raw account number entered on Step 1.
+    String accountOrIban;
+    if (_countryConfig.fieldType == _FieldType.eu) {
+      accountOrIban = _ibanController.text.replaceAll(' ', '').trim();
+    } else {
+      accountOrIban = _accountController.text.trim();
+    }
+
+    if (accountOrIban.isEmpty) {
+      context.read<ExchangePredictionCubit>().reset();
+      return;
+    }
+
+    final country = _countryConfig.fieldType == _FieldType.generic &&
+            _genericCountryController.text.trim().isNotEmpty
+        ? _genericCountryController.text.trim().toUpperCase()
+        : _countryConfig.countryCode;
+
+    final currencyPair =
+        '${_fromCurrency.toUpperCase()}_${_toCurrency.toUpperCase()}';
+
+    context.read<ExchangePredictionCubit>().fetch(
+          country: country,
+          accountOrIban: accountOrIban,
+          currencyPair: currencyPair,
+        );
   }
 
   // ---------------------------------------------------------------------------
@@ -660,7 +715,13 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
           );
           final state = cubit.state;
           if (state is ExchangeError) {
-            throw Exception(state.message);
+            // Classify so the PIN sheet's error display shows e.g.
+            // "Amount too low — Send at least 6.00 USD" instead of the
+            // raw backend log line. The pin-mixin renders the thrown
+            // Exception's message verbatim, so format as
+            // "Headline — Detail" for compact display.
+            final view = classifyExchangeError(state.message);
+            throw Exception('${view.headline} — ${view.detail}');
           }
           if (state is ExchangeProcessing) {
             routedToProcessingScreen = true;
@@ -709,6 +770,45 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
       _rate = cubit.currentRate;
       _isRateExpired = false; // rate staleness is enforced server-side now
     });
+  }
+
+  /// Allow the user to change the SOURCE currency mid-flow (#112). Defers to
+  /// the wallet-aware [SourceCurrencyPicker] which only lists currencies with
+  /// a positive balance. Persists the choice and re-fetches the rate so the
+  /// summary card stays consistent.
+  Future<void> _changeSourceCurrency() async {
+    final cubit = context.read<ExchangeCubit>();
+    final picked = await SourceCurrencyPicker.show(
+      context,
+      currentCode: _fromCurrency,
+      supportedCurrencies: cubit.supportedCurrencies,
+    );
+    if (picked == null || picked.isEmpty || !mounted) return;
+    if (picked.toUpperCase() == _toCurrency.toUpperCase()) {
+      // Same as source guard on home: never let source == destination.
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              'Pick a different source. The destination cannot match the source.'),
+          backgroundColor: Color(0xFFEF4444),
+        ),
+      );
+      return;
+    }
+    setState(() {
+      _fromCurrency = picked.toUpperCase();
+    });
+    cubit.setCurrencyPair(_fromCurrency, _toCurrency);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_prefsKeySourceInternational, _fromCurrency);
+    } catch (_) {
+      // Persistence failure is benign — the in-memory cubit still has it.
+    }
+    await _refreshRate();
+    if (!mounted) return;
+    // Recompute the prediction with the new currency pair (best effort).
+    _fetchExchangePrediction();
   }
 
   // ---------------------------------------------------------------------------
@@ -963,6 +1063,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeInOut,
               );
+              _fetchExchangePrediction();
             } else if (state is AccountVerificationFailure) {
               if (state.isAccountNotFound) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -1073,16 +1174,53 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
+          // Source currency chip — tappable, opens the wallet-aware picker.
+          // Visually subdued (#112): the destination is the primary subject
+          // of this screen; source is supporting context.
+          GestureDetector(
+            onTap: _changeSourceCurrency,
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1F1F1F),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: const Color(0xFF2D2D2D)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.swap_horiz,
+                      size: 14, color: Color(0xFF9CA3AF)),
+                  const SizedBox(width: 6),
+                  Text(
+                    'From $_fromCurrency',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  const Icon(Icons.keyboard_arrow_down,
+                      size: 14, color: Color(0xFF9CA3AF)),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
           Text(
             _countryConfig.flag,
             style: const TextStyle(fontSize: 20),
           ),
           const SizedBox(width: 8),
-          Text(
-            'Sending to ${_countryConfig.countryName}',
-            style: const TextStyle(
-              color: Color(0xFF9CA3AF),
-              fontSize: 14,
+          Expanded(
+            child: Text(
+              'Sending to ${_countryConfig.countryName}',
+              style: const TextStyle(
+                color: Color(0xFF9CA3AF),
+                fontSize: 14,
+              ),
             ),
           ),
         ],
@@ -1266,6 +1404,7 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                       duration: const Duration(milliseconds: 300),
                       curve: Curves.easeInOut,
                     );
+                    _fetchExchangePrediction();
                   },
                   child: const Text(
                     'Enter Name Manually',
@@ -1765,6 +1904,15 @@ class _ExchangeRecipientScreenState extends State<ExchangeRecipientScreen>
                         ],
                       ),
                     ),
+                    // Informational, READ-ONLY corridor + recipient trust
+                    // signals. Non-blocking: any failure renders as nothing /
+                    // a neutral card, never gates Confirm. Skipped for
+                    // same-currency pairs (no cross-border element to signal
+                    // on). See ExchangePredictionAlert header for the backend
+                    // contract status.
+                    if (_fromCurrency.toUpperCase() !=
+                        _toCurrency.toUpperCase())
+                      const ExchangePredictionAlert(),
                     const SizedBox(height: 16),
                   ],
                 ),

@@ -102,6 +102,7 @@ class _FamilyInviteMemberFlowScreenState
   void _submitInvitation() {
     final noLimits = _formData['noLimits'] as bool? ?? true;
 
+    final selectedUserName = (_formData['selectedUserName'] as String? ?? '').trim();
     _cubit.addMember(
       familyId: widget.familyId,
       invitationMethod: _formData['invitationMethod'] as String,
@@ -116,6 +117,15 @@ class _FamilyInviteMemberFlowScreenState
       personalMessage: (_formData['personalMessage'] as String).isEmpty
           ? null
           : _formData['personalMessage'] as String,
+      // For username invites we already have the full name from the user-search
+      // result. For email/phone the user can type one in the contact step (key
+      // 'displayName'); if both are empty we send null and the backend will
+      // populate it once the invitee accepts via the auth-service enrichment.
+      displayName: selectedUserName.isNotEmpty
+          ? selectedUserName
+          : ((_formData['displayName'] as String? ?? '').trim().isNotEmpty
+              ? (_formData['displayName'] as String).trim()
+              : null),
     );
   }
 

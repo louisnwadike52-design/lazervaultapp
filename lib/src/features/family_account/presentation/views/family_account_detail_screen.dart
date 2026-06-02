@@ -71,6 +71,17 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
     _cubit.loadFamilyAccount(widget.familyId);
   }
 
+  /// Pulls the currently-authenticated user ID from AuthenticationCubit.
+  /// Returns null while auth is still loading — callers should treat null
+  /// as "definitely not authorized" (no admin UI is exposed).
+  String? get _currentUserId {
+    final auth = context.read<AuthenticationCubit>().state;
+    if (auth is AuthenticationSuccess) {
+      return auth.profile.userId;
+    }
+    return null;
+  }
+
   void _showAddMemberSheet() {
     // Navigate directly to the new invite member flow screen
     Get.toNamed(AppRoutes.familyInviteMemberFlow, arguments: {
@@ -83,7 +94,11 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
     });
   }
 
-  void _showMemberOptions(FamilyMember member) {
+  void _showMemberOptions(FamilyAccount account, FamilyMember member) {
+    // Role gate: only the family's accepted admin can mutate other members.
+    // Non-admins still see the bottom sheet but only the "View Details"
+    // option (read-only) — the destructive options are filtered out.
+    final viewerIsAdmin = account.isCurrentUserAdmin(_currentUserId);
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -167,8 +182,14 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
             ),
             SizedBox(height: 20.h),
 
-            // Options
-            if (member.role != FamilyMemberRole.admin) ...[
+            // Options. Mutations are gated on the VIEWER being an admin
+            // (server enforces too, but matching here avoids surfacing
+            // actions that would 403). Editing/removing another admin is
+            // still hidden by member.role != admin to keep destructive
+            // peer-admin actions out of the bottom sheet UX; demotion is
+            // available via Edit Limits → role picker (future work) or
+            // via the admin dashboard.
+            if (viewerIsAdmin && member.role != FamilyMemberRole.admin) ...[
               _buildOption(
                 Icons.edit,
                 'Edit Limits',
@@ -207,7 +228,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
                 _showMemberDetailSheet(member);
               },
             ),
-            if (member.role != FamilyMemberRole.admin) ...[
+            if (viewerIsAdmin && member.role != FamilyMemberRole.admin) ...[
               SizedBox(height: 12.h),
               _buildOption(
                 Icons.remove_circle_outline,
@@ -848,6 +869,11 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
   }
 
   void _showAccountSettings(FamilyAccount account) {
+    // Resolved once at sheet-open time so we don't re-read the auth
+    // cubit per option render. If the user signs out while the sheet is
+    // open, the buttons fail open (no-op visually, server rejects).
+    final viewerIsAdmin = account.isCurrentUserAdmin(_currentUserId);
+    final viewerIsCreator = account.isCurrentUserCreator(_currentUserId);
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -881,7 +907,28 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
             ),
             SizedBox(height: 20.h),
 
-            if (account.status == FamilyAccountStatus.active) ...[
+            // Role gating mirrors the backend RPCs:
+            //   • Change distribution / freeze / unfreeze: family admin only
+            //   • Delete: creator only
+            //   • Sent invitations: admin only (read-only history of
+            //     invites the admin has sent for this family)
+            // Non-admin members see only the read-only options.
+            if (viewerIsAdmin) ...[
+              _buildOption(
+                Icons.send_outlined,
+                'Sent Invitations',
+                'See invitations you sent for this family',
+                () {
+                  Get.back();
+                  Get.toNamed(
+                    AppRoutes.familySentInvitations,
+                    arguments: {'familyId': widget.familyId},
+                  );
+                },
+              ),
+              SizedBox(height: 12.h),
+            ],
+            if (viewerIsAdmin && account.status == FamilyAccountStatus.active) ...[
               _buildOption(
                 Icons.swap_horiz,
                 'Change Distribution Mode',
@@ -893,34 +940,48 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
               ),
               SizedBox(height: 12.h),
             ],
-            _buildOption(
-              account.status == FamilyAccountStatus.active
-                  ? Icons.ac_unit
-                  : Icons.wb_sunny,
-              account.status == FamilyAccountStatus.active ? 'Freeze Account' : 'Unfreeze Account',
-              account.status == FamilyAccountStatus.active
-                  ? 'Temporarily freeze all spending'
-                  : 'Reactivate account',
-              () {
-                Get.back();
-                if (account.status == FamilyAccountStatus.active) {
-                  _confirmFreezeAccount(account);
-                } else {
-                  _cubit.unfreezeAccount(widget.familyId);
-                }
-              },
-            ),
-            SizedBox(height: 12.h),
-            _buildOption(
-              Icons.delete_outline,
-              'Delete Account',
-              'Permanently delete family account',
-              () {
-                Get.back();
-                _confirmDeleteAccount(account);
-              },
-              color: Colors.red,
-            ),
+            if (viewerIsAdmin)
+              _buildOption(
+                account.status == FamilyAccountStatus.active
+                    ? Icons.ac_unit
+                    : Icons.wb_sunny,
+                account.status == FamilyAccountStatus.active ? 'Freeze Account' : 'Unfreeze Account',
+                account.status == FamilyAccountStatus.active
+                    ? 'Temporarily freeze all spending'
+                    : 'Reactivate account',
+                () {
+                  Get.back();
+                  if (account.status == FamilyAccountStatus.active) {
+                    _confirmFreezeAccount(account);
+                  } else {
+                    _cubit.unfreezeAccount(widget.familyId);
+                  }
+                },
+              ),
+            if (viewerIsAdmin) SizedBox(height: 12.h),
+            if (viewerIsCreator)
+              _buildOption(
+                Icons.delete_outline,
+                'Delete Account',
+                'Permanently delete family account',
+                () {
+                  Get.back();
+                  _confirmDeleteAccount(account);
+                },
+                color: Colors.red,
+              ),
+            if (!viewerIsAdmin && !viewerIsCreator)
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 12.h),
+                child: Text(
+                  'Only family admins can change account settings.',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.5),
+                    fontSize: 12.sp,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
             SizedBox(height: 20.h),
           ],
         ),
@@ -1609,30 +1670,36 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
   }
 
   Widget _buildMembersTab(FamilyAccount account) {
+    // Mirrors the backend AddFamilyMember admin-only check — non-admins
+    // see the members list read-only without the Add Member CTA.
+    final canInvite = account.isCurrentUserAdmin(_currentUserId) &&
+        account.canAcceptMembers;
     return Column(
       children: [
-        // Add Member Button
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-          child: SizedBox(
-            width: double.infinity,
-            height: 48.h,
-            child: ElevatedButton.icon(
-              onPressed: _showAddMemberSheet,
-              icon: Icon(Icons.add, size: 20.sp),
-              label: Text(
-                'Add Family Member',
-                style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.r),
+        // Add Member Button — admin-only and only while the account is in
+        // a state that accepts new members.
+        if (canInvite)
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+            child: SizedBox(
+              width: double.infinity,
+              height: 48.h,
+              child: ElevatedButton.icon(
+                onPressed: _showAddMemberSheet,
+                icon: Icon(Icons.add, size: 20.sp),
+                label: Text(
+                  'Add Family Member',
+                  style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF3B82F6),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
                 ),
               ),
             ),
           ),
-        ),
 
         // Members List
         Expanded(
@@ -1641,7 +1708,7 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
             itemCount: account.members.length,
             itemBuilder: (context, index) {
               final member = account.members[index];
-              return _buildMemberCard(member);
+              return _buildMemberCard(account, member);
             },
           ),
         ),
@@ -1978,14 +2045,14 @@ class _FamilyAccountDetailScreenState extends State<FamilyAccountDetailScreen>
     );
   }
 
-  Widget _buildMemberCard(FamilyMember member) {
+  Widget _buildMemberCard(FamilyAccount account, FamilyMember member) {
     final utilizationPercentage = member.utilizationPercentage;
     final remainingPercentage = member.allocatedBalance > 0
         ? ((member.remainingBalance / member.allocatedBalance) * 100)
         : 0;
 
     return GestureDetector(
-      onTap: () => _showMemberOptions(member),
+      onTap: () => _showMemberOptions(account, member),
       child: Container(
         margin: EdgeInsets.only(bottom: 12.h),
         padding: EdgeInsets.all(16.w),

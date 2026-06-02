@@ -24,7 +24,7 @@ class _TransferHistoryBottomSheetState
     extends State<TransferHistoryBottomSheet> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
-  final Debouncer _debouncer = Debouncer.search();
+  final Debouncer _debouncer = Debouncer.snappy();
   bool _isLoadingMore = false;
   String _searchQuery = '';
 

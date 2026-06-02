@@ -931,6 +931,14 @@ class Crowdfund extends $pb.GeneratedMessage {
     ..aOS(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'creatorLastName')
     ..aOS(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'creatorUsername')
     ..aOS(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'creatorEmail')
+    ..aOS(21, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cancelReason')
+    ..aOS(22, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cancelInitiatedBy')
+    ..aOS(23, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cancelInitiatorUserId')
+    ..aOS(24, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cancelledAt')
+    ..a<$core.int>(25, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refundsPending', $pb.PbFieldType.O3)
+    ..a<$core.int>(26, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refundsCompleted', $pb.PbFieldType.O3)
+    ..a<$core.int>(27, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refundsFailed', $pb.PbFieldType.O3)
+    ..a<$core.double>(28, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalRefunded', $pb.PbFieldType.OD)
     ..hasRequiredFields = false
   ;
 
@@ -956,6 +964,14 @@ class Crowdfund extends $pb.GeneratedMessage {
     $core.String? creatorLastName,
     $core.String? creatorUsername,
     $core.String? creatorEmail,
+    $core.String? cancelReason,
+    $core.String? cancelInitiatedBy,
+    $core.String? cancelInitiatorUserId,
+    $core.String? cancelledAt,
+    $core.int? refundsPending,
+    $core.int? refundsCompleted,
+    $core.int? refundsFailed,
+    $core.double? totalRefunded,
   }) {
     final _result = create();
     if (id != null) {
@@ -1017,6 +1033,30 @@ class Crowdfund extends $pb.GeneratedMessage {
     }
     if (creatorEmail != null) {
       _result.creatorEmail = creatorEmail;
+    }
+    if (cancelReason != null) {
+      _result.cancelReason = cancelReason;
+    }
+    if (cancelInitiatedBy != null) {
+      _result.cancelInitiatedBy = cancelInitiatedBy;
+    }
+    if (cancelInitiatorUserId != null) {
+      _result.cancelInitiatorUserId = cancelInitiatorUserId;
+    }
+    if (cancelledAt != null) {
+      _result.cancelledAt = cancelledAt;
+    }
+    if (refundsPending != null) {
+      _result.refundsPending = refundsPending;
+    }
+    if (refundsCompleted != null) {
+      _result.refundsCompleted = refundsCompleted;
+    }
+    if (refundsFailed != null) {
+      _result.refundsFailed = refundsFailed;
+    }
+    if (totalRefunded != null) {
+      _result.totalRefunded = totalRefunded;
     }
     return _result;
   }
@@ -1220,6 +1260,78 @@ class Crowdfund extends $pb.GeneratedMessage {
   $core.bool hasCreatorEmail() => $_has(19);
   @$pb.TagNumber(20)
   void clearCreatorEmail() => clearField(20);
+
+  @$pb.TagNumber(21)
+  $core.String get cancelReason => $_getSZ(20);
+  @$pb.TagNumber(21)
+  set cancelReason($core.String v) { $_setString(20, v); }
+  @$pb.TagNumber(21)
+  $core.bool hasCancelReason() => $_has(20);
+  @$pb.TagNumber(21)
+  void clearCancelReason() => clearField(21);
+
+  @$pb.TagNumber(22)
+  $core.String get cancelInitiatedBy => $_getSZ(21);
+  @$pb.TagNumber(22)
+  set cancelInitiatedBy($core.String v) { $_setString(21, v); }
+  @$pb.TagNumber(22)
+  $core.bool hasCancelInitiatedBy() => $_has(21);
+  @$pb.TagNumber(22)
+  void clearCancelInitiatedBy() => clearField(22);
+
+  @$pb.TagNumber(23)
+  $core.String get cancelInitiatorUserId => $_getSZ(22);
+  @$pb.TagNumber(23)
+  set cancelInitiatorUserId($core.String v) { $_setString(22, v); }
+  @$pb.TagNumber(23)
+  $core.bool hasCancelInitiatorUserId() => $_has(22);
+  @$pb.TagNumber(23)
+  void clearCancelInitiatorUserId() => clearField(23);
+
+  @$pb.TagNumber(24)
+  $core.String get cancelledAt => $_getSZ(23);
+  @$pb.TagNumber(24)
+  set cancelledAt($core.String v) { $_setString(23, v); }
+  @$pb.TagNumber(24)
+  $core.bool hasCancelledAt() => $_has(23);
+  @$pb.TagNumber(24)
+  void clearCancelledAt() => clearField(24);
+
+  @$pb.TagNumber(25)
+  $core.int get refundsPending => $_getIZ(24);
+  @$pb.TagNumber(25)
+  set refundsPending($core.int v) { $_setSignedInt32(24, v); }
+  @$pb.TagNumber(25)
+  $core.bool hasRefundsPending() => $_has(24);
+  @$pb.TagNumber(25)
+  void clearRefundsPending() => clearField(25);
+
+  @$pb.TagNumber(26)
+  $core.int get refundsCompleted => $_getIZ(25);
+  @$pb.TagNumber(26)
+  set refundsCompleted($core.int v) { $_setSignedInt32(25, v); }
+  @$pb.TagNumber(26)
+  $core.bool hasRefundsCompleted() => $_has(25);
+  @$pb.TagNumber(26)
+  void clearRefundsCompleted() => clearField(26);
+
+  @$pb.TagNumber(27)
+  $core.int get refundsFailed => $_getIZ(26);
+  @$pb.TagNumber(27)
+  set refundsFailed($core.int v) { $_setSignedInt32(26, v); }
+  @$pb.TagNumber(27)
+  $core.bool hasRefundsFailed() => $_has(26);
+  @$pb.TagNumber(27)
+  void clearRefundsFailed() => clearField(27);
+
+  @$pb.TagNumber(28)
+  $core.double get totalRefunded => $_getN(27);
+  @$pb.TagNumber(28)
+  set totalRefunded($core.double v) { $_setDouble(27, v); }
+  @$pb.TagNumber(28)
+  $core.bool hasTotalRefunded() => $_has(27);
+  @$pb.TagNumber(28)
+  void clearTotalRefunded() => clearField(28);
 }
 
 class CrowdfundContribution extends $pb.GeneratedMessage {
@@ -3402,6 +3514,9 @@ class MarketplaceProductFormField extends $pb.GeneratedMessage {
     ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'validationRegex')
     ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'placeholder')
     ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'utilityId')
+    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dependsOn')
+    ..pc<MarketplaceProductFormItemField>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'itemFields', $pb.PbFieldType.PM, subBuilder: MarketplaceProductFormItemField.create)
     ..hasRequiredFields = false
   ;
 
@@ -3416,6 +3531,9 @@ class MarketplaceProductFormField extends $pb.GeneratedMessage {
     $core.String? validationRegex,
     $core.String? placeholder,
     $core.String? description,
+    $core.String? utilityId,
+    $core.String? dependsOn,
+    $core.Iterable<MarketplaceProductFormItemField>? itemFields,
   }) {
     final _result = create();
     if (name != null) {
@@ -3444,6 +3562,15 @@ class MarketplaceProductFormField extends $pb.GeneratedMessage {
     }
     if (description != null) {
       _result.description = description;
+    }
+    if (utilityId != null) {
+      _result.utilityId = utilityId;
+    }
+    if (dependsOn != null) {
+      _result.dependsOn = dependsOn;
+    }
+    if (itemFields != null) {
+      _result.itemFields.addAll(itemFields);
     }
     return _result;
   }
@@ -3542,6 +3669,138 @@ class MarketplaceProductFormField extends $pb.GeneratedMessage {
   $core.bool hasDescription() => $_has(8);
   @$pb.TagNumber(9)
   void clearDescription() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get utilityId => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set utilityId($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasUtilityId() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearUtilityId() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get dependsOn => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set dependsOn($core.String v) { $_setString(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasDependsOn() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearDependsOn() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.List<MarketplaceProductFormItemField> get itemFields => $_getList(11);
+}
+
+class MarketplaceProductFormItemField extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'MarketplaceProductFormItemField', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'label')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'type')
+    ..aOB(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'required')
+    ..pPS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'options')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'placeholder')
+    ..hasRequiredFields = false
+  ;
+
+  MarketplaceProductFormItemField._() : super();
+  factory MarketplaceProductFormItemField({
+    $core.String? name,
+    $core.String? label,
+    $core.String? type,
+    $core.bool? required,
+    $core.Iterable<$core.String>? options,
+    $core.String? placeholder,
+  }) {
+    final _result = create();
+    if (name != null) {
+      _result.name = name;
+    }
+    if (label != null) {
+      _result.label = label;
+    }
+    if (type != null) {
+      _result.type = type;
+    }
+    if (required != null) {
+      _result.required = required;
+    }
+    if (options != null) {
+      _result.options.addAll(options);
+    }
+    if (placeholder != null) {
+      _result.placeholder = placeholder;
+    }
+    return _result;
+  }
+  factory MarketplaceProductFormItemField.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory MarketplaceProductFormItemField.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  MarketplaceProductFormItemField clone() => MarketplaceProductFormItemField()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  MarketplaceProductFormItemField copyWith(void Function(MarketplaceProductFormItemField) updates) => super.copyWith((message) => updates(message as MarketplaceProductFormItemField)) as MarketplaceProductFormItemField; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static MarketplaceProductFormItemField create() => MarketplaceProductFormItemField._();
+  MarketplaceProductFormItemField createEmptyInstance() => create();
+  static $pb.PbList<MarketplaceProductFormItemField> createRepeated() => $pb.PbList<MarketplaceProductFormItemField>();
+  @$core.pragma('dart2js:noInline')
+  static MarketplaceProductFormItemField getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<MarketplaceProductFormItemField>(create);
+  static MarketplaceProductFormItemField? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get name => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set name($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasName() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearName() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get label => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set label($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasLabel() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLabel() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get type => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set type($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasType() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearType() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.bool get required => $_getBF(3);
+  @$pb.TagNumber(4)
+  set required($core.bool v) { $_setBool(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasRequired() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearRequired() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.List<$core.String> get options => $_getList(4);
+
+  @$pb.TagNumber(6)
+  $core.String get placeholder => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set placeholder($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasPlaceholder() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearPlaceholder() => clearField(6);
 }
 
 class MarketplaceInsuranceProduct extends $pb.GeneratedMessage {
@@ -4097,6 +4356,12 @@ class MarketplaceInsurancePurchaseResult extends $pb.GeneratedMessage {
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'providerReference')
     ..aOM<Insurance>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'insurance', subBuilder: Insurance.create)
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'certificateUrl')
+    ..a<$core.double>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'premium', $pb.PbFieldType.OD)
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..a<$core.double>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'coverageAmount', $pb.PbFieldType.OD)
+    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'startDate')
+    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'endDate')
     ..hasRequiredFields = false
   ;
 
@@ -4108,6 +4373,12 @@ class MarketplaceInsurancePurchaseResult extends $pb.GeneratedMessage {
     $core.String? status,
     $core.String? providerReference,
     Insurance? insurance,
+    $core.String? certificateUrl,
+    $core.double? premium,
+    $core.String? currency,
+    $core.double? coverageAmount,
+    $core.String? startDate,
+    $core.String? endDate,
   }) {
     final _result = create();
     if (policyId != null) {
@@ -4127,6 +4398,24 @@ class MarketplaceInsurancePurchaseResult extends $pb.GeneratedMessage {
     }
     if (insurance != null) {
       _result.insurance = insurance;
+    }
+    if (certificateUrl != null) {
+      _result.certificateUrl = certificateUrl;
+    }
+    if (premium != null) {
+      _result.premium = premium;
+    }
+    if (currency != null) {
+      _result.currency = currency;
+    }
+    if (coverageAmount != null) {
+      _result.coverageAmount = coverageAmount;
+    }
+    if (startDate != null) {
+      _result.startDate = startDate;
+    }
+    if (endDate != null) {
+      _result.endDate = endDate;
     }
     return _result;
   }
@@ -4206,6 +4495,60 @@ class MarketplaceInsurancePurchaseResult extends $pb.GeneratedMessage {
   void clearInsurance() => clearField(6);
   @$pb.TagNumber(6)
   Insurance ensureInsurance() => $_ensure(5);
+
+  @$pb.TagNumber(7)
+  $core.String get certificateUrl => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set certificateUrl($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasCertificateUrl() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearCertificateUrl() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.double get premium => $_getN(7);
+  @$pb.TagNumber(8)
+  set premium($core.double v) { $_setDouble(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasPremium() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearPremium() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get currency => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set currency($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasCurrency() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearCurrency() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.double get coverageAmount => $_getN(9);
+  @$pb.TagNumber(10)
+  set coverageAmount($core.double v) { $_setDouble(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasCoverageAmount() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearCoverageAmount() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get startDate => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set startDate($core.String v) { $_setString(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasStartDate() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearStartDate() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get endDate => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set endDate($core.String v) { $_setString(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasEndDate() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearEndDate() => clearField(12);
 }
 
 class GetInsuranceMarketplaceProductsRequest extends $pb.GeneratedMessage {
@@ -4402,16 +4745,21 @@ class GetInsuranceMarketplaceCategoriesRequest extends $pb.GeneratedMessage {
 class GetInsuranceMarketplaceCategoriesResponse extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetInsuranceMarketplaceCategoriesResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
     ..pc<MarketplaceInsuranceCategory>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'categories', $pb.PbFieldType.PM, subBuilder: MarketplaceInsuranceCategory.create)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'termsLink')
     ..hasRequiredFields = false
   ;
 
   GetInsuranceMarketplaceCategoriesResponse._() : super();
   factory GetInsuranceMarketplaceCategoriesResponse({
     $core.Iterable<MarketplaceInsuranceCategory>? categories,
+    $core.String? termsLink,
   }) {
     final _result = create();
     if (categories != null) {
       _result.categories.addAll(categories);
+    }
+    if (termsLink != null) {
+      _result.termsLink = termsLink;
     }
     return _result;
   }
@@ -4438,6 +4786,15 @@ class GetInsuranceMarketplaceCategoriesResponse extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(1)
   $core.List<MarketplaceInsuranceCategory> get categories => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.String get termsLink => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set termsLink($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTermsLink() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTermsLink() => clearField(2);
 }
 
 class GetInsuranceQuoteRequest extends $pb.GeneratedMessage {
@@ -5020,6 +5377,170 @@ class UploadInsuranceDocumentResponse extends $pb.GeneratedMessage {
   void clearMsg() => clearField(4);
 }
 
+class GetInsuranceDocumentUploadURLRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetInsuranceDocumentUploadURLRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'filename')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'contentType')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'documentType')
+    ..hasRequiredFields = false
+  ;
+
+  GetInsuranceDocumentUploadURLRequest._() : super();
+  factory GetInsuranceDocumentUploadURLRequest({
+    $core.String? filename,
+    $core.String? contentType,
+    $core.String? documentType,
+  }) {
+    final _result = create();
+    if (filename != null) {
+      _result.filename = filename;
+    }
+    if (contentType != null) {
+      _result.contentType = contentType;
+    }
+    if (documentType != null) {
+      _result.documentType = documentType;
+    }
+    return _result;
+  }
+  factory GetInsuranceDocumentUploadURLRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetInsuranceDocumentUploadURLRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetInsuranceDocumentUploadURLRequest clone() => GetInsuranceDocumentUploadURLRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetInsuranceDocumentUploadURLRequest copyWith(void Function(GetInsuranceDocumentUploadURLRequest) updates) => super.copyWith((message) => updates(message as GetInsuranceDocumentUploadURLRequest)) as GetInsuranceDocumentUploadURLRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetInsuranceDocumentUploadURLRequest create() => GetInsuranceDocumentUploadURLRequest._();
+  GetInsuranceDocumentUploadURLRequest createEmptyInstance() => create();
+  static $pb.PbList<GetInsuranceDocumentUploadURLRequest> createRepeated() => $pb.PbList<GetInsuranceDocumentUploadURLRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetInsuranceDocumentUploadURLRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetInsuranceDocumentUploadURLRequest>(create);
+  static GetInsuranceDocumentUploadURLRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get filename => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set filename($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasFilename() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFilename() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get contentType => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set contentType($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasContentType() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearContentType() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get documentType => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set documentType($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasDocumentType() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearDocumentType() => clearField(3);
+}
+
+class GetInsuranceDocumentUploadURLResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetInsuranceDocumentUploadURLResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'uploadUrl')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'publicUrl')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'storageKey')
+    ..aInt64(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt')
+    ..hasRequiredFields = false
+  ;
+
+  GetInsuranceDocumentUploadURLResponse._() : super();
+  factory GetInsuranceDocumentUploadURLResponse({
+    $core.String? uploadUrl,
+    $core.String? publicUrl,
+    $core.String? storageKey,
+    $fixnum.Int64? expiresAt,
+  }) {
+    final _result = create();
+    if (uploadUrl != null) {
+      _result.uploadUrl = uploadUrl;
+    }
+    if (publicUrl != null) {
+      _result.publicUrl = publicUrl;
+    }
+    if (storageKey != null) {
+      _result.storageKey = storageKey;
+    }
+    if (expiresAt != null) {
+      _result.expiresAt = expiresAt;
+    }
+    return _result;
+  }
+  factory GetInsuranceDocumentUploadURLResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetInsuranceDocumentUploadURLResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetInsuranceDocumentUploadURLResponse clone() => GetInsuranceDocumentUploadURLResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetInsuranceDocumentUploadURLResponse copyWith(void Function(GetInsuranceDocumentUploadURLResponse) updates) => super.copyWith((message) => updates(message as GetInsuranceDocumentUploadURLResponse)) as GetInsuranceDocumentUploadURLResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetInsuranceDocumentUploadURLResponse create() => GetInsuranceDocumentUploadURLResponse._();
+  GetInsuranceDocumentUploadURLResponse createEmptyInstance() => create();
+  static $pb.PbList<GetInsuranceDocumentUploadURLResponse> createRepeated() => $pb.PbList<GetInsuranceDocumentUploadURLResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetInsuranceDocumentUploadURLResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetInsuranceDocumentUploadURLResponse>(create);
+  static GetInsuranceDocumentUploadURLResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get uploadUrl => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set uploadUrl($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUploadUrl() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUploadUrl() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get publicUrl => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set publicUrl($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasPublicUrl() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPublicUrl() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get storageKey => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set storageKey($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasStorageKey() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearStorageKey() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $fixnum.Int64 get expiresAt => $_getI64(3);
+  @$pb.TagNumber(4)
+  set expiresAt($fixnum.Int64 v) { $_setInt64(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasExpiresAt() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearExpiresAt() => clearField(4);
+}
+
 class GetInsuranceAuxiliaryDataRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetInsuranceAuxiliaryDataRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'utilityId')
@@ -5411,6 +5932,7 @@ class GetCrowdfundsRequest extends $pb.GeneratedMessage {
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
     ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
     ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'offset', $pb.PbFieldType.O3)
+    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'myCrowdfundsOnly')
     ..hasRequiredFields = false
   ;
 
@@ -5420,6 +5942,7 @@ class GetCrowdfundsRequest extends $pb.GeneratedMessage {
     $core.String? status,
     $core.int? limit,
     $core.int? offset,
+    $core.bool? myCrowdfundsOnly,
   }) {
     final _result = create();
     if (category != null) {
@@ -5433,6 +5956,9 @@ class GetCrowdfundsRequest extends $pb.GeneratedMessage {
     }
     if (offset != null) {
       _result.offset = offset;
+    }
+    if (myCrowdfundsOnly != null) {
+      _result.myCrowdfundsOnly = myCrowdfundsOnly;
     }
     return _result;
   }
@@ -5492,6 +6018,15 @@ class GetCrowdfundsRequest extends $pb.GeneratedMessage {
   $core.bool hasOffset() => $_has(3);
   @$pb.TagNumber(4)
   void clearOffset() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.bool get myCrowdfundsOnly => $_getBF(4);
+  @$pb.TagNumber(5)
+  set myCrowdfundsOnly($core.bool v) { $_setBool(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasMyCrowdfundsOnly() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearMyCrowdfundsOnly() => clearField(5);
 }
 
 class GetCrowdfundsResponse extends $pb.GeneratedMessage {
@@ -5661,6 +6196,7 @@ class ContributeToCrowdfundRequest extends $pb.GeneratedMessage {
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
     ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isAnonymous')
     ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pin')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionId')
     ..hasRequiredFields = false
   ;
 
@@ -5672,6 +6208,7 @@ class ContributeToCrowdfundRequest extends $pb.GeneratedMessage {
     $core.String? message,
     $core.bool? isAnonymous,
     $core.String? pin,
+    $core.String? transactionId,
   }) {
     final _result = create();
     if (crowdfundId != null) {
@@ -5691,6 +6228,9 @@ class ContributeToCrowdfundRequest extends $pb.GeneratedMessage {
     }
     if (pin != null) {
       _result.pin = pin;
+    }
+    if (transactionId != null) {
+      _result.transactionId = transactionId;
     }
     return _result;
   }
@@ -5768,6 +6308,15 @@ class ContributeToCrowdfundRequest extends $pb.GeneratedMessage {
   $core.bool hasPin() => $_has(5);
   @$pb.TagNumber(6)
   void clearPin() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get transactionId => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set transactionId($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasTransactionId() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearTransactionId() => clearField(7);
 }
 
 class ContributeToCrowdfundResponse extends $pb.GeneratedMessage {
@@ -5870,6 +6419,7 @@ class WithdrawFromCrowdfundRequest extends $pb.GeneratedMessage {
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pin')
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'destinationAccountId')
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'destinationAccountType')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionId')
     ..hasRequiredFields = false
   ;
 
@@ -5880,6 +6430,7 @@ class WithdrawFromCrowdfundRequest extends $pb.GeneratedMessage {
     $core.String? pin,
     $core.String? destinationAccountId,
     $core.String? destinationAccountType,
+    $core.String? transactionId,
   }) {
     final _result = create();
     if (crowdfundId != null) {
@@ -5896,6 +6447,9 @@ class WithdrawFromCrowdfundRequest extends $pb.GeneratedMessage {
     }
     if (destinationAccountType != null) {
       _result.destinationAccountType = destinationAccountType;
+    }
+    if (transactionId != null) {
+      _result.transactionId = transactionId;
     }
     return _result;
   }
@@ -5964,6 +6518,15 @@ class WithdrawFromCrowdfundRequest extends $pb.GeneratedMessage {
   $core.bool hasDestinationAccountType() => $_has(4);
   @$pb.TagNumber(5)
   void clearDestinationAccountType() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get transactionId => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set transactionId($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasTransactionId() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearTransactionId() => clearField(6);
 }
 
 class WithdrawFromCrowdfundResponse extends $pb.GeneratedMessage {
@@ -5973,6 +6536,11 @@ class WithdrawFromCrowdfundResponse extends $pb.GeneratedMessage {
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'destinationAccountId')
     ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'destinationNewBalance', $pb.PbFieldType.OD)
+    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'feeAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'netAmount', $pb.PbFieldType.OD)
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'feeType')
+    ..a<$core.int>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'feeBasisPoints', $pb.PbFieldType.O3)
+    ..aInt64(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'feeFixedKobo')
     ..hasRequiredFields = false
   ;
 
@@ -5983,6 +6551,11 @@ class WithdrawFromCrowdfundResponse extends $pb.GeneratedMessage {
     $core.String? message,
     $core.String? destinationAccountId,
     $core.double? destinationNewBalance,
+    $core.double? feeAmount,
+    $core.double? netAmount,
+    $core.String? feeType,
+    $core.int? feeBasisPoints,
+    $fixnum.Int64? feeFixedKobo,
   }) {
     final _result = create();
     if (crowdfund != null) {
@@ -5999,6 +6572,21 @@ class WithdrawFromCrowdfundResponse extends $pb.GeneratedMessage {
     }
     if (destinationNewBalance != null) {
       _result.destinationNewBalance = destinationNewBalance;
+    }
+    if (feeAmount != null) {
+      _result.feeAmount = feeAmount;
+    }
+    if (netAmount != null) {
+      _result.netAmount = netAmount;
+    }
+    if (feeType != null) {
+      _result.feeType = feeType;
+    }
+    if (feeBasisPoints != null) {
+      _result.feeBasisPoints = feeBasisPoints;
+    }
+    if (feeFixedKobo != null) {
+      _result.feeFixedKobo = feeFixedKobo;
     }
     return _result;
   }
@@ -6069,6 +6657,1091 @@ class WithdrawFromCrowdfundResponse extends $pb.GeneratedMessage {
   $core.bool hasDestinationNewBalance() => $_has(4);
   @$pb.TagNumber(5)
   void clearDestinationNewBalance() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.double get feeAmount => $_getN(5);
+  @$pb.TagNumber(6)
+  set feeAmount($core.double v) { $_setDouble(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasFeeAmount() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearFeeAmount() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.double get netAmount => $_getN(6);
+  @$pb.TagNumber(7)
+  set netAmount($core.double v) { $_setDouble(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasNetAmount() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearNetAmount() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get feeType => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set feeType($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasFeeType() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearFeeType() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.int get feeBasisPoints => $_getIZ(8);
+  @$pb.TagNumber(9)
+  set feeBasisPoints($core.int v) { $_setSignedInt32(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasFeeBasisPoints() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearFeeBasisPoints() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $fixnum.Int64 get feeFixedKobo => $_getI64(9);
+  @$pb.TagNumber(10)
+  set feeFixedKobo($fixnum.Int64 v) { $_setInt64(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasFeeFixedKobo() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearFeeFixedKobo() => clearField(10);
+}
+
+class GetCrowdfundWithdrawalFeeQuoteRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetCrowdfundWithdrawalFeeQuoteRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundId')
+    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
+  GetCrowdfundWithdrawalFeeQuoteRequest._() : super();
+  factory GetCrowdfundWithdrawalFeeQuoteRequest({
+    $core.String? crowdfundId,
+    $core.double? amount,
+  }) {
+    final _result = create();
+    if (crowdfundId != null) {
+      _result.crowdfundId = crowdfundId;
+    }
+    if (amount != null) {
+      _result.amount = amount;
+    }
+    return _result;
+  }
+  factory GetCrowdfundWithdrawalFeeQuoteRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetCrowdfundWithdrawalFeeQuoteRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetCrowdfundWithdrawalFeeQuoteRequest clone() => GetCrowdfundWithdrawalFeeQuoteRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetCrowdfundWithdrawalFeeQuoteRequest copyWith(void Function(GetCrowdfundWithdrawalFeeQuoteRequest) updates) => super.copyWith((message) => updates(message as GetCrowdfundWithdrawalFeeQuoteRequest)) as GetCrowdfundWithdrawalFeeQuoteRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetCrowdfundWithdrawalFeeQuoteRequest create() => GetCrowdfundWithdrawalFeeQuoteRequest._();
+  GetCrowdfundWithdrawalFeeQuoteRequest createEmptyInstance() => create();
+  static $pb.PbList<GetCrowdfundWithdrawalFeeQuoteRequest> createRepeated() => $pb.PbList<GetCrowdfundWithdrawalFeeQuoteRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetCrowdfundWithdrawalFeeQuoteRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetCrowdfundWithdrawalFeeQuoteRequest>(create);
+  static GetCrowdfundWithdrawalFeeQuoteRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get crowdfundId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set crowdfundId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCrowdfundId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCrowdfundId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.double get amount => $_getN(1);
+  @$pb.TagNumber(2)
+  set amount($core.double v) { $_setDouble(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasAmount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAmount() => clearField(2);
+}
+
+class GetCrowdfundWithdrawalFeeQuoteResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetCrowdfundWithdrawalFeeQuoteResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..a<$core.double>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'grossAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'feeAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'netAmount', $pb.PbFieldType.OD)
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'feeEnabled')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'feeType')
+    ..a<$core.int>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'feeBasisPoints', $pb.PbFieldType.O3)
+    ..aInt64(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'feeFixedKobo')
+    ..hasRequiredFields = false
+  ;
+
+  GetCrowdfundWithdrawalFeeQuoteResponse._() : super();
+  factory GetCrowdfundWithdrawalFeeQuoteResponse({
+    $core.double? grossAmount,
+    $core.double? feeAmount,
+    $core.double? netAmount,
+    $core.String? currency,
+    $core.bool? feeEnabled,
+    $core.String? feeType,
+    $core.int? feeBasisPoints,
+    $fixnum.Int64? feeFixedKobo,
+  }) {
+    final _result = create();
+    if (grossAmount != null) {
+      _result.grossAmount = grossAmount;
+    }
+    if (feeAmount != null) {
+      _result.feeAmount = feeAmount;
+    }
+    if (netAmount != null) {
+      _result.netAmount = netAmount;
+    }
+    if (currency != null) {
+      _result.currency = currency;
+    }
+    if (feeEnabled != null) {
+      _result.feeEnabled = feeEnabled;
+    }
+    if (feeType != null) {
+      _result.feeType = feeType;
+    }
+    if (feeBasisPoints != null) {
+      _result.feeBasisPoints = feeBasisPoints;
+    }
+    if (feeFixedKobo != null) {
+      _result.feeFixedKobo = feeFixedKobo;
+    }
+    return _result;
+  }
+  factory GetCrowdfundWithdrawalFeeQuoteResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetCrowdfundWithdrawalFeeQuoteResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetCrowdfundWithdrawalFeeQuoteResponse clone() => GetCrowdfundWithdrawalFeeQuoteResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetCrowdfundWithdrawalFeeQuoteResponse copyWith(void Function(GetCrowdfundWithdrawalFeeQuoteResponse) updates) => super.copyWith((message) => updates(message as GetCrowdfundWithdrawalFeeQuoteResponse)) as GetCrowdfundWithdrawalFeeQuoteResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetCrowdfundWithdrawalFeeQuoteResponse create() => GetCrowdfundWithdrawalFeeQuoteResponse._();
+  GetCrowdfundWithdrawalFeeQuoteResponse createEmptyInstance() => create();
+  static $pb.PbList<GetCrowdfundWithdrawalFeeQuoteResponse> createRepeated() => $pb.PbList<GetCrowdfundWithdrawalFeeQuoteResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetCrowdfundWithdrawalFeeQuoteResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetCrowdfundWithdrawalFeeQuoteResponse>(create);
+  static GetCrowdfundWithdrawalFeeQuoteResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.double get grossAmount => $_getN(0);
+  @$pb.TagNumber(1)
+  set grossAmount($core.double v) { $_setDouble(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasGrossAmount() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearGrossAmount() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.double get feeAmount => $_getN(1);
+  @$pb.TagNumber(2)
+  set feeAmount($core.double v) { $_setDouble(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasFeeAmount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearFeeAmount() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.double get netAmount => $_getN(2);
+  @$pb.TagNumber(3)
+  set netAmount($core.double v) { $_setDouble(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasNetAmount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearNetAmount() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get currency => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set currency($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasCurrency() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCurrency() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.bool get feeEnabled => $_getBF(4);
+  @$pb.TagNumber(5)
+  set feeEnabled($core.bool v) { $_setBool(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasFeeEnabled() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearFeeEnabled() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get feeType => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set feeType($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasFeeType() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearFeeType() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.int get feeBasisPoints => $_getIZ(6);
+  @$pb.TagNumber(7)
+  set feeBasisPoints($core.int v) { $_setSignedInt32(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasFeeBasisPoints() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearFeeBasisPoints() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $fixnum.Int64 get feeFixedKobo => $_getI64(7);
+  @$pb.TagNumber(8)
+  set feeFixedKobo($fixnum.Int64 v) { $_setInt64(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasFeeFixedKobo() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearFeeFixedKobo() => clearField(8);
+}
+
+class CrowdfundCustomCategory extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CrowdfundCustomCategory', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt')
+    ..hasRequiredFields = false
+  ;
+
+  CrowdfundCustomCategory._() : super();
+  factory CrowdfundCustomCategory({
+    $core.String? id,
+    $core.String? name,
+    $core.String? createdAt,
+  }) {
+    final _result = create();
+    if (id != null) {
+      _result.id = id;
+    }
+    if (name != null) {
+      _result.name = name;
+    }
+    if (createdAt != null) {
+      _result.createdAt = createdAt;
+    }
+    return _result;
+  }
+  factory CrowdfundCustomCategory.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CrowdfundCustomCategory.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CrowdfundCustomCategory clone() => CrowdfundCustomCategory()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CrowdfundCustomCategory copyWith(void Function(CrowdfundCustomCategory) updates) => super.copyWith((message) => updates(message as CrowdfundCustomCategory)) as CrowdfundCustomCategory; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static CrowdfundCustomCategory create() => CrowdfundCustomCategory._();
+  CrowdfundCustomCategory createEmptyInstance() => create();
+  static $pb.PbList<CrowdfundCustomCategory> createRepeated() => $pb.PbList<CrowdfundCustomCategory>();
+  @$core.pragma('dart2js:noInline')
+  static CrowdfundCustomCategory getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CrowdfundCustomCategory>(create);
+  static CrowdfundCustomCategory? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get name => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set name($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearName() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get createdAt => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set createdAt($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasCreatedAt() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCreatedAt() => clearField(3);
+}
+
+class ListCrowdfundCustomCategoriesRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ListCrowdfundCustomCategoriesRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..hasRequiredFields = false
+  ;
+
+  ListCrowdfundCustomCategoriesRequest._() : super();
+  factory ListCrowdfundCustomCategoriesRequest() => create();
+  factory ListCrowdfundCustomCategoriesRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ListCrowdfundCustomCategoriesRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ListCrowdfundCustomCategoriesRequest clone() => ListCrowdfundCustomCategoriesRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ListCrowdfundCustomCategoriesRequest copyWith(void Function(ListCrowdfundCustomCategoriesRequest) updates) => super.copyWith((message) => updates(message as ListCrowdfundCustomCategoriesRequest)) as ListCrowdfundCustomCategoriesRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static ListCrowdfundCustomCategoriesRequest create() => ListCrowdfundCustomCategoriesRequest._();
+  ListCrowdfundCustomCategoriesRequest createEmptyInstance() => create();
+  static $pb.PbList<ListCrowdfundCustomCategoriesRequest> createRepeated() => $pb.PbList<ListCrowdfundCustomCategoriesRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ListCrowdfundCustomCategoriesRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ListCrowdfundCustomCategoriesRequest>(create);
+  static ListCrowdfundCustomCategoriesRequest? _defaultInstance;
+}
+
+class ListCrowdfundCustomCategoriesResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ListCrowdfundCustomCategoriesResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..pc<CrowdfundCustomCategory>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'categories', $pb.PbFieldType.PM, subBuilder: CrowdfundCustomCategory.create)
+    ..hasRequiredFields = false
+  ;
+
+  ListCrowdfundCustomCategoriesResponse._() : super();
+  factory ListCrowdfundCustomCategoriesResponse({
+    $core.Iterable<CrowdfundCustomCategory>? categories,
+  }) {
+    final _result = create();
+    if (categories != null) {
+      _result.categories.addAll(categories);
+    }
+    return _result;
+  }
+  factory ListCrowdfundCustomCategoriesResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ListCrowdfundCustomCategoriesResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ListCrowdfundCustomCategoriesResponse clone() => ListCrowdfundCustomCategoriesResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ListCrowdfundCustomCategoriesResponse copyWith(void Function(ListCrowdfundCustomCategoriesResponse) updates) => super.copyWith((message) => updates(message as ListCrowdfundCustomCategoriesResponse)) as ListCrowdfundCustomCategoriesResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static ListCrowdfundCustomCategoriesResponse create() => ListCrowdfundCustomCategoriesResponse._();
+  ListCrowdfundCustomCategoriesResponse createEmptyInstance() => create();
+  static $pb.PbList<ListCrowdfundCustomCategoriesResponse> createRepeated() => $pb.PbList<ListCrowdfundCustomCategoriesResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ListCrowdfundCustomCategoriesResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ListCrowdfundCustomCategoriesResponse>(create);
+  static ListCrowdfundCustomCategoriesResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<CrowdfundCustomCategory> get categories => $_getList(0);
+}
+
+class AddCrowdfundCustomCategoryRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AddCrowdfundCustomCategoryRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
+    ..hasRequiredFields = false
+  ;
+
+  AddCrowdfundCustomCategoryRequest._() : super();
+  factory AddCrowdfundCustomCategoryRequest({
+    $core.String? name,
+  }) {
+    final _result = create();
+    if (name != null) {
+      _result.name = name;
+    }
+    return _result;
+  }
+  factory AddCrowdfundCustomCategoryRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory AddCrowdfundCustomCategoryRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  AddCrowdfundCustomCategoryRequest clone() => AddCrowdfundCustomCategoryRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  AddCrowdfundCustomCategoryRequest copyWith(void Function(AddCrowdfundCustomCategoryRequest) updates) => super.copyWith((message) => updates(message as AddCrowdfundCustomCategoryRequest)) as AddCrowdfundCustomCategoryRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static AddCrowdfundCustomCategoryRequest create() => AddCrowdfundCustomCategoryRequest._();
+  AddCrowdfundCustomCategoryRequest createEmptyInstance() => create();
+  static $pb.PbList<AddCrowdfundCustomCategoryRequest> createRepeated() => $pb.PbList<AddCrowdfundCustomCategoryRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AddCrowdfundCustomCategoryRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AddCrowdfundCustomCategoryRequest>(create);
+  static AddCrowdfundCustomCategoryRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get name => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set name($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasName() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearName() => clearField(1);
+}
+
+class AddCrowdfundCustomCategoryResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AddCrowdfundCustomCategoryResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOM<CrowdfundCustomCategory>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'category', subBuilder: CrowdfundCustomCategory.create)
+    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'created')
+    ..hasRequiredFields = false
+  ;
+
+  AddCrowdfundCustomCategoryResponse._() : super();
+  factory AddCrowdfundCustomCategoryResponse({
+    CrowdfundCustomCategory? category,
+    $core.bool? created,
+  }) {
+    final _result = create();
+    if (category != null) {
+      _result.category = category;
+    }
+    if (created != null) {
+      _result.created = created;
+    }
+    return _result;
+  }
+  factory AddCrowdfundCustomCategoryResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory AddCrowdfundCustomCategoryResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  AddCrowdfundCustomCategoryResponse clone() => AddCrowdfundCustomCategoryResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  AddCrowdfundCustomCategoryResponse copyWith(void Function(AddCrowdfundCustomCategoryResponse) updates) => super.copyWith((message) => updates(message as AddCrowdfundCustomCategoryResponse)) as AddCrowdfundCustomCategoryResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static AddCrowdfundCustomCategoryResponse create() => AddCrowdfundCustomCategoryResponse._();
+  AddCrowdfundCustomCategoryResponse createEmptyInstance() => create();
+  static $pb.PbList<AddCrowdfundCustomCategoryResponse> createRepeated() => $pb.PbList<AddCrowdfundCustomCategoryResponse>();
+  @$core.pragma('dart2js:noInline')
+  static AddCrowdfundCustomCategoryResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AddCrowdfundCustomCategoryResponse>(create);
+  static AddCrowdfundCustomCategoryResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  CrowdfundCustomCategory get category => $_getN(0);
+  @$pb.TagNumber(1)
+  set category(CrowdfundCustomCategory v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCategory() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCategory() => clearField(1);
+  @$pb.TagNumber(1)
+  CrowdfundCustomCategory ensureCategory() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.bool get created => $_getBF(1);
+  @$pb.TagNumber(2)
+  set created($core.bool v) { $_setBool(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasCreated() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCreated() => clearField(2);
+}
+
+class DeleteCrowdfundCustomCategoryRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DeleteCrowdfundCustomCategoryRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'categoryId')
+    ..hasRequiredFields = false
+  ;
+
+  DeleteCrowdfundCustomCategoryRequest._() : super();
+  factory DeleteCrowdfundCustomCategoryRequest({
+    $core.String? categoryId,
+  }) {
+    final _result = create();
+    if (categoryId != null) {
+      _result.categoryId = categoryId;
+    }
+    return _result;
+  }
+  factory DeleteCrowdfundCustomCategoryRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory DeleteCrowdfundCustomCategoryRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  DeleteCrowdfundCustomCategoryRequest clone() => DeleteCrowdfundCustomCategoryRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  DeleteCrowdfundCustomCategoryRequest copyWith(void Function(DeleteCrowdfundCustomCategoryRequest) updates) => super.copyWith((message) => updates(message as DeleteCrowdfundCustomCategoryRequest)) as DeleteCrowdfundCustomCategoryRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static DeleteCrowdfundCustomCategoryRequest create() => DeleteCrowdfundCustomCategoryRequest._();
+  DeleteCrowdfundCustomCategoryRequest createEmptyInstance() => create();
+  static $pb.PbList<DeleteCrowdfundCustomCategoryRequest> createRepeated() => $pb.PbList<DeleteCrowdfundCustomCategoryRequest>();
+  @$core.pragma('dart2js:noInline')
+  static DeleteCrowdfundCustomCategoryRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DeleteCrowdfundCustomCategoryRequest>(create);
+  static DeleteCrowdfundCustomCategoryRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get categoryId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set categoryId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCategoryId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCategoryId() => clearField(1);
+}
+
+class DeleteCrowdfundCustomCategoryResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DeleteCrowdfundCustomCategoryResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'deleted')
+    ..hasRequiredFields = false
+  ;
+
+  DeleteCrowdfundCustomCategoryResponse._() : super();
+  factory DeleteCrowdfundCustomCategoryResponse({
+    $core.bool? deleted,
+  }) {
+    final _result = create();
+    if (deleted != null) {
+      _result.deleted = deleted;
+    }
+    return _result;
+  }
+  factory DeleteCrowdfundCustomCategoryResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory DeleteCrowdfundCustomCategoryResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  DeleteCrowdfundCustomCategoryResponse clone() => DeleteCrowdfundCustomCategoryResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  DeleteCrowdfundCustomCategoryResponse copyWith(void Function(DeleteCrowdfundCustomCategoryResponse) updates) => super.copyWith((message) => updates(message as DeleteCrowdfundCustomCategoryResponse)) as DeleteCrowdfundCustomCategoryResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static DeleteCrowdfundCustomCategoryResponse create() => DeleteCrowdfundCustomCategoryResponse._();
+  DeleteCrowdfundCustomCategoryResponse createEmptyInstance() => create();
+  static $pb.PbList<DeleteCrowdfundCustomCategoryResponse> createRepeated() => $pb.PbList<DeleteCrowdfundCustomCategoryResponse>();
+  @$core.pragma('dart2js:noInline')
+  static DeleteCrowdfundCustomCategoryResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DeleteCrowdfundCustomCategoryResponse>(create);
+  static DeleteCrowdfundCustomCategoryResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get deleted => $_getBF(0);
+  @$pb.TagNumber(1)
+  set deleted($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasDeleted() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearDeleted() => clearField(1);
+}
+
+class CrowdfundWithdrawalRecord extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CrowdfundWithdrawalRecord', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'destinationAccountId')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'destinationAccountType')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'idempotencyKey')
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+    ..a<$core.double>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'balanceBefore', $pb.PbFieldType.OD)
+    ..a<$core.double>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'balanceAfter', $pb.PbFieldType.OD)
+    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'notes')
+    ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt')
+    ..a<$core.double>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'feeAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'netAmount', $pb.PbFieldType.OD)
+    ..aOS(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'feeType')
+    ..a<$core.int>(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'feeBasisPoints', $pb.PbFieldType.O3)
+    ..aInt64(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'feeFixedKobo')
+    ..hasRequiredFields = false
+  ;
+
+  CrowdfundWithdrawalRecord._() : super();
+  factory CrowdfundWithdrawalRecord({
+    $core.String? id,
+    $core.String? crowdfundId,
+    $core.String? userId,
+    $core.double? amount,
+    $core.String? currency,
+    $core.String? destinationAccountId,
+    $core.String? destinationAccountType,
+    $core.String? idempotencyKey,
+    $core.String? status,
+    $core.double? balanceBefore,
+    $core.double? balanceAfter,
+    $core.String? notes,
+    $core.String? createdAt,
+    $core.double? feeAmount,
+    $core.double? netAmount,
+    $core.String? feeType,
+    $core.int? feeBasisPoints,
+    $fixnum.Int64? feeFixedKobo,
+  }) {
+    final _result = create();
+    if (id != null) {
+      _result.id = id;
+    }
+    if (crowdfundId != null) {
+      _result.crowdfundId = crowdfundId;
+    }
+    if (userId != null) {
+      _result.userId = userId;
+    }
+    if (amount != null) {
+      _result.amount = amount;
+    }
+    if (currency != null) {
+      _result.currency = currency;
+    }
+    if (destinationAccountId != null) {
+      _result.destinationAccountId = destinationAccountId;
+    }
+    if (destinationAccountType != null) {
+      _result.destinationAccountType = destinationAccountType;
+    }
+    if (idempotencyKey != null) {
+      _result.idempotencyKey = idempotencyKey;
+    }
+    if (status != null) {
+      _result.status = status;
+    }
+    if (balanceBefore != null) {
+      _result.balanceBefore = balanceBefore;
+    }
+    if (balanceAfter != null) {
+      _result.balanceAfter = balanceAfter;
+    }
+    if (notes != null) {
+      _result.notes = notes;
+    }
+    if (createdAt != null) {
+      _result.createdAt = createdAt;
+    }
+    if (feeAmount != null) {
+      _result.feeAmount = feeAmount;
+    }
+    if (netAmount != null) {
+      _result.netAmount = netAmount;
+    }
+    if (feeType != null) {
+      _result.feeType = feeType;
+    }
+    if (feeBasisPoints != null) {
+      _result.feeBasisPoints = feeBasisPoints;
+    }
+    if (feeFixedKobo != null) {
+      _result.feeFixedKobo = feeFixedKobo;
+    }
+    return _result;
+  }
+  factory CrowdfundWithdrawalRecord.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CrowdfundWithdrawalRecord.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CrowdfundWithdrawalRecord clone() => CrowdfundWithdrawalRecord()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CrowdfundWithdrawalRecord copyWith(void Function(CrowdfundWithdrawalRecord) updates) => super.copyWith((message) => updates(message as CrowdfundWithdrawalRecord)) as CrowdfundWithdrawalRecord; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static CrowdfundWithdrawalRecord create() => CrowdfundWithdrawalRecord._();
+  CrowdfundWithdrawalRecord createEmptyInstance() => create();
+  static $pb.PbList<CrowdfundWithdrawalRecord> createRepeated() => $pb.PbList<CrowdfundWithdrawalRecord>();
+  @$core.pragma('dart2js:noInline')
+  static CrowdfundWithdrawalRecord getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CrowdfundWithdrawalRecord>(create);
+  static CrowdfundWithdrawalRecord? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get crowdfundId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set crowdfundId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasCrowdfundId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCrowdfundId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get userId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set userId($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasUserId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearUserId() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.double get amount => $_getN(3);
+  @$pb.TagNumber(4)
+  set amount($core.double v) { $_setDouble(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasAmount() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearAmount() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get currency => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set currency($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasCurrency() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearCurrency() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get destinationAccountId => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set destinationAccountId($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasDestinationAccountId() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearDestinationAccountId() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get destinationAccountType => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set destinationAccountType($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasDestinationAccountType() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearDestinationAccountType() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get idempotencyKey => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set idempotencyKey($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasIdempotencyKey() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearIdempotencyKey() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get status => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set status($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasStatus() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearStatus() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.double get balanceBefore => $_getN(9);
+  @$pb.TagNumber(10)
+  set balanceBefore($core.double v) { $_setDouble(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasBalanceBefore() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearBalanceBefore() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.double get balanceAfter => $_getN(10);
+  @$pb.TagNumber(11)
+  set balanceAfter($core.double v) { $_setDouble(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasBalanceAfter() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearBalanceAfter() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get notes => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set notes($core.String v) { $_setString(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasNotes() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearNotes() => clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.String get createdAt => $_getSZ(12);
+  @$pb.TagNumber(13)
+  set createdAt($core.String v) { $_setString(12, v); }
+  @$pb.TagNumber(13)
+  $core.bool hasCreatedAt() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearCreatedAt() => clearField(13);
+
+  @$pb.TagNumber(14)
+  $core.double get feeAmount => $_getN(13);
+  @$pb.TagNumber(14)
+  set feeAmount($core.double v) { $_setDouble(13, v); }
+  @$pb.TagNumber(14)
+  $core.bool hasFeeAmount() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearFeeAmount() => clearField(14);
+
+  @$pb.TagNumber(15)
+  $core.double get netAmount => $_getN(14);
+  @$pb.TagNumber(15)
+  set netAmount($core.double v) { $_setDouble(14, v); }
+  @$pb.TagNumber(15)
+  $core.bool hasNetAmount() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearNetAmount() => clearField(15);
+
+  @$pb.TagNumber(16)
+  $core.String get feeType => $_getSZ(15);
+  @$pb.TagNumber(16)
+  set feeType($core.String v) { $_setString(15, v); }
+  @$pb.TagNumber(16)
+  $core.bool hasFeeType() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearFeeType() => clearField(16);
+
+  @$pb.TagNumber(17)
+  $core.int get feeBasisPoints => $_getIZ(16);
+  @$pb.TagNumber(17)
+  set feeBasisPoints($core.int v) { $_setSignedInt32(16, v); }
+  @$pb.TagNumber(17)
+  $core.bool hasFeeBasisPoints() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearFeeBasisPoints() => clearField(17);
+
+  @$pb.TagNumber(18)
+  $fixnum.Int64 get feeFixedKobo => $_getI64(17);
+  @$pb.TagNumber(18)
+  set feeFixedKobo($fixnum.Int64 v) { $_setInt64(17, v); }
+  @$pb.TagNumber(18)
+  $core.bool hasFeeFixedKobo() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearFeeFixedKobo() => clearField(18);
+}
+
+class ListCrowdfundWithdrawalsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ListCrowdfundWithdrawalsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  ListCrowdfundWithdrawalsRequest._() : super();
+  factory ListCrowdfundWithdrawalsRequest({
+    $core.String? crowdfundId,
+    $core.String? userId,
+    $core.String? status,
+    $core.int? page,
+    $core.int? pageSize,
+  }) {
+    final _result = create();
+    if (crowdfundId != null) {
+      _result.crowdfundId = crowdfundId;
+    }
+    if (userId != null) {
+      _result.userId = userId;
+    }
+    if (status != null) {
+      _result.status = status;
+    }
+    if (page != null) {
+      _result.page = page;
+    }
+    if (pageSize != null) {
+      _result.pageSize = pageSize;
+    }
+    return _result;
+  }
+  factory ListCrowdfundWithdrawalsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ListCrowdfundWithdrawalsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ListCrowdfundWithdrawalsRequest clone() => ListCrowdfundWithdrawalsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ListCrowdfundWithdrawalsRequest copyWith(void Function(ListCrowdfundWithdrawalsRequest) updates) => super.copyWith((message) => updates(message as ListCrowdfundWithdrawalsRequest)) as ListCrowdfundWithdrawalsRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static ListCrowdfundWithdrawalsRequest create() => ListCrowdfundWithdrawalsRequest._();
+  ListCrowdfundWithdrawalsRequest createEmptyInstance() => create();
+  static $pb.PbList<ListCrowdfundWithdrawalsRequest> createRepeated() => $pb.PbList<ListCrowdfundWithdrawalsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ListCrowdfundWithdrawalsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ListCrowdfundWithdrawalsRequest>(create);
+  static ListCrowdfundWithdrawalsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get crowdfundId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set crowdfundId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCrowdfundId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCrowdfundId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get userId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set userId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasUserId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearUserId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get status => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set status($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasStatus() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearStatus() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get page => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set page($core.int v) { $_setSignedInt32(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasPage() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPage() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get pageSize => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set pageSize($core.int v) { $_setSignedInt32(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasPageSize() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearPageSize() => clearField(5);
+}
+
+class ListCrowdfundWithdrawalsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ListCrowdfundWithdrawalsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..pc<CrowdfundWithdrawalRecord>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'withdrawals', $pb.PbFieldType.PM, subBuilder: CrowdfundWithdrawalRecord.create)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'total', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasMore')
+    ..hasRequiredFields = false
+  ;
+
+  ListCrowdfundWithdrawalsResponse._() : super();
+  factory ListCrowdfundWithdrawalsResponse({
+    $core.Iterable<CrowdfundWithdrawalRecord>? withdrawals,
+    $core.int? total,
+    $core.int? page,
+    $core.int? pageSize,
+    $core.bool? hasMore,
+  }) {
+    final _result = create();
+    if (withdrawals != null) {
+      _result.withdrawals.addAll(withdrawals);
+    }
+    if (total != null) {
+      _result.total = total;
+    }
+    if (page != null) {
+      _result.page = page;
+    }
+    if (pageSize != null) {
+      _result.pageSize = pageSize;
+    }
+    if (hasMore != null) {
+      _result.hasMore = hasMore;
+    }
+    return _result;
+  }
+  factory ListCrowdfundWithdrawalsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ListCrowdfundWithdrawalsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ListCrowdfundWithdrawalsResponse clone() => ListCrowdfundWithdrawalsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ListCrowdfundWithdrawalsResponse copyWith(void Function(ListCrowdfundWithdrawalsResponse) updates) => super.copyWith((message) => updates(message as ListCrowdfundWithdrawalsResponse)) as ListCrowdfundWithdrawalsResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static ListCrowdfundWithdrawalsResponse create() => ListCrowdfundWithdrawalsResponse._();
+  ListCrowdfundWithdrawalsResponse createEmptyInstance() => create();
+  static $pb.PbList<ListCrowdfundWithdrawalsResponse> createRepeated() => $pb.PbList<ListCrowdfundWithdrawalsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ListCrowdfundWithdrawalsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ListCrowdfundWithdrawalsResponse>(create);
+  static ListCrowdfundWithdrawalsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<CrowdfundWithdrawalRecord> get withdrawals => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get total => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set total($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTotal() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotal() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get page => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set page($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPage() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get pageSize => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set pageSize($core.int v) { $_setSignedInt32(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasPageSize() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPageSize() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.bool get hasMore => $_getBF(4);
+  @$pb.TagNumber(5)
+  set hasMore($core.bool v) { $_setBool(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasHasMore() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearHasMore() => clearField(5);
 }
 
 class CloseCrowdfundRequest extends $pb.GeneratedMessage {
@@ -6170,6 +7843,877 @@ class CloseCrowdfundResponse extends $pb.GeneratedMessage {
   void clearCrowdfund() => clearField(1);
   @$pb.TagNumber(1)
   Crowdfund ensureCrowdfund() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+}
+
+class CancelCrowdfundRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CancelCrowdfundRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reason')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionPin')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionId')
+    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'forcePartialRefund')
+    ..hasRequiredFields = false
+  ;
+
+  CancelCrowdfundRequest._() : super();
+  factory CancelCrowdfundRequest({
+    $core.String? crowdfundId,
+    $core.String? reason,
+    $core.String? transactionPin,
+    $core.String? transactionId,
+    $core.bool? forcePartialRefund,
+  }) {
+    final _result = create();
+    if (crowdfundId != null) {
+      _result.crowdfundId = crowdfundId;
+    }
+    if (reason != null) {
+      _result.reason = reason;
+    }
+    if (transactionPin != null) {
+      _result.transactionPin = transactionPin;
+    }
+    if (transactionId != null) {
+      _result.transactionId = transactionId;
+    }
+    if (forcePartialRefund != null) {
+      _result.forcePartialRefund = forcePartialRefund;
+    }
+    return _result;
+  }
+  factory CancelCrowdfundRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CancelCrowdfundRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CancelCrowdfundRequest clone() => CancelCrowdfundRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CancelCrowdfundRequest copyWith(void Function(CancelCrowdfundRequest) updates) => super.copyWith((message) => updates(message as CancelCrowdfundRequest)) as CancelCrowdfundRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static CancelCrowdfundRequest create() => CancelCrowdfundRequest._();
+  CancelCrowdfundRequest createEmptyInstance() => create();
+  static $pb.PbList<CancelCrowdfundRequest> createRepeated() => $pb.PbList<CancelCrowdfundRequest>();
+  @$core.pragma('dart2js:noInline')
+  static CancelCrowdfundRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CancelCrowdfundRequest>(create);
+  static CancelCrowdfundRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get crowdfundId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set crowdfundId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCrowdfundId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCrowdfundId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get reason => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set reason($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasReason() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearReason() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get transactionPin => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set transactionPin($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasTransactionPin() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearTransactionPin() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get transactionId => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set transactionId($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasTransactionId() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearTransactionId() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.bool get forcePartialRefund => $_getBF(4);
+  @$pb.TagNumber(5)
+  set forcePartialRefund($core.bool v) { $_setBool(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasForcePartialRefund() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearForcePartialRefund() => clearField(5);
+}
+
+class CancelCrowdfundResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CancelCrowdfundResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOM<Crowdfund>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfund', subBuilder: Crowdfund.create)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalContributions', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refundsQueued', $pb.PbFieldType.O3)
+    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalRefundAmount', $pb.PbFieldType.OD)
+    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'wasProRata')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  CancelCrowdfundResponse._() : super();
+  factory CancelCrowdfundResponse({
+    Crowdfund? crowdfund,
+    $core.int? totalContributions,
+    $core.int? refundsQueued,
+    $core.double? totalRefundAmount,
+    $core.bool? wasProRata,
+    $core.String? message,
+  }) {
+    final _result = create();
+    if (crowdfund != null) {
+      _result.crowdfund = crowdfund;
+    }
+    if (totalContributions != null) {
+      _result.totalContributions = totalContributions;
+    }
+    if (refundsQueued != null) {
+      _result.refundsQueued = refundsQueued;
+    }
+    if (totalRefundAmount != null) {
+      _result.totalRefundAmount = totalRefundAmount;
+    }
+    if (wasProRata != null) {
+      _result.wasProRata = wasProRata;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    return _result;
+  }
+  factory CancelCrowdfundResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CancelCrowdfundResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CancelCrowdfundResponse clone() => CancelCrowdfundResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CancelCrowdfundResponse copyWith(void Function(CancelCrowdfundResponse) updates) => super.copyWith((message) => updates(message as CancelCrowdfundResponse)) as CancelCrowdfundResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static CancelCrowdfundResponse create() => CancelCrowdfundResponse._();
+  CancelCrowdfundResponse createEmptyInstance() => create();
+  static $pb.PbList<CancelCrowdfundResponse> createRepeated() => $pb.PbList<CancelCrowdfundResponse>();
+  @$core.pragma('dart2js:noInline')
+  static CancelCrowdfundResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CancelCrowdfundResponse>(create);
+  static CancelCrowdfundResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  Crowdfund get crowdfund => $_getN(0);
+  @$pb.TagNumber(1)
+  set crowdfund(Crowdfund v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCrowdfund() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCrowdfund() => clearField(1);
+  @$pb.TagNumber(1)
+  Crowdfund ensureCrowdfund() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.int get totalContributions => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set totalContributions($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTotalContributions() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotalContributions() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get refundsQueued => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set refundsQueued($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasRefundsQueued() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearRefundsQueued() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.double get totalRefundAmount => $_getN(3);
+  @$pb.TagNumber(4)
+  set totalRefundAmount($core.double v) { $_setDouble(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasTotalRefundAmount() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearTotalRefundAmount() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.bool get wasProRata => $_getBF(4);
+  @$pb.TagNumber(5)
+  set wasProRata($core.bool v) { $_setBool(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasWasProRata() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearWasProRata() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get message => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set message($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasMessage() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearMessage() => clearField(6);
+}
+
+class ForceCompleteCrowdfundRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ForceCompleteCrowdfundRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reason')
+    ..hasRequiredFields = false
+  ;
+
+  ForceCompleteCrowdfundRequest._() : super();
+  factory ForceCompleteCrowdfundRequest({
+    $core.String? crowdfundId,
+    $core.String? reason,
+  }) {
+    final _result = create();
+    if (crowdfundId != null) {
+      _result.crowdfundId = crowdfundId;
+    }
+    if (reason != null) {
+      _result.reason = reason;
+    }
+    return _result;
+  }
+  factory ForceCompleteCrowdfundRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ForceCompleteCrowdfundRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ForceCompleteCrowdfundRequest clone() => ForceCompleteCrowdfundRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ForceCompleteCrowdfundRequest copyWith(void Function(ForceCompleteCrowdfundRequest) updates) => super.copyWith((message) => updates(message as ForceCompleteCrowdfundRequest)) as ForceCompleteCrowdfundRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static ForceCompleteCrowdfundRequest create() => ForceCompleteCrowdfundRequest._();
+  ForceCompleteCrowdfundRequest createEmptyInstance() => create();
+  static $pb.PbList<ForceCompleteCrowdfundRequest> createRepeated() => $pb.PbList<ForceCompleteCrowdfundRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ForceCompleteCrowdfundRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ForceCompleteCrowdfundRequest>(create);
+  static ForceCompleteCrowdfundRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get crowdfundId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set crowdfundId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCrowdfundId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCrowdfundId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get reason => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set reason($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasReason() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearReason() => clearField(2);
+}
+
+class ForceCompleteCrowdfundResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ForceCompleteCrowdfundResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOM<Crowdfund>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfund', subBuilder: Crowdfund.create)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  ForceCompleteCrowdfundResponse._() : super();
+  factory ForceCompleteCrowdfundResponse({
+    Crowdfund? crowdfund,
+    $core.String? message,
+  }) {
+    final _result = create();
+    if (crowdfund != null) {
+      _result.crowdfund = crowdfund;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    return _result;
+  }
+  factory ForceCompleteCrowdfundResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ForceCompleteCrowdfundResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ForceCompleteCrowdfundResponse clone() => ForceCompleteCrowdfundResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ForceCompleteCrowdfundResponse copyWith(void Function(ForceCompleteCrowdfundResponse) updates) => super.copyWith((message) => updates(message as ForceCompleteCrowdfundResponse)) as ForceCompleteCrowdfundResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static ForceCompleteCrowdfundResponse create() => ForceCompleteCrowdfundResponse._();
+  ForceCompleteCrowdfundResponse createEmptyInstance() => create();
+  static $pb.PbList<ForceCompleteCrowdfundResponse> createRepeated() => $pb.PbList<ForceCompleteCrowdfundResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ForceCompleteCrowdfundResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ForceCompleteCrowdfundResponse>(create);
+  static ForceCompleteCrowdfundResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  Crowdfund get crowdfund => $_getN(0);
+  @$pb.TagNumber(1)
+  set crowdfund(Crowdfund v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCrowdfund() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCrowdfund() => clearField(1);
+  @$pb.TagNumber(1)
+  Crowdfund ensureCrowdfund() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+}
+
+class ListCrowdfundRefundsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ListCrowdfundRefundsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  ListCrowdfundRefundsRequest._() : super();
+  factory ListCrowdfundRefundsRequest({
+    $core.String? crowdfundId,
+    $core.String? status,
+    $core.int? page,
+    $core.int? pageSize,
+  }) {
+    final _result = create();
+    if (crowdfundId != null) {
+      _result.crowdfundId = crowdfundId;
+    }
+    if (status != null) {
+      _result.status = status;
+    }
+    if (page != null) {
+      _result.page = page;
+    }
+    if (pageSize != null) {
+      _result.pageSize = pageSize;
+    }
+    return _result;
+  }
+  factory ListCrowdfundRefundsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ListCrowdfundRefundsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ListCrowdfundRefundsRequest clone() => ListCrowdfundRefundsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ListCrowdfundRefundsRequest copyWith(void Function(ListCrowdfundRefundsRequest) updates) => super.copyWith((message) => updates(message as ListCrowdfundRefundsRequest)) as ListCrowdfundRefundsRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static ListCrowdfundRefundsRequest create() => ListCrowdfundRefundsRequest._();
+  ListCrowdfundRefundsRequest createEmptyInstance() => create();
+  static $pb.PbList<ListCrowdfundRefundsRequest> createRepeated() => $pb.PbList<ListCrowdfundRefundsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ListCrowdfundRefundsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ListCrowdfundRefundsRequest>(create);
+  static ListCrowdfundRefundsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get crowdfundId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set crowdfundId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCrowdfundId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCrowdfundId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get status => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set status($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasStatus() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearStatus() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get page => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set page($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPage() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get pageSize => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set pageSize($core.int v) { $_setSignedInt32(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasPageSize() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPageSize() => clearField(4);
+}
+
+class CrowdfundRefundEntry extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CrowdfundRefundEntry', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'contributionId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'crowdfundId')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'contributorUserId')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'contributorDisplayName')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'destinationAccountId')
+    ..a<$core.double>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'initiatedBy')
+    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reason')
+    ..a<$core.int>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'attemptCount', $pb.PbFieldType.O3)
+    ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastError')
+    ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt')
+    ..aOS(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt')
+    ..hasRequiredFields = false
+  ;
+
+  CrowdfundRefundEntry._() : super();
+  factory CrowdfundRefundEntry({
+    $core.String? id,
+    $core.String? contributionId,
+    $core.String? crowdfundId,
+    $core.String? contributorUserId,
+    $core.String? contributorDisplayName,
+    $core.String? destinationAccountId,
+    $core.double? amount,
+    $core.String? currency,
+    $core.String? status,
+    $core.String? initiatedBy,
+    $core.String? reason,
+    $core.int? attemptCount,
+    $core.String? lastError,
+    $core.String? createdAt,
+    $core.String? updatedAt,
+  }) {
+    final _result = create();
+    if (id != null) {
+      _result.id = id;
+    }
+    if (contributionId != null) {
+      _result.contributionId = contributionId;
+    }
+    if (crowdfundId != null) {
+      _result.crowdfundId = crowdfundId;
+    }
+    if (contributorUserId != null) {
+      _result.contributorUserId = contributorUserId;
+    }
+    if (contributorDisplayName != null) {
+      _result.contributorDisplayName = contributorDisplayName;
+    }
+    if (destinationAccountId != null) {
+      _result.destinationAccountId = destinationAccountId;
+    }
+    if (amount != null) {
+      _result.amount = amount;
+    }
+    if (currency != null) {
+      _result.currency = currency;
+    }
+    if (status != null) {
+      _result.status = status;
+    }
+    if (initiatedBy != null) {
+      _result.initiatedBy = initiatedBy;
+    }
+    if (reason != null) {
+      _result.reason = reason;
+    }
+    if (attemptCount != null) {
+      _result.attemptCount = attemptCount;
+    }
+    if (lastError != null) {
+      _result.lastError = lastError;
+    }
+    if (createdAt != null) {
+      _result.createdAt = createdAt;
+    }
+    if (updatedAt != null) {
+      _result.updatedAt = updatedAt;
+    }
+    return _result;
+  }
+  factory CrowdfundRefundEntry.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CrowdfundRefundEntry.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CrowdfundRefundEntry clone() => CrowdfundRefundEntry()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CrowdfundRefundEntry copyWith(void Function(CrowdfundRefundEntry) updates) => super.copyWith((message) => updates(message as CrowdfundRefundEntry)) as CrowdfundRefundEntry; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static CrowdfundRefundEntry create() => CrowdfundRefundEntry._();
+  CrowdfundRefundEntry createEmptyInstance() => create();
+  static $pb.PbList<CrowdfundRefundEntry> createRepeated() => $pb.PbList<CrowdfundRefundEntry>();
+  @$core.pragma('dart2js:noInline')
+  static CrowdfundRefundEntry getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CrowdfundRefundEntry>(create);
+  static CrowdfundRefundEntry? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get contributionId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set contributionId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasContributionId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearContributionId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get crowdfundId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set crowdfundId($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasCrowdfundId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCrowdfundId() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get contributorUserId => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set contributorUserId($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasContributorUserId() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearContributorUserId() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get contributorDisplayName => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set contributorDisplayName($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasContributorDisplayName() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearContributorDisplayName() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get destinationAccountId => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set destinationAccountId($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasDestinationAccountId() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearDestinationAccountId() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.double get amount => $_getN(6);
+  @$pb.TagNumber(7)
+  set amount($core.double v) { $_setDouble(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasAmount() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearAmount() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get currency => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set currency($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasCurrency() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearCurrency() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get status => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set status($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasStatus() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearStatus() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get initiatedBy => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set initiatedBy($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasInitiatedBy() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearInitiatedBy() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get reason => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set reason($core.String v) { $_setString(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasReason() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearReason() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.int get attemptCount => $_getIZ(11);
+  @$pb.TagNumber(12)
+  set attemptCount($core.int v) { $_setSignedInt32(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasAttemptCount() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearAttemptCount() => clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.String get lastError => $_getSZ(12);
+  @$pb.TagNumber(13)
+  set lastError($core.String v) { $_setString(12, v); }
+  @$pb.TagNumber(13)
+  $core.bool hasLastError() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearLastError() => clearField(13);
+
+  @$pb.TagNumber(14)
+  $core.String get createdAt => $_getSZ(13);
+  @$pb.TagNumber(14)
+  set createdAt($core.String v) { $_setString(13, v); }
+  @$pb.TagNumber(14)
+  $core.bool hasCreatedAt() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearCreatedAt() => clearField(14);
+
+  @$pb.TagNumber(15)
+  $core.String get updatedAt => $_getSZ(14);
+  @$pb.TagNumber(15)
+  set updatedAt($core.String v) { $_setString(14, v); }
+  @$pb.TagNumber(15)
+  $core.bool hasUpdatedAt() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearUpdatedAt() => clearField(15);
+}
+
+class ListCrowdfundRefundsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ListCrowdfundRefundsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..pc<CrowdfundRefundEntry>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refunds', $pb.PbFieldType.PM, subBuilder: CrowdfundRefundEntry.create)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'total', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  ListCrowdfundRefundsResponse._() : super();
+  factory ListCrowdfundRefundsResponse({
+    $core.Iterable<CrowdfundRefundEntry>? refunds,
+    $core.int? total,
+    $core.int? page,
+    $core.int? pageSize,
+  }) {
+    final _result = create();
+    if (refunds != null) {
+      _result.refunds.addAll(refunds);
+    }
+    if (total != null) {
+      _result.total = total;
+    }
+    if (page != null) {
+      _result.page = page;
+    }
+    if (pageSize != null) {
+      _result.pageSize = pageSize;
+    }
+    return _result;
+  }
+  factory ListCrowdfundRefundsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ListCrowdfundRefundsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ListCrowdfundRefundsResponse clone() => ListCrowdfundRefundsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ListCrowdfundRefundsResponse copyWith(void Function(ListCrowdfundRefundsResponse) updates) => super.copyWith((message) => updates(message as ListCrowdfundRefundsResponse)) as ListCrowdfundRefundsResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static ListCrowdfundRefundsResponse create() => ListCrowdfundRefundsResponse._();
+  ListCrowdfundRefundsResponse createEmptyInstance() => create();
+  static $pb.PbList<ListCrowdfundRefundsResponse> createRepeated() => $pb.PbList<ListCrowdfundRefundsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ListCrowdfundRefundsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ListCrowdfundRefundsResponse>(create);
+  static ListCrowdfundRefundsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<CrowdfundRefundEntry> get refunds => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get total => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set total($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTotal() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotal() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get page => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set page($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPage() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get pageSize => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set pageSize($core.int v) { $_setSignedInt32(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasPageSize() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPageSize() => clearField(4);
+}
+
+class RetryCrowdfundRefundRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'RetryCrowdfundRefundRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refundId')
+    ..hasRequiredFields = false
+  ;
+
+  RetryCrowdfundRefundRequest._() : super();
+  factory RetryCrowdfundRefundRequest({
+    $core.String? refundId,
+  }) {
+    final _result = create();
+    if (refundId != null) {
+      _result.refundId = refundId;
+    }
+    return _result;
+  }
+  factory RetryCrowdfundRefundRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory RetryCrowdfundRefundRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  RetryCrowdfundRefundRequest clone() => RetryCrowdfundRefundRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  RetryCrowdfundRefundRequest copyWith(void Function(RetryCrowdfundRefundRequest) updates) => super.copyWith((message) => updates(message as RetryCrowdfundRefundRequest)) as RetryCrowdfundRefundRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static RetryCrowdfundRefundRequest create() => RetryCrowdfundRefundRequest._();
+  RetryCrowdfundRefundRequest createEmptyInstance() => create();
+  static $pb.PbList<RetryCrowdfundRefundRequest> createRepeated() => $pb.PbList<RetryCrowdfundRefundRequest>();
+  @$core.pragma('dart2js:noInline')
+  static RetryCrowdfundRefundRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RetryCrowdfundRefundRequest>(create);
+  static RetryCrowdfundRefundRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get refundId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set refundId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasRefundId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearRefundId() => clearField(1);
+}
+
+class RetryCrowdfundRefundResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'RetryCrowdfundRefundResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOM<CrowdfundRefundEntry>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refund', subBuilder: CrowdfundRefundEntry.create)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  RetryCrowdfundRefundResponse._() : super();
+  factory RetryCrowdfundRefundResponse({
+    CrowdfundRefundEntry? refund,
+    $core.String? message,
+  }) {
+    final _result = create();
+    if (refund != null) {
+      _result.refund = refund;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    return _result;
+  }
+  factory RetryCrowdfundRefundResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory RetryCrowdfundRefundResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  RetryCrowdfundRefundResponse clone() => RetryCrowdfundRefundResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  RetryCrowdfundRefundResponse copyWith(void Function(RetryCrowdfundRefundResponse) updates) => super.copyWith((message) => updates(message as RetryCrowdfundRefundResponse)) as RetryCrowdfundRefundResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static RetryCrowdfundRefundResponse create() => RetryCrowdfundRefundResponse._();
+  RetryCrowdfundRefundResponse createEmptyInstance() => create();
+  static $pb.PbList<RetryCrowdfundRefundResponse> createRepeated() => $pb.PbList<RetryCrowdfundRefundResponse>();
+  @$core.pragma('dart2js:noInline')
+  static RetryCrowdfundRefundResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RetryCrowdfundRefundResponse>(create);
+  static RetryCrowdfundRefundResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  CrowdfundRefundEntry get refund => $_getN(0);
+  @$pb.TagNumber(1)
+  set refund(CrowdfundRefundEntry v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasRefund() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearRefund() => clearField(1);
+  @$pb.TagNumber(1)
+  CrowdfundRefundEntry ensureRefund() => $_ensure(0);
 
   @$pb.TagNumber(2)
   $core.String get message => $_getSZ(1);
@@ -9165,6 +11709,7 @@ class ProcessInsurancePaymentRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ProcessInsurancePaymentRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paymentId')
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionPinToken')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'idempotencyKey')
     ..hasRequiredFields = false
   ;
 
@@ -9172,6 +11717,7 @@ class ProcessInsurancePaymentRequest extends $pb.GeneratedMessage {
   factory ProcessInsurancePaymentRequest({
     $core.String? paymentId,
     $core.String? transactionPinToken,
+    $core.String? idempotencyKey,
   }) {
     final _result = create();
     if (paymentId != null) {
@@ -9179,6 +11725,9 @@ class ProcessInsurancePaymentRequest extends $pb.GeneratedMessage {
     }
     if (transactionPinToken != null) {
       _result.transactionPinToken = transactionPinToken;
+    }
+    if (idempotencyKey != null) {
+      _result.idempotencyKey = idempotencyKey;
     }
     return _result;
   }
@@ -9220,6 +11769,15 @@ class ProcessInsurancePaymentRequest extends $pb.GeneratedMessage {
   $core.bool hasTransactionPinToken() => $_has(1);
   @$pb.TagNumber(2)
   void clearTransactionPinToken() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get idempotencyKey => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set idempotencyKey($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasIdempotencyKey() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearIdempotencyKey() => clearField(3);
 }
 
 class ProcessInsurancePaymentResponse extends $pb.GeneratedMessage {
@@ -11329,6 +13887,10 @@ class AutoSaveStatistics extends $pb.GeneratedMessage {
     ..a<$core.int>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalTransactions', $pb.PbFieldType.O3)
     ..a<$core.double>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'averageSaveAmount', $pb.PbFieldType.OD)
     ..aOM<AutoSaveRule>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'mostActiveRule', subBuilder: AutoSaveRule.create)
+    ..aOM<AutoSaveRule>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'topRuleByTotalSaved', subBuilder: AutoSaveRule.create)
+    ..a<$core.int>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pausedRulesCount', $pb.PbFieldType.O3)
+    ..a<$core.int>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completedRulesCount', $pb.PbFieldType.O3)
+    ..a<$core.int>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cancelledRulesCount', $pb.PbFieldType.O3)
     ..hasRequiredFields = false
   ;
 
@@ -11342,6 +13904,10 @@ class AutoSaveStatistics extends $pb.GeneratedMessage {
     $core.int? totalTransactions,
     $core.double? averageSaveAmount,
     AutoSaveRule? mostActiveRule,
+    AutoSaveRule? topRuleByTotalSaved,
+    $core.int? pausedRulesCount,
+    $core.int? completedRulesCount,
+    $core.int? cancelledRulesCount,
   }) {
     final _result = create();
     if (userId != null) {
@@ -11367,6 +13933,18 @@ class AutoSaveStatistics extends $pb.GeneratedMessage {
     }
     if (mostActiveRule != null) {
       _result.mostActiveRule = mostActiveRule;
+    }
+    if (topRuleByTotalSaved != null) {
+      _result.topRuleByTotalSaved = topRuleByTotalSaved;
+    }
+    if (pausedRulesCount != null) {
+      _result.pausedRulesCount = pausedRulesCount;
+    }
+    if (completedRulesCount != null) {
+      _result.completedRulesCount = completedRulesCount;
+    }
+    if (cancelledRulesCount != null) {
+      _result.cancelledRulesCount = cancelledRulesCount;
     }
     return _result;
   }
@@ -11464,6 +14042,44 @@ class AutoSaveStatistics extends $pb.GeneratedMessage {
   void clearMostActiveRule() => clearField(8);
   @$pb.TagNumber(8)
   AutoSaveRule ensureMostActiveRule() => $_ensure(7);
+
+  @$pb.TagNumber(9)
+  AutoSaveRule get topRuleByTotalSaved => $_getN(8);
+  @$pb.TagNumber(9)
+  set topRuleByTotalSaved(AutoSaveRule v) { setField(9, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasTopRuleByTotalSaved() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearTopRuleByTotalSaved() => clearField(9);
+  @$pb.TagNumber(9)
+  AutoSaveRule ensureTopRuleByTotalSaved() => $_ensure(8);
+
+  @$pb.TagNumber(10)
+  $core.int get pausedRulesCount => $_getIZ(9);
+  @$pb.TagNumber(10)
+  set pausedRulesCount($core.int v) { $_setSignedInt32(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasPausedRulesCount() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearPausedRulesCount() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.int get completedRulesCount => $_getIZ(10);
+  @$pb.TagNumber(11)
+  set completedRulesCount($core.int v) { $_setSignedInt32(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasCompletedRulesCount() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearCompletedRulesCount() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.int get cancelledRulesCount => $_getIZ(11);
+  @$pb.TagNumber(12)
+  set cancelledRulesCount($core.int v) { $_setSignedInt32(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasCancelledRulesCount() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearCancelledRulesCount() => clearField(12);
 }
 
 class CreateAutoSaveRuleRequest2 extends $pb.GeneratedMessage {
@@ -11762,6 +14378,12 @@ class GetAutoSaveRulesRequest2 extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetAutoSaveRulesRequest2', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountId')
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'search')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sortBy')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sortDir')
+    ..a<$core.int>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
+    ..a<$core.int>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'offset', $pb.PbFieldType.O3)
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'triggerType')
     ..hasRequiredFields = false
   ;
 
@@ -11769,6 +14391,12 @@ class GetAutoSaveRulesRequest2 extends $pb.GeneratedMessage {
   factory GetAutoSaveRulesRequest2({
     $core.String? accountId,
     $core.String? status,
+    $core.String? search,
+    $core.String? sortBy,
+    $core.String? sortDir,
+    $core.int? limit,
+    $core.int? offset,
+    $core.String? triggerType,
   }) {
     final _result = create();
     if (accountId != null) {
@@ -11776,6 +14404,24 @@ class GetAutoSaveRulesRequest2 extends $pb.GeneratedMessage {
     }
     if (status != null) {
       _result.status = status;
+    }
+    if (search != null) {
+      _result.search = search;
+    }
+    if (sortBy != null) {
+      _result.sortBy = sortBy;
+    }
+    if (sortDir != null) {
+      _result.sortDir = sortDir;
+    }
+    if (limit != null) {
+      _result.limit = limit;
+    }
+    if (offset != null) {
+      _result.offset = offset;
+    }
+    if (triggerType != null) {
+      _result.triggerType = triggerType;
     }
     return _result;
   }
@@ -11817,12 +14463,67 @@ class GetAutoSaveRulesRequest2 extends $pb.GeneratedMessage {
   $core.bool hasStatus() => $_has(1);
   @$pb.TagNumber(2)
   void clearStatus() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get search => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set search($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasSearch() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearSearch() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get sortBy => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set sortBy($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasSortBy() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearSortBy() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get sortDir => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set sortDir($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasSortDir() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearSortDir() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.int get limit => $_getIZ(5);
+  @$pb.TagNumber(6)
+  set limit($core.int v) { $_setSignedInt32(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasLimit() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearLimit() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.int get offset => $_getIZ(6);
+  @$pb.TagNumber(7)
+  set offset($core.int v) { $_setSignedInt32(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasOffset() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearOffset() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get triggerType => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set triggerType($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasTriggerType() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearTriggerType() => clearField(8);
 }
 
 class GetAutoSaveRulesResponse2 extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetAutoSaveRulesResponse2', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
     ..pc<AutoSaveRule>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'rules', $pb.PbFieldType.PM, subBuilder: AutoSaveRule.create)
     ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'total', $pb.PbFieldType.O3)
+    ..aOB(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'hasMore')
     ..hasRequiredFields = false
   ;
 
@@ -11830,6 +14531,7 @@ class GetAutoSaveRulesResponse2 extends $pb.GeneratedMessage {
   factory GetAutoSaveRulesResponse2({
     $core.Iterable<AutoSaveRule>? rules,
     $core.int? total,
+    $core.bool? hasMore,
   }) {
     final _result = create();
     if (rules != null) {
@@ -11837,6 +14539,9 @@ class GetAutoSaveRulesResponse2 extends $pb.GeneratedMessage {
     }
     if (total != null) {
       _result.total = total;
+    }
+    if (hasMore != null) {
+      _result.hasMore = hasMore;
     }
     return _result;
   }
@@ -11872,6 +14577,15 @@ class GetAutoSaveRulesResponse2 extends $pb.GeneratedMessage {
   $core.bool hasTotal() => $_has(1);
   @$pb.TagNumber(2)
   void clearTotal() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.bool get hasMore => $_getBF(2);
+  @$pb.TagNumber(3)
+  set hasMore($core.bool v) { $_setBool(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasHasMore() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearHasMore() => clearField(3);
 }
 
 class UpdateAutoSaveRuleRequest2 extends $pb.GeneratedMessage {
@@ -18305,5 +21019,2001 @@ class InsuranceRefundInfo extends $pb.GeneratedMessage {
   $core.bool hasCompletedAt() => $_has(10);
   @$pb.TagNumber(11)
   void clearCompletedAt() => clearField(11);
+}
+
+class GetInsuranceReconciliationOverviewRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetInsuranceReconciliationOverviewRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..hasRequiredFields = false
+  ;
+
+  GetInsuranceReconciliationOverviewRequest._() : super();
+  factory GetInsuranceReconciliationOverviewRequest() => create();
+  factory GetInsuranceReconciliationOverviewRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetInsuranceReconciliationOverviewRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetInsuranceReconciliationOverviewRequest clone() => GetInsuranceReconciliationOverviewRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetInsuranceReconciliationOverviewRequest copyWith(void Function(GetInsuranceReconciliationOverviewRequest) updates) => super.copyWith((message) => updates(message as GetInsuranceReconciliationOverviewRequest)) as GetInsuranceReconciliationOverviewRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetInsuranceReconciliationOverviewRequest create() => GetInsuranceReconciliationOverviewRequest._();
+  GetInsuranceReconciliationOverviewRequest createEmptyInstance() => create();
+  static $pb.PbList<GetInsuranceReconciliationOverviewRequest> createRepeated() => $pb.PbList<GetInsuranceReconciliationOverviewRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetInsuranceReconciliationOverviewRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetInsuranceReconciliationOverviewRequest>(create);
+  static GetInsuranceReconciliationOverviewRequest? _defaultInstance;
+}
+
+class GetInsuranceReconciliationOverviewResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetInsuranceReconciliationOverviewResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'orphanedTransactions', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pendingVerification', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failedRollbacks', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'resolvedToday', $pb.PbFieldType.O3)
+    ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'floatVariance', $pb.PbFieldType.OD)
+    ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'floatVarianceCritical')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastReconciliation')
+    ..aOB(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  GetInsuranceReconciliationOverviewResponse._() : super();
+  factory GetInsuranceReconciliationOverviewResponse({
+    $core.int? orphanedTransactions,
+    $core.int? pendingVerification,
+    $core.int? failedRollbacks,
+    $core.int? resolvedToday,
+    $core.double? floatVariance,
+    $core.bool? floatVarianceCritical,
+    $core.String? lastReconciliation,
+    $core.bool? success,
+    $core.String? message,
+  }) {
+    final _result = create();
+    if (orphanedTransactions != null) {
+      _result.orphanedTransactions = orphanedTransactions;
+    }
+    if (pendingVerification != null) {
+      _result.pendingVerification = pendingVerification;
+    }
+    if (failedRollbacks != null) {
+      _result.failedRollbacks = failedRollbacks;
+    }
+    if (resolvedToday != null) {
+      _result.resolvedToday = resolvedToday;
+    }
+    if (floatVariance != null) {
+      _result.floatVariance = floatVariance;
+    }
+    if (floatVarianceCritical != null) {
+      _result.floatVarianceCritical = floatVarianceCritical;
+    }
+    if (lastReconciliation != null) {
+      _result.lastReconciliation = lastReconciliation;
+    }
+    if (success != null) {
+      _result.success = success;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    return _result;
+  }
+  factory GetInsuranceReconciliationOverviewResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetInsuranceReconciliationOverviewResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetInsuranceReconciliationOverviewResponse clone() => GetInsuranceReconciliationOverviewResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetInsuranceReconciliationOverviewResponse copyWith(void Function(GetInsuranceReconciliationOverviewResponse) updates) => super.copyWith((message) => updates(message as GetInsuranceReconciliationOverviewResponse)) as GetInsuranceReconciliationOverviewResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetInsuranceReconciliationOverviewResponse create() => GetInsuranceReconciliationOverviewResponse._();
+  GetInsuranceReconciliationOverviewResponse createEmptyInstance() => create();
+  static $pb.PbList<GetInsuranceReconciliationOverviewResponse> createRepeated() => $pb.PbList<GetInsuranceReconciliationOverviewResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetInsuranceReconciliationOverviewResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetInsuranceReconciliationOverviewResponse>(create);
+  static GetInsuranceReconciliationOverviewResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get orphanedTransactions => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set orphanedTransactions($core.int v) { $_setSignedInt32(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasOrphanedTransactions() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearOrphanedTransactions() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get pendingVerification => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set pendingVerification($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasPendingVerification() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPendingVerification() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get failedRollbacks => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set failedRollbacks($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasFailedRollbacks() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearFailedRollbacks() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get resolvedToday => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set resolvedToday($core.int v) { $_setSignedInt32(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasResolvedToday() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearResolvedToday() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.double get floatVariance => $_getN(4);
+  @$pb.TagNumber(5)
+  set floatVariance($core.double v) { $_setDouble(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasFloatVariance() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearFloatVariance() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.bool get floatVarianceCritical => $_getBF(5);
+  @$pb.TagNumber(6)
+  set floatVarianceCritical($core.bool v) { $_setBool(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasFloatVarianceCritical() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearFloatVarianceCritical() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get lastReconciliation => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set lastReconciliation($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasLastReconciliation() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearLastReconciliation() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.bool get success => $_getBF(7);
+  @$pb.TagNumber(8)
+  set success($core.bool v) { $_setBool(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasSuccess() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearSuccess() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get message => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set message($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasMessage() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearMessage() => clearField(9);
+}
+
+class GetOrphanedInsuranceTransactionsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetOrphanedInsuranceTransactionsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  GetOrphanedInsuranceTransactionsRequest._() : super();
+  factory GetOrphanedInsuranceTransactionsRequest({
+    $core.int? page,
+    $core.int? limit,
+  }) {
+    final _result = create();
+    if (page != null) {
+      _result.page = page;
+    }
+    if (limit != null) {
+      _result.limit = limit;
+    }
+    return _result;
+  }
+  factory GetOrphanedInsuranceTransactionsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetOrphanedInsuranceTransactionsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetOrphanedInsuranceTransactionsRequest clone() => GetOrphanedInsuranceTransactionsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetOrphanedInsuranceTransactionsRequest copyWith(void Function(GetOrphanedInsuranceTransactionsRequest) updates) => super.copyWith((message) => updates(message as GetOrphanedInsuranceTransactionsRequest)) as GetOrphanedInsuranceTransactionsRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetOrphanedInsuranceTransactionsRequest create() => GetOrphanedInsuranceTransactionsRequest._();
+  GetOrphanedInsuranceTransactionsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetOrphanedInsuranceTransactionsRequest> createRepeated() => $pb.PbList<GetOrphanedInsuranceTransactionsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetOrphanedInsuranceTransactionsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetOrphanedInsuranceTransactionsRequest>(create);
+  static GetOrphanedInsuranceTransactionsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get page => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set page($core.int v) { $_setSignedInt32(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPage() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPage() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get limit => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set limit($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasLimit() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLimit() => clearField(2);
+}
+
+class OrphanedInsuranceTransaction extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'OrphanedInsuranceTransaction', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'purchaseId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'policyReference')
+    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'issueType')
+    ..hasRequiredFields = false
+  ;
+
+  OrphanedInsuranceTransaction._() : super();
+  factory OrphanedInsuranceTransaction({
+    $core.String? purchaseId,
+    $core.String? userId,
+    $core.String? policyReference,
+    $core.double? amount,
+    $core.String? currency,
+    $core.String? status,
+    $core.String? createdAt,
+    $core.String? issueType,
+  }) {
+    final _result = create();
+    if (purchaseId != null) {
+      _result.purchaseId = purchaseId;
+    }
+    if (userId != null) {
+      _result.userId = userId;
+    }
+    if (policyReference != null) {
+      _result.policyReference = policyReference;
+    }
+    if (amount != null) {
+      _result.amount = amount;
+    }
+    if (currency != null) {
+      _result.currency = currency;
+    }
+    if (status != null) {
+      _result.status = status;
+    }
+    if (createdAt != null) {
+      _result.createdAt = createdAt;
+    }
+    if (issueType != null) {
+      _result.issueType = issueType;
+    }
+    return _result;
+  }
+  factory OrphanedInsuranceTransaction.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory OrphanedInsuranceTransaction.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  OrphanedInsuranceTransaction clone() => OrphanedInsuranceTransaction()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  OrphanedInsuranceTransaction copyWith(void Function(OrphanedInsuranceTransaction) updates) => super.copyWith((message) => updates(message as OrphanedInsuranceTransaction)) as OrphanedInsuranceTransaction; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static OrphanedInsuranceTransaction create() => OrphanedInsuranceTransaction._();
+  OrphanedInsuranceTransaction createEmptyInstance() => create();
+  static $pb.PbList<OrphanedInsuranceTransaction> createRepeated() => $pb.PbList<OrphanedInsuranceTransaction>();
+  @$core.pragma('dart2js:noInline')
+  static OrphanedInsuranceTransaction getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<OrphanedInsuranceTransaction>(create);
+  static OrphanedInsuranceTransaction? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get purchaseId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set purchaseId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPurchaseId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPurchaseId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get userId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set userId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasUserId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearUserId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get policyReference => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set policyReference($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPolicyReference() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPolicyReference() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.double get amount => $_getN(3);
+  @$pb.TagNumber(4)
+  set amount($core.double v) { $_setDouble(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasAmount() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearAmount() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get currency => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set currency($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasCurrency() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearCurrency() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get status => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set status($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasStatus() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearStatus() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get createdAt => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set createdAt($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasCreatedAt() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearCreatedAt() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get issueType => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set issueType($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasIssueType() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearIssueType() => clearField(8);
+}
+
+class GetOrphanedInsuranceTransactionsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetOrphanedInsuranceTransactionsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..pc<OrphanedInsuranceTransaction>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactions', $pb.PbFieldType.PM, subBuilder: OrphanedInsuranceTransaction.create)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalCount', $pb.PbFieldType.O3)
+    ..aOB(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  GetOrphanedInsuranceTransactionsResponse._() : super();
+  factory GetOrphanedInsuranceTransactionsResponse({
+    $core.Iterable<OrphanedInsuranceTransaction>? transactions,
+    $core.int? totalCount,
+    $core.bool? success,
+    $core.String? message,
+  }) {
+    final _result = create();
+    if (transactions != null) {
+      _result.transactions.addAll(transactions);
+    }
+    if (totalCount != null) {
+      _result.totalCount = totalCount;
+    }
+    if (success != null) {
+      _result.success = success;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    return _result;
+  }
+  factory GetOrphanedInsuranceTransactionsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetOrphanedInsuranceTransactionsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetOrphanedInsuranceTransactionsResponse clone() => GetOrphanedInsuranceTransactionsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetOrphanedInsuranceTransactionsResponse copyWith(void Function(GetOrphanedInsuranceTransactionsResponse) updates) => super.copyWith((message) => updates(message as GetOrphanedInsuranceTransactionsResponse)) as GetOrphanedInsuranceTransactionsResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetOrphanedInsuranceTransactionsResponse create() => GetOrphanedInsuranceTransactionsResponse._();
+  GetOrphanedInsuranceTransactionsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetOrphanedInsuranceTransactionsResponse> createRepeated() => $pb.PbList<GetOrphanedInsuranceTransactionsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetOrphanedInsuranceTransactionsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetOrphanedInsuranceTransactionsResponse>(create);
+  static GetOrphanedInsuranceTransactionsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<OrphanedInsuranceTransaction> get transactions => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get totalCount => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set totalCount($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTotalCount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotalCount() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.bool get success => $_getBF(2);
+  @$pb.TagNumber(3)
+  set success($core.bool v) { $_setBool(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasSuccess() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearSuccess() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get message => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set message($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasMessage() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearMessage() => clearField(4);
+}
+
+class ManualReconcilePurchaseRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ManualReconcilePurchaseRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'purchaseId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'action')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reason')
+    ..hasRequiredFields = false
+  ;
+
+  ManualReconcilePurchaseRequest._() : super();
+  factory ManualReconcilePurchaseRequest({
+    $core.String? purchaseId,
+    $core.String? action,
+    $core.String? reason,
+  }) {
+    final _result = create();
+    if (purchaseId != null) {
+      _result.purchaseId = purchaseId;
+    }
+    if (action != null) {
+      _result.action = action;
+    }
+    if (reason != null) {
+      _result.reason = reason;
+    }
+    return _result;
+  }
+  factory ManualReconcilePurchaseRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ManualReconcilePurchaseRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ManualReconcilePurchaseRequest clone() => ManualReconcilePurchaseRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ManualReconcilePurchaseRequest copyWith(void Function(ManualReconcilePurchaseRequest) updates) => super.copyWith((message) => updates(message as ManualReconcilePurchaseRequest)) as ManualReconcilePurchaseRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static ManualReconcilePurchaseRequest create() => ManualReconcilePurchaseRequest._();
+  ManualReconcilePurchaseRequest createEmptyInstance() => create();
+  static $pb.PbList<ManualReconcilePurchaseRequest> createRepeated() => $pb.PbList<ManualReconcilePurchaseRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ManualReconcilePurchaseRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ManualReconcilePurchaseRequest>(create);
+  static ManualReconcilePurchaseRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get purchaseId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set purchaseId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPurchaseId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPurchaseId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get action => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set action($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasAction() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAction() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get reason => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set reason($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasReason() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearReason() => clearField(3);
+}
+
+class ManualReconcilePurchaseResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ManualReconcilePurchaseResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'purchaseId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'previousStatus')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'newStatus')
+    ..aOB(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'actionTaken')
+    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  ManualReconcilePurchaseResponse._() : super();
+  factory ManualReconcilePurchaseResponse({
+    $core.String? purchaseId,
+    $core.String? previousStatus,
+    $core.String? newStatus,
+    $core.bool? actionTaken,
+    $core.bool? success,
+    $core.String? message,
+  }) {
+    final _result = create();
+    if (purchaseId != null) {
+      _result.purchaseId = purchaseId;
+    }
+    if (previousStatus != null) {
+      _result.previousStatus = previousStatus;
+    }
+    if (newStatus != null) {
+      _result.newStatus = newStatus;
+    }
+    if (actionTaken != null) {
+      _result.actionTaken = actionTaken;
+    }
+    if (success != null) {
+      _result.success = success;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    return _result;
+  }
+  factory ManualReconcilePurchaseResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ManualReconcilePurchaseResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ManualReconcilePurchaseResponse clone() => ManualReconcilePurchaseResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ManualReconcilePurchaseResponse copyWith(void Function(ManualReconcilePurchaseResponse) updates) => super.copyWith((message) => updates(message as ManualReconcilePurchaseResponse)) as ManualReconcilePurchaseResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static ManualReconcilePurchaseResponse create() => ManualReconcilePurchaseResponse._();
+  ManualReconcilePurchaseResponse createEmptyInstance() => create();
+  static $pb.PbList<ManualReconcilePurchaseResponse> createRepeated() => $pb.PbList<ManualReconcilePurchaseResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ManualReconcilePurchaseResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ManualReconcilePurchaseResponse>(create);
+  static ManualReconcilePurchaseResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get purchaseId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set purchaseId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPurchaseId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPurchaseId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get previousStatus => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set previousStatus($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasPreviousStatus() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPreviousStatus() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get newStatus => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set newStatus($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasNewStatus() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearNewStatus() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.bool get actionTaken => $_getBF(3);
+  @$pb.TagNumber(4)
+  set actionTaken($core.bool v) { $_setBool(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasActionTaken() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearActionTaken() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.bool get success => $_getBF(4);
+  @$pb.TagNumber(5)
+  set success($core.bool v) { $_setBool(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasSuccess() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearSuccess() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get message => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set message($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasMessage() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearMessage() => clearField(6);
+}
+
+class AdminTriggerRefundRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AdminTriggerRefundRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'purchaseId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reason')
+    ..aOB(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'force')
+    ..hasRequiredFields = false
+  ;
+
+  AdminTriggerRefundRequest._() : super();
+  factory AdminTriggerRefundRequest({
+    $core.String? purchaseId,
+    $core.String? reason,
+    $core.bool? force,
+  }) {
+    final _result = create();
+    if (purchaseId != null) {
+      _result.purchaseId = purchaseId;
+    }
+    if (reason != null) {
+      _result.reason = reason;
+    }
+    if (force != null) {
+      _result.force = force;
+    }
+    return _result;
+  }
+  factory AdminTriggerRefundRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory AdminTriggerRefundRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  AdminTriggerRefundRequest clone() => AdminTriggerRefundRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  AdminTriggerRefundRequest copyWith(void Function(AdminTriggerRefundRequest) updates) => super.copyWith((message) => updates(message as AdminTriggerRefundRequest)) as AdminTriggerRefundRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static AdminTriggerRefundRequest create() => AdminTriggerRefundRequest._();
+  AdminTriggerRefundRequest createEmptyInstance() => create();
+  static $pb.PbList<AdminTriggerRefundRequest> createRepeated() => $pb.PbList<AdminTriggerRefundRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AdminTriggerRefundRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AdminTriggerRefundRequest>(create);
+  static AdminTriggerRefundRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get purchaseId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set purchaseId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPurchaseId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPurchaseId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get reason => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set reason($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasReason() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearReason() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.bool get force => $_getBF(2);
+  @$pb.TagNumber(3)
+  set force($core.bool v) { $_setBool(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasForce() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearForce() => clearField(3);
+}
+
+class AdminTriggerRefundResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AdminTriggerRefundResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'refundId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'purchaseId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+    ..aOB(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'initiated')
+    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  AdminTriggerRefundResponse._() : super();
+  factory AdminTriggerRefundResponse({
+    $core.String? refundId,
+    $core.String? purchaseId,
+    $core.String? status,
+    $core.bool? initiated,
+    $core.bool? success,
+    $core.String? message,
+  }) {
+    final _result = create();
+    if (refundId != null) {
+      _result.refundId = refundId;
+    }
+    if (purchaseId != null) {
+      _result.purchaseId = purchaseId;
+    }
+    if (status != null) {
+      _result.status = status;
+    }
+    if (initiated != null) {
+      _result.initiated = initiated;
+    }
+    if (success != null) {
+      _result.success = success;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    return _result;
+  }
+  factory AdminTriggerRefundResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory AdminTriggerRefundResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  AdminTriggerRefundResponse clone() => AdminTriggerRefundResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  AdminTriggerRefundResponse copyWith(void Function(AdminTriggerRefundResponse) updates) => super.copyWith((message) => updates(message as AdminTriggerRefundResponse)) as AdminTriggerRefundResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static AdminTriggerRefundResponse create() => AdminTriggerRefundResponse._();
+  AdminTriggerRefundResponse createEmptyInstance() => create();
+  static $pb.PbList<AdminTriggerRefundResponse> createRepeated() => $pb.PbList<AdminTriggerRefundResponse>();
+  @$core.pragma('dart2js:noInline')
+  static AdminTriggerRefundResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AdminTriggerRefundResponse>(create);
+  static AdminTriggerRefundResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get refundId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set refundId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasRefundId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearRefundId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get purchaseId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set purchaseId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasPurchaseId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPurchaseId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get status => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set status($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasStatus() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearStatus() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.bool get initiated => $_getBF(3);
+  @$pb.TagNumber(4)
+  set initiated($core.bool v) { $_setBool(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasInitiated() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearInitiated() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.bool get success => $_getBF(4);
+  @$pb.TagNumber(5)
+  set success($core.bool v) { $_setBool(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasSuccess() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearSuccess() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get message => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set message($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasMessage() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearMessage() => clearField(6);
+}
+
+class GetInsuranceWebhookEventsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetInsuranceWebhookEventsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'eventType')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  GetInsuranceWebhookEventsRequest._() : super();
+  factory GetInsuranceWebhookEventsRequest({
+    $core.String? eventType,
+    $core.String? status,
+    $core.int? page,
+    $core.int? limit,
+  }) {
+    final _result = create();
+    if (eventType != null) {
+      _result.eventType = eventType;
+    }
+    if (status != null) {
+      _result.status = status;
+    }
+    if (page != null) {
+      _result.page = page;
+    }
+    if (limit != null) {
+      _result.limit = limit;
+    }
+    return _result;
+  }
+  factory GetInsuranceWebhookEventsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetInsuranceWebhookEventsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetInsuranceWebhookEventsRequest clone() => GetInsuranceWebhookEventsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetInsuranceWebhookEventsRequest copyWith(void Function(GetInsuranceWebhookEventsRequest) updates) => super.copyWith((message) => updates(message as GetInsuranceWebhookEventsRequest)) as GetInsuranceWebhookEventsRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetInsuranceWebhookEventsRequest create() => GetInsuranceWebhookEventsRequest._();
+  GetInsuranceWebhookEventsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetInsuranceWebhookEventsRequest> createRepeated() => $pb.PbList<GetInsuranceWebhookEventsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetInsuranceWebhookEventsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetInsuranceWebhookEventsRequest>(create);
+  static GetInsuranceWebhookEventsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get eventType => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set eventType($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasEventType() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearEventType() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get status => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set status($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasStatus() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearStatus() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get page => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set page($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPage() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get limit => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set limit($core.int v) { $_setSignedInt32(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasLimit() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearLimit() => clearField(4);
+}
+
+class InsuranceWebhookEvent extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'InsuranceWebhookEvent', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'eventId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'eventType')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'aggregateId')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receivedAt')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'processedAt')
+    ..a<$core.int>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'retryCount', $pb.PbFieldType.O3)
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorMessage')
+    ..hasRequiredFields = false
+  ;
+
+  InsuranceWebhookEvent._() : super();
+  factory InsuranceWebhookEvent({
+    $core.String? eventId,
+    $core.String? eventType,
+    $core.String? aggregateId,
+    $core.String? status,
+    $core.String? receivedAt,
+    $core.String? processedAt,
+    $core.int? retryCount,
+    $core.String? errorMessage,
+  }) {
+    final _result = create();
+    if (eventId != null) {
+      _result.eventId = eventId;
+    }
+    if (eventType != null) {
+      _result.eventType = eventType;
+    }
+    if (aggregateId != null) {
+      _result.aggregateId = aggregateId;
+    }
+    if (status != null) {
+      _result.status = status;
+    }
+    if (receivedAt != null) {
+      _result.receivedAt = receivedAt;
+    }
+    if (processedAt != null) {
+      _result.processedAt = processedAt;
+    }
+    if (retryCount != null) {
+      _result.retryCount = retryCount;
+    }
+    if (errorMessage != null) {
+      _result.errorMessage = errorMessage;
+    }
+    return _result;
+  }
+  factory InsuranceWebhookEvent.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory InsuranceWebhookEvent.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  InsuranceWebhookEvent clone() => InsuranceWebhookEvent()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  InsuranceWebhookEvent copyWith(void Function(InsuranceWebhookEvent) updates) => super.copyWith((message) => updates(message as InsuranceWebhookEvent)) as InsuranceWebhookEvent; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static InsuranceWebhookEvent create() => InsuranceWebhookEvent._();
+  InsuranceWebhookEvent createEmptyInstance() => create();
+  static $pb.PbList<InsuranceWebhookEvent> createRepeated() => $pb.PbList<InsuranceWebhookEvent>();
+  @$core.pragma('dart2js:noInline')
+  static InsuranceWebhookEvent getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<InsuranceWebhookEvent>(create);
+  static InsuranceWebhookEvent? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get eventId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set eventId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasEventId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearEventId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get eventType => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set eventType($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasEventType() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearEventType() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get aggregateId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set aggregateId($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasAggregateId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAggregateId() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get status => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set status($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasStatus() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearStatus() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get receivedAt => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set receivedAt($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasReceivedAt() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearReceivedAt() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get processedAt => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set processedAt($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasProcessedAt() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearProcessedAt() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.int get retryCount => $_getIZ(6);
+  @$pb.TagNumber(7)
+  set retryCount($core.int v) { $_setSignedInt32(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasRetryCount() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearRetryCount() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get errorMessage => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set errorMessage($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasErrorMessage() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearErrorMessage() => clearField(8);
+}
+
+class GetInsuranceWebhookEventsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetInsuranceWebhookEventsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..pc<InsuranceWebhookEvent>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'events', $pb.PbFieldType.PM, subBuilder: InsuranceWebhookEvent.create)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalCount', $pb.PbFieldType.O3)
+    ..aOB(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  GetInsuranceWebhookEventsResponse._() : super();
+  factory GetInsuranceWebhookEventsResponse({
+    $core.Iterable<InsuranceWebhookEvent>? events,
+    $core.int? totalCount,
+    $core.bool? success,
+    $core.String? message,
+  }) {
+    final _result = create();
+    if (events != null) {
+      _result.events.addAll(events);
+    }
+    if (totalCount != null) {
+      _result.totalCount = totalCount;
+    }
+    if (success != null) {
+      _result.success = success;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    return _result;
+  }
+  factory GetInsuranceWebhookEventsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetInsuranceWebhookEventsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetInsuranceWebhookEventsResponse clone() => GetInsuranceWebhookEventsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetInsuranceWebhookEventsResponse copyWith(void Function(GetInsuranceWebhookEventsResponse) updates) => super.copyWith((message) => updates(message as GetInsuranceWebhookEventsResponse)) as GetInsuranceWebhookEventsResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetInsuranceWebhookEventsResponse create() => GetInsuranceWebhookEventsResponse._();
+  GetInsuranceWebhookEventsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetInsuranceWebhookEventsResponse> createRepeated() => $pb.PbList<GetInsuranceWebhookEventsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetInsuranceWebhookEventsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetInsuranceWebhookEventsResponse>(create);
+  static GetInsuranceWebhookEventsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<InsuranceWebhookEvent> get events => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get totalCount => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set totalCount($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTotalCount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotalCount() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.bool get success => $_getBF(2);
+  @$pb.TagNumber(3)
+  set success($core.bool v) { $_setBool(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasSuccess() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearSuccess() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get message => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set message($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasMessage() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearMessage() => clearField(4);
+}
+
+class RetryFailedWebhookEventRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'RetryFailedWebhookEventRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'eventId')
+    ..hasRequiredFields = false
+  ;
+
+  RetryFailedWebhookEventRequest._() : super();
+  factory RetryFailedWebhookEventRequest({
+    $core.String? eventId,
+  }) {
+    final _result = create();
+    if (eventId != null) {
+      _result.eventId = eventId;
+    }
+    return _result;
+  }
+  factory RetryFailedWebhookEventRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory RetryFailedWebhookEventRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  RetryFailedWebhookEventRequest clone() => RetryFailedWebhookEventRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  RetryFailedWebhookEventRequest copyWith(void Function(RetryFailedWebhookEventRequest) updates) => super.copyWith((message) => updates(message as RetryFailedWebhookEventRequest)) as RetryFailedWebhookEventRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static RetryFailedWebhookEventRequest create() => RetryFailedWebhookEventRequest._();
+  RetryFailedWebhookEventRequest createEmptyInstance() => create();
+  static $pb.PbList<RetryFailedWebhookEventRequest> createRepeated() => $pb.PbList<RetryFailedWebhookEventRequest>();
+  @$core.pragma('dart2js:noInline')
+  static RetryFailedWebhookEventRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RetryFailedWebhookEventRequest>(create);
+  static RetryFailedWebhookEventRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get eventId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set eventId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasEventId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearEventId() => clearField(1);
+}
+
+class RetryFailedWebhookEventResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'RetryFailedWebhookEventResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'eventId')
+    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'queued')
+    ..aOB(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  RetryFailedWebhookEventResponse._() : super();
+  factory RetryFailedWebhookEventResponse({
+    $core.String? eventId,
+    $core.bool? queued,
+    $core.bool? success,
+    $core.String? message,
+  }) {
+    final _result = create();
+    if (eventId != null) {
+      _result.eventId = eventId;
+    }
+    if (queued != null) {
+      _result.queued = queued;
+    }
+    if (success != null) {
+      _result.success = success;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    return _result;
+  }
+  factory RetryFailedWebhookEventResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory RetryFailedWebhookEventResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  RetryFailedWebhookEventResponse clone() => RetryFailedWebhookEventResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  RetryFailedWebhookEventResponse copyWith(void Function(RetryFailedWebhookEventResponse) updates) => super.copyWith((message) => updates(message as RetryFailedWebhookEventResponse)) as RetryFailedWebhookEventResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static RetryFailedWebhookEventResponse create() => RetryFailedWebhookEventResponse._();
+  RetryFailedWebhookEventResponse createEmptyInstance() => create();
+  static $pb.PbList<RetryFailedWebhookEventResponse> createRepeated() => $pb.PbList<RetryFailedWebhookEventResponse>();
+  @$core.pragma('dart2js:noInline')
+  static RetryFailedWebhookEventResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RetryFailedWebhookEventResponse>(create);
+  static RetryFailedWebhookEventResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get eventId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set eventId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasEventId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearEventId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.bool get queued => $_getBF(1);
+  @$pb.TagNumber(2)
+  set queued($core.bool v) { $_setBool(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasQueued() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearQueued() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.bool get success => $_getBF(2);
+  @$pb.TagNumber(3)
+  set success($core.bool v) { $_setBool(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasSuccess() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearSuccess() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get message => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set message($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasMessage() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearMessage() => clearField(4);
+}
+
+class GetFailedInsuranceTransactionsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetFailedInsuranceTransactionsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  GetFailedInsuranceTransactionsRequest._() : super();
+  factory GetFailedInsuranceTransactionsRequest({
+    $core.int? page,
+    $core.int? limit,
+  }) {
+    final _result = create();
+    if (page != null) {
+      _result.page = page;
+    }
+    if (limit != null) {
+      _result.limit = limit;
+    }
+    return _result;
+  }
+  factory GetFailedInsuranceTransactionsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetFailedInsuranceTransactionsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetFailedInsuranceTransactionsRequest clone() => GetFailedInsuranceTransactionsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetFailedInsuranceTransactionsRequest copyWith(void Function(GetFailedInsuranceTransactionsRequest) updates) => super.copyWith((message) => updates(message as GetFailedInsuranceTransactionsRequest)) as GetFailedInsuranceTransactionsRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetFailedInsuranceTransactionsRequest create() => GetFailedInsuranceTransactionsRequest._();
+  GetFailedInsuranceTransactionsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetFailedInsuranceTransactionsRequest> createRepeated() => $pb.PbList<GetFailedInsuranceTransactionsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetFailedInsuranceTransactionsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetFailedInsuranceTransactionsRequest>(create);
+  static GetFailedInsuranceTransactionsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get page => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set page($core.int v) { $_setSignedInt32(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPage() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPage() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get limit => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set limit($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasLimit() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLimit() => clearField(2);
+}
+
+class FailedInsuranceTransaction extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'FailedInsuranceTransaction', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'purchaseId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'productId')
+    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorMessage')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failedAt')
+    ..a<$core.int>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'retryCount', $pb.PbFieldType.O3)
+    ..aOB(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'requiresManualReview')
+    ..hasRequiredFields = false
+  ;
+
+  FailedInsuranceTransaction._() : super();
+  factory FailedInsuranceTransaction({
+    $core.String? purchaseId,
+    $core.String? userId,
+    $core.String? productId,
+    $core.double? amount,
+    $core.String? currency,
+    $core.String? status,
+    $core.String? errorMessage,
+    $core.String? failedAt,
+    $core.int? retryCount,
+    $core.bool? requiresManualReview,
+  }) {
+    final _result = create();
+    if (purchaseId != null) {
+      _result.purchaseId = purchaseId;
+    }
+    if (userId != null) {
+      _result.userId = userId;
+    }
+    if (productId != null) {
+      _result.productId = productId;
+    }
+    if (amount != null) {
+      _result.amount = amount;
+    }
+    if (currency != null) {
+      _result.currency = currency;
+    }
+    if (status != null) {
+      _result.status = status;
+    }
+    if (errorMessage != null) {
+      _result.errorMessage = errorMessage;
+    }
+    if (failedAt != null) {
+      _result.failedAt = failedAt;
+    }
+    if (retryCount != null) {
+      _result.retryCount = retryCount;
+    }
+    if (requiresManualReview != null) {
+      _result.requiresManualReview = requiresManualReview;
+    }
+    return _result;
+  }
+  factory FailedInsuranceTransaction.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory FailedInsuranceTransaction.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  FailedInsuranceTransaction clone() => FailedInsuranceTransaction()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  FailedInsuranceTransaction copyWith(void Function(FailedInsuranceTransaction) updates) => super.copyWith((message) => updates(message as FailedInsuranceTransaction)) as FailedInsuranceTransaction; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static FailedInsuranceTransaction create() => FailedInsuranceTransaction._();
+  FailedInsuranceTransaction createEmptyInstance() => create();
+  static $pb.PbList<FailedInsuranceTransaction> createRepeated() => $pb.PbList<FailedInsuranceTransaction>();
+  @$core.pragma('dart2js:noInline')
+  static FailedInsuranceTransaction getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<FailedInsuranceTransaction>(create);
+  static FailedInsuranceTransaction? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get purchaseId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set purchaseId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPurchaseId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPurchaseId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get userId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set userId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasUserId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearUserId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get productId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set productId($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasProductId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearProductId() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.double get amount => $_getN(3);
+  @$pb.TagNumber(4)
+  set amount($core.double v) { $_setDouble(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasAmount() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearAmount() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get currency => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set currency($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasCurrency() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearCurrency() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get status => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set status($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasStatus() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearStatus() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get errorMessage => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set errorMessage($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasErrorMessage() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearErrorMessage() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get failedAt => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set failedAt($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasFailedAt() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearFailedAt() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.int get retryCount => $_getIZ(8);
+  @$pb.TagNumber(9)
+  set retryCount($core.int v) { $_setSignedInt32(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasRetryCount() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearRetryCount() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.bool get requiresManualReview => $_getBF(9);
+  @$pb.TagNumber(10)
+  set requiresManualReview($core.bool v) { $_setBool(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasRequiresManualReview() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearRequiresManualReview() => clearField(10);
+}
+
+class GetFailedInsuranceTransactionsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetFailedInsuranceTransactionsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..pc<FailedInsuranceTransaction>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactions', $pb.PbFieldType.PM, subBuilder: FailedInsuranceTransaction.create)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalCount', $pb.PbFieldType.O3)
+    ..aOB(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  GetFailedInsuranceTransactionsResponse._() : super();
+  factory GetFailedInsuranceTransactionsResponse({
+    $core.Iterable<FailedInsuranceTransaction>? transactions,
+    $core.int? totalCount,
+    $core.bool? success,
+    $core.String? message,
+  }) {
+    final _result = create();
+    if (transactions != null) {
+      _result.transactions.addAll(transactions);
+    }
+    if (totalCount != null) {
+      _result.totalCount = totalCount;
+    }
+    if (success != null) {
+      _result.success = success;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    return _result;
+  }
+  factory GetFailedInsuranceTransactionsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetFailedInsuranceTransactionsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetFailedInsuranceTransactionsResponse clone() => GetFailedInsuranceTransactionsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetFailedInsuranceTransactionsResponse copyWith(void Function(GetFailedInsuranceTransactionsResponse) updates) => super.copyWith((message) => updates(message as GetFailedInsuranceTransactionsResponse)) as GetFailedInsuranceTransactionsResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetFailedInsuranceTransactionsResponse create() => GetFailedInsuranceTransactionsResponse._();
+  GetFailedInsuranceTransactionsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetFailedInsuranceTransactionsResponse> createRepeated() => $pb.PbList<GetFailedInsuranceTransactionsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetFailedInsuranceTransactionsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetFailedInsuranceTransactionsResponse>(create);
+  static GetFailedInsuranceTransactionsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<FailedInsuranceTransaction> get transactions => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get totalCount => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set totalCount($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTotalCount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotalCount() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.bool get success => $_getBF(2);
+  @$pb.TagNumber(3)
+  set success($core.bool v) { $_setBool(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasSuccess() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearSuccess() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get message => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set message($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasMessage() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearMessage() => clearField(4);
+}
+
+class UpdateProductMarginRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateProductMarginRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'productId')
+    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'marginPercentage', $pb.PbFieldType.OD)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reason')
+    ..hasRequiredFields = false
+  ;
+
+  UpdateProductMarginRequest._() : super();
+  factory UpdateProductMarginRequest({
+    $core.String? productId,
+    $core.double? marginPercentage,
+    $core.String? reason,
+  }) {
+    final _result = create();
+    if (productId != null) {
+      _result.productId = productId;
+    }
+    if (marginPercentage != null) {
+      _result.marginPercentage = marginPercentage;
+    }
+    if (reason != null) {
+      _result.reason = reason;
+    }
+    return _result;
+  }
+  factory UpdateProductMarginRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateProductMarginRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UpdateProductMarginRequest clone() => UpdateProductMarginRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UpdateProductMarginRequest copyWith(void Function(UpdateProductMarginRequest) updates) => super.copyWith((message) => updates(message as UpdateProductMarginRequest)) as UpdateProductMarginRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static UpdateProductMarginRequest create() => UpdateProductMarginRequest._();
+  UpdateProductMarginRequest createEmptyInstance() => create();
+  static $pb.PbList<UpdateProductMarginRequest> createRepeated() => $pb.PbList<UpdateProductMarginRequest>();
+  @$core.pragma('dart2js:noInline')
+  static UpdateProductMarginRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateProductMarginRequest>(create);
+  static UpdateProductMarginRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get productId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set productId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasProductId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearProductId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.double get marginPercentage => $_getN(1);
+  @$pb.TagNumber(2)
+  set marginPercentage($core.double v) { $_setDouble(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMarginPercentage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMarginPercentage() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get reason => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set reason($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasReason() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearReason() => clearField(3);
+}
+
+class UpdateProductMarginResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateProductMarginResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'productId')
+    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'previousMargin', $pb.PbFieldType.OD)
+    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'newMargin', $pb.PbFieldType.OD)
+    ..aOB(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  UpdateProductMarginResponse._() : super();
+  factory UpdateProductMarginResponse({
+    $core.String? productId,
+    $core.double? previousMargin,
+    $core.double? newMargin,
+    $core.bool? success,
+    $core.String? message,
+  }) {
+    final _result = create();
+    if (productId != null) {
+      _result.productId = productId;
+    }
+    if (previousMargin != null) {
+      _result.previousMargin = previousMargin;
+    }
+    if (newMargin != null) {
+      _result.newMargin = newMargin;
+    }
+    if (success != null) {
+      _result.success = success;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    return _result;
+  }
+  factory UpdateProductMarginResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateProductMarginResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UpdateProductMarginResponse clone() => UpdateProductMarginResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UpdateProductMarginResponse copyWith(void Function(UpdateProductMarginResponse) updates) => super.copyWith((message) => updates(message as UpdateProductMarginResponse)) as UpdateProductMarginResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static UpdateProductMarginResponse create() => UpdateProductMarginResponse._();
+  UpdateProductMarginResponse createEmptyInstance() => create();
+  static $pb.PbList<UpdateProductMarginResponse> createRepeated() => $pb.PbList<UpdateProductMarginResponse>();
+  @$core.pragma('dart2js:noInline')
+  static UpdateProductMarginResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateProductMarginResponse>(create);
+  static UpdateProductMarginResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get productId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set productId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasProductId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearProductId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.double get previousMargin => $_getN(1);
+  @$pb.TagNumber(2)
+  set previousMargin($core.double v) { $_setDouble(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasPreviousMargin() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPreviousMargin() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.double get newMargin => $_getN(2);
+  @$pb.TagNumber(3)
+  set newMargin($core.double v) { $_setDouble(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasNewMargin() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearNewMargin() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.bool get success => $_getBF(3);
+  @$pb.TagNumber(4)
+  set success($core.bool v) { $_setBool(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasSuccess() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearSuccess() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get message => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set message($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasMessage() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearMessage() => clearField(5);
+}
+
+class PlatformWalletBalance extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'PlatformWalletBalance', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'walletType')
+    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'balance', $pb.PbFieldType.OD)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pendingTransactions', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  PlatformWalletBalance._() : super();
+  factory PlatformWalletBalance({
+    $core.String? walletType,
+    $core.double? balance,
+    $core.String? currency,
+    $core.int? pendingTransactions,
+  }) {
+    final _result = create();
+    if (walletType != null) {
+      _result.walletType = walletType;
+    }
+    if (balance != null) {
+      _result.balance = balance;
+    }
+    if (currency != null) {
+      _result.currency = currency;
+    }
+    if (pendingTransactions != null) {
+      _result.pendingTransactions = pendingTransactions;
+    }
+    return _result;
+  }
+  factory PlatformWalletBalance.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory PlatformWalletBalance.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  PlatformWalletBalance clone() => PlatformWalletBalance()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  PlatformWalletBalance copyWith(void Function(PlatformWalletBalance) updates) => super.copyWith((message) => updates(message as PlatformWalletBalance)) as PlatformWalletBalance; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static PlatformWalletBalance create() => PlatformWalletBalance._();
+  PlatformWalletBalance createEmptyInstance() => create();
+  static $pb.PbList<PlatformWalletBalance> createRepeated() => $pb.PbList<PlatformWalletBalance>();
+  @$core.pragma('dart2js:noInline')
+  static PlatformWalletBalance getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<PlatformWalletBalance>(create);
+  static PlatformWalletBalance? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get walletType => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set walletType($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasWalletType() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearWalletType() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.double get balance => $_getN(1);
+  @$pb.TagNumber(2)
+  set balance($core.double v) { $_setDouble(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasBalance() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearBalance() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get currency => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set currency($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasCurrency() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCurrency() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get pendingTransactions => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set pendingTransactions($core.int v) { $_setSignedInt32(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasPendingTransactions() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPendingTransactions() => clearField(4);
+}
+
+class GetInsurancePlatformWalletsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetInsurancePlatformWalletsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..hasRequiredFields = false
+  ;
+
+  GetInsurancePlatformWalletsRequest._() : super();
+  factory GetInsurancePlatformWalletsRequest() => create();
+  factory GetInsurancePlatformWalletsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetInsurancePlatformWalletsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetInsurancePlatformWalletsRequest clone() => GetInsurancePlatformWalletsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetInsurancePlatformWalletsRequest copyWith(void Function(GetInsurancePlatformWalletsRequest) updates) => super.copyWith((message) => updates(message as GetInsurancePlatformWalletsRequest)) as GetInsurancePlatformWalletsRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetInsurancePlatformWalletsRequest create() => GetInsurancePlatformWalletsRequest._();
+  GetInsurancePlatformWalletsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetInsurancePlatformWalletsRequest> createRepeated() => $pb.PbList<GetInsurancePlatformWalletsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetInsurancePlatformWalletsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetInsurancePlatformWalletsRequest>(create);
+  static GetInsurancePlatformWalletsRequest? _defaultInstance;
+}
+
+class GetInsurancePlatformWalletsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetInsurancePlatformWalletsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'financialproducts'), createEmptyInstance: create)
+    ..pc<PlatformWalletBalance>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'wallets', $pb.PbFieldType.PM, subBuilder: PlatformWalletBalance.create)
+    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  GetInsurancePlatformWalletsResponse._() : super();
+  factory GetInsurancePlatformWalletsResponse({
+    $core.Iterable<PlatformWalletBalance>? wallets,
+    $core.bool? success,
+    $core.String? message,
+  }) {
+    final _result = create();
+    if (wallets != null) {
+      _result.wallets.addAll(wallets);
+    }
+    if (success != null) {
+      _result.success = success;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    return _result;
+  }
+  factory GetInsurancePlatformWalletsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetInsurancePlatformWalletsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetInsurancePlatformWalletsResponse clone() => GetInsurancePlatformWalletsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetInsurancePlatformWalletsResponse copyWith(void Function(GetInsurancePlatformWalletsResponse) updates) => super.copyWith((message) => updates(message as GetInsurancePlatformWalletsResponse)) as GetInsurancePlatformWalletsResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetInsurancePlatformWalletsResponse create() => GetInsurancePlatformWalletsResponse._();
+  GetInsurancePlatformWalletsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetInsurancePlatformWalletsResponse> createRepeated() => $pb.PbList<GetInsurancePlatformWalletsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetInsurancePlatformWalletsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetInsurancePlatformWalletsResponse>(create);
+  static GetInsurancePlatformWalletsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<PlatformWalletBalance> get wallets => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.bool get success => $_getBF(1);
+  @$pb.TagNumber(2)
+  set success($core.bool v) { $_setBool(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasSuccess() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearSuccess() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get message => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set message($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearMessage() => clearField(3);
 }
 

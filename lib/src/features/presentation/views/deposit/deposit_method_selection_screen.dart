@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -229,22 +228,6 @@ class _DepositMethodSelectionScreenState extends State<DepositMethodSelectionScr
     final List<Map<String, dynamic>> flutterwaveMethods = _getFlutterwaveMethodsForCountry(countryCode);
     // Insert Flutterwave methods at the top of available methods
     _availableMethods.insertAll(0, flutterwaveMethods);
-
-    // Add test deposit option in debug mode
-    if (kDebugMode) {
-      _availableMethods.add({
-        'id': 'test_deposit',
-        'name': 'Test Deposit',
-        'icon': Icons.science,
-        'description': 'Instant simulated deposit (sandbox)',
-        'isAvailable': true,
-        'processingTime': 'Instant',
-        'fee': 'Free',
-        'isRecommended': false,
-        'type': 'test_deposit',
-        'country_code': countryCode,
-      });
-    }
   }
 
   List<Map<String, dynamic>> _getFlutterwaveMethodsForCountry(String countryCode) {

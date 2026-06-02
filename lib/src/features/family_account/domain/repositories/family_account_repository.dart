@@ -32,6 +32,7 @@ abstract class FamilyAccountRepository {
     required double allocationPercentageCap,
     required String role, // admin, member
     String? personalMessage,
+    String? displayName, // Optional UI-provided name; server enriches if empty
   });
 
   // Update a family member's settings
@@ -132,6 +133,21 @@ abstract class FamilyAccountRepository {
     required String familyId,
     required String fundDistributionMode,
     List<MemberAllocationEntry> allocations = const [],
+  });
+
+  // Invitee-side invitation history (pending + accepted + declined + expired + removed).
+  Future<Either<Failure, List<InvitationHistoryEntry>>> getMyInvitationHistory({
+    String statusFilter = '',
+    int page = 1,
+    int pageSize = 25,
+  });
+
+  // Inviter-side sent invitations across every family the caller admins.
+  Future<Either<Failure, List<SentInvitationEntry>>> getSentInvitations({
+    String? familyId,
+    String statusFilter = '',
+    int page = 1,
+    int pageSize = 25,
   });
 }
 

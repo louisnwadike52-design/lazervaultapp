@@ -21,6 +21,7 @@ class InitiateDepositUseCase {
     required String sourceBankName,
     String? countryCode,
     String? accessToken,
+    String? paymentMethod,
   }) async {
     return await _repository.initiateDeposit(
       targetAccountId: targetAccountId,
@@ -29,20 +30,7 @@ class InitiateDepositUseCase {
       sourceBankName: sourceBankName,
       countryCode: countryCode,
       accessToken: accessToken,
-    );
-  }
-
-  Future<Either<Failure, DepositDetails>> simulateTestDeposit({
-    required String destinationAccountId,
-    required double amount,
-    required String currency,
-    required String countryCode,
-  }) async {
-    return await _repository.simulateTestDeposit(
-      destinationAccountId: destinationAccountId,
-      amount: amount,
-      currency: currency,
-      countryCode: countryCode,
+      paymentMethod: paymentMethod,
     );
   }
 

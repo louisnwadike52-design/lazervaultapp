@@ -232,6 +232,18 @@ class CrowdfundCard extends StatelessWidget {
         statusText = 'Cancelled';
         icon = Icons.cancel;
         break;
+      case CrowdfundStatus.cancelling:
+        backgroundColor = const Color(0xFFF59E0B).withValues(alpha: 0.2);
+        textColor = const Color(0xFFF59E0B);
+        statusText = 'Cancelling';
+        icon = Icons.sync;
+        break;
+      case CrowdfundStatus.expired:
+        backgroundColor = const Color(0xFFEF4444).withValues(alpha: 0.2);
+        textColor = const Color(0xFFEF4444);
+        statusText = 'Expired';
+        icon = Icons.timer_off;
+        break;
     }
 
     return Container(

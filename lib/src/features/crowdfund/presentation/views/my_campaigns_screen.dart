@@ -324,6 +324,12 @@ class _MyCampaignsScreenState extends State<MyCampaignsScreen>
         return const Color(0xFF4E03D0);
       case CrowdfundStatus.cancelled:
         return const Color(0xFF6B7280);
+      case CrowdfundStatus.cancelling:
+        // Same hue as paused (a transient-in-progress state) but
+        // distinguished by the badge label upstream.
+        return const Color(0xFFF59E0B);
+      case CrowdfundStatus.expired:
+        return const Color(0xFFEF4444);
     }
   }
 }

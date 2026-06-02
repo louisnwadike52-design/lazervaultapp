@@ -196,3 +196,84 @@ extension FamilyMemberExtension on FamilyMember {
     );
   }
 }
+
+// ─── Invite history mappers ────────────────────────────────────────────
+
+DateTime? _parseNullableDate(String? raw) {
+  if (raw == null || raw.isEmpty) return null;
+  return DateTime.tryParse(raw);
+}
+
+InvitationStatus _parseInvitationStatus(String raw) {
+  switch (raw) {
+    case 'pending':
+      return InvitationStatus.pending;
+    case 'accepted':
+      return InvitationStatus.accepted;
+    case 'declined':
+      return InvitationStatus.declined;
+    case 'removed':
+      return InvitationStatus.removed;
+    case 'expired':
+      return InvitationStatus.expired;
+    default:
+      // Backend should never send anything else, but if it does we map
+      // to expired so the row appears in History (not Pending) — defensive
+      // default so users don't see an empty "?" status.
+      return InvitationStatus.expired;
+  }
+}
+
+FamilyMemberRole _parseFamilyMemberRole(String raw) {
+  switch (raw) {
+    case 'admin':
+      return FamilyMemberRole.admin;
+    default:
+      return FamilyMemberRole.member;
+  }
+}
+
+extension InvitationHistoryEntryProtoExtension on InvitationHistoryEntryProto {
+  InvitationHistoryEntry toDomain() {
+    return InvitationHistoryEntry(
+      invitationToken: invitationToken,
+      familyId: familyId,
+      familyName: familyName,
+      creatorName: creatorName,
+      creatorAvatar: creatorAvatar,
+      invitedBy: invitedBy,
+      status: _parseInvitationStatus(invitationStatus),
+      initialAllocation: initialAllocation,
+      dailyLimit: dailyLimit,
+      monthlyLimit: monthlyLimit,
+      invitationMethod: invitationMethod,
+      invitationDestination: invitationDestination,
+      createdAt: DateTime.tryParse(createdAt) ?? DateTime.now(),
+      expiresAt: _parseNullableDate(expiresAt),
+      respondedAt: _parseNullableDate(respondedAt),
+    );
+  }
+}
+
+extension SentInvitationEntryProtoExtension on SentInvitationEntryProto {
+  SentInvitationEntry toDomain() {
+    return SentInvitationEntry(
+      memberId: memberId,
+      familyId: familyId,
+      familyName: familyName,
+      invitationMethod: invitationMethod,
+      invitationDestination: invitationDestination,
+      status: _parseInvitationStatus(invitationStatus),
+      invitedUserId: invitedUserId,
+      invitedUserName: invitedUserName,
+      invitedUserAvatar: invitedUserAvatar,
+      initialAllocation: initialAllocation,
+      dailyLimit: dailyLimit,
+      monthlyLimit: monthlyLimit,
+      role: _parseFamilyMemberRole(role),
+      createdAt: DateTime.tryParse(createdAt) ?? DateTime.now(),
+      expiresAt: _parseNullableDate(expiresAt),
+      respondedAt: _parseNullableDate(respondedAt),
+    );
+  }
+}

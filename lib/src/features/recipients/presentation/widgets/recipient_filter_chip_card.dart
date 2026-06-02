@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 
-/// Enum representing the available filter types for recipients
+/// Enum representing the available filter types for recipients.
+///
+/// `recurring` replaced the previous `bank` value (which was a no-op
+/// duplicate of `all`). When selected, the recipients screen swaps the
+/// list contents for the user's active recurring transfers — see
+/// `_buildRecurringList()` in `select_recipients.dart`.
 enum RecipientFilterType {
   all,
   recent,
   favorites,
-  bank,
+  recurring,
 }
 
 class RecipientFilterChip {

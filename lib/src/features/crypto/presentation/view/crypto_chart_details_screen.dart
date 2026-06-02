@@ -287,94 +287,45 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
       backgroundColor: Colors.black,
       body: BlocBuilder<CryptoCubit, CryptoState>(
         builder: (context, state) {
-          if (state is CryptoLoading || state is CryptoInitial) {
-            // Explicit loading state — distinct from the "no data"
-            // branch below so the user can tell a slow network from
-            // a silent backend. The expanded chart was previously a
-            // bare CircularProgressIndicator on a black void; the
-            // explicit copy + 'Fetching from Quidax' line makes the
-            // architecture obvious.
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(
-                    width: 40.sp,
-                    height: 40.sp,
-                    child: const CircularProgressIndicator(
-                        strokeWidth: 2.5, color: Color(0xFF3B82F6)),
-                  ),
-                  SizedBox(height: 16.h),
-                  Text(
-                    'Loading chart…',
-                    style: GoogleFonts.inter(
-                      color: Colors.white.withValues(alpha: 0.85),
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    'Fetching OHLCV from Quidax',
-                    style: GoogleFonts.inter(
-                      color: Colors.white.withValues(alpha: 0.45),
-                      fontSize: 11.sp,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
-          if (state is CryptoError) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.error_outline,
-                      color: const Color(0xFFFB923C), size: 48.sp),
-                  SizedBox(height: 12.h),
-                  Text(
-                    "Couldn't load chart",
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    state.message,
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
-                      color: Colors.white.withValues(alpha: 0.55),
-                      fontSize: 12.sp,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
-
+          // IMPORTANT: never early-return on a non-loaded state — the
+          // control bar (timeframe selector, indicators, drawing
+          // tools, chart-type) MUST stay visible regardless of chart-
+          // canvas state so the user can change timeframe / retry
+          // even when the current fetch is loading or has errored.
+          //
+          // The chart canvas itself swaps for a loading or error
+          // widget below; that's the only piece that branches on
+          // state.
+          final isLoading =
+              state is CryptoLoading || state is CryptoInitial;
+          final cryptoErr = state is CryptoError ? state.message : null;
           // Use real price history from gRPC backend
           final priceHistory = _convertPriceHistoryFromState(state);
-          
+
           return Stack(
             children: [
-              // Full screen chart (90% height, 100% width)
+              // Full screen chart (90% height, 100% width).
+              // Canvas branches on state so the user gets distinct
+              // loading / error / loaded UX without ever losing the
+              // control bar.
               Positioned.fill(
                 child: SizedBox(
                   height: MediaQuery.of(context).size.height * 0.9,
                   width: MediaQuery.of(context).size.width,
-                  child: _buildFullScreenChart(priceHistory),
+                  child: isLoading
+                      ? _buildChartCanvasLoading()
+                      : (cryptoErr != null
+                          ? _buildChartCanvasError(cryptoErr)
+                          : _buildFullScreenChart(priceHistory)),
                 ),
               ),
-              
+
               // Top overlay with minimal info
               _buildTopOverlay(),
-              
+
               // Bottom area with timeframe selector and controls
               _buildBottomControlsArea(),
-              
+
               // Drawing tool indicator
               if (_selectedDrawingTool != DrawingTool.none)
                 _buildDrawingToolIndicator(),
@@ -1224,6 +1175,85 @@ class _CryptoChartDetailsScreenState extends State<CryptoChartDetailsScreen> {
       print('Error in crypto candlestick chart: $e');
       return _buildEmptyChart();
     }
+  }
+
+  /// Loading state for the chart CANVAS only — control bar above is
+  /// kept rendered by the body's Stack so the user can still change
+  /// timeframe / open indicators while the fetch is in flight.
+  Widget _buildChartCanvasLoading() {
+    return SizedBox(
+      width: double.infinity,
+      height: double.infinity,
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 40.sp,
+              height: 40.sp,
+              child: const CircularProgressIndicator(
+                  strokeWidth: 2.5, color: Color(0xFF3B82F6)),
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              'Loading chart…',
+              style: GoogleFonts.inter(
+                color: Colors.white.withValues(alpha: 0.85),
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            SizedBox(height: 4.h),
+            Text(
+              'Fetching OHLCV from Quidax',
+              style: GoogleFonts.inter(
+                color: Colors.white.withValues(alpha: 0.45),
+                fontSize: 11.sp,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Error state for the chart CANVAS only — same control-bar
+  /// preservation contract as the loading canvas.
+  Widget _buildChartCanvasError(String message) {
+    return SizedBox(
+      width: double.infinity,
+      height: double.infinity,
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.error_outline,
+                color: const Color(0xFFFB923C), size: 48.sp),
+            SizedBox(height: 12.h),
+            Text(
+              "Couldn't load chart",
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            SizedBox(height: 4.h),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 32.w),
+              child: Text(
+                message,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  color: Colors.white.withValues(alpha: 0.55),
+                  fontSize: 12.sp,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildEmptyChart() {

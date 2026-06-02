@@ -150,6 +150,44 @@ class FamilyAccount extends Equatable {
   bool get isPendingSetup => status == FamilyAccountStatus.pendingSetup;
   bool get needsSetup => !setupCompleted && isPendingSetup;
   bool get canAcceptMembers => isActive || isPendingSetup;
+
+  // ─── Role helpers ──────────────────────────────────────────────────
+  // These mirror the backend's isFamilyAdmin / creator checks. UI must
+  // call them with the currently-authenticated user's ID (typically
+  // pulled from AuthenticationCubit state).
+
+  /// The current user's member record on this family, or null if they
+  /// aren't a member (e.g. an admin dashboard viewer).
+  FamilyMember? memberForUser(String? userId) {
+    if (userId == null || userId.isEmpty) return null;
+    for (final m in members) {
+      if (m.userId == userId) return m;
+    }
+    return null;
+  }
+
+  /// True iff the given user has the admin role AND has accepted the
+  /// invitation. Mirrors backend isFamilyAdmin (role=admin AND
+  /// invitation_status=accepted).
+  bool isCurrentUserAdmin(String? userId) {
+    final m = memberForUser(userId);
+    return m != null &&
+        m.role == FamilyMemberRole.admin &&
+        m.invitationStatus == InvitationStatus.accepted;
+  }
+
+  /// True iff the given user originally created this family. Creator is
+  /// always treated as admin and is the only role allowed to delete.
+  bool isCurrentUserCreator(String? userId) =>
+      userId != null && userId.isNotEmpty && userId == creatorId;
+
+  /// True if the given user is an accepted member of any kind. Read
+  /// access is gated on this on the backend (GetFamilyAccount,
+  /// GetFamilyTransactions).
+  bool isCurrentUserMember(String? userId) {
+    final m = memberForUser(userId);
+    return m != null && m.invitationStatus == InvitationStatus.accepted;
+  }
 }
 
 class FamilyMember extends Equatable {
@@ -409,6 +447,124 @@ class PendingInvitation extends Equatable {
 
   bool get isExpired => DateTime.now().isAfter(expiresAt);
   int get daysUntilExpiration => expiresAt.difference(DateTime.now()).inDays;
+}
+
+/// Invitee-side invitation history entry — covers all final states
+/// (pending, accepted, declined, expired, removed) for one invitation
+/// addressed to the current user. Used by the History tab.
+class InvitationHistoryEntry extends Equatable {
+  final String invitationToken;
+  final String familyId;
+  final String familyName;
+  final String creatorName;
+  final String? creatorAvatar;
+  final String invitedBy;
+  final InvitationStatus status;
+  final double initialAllocation;
+  final double dailyLimit;
+  final double monthlyLimit;
+  final String invitationMethod; // email | phone | username
+  final String invitationDestination;
+  final DateTime createdAt;
+  final DateTime? expiresAt;
+  final DateTime? respondedAt;
+
+  const InvitationHistoryEntry({
+    required this.invitationToken,
+    required this.familyId,
+    required this.familyName,
+    required this.creatorName,
+    this.creatorAvatar,
+    required this.invitedBy,
+    required this.status,
+    required this.initialAllocation,
+    required this.dailyLimit,
+    required this.monthlyLimit,
+    required this.invitationMethod,
+    required this.invitationDestination,
+    required this.createdAt,
+    this.expiresAt,
+    this.respondedAt,
+  });
+
+  @override
+  List<Object?> get props => [
+        invitationToken,
+        familyId,
+        familyName,
+        creatorName,
+        creatorAvatar,
+        invitedBy,
+        status,
+        initialAllocation,
+        dailyLimit,
+        monthlyLimit,
+        invitationMethod,
+        invitationDestination,
+        createdAt,
+        expiresAt,
+        respondedAt,
+      ];
+}
+
+/// Inviter-side sent-invitation entry — covers invitations sent across
+/// every family the caller currently admins. Used by the Sent tab.
+class SentInvitationEntry extends Equatable {
+  final String memberId;
+  final String familyId;
+  final String familyName;
+  final String invitationMethod;
+  final String invitationDestination;
+  final InvitationStatus status;
+  final String? invitedUserId;
+  final String invitedUserName;
+  final String? invitedUserAvatar;
+  final double initialAllocation;
+  final double dailyLimit;
+  final double monthlyLimit;
+  final FamilyMemberRole role;
+  final DateTime createdAt;
+  final DateTime? expiresAt;
+  final DateTime? respondedAt;
+
+  const SentInvitationEntry({
+    required this.memberId,
+    required this.familyId,
+    required this.familyName,
+    required this.invitationMethod,
+    required this.invitationDestination,
+    required this.status,
+    this.invitedUserId,
+    required this.invitedUserName,
+    this.invitedUserAvatar,
+    required this.initialAllocation,
+    required this.dailyLimit,
+    required this.monthlyLimit,
+    required this.role,
+    required this.createdAt,
+    this.expiresAt,
+    this.respondedAt,
+  });
+
+  @override
+  List<Object?> get props => [
+        memberId,
+        familyId,
+        familyName,
+        invitationMethod,
+        invitationDestination,
+        status,
+        invitedUserId,
+        invitedUserName,
+        invitedUserAvatar,
+        initialAllocation,
+        dailyLimit,
+        monthlyLimit,
+        role,
+        createdAt,
+        expiresAt,
+        respondedAt,
+      ];
 }
 
 class FamilyAccountSummary extends Equatable {

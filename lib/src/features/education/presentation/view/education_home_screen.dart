@@ -11,6 +11,8 @@ import '../../domain/repositories/education_repository.dart';
 import '../cubit/education_cubit.dart';
 import '../cubit/education_history_cubit.dart';
 import '../cubit/education_state.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 
 /// Education PINs landing. Mirrors the internet / water landing pattern:
 /// quick-actions row (Saved Candidates, Reminders, History) → hero
@@ -67,13 +69,22 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      // Both AppBar back and the OS/Android back button always route to
+      // the utility bills hub. Education PINs is reached as a sub-hub of
+      // utilities; popping to whatever happened to be underneath (search
+      // results, deep links, rebuy flows) is confusing.
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) Get.offAllNamed(AppRoutes.billsHub);
+      },
+      child: Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          onPressed: () => Get.back(),
+          onPressed: () => Get.offAllNamed(AppRoutes.billsHub),
           icon: const Icon(Icons.arrow_back, color: Colors.white),
         ),
         title: Text(
@@ -85,6 +96,24 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
           ),
         ),
         centerTitle: true,
+        actions: [
+          // Per-bill voice + chat icons — pin every session to the
+          // education flow on chat-products-service
+          // (DIRECT_ROUTES['education'] → primary 'utility').
+          ServiceVoiceButton(
+            serviceName: 'education',
+            iconColor: const Color(0xFF3B82F6),
+            backgroundColor: const Color(0xFF3B82F6),
+          ),
+          SizedBox(width: 8.w),
+          MicroserviceChatIcon(
+            serviceName: 'Education',
+            sourceContext: 'education',
+            icon: Icons.chat_bubble_outline,
+            iconColor: const Color(0xFF3B82F6),
+          ),
+          SizedBox(width: 12.w),
+        ],
       ),
       body: SafeArea(
         child: BlocBuilder<EducationCubit, EducationState>(
@@ -133,6 +162,7 @@ class _EducationHomeScreenState extends State<EducationHomeScreen> {
           },
         ),
       ),
+    ),
     );
   }
 

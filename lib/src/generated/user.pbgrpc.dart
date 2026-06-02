@@ -10,218 +10,218 @@ import 'dart:async' as $async;
 import 'dart:core' as $core;
 
 import 'package:grpc/service_api.dart' as $grpc;
-import 'user.pb.dart' as $41;
+import 'user.pb.dart' as $42;
 export 'user.pb.dart';
 
 class UserServiceClient extends $grpc.Client {
   static final _$createUser =
-      $grpc.ClientMethod<$41.CreateUserRequest, $41.CreateUserResponse>(
+      $grpc.ClientMethod<$42.CreateUserRequest, $42.CreateUserResponse>(
           '/pb.UserService/CreateUser',
-          ($41.CreateUserRequest value) => value.writeToBuffer(),
+          ($42.CreateUserRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $41.CreateUserResponse.fromBuffer(value));
+              $42.CreateUserResponse.fromBuffer(value));
   static final _$getUserProfile =
-      $grpc.ClientMethod<$41.GetUserProfileRequest, $41.GetUserProfileResponse>(
+      $grpc.ClientMethod<$42.GetUserProfileRequest, $42.GetUserProfileResponse>(
           '/pb.UserService/GetUserProfile',
-          ($41.GetUserProfileRequest value) => value.writeToBuffer(),
+          ($42.GetUserProfileRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $41.GetUserProfileResponse.fromBuffer(value));
+              $42.GetUserProfileResponse.fromBuffer(value));
   static final _$updateUserProfile = $grpc.ClientMethod<
-          $41.UpdateUserProfileRequest, $41.UpdateUserProfileResponse>(
+          $42.UpdateUserProfileRequest, $42.UpdateUserProfileResponse>(
       '/pb.UserService/UpdateUserProfile',
-      ($41.UpdateUserProfileRequest value) => value.writeToBuffer(),
+      ($42.UpdateUserProfileRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $41.UpdateUserProfileResponse.fromBuffer(value));
+          $42.UpdateUserProfileResponse.fromBuffer(value));
   static final _$updatePassword =
-      $grpc.ClientMethod<$41.UpdatePasswordRequest, $41.UpdatePasswordResponse>(
+      $grpc.ClientMethod<$42.UpdatePasswordRequest, $42.UpdatePasswordResponse>(
           '/pb.UserService/UpdatePassword',
-          ($41.UpdatePasswordRequest value) => value.writeToBuffer(),
+          ($42.UpdatePasswordRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $41.UpdatePasswordResponse.fromBuffer(value));
+              $42.UpdatePasswordResponse.fromBuffer(value));
   static final _$updatePreferences = $grpc.ClientMethod<
-          $41.UpdatePreferencesRequest, $41.UpdatePreferencesResponse>(
+          $42.UpdatePreferencesRequest, $42.UpdatePreferencesResponse>(
       '/pb.UserService/UpdatePreferences',
-      ($41.UpdatePreferencesRequest value) => value.writeToBuffer(),
+      ($42.UpdatePreferencesRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $41.UpdatePreferencesResponse.fromBuffer(value));
+          $42.UpdatePreferencesResponse.fromBuffer(value));
   static final _$uploadIDDocument = $grpc.ClientMethod<
-          $41.UploadIDDocumentRequest, $41.UploadIDDocumentResponse>(
+          $42.UploadIDDocumentRequest, $42.UploadIDDocumentResponse>(
       '/pb.UserService/UploadIDDocument',
-      ($41.UploadIDDocumentRequest value) => value.writeToBuffer(),
+      ($42.UploadIDDocumentRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $41.UploadIDDocumentResponse.fromBuffer(value));
+          $42.UploadIDDocumentResponse.fromBuffer(value));
   static final _$getIDDocuments =
-      $grpc.ClientMethod<$41.GetIDDocumentsRequest, $41.GetIDDocumentsResponse>(
+      $grpc.ClientMethod<$42.GetIDDocumentsRequest, $42.GetIDDocumentsResponse>(
           '/pb.UserService/GetIDDocuments',
-          ($41.GetIDDocumentsRequest value) => value.writeToBuffer(),
+          ($42.GetIDDocumentsRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $41.GetIDDocumentsResponse.fromBuffer(value));
+              $42.GetIDDocumentsResponse.fromBuffer(value));
   static final _$verifyIDDocument = $grpc.ClientMethod<
-          $41.VerifyIDDocumentRequest, $41.VerifyIDDocumentResponse>(
+          $42.VerifyIDDocumentRequest, $42.VerifyIDDocumentResponse>(
       '/pb.UserService/VerifyIDDocument',
-      ($41.VerifyIDDocumentRequest value) => value.writeToBuffer(),
+      ($42.VerifyIDDocumentRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $41.VerifyIDDocumentResponse.fromBuffer(value));
-  static final _$registerFace = $grpc.ClientMethod<$41.UserRegisterFaceRequest,
-          $41.UserRegisterFaceResponse>(
+          $42.VerifyIDDocumentResponse.fromBuffer(value));
+  static final _$registerFace = $grpc.ClientMethod<$42.UserRegisterFaceRequest,
+          $42.UserRegisterFaceResponse>(
       '/pb.UserService/RegisterFace',
-      ($41.UserRegisterFaceRequest value) => value.writeToBuffer(),
+      ($42.UserRegisterFaceRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $41.UserRegisterFaceResponse.fromBuffer(value));
+          $42.UserRegisterFaceResponse.fromBuffer(value));
   static final _$verifyFace =
-      $grpc.ClientMethod<$41.UserVerifyFaceRequest, $41.UserVerifyFaceResponse>(
+      $grpc.ClientMethod<$42.UserVerifyFaceRequest, $42.UserVerifyFaceResponse>(
           '/pb.UserService/VerifyFace',
-          ($41.UserVerifyFaceRequest value) => value.writeToBuffer(),
+          ($42.UserVerifyFaceRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $41.UserVerifyFaceResponse.fromBuffer(value));
+              $42.UserVerifyFaceResponse.fromBuffer(value));
   static final _$getFacialData =
-      $grpc.ClientMethod<$41.GetFacialDataRequest, $41.GetFacialDataResponse>(
+      $grpc.ClientMethod<$42.GetFacialDataRequest, $42.GetFacialDataResponse>(
           '/pb.UserService/GetFacialData',
-          ($41.GetFacialDataRequest value) => value.writeToBuffer(),
+          ($42.GetFacialDataRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $41.GetFacialDataResponse.fromBuffer(value));
+              $42.GetFacialDataResponse.fromBuffer(value));
   static final _$setPasscode =
-      $grpc.ClientMethod<$41.SetPasscodeRequest, $41.SetPasscodeResponse>(
+      $grpc.ClientMethod<$42.SetPasscodeRequest, $42.SetPasscodeResponse>(
           '/pb.UserService/SetPasscode',
-          ($41.SetPasscodeRequest value) => value.writeToBuffer(),
+          ($42.SetPasscodeRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $41.SetPasscodeResponse.fromBuffer(value));
+              $42.SetPasscodeResponse.fromBuffer(value));
   static final _$verifyPasscode =
-      $grpc.ClientMethod<$41.VerifyPasscodeRequest, $41.VerifyPasscodeResponse>(
+      $grpc.ClientMethod<$42.VerifyPasscodeRequest, $42.VerifyPasscodeResponse>(
           '/pb.UserService/VerifyPasscode',
-          ($41.VerifyPasscodeRequest value) => value.writeToBuffer(),
+          ($42.VerifyPasscodeRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $41.VerifyPasscodeResponse.fromBuffer(value));
+              $42.VerifyPasscodeResponse.fromBuffer(value));
   static final _$removePasscode =
-      $grpc.ClientMethod<$41.RemovePasscodeRequest, $41.RemovePasscodeResponse>(
+      $grpc.ClientMethod<$42.RemovePasscodeRequest, $42.RemovePasscodeResponse>(
           '/pb.UserService/RemovePasscode',
-          ($41.RemovePasscodeRequest value) => value.writeToBuffer(),
+          ($42.RemovePasscodeRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
-              $41.RemovePasscodeResponse.fromBuffer(value));
+              $42.RemovePasscodeResponse.fromBuffer(value));
   static final _$checkPasscodeExists = $grpc.ClientMethod<
-          $41.CheckPasscodeExistsRequest, $41.CheckPasscodeExistsResponse>(
+          $42.CheckPasscodeExistsRequest, $42.CheckPasscodeExistsResponse>(
       '/pb.UserService/CheckPasscodeExists',
-      ($41.CheckPasscodeExistsRequest value) => value.writeToBuffer(),
+      ($42.CheckPasscodeExistsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $41.CheckPasscodeExistsResponse.fromBuffer(value));
+          $42.CheckPasscodeExistsResponse.fromBuffer(value));
   static final _$updateDevicePermissions = $grpc.ClientMethod<
-          $41.UpdateDevicePermissionsRequest,
-          $41.UpdateDevicePermissionsResponse>(
+          $42.UpdateDevicePermissionsRequest,
+          $42.UpdateDevicePermissionsResponse>(
       '/pb.UserService/UpdateDevicePermissions',
-      ($41.UpdateDevicePermissionsRequest value) => value.writeToBuffer(),
+      ($42.UpdateDevicePermissionsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $41.UpdateDevicePermissionsResponse.fromBuffer(value));
+          $42.UpdateDevicePermissionsResponse.fromBuffer(value));
   static final _$getDevicePermissions = $grpc.ClientMethod<
-          $41.GetDevicePermissionsRequest, $41.GetDevicePermissionsResponse>(
+          $42.GetDevicePermissionsRequest, $42.GetDevicePermissionsResponse>(
       '/pb.UserService/GetDevicePermissions',
-      ($41.GetDevicePermissionsRequest value) => value.writeToBuffer(),
+      ($42.GetDevicePermissionsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $41.GetDevicePermissionsResponse.fromBuffer(value));
+          $42.GetDevicePermissionsResponse.fromBuffer(value));
 
   UserServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
       $core.Iterable<$grpc.ClientInterceptor>? interceptors})
       : super(channel, options: options, interceptors: interceptors);
 
-  $grpc.ResponseFuture<$41.CreateUserResponse> createUser(
-      $41.CreateUserRequest request,
+  $grpc.ResponseFuture<$42.CreateUserResponse> createUser(
+      $42.CreateUserRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$createUser, request, options: options);
   }
 
-  $grpc.ResponseFuture<$41.GetUserProfileResponse> getUserProfile(
-      $41.GetUserProfileRequest request,
+  $grpc.ResponseFuture<$42.GetUserProfileResponse> getUserProfile(
+      $42.GetUserProfileRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getUserProfile, request, options: options);
   }
 
-  $grpc.ResponseFuture<$41.UpdateUserProfileResponse> updateUserProfile(
-      $41.UpdateUserProfileRequest request,
+  $grpc.ResponseFuture<$42.UpdateUserProfileResponse> updateUserProfile(
+      $42.UpdateUserProfileRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$updateUserProfile, request, options: options);
   }
 
-  $grpc.ResponseFuture<$41.UpdatePasswordResponse> updatePassword(
-      $41.UpdatePasswordRequest request,
+  $grpc.ResponseFuture<$42.UpdatePasswordResponse> updatePassword(
+      $42.UpdatePasswordRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$updatePassword, request, options: options);
   }
 
-  $grpc.ResponseFuture<$41.UpdatePreferencesResponse> updatePreferences(
-      $41.UpdatePreferencesRequest request,
+  $grpc.ResponseFuture<$42.UpdatePreferencesResponse> updatePreferences(
+      $42.UpdatePreferencesRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$updatePreferences, request, options: options);
   }
 
-  $grpc.ResponseFuture<$41.UploadIDDocumentResponse> uploadIDDocument(
-      $41.UploadIDDocumentRequest request,
+  $grpc.ResponseFuture<$42.UploadIDDocumentResponse> uploadIDDocument(
+      $42.UploadIDDocumentRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$uploadIDDocument, request, options: options);
   }
 
-  $grpc.ResponseFuture<$41.GetIDDocumentsResponse> getIDDocuments(
-      $41.GetIDDocumentsRequest request,
+  $grpc.ResponseFuture<$42.GetIDDocumentsResponse> getIDDocuments(
+      $42.GetIDDocumentsRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getIDDocuments, request, options: options);
   }
 
-  $grpc.ResponseFuture<$41.VerifyIDDocumentResponse> verifyIDDocument(
-      $41.VerifyIDDocumentRequest request,
+  $grpc.ResponseFuture<$42.VerifyIDDocumentResponse> verifyIDDocument(
+      $42.VerifyIDDocumentRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$verifyIDDocument, request, options: options);
   }
 
-  $grpc.ResponseFuture<$41.UserRegisterFaceResponse> registerFace(
-      $41.UserRegisterFaceRequest request,
+  $grpc.ResponseFuture<$42.UserRegisterFaceResponse> registerFace(
+      $42.UserRegisterFaceRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$registerFace, request, options: options);
   }
 
-  $grpc.ResponseFuture<$41.UserVerifyFaceResponse> verifyFace(
-      $41.UserVerifyFaceRequest request,
+  $grpc.ResponseFuture<$42.UserVerifyFaceResponse> verifyFace(
+      $42.UserVerifyFaceRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$verifyFace, request, options: options);
   }
 
-  $grpc.ResponseFuture<$41.GetFacialDataResponse> getFacialData(
-      $41.GetFacialDataRequest request,
+  $grpc.ResponseFuture<$42.GetFacialDataResponse> getFacialData(
+      $42.GetFacialDataRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getFacialData, request, options: options);
   }
 
-  $grpc.ResponseFuture<$41.SetPasscodeResponse> setPasscode(
-      $41.SetPasscodeRequest request,
+  $grpc.ResponseFuture<$42.SetPasscodeResponse> setPasscode(
+      $42.SetPasscodeRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$setPasscode, request, options: options);
   }
 
-  $grpc.ResponseFuture<$41.VerifyPasscodeResponse> verifyPasscode(
-      $41.VerifyPasscodeRequest request,
+  $grpc.ResponseFuture<$42.VerifyPasscodeResponse> verifyPasscode(
+      $42.VerifyPasscodeRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$verifyPasscode, request, options: options);
   }
 
-  $grpc.ResponseFuture<$41.RemovePasscodeResponse> removePasscode(
-      $41.RemovePasscodeRequest request,
+  $grpc.ResponseFuture<$42.RemovePasscodeResponse> removePasscode(
+      $42.RemovePasscodeRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$removePasscode, request, options: options);
   }
 
-  $grpc.ResponseFuture<$41.CheckPasscodeExistsResponse> checkPasscodeExists(
-      $41.CheckPasscodeExistsRequest request,
+  $grpc.ResponseFuture<$42.CheckPasscodeExistsResponse> checkPasscodeExists(
+      $42.CheckPasscodeExistsRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$checkPasscodeExists, request, options: options);
   }
 
-  $grpc.ResponseFuture<$41.UpdateDevicePermissionsResponse>
-      updateDevicePermissions($41.UpdateDevicePermissionsRequest request,
+  $grpc.ResponseFuture<$42.UpdateDevicePermissionsResponse>
+      updateDevicePermissions($42.UpdateDevicePermissionsRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$updateDevicePermissions, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$41.GetDevicePermissionsResponse> getDevicePermissions(
-      $41.GetDevicePermissionsRequest request,
+  $grpc.ResponseFuture<$42.GetDevicePermissionsResponse> getDevicePermissions(
+      $42.GetDevicePermissionsRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getDevicePermissions, request, options: options);
   }
@@ -232,292 +232,292 @@ abstract class UserServiceBase extends $grpc.Service {
 
   UserServiceBase() {
     $addMethod(
-        $grpc.ServiceMethod<$41.CreateUserRequest, $41.CreateUserResponse>(
+        $grpc.ServiceMethod<$42.CreateUserRequest, $42.CreateUserResponse>(
             'CreateUser',
             createUser_Pre,
             false,
             false,
             ($core.List<$core.int> value) =>
-                $41.CreateUserRequest.fromBuffer(value),
-            ($41.CreateUserResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$41.GetUserProfileRequest,
-            $41.GetUserProfileResponse>(
+                $42.CreateUserRequest.fromBuffer(value),
+            ($42.CreateUserResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$42.GetUserProfileRequest,
+            $42.GetUserProfileResponse>(
         'GetUserProfile',
         getUserProfile_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $41.GetUserProfileRequest.fromBuffer(value),
-        ($41.GetUserProfileResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$41.UpdateUserProfileRequest,
-            $41.UpdateUserProfileResponse>(
+            $42.GetUserProfileRequest.fromBuffer(value),
+        ($42.GetUserProfileResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$42.UpdateUserProfileRequest,
+            $42.UpdateUserProfileResponse>(
         'UpdateUserProfile',
         updateUserProfile_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $41.UpdateUserProfileRequest.fromBuffer(value),
-        ($41.UpdateUserProfileResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$41.UpdatePasswordRequest,
-            $41.UpdatePasswordResponse>(
+            $42.UpdateUserProfileRequest.fromBuffer(value),
+        ($42.UpdateUserProfileResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$42.UpdatePasswordRequest,
+            $42.UpdatePasswordResponse>(
         'UpdatePassword',
         updatePassword_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $41.UpdatePasswordRequest.fromBuffer(value),
-        ($41.UpdatePasswordResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$41.UpdatePreferencesRequest,
-            $41.UpdatePreferencesResponse>(
+            $42.UpdatePasswordRequest.fromBuffer(value),
+        ($42.UpdatePasswordResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$42.UpdatePreferencesRequest,
+            $42.UpdatePreferencesResponse>(
         'UpdatePreferences',
         updatePreferences_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $41.UpdatePreferencesRequest.fromBuffer(value),
-        ($41.UpdatePreferencesResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$41.UploadIDDocumentRequest,
-            $41.UploadIDDocumentResponse>(
+            $42.UpdatePreferencesRequest.fromBuffer(value),
+        ($42.UpdatePreferencesResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$42.UploadIDDocumentRequest,
+            $42.UploadIDDocumentResponse>(
         'UploadIDDocument',
         uploadIDDocument_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $41.UploadIDDocumentRequest.fromBuffer(value),
-        ($41.UploadIDDocumentResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$41.GetIDDocumentsRequest,
-            $41.GetIDDocumentsResponse>(
+            $42.UploadIDDocumentRequest.fromBuffer(value),
+        ($42.UploadIDDocumentResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$42.GetIDDocumentsRequest,
+            $42.GetIDDocumentsResponse>(
         'GetIDDocuments',
         getIDDocuments_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $41.GetIDDocumentsRequest.fromBuffer(value),
-        ($41.GetIDDocumentsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$41.VerifyIDDocumentRequest,
-            $41.VerifyIDDocumentResponse>(
+            $42.GetIDDocumentsRequest.fromBuffer(value),
+        ($42.GetIDDocumentsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$42.VerifyIDDocumentRequest,
+            $42.VerifyIDDocumentResponse>(
         'VerifyIDDocument',
         verifyIDDocument_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $41.VerifyIDDocumentRequest.fromBuffer(value),
-        ($41.VerifyIDDocumentResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$41.UserRegisterFaceRequest,
-            $41.UserRegisterFaceResponse>(
+            $42.VerifyIDDocumentRequest.fromBuffer(value),
+        ($42.VerifyIDDocumentResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$42.UserRegisterFaceRequest,
+            $42.UserRegisterFaceResponse>(
         'RegisterFace',
         registerFace_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $41.UserRegisterFaceRequest.fromBuffer(value),
-        ($41.UserRegisterFaceResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$41.UserVerifyFaceRequest,
-            $41.UserVerifyFaceResponse>(
+            $42.UserRegisterFaceRequest.fromBuffer(value),
+        ($42.UserRegisterFaceResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$42.UserVerifyFaceRequest,
+            $42.UserVerifyFaceResponse>(
         'VerifyFace',
         verifyFace_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $41.UserVerifyFaceRequest.fromBuffer(value),
-        ($41.UserVerifyFaceResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$41.GetFacialDataRequest,
-            $41.GetFacialDataResponse>(
+            $42.UserVerifyFaceRequest.fromBuffer(value),
+        ($42.UserVerifyFaceResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$42.GetFacialDataRequest,
+            $42.GetFacialDataResponse>(
         'GetFacialData',
         getFacialData_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $41.GetFacialDataRequest.fromBuffer(value),
-        ($41.GetFacialDataResponse value) => value.writeToBuffer()));
+            $42.GetFacialDataRequest.fromBuffer(value),
+        ($42.GetFacialDataResponse value) => value.writeToBuffer()));
     $addMethod(
-        $grpc.ServiceMethod<$41.SetPasscodeRequest, $41.SetPasscodeResponse>(
+        $grpc.ServiceMethod<$42.SetPasscodeRequest, $42.SetPasscodeResponse>(
             'SetPasscode',
             setPasscode_Pre,
             false,
             false,
             ($core.List<$core.int> value) =>
-                $41.SetPasscodeRequest.fromBuffer(value),
-            ($41.SetPasscodeResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$41.VerifyPasscodeRequest,
-            $41.VerifyPasscodeResponse>(
+                $42.SetPasscodeRequest.fromBuffer(value),
+            ($42.SetPasscodeResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$42.VerifyPasscodeRequest,
+            $42.VerifyPasscodeResponse>(
         'VerifyPasscode',
         verifyPasscode_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $41.VerifyPasscodeRequest.fromBuffer(value),
-        ($41.VerifyPasscodeResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$41.RemovePasscodeRequest,
-            $41.RemovePasscodeResponse>(
+            $42.VerifyPasscodeRequest.fromBuffer(value),
+        ($42.VerifyPasscodeResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$42.RemovePasscodeRequest,
+            $42.RemovePasscodeResponse>(
         'RemovePasscode',
         removePasscode_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $41.RemovePasscodeRequest.fromBuffer(value),
-        ($41.RemovePasscodeResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$41.CheckPasscodeExistsRequest,
-            $41.CheckPasscodeExistsResponse>(
+            $42.RemovePasscodeRequest.fromBuffer(value),
+        ($42.RemovePasscodeResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$42.CheckPasscodeExistsRequest,
+            $42.CheckPasscodeExistsResponse>(
         'CheckPasscodeExists',
         checkPasscodeExists_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $41.CheckPasscodeExistsRequest.fromBuffer(value),
-        ($41.CheckPasscodeExistsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$41.UpdateDevicePermissionsRequest,
-            $41.UpdateDevicePermissionsResponse>(
+            $42.CheckPasscodeExistsRequest.fromBuffer(value),
+        ($42.CheckPasscodeExistsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$42.UpdateDevicePermissionsRequest,
+            $42.UpdateDevicePermissionsResponse>(
         'UpdateDevicePermissions',
         updateDevicePermissions_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $41.UpdateDevicePermissionsRequest.fromBuffer(value),
-        ($41.UpdateDevicePermissionsResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$41.GetDevicePermissionsRequest,
-            $41.GetDevicePermissionsResponse>(
+            $42.UpdateDevicePermissionsRequest.fromBuffer(value),
+        ($42.UpdateDevicePermissionsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$42.GetDevicePermissionsRequest,
+            $42.GetDevicePermissionsResponse>(
         'GetDevicePermissions',
         getDevicePermissions_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $41.GetDevicePermissionsRequest.fromBuffer(value),
-        ($41.GetDevicePermissionsResponse value) => value.writeToBuffer()));
+            $42.GetDevicePermissionsRequest.fromBuffer(value),
+        ($42.GetDevicePermissionsResponse value) => value.writeToBuffer()));
   }
 
-  $async.Future<$41.CreateUserResponse> createUser_Pre($grpc.ServiceCall call,
-      $async.Future<$41.CreateUserRequest> request) async {
+  $async.Future<$42.CreateUserResponse> createUser_Pre($grpc.ServiceCall call,
+      $async.Future<$42.CreateUserRequest> request) async {
     return createUser(call, await request);
   }
 
-  $async.Future<$41.GetUserProfileResponse> getUserProfile_Pre(
+  $async.Future<$42.GetUserProfileResponse> getUserProfile_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$41.GetUserProfileRequest> request) async {
+      $async.Future<$42.GetUserProfileRequest> request) async {
     return getUserProfile(call, await request);
   }
 
-  $async.Future<$41.UpdateUserProfileResponse> updateUserProfile_Pre(
+  $async.Future<$42.UpdateUserProfileResponse> updateUserProfile_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$41.UpdateUserProfileRequest> request) async {
+      $async.Future<$42.UpdateUserProfileRequest> request) async {
     return updateUserProfile(call, await request);
   }
 
-  $async.Future<$41.UpdatePasswordResponse> updatePassword_Pre(
+  $async.Future<$42.UpdatePasswordResponse> updatePassword_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$41.UpdatePasswordRequest> request) async {
+      $async.Future<$42.UpdatePasswordRequest> request) async {
     return updatePassword(call, await request);
   }
 
-  $async.Future<$41.UpdatePreferencesResponse> updatePreferences_Pre(
+  $async.Future<$42.UpdatePreferencesResponse> updatePreferences_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$41.UpdatePreferencesRequest> request) async {
+      $async.Future<$42.UpdatePreferencesRequest> request) async {
     return updatePreferences(call, await request);
   }
 
-  $async.Future<$41.UploadIDDocumentResponse> uploadIDDocument_Pre(
+  $async.Future<$42.UploadIDDocumentResponse> uploadIDDocument_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$41.UploadIDDocumentRequest> request) async {
+      $async.Future<$42.UploadIDDocumentRequest> request) async {
     return uploadIDDocument(call, await request);
   }
 
-  $async.Future<$41.GetIDDocumentsResponse> getIDDocuments_Pre(
+  $async.Future<$42.GetIDDocumentsResponse> getIDDocuments_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$41.GetIDDocumentsRequest> request) async {
+      $async.Future<$42.GetIDDocumentsRequest> request) async {
     return getIDDocuments(call, await request);
   }
 
-  $async.Future<$41.VerifyIDDocumentResponse> verifyIDDocument_Pre(
+  $async.Future<$42.VerifyIDDocumentResponse> verifyIDDocument_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$41.VerifyIDDocumentRequest> request) async {
+      $async.Future<$42.VerifyIDDocumentRequest> request) async {
     return verifyIDDocument(call, await request);
   }
 
-  $async.Future<$41.UserRegisterFaceResponse> registerFace_Pre(
+  $async.Future<$42.UserRegisterFaceResponse> registerFace_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$41.UserRegisterFaceRequest> request) async {
+      $async.Future<$42.UserRegisterFaceRequest> request) async {
     return registerFace(call, await request);
   }
 
-  $async.Future<$41.UserVerifyFaceResponse> verifyFace_Pre(
+  $async.Future<$42.UserVerifyFaceResponse> verifyFace_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$41.UserVerifyFaceRequest> request) async {
+      $async.Future<$42.UserVerifyFaceRequest> request) async {
     return verifyFace(call, await request);
   }
 
-  $async.Future<$41.GetFacialDataResponse> getFacialData_Pre(
+  $async.Future<$42.GetFacialDataResponse> getFacialData_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$41.GetFacialDataRequest> request) async {
+      $async.Future<$42.GetFacialDataRequest> request) async {
     return getFacialData(call, await request);
   }
 
-  $async.Future<$41.SetPasscodeResponse> setPasscode_Pre($grpc.ServiceCall call,
-      $async.Future<$41.SetPasscodeRequest> request) async {
+  $async.Future<$42.SetPasscodeResponse> setPasscode_Pre($grpc.ServiceCall call,
+      $async.Future<$42.SetPasscodeRequest> request) async {
     return setPasscode(call, await request);
   }
 
-  $async.Future<$41.VerifyPasscodeResponse> verifyPasscode_Pre(
+  $async.Future<$42.VerifyPasscodeResponse> verifyPasscode_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$41.VerifyPasscodeRequest> request) async {
+      $async.Future<$42.VerifyPasscodeRequest> request) async {
     return verifyPasscode(call, await request);
   }
 
-  $async.Future<$41.RemovePasscodeResponse> removePasscode_Pre(
+  $async.Future<$42.RemovePasscodeResponse> removePasscode_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$41.RemovePasscodeRequest> request) async {
+      $async.Future<$42.RemovePasscodeRequest> request) async {
     return removePasscode(call, await request);
   }
 
-  $async.Future<$41.CheckPasscodeExistsResponse> checkPasscodeExists_Pre(
+  $async.Future<$42.CheckPasscodeExistsResponse> checkPasscodeExists_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$41.CheckPasscodeExistsRequest> request) async {
+      $async.Future<$42.CheckPasscodeExistsRequest> request) async {
     return checkPasscodeExists(call, await request);
   }
 
-  $async.Future<$41.UpdateDevicePermissionsResponse>
+  $async.Future<$42.UpdateDevicePermissionsResponse>
       updateDevicePermissions_Pre($grpc.ServiceCall call,
-          $async.Future<$41.UpdateDevicePermissionsRequest> request) async {
+          $async.Future<$42.UpdateDevicePermissionsRequest> request) async {
     return updateDevicePermissions(call, await request);
   }
 
-  $async.Future<$41.GetDevicePermissionsResponse> getDevicePermissions_Pre(
+  $async.Future<$42.GetDevicePermissionsResponse> getDevicePermissions_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$41.GetDevicePermissionsRequest> request) async {
+      $async.Future<$42.GetDevicePermissionsRequest> request) async {
     return getDevicePermissions(call, await request);
   }
 
-  $async.Future<$41.CreateUserResponse> createUser(
-      $grpc.ServiceCall call, $41.CreateUserRequest request);
-  $async.Future<$41.GetUserProfileResponse> getUserProfile(
-      $grpc.ServiceCall call, $41.GetUserProfileRequest request);
-  $async.Future<$41.UpdateUserProfileResponse> updateUserProfile(
-      $grpc.ServiceCall call, $41.UpdateUserProfileRequest request);
-  $async.Future<$41.UpdatePasswordResponse> updatePassword(
-      $grpc.ServiceCall call, $41.UpdatePasswordRequest request);
-  $async.Future<$41.UpdatePreferencesResponse> updatePreferences(
-      $grpc.ServiceCall call, $41.UpdatePreferencesRequest request);
-  $async.Future<$41.UploadIDDocumentResponse> uploadIDDocument(
-      $grpc.ServiceCall call, $41.UploadIDDocumentRequest request);
-  $async.Future<$41.GetIDDocumentsResponse> getIDDocuments(
-      $grpc.ServiceCall call, $41.GetIDDocumentsRequest request);
-  $async.Future<$41.VerifyIDDocumentResponse> verifyIDDocument(
-      $grpc.ServiceCall call, $41.VerifyIDDocumentRequest request);
-  $async.Future<$41.UserRegisterFaceResponse> registerFace(
-      $grpc.ServiceCall call, $41.UserRegisterFaceRequest request);
-  $async.Future<$41.UserVerifyFaceResponse> verifyFace(
-      $grpc.ServiceCall call, $41.UserVerifyFaceRequest request);
-  $async.Future<$41.GetFacialDataResponse> getFacialData(
-      $grpc.ServiceCall call, $41.GetFacialDataRequest request);
-  $async.Future<$41.SetPasscodeResponse> setPasscode(
-      $grpc.ServiceCall call, $41.SetPasscodeRequest request);
-  $async.Future<$41.VerifyPasscodeResponse> verifyPasscode(
-      $grpc.ServiceCall call, $41.VerifyPasscodeRequest request);
-  $async.Future<$41.RemovePasscodeResponse> removePasscode(
-      $grpc.ServiceCall call, $41.RemovePasscodeRequest request);
-  $async.Future<$41.CheckPasscodeExistsResponse> checkPasscodeExists(
-      $grpc.ServiceCall call, $41.CheckPasscodeExistsRequest request);
-  $async.Future<$41.UpdateDevicePermissionsResponse> updateDevicePermissions(
-      $grpc.ServiceCall call, $41.UpdateDevicePermissionsRequest request);
-  $async.Future<$41.GetDevicePermissionsResponse> getDevicePermissions(
-      $grpc.ServiceCall call, $41.GetDevicePermissionsRequest request);
+  $async.Future<$42.CreateUserResponse> createUser(
+      $grpc.ServiceCall call, $42.CreateUserRequest request);
+  $async.Future<$42.GetUserProfileResponse> getUserProfile(
+      $grpc.ServiceCall call, $42.GetUserProfileRequest request);
+  $async.Future<$42.UpdateUserProfileResponse> updateUserProfile(
+      $grpc.ServiceCall call, $42.UpdateUserProfileRequest request);
+  $async.Future<$42.UpdatePasswordResponse> updatePassword(
+      $grpc.ServiceCall call, $42.UpdatePasswordRequest request);
+  $async.Future<$42.UpdatePreferencesResponse> updatePreferences(
+      $grpc.ServiceCall call, $42.UpdatePreferencesRequest request);
+  $async.Future<$42.UploadIDDocumentResponse> uploadIDDocument(
+      $grpc.ServiceCall call, $42.UploadIDDocumentRequest request);
+  $async.Future<$42.GetIDDocumentsResponse> getIDDocuments(
+      $grpc.ServiceCall call, $42.GetIDDocumentsRequest request);
+  $async.Future<$42.VerifyIDDocumentResponse> verifyIDDocument(
+      $grpc.ServiceCall call, $42.VerifyIDDocumentRequest request);
+  $async.Future<$42.UserRegisterFaceResponse> registerFace(
+      $grpc.ServiceCall call, $42.UserRegisterFaceRequest request);
+  $async.Future<$42.UserVerifyFaceResponse> verifyFace(
+      $grpc.ServiceCall call, $42.UserVerifyFaceRequest request);
+  $async.Future<$42.GetFacialDataResponse> getFacialData(
+      $grpc.ServiceCall call, $42.GetFacialDataRequest request);
+  $async.Future<$42.SetPasscodeResponse> setPasscode(
+      $grpc.ServiceCall call, $42.SetPasscodeRequest request);
+  $async.Future<$42.VerifyPasscodeResponse> verifyPasscode(
+      $grpc.ServiceCall call, $42.VerifyPasscodeRequest request);
+  $async.Future<$42.RemovePasscodeResponse> removePasscode(
+      $grpc.ServiceCall call, $42.RemovePasscodeRequest request);
+  $async.Future<$42.CheckPasscodeExistsResponse> checkPasscodeExists(
+      $grpc.ServiceCall call, $42.CheckPasscodeExistsRequest request);
+  $async.Future<$42.UpdateDevicePermissionsResponse> updateDevicePermissions(
+      $grpc.ServiceCall call, $42.UpdateDevicePermissionsRequest request);
+  $async.Future<$42.GetDevicePermissionsResponse> getDevicePermissions(
+      $grpc.ServiceCall call, $42.GetDevicePermissionsRequest request);
 }

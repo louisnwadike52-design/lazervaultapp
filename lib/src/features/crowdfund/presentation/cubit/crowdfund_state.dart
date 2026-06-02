@@ -150,6 +150,62 @@ class CrowdfundUpdated extends CrowdfundState {
   List<Object?> get props => [crowdfund];
 }
 
+/// Pause/Resume terminal states. Carry the updated crowdfund so the
+/// details screen can rebuild without an extra fetch (mirrors the
+/// WithdrawalCompleted pattern at crowdfund_cubit.dart:1077).
+class CrowdfundPaused extends CrowdfundState {
+  final Crowdfund crowdfund;
+  const CrowdfundPaused(this.crowdfund);
+  @override
+  List<Object?> get props => [crowdfund];
+}
+
+class CrowdfundResumed extends CrowdfundState {
+  final Crowdfund crowdfund;
+  const CrowdfundResumed(this.crowdfund);
+  @override
+  List<Object?> get props => [crowdfund];
+}
+
+/// Cancel was accepted server-side and refund rows were queued. The
+/// async worker drains them and advances status to `cancelled`; the
+/// cancel-progress screen reads `refunds_pending` / `refunds_completed`
+/// off the campaign on refresh.
+class CancelInitiated extends CrowdfundState {
+  final Crowdfund crowdfund;
+  final int refundsQueued;
+  final int totalContributions;
+  final double totalRefundAmount;
+  final String message;
+  const CancelInitiated({
+    required this.crowdfund,
+    required this.refundsQueued,
+    required this.totalContributions,
+    required this.totalRefundAmount,
+    required this.message,
+  });
+  @override
+  List<Object?> get props =>
+      [crowdfund, refundsQueued, totalContributions, totalRefundAmount, message];
+}
+
+/// Hard-delete succeeded; details screen should pop.
+class CrowdfundDeleted extends CrowdfundState {
+  final String crowdfundId;
+  const CrowdfundDeleted(this.crowdfundId);
+  @override
+  List<Object?> get props => [crowdfundId];
+}
+
+/// Refund audit rows loaded for the cancel-progress screen / admin.
+class CrowdfundRefundsLoaded extends CrowdfundState {
+  final String crowdfundId;
+  final List<CrowdfundRefund> refunds;
+  const CrowdfundRefundsLoaded({required this.crowdfundId, required this.refunds});
+  @override
+  List<Object?> get props => [crowdfundId, refunds];
+}
+
 /// Donation processing state with step indicator
 class DonationProcessing extends CrowdfundState {
   final String step;

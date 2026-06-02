@@ -135,4 +135,24 @@ if ! protoc --dart_out=grpc:lib/src/generated \
   exit 1
 fi
 
+# Generate investments.proto from investments-service (Flutter has no local copy; uses microservice canonical)
+echo "Generating Dart code from investments.proto (investments-service canonical)..."
+if ! protoc --dart_out=grpc:lib/src/generated \
+  -I../microservices/investments-service/investments-microservice/proto \
+  -Iproto \
+  ../microservices/investments-service/investments-microservice/proto/investments.proto; then
+  echo "ERROR: investments.proto generation failed."
+  exit 1
+fi
+
+# Generate multi_country.proto from accounts-service (Flutter has no local copy)
+echo "Generating Dart code from multi_country.proto (accounts-service canonical)..."
+if ! protoc --dart_out=grpc:lib/src/generated \
+  -I../microservices/accounts-service/accounts-microservice/proto \
+  -Iproto \
+  ../microservices/accounts-service/accounts-microservice/proto/multi_country.proto; then
+  echo "ERROR: multi_country.proto generation failed."
+  exit 1
+fi
+
 echo "Dart code generation successful." 

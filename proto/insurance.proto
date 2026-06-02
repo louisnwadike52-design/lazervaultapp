@@ -266,13 +266,41 @@ message GetPaymentStatisticsResponse {
 message InsuranceProductFormField {
     string name = 1;                         // Field identifier
     string label = 2;                        // Display label
-    string type = 3;                         // "text", "number", "date", "select", "boolean", "email", "phone"
+    string type = 3;                         // "text", "number", "date", "select", "boolean", "email", "phone", "file"
     bool required = 4;
     repeated string options = 5;             // For "select" type fields
     string default_value = 6;
     string validation_regex = 7;
     string placeholder = 8;
     string description = 9;                  // Help text for the field
+    // utility_id is the MyCover.ai utility-list UUID that powers this
+    // field's options when the values come from
+    // /v2/products/utility/{id}. Non-empty implies type == "select"
+    // and Flutter should fetch options from that endpoint instead of
+    // using the static `options` array.
+    string utility_id = 10;
+    // depends_on is the name of another field whose value scopes this
+    // field's utility query (e.g. vehicle_model depends on
+    // vehicle_make). Empty for independent selects.
+    string depends_on = 11;
+    // item_fields describes the per-item sub-fields of a structured
+    // (object-per-item) array field — e.g. benefit_details items are
+    // {benefit(select), sum_insured(number)} while item_details items
+    // are {name, value, quantity, image_url, description}. Empty for
+    // non-array fields and for array fields where the client should use
+    // the default cargo item shape.
+    repeated InsuranceProductFormItemField item_fields = 12;
+}
+
+// One sub-field of a structured-array item (see
+// InsuranceProductFormField.item_fields).
+message InsuranceProductFormItemField {
+    string name = 1;
+    string label = 2;
+    string type = 3;          // "text" | "number" | "monetary" | "select" | "image"
+    bool required = 4;
+    repeated string options = 5;
+    string placeholder = 6;
 }
 
 // MyCover.ai insurance product
@@ -355,6 +383,11 @@ message GetInsuranceCategoriesResponse {
     repeated InsuranceCategory categories = 1;
     bool success = 2;
     string msg = 3;
+    // Admin-set hosted terms & conditions URL surfaced to Flutter so
+    // the in-app webview bottom sheet on the Review step can load it.
+    // Source of truth: system_settings.insurance.mycover.terms_link.
+    // Empty when not configured — Flutter renders an unavailable state.
+    string terms_link = 4;
 }
 
 message GetInsuranceQuoteRequest {

@@ -10,8 +10,8 @@ import 'dart:core' as $core;
 import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $48;
-import 'account.pb.dart' as $0;
+import 'google/protobuf/timestamp.pb.dart' as $3;
+import 'account.pb.dart' as $1;
 
 import 'deposit.pbenum.dart';
 
@@ -25,6 +25,7 @@ class InitiateDepositRequest extends $pb.GeneratedMessage {
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'source_bank_name')
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'country_code')
     ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'locale')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'payment_method')
     ..hasRequiredFields = false
   ;
 
@@ -36,6 +37,7 @@ class InitiateDepositRequest extends $pb.GeneratedMessage {
     $core.String? sourceBankName,
     $core.String? countryCode,
     $core.String? locale,
+    $core.String? paymentMethod,
   }) {
     final _result = create();
     if (targetAccountId != null) {
@@ -55,6 +57,9 @@ class InitiateDepositRequest extends $pb.GeneratedMessage {
     }
     if (locale != null) {
       _result.locale = locale;
+    }
+    if (paymentMethod != null) {
+      _result.paymentMethod = paymentMethod;
     }
     return _result;
   }
@@ -132,6 +137,15 @@ class InitiateDepositRequest extends $pb.GeneratedMessage {
   $core.bool hasLocale() => $_has(5);
   @$pb.TagNumber(6)
   void clearLocale() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get paymentMethod => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set paymentMethod($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasPaymentMethod() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearPaymentMethod() => clearField(7);
 }
 
 class InitiateDepositResponse extends $pb.GeneratedMessage {
@@ -320,13 +334,13 @@ class GetDepositDetailsResponse extends $pb.GeneratedMessage {
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'source_bank_name')
     ..e<DepositStatus>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: DepositStatus.DEPOSIT_STATUS_UNSPECIFIED, valueOf: DepositStatus.valueOf, enumValues: DepositStatus.values)
-    ..aOM<$48.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'created_at', subBuilder: $48.Timestamp.create)
-    ..aOM<$48.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'processing_at', subBuilder: $48.Timestamp.create)
-    ..aOM<$48.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completed_at', subBuilder: $48.Timestamp.create)
-    ..aOM<$48.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failed_at', subBuilder: $48.Timestamp.create)
+    ..aOM<$3.Timestamp>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'created_at', subBuilder: $3.Timestamp.create)
+    ..aOM<$3.Timestamp>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'processing_at', subBuilder: $3.Timestamp.create)
+    ..aOM<$3.Timestamp>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completed_at', subBuilder: $3.Timestamp.create)
+    ..aOM<$3.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failed_at', subBuilder: $3.Timestamp.create)
     ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failure_reason')
     ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'external_transaction_id')
-    ..aOM<$0.AccountDetails>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updated_account', subBuilder: $0.AccountDetails.create)
+    ..aOM<$1.AccountDetails>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updated_account', subBuilder: $1.AccountDetails.create)
     ..hasRequiredFields = false
   ;
 
@@ -338,13 +352,13 @@ class GetDepositDetailsResponse extends $pb.GeneratedMessage {
     $core.String? currency,
     $core.String? sourceBankName,
     DepositStatus? status,
-    $48.Timestamp? createdAt,
-    $48.Timestamp? processingAt,
-    $48.Timestamp? completedAt,
-    $48.Timestamp? failedAt,
+    $3.Timestamp? createdAt,
+    $3.Timestamp? processingAt,
+    $3.Timestamp? completedAt,
+    $3.Timestamp? failedAt,
     $core.String? failureReason,
     $core.String? externalTransactionId,
-    $0.AccountDetails? updatedAccount,
+    $1.AccountDetails? updatedAccount,
   }) {
     final _result = create();
     if (depositId != null) {
@@ -464,48 +478,48 @@ class GetDepositDetailsResponse extends $pb.GeneratedMessage {
   void clearStatus() => clearField(6);
 
   @$pb.TagNumber(7)
-  $48.Timestamp get createdAt => $_getN(6);
+  $3.Timestamp get createdAt => $_getN(6);
   @$pb.TagNumber(7)
-  set createdAt($48.Timestamp v) { setField(7, v); }
+  set createdAt($3.Timestamp v) { setField(7, v); }
   @$pb.TagNumber(7)
   $core.bool hasCreatedAt() => $_has(6);
   @$pb.TagNumber(7)
   void clearCreatedAt() => clearField(7);
   @$pb.TagNumber(7)
-  $48.Timestamp ensureCreatedAt() => $_ensure(6);
+  $3.Timestamp ensureCreatedAt() => $_ensure(6);
 
   @$pb.TagNumber(8)
-  $48.Timestamp get processingAt => $_getN(7);
+  $3.Timestamp get processingAt => $_getN(7);
   @$pb.TagNumber(8)
-  set processingAt($48.Timestamp v) { setField(8, v); }
+  set processingAt($3.Timestamp v) { setField(8, v); }
   @$pb.TagNumber(8)
   $core.bool hasProcessingAt() => $_has(7);
   @$pb.TagNumber(8)
   void clearProcessingAt() => clearField(8);
   @$pb.TagNumber(8)
-  $48.Timestamp ensureProcessingAt() => $_ensure(7);
+  $3.Timestamp ensureProcessingAt() => $_ensure(7);
 
   @$pb.TagNumber(9)
-  $48.Timestamp get completedAt => $_getN(8);
+  $3.Timestamp get completedAt => $_getN(8);
   @$pb.TagNumber(9)
-  set completedAt($48.Timestamp v) { setField(9, v); }
+  set completedAt($3.Timestamp v) { setField(9, v); }
   @$pb.TagNumber(9)
   $core.bool hasCompletedAt() => $_has(8);
   @$pb.TagNumber(9)
   void clearCompletedAt() => clearField(9);
   @$pb.TagNumber(9)
-  $48.Timestamp ensureCompletedAt() => $_ensure(8);
+  $3.Timestamp ensureCompletedAt() => $_ensure(8);
 
   @$pb.TagNumber(10)
-  $48.Timestamp get failedAt => $_getN(9);
+  $3.Timestamp get failedAt => $_getN(9);
   @$pb.TagNumber(10)
-  set failedAt($48.Timestamp v) { setField(10, v); }
+  set failedAt($3.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasFailedAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearFailedAt() => clearField(10);
   @$pb.TagNumber(10)
-  $48.Timestamp ensureFailedAt() => $_ensure(9);
+  $3.Timestamp ensureFailedAt() => $_ensure(9);
 
   @$pb.TagNumber(11)
   $core.String get failureReason => $_getSZ(10);
@@ -526,104 +540,15 @@ class GetDepositDetailsResponse extends $pb.GeneratedMessage {
   void clearExternalTransactionId() => clearField(12);
 
   @$pb.TagNumber(13)
-  $0.AccountDetails get updatedAccount => $_getN(12);
+  $1.AccountDetails get updatedAccount => $_getN(12);
   @$pb.TagNumber(13)
-  set updatedAccount($0.AccountDetails v) { setField(13, v); }
+  set updatedAccount($1.AccountDetails v) { setField(13, v); }
   @$pb.TagNumber(13)
   $core.bool hasUpdatedAccount() => $_has(12);
   @$pb.TagNumber(13)
   void clearUpdatedAccount() => clearField(13);
   @$pb.TagNumber(13)
-  $0.AccountDetails ensureUpdatedAccount() => $_ensure(12);
-}
-
-class SimulateTestDepositRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SimulateTestDepositRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pb'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'destination_account_id')
-    ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
-    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'country_code')
-    ..hasRequiredFields = false
-  ;
-
-  SimulateTestDepositRequest._() : super();
-  factory SimulateTestDepositRequest({
-    $core.String? destinationAccountId,
-    $fixnum.Int64? amount,
-    $core.String? currency,
-    $core.String? countryCode,
-  }) {
-    final _result = create();
-    if (destinationAccountId != null) {
-      _result.destinationAccountId = destinationAccountId;
-    }
-    if (amount != null) {
-      _result.amount = amount;
-    }
-    if (currency != null) {
-      _result.currency = currency;
-    }
-    if (countryCode != null) {
-      _result.countryCode = countryCode;
-    }
-    return _result;
-  }
-  factory SimulateTestDepositRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory SimulateTestDepositRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  SimulateTestDepositRequest clone() => SimulateTestDepositRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  SimulateTestDepositRequest copyWith(void Function(SimulateTestDepositRequest) updates) => super.copyWith((message) => updates(message as SimulateTestDepositRequest)) as SimulateTestDepositRequest; // ignore: deprecated_member_use
-  $pb.BuilderInfo get info_ => _i;
-  @$core.pragma('dart2js:noInline')
-  static SimulateTestDepositRequest create() => SimulateTestDepositRequest._();
-  SimulateTestDepositRequest createEmptyInstance() => create();
-  static $pb.PbList<SimulateTestDepositRequest> createRepeated() => $pb.PbList<SimulateTestDepositRequest>();
-  @$core.pragma('dart2js:noInline')
-  static SimulateTestDepositRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SimulateTestDepositRequest>(create);
-  static SimulateTestDepositRequest? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.String get destinationAccountId => $_getSZ(0);
-  @$pb.TagNumber(1)
-  set destinationAccountId($core.String v) { $_setString(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasDestinationAccountId() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearDestinationAccountId() => clearField(1);
-
-  @$pb.TagNumber(2)
-  $fixnum.Int64 get amount => $_getI64(1);
-  @$pb.TagNumber(2)
-  set amount($fixnum.Int64 v) { $_setInt64(1, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasAmount() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearAmount() => clearField(2);
-
-  @$pb.TagNumber(3)
-  $core.String get currency => $_getSZ(2);
-  @$pb.TagNumber(3)
-  set currency($core.String v) { $_setString(2, v); }
-  @$pb.TagNumber(3)
-  $core.bool hasCurrency() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearCurrency() => clearField(3);
-
-  @$pb.TagNumber(4)
-  $core.String get countryCode => $_getSZ(3);
-  @$pb.TagNumber(4)
-  set countryCode($core.String v) { $_setString(3, v); }
-  @$pb.TagNumber(4)
-  $core.bool hasCountryCode() => $_has(3);
-  @$pb.TagNumber(4)
-  void clearCountryCode() => clearField(4);
+  $1.AccountDetails ensureUpdatedAccount() => $_ensure(12);
 }
 
 class GetDepositMethodsRequest extends $pb.GeneratedMessage {

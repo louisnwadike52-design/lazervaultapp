@@ -92,6 +92,7 @@ class AddFamilyMemberUseCase extends UseCase<FamilyMember, AddFamilyMemberParams
       allocationPercentageCap: params.allocationPercentageCap,
       role: params.role,
       personalMessage: params.personalMessage,
+      displayName: params.displayName,
     );
   }
 }
@@ -107,6 +108,7 @@ class AddFamilyMemberParams {
   final double allocationPercentageCap;
   final String role;
   final String? personalMessage;
+  final String? displayName;
 
   AddFamilyMemberParams({
     required this.familyId,
@@ -119,6 +121,7 @@ class AddFamilyMemberParams {
     required this.allocationPercentageCap,
     required this.role,
     this.personalMessage,
+    this.displayName,
   });
 }
 
@@ -480,5 +483,64 @@ class UpdateFundDistributionModeParams {
     required this.familyId,
     required this.fundDistributionMode,
     this.allocations = const [],
+  });
+}
+
+// ─── Invitation history use cases ──────────────────────────────────────
+
+class GetMyInvitationHistoryUseCase
+    extends UseCase<List<InvitationHistoryEntry>, GetMyInvitationHistoryParams> {
+  final FamilyAccountRepository repository;
+  GetMyInvitationHistoryUseCase(this.repository);
+
+  @override
+  Future<Either<Failure, List<InvitationHistoryEntry>>> call(
+      GetMyInvitationHistoryParams params) {
+    return repository.getMyInvitationHistory(
+      statusFilter: params.statusFilter,
+      page: params.page,
+      pageSize: params.pageSize,
+    );
+  }
+}
+
+class GetMyInvitationHistoryParams {
+  final String statusFilter;
+  final int page;
+  final int pageSize;
+  const GetMyInvitationHistoryParams({
+    this.statusFilter = '',
+    this.page = 1,
+    this.pageSize = 25,
+  });
+}
+
+class GetSentInvitationsUseCase
+    extends UseCase<List<SentInvitationEntry>, GetSentInvitationsParams> {
+  final FamilyAccountRepository repository;
+  GetSentInvitationsUseCase(this.repository);
+
+  @override
+  Future<Either<Failure, List<SentInvitationEntry>>> call(
+      GetSentInvitationsParams params) {
+    return repository.getSentInvitations(
+      familyId: params.familyId,
+      statusFilter: params.statusFilter,
+      page: params.page,
+      pageSize: params.pageSize,
+    );
+  }
+}
+
+class GetSentInvitationsParams {
+  final String? familyId;
+  final String statusFilter;
+  final int page;
+  final int pageSize;
+  const GetSentInvitationsParams({
+    this.familyId,
+    this.statusFilter = '',
+    this.page = 1,
+    this.pageSize = 25,
   });
 }

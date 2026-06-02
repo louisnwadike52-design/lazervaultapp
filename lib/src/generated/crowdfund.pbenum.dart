@@ -15,6 +15,8 @@ class CrowdfundStatus extends $pb.ProtobufEnum {
   static const CrowdfundStatus CROWDFUND_STATUS_PAUSED = CrowdfundStatus._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'CROWDFUND_STATUS_PAUSED');
   static const CrowdfundStatus CROWDFUND_STATUS_COMPLETED = CrowdfundStatus._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'CROWDFUND_STATUS_COMPLETED');
   static const CrowdfundStatus CROWDFUND_STATUS_CANCELLED = CrowdfundStatus._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'CROWDFUND_STATUS_CANCELLED');
+  static const CrowdfundStatus CROWDFUND_STATUS_CANCELLING = CrowdfundStatus._(5, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'CROWDFUND_STATUS_CANCELLING');
+  static const CrowdfundStatus CROWDFUND_STATUS_EXPIRED = CrowdfundStatus._(6, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'CROWDFUND_STATUS_EXPIRED');
 
   static const $core.List<CrowdfundStatus> values = <CrowdfundStatus> [
     CROWDFUND_STATUS_UNSPECIFIED,
@@ -22,6 +24,8 @@ class CrowdfundStatus extends $pb.ProtobufEnum {
     CROWDFUND_STATUS_PAUSED,
     CROWDFUND_STATUS_COMPLETED,
     CROWDFUND_STATUS_CANCELLED,
+    CROWDFUND_STATUS_CANCELLING,
+    CROWDFUND_STATUS_EXPIRED,
   ];
 
   static final $core.Map<$core.int, CrowdfundStatus> _byValue = $pb.ProtobufEnum.initByValue(values);

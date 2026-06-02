@@ -9,7 +9,7 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $48;
+import 'google/protobuf/timestamp.pb.dart' as $49;
 
 import 'split_bill.pbenum.dart';
 
@@ -32,8 +32,8 @@ class SplitBill extends $pb.GeneratedMessage {
     ..a<$core.int>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paidCount', $pb.PbFieldType.O3)
     ..a<$core.double>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paidAmount', $pb.PbFieldType.OD)
     ..pc<SplitBillParticipant>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'participants', $pb.PbFieldType.PM, subBuilder: SplitBillParticipant.create)
-    ..aOM<$48.Timestamp>(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $48.Timestamp.create)
-    ..aOM<$48.Timestamp>(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $48.Timestamp.create)
+    ..aOM<$49.Timestamp>(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $49.Timestamp.create)
+    ..aOM<$49.Timestamp>(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $49.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -54,8 +54,8 @@ class SplitBill extends $pb.GeneratedMessage {
     $core.int? paidCount,
     $core.double? paidAmount,
     $core.Iterable<SplitBillParticipant>? participants,
-    $48.Timestamp? createdAt,
-    $48.Timestamp? updatedAt,
+    $49.Timestamp? createdAt,
+    $49.Timestamp? updatedAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -262,26 +262,26 @@ class SplitBill extends $pb.GeneratedMessage {
   $core.List<SplitBillParticipant> get participants => $_getList(14);
 
   @$pb.TagNumber(16)
-  $48.Timestamp get createdAt => $_getN(15);
+  $49.Timestamp get createdAt => $_getN(15);
   @$pb.TagNumber(16)
-  set createdAt($48.Timestamp v) { setField(16, v); }
+  set createdAt($49.Timestamp v) { setField(16, v); }
   @$pb.TagNumber(16)
   $core.bool hasCreatedAt() => $_has(15);
   @$pb.TagNumber(16)
   void clearCreatedAt() => clearField(16);
   @$pb.TagNumber(16)
-  $48.Timestamp ensureCreatedAt() => $_ensure(15);
+  $49.Timestamp ensureCreatedAt() => $_ensure(15);
 
   @$pb.TagNumber(17)
-  $48.Timestamp get updatedAt => $_getN(16);
+  $49.Timestamp get updatedAt => $_getN(16);
   @$pb.TagNumber(17)
-  set updatedAt($48.Timestamp v) { setField(17, v); }
+  set updatedAt($49.Timestamp v) { setField(17, v); }
   @$pb.TagNumber(17)
   $core.bool hasUpdatedAt() => $_has(16);
   @$pb.TagNumber(17)
   void clearUpdatedAt() => clearField(17);
   @$pb.TagNumber(17)
-  $48.Timestamp ensureUpdatedAt() => $_ensure(16);
+  $49.Timestamp ensureUpdatedAt() => $_ensure(16);
 }
 
 class SplitBillParticipant extends $pb.GeneratedMessage {
@@ -295,7 +295,7 @@ class SplitBillParticipant extends $pb.GeneratedMessage {
     ..a<$core.double>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'percentage', $pb.PbFieldType.OD)
     ..e<SplitBillParticipantStatus>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: SplitBillParticipantStatus.SPLIT_BILL_PARTICIPANT_STATUS_PENDING, valueOf: SplitBillParticipantStatus.valueOf, enumValues: SplitBillParticipantStatus.values)
     ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionReference')
-    ..aOM<$48.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paidAt', subBuilder: $48.Timestamp.create)
+    ..aOM<$49.Timestamp>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paidAt', subBuilder: $49.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -310,7 +310,7 @@ class SplitBillParticipant extends $pb.GeneratedMessage {
     $core.double? percentage,
     SplitBillParticipantStatus? status,
     $core.String? transactionReference,
-    $48.Timestamp? paidAt,
+    $49.Timestamp? paidAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -448,15 +448,15 @@ class SplitBillParticipant extends $pb.GeneratedMessage {
   void clearTransactionReference() => clearField(9);
 
   @$pb.TagNumber(10)
-  $48.Timestamp get paidAt => $_getN(9);
+  $49.Timestamp get paidAt => $_getN(9);
   @$pb.TagNumber(10)
-  set paidAt($48.Timestamp v) { setField(10, v); }
+  set paidAt($49.Timestamp v) { setField(10, v); }
   @$pb.TagNumber(10)
   $core.bool hasPaidAt() => $_has(9);
   @$pb.TagNumber(10)
   void clearPaidAt() => clearField(10);
   @$pb.TagNumber(10)
-  $48.Timestamp ensurePaidAt() => $_ensure(9);
+  $49.Timestamp ensurePaidAt() => $_ensure(9);
 }
 
 class SplitBillParticipantInput extends $pb.GeneratedMessage {
@@ -548,8 +548,8 @@ class SplitBillTransaction extends $pb.GeneratedMessage {
     ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
     ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
     ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reference')
-    ..aOM<$48.Timestamp>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $48.Timestamp.create)
-    ..aOM<$48.Timestamp>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completedAt', subBuilder: $48.Timestamp.create)
+    ..aOM<$49.Timestamp>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $49.Timestamp.create)
+    ..aOM<$49.Timestamp>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completedAt', subBuilder: $49.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -567,8 +567,8 @@ class SplitBillTransaction extends $pb.GeneratedMessage {
     $core.String? description,
     $core.String? status,
     $core.String? reference,
-    $48.Timestamp? createdAt,
-    $48.Timestamp? completedAt,
+    $49.Timestamp? createdAt,
+    $49.Timestamp? completedAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -745,26 +745,26 @@ class SplitBillTransaction extends $pb.GeneratedMessage {
   void clearReference() => clearField(12);
 
   @$pb.TagNumber(13)
-  $48.Timestamp get createdAt => $_getN(12);
+  $49.Timestamp get createdAt => $_getN(12);
   @$pb.TagNumber(13)
-  set createdAt($48.Timestamp v) { setField(13, v); }
+  set createdAt($49.Timestamp v) { setField(13, v); }
   @$pb.TagNumber(13)
   $core.bool hasCreatedAt() => $_has(12);
   @$pb.TagNumber(13)
   void clearCreatedAt() => clearField(13);
   @$pb.TagNumber(13)
-  $48.Timestamp ensureCreatedAt() => $_ensure(12);
+  $49.Timestamp ensureCreatedAt() => $_ensure(12);
 
   @$pb.TagNumber(14)
-  $48.Timestamp get completedAt => $_getN(13);
+  $49.Timestamp get completedAt => $_getN(13);
   @$pb.TagNumber(14)
-  set completedAt($48.Timestamp v) { setField(14, v); }
+  set completedAt($49.Timestamp v) { setField(14, v); }
   @$pb.TagNumber(14)
   $core.bool hasCompletedAt() => $_has(13);
   @$pb.TagNumber(14)
   void clearCompletedAt() => clearField(14);
   @$pb.TagNumber(14)
-  $48.Timestamp ensureCompletedAt() => $_ensure(13);
+  $49.Timestamp ensureCompletedAt() => $_ensure(13);
 }
 
 class CreateSplitBillRequest extends $pb.GeneratedMessage {

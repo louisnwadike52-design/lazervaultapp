@@ -4,6 +4,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../../../../../core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import '../cubit/airtime_cubit.dart';
 import '../widgets/quick_actions_card.dart';
 import '../widgets/recent_transactions_card.dart';
@@ -608,6 +610,23 @@ class _AirtimeScreenState extends State<AirtimeScreen> {
                 ),
               ],
             ),
+          ),
+          // Per-bill voice + chat icons — pin every session opened
+          // from this screen to the airtime flow on
+          // chat-products-service (DIRECT_ROUTES['airtime'] →
+          // primary 'utility'). Overrides the previous "bills hub
+          // only" decision per #210.
+          ServiceVoiceButton(
+            serviceName: 'airtime',
+            iconColor: _buyColor,
+            backgroundColor: _buyColor,
+          ),
+          SizedBox(width: 8.w),
+          MicroserviceChatIcon(
+            serviceName: 'Airtime',
+            sourceContext: 'airtime',
+            icon: Icons.chat_bubble_outline,
+            iconColor: _buyColor,
           ),
         ],
       ),

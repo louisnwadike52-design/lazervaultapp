@@ -122,6 +122,8 @@ class TransferCubit extends Cubit<TransferState> {
     required String description,
     required String transactionId,
     required String verificationToken,
+    String? destinationBankCode,        // External: bank code from recipient.sortCode
+    String? beneficiaryName,            // External: recipient name on bank account
     DateTime? scheduledAt,
     double? availableBalance,          // Source account available balance (major units)
     int? expenseCategory,              // Budget category enum value selected by user
@@ -148,6 +150,8 @@ class TransferCubit extends Cubit<TransferState> {
         description: description,
         transactionId: transactionId,
         verificationToken: verificationToken,
+        destinationBankCode: destinationBankCode,
+        beneficiaryName: beneficiaryName,
         scheduledAt: scheduledAt,
         expenseCategory: expenseCategory,
       );
@@ -155,7 +159,14 @@ class TransferCubit extends Cubit<TransferState> {
       if (isClosed) return;
 
       if (result.success) {
-        emit(TransferSuccess(response: _toEntity(result)));
+        // External transfers go through Flutterwave hold-then-capture: the
+        // backend returns immediately with status="pending" or "processing"
+        // and the webhook drives the terminal transition. The receipt screen
+        // uses isInFlight to render a Processing badge and listens on the
+        // balance WebSocket for the terminal Success/Failure event.
+        final status = result.status?.toLowerCase() ?? '';
+        final isInFlight = type == 'external' && (status == 'pending' || status == 'processing');
+        emit(TransferSuccess(response: _toEntity(result), isInFlight: isInFlight));
       } else {
         emit(TransferFailure(message: result.errorMessage ?? 'Transfer failed'));
       }

@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/debouncer.dart';
 import 'package:lazervault/src/features/customers/domain/entities/customer_entity.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import '../cubit/customer_cubit.dart';
 import '../cubit/customer_state.dart';
 
@@ -103,6 +105,26 @@ class _CustomerListScreenState extends State<CustomerListScreen> {
           ),
         ),
         centerTitle: true,
+        actions: [
+          // Per-service voice + chat icons — pin every voice/chat
+          // session opened from this screen to the customers CRM
+          // flow on chat-business-service (DIRECT_ROUTES['customers']
+          // → SERVICE_AGENTS['customers']). Same pattern as crowdfund,
+          // autosave, lock-funds, tax.
+          ServiceVoiceButton(
+            serviceName: 'customers',
+            iconColor: const Color(0xFF3B82F6),
+            backgroundColor: const Color(0xFF3B82F6),
+          ),
+          SizedBox(width: 8.w),
+          MicroserviceChatIcon(
+            serviceName: 'Customers',
+            sourceContext: 'customers',
+            icon: Icons.chat_bubble_outline,
+            iconColor: const Color(0xFF3B82F6),
+          ),
+          SizedBox(width: 12.w),
+        ],
       ),
       body: SafeArea(
         child: Column(

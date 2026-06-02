@@ -22,13 +22,16 @@ import 'package:lazervault/src/generated/accounts.pbgrpc.dart' as accounts_grpc;
 import '../cubit/exchange_cubit.dart';
 import '../cubit/exchange_state.dart';
 import '../theme/exchange_theme.dart';
+import '../utils/exchange_error_classifier.dart';
 import '../widgets/currency_pair_selector.dart';
 import '../widgets/exchange_mode_toggle.dart';
 import '../widgets/exchange_history_actions_sheet.dart';
 import '../widgets/exchange_transaction_tile.dart';
 import '../widgets/fee_breakdown_widget.dart';
 import '../widgets/quick_amount_buttons.dart';
+import '../widgets/source_currency_picker.dart';
 import '../../domain/repositories/i_exchange_repository.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ExchangeHomeScreen extends StatefulWidget {
   const ExchangeHomeScreen({super.key});
@@ -54,6 +57,15 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
   bool _isPrimaryActionInProgress = false;
   Timer? _amountDebounce;
 
+  // SharedPreferences keys for per-flow source-currency stickiness. The user's
+  // last "Send from" choice is restored on next entry to the exchange flow so
+  // multi-currency users don't reselect NGN every time. Defaults to NGN when
+  // no prior selection (matches pre-#112 behaviour).
+  static const _prefsKeySourceConvert =
+      'last_exchange_source_currency_conversion';
+  static const _prefsKeySourceInternational =
+      'last_exchange_source_currency_international';
+
   @override
   void initState() {
     super.initState();
@@ -71,6 +83,42 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
     }
     cubit.loadHome();
     _amountController.addListener(_onAmountChanged);
+    // Restore the last-used source currency for the active mode (best
+    // effort; ignored if SharedPreferences fails or no prior choice exists).
+    _restoreLastSourceCurrency();
+  }
+
+  Future<void> _restoreLastSourceCurrency() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final key = _mode == ExchangeMode.convert
+          ? _prefsKeySourceConvert
+          : _prefsKeySourceInternational;
+      final stored = prefs.getString(key);
+      if (stored == null || stored.isEmpty) return;
+      if (!mounted) return;
+      final cubit = context.read<ExchangeCubit>();
+      if (stored.toUpperCase() == cubit.fromCurrency.toUpperCase()) return;
+      // Avoid bouncing into an invalid pair (source == destination).
+      if (stored.toUpperCase() == cubit.toCurrency.toUpperCase()) return;
+      cubit.setCurrencyPair(stored.toUpperCase(), cubit.toCurrency);
+      // Refresh rate against the restored source.
+      await _fetchRate();
+    } catch (_) {
+      // Ignore — defaulting to NGN is fine when prefs are unavailable.
+    }
+  }
+
+  Future<void> _persistSourceCurrency(String code) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final key = _mode == ExchangeMode.convert
+          ? _prefsKeySourceConvert
+          : _prefsKeySourceInternational;
+      await prefs.setString(key, code.toUpperCase());
+    } catch (_) {
+      // Persistence failure is benign — just doesn't stick across launches.
+    }
   }
 
   @override
@@ -100,6 +148,9 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
   void _onModeChanged(ExchangeMode mode) {
     setState(() => _mode = mode);
     context.read<ExchangeCubit>().setMode(mode);
+    // Each flow type owns its own source-currency stickiness, so reapply
+    // the stored choice for the newly active mode (best effort).
+    _restoreLastSourceCurrency();
   }
 
   Future<void> _fetchRate() async {
@@ -118,6 +169,10 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
   void _onSwapCurrencies() {
     final cubit = context.read<ExchangeCubit>();
     cubit.swapCurrencies();
+    // Persist the new source so it sticks across sessions per the active
+    // flow type. Fire-and-forget — failure is benign (just doesn't survive
+    // restart).
+    _persistSourceCurrency(cubit.fromCurrency);
     _fetchRate();
   }
 
@@ -126,6 +181,22 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
     final currencies = cubit.supportedCurrencies;
     if (currencies.isEmpty) return;
 
+    // Source picker uses the dedicated wallet-aware sheet (#112): only shows
+    // currencies the user actually has a balance > 0 in, with an empty-state
+    // CTA when they only have NGN. Destination picker stays on the legacy
+    // supports-conversion / supports-international filter.
+    if (isFrom) {
+      _showSourceCurrencyPicker(cubit, currencies);
+      return;
+    }
+
+    // TODO(#114): swap to corridor-aware filtering once the corridor-matrix
+    // RPC is exposed on ExchangeServiceClient. Today we filter by the
+    // capability flags from GetSupportedCurrencies (supportsConversion /
+    // supportsInternational) and exclude the source via `excludeCode`. The
+    // corridor matrix will give us a per-(source,destination) pairs list so
+    // we can drop pairs that the backend would 400 (e.g. USD -> KES bridges
+    // that aren't live).
     final filtered = _mode == ExchangeMode.convert
         ? currencies.where((c) => c.supportsConversion).toList()
         : currencies.where((c) => c.supportsInternational).toList();
@@ -139,21 +210,37 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
       ),
       builder: (ctx) => _CurrencyPickerSheet(
         currencies: filtered,
-        selectedCode: isFrom ? cubit.fromCurrency : cubit.toCurrency,
-        excludeCode: isFrom ? cubit.toCurrency : cubit.fromCurrency,
-        title:
-            isFrom ? 'Select Source Currency' : 'Select Destination Currency',
+        selectedCode: cubit.toCurrency,
+        excludeCode: cubit.fromCurrency,
+        title: 'Select Destination Currency',
         onSelected: (code) {
-          if (isFrom) {
-            cubit.setCurrencyPair(code, cubit.toCurrency);
-          } else {
-            cubit.setCurrencyPair(cubit.fromCurrency, code);
-          }
+          cubit.setCurrencyPair(cubit.fromCurrency, code);
           Navigator.of(ctx).pop();
           _fetchRate();
         },
       ),
     );
+  }
+
+  Future<void> _showSourceCurrencyPicker(
+    ExchangeCubit cubit,
+    List<SupportedCurrencyInfo> currencies,
+  ) async {
+    final picked = await SourceCurrencyPicker.show(
+      context,
+      currentCode: cubit.fromCurrency,
+      supportedCurrencies: currencies,
+    );
+    if (picked == null || picked.isEmpty || !mounted) return;
+    if (picked.toUpperCase() == cubit.toCurrency.toUpperCase()) {
+      // User picked a source that matches the destination — flip the
+      // destination to the prior source so we never end up source == dest.
+      cubit.setCurrencyPair(picked, cubit.fromCurrency);
+    } else {
+      cubit.setCurrencyPair(picked, cubit.toCurrency);
+    }
+    await _persistSourceCurrency(picked);
+    await _fetchRate();
   }
 
   Future<void> _onPrimaryAction() async {
@@ -640,6 +727,11 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
   }
 
   Widget _buildErrorState(String message) {
+    // Classify the raw backend error into a kind + headline + detail so
+    // the user sees an actionable message ("Send at least 6.00 USD")
+    // instead of a leaky log line. See
+    // currency_exchange/presentation/utils/exchange_error_classifier.dart.
+    final view = classifyExchangeError(message);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -649,7 +741,16 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
             const Icon(Icons.error_outline, color: Color(0xFFEF4444), size: 48),
             const SizedBox(height: 16),
             Text(
-              message,
+              view.headline,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              view.detail,
               textAlign: TextAlign.center,
               style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
             ),
@@ -661,7 +762,8 @@ class _ExchangeHomeScreenState extends State<ExchangeHomeScreen>
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
               ),
-              child: const Text('Retry', style: TextStyle(color: Colors.white)),
+              child: Text(view.cta ?? 'Retry',
+                  style: const TextStyle(color: Colors.white)),
             ),
           ],
         ),

@@ -8,6 +8,13 @@ class SecureStorageService {
   static const String _keyHasPasscode = 'has_passcode';
   static const String _keyAccessToken = 'access_token';
   static const String _keyRefreshToken = 'refresh_token';
+  // BVN / NIN. PII so we keep them encrypted-at-rest (FlutterSecureStorage
+  // uses Keychain on iOS + EncryptedSharedPreferences on Android). Written
+  // by the KYC verification flow on successful tier-2 verification, read
+  // by the insurance purchase form's auto-fill so users don't retype.
+  // Cleared by `deleteIdentityNumbers` on logout (called from clearAll).
+  static const String _keyBvn = 'kyc_bvn';
+  static const String _keyNin = 'kyc_nin';
 
   final FlutterSecureStorage _storage;
 
@@ -69,6 +76,38 @@ class SecureStorageService {
   Future<void> deleteTokens() async {
     await _storage.delete(key: _keyAccessToken);
     await _storage.delete(key: _keyRefreshToken);
+  }
+
+  // ─── Identity numbers (BVN / NIN) ─────────────────────────────────────
+  // Both are 11-digit Nigerian identity numbers. Stored only after a
+  // successful KYC verification — the user typed them once during
+  // BVN/Mono onboarding and we cache them encrypted so the insurance
+  // purchase form can pre-fill the same value instead of asking the
+  // user to retype. The form keeps the field editable so the user can
+  // override (e.g. if they're buying for someone else).
+
+  Future<void> saveBvn(String bvn) async {
+    final trimmed = bvn.trim();
+    if (trimmed.isEmpty) return;
+    await _storage.write(key: _keyBvn, value: trimmed);
+  }
+
+  Future<String?> getBvn() async => _storage.read(key: _keyBvn);
+
+  Future<void> saveNin(String nin) async {
+    final trimmed = nin.trim();
+    if (trimmed.isEmpty) return;
+    await _storage.write(key: _keyNin, value: trimmed);
+  }
+
+  Future<String?> getNin() async => _storage.read(key: _keyNin);
+
+  /// Wipe identity numbers. Called from `clearAll` (logout) and exposed
+  /// independently so a future "revoke KYC" action can clear the cache
+  /// without touching tokens.
+  Future<void> deleteIdentityNumbers() async {
+    await _storage.delete(key: _keyBvn);
+    await _storage.delete(key: _keyNin);
   }
 
   // Clear all data

@@ -1310,8 +1310,8 @@ class AppRouter {
             : args.isNotEmpty
                 ? args
                 : <String, dynamic>{};
-        return BlocProvider(
-          create: (_) => serviceLocator<DepositCubit>(),
+        return BlocProvider.value(
+          value: serviceLocator<DepositCubit>(),
           child: serviceLocator<DepositFundsScreen>(param1: selectedCard),
         );
       },

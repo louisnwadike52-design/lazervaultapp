@@ -60,6 +60,23 @@ abstract class FamilyAccountRemoteDataSource {
     required String fundDistributionMode,
     List<MemberAllocationProto> allocations = const [],
   });
+
+  /// Invitee-side invitation history. statusFilter ∈
+  /// {all, pending, accepted, declined, expired, removed}. Empty = all.
+  Future<List<InvitationHistoryEntryProto>> getMyInvitationHistory({
+    String statusFilter = '',
+    int page = 1,
+    int pageSize = 25,
+  });
+
+  /// Inviter-side history of invitations sent across every family the
+  /// caller admins. Optional familyId narrows to a single family.
+  Future<List<SentInvitationEntryProto>> getSentInvitations({
+    String? familyId,
+    String statusFilter = '',
+    int page = 1,
+    int pageSize = 25,
+  });
 }
 
 class FamilyAccountRemoteDataSourceImpl implements FamilyAccountRemoteDataSource {
@@ -938,4 +955,22 @@ class FamilyAccountRemoteDataSourceImpl implements FamilyAccountRemoteDataSource
       );
     }
   }
+
+  // The mock datasource doesn't track history — the real implementation
+  // lives in the gRPC datasource. Returning [] keeps any local-only test
+  // harness compiling without lying about content.
+  @override
+  Future<List<InvitationHistoryEntryProto>> getMyInvitationHistory({
+    String statusFilter = '',
+    int page = 1,
+    int pageSize = 25,
+  }) async => [];
+
+  @override
+  Future<List<SentInvitationEntryProto>> getSentInvitations({
+    String? familyId,
+    String statusFilter = '',
+    int page = 1,
+    int pageSize = 25,
+  }) async => [];
 }

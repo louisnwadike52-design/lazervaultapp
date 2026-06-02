@@ -9,7 +9,7 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $48;
+import 'google/protobuf/timestamp.pb.dart' as $49;
 
 import 'chat.pbenum.dart';
 
@@ -21,7 +21,7 @@ class ChatMessage extends $pb.GeneratedMessage {
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'senderUserId')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receiverUserId')
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'content')
-    ..aOM<$48.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'timestamp', subBuilder: $48.Timestamp.create)
+    ..aOM<$49.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'timestamp', subBuilder: $49.Timestamp.create)
     ..e<MessageType>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'messageType', $pb.PbFieldType.OE, defaultOrMaker: MessageType.TEXT, valueOf: MessageType.valueOf, enumValues: MessageType.values)
     ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'attachmentUrl')
     ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'replyToMessageId')
@@ -34,7 +34,7 @@ class ChatMessage extends $pb.GeneratedMessage {
     $core.String? senderUserId,
     $core.String? receiverUserId,
     $core.String? content,
-    $48.Timestamp? timestamp,
+    $49.Timestamp? timestamp,
     MessageType? messageType,
     $core.String? attachmentUrl,
     $core.String? replyToMessageId,
@@ -124,15 +124,15 @@ class ChatMessage extends $pb.GeneratedMessage {
   void clearContent() => clearField(4);
 
   @$pb.TagNumber(5)
-  $48.Timestamp get timestamp => $_getN(4);
+  $49.Timestamp get timestamp => $_getN(4);
   @$pb.TagNumber(5)
-  set timestamp($48.Timestamp v) { setField(5, v); }
+  set timestamp($49.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasTimestamp() => $_has(4);
   @$pb.TagNumber(5)
   void clearTimestamp() => clearField(5);
   @$pb.TagNumber(5)
-  $48.Timestamp ensureTimestamp() => $_ensure(4);
+  $49.Timestamp ensureTimestamp() => $_ensure(4);
 
   @$pb.TagNumber(6)
   MessageType get messageType => $_getN(5);

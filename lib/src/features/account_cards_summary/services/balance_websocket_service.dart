@@ -43,20 +43,25 @@ class BalanceUpdateEvent {
   });
 
   factory BalanceUpdateEvent.fromJson(Map<String, dynamic> json) {
+    // new_balance / available_balance default to 0 for events that don't
+    // carry a balance snapshot — e.g. insurance_policy_renewed,
+    // insurance_claim_status_changed. Those events still need to flow
+    // through the same parser so we route them downstream.
+    double n(dynamic v) => v == null ? 0.0 : (v as num).toDouble();
     return BalanceUpdateEvent(
-      userId: json['user_id'] as String,
-      accountId: json['account_id'] as String,
+      userId: json['user_id'] as String? ?? '',
+      accountId: json['account_id'] as String? ?? '',
       countryCode: json['country_code'] as String? ?? '',
-      newBalance: (json['new_balance'] as num).toDouble(),
-      availableBalance: (json['available_balance'] as num).toDouble(),
-      currency: json['currency'] as String,
-      eventType: json['event_type'] as String,
+      newBalance: n(json['new_balance']),
+      availableBalance: n(json['available_balance']),
+      currency: json['currency'] as String? ?? '',
+      eventType: json['event_type'] as String? ?? '',
       transactionId: json['transaction_id'] as String?,
       reference: json['reference'] as String?,
       amount: json['amount'] != null ? (json['amount'] as num).toDouble() : null,
       narration: json['narration'] as String?,
       status: json['status'] as String? ?? 'completed',
-      timestamp: json['timestamp'] as int,
+      timestamp: (json['timestamp'] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -64,6 +69,94 @@ class BalanceUpdateEvent {
   String toString() {
     return 'BalanceUpdateEvent(userId: $userId, accountId: $accountId, newBalance: $newBalance, eventType: $eventType, status: $status)';
   }
+}
+
+/// Insurance lifecycle event pushed from ws-balance-service.
+/// Covers both purchase saga transitions (completed/failed/refunded/
+/// refund_failed) and post-purchase events (policy_renewed). The
+/// distinguishing fields are `eventType` (the wire string) and
+/// `purchaseId` (the InsurancePurchase.ID — Flutter cubits filter on
+/// this when they need to react to a specific policy).
+class InsurancePurchaseEvent {
+  final String userId;
+  final String purchaseId; // transaction_id on the wire
+  final String eventType;  // insurance_purchase_completed | ... | insurance_policy_renewed
+  final String status;     // pending | processing | completed | failed | renewed
+  final String reference;  // policy number for renewals, purchase ref otherwise
+  final String narration;  // free-form: new expiry ISO for renewals, error msg for failures
+  final double amount;
+  final String currency;
+  final int timestamp;
+
+  InsurancePurchaseEvent({
+    required this.userId,
+    required this.purchaseId,
+    required this.eventType,
+    required this.status,
+    required this.reference,
+    required this.narration,
+    required this.amount,
+    required this.currency,
+    required this.timestamp,
+  });
+
+  factory InsurancePurchaseEvent.fromBalanceEvent(BalanceUpdateEvent b) {
+    return InsurancePurchaseEvent(
+      userId: b.userId,
+      purchaseId: b.transactionId ?? '',
+      eventType: b.eventType,
+      status: b.status,
+      reference: b.reference ?? '',
+      narration: b.narration ?? '',
+      amount: b.amount ?? 0.0,
+      currency: b.currency,
+      timestamp: b.timestamp,
+    );
+  }
+
+  bool get isRenewal => eventType == 'insurance_policy_renewed';
+  bool get isPurchaseTerminal =>
+      eventType == 'insurance_purchase_completed' ||
+      eventType == 'insurance_purchase_failed' ||
+      eventType == 'insurance_purchase_refunded' ||
+      eventType == 'insurance_purchase_refund_failed';
+
+  @override
+  String toString() =>
+      'InsurancePurchaseEvent($eventType purchase=$purchaseId status=$status)';
+}
+
+/// Insurance claim status event pushed by the claim reconciler when
+/// MyCover advances a claim to approved / rejected / settled. The
+/// transaction_id field carries the claim ID.
+class InsuranceClaimEvent {
+  final String userId;
+  final String claimId;
+  final String status;    // approved | rejected | settled | etc.
+  final String narration; // upstream label / reason text
+  final int timestamp;
+
+  InsuranceClaimEvent({
+    required this.userId,
+    required this.claimId,
+    required this.status,
+    required this.narration,
+    required this.timestamp,
+  });
+
+  factory InsuranceClaimEvent.fromBalanceEvent(BalanceUpdateEvent b) {
+    return InsuranceClaimEvent(
+      userId: b.userId,
+      claimId: b.transactionId ?? '',
+      status: b.status,
+      narration: b.narration ?? '',
+      timestamp: b.timestamp,
+    );
+  }
+
+  @override
+  String toString() =>
+      'InsuranceClaimEvent(claim=$claimId status=$status)';
 }
 
 /// Connection states for WebSocket
@@ -136,6 +229,13 @@ class BalanceWebSocketService {
   final _eventController = StreamController<BalanceUpdateEvent>.broadcast();
   final _lockFundEventController =
       StreamController<LockFundLifecycleEvent>.broadcast();
+  // Dedicated insurance streams. Cubits subscribe here instead of
+  // filtering balance updates by event_type prefix; keeps the call
+  // sites tidy and the wire format isolated from consumers.
+  final _insurancePurchaseEventController =
+      StreamController<InsurancePurchaseEvent>.broadcast();
+  final _insuranceClaimEventController =
+      StreamController<InsuranceClaimEvent>.broadcast();
   final _connectionController = StreamController<WebSocketConnectionState>.broadcast();
   Timer? _pingTimer;
   bool _isConnected = false;
@@ -156,6 +256,18 @@ class BalanceWebSocketService {
   /// (created / matured / renewed / renewal_skipped).
   Stream<LockFundLifecycleEvent> get lockFundEvents =>
       _lockFundEventController.stream;
+
+  /// Stream of insurance purchase / renewal lifecycle events. Consumed
+  /// by `InsuranceCubit` to refresh the policy list when a purchase
+  /// completes or a renewal lands without waiting for a pull-to-refresh.
+  Stream<InsurancePurchaseEvent> get insurancePurchaseEvents =>
+      _insurancePurchaseEventController.stream;
+
+  /// Stream of insurance claim status events. Consumed by
+  /// `MyClaimsCubit` to refresh the claims list when the reconciler
+  /// advances a claim to a terminal state on MyCover's side.
+  Stream<InsuranceClaimEvent> get insuranceClaimEvents =>
+      _insuranceClaimEventController.stream;
 
   /// Stream of connection state changes
   Stream<WebSocketConnectionState> get connectionState => _connectionController.stream;
@@ -406,6 +518,10 @@ class BalanceWebSocketService {
           final event = BalanceUpdateEvent.fromJson(payload);
           print('BalanceWebSocketService: Received balance update - $event');
           _eventController.add(event);
+          // Fan out to the insurance-specific streams when the wire
+          // event_type matches. Cubits subscribe to those rather than
+          // filtering balance updates by prefix.
+          _maybeRouteInsuranceEvent(event);
         }
         return;
       }
@@ -459,6 +575,33 @@ class BalanceWebSocketService {
     }
   }
 
+  /// Test-only hook: inject a wire-shaped payload as if it had arrived
+  /// over the socket. Used by `test/features/insurance/insurance_cubit_ws_test.dart`
+  /// to exercise the cubit subscriptions without standing up a real
+  /// ws-balance-service. Mirrors the routing inside [_handleMessage] but
+  /// skips the JSON decode + envelope check.
+  void testInjectBalanceEvent(Map<String, dynamic> payload) {
+    final event = BalanceUpdateEvent.fromJson(payload);
+    _eventController.add(event);
+    _maybeRouteInsuranceEvent(event);
+  }
+
+  /// Fan a parsed `BalanceUpdateEvent` out to the insurance-specific
+  /// streams when the wire `event_type` matches. Safe to call for any
+  /// event — the routing is keyed off the string prefix and unknown
+  /// types are simply ignored.
+  void _maybeRouteInsuranceEvent(BalanceUpdateEvent event) {
+    final t = event.eventType;
+    if (t.startsWith('insurance_purchase_') ||
+        t == 'insurance_policy_renewed') {
+      _insurancePurchaseEventController
+          .add(InsurancePurchaseEvent.fromBalanceEvent(event));
+    } else if (t == 'insurance_claim_status_changed') {
+      _insuranceClaimEventController
+          .add(InsuranceClaimEvent.fromBalanceEvent(event));
+    }
+  }
+
   /// Handle WebSocket error
   void _handleError(error) {
     print('BalanceWebSocketService: WebSocket error - $error');
@@ -478,6 +621,8 @@ class BalanceWebSocketService {
     disconnect();
     _eventController.close();
     _lockFundEventController.close();
+    _insurancePurchaseEventController.close();
+    _insuranceClaimEventController.close();
     _connectionController.close();
   }
 

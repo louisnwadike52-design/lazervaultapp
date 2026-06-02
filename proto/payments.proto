@@ -243,6 +243,22 @@ service PaymentsService {
     };
   }
 
+  // Informational, READ-ONLY transfer success prediction for an EXTERNAL
+  // (other-bank) transfer. Shown on the confirmation screen before PIN entry.
+  // NEVER moves money, blocks, or alters a transfer.
+  rpc GetTransferSuccessPrediction(GetTransferSuccessPredictionRequest) returns (GetTransferSuccessPredictionResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/transfers/success-prediction"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Transfer Success Prediction";
+      description: "Informational, read-only success signals (bank availability + recipient trust) for an external transfer. Never blocks or moves money.";
+      tags: ["Transfers"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
   // === TRANSFER OPERATIONS (Consolidated from Banking Service) ===
 
   rpc InitiateDomesticTransfer(InitiateDomesticTransferRequest) returns (InitiateTransferResponse) {
@@ -577,6 +593,165 @@ service PaymentsService {
       summary: "Get Recurring Transfers by Recipient";
       description: "Get recurring transfers for a specific recipient account";
       tags: ["Recurring Transfers"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  // === SAVED BATCH DRAFTS ===
+  //
+  // Drafts are user-owned templates of recipients + amounts. They NEVER
+  // move money or place holds. Execution (ExecuteFromSavedBatch) delegates
+  // to the already CAS-hardened BatchTransfer money path, leaving the draft
+  // untouched so the user can re-execute or keep editing.
+
+  rpc SaveBatchDraft(SaveBatchDraftRequest) returns (SavedBatch) {
+    option (google.api.http) = {
+      post: "/api/v1/transfers/batch/saved"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Save Batch Draft";
+      description: "Save a named batch transfer draft (no money moves).";
+      tags: ["Saved Batches"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  rpc ListSavedBatches(ListSavedBatchesRequest) returns (ListSavedBatchesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/transfers/batch/saved"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "List Saved Batches";
+      description: "List the authenticated user's saved batch drafts.";
+      tags: ["Saved Batches"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  rpc GetSavedBatch(GetSavedBatchRequest) returns (SavedBatch) {
+    option (google.api.http) = {
+      get: "/api/v1/transfers/batch/saved/{id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Saved Batch";
+      description: "Get a saved batch draft with all items.";
+      tags: ["Saved Batches"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  rpc UpdateSavedBatch(UpdateSavedBatchRequest) returns (SavedBatch) {
+    option (google.api.http) = {
+      patch: "/api/v1/transfers/batch/saved/{id}"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Update Saved Batch";
+      description: "Rename a saved batch draft.";
+      tags: ["Saved Batches"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  rpc DeleteSavedBatch(DeleteSavedBatchRequest) returns (DeleteSavedBatchResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/transfers/batch/saved/{id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Delete Saved Batch";
+      description: "Delete a saved batch draft and all its items.";
+      tags: ["Saved Batches"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  rpc AddSavedBatchItem(AddSavedBatchItemRequest) returns (SavedBatch) {
+    option (google.api.http) = {
+      post: "/api/v1/transfers/batch/saved/{saved_batch_id}/items"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Add Saved Batch Item";
+      description: "Append a recipient to a saved batch draft.";
+      tags: ["Saved Batches"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  rpc RemoveSavedBatchItem(RemoveSavedBatchItemRequest) returns (SavedBatch) {
+    option (google.api.http) = {
+      delete: "/api/v1/transfers/batch/saved/{saved_batch_id}/items/{item_id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Remove Saved Batch Item";
+      description: "Remove a single recipient from a saved batch draft.";
+      tags: ["Saved Batches"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  rpc UpdateSavedBatchItemAmount(UpdateSavedBatchItemAmountRequest) returns (SavedBatch) {
+    option (google.api.http) = {
+      patch: "/api/v1/transfers/batch/saved/{saved_batch_id}/items/{item_id}/amount"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Update Saved Batch Item Amount";
+      description: "Change the amount for a single item.";
+      tags: ["Saved Batches"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  rpc ApplyCollectiveAmount(ApplyCollectiveAmountRequest) returns (SavedBatch) {
+    option (google.api.http) = {
+      post: "/api/v1/transfers/batch/saved/{saved_batch_id}/apply-collective"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Apply Collective Amount";
+      description: "Scale every item by a multiplier or set every item to a fixed amount.";
+      tags: ["Saved Batches"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  rpc ExecuteFromSavedBatch(ExecuteFromSavedBatchRequest) returns (BatchTransferResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/transfers/batch/saved/{saved_batch_id}/execute"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Execute Saved Batch";
+      description: "Materialise a saved draft into a real BatchTransfer using the existing CAS-hardened money path. Draft is not consumed.";
+      tags: ["Saved Batches"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  // === BATCH RECEIPTS (read-only) ===
+
+  rpc GetBatchReceipt(GetBatchReceiptRequest) returns (BatchReceipt) {
+    option (google.api.http) = {
+      get: "/api/v1/transfers/batch/{batch_id}/receipt"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Batch Receipt";
+      description: "Receipt for an executed batch.";
+      tags: ["Batch Receipts"];
+      security: { security_requirement: { key: "bearer"; } };
+    };
+  }
+
+  rpc GetBatchItemReceipt(GetBatchItemReceiptRequest) returns (BatchItemReceipt) {
+    option (google.api.http) = {
+      get: "/api/v1/transfers/batch/items/{item_id}/receipt"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get Batch Item Receipt";
+      description: "Receipt for a single batch item.";
+      tags: ["Batch Receipts"];
       security: { security_requirement: { key: "bearer"; } };
     };
   }
@@ -985,6 +1160,28 @@ message VerifyBankAccountResponse {
   string error_code = 7;               // Error code if verification failed
   string error_message = 8;            // Error message if verification failed
   string user_message = 9;             // User-friendly error message
+}
+
+// ===== TRANSFER SUCCESS PREDICTION (informational, read-only) =====
+
+message GetTransferSuccessPredictionRequest {
+  string bank_code      = 1;   // destination bank code (external transfer)
+  string account_number = 2;   // destination account number
+}
+
+message GetTransferSuccessPredictionResponse {
+  // Bank availability: rolling-window success rate to this destination bank.
+  int32  bank_availability_pct = 1;   // 0-100; 0 when band is "unknown"
+  string bank_band             = 2;   // good | fair | poor | unknown
+  int32  bank_sample_size      = 3;   // resolved transfers in the window
+
+  // Recipient trust: prior successful transfers to this (bank, account).
+  string recipient_trust_band       = 4;   // verified | new | caution | unknown
+  int32  prior_transfer_count       = 5;   // by THIS user to the recipient
+  int64  recipient_known_since_unix = 6;   // earliest platform-wide success (unix secs); 0 if none
+
+  // Fraud signal.
+  bool   blocklisted = 7;   // true if destination is on the fraud blocklist
 }
 
 // ===== TRANSFER CONSOLIDATION MESSAGES =====
@@ -1491,4 +1688,187 @@ message GetRecurringTransfersByRecipientRequest {
 
 message GetRecurringTransfersByRecipientResponse {
   repeated RecurringTransferDetail recurring_transfers = 1;
+}
+
+// ===== SAVED BATCH DRAFTS =====
+//
+// A SavedBatch is a user-owned, named TEMPLATE of recipients + amounts.
+// Drafts NEVER move money. ExecuteFromSavedBatch is the only path that
+// turns a draft into a real transfer.
+
+message SavedBatchItemInput {
+  // Free-form recipient category: "internal_lazervault" | "external_bank"
+  // | "tagpay" | "contact". Defaults to "external_bank" if blank.
+  string recipient_type    = 1;
+  string recipient_user_id = 2;
+  string bank_code         = 3;
+  string account_number    = 4;
+  string beneficiary_name  = 5;
+  double amount            = 6;
+  string narration         = 7;
+  int32  sort_order        = 8;
+}
+
+message SavedBatchItem {
+  string id                = 1;
+  string saved_batch_id    = 2;
+  string recipient_type    = 3;
+  string recipient_user_id = 4;
+  string bank_code         = 5;
+  string account_number    = 6;
+  string beneficiary_name  = 7;
+  double amount            = 8;
+  string narration         = 9;
+  int32  sort_order        = 10;
+  string created_at        = 11;
+  string updated_at        = 12;
+}
+
+message SavedBatch {
+  string id                = 1;
+  string user_id           = 2;
+  string name              = 3;
+  string currency          = 4;
+  string source_account_id = 5;
+  double total_amount      = 6;
+  int32  item_count        = 7;
+  string created_at        = 8;
+  string updated_at        = 9;
+  repeated SavedBatchItem items = 10;
+}
+
+message SaveBatchDraftRequest {
+  string name              = 1;
+  string currency          = 2;
+  string source_account_id = 3;
+  repeated SavedBatchItemInput items = 4;
+}
+
+message ListSavedBatchesRequest {
+  int32 limit  = 1;
+  int32 offset = 2;
+}
+
+message ListSavedBatchesResponse {
+  repeated SavedBatch batches = 1;
+  int64 total                 = 2;
+  int32 limit                 = 3;
+  int32 offset                = 4;
+}
+
+message GetSavedBatchRequest {
+  string id = 1;
+}
+
+message UpdateSavedBatchRequest {
+  string id   = 1;
+  string name = 2;
+}
+
+message DeleteSavedBatchRequest {
+  string id = 1;
+}
+
+message DeleteSavedBatchResponse {
+  bool success = 1;
+}
+
+message AddSavedBatchItemRequest {
+  string saved_batch_id    = 1;
+  SavedBatchItemInput item = 2;
+}
+
+message RemoveSavedBatchItemRequest {
+  string saved_batch_id = 1;
+  string item_id        = 2;
+}
+
+message UpdateSavedBatchItemAmountRequest {
+  string saved_batch_id = 1;
+  string item_id        = 2;
+  double amount         = 3;
+}
+
+message ApplyCollectiveAmountRequest {
+  string saved_batch_id = 1;
+  // Exactly one of multiplier or amount_per_item must be set.
+  oneof mode {
+    double multiplier      = 2;
+    double amount_per_item = 3;
+  }
+}
+
+message ExecuteFromSavedBatchRequest {
+  string saved_batch_id  = 1;
+  string idempotency_key = 2;
+  string transaction_id     = 3;
+  string verification_token = 4;
+  map<string, double> per_item_overrides = 5;
+  string source_account_id = 6;
+}
+
+// ===== BATCH RECEIPTS =====
+
+message BatchReceiptItem {
+  string item_id           = 1;
+  string status            = 2;
+  double amount            = 3;
+  double fee               = 4;
+  string currency          = 5;
+  string reference         = 6;
+  string recipient_name    = 7;
+  string recipient_account = 8;
+  string bank_code         = 9;
+  string bank_name         = 10;
+  string transfer_type     = 11;
+  string narration         = 12;
+  string failure_reason    = 13;
+  string classification    = 14;
+  string provider_name     = 15;
+  string provider_ref      = 16;
+  string provider_status   = 17;
+  string payment_id          = 18;
+  string payment_status      = 19;
+  string payment_reference   = 20;
+  string created_at          = 21;
+  string updated_at          = 22;
+  string transaction_date    = 23;
+  string hold_captured_at    = 24;
+  string hold_released_at    = 25;
+}
+
+message BatchReceipt {
+  string batch_id              = 1;
+  string user_id               = 2;
+  string status                = 3;
+  string currency              = 4;
+  int32  total_transfers       = 5;
+  int32  successful_transfers  = 6;
+  int32  failed_transfers      = 7;
+  double total_amount          = 8;
+  double total_fees            = 9;
+  string created_at            = 10;
+  string updated_at            = 11;
+  string finalized_at          = 12;
+  string source_account_id     = 13;
+  string source_account_number = 14;
+  string source_account_name   = 15;
+  repeated BatchReceiptItem items = 20;
+}
+
+message GetBatchReceiptRequest {
+  string batch_id = 1;
+}
+
+message GetBatchItemReceiptRequest {
+  string item_id = 1;
+}
+
+message BatchItemReceipt {
+  string batch_id              = 1;
+  string batch_status          = 2;
+  string source_account_id     = 3;
+  string source_account_number = 4;
+  string source_account_name   = 5;
+  BatchReceiptItem item        = 6;
 }

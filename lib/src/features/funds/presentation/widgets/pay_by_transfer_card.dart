@@ -2,20 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:lazervault/src/features/funds/data/services/deposit_simulation_service.dart';
 
-/// Pay by Transfer Card - Shows user's virtual account (NUBAN) details for deposits
-/// Users can copy the account details and transfer directly from any bank app
-///
-/// In development mode, includes a "Simulate Deposit" button for testing.
+/// Shows the user's virtual-account details so they can fund their wallet by
+/// transferring from their own bank app. Inbound transfers to the NUBAN are
+/// credited automatically by the banking-service virtual-account webhook.
 class PayByTransferCard extends StatefulWidget {
   final String accountNumber;
   final String accountName;
   final String bankName;
-  final String? accountId;  // User's account ID for simulation
-  final String? userId;     // User's ID for notifications
+  final String? accountId;
+  final String? userId;
+  final String currency;
+  final String countryCode;
   final VoidCallback? onInfoTap;
-  final VoidCallback? onSimulationComplete;
 
   const PayByTransferCard({
     super.key,
@@ -24,8 +23,9 @@ class PayByTransferCard extends StatefulWidget {
     required this.bankName,
     this.accountId,
     this.userId,
+    this.currency = 'NGN',
+    this.countryCode = 'NG',
     this.onInfoTap,
-    this.onSimulationComplete,
   });
 
   @override
@@ -33,8 +33,6 @@ class PayByTransferCard extends StatefulWidget {
 }
 
 class _PayByTransferCardState extends State<PayByTransferCard> {
-  bool _isSimulating = false;
-
   void _copyToClipboard(BuildContext context, String text, String label) {
     Clipboard.setData(ClipboardData(text: text));
     Get.snackbar(
@@ -48,267 +46,8 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
     );
   }
 
-  Future<void> _showSimulationBottomSheet(BuildContext context) async {
-    double? selectedAmount;
-
-    await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setSheetState) => Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFF1E1E1E),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Drag handle
-              Container(
-                margin: EdgeInsets.only(top: 12.h),
-                width: 40.w,
-                height: 4.h,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(2.r),
-                ),
-              ),
-              SizedBox(height: 16.h),
-
-              // Header
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24.w),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 40.w,
-                      height: 40.w,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF00D09C).withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(10.r),
-                      ),
-                      child: Icon(
-                        Icons.science,
-                        color: const Color(0xFF00D09C),
-                        size: 20.sp,
-                      ),
-                    ),
-                    SizedBox(width: 12.w),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Simulate Deposit',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18.sp,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          Text(
-                            'Testing mode - simulate Flutterwave webhook',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.6),
-                              fontSize: 12.sp,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: Icon(Icons.close, color: Colors.white.withValues(alpha: 0.6)),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 24.h),
-
-              // Account info
-              Container(
-                margin: EdgeInsets.symmetric(horizontal: 24.w),
-                padding: EdgeInsets.all(16.w),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Simulating deposit to:',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.6),
-                        fontSize: 12.sp,
-                      ),
-                    ),
-                    SizedBox(height: 8.h),
-                    Text(
-                      widget.accountNumber,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20.sp,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                    Text(
-                      widget.accountName,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.8),
-                        fontSize: 14.sp,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 24.h),
-
-              // Amount selection
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24.w),
-                child: Text(
-                  'Select amount',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.9),
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              SizedBox(height: 12.h),
-
-              // Quick amount buttons
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24.w),
-                child: Wrap(
-                  spacing: 8.w,
-                  runSpacing: 8.h,
-                  children: DepositSimulationService.testAmounts.map((amount) {
-                    final isSelected = selectedAmount == amount;
-                    return InkWell(
-                      onTap: () {
-                        setSheetState(() {
-                          selectedAmount = amount;
-                        });
-                      },
-                      borderRadius: BorderRadius.circular(8.r),
-                      child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? const Color(0xFF00D09C)
-                              : Colors.white.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8.r),
-                          border: Border.all(
-                            color: isSelected ? const Color(0xFF00D09C) : Colors.transparent,
-                          ),
-                        ),
-                        child: Text(
-                          '₦${amount.toString()}',
-                          style: TextStyle(
-                            color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.7),
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ),
-              SizedBox(height: 24.h),
-
-              // Simulate button
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24.w),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: selectedAmount == null || _isSimulating
-                        ? null
-                        : () async {
-                            setSheetState(() {
-                              _isSimulating = true;
-                            });
-                            Navigator.pop(context);
-
-                            final result = await DepositSimulationService.simulateDeposit(
-                              accountNumber: widget.accountNumber,
-                              accountName: widget.accountName,
-                              amount: selectedAmount!,
-                            );
-
-                            setState(() {
-                              _isSimulating = false;
-                            });
-
-                            if (result.success) {
-                              Get.snackbar(
-                                'Deposit Simulated!',
-                                result.message,
-                                backgroundColor: Colors.green.withValues(alpha: 0.9),
-                                colorText: Colors.white,
-                                snackPosition: SnackPosition.BOTTOM,
-                                duration: const Duration(seconds: 3),
-                                margin: EdgeInsets.all(16.w),
-                              );
-                              widget.onSimulationComplete?.call();
-                            } else {
-                              Get.snackbar(
-                                'Simulation Failed',
-                                result.message,
-                                backgroundColor: Colors.red.withValues(alpha: 0.9),
-                                colorText: Colors.white,
-                                snackPosition: SnackPosition.BOTTOM,
-                                duration: const Duration(seconds: 4),
-                                margin: EdgeInsets.all(16.w),
-                              );
-                            }
-                          },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: selectedAmount == null
-                          ? Colors.grey.shade700
-                          : const Color(0xFF00D09C),
-                      foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(vertical: 16.h),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                    ),
-                    child: _isSimulating
-                        ? SizedBox(
-                            height: 20.h,
-                            width: 20.w,
-                            child: const CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation(Colors.white),
-                            ),
-                          )
-                        : Text(
-                            'Simulate Deposit',
-                            style: TextStyle(
-                              fontSize: 16.sp,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 32.h),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    final isDevMode = DepositSimulationService.isSimulationEnabled;
-
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(20.w),
@@ -361,23 +100,6 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
                   ],
                 ),
               ),
-              // Development mode indicator
-              if (isDevMode)
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(4.r),
-                  ),
-                  child: Text(
-                    'DEV',
-                    style: TextStyle(
-                      color: Colors.orange,
-                      fontSize: 10.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
             ],
           ),
           SizedBox(height: 20.h),
@@ -438,50 +160,6 @@ class _PayByTransferCardState extends State<PayByTransferCard> {
               ],
             ),
           ),
-
-          // Simulation button (development mode only)
-          if (isDevMode) ...[
-            SizedBox(height: 16.h),
-            InkWell(
-              onTap: _isSimulating ? null : () => _showSimulationBottomSheet(context),
-              borderRadius: BorderRadius.circular(8.r),
-              child: Container(
-                padding: EdgeInsets.symmetric(vertical: 12.h),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color.fromARGB(255, 78, 3, 208), Color(0xFF4834D4)],
-                  ),
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (_isSimulating)
-                      SizedBox(
-                        height: 16.h,
-                        width: 16.w,
-                        child: const CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation(Colors.white),
-                        ),
-                      )
-                    else ...[
-                      Icon(Icons.science, color: Colors.white, size: 18.sp),
-                      SizedBox(width: 8.w),
-                      Text(
-                        'Simulate Test Deposit',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          ],
         ],
       ),
     );

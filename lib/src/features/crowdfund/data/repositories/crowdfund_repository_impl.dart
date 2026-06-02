@@ -95,6 +95,8 @@ class CrowdfundRepositoryImpl implements CrowdfundRepository {
     CrowdfundStatus? status,
     String? imageUrl,
     Map<String, dynamic>? metadata,
+    String? category,
+    double? targetAmount,
   }) async {
     try {
       return await remoteDataSource.updateCrowdfund(
@@ -106,6 +108,8 @@ class CrowdfundRepositoryImpl implements CrowdfundRepository {
         status: status,
         imageUrl: imageUrl,
         metadata: metadata,
+        category: category,
+        targetAmount: targetAmount,
       );
     } catch (e) {
       throw Exception('Failed to update crowdfund: $e');
@@ -118,6 +122,44 @@ class CrowdfundRepositoryImpl implements CrowdfundRepository {
       await remoteDataSource.deleteCrowdfund(crowdfundId);
     } catch (e) {
       throw Exception('Failed to delete crowdfund: $e');
+    }
+  }
+
+  @override
+  Future<CancelCrowdfundResult> cancelCrowdfund({
+    required String crowdfundId,
+    required String reason,
+    required String transactionPin,
+    required String transactionId,
+  }) async {
+    try {
+      return await remoteDataSource.cancelCrowdfund(
+        crowdfundId: crowdfundId,
+        reason: reason,
+        transactionPin: transactionPin,
+        transactionId: transactionId,
+      );
+    } catch (e) {
+      throw Exception('Failed to cancel crowdfund: $e');
+    }
+  }
+
+  @override
+  Future<List<CrowdfundRefund>> listCrowdfundRefunds({
+    required String crowdfundId,
+    String? status,
+    int page = 1,
+    int pageSize = 50,
+  }) async {
+    try {
+      return await remoteDataSource.listCrowdfundRefunds(
+        crowdfundId: crowdfundId,
+        status: status,
+        page: page,
+        pageSize: pageSize,
+      );
+    } catch (e) {
+      throw Exception('Failed to list refunds: $e');
     }
   }
 

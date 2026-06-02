@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../../core/types/app_routes.dart';
-import '../../../../../core/shared_widgets/app_loading_button.dart';
 import '../../../widgets/build_form_field.dart';
 import '../../../authentication/cubit/authentication_cubit.dart';
 import '../../../authentication/cubit/authentication_state.dart';
 import '../../domain/entities/kyc_tier_entity.dart';
 import '../cubits/kyc_cubit.dart';
+import '../widgets/light_theme/kyc_header.dart';
+import '../widgets/light_theme/kyc_info_card.dart';
+import '../widgets/light_theme/kyc_light_scaffold.dart';
+import '../widgets/light_theme/kyc_primary_button.dart';
+import '../widgets/light_theme/kyc_skip_button.dart';
+import '../widgets/light_theme/kyc_terms_checkbox.dart';
 import 'mono_identity_screen.dart';
 
 /// New BVN Verification Screen - Matches Signup Theme
@@ -29,18 +33,6 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
   bool _isSubmitting = false;
 
   @override
-  void initState() {
-    super.initState();
-    // Set status bar icons to dark (for light background)
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-      ),
-    );
-  }
-
-  @override
   void dispose() {
     _bvnController.dispose();
     super.dispose();
@@ -48,230 +40,98 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Get.back(),
-        ),
-      ),
-      body: Stack(
-        children: [
-          // Background image
-          Container(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage("assets/images/bg/up-down-curve-bg.png"),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          // Content
-          BlocListener<KYCCubit, KYCState>(
-            listener: (context, state) {
-              if (!mounted) return;
-
-              if (state is IDVerificationSuccess) {
-                _handleVerificationSuccess(context, state.response);
-              } else if (state is VerificationSessionCreated) {
-                _handleSessionCreated(context, state.session);
-              } else if (state is VerificationConfirmed) {
-                _handleVerificationConfirmed(context);
-              } else if (state is KYCError) {
-                _showErrorDialog(context, state);
-              }
-            },
-            child: BlocBuilder<KYCCubit, KYCState>(
-              builder: (context, state) {
-                final isLoading = state is KYCLoading;
-
-                return SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        SizedBox(height: 60.h),
-
-                        // Logo
-                        Center(
-                          child: Container(
-                            width: 70.h,
-                            height: 70.h,
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.transparent,
-                            ),
-                            child: Image.asset(
-                              'assets/logo/app_logo.png',
-                              errorBuilder: (context, error, stackTrace) =>
-                                  const Icon(Icons.account_balance_wallet, size: 70),
-                            ),
-                          ),
-                        ),
-
-                        SizedBox(height: 16.h),
-
-                        // Title
-                        Text(
-                          "Verify Your Identity",
-                          style: TextStyle(
-                            fontSize: 24.sp,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-
-                        SizedBox(height: 8.h),
-
-                        Text(
-                          "Enter your BVN to complete Tier 2 verification",
+    return KycLightScaffold(
+      child: BlocListener<KYCCubit, KYCState>(
+        listener: (context, state) {
+          if (!mounted) return;
+          if (state is IDVerificationSuccess) {
+            _handleVerificationSuccess(context, state.response);
+          } else if (state is VerificationSessionCreated) {
+            _handleSessionCreated(context, state.session);
+          } else if (state is VerificationConfirmed) {
+            _handleVerificationConfirmed(context);
+          } else if (state is KYCError) {
+            _showErrorDialog(context, state);
+          }
+        },
+        child: BlocBuilder<KYCCubit, KYCState>(
+          builder: (context, state) {
+            final isLoading = state is KYCLoading;
+            return Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const KycHeader(
+                    title: 'Verify Your Identity',
+                    subtitle: 'Enter your BVN to complete Tier 2 verification',
+                  ),
+                  const KycInfoCard(
+                    icon: Icons.info_outline,
+                    text:
+                        'We verify your BVN securely with our partner. Your information is encrypted and only used for CBN compliance.',
+                  ),
+                  SizedBox(height: 24.h),
+                  BuildFormField(
+                    name: 'bvn',
+                    placeholder: 'Enter your 11-digit BVN',
+                    keyboardType: TextInputType.number,
+                    prefixIcon:
+                        const Icon(Icons.badge, color: Colors.black45),
+                    controller: _bvnController,
+                    maxLength: 11,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'BVN is required';
+                      }
+                      if (value.length != 11) {
+                        return 'BVN must be 11 digits';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 16.h),
+                  _buildBenefitsSection(context),
+                  SizedBox(height: 32.h),
+                  KycTermsCheckbox(
+                    value: _acceptTerms,
+                    onChanged: (v) => setState(() => _acceptTerms = v),
+                  ),
+                  SizedBox(height: 24.h),
+                  KycPrimaryButton(
+                    text: 'Verify BVN',
+                    onPressed: isLoading ? null : _submitBVN,
+                    isLoading: isLoading,
+                  ),
+                  SizedBox(height: 16.h),
+                  KycSkipButton(onPressed: () => _skipForNow(context)),
+                  SizedBox(height: 20.h),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Already verified?',
+                        style:
+                            TextStyle(fontSize: 14.sp, color: Colors.black54),
+                      ),
+                      TextButton(
+                        onPressed: () => Get.toNamed(AppRoutes.dashboard),
+                        child: Text(
+                          'Go to Dashboard',
                           style: TextStyle(
                             fontSize: 14.sp,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black54,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-
-                        SizedBox(height: 32.h),
-
-                        // BVN Info Card
-                        _buildBVNInfoCard(context),
-
-                        SizedBox(height: 24.h),
-
-                        // BVN Input Field
-                        BuildFormField(
-                          name: "bvn",
-                          placeholder: "Enter your 11-digit BVN",
-                          keyboardType: TextInputType.number,
-                          prefixIcon: const Icon(Icons.badge, color: Colors.black45),
-                          controller: _bvnController,
-                          maxLength: 11,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'BVN is required';
-                            }
-                            if (value.length != 11) {
-                              return 'BVN must be 11 digits';
-                            }
-                            return null;
-                          },
-                        ),
-
-                        SizedBox(height: 16.h),
-
-                        // Benefits
-                        _buildBenefitsSection(context),
-
-                        SizedBox(height: 32.h),
-
-                        // Terms Checkbox
-                        _buildTermsCheckbox(context),
-
-                        SizedBox(height: 24.h),
-
-                        // Submit Button
-                        SizedBox(
-                          width: double.infinity,
-                          height: 50.h,
-                          child: AppLoadingButton(
-                            onPressed: isLoading ? null : _submitBVN,
-                            isLoading: isLoading,
-                            text: 'Verify BVN',
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-
-                        SizedBox(height: 16.h),
-
-                        // Skip Button
-                        Center(
-                          child: TextButton(
-                            onPressed: () => _skipForNow(context),
-                            child: Text(
-                              'Skip for now',
-                              style: TextStyle(
-                                fontSize: 16.sp,
-                                color: Colors.black54,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        SizedBox(height: 20.h),
-
-                        // Already have account link
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              "Already verified?",
-                              style: TextStyle(fontSize: 14.sp, color: Colors.black54),
-                            ),
-                            TextButton(
-                              onPressed: () => Get.toNamed(AppRoutes.dashboard),
-                              child: Text(
-                                "Go to Dashboard",
-                                style: TextStyle(
-                                  fontSize: 14.sp,
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBVNInfoCard(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: Colors.blue.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: Colors.blue.withValues(alpha: 0.3),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.info_outline,
-            color: Colors.blue,
-            size: 20.sp,
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Text(
-              'We verify your BVN securely with our partner. Your information is encrypted and only used for CBN compliance.',
-              style: GoogleFonts.inter(
-                color: Colors.black87,
-                fontSize: 13.sp,
-                height: 1.4,
+                ],
               ),
-            ),
-          ),
-        ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -356,60 +216,6 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
     );
   }
 
-  Widget _buildTermsCheckbox(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: Colors.grey.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Checkbox(
-            activeColor: Colors.blue,
-            value: _acceptTerms,
-            onChanged: (value) => setState(() => _acceptTerms = value ?? false),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: GestureDetector(
-              onTap: () => setState(() => _acceptTerms = !_acceptTerms),
-              child: RichText(
-                text: TextSpan(
-                  style: GoogleFonts.inter(
-                    color: Colors.black54,
-                    fontSize: 13.sp,
-                    height: 1.4,
-                  ),
-                  children: [
-                    const TextSpan(text: 'I agree to the '),
-                    TextSpan(
-                      text: 'Terms of Service',
-                      style: GoogleFonts.inter(
-                        color: Colors.blue,
-                        decoration: TextDecoration.underline,
-                      ),
-                    ),
-                    const TextSpan(text: ' and '),
-                    TextSpan(
-                      text: 'Privacy Policy',
-                      style: GoogleFonts.inter(
-                        color: Colors.blue,
-                        decoration: TextDecoration.underline,
-                      ),
-                    ),
-                    const TextSpan(text: '.'),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _submitBVN() {
     if (_isSubmitting) return;
 
@@ -453,13 +259,16 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
       phoneNumber = authCubit.currentProfile!.user.phoneNumber;
     }
 
-    // Create verification session with Mono
+    // Strip non-digits (defensive — paste may include hyphens/spaces).
+    final cleanBvn =
+        _bvnController.text.trim().replaceAll(RegExp(r'[^0-9]'), '');
+
     cubit.createVerificationSession(
       userId: userId,
       targetTier: KYCTier.tier2,
       countryCode: 'NG',
       idType: IDType.bvn,
-      idNumber: _bvnController.text.trim(),
+      idNumber: cleanBvn,
       firstName: firstName ?? '',
       lastName: lastName ?? '',
       dateOfBirth: dateOfBirth ?? '',
@@ -470,10 +279,23 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
   void _handleSessionCreated(BuildContext context, VerificationSession session) {
     if (!mounted) return;
 
-    // Navigate to Mono identity verification
+    // Navigate to Mono identity verification.
     if (session.sessionUrl != null && session.sessionUrl!.isNotEmpty) {
       _navigateToMonoVerification(context, session);
+      return;
     }
+    // No URL came back — surface to the user instead of silently leaving
+    // the button stuck on the loading state. The cubit will not emit
+    // another terminal state from here, so we have to drop the spinner
+    // ourselves.
+    setState(() => _isSubmitting = false);
+    Get.snackbar(
+      'Verification unavailable',
+      'We couldn\'t start the verification. Please try again.',
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: Colors.orange,
+      colorText: Colors.white,
+    );
   }
 
   void _navigateToMonoVerification(BuildContext context, VerificationSession session) {

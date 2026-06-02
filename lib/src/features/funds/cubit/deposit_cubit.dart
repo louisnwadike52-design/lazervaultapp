@@ -24,6 +24,7 @@ class DepositCubit extends Cubit<DepositState> {
     required String sourceBankName,
     String? countryCode,
     String? accessToken,
+    String? paymentMethod, // "apple_pay", "google_pay", "card", etc.
   }) async {
     if (isClosed || _isProcessing) return;
     _isProcessing = true;
@@ -49,6 +50,7 @@ class DepositCubit extends Cubit<DepositState> {
         sourceBankName: sourceBankName,
         countryCode: countryCode,
         accessToken: accessToken,
+        paymentMethod: paymentMethod,
       );
 
       if (isClosed) return;
@@ -81,38 +83,6 @@ class DepositCubit extends Cubit<DepositState> {
       );
     } catch (e) {
       _isProcessing = false;
-      if (isClosed) return;
-      emit(DepositFailure('An unexpected error occurred: $e'));
-    }
-  }
-
-  /// Simulate a test deposit (sandbox only) — instant credit
-  Future<void> simulateTestDeposit({
-    required String destinationAccountId,
-    required double amount,
-    required String currency,
-    required String countryCode,
-  }) async {
-    if (isClosed) return;
-    emit(DepositLoading());
-
-    try {
-      final result = await _initiateDepositUseCase.simulateTestDeposit(
-        destinationAccountId: destinationAccountId,
-        amount: amount,
-        currency: currency,
-        countryCode: countryCode,
-      );
-
-      if (isClosed) return;
-      result.fold(
-        (failure) => emit(DepositFailure(
-          failure.message,
-          statusCode: failure.statusCode,
-        )),
-        (depositDetails) => emit(SimulateDepositSuccess(depositDetails)),
-      );
-    } catch (e) {
       if (isClosed) return;
       emit(DepositFailure('An unexpected error occurred: $e'));
     }

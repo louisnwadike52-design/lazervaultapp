@@ -97,6 +97,24 @@ service FamilyAccountsService {
     };
   }
 
+  // Get the authenticated user's invitation history across all statuses
+  // (pending, accepted, declined, expired, removed). Supports optional
+  // status filter + pagination. Invitee-side view.
+  rpc GetMyInvitationHistory(GetMyInvitationHistoryRequest) returns (GetMyInvitationHistoryResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/family-invitations/history"
+    };
+  }
+
+  // Get invitations the authenticated user has SENT (as a family admin).
+  // Returns members across every family the user admins, filterable by
+  // family_id + status. Inviter-side view.
+  rpc GetSentInvitations(GetSentInvitationsRequest) returns (GetSentInvitationsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/family-invitations/sent"
+    };
+  }
+
   // Get transaction history for a family account
   // All members can view all transactions (full transparency)
   rpc GetFamilyTransactions(GetFamilyTransactionsRequest) returns (GetFamilyTransactionsResponse) {
@@ -173,6 +191,184 @@ service FamilyAccountsService {
       body: "*"
     };
   }
+
+  // =========================================================================
+  // Admin RPCs (ops dashboard)
+  // Callers must carry the admin role in the JWT. The HTTP routes live under
+  // /api/v1/admin/family-accounts and the core-gateway enforces the role check
+  // before forwarding.
+  // =========================================================================
+
+  // List family accounts across all users with admin-only filters
+  rpc AdminListFamilyAccounts(AdminListFamilyAccountsRequest) returns (AdminListFamilyAccountsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/family-accounts"
+    };
+  }
+
+  // Get full detail for any family account (no membership check)
+  rpc AdminGetFamilyAccount(AdminGetFamilyAccountRequest) returns (AdminGetFamilyAccountResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/family-accounts/{family_id}"
+    };
+  }
+
+  // Admin freeze (records reason and last_admin_action_by/at)
+  rpc AdminFreezeFamilyAccount(AdminFreezeFamilyAccountRequest) returns (AdminFreezeFamilyAccountResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/family-accounts/{family_id}/freeze"
+      body: "*"
+    };
+  }
+
+  // Admin unfreeze
+  rpc AdminUnfreezeFamilyAccount(AdminUnfreezeFamilyAccountRequest) returns (AdminUnfreezeFamilyAccountResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/family-accounts/{family_id}/unfreeze"
+      body: "*"
+    };
+  }
+
+  // Admin delete — bypasses the user confirmation_code check
+  rpc AdminDeleteFamilyAccount(AdminDeleteFamilyAccountRequest) returns (AdminDeleteFamilyAccountResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/admin/family-accounts/{family_id}"
+    };
+  }
+
+  // Admin force-allocate funds from the pool to a member
+  rpc AdminForceAllocateFunds(AdminForceAllocateFundsRequest) returns (AdminForceAllocateFundsResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/family-accounts/{family_id}/members/{member_id}/allocate"
+      body: "*"
+    };
+  }
+
+  // Admin remove member (no confirmation, audit-only)
+  rpc AdminRemoveFamilyMember(AdminRemoveFamilyMemberRequest) returns (AdminRemoveFamilyMemberResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/admin/family-accounts/{family_id}/members/{member_id}"
+    };
+  }
+
+  // Admin update notes on an account (free-text for ops follow-up)
+  rpc AdminUpdateFamilyAccountNotes(AdminUpdateFamilyAccountNotesRequest) returns (AdminUpdateFamilyAccountNotesResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/admin/family-accounts/{family_id}/notes"
+      body: "*"
+    };
+  }
+}
+
+// Admin: list
+message AdminListFamilyAccountsRequest {
+  string status = 1;        // optional status filter
+  string creator_id = 2;    // optional creator user_id filter
+  int32  min_members = 3;   // optional minimum member count
+  string created_after = 4; // RFC3339
+  string created_before = 5;// RFC3339
+  string search = 6;        // case-insensitive substring match on name
+  int32  page = 7;          // 1-based
+  int32  page_size = 8;     // default 20, max 200
+}
+
+message AdminListFamilyAccountsResponse {
+  repeated FamilyAccount family_accounts = 1;
+  int32 total_count = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+  int32 total_pages = 5;
+}
+
+// Admin: get
+message AdminGetFamilyAccountRequest {
+  string family_id = 1;
+}
+
+message AdminGetFamilyAccountResponse {
+  FamilyAccount family_account = 1;
+  repeated FamilyTransaction recent_transactions = 2; // last 50
+  FamilyAccountSummary summary = 3;
+  string admin_notes = 4;
+  string admin_frozen_reason = 5;
+  string last_admin_action_at = 6;
+  string last_admin_action_by = 7;
+}
+
+// Admin: freeze
+message AdminFreezeFamilyAccountRequest {
+  string family_id = 1;
+  string reason = 2; // required for audit
+}
+
+message AdminFreezeFamilyAccountResponse {
+  bool success = 1;
+  FamilyAccount family_account = 2;
+  string message = 3;
+}
+
+// Admin: unfreeze
+message AdminUnfreezeFamilyAccountRequest {
+  string family_id = 1;
+  string reason = 2;
+}
+
+message AdminUnfreezeFamilyAccountResponse {
+  bool success = 1;
+  FamilyAccount family_account = 2;
+  string message = 3;
+}
+
+// Admin: delete
+message AdminDeleteFamilyAccountRequest {
+  string family_id = 1;
+  string reason = 2; // required for audit
+}
+
+message AdminDeleteFamilyAccountResponse {
+  bool success = 1;
+  double returned_balance = 2;
+  string message = 3;
+}
+
+// Admin: force allocate
+message AdminForceAllocateFundsRequest {
+  string family_id = 1;
+  string member_id = 2;
+  double amount = 3;
+  string reason = 4;
+}
+
+message AdminForceAllocateFundsResponse {
+  FamilyMember member = 1;
+  FamilyTransaction transaction = 2;
+  double remaining_pool_balance = 3;
+  string message = 4;
+}
+
+// Admin: remove member
+message AdminRemoveFamilyMemberRequest {
+  string family_id = 1;
+  string member_id = 2;
+  string reason = 3;
+  bool return_balance_to_pool = 4;
+}
+
+message AdminRemoveFamilyMemberResponse {
+  bool success = 1;
+  double returned_balance = 2;
+  string message = 3;
+}
+
+// Admin: update notes
+message AdminUpdateFamilyAccountNotesRequest {
+  string family_id = 1;
+  string admin_notes = 2;
+}
+
+message AdminUpdateFamilyAccountNotesResponse {
+  FamilyAccount family_account = 1;
+  string message = 2;
 }
 
 // Request/Response Messages
@@ -293,6 +489,76 @@ message GetPendingInvitationsRequest {
 message GetPendingInvitationsResponse {
   repeated PendingInvitation invitations = 1;
   int32 total_count = 2;
+}
+
+// Invitee-side history. Status defaults to "all" (omit pending+accepted to
+// keep the receivable inbox clean — use GetPendingInvitations for that).
+message GetMyInvitationHistoryRequest {
+  string status_filter = 1; // optional: pending | accepted | declined | expired | removed | all (default: all)
+  int32 page = 2;
+  int32 page_size = 3;      // default 25, max 200
+}
+
+message InvitationHistoryEntry {
+  string invitation_token = 1;
+  string family_id = 2;
+  string family_name = 3;
+  string creator_name = 4;
+  string creator_avatar = 5;
+  string invited_by = 6;
+  string invitation_status = 7;  // pending|accepted|declined|expired|removed
+  double initial_allocation = 8;
+  double daily_limit = 9;
+  double monthly_limit = 10;
+  string invitation_method = 11; // email|phone|username
+  string invitation_destination = 12;
+  string created_at = 13;
+  string expires_at = 14;
+  string responded_at = 15;      // populated for accepted/declined (= joined_at | updated_at)
+}
+
+message GetMyInvitationHistoryResponse {
+  repeated InvitationHistoryEntry entries = 1;
+  int32 total_count = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+  int32 total_pages = 5;
+}
+
+// Inviter-side history. Returns invitations the caller has sent across
+// every family they admin. Optional filter narrows to a single family.
+message GetSentInvitationsRequest {
+  string family_id = 1;        // optional — restrict to one family
+  string status_filter = 2;    // optional: pending|accepted|declined|expired|removed|all
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+message SentInvitationEntry {
+  string member_id = 1;
+  string family_id = 2;
+  string family_name = 3;
+  string invitation_method = 4;
+  string invitation_destination = 5;
+  string invitation_status = 6;
+  string invited_user_id = 7;     // null when invite hasn't been linked yet
+  string invited_user_name = 8;   // enriched
+  string invited_user_avatar = 9; // enriched
+  double initial_allocation = 10;
+  double daily_limit = 11;
+  double monthly_limit = 12;
+  string role = 13;
+  string created_at = 14;
+  string expires_at = 15;
+  string responded_at = 16;
+}
+
+message GetSentInvitationsResponse {
+  repeated SentInvitationEntry entries = 1;
+  int32 total_count = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+  int32 total_pages = 5;
 }
 
 // Get Family Transactions

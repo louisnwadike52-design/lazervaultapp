@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:flutter/services.dart';
 import 'package:lazervault/core/services/account_manager.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/src/features/funds/cubit/transfer_prediction_cubit.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/transfer_prediction_alert.dart';
 import 'package:lazervault/src/features/funds/domain/entities/batch_transfer_entity.dart';
+import 'package:lazervault/src/features/funds/domain/entities/saved_batch_entity.dart';
+import 'package:lazervault/src/features/funds/domain/repositories/i_saved_batch_repository.dart';
 import 'package:lazervault/src/features/account_cards_summary/domain/entities/account_summary_entity.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
@@ -40,6 +47,12 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
   DateTime? _scheduledDate;
   TimeOfDay? _scheduledTime;
 
+  // Informational, READ-ONLY success prediction for the batch's external items.
+  // Non-blocking; we surface a single batch-level note keyed on the first
+  // external recipient (representative of the destination-bank network signal).
+  final TransferPredictionCubit _predictionCubit =
+      serviceLocator<TransferPredictionCubit>();
+
   @override
   void initState() {
     super.initState();
@@ -54,6 +67,20 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
         batchCurrencySymbol(_currency);
 
     _setupAnimations();
+    _maybeFetchBatchPrediction();
+  }
+
+  /// Fetch the success prediction for the FIRST external recipient as a
+  /// representative batch-level network signal. Best-effort and non-blocking.
+  void _maybeFetchBatchPrediction() {
+    final recipients =
+        transferData['recipients'] as List<BatchTransferRecipient>? ?? [];
+    final firstExternal = recipients.where((r) => r.isExternal).firstOrNull;
+    if (firstExternal == null) return; // all-internal batch: nothing to show
+    _predictionCubit.fetch(
+      bankCode: firstExternal.destinationBankCode ?? '',
+      accountNumber: firstExternal.toAccountNumber,
+    );
   }
 
   void _setupAnimations() {
@@ -77,6 +104,7 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
   @override
   void dispose() {
     _animationController.dispose();
+    _predictionCubit.close();
     super.dispose();
   }
 
@@ -272,24 +300,27 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: btBackground,
-      body: SafeArea(
-          child: Column(
-            children: [
-              _buildHeader(),
-              Expanded(
-                child: FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: SlideTransition(
-                    position: _slideAnimation,
-                    child: _buildReviewContent(),
+    return BlocProvider<TransferPredictionCubit>.value(
+      value: _predictionCubit,
+      child: Scaffold(
+        backgroundColor: btBackground,
+        body: SafeArea(
+            child: Column(
+              children: [
+                _buildHeader(),
+                Expanded(
+                  child: FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: SlideTransition(
+                      position: _slideAnimation,
+                      child: _buildReviewContent(),
+                    ),
                   ),
                 ),
-              ),
-              _buildConfirmButton(),
-            ],
-          ),
+                _buildConfirmButton(),
+              ],
+            ),
+        ),
       ),
     );
   }
@@ -389,6 +420,25 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
           _buildRecipientsCard(recipients),
 
           SizedBox(height: 20.h),
+
+          // Informational, READ-ONLY success prediction for the batch's external
+          // items. Batch-level note keyed on the first external recipient.
+          // Shown BEFORE Confirm; never blocks or moves money.
+          if (recipients.any((r) => r.isExternal)) ...[
+            Padding(
+              padding: EdgeInsets.only(left: 4.w, bottom: 6.h),
+              child: Text(
+                'External recipients',
+                style: GoogleFonts.inter(
+                  color: btTextSecondary,
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            const TransferPredictionAlert(margin: EdgeInsets.zero),
+            SizedBox(height: 20.h),
+          ],
 
           // Payment breakdown card
           _buildPaymentBreakdownCard(totalAmount, fee, grandTotal),
@@ -1004,53 +1054,215 @@ class _BatchTransferReviewScreenState extends State<BatchTransferReviewScreen>
 
   Widget _buildConfirmButton() {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
       decoration: BoxDecoration(
         color: btCard,
         border: Border(top: BorderSide(color: btBorder)),
       ),
       child: SafeArea(
         top: false,
-        child: SizedBox(
-          width: double.infinity,
-          height: 52.h,
-          child: ElevatedButton(
-            onPressed: _isProcessing ? null : _confirmTransfer,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _isScheduled ? btOrange : btBlue,
-              foregroundColor: btTextPrimary,
-              elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-            ),
-            child: _isProcessing
-                ? SizedBox(
-                    height: 20.h,
-                    width: 20.w,
-                    child: const CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(btTextPrimary),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                // Secondary: Save batch as a reusable draft. No money moves.
+                Expanded(
+                  flex: 4,
+                  child: SizedBox(
+                    height: 48.h,
+                    child: OutlinedButton(
+                      onPressed: _isProcessing ? null : _openSaveBatchDialog,
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: btBorder),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14.r)),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.bookmark_outline_rounded,
+                              size: 16.sp, color: btTextPrimary),
+                          SizedBox(width: 6.w),
+                          Text(
+                            'Save',
+                            style: GoogleFonts.inter(
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.w600,
+                                color: btTextPrimary),
+                          ),
+                        ],
+                      ),
                     ),
-                  )
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        _isScheduled ? Icons.schedule : Icons.lock_outlined,
-                        size: 18.sp,
-                      ),
-                      SizedBox(width: 8.w),
-                      Text(
-                        _isScheduled ? 'Schedule Transfer' : 'Confirm Transfer',
-                        style: GoogleFonts.inter(
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
                   ),
-          ),
+                ),
+                SizedBox(width: 10.w),
+                Expanded(
+                  flex: 7,
+                  child: SizedBox(
+                    height: 48.h,
+                    child: ElevatedButton(
+                      onPressed: _isProcessing ? null : _confirmTransfer,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _isScheduled ? btOrange : btBlue,
+                        foregroundColor: btTextPrimary,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14.r)),
+                      ),
+                      child: _isProcessing
+                          ? SizedBox(
+                              height: 20.h,
+                              width: 20.w,
+                              child: const CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(btTextPrimary),
+                              ),
+                            )
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                    _isScheduled
+                                        ? Icons.schedule
+                                        : Icons.lock_outlined,
+                                    size: 16.sp),
+                                SizedBox(width: 8.w),
+                                Text(
+                                  _isScheduled
+                                      ? 'Schedule'
+                                      : 'Confirm',
+                                  style: GoogleFonts.inter(
+                                      fontSize: 14.sp,
+                                      fontWeight: FontWeight.w600),
+                                ),
+                              ],
+                            ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
+    );
+  }
+
+  /// Opens a name-input dialog and persists the in-progress batch as a
+  /// reusable draft via SaveBatchDraft. The Confirm flow is untouched —
+  /// saving a draft never moves money.
+  Future<void> _openSaveBatchDialog() async {
+    final recipients =
+        transferData['recipients'] as List<BatchTransferRecipient>? ?? [];
+    if (recipients.isEmpty) {
+      _showError('Add at least one recipient before saving.');
+      return;
+    }
+    final controller = TextEditingController(
+        text: transferData['description'] as String? ?? '');
+    final name = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: btCard,
+        title: Text('Save this batch',
+            style: GoogleFonts.inter(
+                color: btTextPrimary,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w700)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Saved batches are templates you can re-execute or edit later. No money moves until you tap Send on the saved batch.',
+              style:
+                  GoogleFonts.inter(color: btTextSecondary, fontSize: 12.sp),
+            ),
+            SizedBox(height: 12.h),
+            TextField(
+              controller: controller,
+              autofocus: true,
+              style: GoogleFonts.inter(
+                  color: btTextPrimary, fontSize: 14.sp),
+              decoration: InputDecoration(
+                hintText: 'Batch name',
+                hintStyle: GoogleFonts.inter(color: btTextTertiary),
+                filled: true,
+                fillColor: btBackground,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10.r),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+              inputFormatters: [
+                LengthLimitingTextInputFormatter(80),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text('Cancel',
+                  style: GoogleFonts.inter(color: btTextSecondary))),
+          TextButton(
+              onPressed: () =>
+                  Navigator.of(ctx).pop(controller.text.trim()),
+              child: Text('Save', style: GoogleFonts.inter(color: btBlue))),
+        ],
+      ),
+    );
+    if (name == null || name.isEmpty || !mounted) return;
+
+    // Build the draft items from the in-progress review payload. The
+    // server treats `recipient_type` as the routing hint — we mark each
+    // item as external_bank when a destination_bank_code is present,
+    // otherwise internal_lazervault.
+    final items = recipients.map((r) {
+      return SavedBatchItemInputEntity(
+        recipientType: r.isExternal ? 'external_bank' : 'internal_lazervault',
+        recipientUserId: '',
+        bankCode: r.destinationBankCode ?? '',
+        accountNumber: r.toAccountNumber,
+        beneficiaryName: r.beneficiaryName ?? '',
+        amount: r.amount.toDouble() / 100,
+        narration: r.description ?? r.reference ?? '',
+      );
+    }).toList();
+
+    final repo = serviceLocator<ISavedBatchRepository>();
+    final fromAccountId = (transferData['fromAccountId'] as String?) ?? '';
+    final res = await repo.saveBatchDraft(
+      name: name,
+      currency: _currency,
+      sourceAccountId: fromAccountId,
+      items: items,
+    );
+
+    if (!mounted) return;
+    res.fold(
+      (failure) {
+        _showError('Could not save batch: ${failure.message}');
+      },
+      (saved) {
+        Get.snackbar(
+          'Batch saved',
+          '${saved.name} is now available under Saved Batches.',
+          backgroundColor: btGreen,
+          colorText: btTextPrimary,
+          snackPosition: SnackPosition.TOP,
+          mainButton: TextButton(
+            onPressed: () => Get.toNamed(AppRoutes.savedBatches),
+            child: Text('View',
+                style: GoogleFonts.inter(
+                    color: btTextPrimary,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12.sp)),
+          ),
+        );
+      },
     );
   }
 }

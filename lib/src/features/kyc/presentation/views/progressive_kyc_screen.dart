@@ -624,8 +624,8 @@ class _ProgressiveKYCScreenState extends State<ProgressiveKYCScreen> {
   }
 
   void _startVerification(BuildContext context, {KYCTier? targetTier}) {
-    final authCubit = context.read<AuthenticationCubit>();
-    final countryCode = authCubit.currentProfile?.user.country ?? 'NG';
+    // ID verification screen is BVN-only post-refactor; country code is no
+    // longer surfaced here.
     final tier = targetTier ?? KYCTier.tier2;
 
     // Navigate to ID verification screen for data collection,
@@ -636,8 +636,6 @@ class _ProgressiveKYCScreenState extends State<ProgressiveKYCScreen> {
           value: context.read<KYCCubit>(),
           child: IdVerificationScreen(
             targetTier: tier,
-            countryCode: countryCode,
-            bvnOnlyEntry: countryCode == 'NG' && tier == KYCTier.tier2,
             onSkipPressed: () => _skipForNow(context),
           ),
         ),
@@ -777,7 +775,13 @@ class _ProgressiveKYCScreenState extends State<ProgressiveKYCScreen> {
   void _skipForNow(BuildContext context) {
     final cubit = context.read<KYCCubit>();
     final userId = context.read<AuthenticationCubit>().userId ?? '';
-    cubit.skipKYCUpgrade(userId: userId, skipTier2: true);
+    if (userId.isNotEmpty) {
+      cubit.skipKYCUpgrade(userId: userId, skipTier2: true);
+    }
+    // Skip = "I'll do this later" → take the user straight to the dashboard
+    // (Tier-1 limits). Without this jump the screen sits in place because the
+    // skip backend response only updates state — it does not navigate.
+    Get.offAllNamed(AppRoutes.dashboard);
   }
 
   void _showUpgradeDialog(BuildContext context, UserKYCProfile profile) {

@@ -32,12 +32,13 @@ const InitiateDepositRequest$json = const {
     const {'1': 'source_bank_name', '3': 4, '4': 1, '5': 9, '10': 'source_bank_name'},
     const {'1': 'country_code', '3': 5, '4': 1, '5': 9, '10': 'country_code'},
     const {'1': 'locale', '3': 6, '4': 1, '5': 9, '10': 'locale'},
+    const {'1': 'payment_method', '3': 7, '4': 1, '5': 9, '10': 'payment_method'},
   ],
   '7': const {},
 };
 
 /// Descriptor for `InitiateDepositRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List initiateDepositRequestDescriptor = $convert.base64Decode('ChZJbml0aWF0ZURlcG9zaXRSZXF1ZXN0EiwKEXRhcmdldF9hY2NvdW50X2lkGAEgASgJUhF0YXJnZXRfYWNjb3VudF9pZBIWCgZhbW91bnQYAiABKARSBmFtb3VudBIaCghjdXJyZW5jeRgDIAEoCVIIY3VycmVuY3kSKgoQc291cmNlX2JhbmtfbmFtZRgEIAEoCVIQc291cmNlX2JhbmtfbmFtZRIiCgxjb3VudHJ5X2NvZGUYBSABKAlSDGNvdW50cnlfY29kZRIWCgZsb2NhbGUYBiABKAlSBmxvY2FsZTpAkkE9CjvSARF0YXJnZXRfYWNjb3VudF9pZNIBBmFtb3VudNIBCGN1cnJlbmN50gEQc291cmNlX2JhbmtfbmFtZQ==');
+final $typed_data.Uint8List initiateDepositRequestDescriptor = $convert.base64Decode('ChZJbml0aWF0ZURlcG9zaXRSZXF1ZXN0EiwKEXRhcmdldF9hY2NvdW50X2lkGAEgASgJUhF0YXJnZXRfYWNjb3VudF9pZBIWCgZhbW91bnQYAiABKARSBmFtb3VudBIaCghjdXJyZW5jeRgDIAEoCVIIY3VycmVuY3kSKgoQc291cmNlX2JhbmtfbmFtZRgEIAEoCVIQc291cmNlX2JhbmtfbmFtZRIiCgxjb3VudHJ5X2NvZGUYBSABKAlSDGNvdW50cnlfY29kZRIWCgZsb2NhbGUYBiABKAlSBmxvY2FsZRImCg5wYXltZW50X21ldGhvZBgHIAEoCVIOcGF5bWVudF9tZXRob2Q6QJJBPQo70gERdGFyZ2V0X2FjY291bnRfaWTSAQZhbW91bnTSAQhjdXJyZW5jedIBEHNvdXJjZV9iYW5rX25hbWU=');
 @$core.Deprecated('Use initiateDepositResponseDescriptor instead')
 const InitiateDepositResponse$json = const {
   '1': 'InitiateDepositResponse',
@@ -86,19 +87,6 @@ const GetDepositDetailsResponse$json = const {
 
 /// Descriptor for `GetDepositDetailsResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getDepositDetailsResponseDescriptor = $convert.base64Decode('ChlHZXREZXBvc2l0RGV0YWlsc1Jlc3BvbnNlEh4KCmRlcG9zaXRfaWQYASABKAlSCmRlcG9zaXRfaWQSLAoRdGFyZ2V0X2FjY291bnRfaWQYAiABKAlSEXRhcmdldF9hY2NvdW50X2lkEhYKBmFtb3VudBgDIAEoBFIGYW1vdW50EhoKCGN1cnJlbmN5GAQgASgJUghjdXJyZW5jeRIqChBzb3VyY2VfYmFua19uYW1lGAUgASgJUhBzb3VyY2VfYmFua19uYW1lEikKBnN0YXR1cxgGIAEoDjIRLnBiLkRlcG9zaXRTdGF0dXNSBnN0YXR1cxI6CgpjcmVhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIKY3JlYXRlZF9hdBJACg1wcm9jZXNzaW5nX2F0GAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFINcHJvY2Vzc2luZ19hdBI+Cgxjb21wbGV0ZWRfYXQYCSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgxjb21wbGV0ZWRfYXQSOAoJZmFpbGVkX2F0GAogASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIJZmFpbGVkX2F0EiYKDmZhaWx1cmVfcmVhc29uGAsgASgJUg5mYWlsdXJlX3JlYXNvbhI4ChdleHRlcm5hbF90cmFuc2FjdGlvbl9pZBgMIAEoCVIXZXh0ZXJuYWxfdHJhbnNhY3Rpb25faWQSPAoPdXBkYXRlZF9hY2NvdW50GA0gASgLMhIucGIuQWNjb3VudERldGFpbHNSD3VwZGF0ZWRfYWNjb3VudA==');
-@$core.Deprecated('Use simulateTestDepositRequestDescriptor instead')
-const SimulateTestDepositRequest$json = const {
-  '1': 'SimulateTestDepositRequest',
-  '2': const [
-    const {'1': 'destination_account_id', '3': 1, '4': 1, '5': 9, '10': 'destination_account_id'},
-    const {'1': 'amount', '3': 2, '4': 1, '5': 4, '10': 'amount'},
-    const {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
-    const {'1': 'country_code', '3': 4, '4': 1, '5': 9, '10': 'country_code'},
-  ],
-};
-
-/// Descriptor for `SimulateTestDepositRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List simulateTestDepositRequestDescriptor = $convert.base64Decode('ChpTaW11bGF0ZVRlc3REZXBvc2l0UmVxdWVzdBI2ChZkZXN0aW5hdGlvbl9hY2NvdW50X2lkGAEgASgJUhZkZXN0aW5hdGlvbl9hY2NvdW50X2lkEhYKBmFtb3VudBgCIAEoBFIGYW1vdW50EhoKCGN1cnJlbmN5GAMgASgJUghjdXJyZW5jeRIiCgxjb3VudHJ5X2NvZGUYBCABKAlSDGNvdW50cnlfY29kZQ==');
 @$core.Deprecated('Use getDepositMethodsRequestDescriptor instead')
 const GetDepositMethodsRequest$json = const {
   '1': 'GetDepositMethodsRequest',

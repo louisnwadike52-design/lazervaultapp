@@ -1,7 +1,58 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/datasources/recipient_verification_remote_datasource.dart';
+import '../../domain/entities/account_verification_result.dart';
 import 'account_verification_state.dart';
 import '../../../../../core/utilities/banks_data.dart';
+
+/// Process-local verification cache.
+///
+/// Bank name-enquiry is the slowest single RPC in the SendFunds flow
+/// (~800ms-2s against Paystack/Flutterwave sandbox on Nigerian 4G). The
+/// (bank_code, account_number) → account_name mapping is stable for the
+/// lifetime of an open account, so caching for 30 minutes avoids paying
+/// the cost again when a user re-enters the same recipient (e.g. typo
+/// then corrects back, or comes back to the screen).
+///
+/// Why 30 min (not longer): Paystack itself may rate-limit our test-mode
+/// resolves; aggressive caching also masks closed/frozen accounts. 30
+/// min is short enough that a closed account surfaces within one user
+/// session, long enough to cover the rapid-iteration flow.
+///
+/// Why in-memory (not Hive): names are PII-adjacent. Persisting them to
+/// disk widens the data-at-rest surface for marginal benefit (app-restart
+/// cache hits are rare on this screen). Kept process-local.
+class _VerificationCache {
+  static final Map<String, _CacheEntry> _entries = {};
+  static const Duration _ttl = Duration(minutes: 30);
+
+  static String _key(String bankCode, String accountNumber, String country) =>
+      '$country:$bankCode:$accountNumber';
+
+  static AccountVerificationResult? get(
+      String bankCode, String accountNumber, String country) {
+    final entry = _entries[_key(bankCode, accountNumber, country)];
+    if (entry == null) return null;
+    if (DateTime.now().isAfter(entry.expiresAt)) {
+      _entries.remove(_key(bankCode, accountNumber, country));
+      return null;
+    }
+    return entry.result;
+  }
+
+  static void put(String bankCode, String accountNumber, String country,
+      AccountVerificationResult result) {
+    _entries[_key(bankCode, accountNumber, country)] = _CacheEntry(
+      result: result,
+      expiresAt: DateTime.now().add(_ttl),
+    );
+  }
+}
+
+class _CacheEntry {
+  final AccountVerificationResult result;
+  final DateTime expiresAt;
+  const _CacheEntry({required this.result, required this.expiresAt});
+}
 
 /// Cubit for managing account verification state.
 ///
@@ -38,6 +89,22 @@ class AccountVerificationCubit extends Cubit<AccountVerificationState> {
     _lastAccountNumber = accountNumber;
     _lastCountry = country;
 
+    // Cache hit short-circuit. Same (country, bankCode, accountNumber)
+    // tuple resolved within the last 30min is reused — saves a network
+    // round-trip on Nigerian 4G + dodges the Paystack test-mode daily-
+    // resolve rate limit on the same recipient.
+    final cached = _VerificationCache.get(bankCode, accountNumber, country);
+    if (cached != null) {
+      emit(AccountVerificationSuccess(
+        accountNumber: cached.accountNumber,
+        accountName: cached.accountName,
+        bankName: cached.bankName,
+        bankCode: cached.bankCode,
+        verificationStatus: cached.verificationStatus,
+      ));
+      return;
+    }
+
     // Emit loading state
     emit(AccountVerificationLoading(
       accountNumber: accountNumber,
@@ -54,6 +121,10 @@ class AccountVerificationCubit extends Cubit<AccountVerificationState> {
       );
 
       if (isClosed) return;
+
+      // Cache successful verifications only — failures should re-query
+      // so the user gets up-to-date error reasons.
+      _VerificationCache.put(bankCode, accountNumber, country, result);
 
       // Emit success state
       emit(AccountVerificationSuccess(

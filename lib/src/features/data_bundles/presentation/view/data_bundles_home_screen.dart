@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../cubit/data_bundles_cubit.dart';
 import '../widgets/data_recent_purchases_card.dart';
@@ -174,6 +176,21 @@ class _DataBundlesHomeScreenState extends State<DataBundlesHomeScreen> {
                 ),
               ],
             ),
+          ),
+          // Per-bill voice + chat icons — pin every session to the
+          // data flow on chat-products-service
+          // (DIRECT_ROUTES['data'] → primary 'utility').
+          ServiceVoiceButton(
+            serviceName: 'data',
+            iconColor: const Color(0xFF3B82F6),
+            backgroundColor: const Color(0xFF3B82F6),
+          ),
+          SizedBox(width: 8.w),
+          MicroserviceChatIcon(
+            serviceName: 'Data Bundles',
+            sourceContext: 'data',
+            icon: Icons.chat_bubble_outline,
+            iconColor: const Color(0xFF3B82F6),
           ),
         ],
       ),

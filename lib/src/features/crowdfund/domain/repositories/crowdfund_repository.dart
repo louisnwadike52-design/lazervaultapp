@@ -42,9 +42,30 @@ abstract class CrowdfundRepository {
     CrowdfundStatus? status,
     String? imageUrl,
     Map<String, dynamic>? metadata,
+    String? category,
+    double? targetAmount,
   });
 
   Future<void> deleteCrowdfund(String crowdfundId);
+
+  /// Cancel campaign + auto-refund every outstanding contribution.
+  /// Returns the synchronous result; the async worker advances the
+  /// campaign from `cancelling` → `cancelled` once all refunds settle.
+  Future<CancelCrowdfundResult> cancelCrowdfund({
+    required String crowdfundId,
+    required String reason,
+    required String transactionPin,
+    required String transactionId,
+  });
+
+  /// Page through refund audit rows for a campaign. Backend enforces
+  /// visibility (creator + admin see all; contributors see only own).
+  Future<List<CrowdfundRefund>> listCrowdfundRefunds({
+    required String crowdfundId,
+    String? status,
+    int page = 1,
+    int pageSize = 50,
+  });
 
   // Donation Operations
   Future<CrowdfundDonation> makeDonation({

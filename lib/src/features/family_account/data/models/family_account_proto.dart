@@ -601,3 +601,82 @@ class MemberAllocationProto {
     };
   }
 }
+
+/// Invitee-side invitation history entry. Mirrors
+/// proto.InvitationHistoryEntry — one row per invitation regardless of
+/// status (pending/accepted/declined/expired/removed).
+class InvitationHistoryEntryProto {
+  final String invitationToken;
+  final String familyId;
+  final String familyName;
+  final String creatorName;
+  final String? creatorAvatar;
+  final String invitedBy;
+  final String invitationStatus;
+  final double initialAllocation;
+  final double dailyLimit;
+  final double monthlyLimit;
+  final String invitationMethod;
+  final String invitationDestination;
+  final String createdAt;
+  final String expiresAt;
+  final String? respondedAt;
+
+  InvitationHistoryEntryProto({
+    required this.invitationToken,
+    required this.familyId,
+    required this.familyName,
+    required this.creatorName,
+    this.creatorAvatar,
+    required this.invitedBy,
+    required this.invitationStatus,
+    required this.initialAllocation,
+    required this.dailyLimit,
+    required this.monthlyLimit,
+    required this.invitationMethod,
+    required this.invitationDestination,
+    required this.createdAt,
+    required this.expiresAt,
+    this.respondedAt,
+  });
+}
+
+/// Inviter-side history entry — one row per invitation sent across all
+/// families the caller admins. Mirrors proto.SentInvitationEntry.
+class SentInvitationEntryProto {
+  final String memberId;
+  final String familyId;
+  final String familyName;
+  final String invitationMethod;
+  final String invitationDestination;
+  final String invitationStatus;
+  final String? invitedUserId;
+  final String invitedUserName;
+  final String? invitedUserAvatar;
+  final double initialAllocation;
+  final double dailyLimit;
+  final double monthlyLimit;
+  final String role;
+  final String createdAt;
+  final String expiresAt;
+  final String? respondedAt;
+
+  SentInvitationEntryProto({
+    required this.memberId,
+    required this.familyId,
+    required this.familyName,
+    required this.invitationMethod,
+    required this.invitationDestination,
+    required this.invitationStatus,
+    this.invitedUserId,
+    required this.invitedUserName,
+    this.invitedUserAvatar,
+    required this.initialAllocation,
+    required this.dailyLimit,
+    required this.monthlyLimit,
+    required this.role,
+    required this.createdAt,
+    required this.expiresAt,
+    this.respondedAt,
+  });
+}

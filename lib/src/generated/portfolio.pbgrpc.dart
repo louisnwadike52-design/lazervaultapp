@@ -10,62 +10,62 @@ import 'dart:async' as $async;
 import 'dart:core' as $core;
 
 import 'package:grpc/service_api.dart' as $grpc;
-import 'portfolio.pb.dart' as $29;
+import 'portfolio.pb.dart' as $30;
 export 'portfolio.pb.dart';
 
 class PortfolioServiceClient extends $grpc.Client {
   static final _$getCompletePortfolio = $grpc.ClientMethod<
-          $29.GetCompletePortfolioRequest, $29.GetCompletePortfolioResponse>(
+          $30.GetCompletePortfolioRequest, $30.GetCompletePortfolioResponse>(
       '/pb.PortfolioService/GetCompletePortfolio',
-      ($29.GetCompletePortfolioRequest value) => value.writeToBuffer(),
+      ($30.GetCompletePortfolioRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $29.GetCompletePortfolioResponse.fromBuffer(value));
+          $30.GetCompletePortfolioResponse.fromBuffer(value));
   static final _$getPortfolioByAssetType = $grpc.ClientMethod<
-          $29.GetPortfolioByAssetTypeRequest,
-          $29.GetPortfolioByAssetTypeResponse>(
+          $30.GetPortfolioByAssetTypeRequest,
+          $30.GetPortfolioByAssetTypeResponse>(
       '/pb.PortfolioService/GetPortfolioByAssetType',
-      ($29.GetPortfolioByAssetTypeRequest value) => value.writeToBuffer(),
+      ($30.GetPortfolioByAssetTypeRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $29.GetPortfolioByAssetTypeResponse.fromBuffer(value));
+          $30.GetPortfolioByAssetTypeResponse.fromBuffer(value));
   static final _$getPortfolioHistory = $grpc.ClientMethod<
-          $29.GetPortfolioHistoryRequest, $29.GetPortfolioHistoryResponse>(
+          $30.GetPortfolioHistoryRequest, $30.GetPortfolioHistoryResponse>(
       '/pb.PortfolioService/GetPortfolioHistory',
-      ($29.GetPortfolioHistoryRequest value) => value.writeToBuffer(),
+      ($30.GetPortfolioHistoryRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $29.GetPortfolioHistoryResponse.fromBuffer(value));
+          $30.GetPortfolioHistoryResponse.fromBuffer(value));
   static final _$getPortfolioSummary = $grpc.ClientMethod<
-          $29.GetPortfolioSummaryRequest, $29.GetPortfolioSummaryResponse>(
+          $30.GetPortfolioSummaryRequest, $30.GetPortfolioSummaryResponse>(
       '/pb.PortfolioService/GetPortfolioSummary',
-      ($29.GetPortfolioSummaryRequest value) => value.writeToBuffer(),
+      ($30.GetPortfolioSummaryRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $29.GetPortfolioSummaryResponse.fromBuffer(value));
+          $30.GetPortfolioSummaryResponse.fromBuffer(value));
 
   PortfolioServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
       $core.Iterable<$grpc.ClientInterceptor>? interceptors})
       : super(channel, options: options, interceptors: interceptors);
 
-  $grpc.ResponseFuture<$29.GetCompletePortfolioResponse> getCompletePortfolio(
-      $29.GetCompletePortfolioRequest request,
+  $grpc.ResponseFuture<$30.GetCompletePortfolioResponse> getCompletePortfolio(
+      $30.GetCompletePortfolioRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getCompletePortfolio, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.GetPortfolioByAssetTypeResponse>
-      getPortfolioByAssetType($29.GetPortfolioByAssetTypeRequest request,
+  $grpc.ResponseFuture<$30.GetPortfolioByAssetTypeResponse>
+      getPortfolioByAssetType($30.GetPortfolioByAssetTypeRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getPortfolioByAssetType, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$29.GetPortfolioHistoryResponse> getPortfolioHistory(
-      $29.GetPortfolioHistoryRequest request,
+  $grpc.ResponseFuture<$30.GetPortfolioHistoryResponse> getPortfolioHistory(
+      $30.GetPortfolioHistoryRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getPortfolioHistory, request, options: options);
   }
 
-  $grpc.ResponseFuture<$29.GetPortfolioSummaryResponse> getPortfolioSummary(
-      $29.GetPortfolioSummaryRequest request,
+  $grpc.ResponseFuture<$30.GetPortfolioSummaryResponse> getPortfolioSummary(
+      $30.GetPortfolioSummaryRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getPortfolioSummary, request, options: options);
   }
@@ -75,74 +75,74 @@ abstract class PortfolioServiceBase extends $grpc.Service {
   $core.String get $name => 'pb.PortfolioService';
 
   PortfolioServiceBase() {
-    $addMethod($grpc.ServiceMethod<$29.GetCompletePortfolioRequest,
-            $29.GetCompletePortfolioResponse>(
+    $addMethod($grpc.ServiceMethod<$30.GetCompletePortfolioRequest,
+            $30.GetCompletePortfolioResponse>(
         'GetCompletePortfolio',
         getCompletePortfolio_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.GetCompletePortfolioRequest.fromBuffer(value),
-        ($29.GetCompletePortfolioResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.GetPortfolioByAssetTypeRequest,
-            $29.GetPortfolioByAssetTypeResponse>(
+            $30.GetCompletePortfolioRequest.fromBuffer(value),
+        ($30.GetCompletePortfolioResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$30.GetPortfolioByAssetTypeRequest,
+            $30.GetPortfolioByAssetTypeResponse>(
         'GetPortfolioByAssetType',
         getPortfolioByAssetType_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.GetPortfolioByAssetTypeRequest.fromBuffer(value),
-        ($29.GetPortfolioByAssetTypeResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.GetPortfolioHistoryRequest,
-            $29.GetPortfolioHistoryResponse>(
+            $30.GetPortfolioByAssetTypeRequest.fromBuffer(value),
+        ($30.GetPortfolioByAssetTypeResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$30.GetPortfolioHistoryRequest,
+            $30.GetPortfolioHistoryResponse>(
         'GetPortfolioHistory',
         getPortfolioHistory_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.GetPortfolioHistoryRequest.fromBuffer(value),
-        ($29.GetPortfolioHistoryResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$29.GetPortfolioSummaryRequest,
-            $29.GetPortfolioSummaryResponse>(
+            $30.GetPortfolioHistoryRequest.fromBuffer(value),
+        ($30.GetPortfolioHistoryResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$30.GetPortfolioSummaryRequest,
+            $30.GetPortfolioSummaryResponse>(
         'GetPortfolioSummary',
         getPortfolioSummary_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $29.GetPortfolioSummaryRequest.fromBuffer(value),
-        ($29.GetPortfolioSummaryResponse value) => value.writeToBuffer()));
+            $30.GetPortfolioSummaryRequest.fromBuffer(value),
+        ($30.GetPortfolioSummaryResponse value) => value.writeToBuffer()));
   }
 
-  $async.Future<$29.GetCompletePortfolioResponse> getCompletePortfolio_Pre(
+  $async.Future<$30.GetCompletePortfolioResponse> getCompletePortfolio_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$29.GetCompletePortfolioRequest> request) async {
+      $async.Future<$30.GetCompletePortfolioRequest> request) async {
     return getCompletePortfolio(call, await request);
   }
 
-  $async.Future<$29.GetPortfolioByAssetTypeResponse>
+  $async.Future<$30.GetPortfolioByAssetTypeResponse>
       getPortfolioByAssetType_Pre($grpc.ServiceCall call,
-          $async.Future<$29.GetPortfolioByAssetTypeRequest> request) async {
+          $async.Future<$30.GetPortfolioByAssetTypeRequest> request) async {
     return getPortfolioByAssetType(call, await request);
   }
 
-  $async.Future<$29.GetPortfolioHistoryResponse> getPortfolioHistory_Pre(
+  $async.Future<$30.GetPortfolioHistoryResponse> getPortfolioHistory_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$29.GetPortfolioHistoryRequest> request) async {
+      $async.Future<$30.GetPortfolioHistoryRequest> request) async {
     return getPortfolioHistory(call, await request);
   }
 
-  $async.Future<$29.GetPortfolioSummaryResponse> getPortfolioSummary_Pre(
+  $async.Future<$30.GetPortfolioSummaryResponse> getPortfolioSummary_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$29.GetPortfolioSummaryRequest> request) async {
+      $async.Future<$30.GetPortfolioSummaryRequest> request) async {
     return getPortfolioSummary(call, await request);
   }
 
-  $async.Future<$29.GetCompletePortfolioResponse> getCompletePortfolio(
-      $grpc.ServiceCall call, $29.GetCompletePortfolioRequest request);
-  $async.Future<$29.GetPortfolioByAssetTypeResponse> getPortfolioByAssetType(
-      $grpc.ServiceCall call, $29.GetPortfolioByAssetTypeRequest request);
-  $async.Future<$29.GetPortfolioHistoryResponse> getPortfolioHistory(
-      $grpc.ServiceCall call, $29.GetPortfolioHistoryRequest request);
-  $async.Future<$29.GetPortfolioSummaryResponse> getPortfolioSummary(
-      $grpc.ServiceCall call, $29.GetPortfolioSummaryRequest request);
+  $async.Future<$30.GetCompletePortfolioResponse> getCompletePortfolio(
+      $grpc.ServiceCall call, $30.GetCompletePortfolioRequest request);
+  $async.Future<$30.GetPortfolioByAssetTypeResponse> getPortfolioByAssetType(
+      $grpc.ServiceCall call, $30.GetPortfolioByAssetTypeRequest request);
+  $async.Future<$30.GetPortfolioHistoryResponse> getPortfolioHistory(
+      $grpc.ServiceCall call, $30.GetPortfolioHistoryRequest request);
+  $async.Future<$30.GetPortfolioSummaryResponse> getPortfolioSummary(
+      $grpc.ServiceCall call, $30.GetPortfolioSummaryRequest request);
 }

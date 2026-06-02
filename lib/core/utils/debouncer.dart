@@ -45,6 +45,15 @@ class Debouncer {
   /// like character count updates or local validation.
   factory Debouncer.typing() => Debouncer(milliseconds: 300);
 
+  /// Creates a debouncer optimized for SendFunds-flow recipient search.
+  ///
+  /// At 250ms, results feel near-instant on a typical 80-150ms Nigerian
+  /// 4G link while still consolidating bursty keypresses into one API
+  /// call. Use this on screens where the user is actively waiting on
+  /// results (recipient picker, username search) — NOT for screens where
+  /// they're still composing a query (analytics filters, etc.).
+  factory Debouncer.snappy() => Debouncer(milliseconds: 250);
+
   /// Creates a debouncer optimized for real-time updates (100ms delay).
   ///
   /// Use sparingly - only for scenarios requiring near-immediate feedback.

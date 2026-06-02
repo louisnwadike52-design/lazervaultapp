@@ -18,6 +18,9 @@ import 'package:lazervault/src/features/recipients/presentation/cubit/account_ve
 import 'package:lazervault/src/features/recipients/presentation/cubit/account_verification_state.dart';
 import 'package:lazervault/src/features/recipients/domain/entities/account_verification_result.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/recipient_chips_builder.dart';
+import 'package:lazervault/src/features/funds/cubit/recurring_transfer_cubit.dart';
+import 'package:lazervault/src/features/funds/cubit/recurring_transfer_state.dart';
+import 'package:lazervault/src/features/funds/domain/entities/recurring_transfer_entity.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/recipient_filter_chip_card.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/recipients/presentation/widgets/enhanced_recipient_selection_bottom_sheet.dart';
@@ -67,6 +70,12 @@ class _SelectRecipientsState extends State<SelectRecipients> {
 
   // Scroll controller for recipients list
   final ScrollController _recipientsScrollController = ScrollController();
+
+  // Recurring-transfers cubit. Held as a field rather than read from the
+  // tree because this screen is the only consumer and we want a fresh
+  // instance per screen lifecycle (factory-registered in serviceLocator).
+  // Created lazily on first tap of the "Recurring" pill.
+  RecurringTransferCubit? _recurringTransferCubit;
 
   String? _getAccessTokenFromState(AuthenticationState authState) {
     if (authState is AuthenticationSuccess) {
@@ -139,10 +148,15 @@ class _SelectRecipientsState extends State<SelectRecipients> {
   @override
   void dispose() {
     _recipientsScrollController.dispose();
+    _recurringTransferCubit?.close();
     super.dispose();
   }
 
   void _onRecipientsScroll() {
+    // Recurring tab uses a different cubit + no pagination — skip the
+    // recipients load-more on that filter.
+    if (_currentFilter == RecipientFilterType.recurring) return;
+
     if (_recipientsScrollController.position.pixels >=
         _recipientsScrollController.position.maxScrollExtent * 0.8) {
       // Load more when scrolled to 80% of the list
@@ -171,9 +185,16 @@ class _SelectRecipientsState extends State<SelectRecipients> {
     final countryCode = localeManager.currentCountry;
     final currency = localeManager.currentCurrency;
 
-    // Apply filter based on selected type
+    // Apply filter based on selected type.
+    //
+    // `recurring` is the only filter that uses a different cubit + data
+    // source (active recurring transfers, not saved recipients). The other
+    // three all call RecipientCubit.getRecipients with parameters; backend
+    // returns recent-first by default so 'recent' is the same call as 'all'
+    // — kept distinct so the chip selection remains visible.
     switch (filterType) {
       case RecipientFilterType.all:
+      case RecipientFilterType.recent:
         context.read<RecipientCubit>().getRecipients(
           accessToken: accessToken,
           countryCode: countryCode,
@@ -188,19 +209,11 @@ class _SelectRecipientsState extends State<SelectRecipients> {
           favoritesOnly: true,
         );
         break;
-      case RecipientFilterType.recent:
-        context.read<RecipientCubit>().getRecipients(
-          accessToken: accessToken,
-          countryCode: countryCode,
-          currency: currency,
-        );
-        break;
-      case RecipientFilterType.bank:
-        context.read<RecipientCubit>().getRecipients(
-          accessToken: accessToken,
-          countryCode: countryCode,
-          currency: currency,
-        );
+      case RecipientFilterType.recurring:
+        // Lazy-create the cubit on first tap so users who never visit the
+        // Recurring tab don't pay for a wasted gRPC client setup.
+        _recurringTransferCubit ??= serviceLocator<RecurringTransferCubit>();
+        _recurringTransferCubit!.loadRecurringTransfers(status: 'active');
         break;
     }
   }
@@ -515,6 +528,13 @@ class _SelectRecipientsState extends State<SelectRecipients> {
   }
 
   Widget _buildRecipientsList(RecipientState state) {
+    // Recurring tab swaps the list contents for the user's active
+    // recurring transfers. Different cubit, different entity, different
+    // empty-state copy — easiest to fork at the top.
+    if (_currentFilter == RecipientFilterType.recurring) {
+      return _buildRecurringList();
+    }
+
     // Handle Initial State explicitly - show centered loader while initializing
     if (state is RecipientInitial) {
       return _buildLoadingWidget();
@@ -3306,6 +3326,213 @@ class _SelectRecipientsState extends State<SelectRecipients> {
       ),
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+    );
+  }
+
+  /// Builds the recurring-transfers panel shown when the user taps the
+  /// "Recurring" pill. Uses the central `_buildLoadingWidget()` for the
+  /// loading state (consistent with the recipients list) and reuses the
+  /// same card layout via `_buildRecurringTransferItem`.
+  Widget _buildRecurringList() {
+    final cubit = _recurringTransferCubit;
+    if (cubit == null) {
+      return _buildLoadingWidget();
+    }
+    return BlocProvider.value(
+      value: cubit,
+      child: BlocBuilder<RecurringTransferCubit, RecurringTransferState>(
+        builder: (context, state) {
+          if (state is RecurringTransferInitial ||
+              state is RecurringTransferLoading) {
+            return _buildLoadingWidget();
+          }
+          if (state is RecurringTransferError) {
+            return Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 32.w),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.cloud_off_rounded,
+                        color: Colors.grey[400], size: 48.sp),
+                    SizedBox(height: 16.h),
+                    Text(
+                      _friendlyError(state.message),
+                      style: TextStyle(
+                          color: Colors.grey[400], fontSize: 14.sp),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 16.h),
+                    TextButton(
+                      onPressed: () => cubit.loadRecurringTransfers(status: 'active'),
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+          if (state is RecurringTransferListLoaded) {
+            final transfers = state.transfers;
+            if (transfers.isEmpty) {
+              return Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 32.w),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.repeat_rounded,
+                          color: Colors.grey[400], size: 48.sp),
+                      SizedBox(height: 16.h),
+                      Text(
+                        'No active recurring transfers',
+                        style: TextStyle(
+                            color: Colors.grey[600], fontSize: 16.sp),
+                      ),
+                      SizedBox(height: 8.h),
+                      Text(
+                        'Set one up from any transfer confirmation.',
+                        style: TextStyle(
+                            color: Colors.grey[500], fontSize: 13.sp),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+            return RefreshIndicator(
+              color: const Color.fromARGB(255, 78, 3, 208),
+              onRefresh: () async {
+                await cubit.loadRecurringTransfers(status: 'active');
+              },
+              child: ListView.builder(
+                physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics(),
+                ),
+                padding: EdgeInsets.symmetric(vertical: 8.h),
+                itemCount: transfers.length,
+                itemBuilder: (context, index) =>
+                    _buildRecurringTransferItem(transfers[index]),
+              ),
+            );
+          }
+          // Any non-list terminal state (Created / Updated / Deleted /
+          // DetailLoaded) — just show the loader briefly; the cubit will
+          // be refreshed back to ListLoaded by the next user action.
+          return _buildLoadingWidget();
+        },
+      ),
+    );
+  }
+
+  /// Card for a single recurring transfer. Tap navigates to the detail
+  /// screen (same surface as the standalone recurring transfers list).
+  Widget _buildRecurringTransferItem(RecurringTransferEntity t) {
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 8.h, horizontal: 4.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            offset: const Offset(0, 2),
+            blurRadius: 8,
+            spreadRadius: 0,
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16.r),
+          onTap: () => Get.toNamed(
+            AppRoutes.recurringTransferDetail,
+            arguments: t.id,
+          ),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+            child: Row(
+              children: [
+                Container(
+                  width: 48.w,
+                  height: 48.w,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEDE7FA),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.repeat_rounded,
+                      color: const Color.fromARGB(255, 78, 3, 208),
+                      size: 22.sp,
+                    ),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _toTitleCase(t.recipientName),
+                        style: TextStyle(
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      SizedBox(height: 2.h),
+                      Text(
+                        '${t.recipientBankName.isEmpty ? "LazerVault" : t.recipientBankName} • ${t.frequency.label}',
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '${t.currency} ${t.amount.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    SizedBox(height: 4.h),
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 6.w, vertical: 2.h),
+                      decoration: BoxDecoration(
+                        color: t.status == RecurringTransferStatus.active
+                            ? const Color(0xFFE6F8EE)
+                            : const Color(0xFFFDECEC),
+                        borderRadius: BorderRadius.circular(4.r),
+                      ),
+                      child: Text(
+                        t.status.label,
+                        style: TextStyle(
+                          fontSize: 10.sp,
+                          fontWeight: FontWeight.w600,
+                          color: t.status == RecurringTransferStatus.active
+                              ? const Color(0xFF1AA260)
+                              : const Color(0xFFD64545),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 

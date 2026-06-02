@@ -42,6 +42,10 @@ class CrowdfundGrpcDataSource {
         return pb.CrowdfundStatus.CROWDFUND_STATUS_COMPLETED;
       case CrowdfundStatus.cancelled:
         return pb.CrowdfundStatus.CROWDFUND_STATUS_CANCELLED;
+      case CrowdfundStatus.cancelling:
+        return pb.CrowdfundStatus.CROWDFUND_STATUS_CANCELLING;
+      case CrowdfundStatus.expired:
+        return pb.CrowdfundStatus.CROWDFUND_STATUS_EXPIRED;
     }
   }
 
@@ -173,6 +177,8 @@ class CrowdfundGrpcDataSource {
     CrowdfundStatus? status,
     String? imageUrl,
     Map<String, dynamic>? metadata,
+    String? category,
+    double? targetAmount,
   }) async {
     try {
       final request = pb.UpdateCrowdfundRequest()..crowdfundId = crowdfundId;
@@ -184,6 +190,10 @@ class CrowdfundGrpcDataSource {
       if (status != null) request.status = _statusToProto(status);
       if (imageUrl != null) request.imageUrl = imageUrl;
       if (metadata != null) request.metadata = jsonEncode(metadata);
+      if (category != null) request.category = category;
+      if (targetAmount != null) {
+        request.targetAmount = _amountToInt64(targetAmount);
+      }
 
       final callOptions = await _callOptionsHelper.withAuth();
       final response =
@@ -192,6 +202,56 @@ class CrowdfundGrpcDataSource {
       return CrowdfundModel.fromProto(response.crowdfund);
     } on GrpcError catch (e) {
       throw Exception(friendlyGrpcError(e, 'Failed to update crowdfund'));
+    }
+  }
+
+  /// Cancel the campaign and queue per-contribution refunds. Returns
+  /// the synchronous result with refunds_queued; the async worker
+  /// drains the queue and advances status from cancelling → cancelled.
+  Future<CancelCrowdfundResultModel> cancelCrowdfund({
+    required String crowdfundId,
+    required String reason,
+    required String transactionPin,
+    required String transactionId,
+  }) async {
+    try {
+      final request = pb.CancelCrowdfundRequest()
+        ..crowdfundId = crowdfundId
+        ..reason = reason
+        ..transactionPin = transactionPin
+        ..transactionId = transactionId;
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response =
+          await _client.cancelCrowdfund(request, options: callOptions);
+      return CancelCrowdfundResultModel.fromProto(response);
+    } on GrpcError catch (e) {
+      throw Exception(friendlyGrpcError(e, 'Failed to cancel crowdfund'));
+    }
+  }
+
+  /// List refund audit rows for the campaign. Backend enforces
+  /// visibility (campaign creator + admin see all rows; contributors
+  /// see only their own).
+  Future<List<CrowdfundRefundModel>> listCrowdfundRefunds({
+    required String crowdfundId,
+    String? status,
+    int page = 1,
+    int pageSize = 50,
+  }) async {
+    try {
+      final request = pb.ListCrowdfundRefundsRequest()
+        ..crowdfundId = crowdfundId
+        ..page = page
+        ..pageSize = pageSize;
+      if (status != null) request.status = status;
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response =
+          await _client.listCrowdfundRefunds(request, options: callOptions);
+      return response.refunds
+          .map((r) => CrowdfundRefundModel.fromProto(r))
+          .toList();
+    } on GrpcError catch (e) {
+      throw Exception(friendlyGrpcError(e, 'Failed to list refunds'));
     }
   }
 

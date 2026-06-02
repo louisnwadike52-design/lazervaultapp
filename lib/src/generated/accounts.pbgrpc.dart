@@ -284,6 +284,32 @@ class AccountsServiceClient extends $grpc.Client {
           ($0.TopUpLockFundsRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
               $0.TopUpLockFundsResponse.fromBuffer(value));
+  static final _$renewLockFunds =
+      $grpc.ClientMethod<$0.RenewLockFundsRequest, $0.RenewLockFundsResponse>(
+          '/accounts.AccountsService/RenewLockFunds',
+          ($0.RenewLockFundsRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.RenewLockFundsResponse.fromBuffer(value));
+  static final _$cancelLockFunds =
+      $grpc.ClientMethod<$0.CancelLockFundsRequest, $0.CancelLockFundsResponse>(
+          '/accounts.AccountsService/CancelLockFunds',
+          ($0.CancelLockFundsRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.CancelLockFundsResponse.fromBuffer(value));
+  static final _$adminForceMatureLockFunds = $grpc.ClientMethod<
+          $0.AdminForceMatureLockFundsRequest,
+          $0.AdminForceMatureLockFundsResponse>(
+      '/accounts.AccountsService/AdminForceMatureLockFunds',
+      ($0.AdminForceMatureLockFundsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.AdminForceMatureLockFundsResponse.fromBuffer(value));
+  static final _$adminForceCancelLockFunds = $grpc.ClientMethod<
+          $0.AdminForceCancelLockFundsRequest,
+          $0.AdminForceCancelLockFundsResponse>(
+      '/accounts.AccountsService/AdminForceCancelLockFunds',
+      ($0.AdminForceCancelLockFundsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.AdminForceCancelLockFundsResponse.fromBuffer(value));
   static final _$getPiggyVaultConfig = $grpc.ClientMethod<
           $0.GetPiggyVaultConfigRequest, $0.GetPiggyVaultConfigResponse>(
       '/accounts.AccountsService/GetPiggyVaultConfig',
@@ -466,6 +492,79 @@ class AccountsServiceClient extends $grpc.Client {
           value.writeToBuffer(),
       ($core.List<$core.int> value) =>
           $0.AdminGetPlatformWalletTransactionsResponse.fromBuffer(value));
+  static final _$adminListWalletReconciliations = $grpc.ClientMethod<
+          $0.AdminListWalletReconciliationsRequest,
+          $0.AdminListWalletReconciliationsResponse>(
+      '/accounts.AccountsService/AdminListWalletReconciliations',
+      ($0.AdminListWalletReconciliationsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.AdminListWalletReconciliationsResponse.fromBuffer(value));
+  static final _$adminRunWalletReconciliation = $grpc.ClientMethod<
+          $0.AdminRunWalletReconciliationRequest,
+          $0.AdminRunWalletReconciliationResponse>(
+      '/accounts.AccountsService/AdminRunWalletReconciliation',
+      ($0.AdminRunWalletReconciliationRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.AdminRunWalletReconciliationResponse.fromBuffer(value));
+  static final _$adminGetRevenueBalanceSnapshots = $grpc.ClientMethod<
+          $0.AdminGetRevenueBalanceSnapshotsRequest,
+          $0.AdminGetRevenueBalanceSnapshotsResponse>(
+      '/accounts.AccountsService/AdminGetRevenueBalanceSnapshots',
+      ($0.AdminGetRevenueBalanceSnapshotsRequest value) =>
+          value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.AdminGetRevenueBalanceSnapshotsResponse.fromBuffer(value));
+  static final _$adminListOpsAlerts = $grpc.ClientMethod<
+          $0.AdminListOpsAlertsRequest, $0.AdminListOpsAlertsResponse>(
+      '/accounts.AccountsService/AdminListOpsAlerts',
+      ($0.AdminListOpsAlertsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.AdminListOpsAlertsResponse.fromBuffer(value));
+  static final _$adminAckOpsAlert = $grpc.ClientMethod<
+          $0.AdminAckOpsAlertRequest, $0.AdminAckOpsAlertResponse>(
+      '/accounts.AccountsService/AdminAckOpsAlert',
+      ($0.AdminAckOpsAlertRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.AdminAckOpsAlertResponse.fromBuffer(value));
+  static final _$adminSilenceOpsAlert = $grpc.ClientMethod<
+          $0.AdminSilenceOpsAlertRequest, $0.AdminSilenceOpsAlertResponse>(
+      '/accounts.AccountsService/AdminSilenceOpsAlert',
+      ($0.AdminSilenceOpsAlertRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.AdminSilenceOpsAlertResponse.fromBuffer(value));
+  static final _$adminUnsilenceOpsAlert = $grpc.ClientMethod<
+          $0.AdminUnsilenceOpsAlertRequest, $0.AdminUnsilenceOpsAlertResponse>(
+      '/accounts.AccountsService/AdminUnsilenceOpsAlert',
+      ($0.AdminUnsilenceOpsAlertRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.AdminUnsilenceOpsAlertResponse.fromBuffer(value));
+  static final _$adminGetOpsAlert =
+      $grpc.ClientMethod<$0.AdminGetOpsAlertRequest, $0.OpsAlertDetail>(
+          '/accounts.AccountsService/AdminGetOpsAlert',
+          ($0.AdminGetOpsAlertRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) => $0.OpsAlertDetail.fromBuffer(value));
+  static final _$adminListSupportedLocales = $grpc.ClientMethod<
+          $0.AdminListSupportedLocalesRequest,
+          $0.AdminListSupportedLocalesResponse>(
+      '/accounts.AccountsService/AdminListSupportedLocales',
+      ($0.AdminListSupportedLocalesRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.AdminListSupportedLocalesResponse.fromBuffer(value));
+  static final _$adminGetPiggyVaultConfigI18n = $grpc.ClientMethod<
+          $0.AdminGetPiggyVaultConfigI18nRequest,
+          $0.AdminGetPiggyVaultConfigI18nResponse>(
+      '/accounts.AccountsService/AdminGetPiggyVaultConfigI18n',
+      ($0.AdminGetPiggyVaultConfigI18nRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.AdminGetPiggyVaultConfigI18nResponse.fromBuffer(value));
+  static final _$adminUpsertPiggyVaultConfigI18n = $grpc.ClientMethod<
+          $0.AdminUpsertPiggyVaultConfigI18nRequest,
+          $0.AdminUpsertPiggyVaultConfigI18nResponse>(
+      '/accounts.AccountsService/AdminUpsertPiggyVaultConfigI18n',
+      ($0.AdminUpsertPiggyVaultConfigI18nRequest value) =>
+          value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.AdminUpsertPiggyVaultConfigI18nResponse.fromBuffer(value));
   static final _$adminGetClearingRecords = $grpc.ClientMethod<
           $0.AdminGetClearingRecordsRequest,
           $0.AdminGetClearingRecordsResponse>(
@@ -770,6 +869,32 @@ class AccountsServiceClient extends $grpc.Client {
     return $createUnaryCall(_$topUpLockFunds, request, options: options);
   }
 
+  $grpc.ResponseFuture<$0.RenewLockFundsResponse> renewLockFunds(
+      $0.RenewLockFundsRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$renewLockFunds, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.CancelLockFundsResponse> cancelLockFunds(
+      $0.CancelLockFundsRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$cancelLockFunds, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.AdminForceMatureLockFundsResponse>
+      adminForceMatureLockFunds($0.AdminForceMatureLockFundsRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminForceMatureLockFunds, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$0.AdminForceCancelLockFundsResponse>
+      adminForceCancelLockFunds($0.AdminForceCancelLockFundsRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminForceCancelLockFunds, request,
+        options: options);
+  }
+
   $grpc.ResponseFuture<$0.GetPiggyVaultConfigResponse> getPiggyVaultConfig(
       $0.GetPiggyVaultConfigRequest request,
       {$grpc.CallOptions? options}) {
@@ -955,6 +1080,84 @@ class AccountsServiceClient extends $grpc.Client {
           $0.AdminGetPlatformWalletTransactionsRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$adminGetPlatformWalletTransactions, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$0.AdminListWalletReconciliationsResponse>
+      adminListWalletReconciliations(
+          $0.AdminListWalletReconciliationsRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminListWalletReconciliations, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$0.AdminRunWalletReconciliationResponse>
+      adminRunWalletReconciliation(
+          $0.AdminRunWalletReconciliationRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminRunWalletReconciliation, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$0.AdminGetRevenueBalanceSnapshotsResponse>
+      adminGetRevenueBalanceSnapshots(
+          $0.AdminGetRevenueBalanceSnapshotsRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminGetRevenueBalanceSnapshots, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$0.AdminListOpsAlertsResponse> adminListOpsAlerts(
+      $0.AdminListOpsAlertsRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminListOpsAlerts, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.AdminAckOpsAlertResponse> adminAckOpsAlert(
+      $0.AdminAckOpsAlertRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminAckOpsAlert, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.AdminSilenceOpsAlertResponse> adminSilenceOpsAlert(
+      $0.AdminSilenceOpsAlertRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminSilenceOpsAlert, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.AdminUnsilenceOpsAlertResponse>
+      adminUnsilenceOpsAlert($0.AdminUnsilenceOpsAlertRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminUnsilenceOpsAlert, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$0.OpsAlertDetail> adminGetOpsAlert(
+      $0.AdminGetOpsAlertRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminGetOpsAlert, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.AdminListSupportedLocalesResponse>
+      adminListSupportedLocales($0.AdminListSupportedLocalesRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminListSupportedLocales, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$0.AdminGetPiggyVaultConfigI18nResponse>
+      adminGetPiggyVaultConfigI18n(
+          $0.AdminGetPiggyVaultConfigI18nRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminGetPiggyVaultConfigI18n, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$0.AdminUpsertPiggyVaultConfigI18nResponse>
+      adminUpsertPiggyVaultConfigI18n(
+          $0.AdminUpsertPiggyVaultConfigI18nRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminUpsertPiggyVaultConfigI18n, request,
         options: options);
   }
 
@@ -1382,6 +1585,42 @@ abstract class AccountsServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.TopUpLockFundsRequest.fromBuffer(value),
         ($0.TopUpLockFundsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.RenewLockFundsRequest,
+            $0.RenewLockFundsResponse>(
+        'RenewLockFunds',
+        renewLockFunds_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.RenewLockFundsRequest.fromBuffer(value),
+        ($0.RenewLockFundsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.CancelLockFundsRequest,
+            $0.CancelLockFundsResponse>(
+        'CancelLockFunds',
+        cancelLockFunds_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.CancelLockFundsRequest.fromBuffer(value),
+        ($0.CancelLockFundsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AdminForceMatureLockFundsRequest,
+            $0.AdminForceMatureLockFundsResponse>(
+        'AdminForceMatureLockFunds',
+        adminForceMatureLockFunds_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.AdminForceMatureLockFundsRequest.fromBuffer(value),
+        ($0.AdminForceMatureLockFundsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AdminForceCancelLockFundsRequest,
+            $0.AdminForceCancelLockFundsResponse>(
+        'AdminForceCancelLockFunds',
+        adminForceCancelLockFunds_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.AdminForceCancelLockFundsRequest.fromBuffer(value),
+        ($0.AdminForceCancelLockFundsResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.GetPiggyVaultConfigRequest,
             $0.GetPiggyVaultConfigResponse>(
         'GetPiggyVaultConfig',
@@ -1643,6 +1882,110 @@ abstract class AccountsServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.AdminGetPlatformWalletTransactionsRequest.fromBuffer(value),
         ($0.AdminGetPlatformWalletTransactionsResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AdminListWalletReconciliationsRequest,
+            $0.AdminListWalletReconciliationsResponse>(
+        'AdminListWalletReconciliations',
+        adminListWalletReconciliations_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.AdminListWalletReconciliationsRequest.fromBuffer(value),
+        ($0.AdminListWalletReconciliationsResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AdminRunWalletReconciliationRequest,
+            $0.AdminRunWalletReconciliationResponse>(
+        'AdminRunWalletReconciliation',
+        adminRunWalletReconciliation_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.AdminRunWalletReconciliationRequest.fromBuffer(value),
+        ($0.AdminRunWalletReconciliationResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AdminGetRevenueBalanceSnapshotsRequest,
+            $0.AdminGetRevenueBalanceSnapshotsResponse>(
+        'AdminGetRevenueBalanceSnapshots',
+        adminGetRevenueBalanceSnapshots_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.AdminGetRevenueBalanceSnapshotsRequest.fromBuffer(value),
+        ($0.AdminGetRevenueBalanceSnapshotsResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AdminListOpsAlertsRequest,
+            $0.AdminListOpsAlertsResponse>(
+        'AdminListOpsAlerts',
+        adminListOpsAlerts_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.AdminListOpsAlertsRequest.fromBuffer(value),
+        ($0.AdminListOpsAlertsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AdminAckOpsAlertRequest,
+            $0.AdminAckOpsAlertResponse>(
+        'AdminAckOpsAlert',
+        adminAckOpsAlert_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.AdminAckOpsAlertRequest.fromBuffer(value),
+        ($0.AdminAckOpsAlertResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AdminSilenceOpsAlertRequest,
+            $0.AdminSilenceOpsAlertResponse>(
+        'AdminSilenceOpsAlert',
+        adminSilenceOpsAlert_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.AdminSilenceOpsAlertRequest.fromBuffer(value),
+        ($0.AdminSilenceOpsAlertResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AdminUnsilenceOpsAlertRequest,
+            $0.AdminUnsilenceOpsAlertResponse>(
+        'AdminUnsilenceOpsAlert',
+        adminUnsilenceOpsAlert_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.AdminUnsilenceOpsAlertRequest.fromBuffer(value),
+        ($0.AdminUnsilenceOpsAlertResponse value) => value.writeToBuffer()));
+    $addMethod(
+        $grpc.ServiceMethod<$0.AdminGetOpsAlertRequest, $0.OpsAlertDetail>(
+            'AdminGetOpsAlert',
+            adminGetOpsAlert_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $0.AdminGetOpsAlertRequest.fromBuffer(value),
+            ($0.OpsAlertDetail value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AdminListSupportedLocalesRequest,
+            $0.AdminListSupportedLocalesResponse>(
+        'AdminListSupportedLocales',
+        adminListSupportedLocales_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.AdminListSupportedLocalesRequest.fromBuffer(value),
+        ($0.AdminListSupportedLocalesResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AdminGetPiggyVaultConfigI18nRequest,
+            $0.AdminGetPiggyVaultConfigI18nResponse>(
+        'AdminGetPiggyVaultConfigI18n',
+        adminGetPiggyVaultConfigI18n_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.AdminGetPiggyVaultConfigI18nRequest.fromBuffer(value),
+        ($0.AdminGetPiggyVaultConfigI18nResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AdminUpsertPiggyVaultConfigI18nRequest,
+            $0.AdminUpsertPiggyVaultConfigI18nResponse>(
+        'AdminUpsertPiggyVaultConfigI18n',
+        adminUpsertPiggyVaultConfigI18n_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.AdminUpsertPiggyVaultConfigI18nRequest.fromBuffer(value),
+        ($0.AdminUpsertPiggyVaultConfigI18nResponse value) =>
             value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.AdminGetClearingRecordsRequest,
             $0.AdminGetClearingRecordsResponse>(
@@ -1941,6 +2284,30 @@ abstract class AccountsServiceBase extends $grpc.Service {
     return topUpLockFunds(call, await request);
   }
 
+  $async.Future<$0.RenewLockFundsResponse> renewLockFunds_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.RenewLockFundsRequest> request) async {
+    return renewLockFunds(call, await request);
+  }
+
+  $async.Future<$0.CancelLockFundsResponse> cancelLockFunds_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.CancelLockFundsRequest> request) async {
+    return cancelLockFunds(call, await request);
+  }
+
+  $async.Future<$0.AdminForceMatureLockFundsResponse>
+      adminForceMatureLockFunds_Pre($grpc.ServiceCall call,
+          $async.Future<$0.AdminForceMatureLockFundsRequest> request) async {
+    return adminForceMatureLockFunds(call, await request);
+  }
+
+  $async.Future<$0.AdminForceCancelLockFundsResponse>
+      adminForceCancelLockFunds_Pre($grpc.ServiceCall call,
+          $async.Future<$0.AdminForceCancelLockFundsRequest> request) async {
+    return adminForceCancelLockFunds(call, await request);
+  }
+
   $async.Future<$0.GetPiggyVaultConfigResponse> getPiggyVaultConfig_Pre(
       $grpc.ServiceCall call,
       $async.Future<$0.GetPiggyVaultConfigRequest> request) async {
@@ -2115,6 +2482,77 @@ abstract class AccountsServiceBase extends $grpc.Service {
     return adminGetPlatformWalletTransactions(call, await request);
   }
 
+  $async.Future<$0.AdminListWalletReconciliationsResponse>
+      adminListWalletReconciliations_Pre(
+          $grpc.ServiceCall call,
+          $async.Future<$0.AdminListWalletReconciliationsRequest>
+              request) async {
+    return adminListWalletReconciliations(call, await request);
+  }
+
+  $async.Future<$0.AdminRunWalletReconciliationResponse>
+      adminRunWalletReconciliation_Pre($grpc.ServiceCall call,
+          $async.Future<$0.AdminRunWalletReconciliationRequest> request) async {
+    return adminRunWalletReconciliation(call, await request);
+  }
+
+  $async.Future<$0.AdminGetRevenueBalanceSnapshotsResponse>
+      adminGetRevenueBalanceSnapshots_Pre(
+          $grpc.ServiceCall call,
+          $async.Future<$0.AdminGetRevenueBalanceSnapshotsRequest>
+              request) async {
+    return adminGetRevenueBalanceSnapshots(call, await request);
+  }
+
+  $async.Future<$0.AdminListOpsAlertsResponse> adminListOpsAlerts_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.AdminListOpsAlertsRequest> request) async {
+    return adminListOpsAlerts(call, await request);
+  }
+
+  $async.Future<$0.AdminAckOpsAlertResponse> adminAckOpsAlert_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.AdminAckOpsAlertRequest> request) async {
+    return adminAckOpsAlert(call, await request);
+  }
+
+  $async.Future<$0.AdminSilenceOpsAlertResponse> adminSilenceOpsAlert_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.AdminSilenceOpsAlertRequest> request) async {
+    return adminSilenceOpsAlert(call, await request);
+  }
+
+  $async.Future<$0.AdminUnsilenceOpsAlertResponse> adminUnsilenceOpsAlert_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.AdminUnsilenceOpsAlertRequest> request) async {
+    return adminUnsilenceOpsAlert(call, await request);
+  }
+
+  $async.Future<$0.OpsAlertDetail> adminGetOpsAlert_Pre($grpc.ServiceCall call,
+      $async.Future<$0.AdminGetOpsAlertRequest> request) async {
+    return adminGetOpsAlert(call, await request);
+  }
+
+  $async.Future<$0.AdminListSupportedLocalesResponse>
+      adminListSupportedLocales_Pre($grpc.ServiceCall call,
+          $async.Future<$0.AdminListSupportedLocalesRequest> request) async {
+    return adminListSupportedLocales(call, await request);
+  }
+
+  $async.Future<$0.AdminGetPiggyVaultConfigI18nResponse>
+      adminGetPiggyVaultConfigI18n_Pre($grpc.ServiceCall call,
+          $async.Future<$0.AdminGetPiggyVaultConfigI18nRequest> request) async {
+    return adminGetPiggyVaultConfigI18n(call, await request);
+  }
+
+  $async.Future<$0.AdminUpsertPiggyVaultConfigI18nResponse>
+      adminUpsertPiggyVaultConfigI18n_Pre(
+          $grpc.ServiceCall call,
+          $async.Future<$0.AdminUpsertPiggyVaultConfigI18nRequest>
+              request) async {
+    return adminUpsertPiggyVaultConfigI18n(call, await request);
+  }
+
   $async.Future<$0.AdminGetClearingRecordsResponse> adminGetClearingRecords_Pre(
       $grpc.ServiceCall call,
       $async.Future<$0.AdminGetClearingRecordsRequest> request) async {
@@ -2230,6 +2668,14 @@ abstract class AccountsServiceBase extends $grpc.Service {
       $grpc.ServiceCall call, $0.UnlockFundsRequest request);
   $async.Future<$0.TopUpLockFundsResponse> topUpLockFunds(
       $grpc.ServiceCall call, $0.TopUpLockFundsRequest request);
+  $async.Future<$0.RenewLockFundsResponse> renewLockFunds(
+      $grpc.ServiceCall call, $0.RenewLockFundsRequest request);
+  $async.Future<$0.CancelLockFundsResponse> cancelLockFunds(
+      $grpc.ServiceCall call, $0.CancelLockFundsRequest request);
+  $async.Future<$0.AdminForceMatureLockFundsResponse> adminForceMatureLockFunds(
+      $grpc.ServiceCall call, $0.AdminForceMatureLockFundsRequest request);
+  $async.Future<$0.AdminForceCancelLockFundsResponse> adminForceCancelLockFunds(
+      $grpc.ServiceCall call, $0.AdminForceCancelLockFundsRequest request);
   $async.Future<$0.GetPiggyVaultConfigResponse> getPiggyVaultConfig(
       $grpc.ServiceCall call, $0.GetPiggyVaultConfigRequest request);
   $async.Future<$0.GetAllPiggyVaultConfigsResponse> getAllPiggyVaultConfigs(
@@ -2292,6 +2738,33 @@ abstract class AccountsServiceBase extends $grpc.Service {
   $async.Future<$0.AdminGetPlatformWalletTransactionsResponse>
       adminGetPlatformWalletTransactions($grpc.ServiceCall call,
           $0.AdminGetPlatformWalletTransactionsRequest request);
+  $async.Future<$0.AdminListWalletReconciliationsResponse>
+      adminListWalletReconciliations($grpc.ServiceCall call,
+          $0.AdminListWalletReconciliationsRequest request);
+  $async.Future<$0.AdminRunWalletReconciliationResponse>
+      adminRunWalletReconciliation($grpc.ServiceCall call,
+          $0.AdminRunWalletReconciliationRequest request);
+  $async.Future<$0.AdminGetRevenueBalanceSnapshotsResponse>
+      adminGetRevenueBalanceSnapshots($grpc.ServiceCall call,
+          $0.AdminGetRevenueBalanceSnapshotsRequest request);
+  $async.Future<$0.AdminListOpsAlertsResponse> adminListOpsAlerts(
+      $grpc.ServiceCall call, $0.AdminListOpsAlertsRequest request);
+  $async.Future<$0.AdminAckOpsAlertResponse> adminAckOpsAlert(
+      $grpc.ServiceCall call, $0.AdminAckOpsAlertRequest request);
+  $async.Future<$0.AdminSilenceOpsAlertResponse> adminSilenceOpsAlert(
+      $grpc.ServiceCall call, $0.AdminSilenceOpsAlertRequest request);
+  $async.Future<$0.AdminUnsilenceOpsAlertResponse> adminUnsilenceOpsAlert(
+      $grpc.ServiceCall call, $0.AdminUnsilenceOpsAlertRequest request);
+  $async.Future<$0.OpsAlertDetail> adminGetOpsAlert(
+      $grpc.ServiceCall call, $0.AdminGetOpsAlertRequest request);
+  $async.Future<$0.AdminListSupportedLocalesResponse> adminListSupportedLocales(
+      $grpc.ServiceCall call, $0.AdminListSupportedLocalesRequest request);
+  $async.Future<$0.AdminGetPiggyVaultConfigI18nResponse>
+      adminGetPiggyVaultConfigI18n($grpc.ServiceCall call,
+          $0.AdminGetPiggyVaultConfigI18nRequest request);
+  $async.Future<$0.AdminUpsertPiggyVaultConfigI18nResponse>
+      adminUpsertPiggyVaultConfigI18n($grpc.ServiceCall call,
+          $0.AdminUpsertPiggyVaultConfigI18nRequest request);
   $async.Future<$0.AdminGetClearingRecordsResponse> adminGetClearingRecords(
       $grpc.ServiceCall call, $0.AdminGetClearingRecordsRequest request);
   $async.Future<$0.AdminGetClearingHealthResponse> adminGetClearingHealth(

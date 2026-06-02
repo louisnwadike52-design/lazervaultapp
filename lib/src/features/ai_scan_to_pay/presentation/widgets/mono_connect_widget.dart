@@ -122,6 +122,19 @@ Future<MonoConnectResult?> showMonoConnectBottomSheet({
   }
   debugPrint('[MonoConnect] ==========================================');
 
+  // Dismiss the modal sheet that hosts the Mono WebView exactly once. The Mono
+  // SDK's success/close callbacks complete the flow but do NOT close our sheet,
+  // so without this the sheet lingers showing a blank (closed) WebView when the
+  // user taps X / back. Pop it so the user lands back on the deposit screen.
+  var monoSheetDismissed = false;
+  void dismissMonoSheet() {
+    if (monoSheetDismissed) return;
+    monoSheetDismissed = true;
+    if (context.mounted && Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
+  }
+
   // Build configuration
   final config = ConnectConfiguration(
     publicKey: publicKey,
@@ -146,6 +159,7 @@ Future<MonoConnectResult?> showMonoConnectBottomSheet({
         institutionName: selectedInstitutionName ?? institution?.name,
       );
 
+      dismissMonoSheet();
       completer.complete(result);
     },
     onEvent: (event) {
@@ -162,6 +176,9 @@ Future<MonoConnectResult?> showMonoConnectBottomSheet({
       debugPrint('[MonoConnect] Closed');
       HapticFeedback.lightImpact();
 
+      // Pop our host sheet so the user returns to the deposit screen instead
+      // of a blank, closed-WebView sheet.
+      dismissMonoSheet();
       if (!completer.isCompleted) {
         // User cancelled
         completer.complete(null);
@@ -170,17 +187,30 @@ Future<MonoConnectResult?> showMonoConnectBottomSheet({
   );
 
   // Launch Mono Connect as custom modal bottom sheet (70% height with themed background)
-  _launchCustomMonoBottomSheet(context, config);
+  // If the sheet is dismissed by ANY means (swipe, barrier tap, or our pop)
+  // without a Mono success/close callback, treat it as a cancel so the caller's
+  // future never hangs.
+  _launchCustomMonoBottomSheet(context, config).whenComplete(() {
+    monoSheetDismissed = true;
+    if (!completer.isCompleted) {
+      completer.complete(null);
+    }
+  });
 
   return completer.future;
 }
 
 /// Custom themed Mono Connect bottom sheet with 90% screen height and styled overlay
-void _launchCustomMonoBottomSheet(BuildContext context, ConnectConfiguration config) {
-  showModalBottomSheet<dynamic>(
+Future<dynamic> _launchCustomMonoBottomSheet(BuildContext context, ConnectConfiguration config) {
+  return showModalBottomSheet<dynamic>(
     context: context,
     useSafeArea: true,
     isScrollControlled: true,
+    // Non-closable by swipe / barrier tap — the flow only ends via Mono's own
+    // controls (success or its X/back), which we handle gracefully. Prevents
+    // accidental dismissal mid-link, especially after a mandate is created.
+    isDismissible: false,
+    enableDrag: false,
     backgroundColor: Colors.transparent,
     barrierColor: const Color(0xFF0D0D1A).withValues(alpha: 0.85), // Dark themed overlay
     shape: const RoundedRectangleBorder(

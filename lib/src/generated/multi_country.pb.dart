@@ -10,7 +10,7 @@ import 'dart:core' as $core;
 import 'package:protobuf/protobuf.dart' as $pb;
 
 import 'accounts.pb.dart' as $0;
-import 'google/protobuf/timestamp.pb.dart' as $4;
+import 'google/protobuf/timestamp.pb.dart' as $2;
 
 class LocaleAccountGroup extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'LocaleAccountGroup', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts'), createEmptyInstance: create)
@@ -1080,8 +1080,8 @@ class LocaleAccountCreationStatus extends $pb.GeneratedMessage {
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'countryCode')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorMessage')
-    ..aOM<$4.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $4.Timestamp.create)
-    ..aOM<$4.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completedAt', subBuilder: $4.Timestamp.create)
+    ..aOM<$2.Timestamp>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $2.Timestamp.create)
+    ..aOM<$2.Timestamp>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'completedAt', subBuilder: $2.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -1091,8 +1091,8 @@ class LocaleAccountCreationStatus extends $pb.GeneratedMessage {
     $core.String? countryCode,
     $core.String? status,
     $core.String? errorMessage,
-    $4.Timestamp? createdAt,
-    $4.Timestamp? completedAt,
+    $2.Timestamp? createdAt,
+    $2.Timestamp? completedAt,
   }) {
     final _result = create();
     if (locale != null) {
@@ -1173,26 +1173,26 @@ class LocaleAccountCreationStatus extends $pb.GeneratedMessage {
   void clearErrorMessage() => clearField(4);
 
   @$pb.TagNumber(5)
-  $4.Timestamp get createdAt => $_getN(4);
+  $2.Timestamp get createdAt => $_getN(4);
   @$pb.TagNumber(5)
-  set createdAt($4.Timestamp v) { setField(5, v); }
+  set createdAt($2.Timestamp v) { setField(5, v); }
   @$pb.TagNumber(5)
   $core.bool hasCreatedAt() => $_has(4);
   @$pb.TagNumber(5)
   void clearCreatedAt() => clearField(5);
   @$pb.TagNumber(5)
-  $4.Timestamp ensureCreatedAt() => $_ensure(4);
+  $2.Timestamp ensureCreatedAt() => $_ensure(4);
 
   @$pb.TagNumber(6)
-  $4.Timestamp get completedAt => $_getN(5);
+  $2.Timestamp get completedAt => $_getN(5);
   @$pb.TagNumber(6)
-  set completedAt($4.Timestamp v) { setField(6, v); }
+  set completedAt($2.Timestamp v) { setField(6, v); }
   @$pb.TagNumber(6)
   $core.bool hasCompletedAt() => $_has(5);
   @$pb.TagNumber(6)
   void clearCompletedAt() => clearField(6);
   @$pb.TagNumber(6)
-  $4.Timestamp ensureCompletedAt() => $_ensure(5);
+  $2.Timestamp ensureCompletedAt() => $_ensure(5);
 }
 
 class GetAccountCreationStatusRequest extends $pb.GeneratedMessage {

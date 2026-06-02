@@ -65,6 +65,14 @@ class CrowdfundModel extends Crowdfund {
     required super.createdAt,
     required super.updatedAt,
     super.recentDonations,
+    super.cancelReason,
+    super.cancelInitiatedBy,
+    super.cancelInitiatorUserId,
+    super.cancelledAt,
+    super.refundsPending,
+    super.refundsCompleted,
+    super.refundsFailed,
+    super.totalRefunded,
   });
 
   factory CrowdfundModel.fromProto(pb.CrowdfundMessage proto) {
@@ -76,12 +84,12 @@ class CrowdfundModel extends Crowdfund {
       description: proto.description,
       story: proto.story,
       crowdfundCode: proto.crowdfundCode,
-      targetAmount: proto.targetAmount.toDouble() / 100, // Convert from cents
+      targetAmount: proto.targetAmount.toDouble() / 100, // kobo → major
       currentAmount: proto.currentAmount.toDouble() / 100,
       currency: proto.currency,
       deadline: proto.hasDeadline() ? proto.deadline.toDateTime() : null,
       category: proto.category,
-      status: _statusFromProto(proto.status),
+      status: statusFromProto(proto.status),
       imageUrl: proto.imageUrl.isEmpty ? null : proto.imageUrl,
       metadata: proto.metadata.isEmpty ? null : _safeJsonDecode(proto.metadata),
       donorCount: proto.donorCount,
@@ -91,10 +99,24 @@ class CrowdfundModel extends Crowdfund {
       recentDonations: proto.recentDonations
           .map((d) => CrowdfundDonationModel.fromProto(d))
           .toList(),
+      cancelReason:
+          proto.cancelReason.isEmpty ? null : proto.cancelReason,
+      cancelInitiatedBy: proto.cancelInitiatedBy.isEmpty
+          ? null
+          : proto.cancelInitiatedBy,
+      cancelInitiatorUserId: proto.cancelInitiatorUserId.isEmpty
+          ? null
+          : proto.cancelInitiatorUserId,
+      cancelledAt:
+          proto.hasCancelledAt() ? proto.cancelledAt.toDateTime() : null,
+      refundsPending: proto.refundsPending,
+      refundsCompleted: proto.refundsCompleted,
+      refundsFailed: proto.refundsFailed,
+      totalRefunded: proto.totalRefunded.toDouble() / 100,
     );
   }
 
-  static CrowdfundStatus _statusFromProto(pb.CrowdfundStatus status) {
+  static CrowdfundStatus statusFromProto(pb.CrowdfundStatus status) {
     switch (status) {
       case pb.CrowdfundStatus.CROWDFUND_STATUS_ACTIVE:
         return CrowdfundStatus.active;
@@ -104,11 +126,79 @@ class CrowdfundModel extends Crowdfund {
         return CrowdfundStatus.completed;
       case pb.CrowdfundStatus.CROWDFUND_STATUS_CANCELLED:
         return CrowdfundStatus.cancelled;
+      case pb.CrowdfundStatus.CROWDFUND_STATUS_CANCELLING:
+        return CrowdfundStatus.cancelling;
+      case pb.CrowdfundStatus.CROWDFUND_STATUS_EXPIRED:
+        return CrowdfundStatus.expired;
       default:
         return CrowdfundStatus.active;
     }
   }
 
+}
+
+/// Maps the per-row refund proto onto the domain entity.
+class CrowdfundRefundModel extends CrowdfundRefund {
+  const CrowdfundRefundModel({
+    required super.id,
+    required super.contributionId,
+    required super.crowdfundId,
+    required super.contributorUserId,
+    required super.contributorDisplayName,
+    super.destinationAccountId,
+    required super.amount,
+    required super.currency,
+    required super.status,
+    required super.initiatedBy,
+    required super.reason,
+    required super.attemptCount,
+    super.lastError,
+    required super.createdAt,
+    required super.updatedAt,
+  });
+
+  factory CrowdfundRefundModel.fromProto(pb.CrowdfundRefundRecord proto) {
+    return CrowdfundRefundModel(
+      id: proto.id,
+      contributionId: proto.contributionId,
+      crowdfundId: proto.crowdfundId,
+      contributorUserId: proto.contributorUserId.toInt(),
+      contributorDisplayName: proto.contributorDisplayName,
+      destinationAccountId: proto.destinationAccountId.isEmpty
+          ? null
+          : proto.destinationAccountId,
+      amount: proto.amount.toDouble() / 100, // kobo → major
+      currency: proto.currency.isEmpty ? 'NGN' : proto.currency,
+      status: proto.status,
+      initiatedBy: proto.initiatedBy,
+      reason: proto.reason,
+      attemptCount: proto.attemptCount,
+      lastError: proto.lastError.isEmpty ? null : proto.lastError,
+      createdAt: DateTime.tryParse(proto.createdAt) ?? DateTime.now(),
+      updatedAt: DateTime.tryParse(proto.updatedAt) ?? DateTime.now(),
+    );
+  }
+}
+
+/// Result returned from the synchronous portion of CancelCrowdfund.
+class CancelCrowdfundResultModel extends CancelCrowdfundResult {
+  const CancelCrowdfundResultModel({
+    required super.crowdfund,
+    required super.totalContributions,
+    required super.refundsQueued,
+    required super.totalRefundAmount,
+    required super.message,
+  });
+
+  factory CancelCrowdfundResultModel.fromProto(pb.CancelCrowdfundResponse proto) {
+    return CancelCrowdfundResultModel(
+      crowdfund: CrowdfundModel.fromProto(proto.crowdfund),
+      totalContributions: proto.totalContributions,
+      refundsQueued: proto.refundsQueued,
+      totalRefundAmount: proto.totalRefundAmount.toDouble() / 100,
+      message: proto.message,
+    );
+  }
 }
 
 class CrowdfundDonorModel extends CrowdfundDonor {

@@ -1448,7 +1448,10 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton(() => InitiateDepositUseCase(serviceLocator<IDepositRepository>()));
 
   // Blocs/Cubits
-  serviceLocator.registerFactory(() => DepositCubit(
+  // Lazy singleton (not factory) so the deposit screen + its modal sheets all
+  // resolve the SAME instance via serviceLocator — the modal CTAs run from a
+  // context above the screen's BlocProvider, so context.read would miss it.
+  serviceLocator.registerLazySingleton(() => DepositCubit(
     serviceLocator<InitiateDepositUseCase>(),
     bankingWebSocketService: serviceLocator<BankingWebSocketService>(),
   ));

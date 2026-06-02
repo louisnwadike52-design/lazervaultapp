@@ -81,7 +81,7 @@ class _MultiSelectRecipientBottomSheetState extends State<MultiSelectRecipientBo
   final List<RecipientModel> _tempSelectedRecipients = [];
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _userSearchController = TextEditingController();
-  final Debouncer _userSearchDebouncer = Debouncer.search();
+  final Debouncer _userSearchDebouncer = Debouncer.snappy();
   String _searchQuery = '';
 
   late TabController _tabController;

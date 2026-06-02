@@ -16,6 +16,11 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
   final SearchCrowdfundsUseCase searchCrowdfundsUseCase;
   final UpdateCrowdfundUseCase updateCrowdfundUseCase;
   final DeleteCrowdfundUseCase deleteCrowdfundUseCase;
+  // Cancel + list-refunds use cases. Optional because callers that
+  // don't expose the cancel UI (test harnesses, legacy DI) can still
+  // construct a cubit without them.
+  final CancelCrowdfundUseCase? cancelCrowdfundUseCase;
+  final ListCrowdfundRefundsUseCase? listCrowdfundRefundsUseCase;
   final MakeDonationUseCase makeDonationUseCase;
   final GetCrowdfundDonationsUseCase getCrowdfundDonationsUseCase;
   final GetUserDonationsUseCase getUserDonationsUseCase;
@@ -52,6 +57,8 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
     required this.searchCrowdfundsUseCase,
     required this.updateCrowdfundUseCase,
     required this.deleteCrowdfundUseCase,
+    this.cancelCrowdfundUseCase,
+    this.listCrowdfundRefundsUseCase,
     required this.makeDonationUseCase,
     required this.getCrowdfundDonationsUseCase,
     required this.getUserDonationsUseCase,
@@ -533,7 +540,10 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
     }
   }
 
-  /// Update an existing crowdfund
+  /// Update an existing crowdfund. category + targetAmount are
+  /// optional and only sent when changed — backend rejects target
+  /// reductions below current_amount and silently ignores past
+  /// deadlines, so the Edit UI also pre-validates.
   Future<void> updateCrowdfund({
     required String crowdfundId,
     String? title,
@@ -543,6 +553,8 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
     CrowdfundStatus? status,
     String? imageUrl,
     Map<String, dynamic>? metadata,
+    String? category,
+    double? targetAmount,
   }) async {
     try {
       if (isClosed) return;
@@ -557,6 +569,8 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
         status: status,
         imageUrl: imageUrl,
         metadata: metadata,
+        category: category,
+        targetAmount: targetAmount,
       );
 
       await _cacheManager?.invalidatePattern('crowdfund');
@@ -569,7 +583,114 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
     }
   }
 
-  /// Delete a crowdfund
+  /// Pause an active campaign. Reuses UpdateCrowdfund with
+  /// status='paused' under the hood — a future dedicated RPC swap
+  /// wouldn't require callers to change.
+  Future<void> pauseCrowdfund(String crowdfundId) async {
+    try {
+      if (isClosed) return;
+      emit(const CrowdfundLoading(message: 'Pausing campaign...'));
+      final crowdfund = await updateCrowdfundUseCase(
+        crowdfundId: crowdfundId,
+        status: CrowdfundStatus.paused,
+      );
+      await _cacheManager?.invalidatePattern('crowdfund');
+      if (isClosed) return;
+      emit(CrowdfundPaused(crowdfund));
+    } catch (e) {
+      if (isClosed) return;
+      emit(CrowdfundError(message: getUserFriendlyErrorMessage(e, fallback: 'Failed to pause campaign. Please try again.')));
+    }
+  }
+
+  /// Resume a paused campaign back to active. If the deadline has
+  /// already passed the backend deadline worker will flip the row
+  /// back to 'expired' within a minute — the UI warns at confirm.
+  Future<void> resumeCrowdfund(String crowdfundId) async {
+    try {
+      if (isClosed) return;
+      emit(const CrowdfundLoading(message: 'Resuming campaign...'));
+      final crowdfund = await updateCrowdfundUseCase(
+        crowdfundId: crowdfundId,
+        status: CrowdfundStatus.active,
+      );
+      await _cacheManager?.invalidatePattern('crowdfund');
+      if (isClosed) return;
+      emit(CrowdfundResumed(crowdfund));
+    } catch (e) {
+      if (isClosed) return;
+      emit(CrowdfundError(message: getUserFriendlyErrorMessage(e, fallback: 'Failed to resume campaign. Please try again.')));
+    }
+  }
+
+  /// Cancel the campaign and auto-refund every contributor. The
+  /// returned state's `refundsQueued` is what the worker will drain
+  /// asynchronously; the cancel-progress screen reads
+  /// `refunds_pending` / `refunds_completed` off the campaign on
+  /// each refresh.
+  Future<void> cancelCrowdfund({
+    required String crowdfundId,
+    required String reason,
+    required String transactionPin,
+    required String transactionId,
+  }) async {
+    if (cancelCrowdfundUseCase == null) {
+      emit(const CrowdfundError(message: 'Cancel is not configured.'));
+      return;
+    }
+    try {
+      if (isClosed) return;
+      emit(const CrowdfundLoading(message: 'Queuing refunds...'));
+
+      final result = await cancelCrowdfundUseCase!(
+        crowdfundId: crowdfundId,
+        reason: reason,
+        transactionPin: transactionPin,
+        transactionId: transactionId,
+      );
+
+      await _cacheManager?.invalidatePattern('crowdfund');
+
+      if (isClosed) return;
+      emit(CancelInitiated(
+        crowdfund: result.crowdfund,
+        refundsQueued: result.refundsQueued,
+        totalContributions: result.totalContributions,
+        totalRefundAmount: result.totalRefundAmount,
+        message: result.message,
+      ));
+    } catch (e) {
+      if (isClosed) return;
+      emit(CrowdfundError(message: getUserFriendlyErrorMessage(e, fallback: 'Failed to cancel campaign. Please try again.')));
+    }
+  }
+
+  /// Load refund audit rows for the campaign (used by the cancel
+  /// progress screen). Doesn't emit Loading because it runs on top
+  /// of an existing details screen — callers should disable the UI
+  /// optimistically and rely on this state's emit.
+  Future<void> loadCrowdfundRefunds({
+    required String crowdfundId,
+    String? status,
+    int pageSize = 100,
+  }) async {
+    if (listCrowdfundRefundsUseCase == null) return;
+    try {
+      final refunds = await listCrowdfundRefundsUseCase!(
+        crowdfundId: crowdfundId,
+        status: status,
+        pageSize: pageSize,
+      );
+      if (isClosed) return;
+      emit(CrowdfundRefundsLoaded(crowdfundId: crowdfundId, refunds: refunds));
+    } catch (e) {
+      if (isClosed) return;
+      emit(CrowdfundError(message: getUserFriendlyErrorMessage(e, fallback: 'Failed to load refunds.')));
+    }
+  }
+
+  /// Delete a crowdfund. Backend enforces "no contributors" — UI
+  /// gates the menu item but the server is the source of truth.
   Future<void> deleteCrowdfund(String crowdfundId) async {
     try {
       if (isClosed) return;
@@ -579,8 +700,8 @@ class CrowdfundCubit extends Cubit<CrowdfundState> {
 
       await _cacheManager?.invalidatePattern('crowdfund');
 
-      // Reload crowdfunds after deletion
-      await loadCrowdfunds();
+      if (isClosed) return;
+      emit(CrowdfundDeleted(crowdfundId));
     } catch (e) {
       if (isClosed) return;
       emit(CrowdfundError(message: getUserFriendlyErrorMessage(e, fallback: 'Failed to delete crowdfund. Please try again.')));

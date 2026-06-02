@@ -47,7 +47,9 @@ class UsernameSearchBottomSheet extends StatefulWidget {
 class _UsernameSearchBottomSheetState extends State<UsernameSearchBottomSheet> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
-  final Debouncer _debouncer = Debouncer.search();
+  // snappy() = 250ms; on 80-150ms Nigerian 4G this makes results feel
+  // near-instant while still consolidating bursty keypresses.
+  final Debouncer _debouncer = Debouncer.snappy();
   List<UserSearchResultEntity> _searchResults = [];
   bool _isSearching = false;
   String? _errorMessage;

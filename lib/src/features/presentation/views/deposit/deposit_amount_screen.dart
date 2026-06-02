@@ -85,7 +85,6 @@ class _DepositAmountScreenState extends State<DepositAmountScreen>
         _validateCryptoDeposit();
         break;
       case 'flutterwave':
-      case 'test_deposit':
         _validateFlutterwaveDeposit();
         break;
       case 'digital_wallet':

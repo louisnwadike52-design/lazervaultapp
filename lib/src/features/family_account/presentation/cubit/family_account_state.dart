@@ -132,6 +132,35 @@ class PendingInvitationsLoaded extends FamilyAccountState {
   List<Object?> get props => [invitations, totalCount];
 }
 
+class InvitationHistoryLoading extends FamilyAccountState {}
+
+class InvitationHistoryLoaded extends FamilyAccountState {
+  final List<InvitationHistoryEntry> entries;
+  final String statusFilter; // current filter ("" or "all" if not filtered)
+
+  const InvitationHistoryLoaded(this.entries, {this.statusFilter = ''});
+
+  @override
+  List<Object?> get props => [entries, statusFilter];
+}
+
+class SentInvitationsLoading extends FamilyAccountState {}
+
+class SentInvitationsLoaded extends FamilyAccountState {
+  final List<SentInvitationEntry> entries;
+  final String? familyIdFilter;
+  final String statusFilter;
+
+  const SentInvitationsLoaded(
+    this.entries, {
+    this.familyIdFilter,
+    this.statusFilter = '',
+  });
+
+  @override
+  List<Object?> get props => [entries, familyIdFilter, statusFilter];
+}
+
 class InvitationAccepted extends FamilyAccountState {
   final FamilyAccount familyAccount;
 

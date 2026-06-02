@@ -23,6 +23,8 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
   final ProcessMemberContributionUseCase processMemberContribution;
   final SetupFamilyAccountUseCase setupFamilyAccount;
   final UpdateFundDistributionModeUseCase updateFundDistributionMode;
+  final GetMyInvitationHistoryUseCase getMyInvitationHistory;
+  final GetSentInvitationsUseCase getSentInvitations;
 
   FamilyAccountCubit({
     required this.getFamilyAccounts,
@@ -43,6 +45,8 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
     required this.processMemberContribution,
     required this.setupFamilyAccount,
     required this.updateFundDistributionMode,
+    required this.getMyInvitationHistory,
+    required this.getSentInvitations,
   })  : _acceptInvitationUseCase = acceptInvitationUseCase,
         _declineInvitationUseCase = declineInvitationUseCase,
         super(FamilyAccountInitial());
@@ -52,7 +56,7 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
     emit(FamilyAccountLoading());
     final result = await getFamilyAccounts(GetFamilyAccountsParams(statusFilter: statusFilter));
     result.fold(
-      (failure) => emit(FamilyAccountError(failure.toString())),
+      (failure) => emit(FamilyAccountError(failure.message)),
       (accounts) => emit(FamilyAccountsLoaded(accounts)),
     );
   }
@@ -62,7 +66,7 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
     emit(FamilyAccountLoading());
     final result = await getFamilyAccount(familyId);
     result.fold(
-      (failure) => emit(FamilyAccountError(failure.toString())),
+      (failure) => emit(FamilyAccountError(failure.message)),
       (account) => emit(FamilyAccountLoaded(account)),
     );
   }
@@ -84,7 +88,7 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
       allowMemberContributions: allowMemberContributions,
     ));
     result.fold(
-      (failure) => emit(FamilyAccountError(failure.toString())),
+      (failure) => emit(FamilyAccountError(failure.message)),
       (account) => emit(FamilyAccountCreated(account)),
     );
   }
@@ -101,6 +105,7 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
     required double allocationPercentageCap,
     required String role,
     String? personalMessage,
+    String? displayName,
   }) async {
     emit(FamilyMemberAdding());
     final result = await addFamilyMember(AddFamilyMemberParams(
@@ -114,9 +119,10 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
       allocationPercentageCap: allocationPercentageCap,
       role: role,
       personalMessage: personalMessage,
+      displayName: displayName,
     ));
     result.fold(
-      (failure) => emit(FamilyAccountError(failure.toString())),
+      (failure) => emit(FamilyAccountError(failure.message)),
       (member) => emit(FamilyMemberAdded(member)),
     );
   }
@@ -144,7 +150,7 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
       role: role,
     ));
     result.fold(
-      (failure) => emit(FamilyAccountError(failure.toString())),
+      (failure) => emit(FamilyAccountError(failure.message)),
       (member) => emit(FamilyMemberUpdated(member)),
     );
   }
@@ -164,7 +170,7 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
       returnBalanceToPool: returnBalanceToPool,
     ));
     result.fold(
-      (failure) => emit(FamilyAccountError(failure.toString())),
+      (failure) => emit(FamilyAccountError(failure.message)),
       (returnedBalance) => emit(FamilyMemberRemoved(returnedBalance)),
     );
   }
@@ -174,7 +180,7 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
     emit(FamilyAccountLoading());
     final result = await _acceptInvitationUseCase(invitationToken);
     result.fold(
-      (failure) => emit(FamilyAccountError(failure.toString())),
+      (failure) => emit(FamilyAccountError(failure.message)),
       (account) => emit(InvitationAccepted(account)),
     );
   }
@@ -184,7 +190,7 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
     emit(FamilyAccountLoading());
     final result = await _declineInvitationUseCase(invitationToken);
     result.fold(
-      (failure) => emit(FamilyAccountError(failure.toString())),
+      (failure) => emit(FamilyAccountError(failure.message)),
       (success) => emit(InvitationDeclined(success)),
     );
   }
@@ -194,8 +200,43 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
     emit(FamilyAccountLoading());
     final result = await getPendingInvitations(NoParams());
     result.fold(
-      (failure) => emit(FamilyAccountError(failure.toString())),
+      (failure) => emit(FamilyAccountError(failure.message)),
       (invitations) => emit(PendingInvitationsLoaded(invitations)),
+    );
+  }
+
+  /// Invitee-side history. statusFilter ∈ {'', 'pending', 'accepted',
+  /// 'declined', 'expired', 'removed', 'all'}.
+  Future<void> loadInvitationHistory({String statusFilter = ''}) async {
+    emit(InvitationHistoryLoading());
+    final result = await getMyInvitationHistory(
+      GetMyInvitationHistoryParams(statusFilter: statusFilter),
+    );
+    result.fold(
+      (failure) => emit(FamilyAccountError(failure.message)),
+      (entries) => emit(InvitationHistoryLoaded(entries, statusFilter: statusFilter)),
+    );
+  }
+
+  /// Inviter-side history. Optional familyId narrows to one family.
+  Future<void> loadSentInvitations({
+    String? familyId,
+    String statusFilter = '',
+  }) async {
+    emit(SentInvitationsLoading());
+    final result = await getSentInvitations(
+      GetSentInvitationsParams(
+        familyId: familyId,
+        statusFilter: statusFilter,
+      ),
+    );
+    result.fold(
+      (failure) => emit(FamilyAccountError(failure.message)),
+      (entries) => emit(SentInvitationsLoaded(
+        entries,
+        familyIdFilter: familyId,
+        statusFilter: statusFilter,
+      )),
     );
   }
 
@@ -220,7 +261,7 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
       endDate: endDate,
     ));
     result.fold(
-      (failure) => emit(FamilyAccountError(failure.toString())),
+      (failure) => emit(FamilyAccountError(failure.message)),
       (transactions) => emit(FamilyTransactionsLoaded(transactions)),
     );
   }
@@ -240,7 +281,7 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
       description: description,
     ));
     result.fold(
-      (failure) => emit(FamilyAccountError(failure.toString())),
+      (failure) => emit(FamilyAccountError(failure.message)),
       (member) => emit(FundsAllocated(member, 0)),
     );
   }
@@ -258,7 +299,7 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
       cardName: cardName,
     ));
     result.fold(
-      (failure) => emit(FamilyAccountError(failure.toString())),
+      (failure) => emit(FamilyAccountError(failure.message)),
       (member) => emit(MemberCardGenerated(member)),
     );
   }
@@ -274,7 +315,7 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
       reason: reason,
     ));
     result.fold(
-      (failure) => emit(FamilyAccountError(failure.toString())),
+      (failure) => emit(FamilyAccountError(failure.message)),
       (account) => emit(FamilyAccountFrozen(account)),
     );
   }
@@ -284,7 +325,7 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
     emit(FamilyAccountLoading());
     final result = await unfreezeFamilyAccount(familyId);
     result.fold(
-      (failure) => emit(FamilyAccountError(failure.toString())),
+      (failure) => emit(FamilyAccountError(failure.message)),
       (account) => emit(FamilyAccountUnfrozen(account)),
     );
   }
@@ -300,7 +341,7 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
       confirmationCode: confirmationCode,
     ));
     result.fold(
-      (failure) => emit(FamilyAccountError(failure.toString())),
+      (failure) => emit(FamilyAccountError(failure.message)),
       (returnedBalance) => emit(FamilyAccountDeleted(returnedBalance)),
     );
   }
@@ -320,7 +361,7 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
       description: description,
     ));
     result.fold(
-      (failure) => emit(FamilyAccountError(failure.toString())),
+      (failure) => emit(FamilyAccountError(failure.message)),
       (account) => emit(MemberContributionProcessed(account)),
     );
   }
@@ -340,7 +381,7 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
       allocations: allocations,
     ));
     result.fold(
-      (failure) => emit(FamilyAccountError(failure.toString())),
+      (failure) => emit(FamilyAccountError(failure.message)),
       (account) => emit(FamilyAccountSetupCompleted(account)),
     );
   }
@@ -358,7 +399,7 @@ class FamilyAccountCubit extends Cubit<FamilyAccountState> {
       allocations: allocations,
     ));
     result.fold(
-      (failure) => emit(FamilyAccountError(failure.toString())),
+      (failure) => emit(FamilyAccountError(failure.message)),
       (account) => emit(FundDistributionModeUpdated(account)),
     );
   }

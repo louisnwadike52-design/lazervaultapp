@@ -70,6 +70,19 @@ class FamilyAccountsServiceClient extends $grpc.Client {
       ($18.GetPendingInvitationsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
           $18.GetPendingInvitationsResponse.fromBuffer(value));
+  static final _$getMyInvitationHistory = $grpc.ClientMethod<
+          $18.GetMyInvitationHistoryRequest,
+          $18.GetMyInvitationHistoryResponse>(
+      '/accounts.v1.FamilyAccountsService/GetMyInvitationHistory',
+      ($18.GetMyInvitationHistoryRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $18.GetMyInvitationHistoryResponse.fromBuffer(value));
+  static final _$getSentInvitations = $grpc.ClientMethod<
+          $18.GetSentInvitationsRequest, $18.GetSentInvitationsResponse>(
+      '/accounts.v1.FamilyAccountsService/GetSentInvitations',
+      ($18.GetSentInvitationsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $18.GetSentInvitationsResponse.fromBuffer(value));
   static final _$getFamilyTransactions = $grpc.ClientMethod<
           $18.GetFamilyTransactionsRequest, $18.GetFamilyTransactionsResponse>(
       '/accounts.v1.FamilyAccountsService/GetFamilyTransactions',
@@ -126,6 +139,61 @@ class FamilyAccountsServiceClient extends $grpc.Client {
       ($18.UpdateFundDistributionModeRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
           $18.UpdateFundDistributionModeResponse.fromBuffer(value));
+  static final _$adminListFamilyAccounts = $grpc.ClientMethod<
+          $18.AdminListFamilyAccountsRequest,
+          $18.AdminListFamilyAccountsResponse>(
+      '/accounts.v1.FamilyAccountsService/AdminListFamilyAccounts',
+      ($18.AdminListFamilyAccountsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $18.AdminListFamilyAccountsResponse.fromBuffer(value));
+  static final _$adminGetFamilyAccount = $grpc.ClientMethod<
+          $18.AdminGetFamilyAccountRequest, $18.AdminGetFamilyAccountResponse>(
+      '/accounts.v1.FamilyAccountsService/AdminGetFamilyAccount',
+      ($18.AdminGetFamilyAccountRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $18.AdminGetFamilyAccountResponse.fromBuffer(value));
+  static final _$adminFreezeFamilyAccount = $grpc.ClientMethod<
+          $18.AdminFreezeFamilyAccountRequest,
+          $18.AdminFreezeFamilyAccountResponse>(
+      '/accounts.v1.FamilyAccountsService/AdminFreezeFamilyAccount',
+      ($18.AdminFreezeFamilyAccountRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $18.AdminFreezeFamilyAccountResponse.fromBuffer(value));
+  static final _$adminUnfreezeFamilyAccount = $grpc.ClientMethod<
+          $18.AdminUnfreezeFamilyAccountRequest,
+          $18.AdminUnfreezeFamilyAccountResponse>(
+      '/accounts.v1.FamilyAccountsService/AdminUnfreezeFamilyAccount',
+      ($18.AdminUnfreezeFamilyAccountRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $18.AdminUnfreezeFamilyAccountResponse.fromBuffer(value));
+  static final _$adminDeleteFamilyAccount = $grpc.ClientMethod<
+          $18.AdminDeleteFamilyAccountRequest,
+          $18.AdminDeleteFamilyAccountResponse>(
+      '/accounts.v1.FamilyAccountsService/AdminDeleteFamilyAccount',
+      ($18.AdminDeleteFamilyAccountRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $18.AdminDeleteFamilyAccountResponse.fromBuffer(value));
+  static final _$adminForceAllocateFunds = $grpc.ClientMethod<
+          $18.AdminForceAllocateFundsRequest,
+          $18.AdminForceAllocateFundsResponse>(
+      '/accounts.v1.FamilyAccountsService/AdminForceAllocateFunds',
+      ($18.AdminForceAllocateFundsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $18.AdminForceAllocateFundsResponse.fromBuffer(value));
+  static final _$adminRemoveFamilyMember = $grpc.ClientMethod<
+          $18.AdminRemoveFamilyMemberRequest,
+          $18.AdminRemoveFamilyMemberResponse>(
+      '/accounts.v1.FamilyAccountsService/AdminRemoveFamilyMember',
+      ($18.AdminRemoveFamilyMemberRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $18.AdminRemoveFamilyMemberResponse.fromBuffer(value));
+  static final _$adminUpdateFamilyAccountNotes = $grpc.ClientMethod<
+          $18.AdminUpdateFamilyAccountNotesRequest,
+          $18.AdminUpdateFamilyAccountNotesResponse>(
+      '/accounts.v1.FamilyAccountsService/AdminUpdateFamilyAccountNotes',
+      ($18.AdminUpdateFamilyAccountNotesRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $18.AdminUpdateFamilyAccountNotesResponse.fromBuffer(value));
 
   FamilyAccountsServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -188,6 +256,19 @@ class FamilyAccountsServiceClient extends $grpc.Client {
     return $createUnaryCall(_$getPendingInvitations, request, options: options);
   }
 
+  $grpc.ResponseFuture<$18.GetMyInvitationHistoryResponse>
+      getMyInvitationHistory($18.GetMyInvitationHistoryRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getMyInvitationHistory, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$18.GetSentInvitationsResponse> getSentInvitations(
+      $18.GetSentInvitationsRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getSentInvitations, request, options: options);
+  }
+
   $grpc.ResponseFuture<$18.GetFamilyTransactionsResponse> getFamilyTransactions(
       $18.GetFamilyTransactionsRequest request,
       {$grpc.CallOptions? options}) {
@@ -241,6 +322,62 @@ class FamilyAccountsServiceClient extends $grpc.Client {
       updateFundDistributionMode($18.UpdateFundDistributionModeRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$updateFundDistributionMode, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$18.AdminListFamilyAccountsResponse>
+      adminListFamilyAccounts($18.AdminListFamilyAccountsRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminListFamilyAccounts, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$18.AdminGetFamilyAccountResponse> adminGetFamilyAccount(
+      $18.AdminGetFamilyAccountRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminGetFamilyAccount, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$18.AdminFreezeFamilyAccountResponse>
+      adminFreezeFamilyAccount($18.AdminFreezeFamilyAccountRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminFreezeFamilyAccount, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$18.AdminUnfreezeFamilyAccountResponse>
+      adminUnfreezeFamilyAccount($18.AdminUnfreezeFamilyAccountRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminUnfreezeFamilyAccount, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$18.AdminDeleteFamilyAccountResponse>
+      adminDeleteFamilyAccount($18.AdminDeleteFamilyAccountRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminDeleteFamilyAccount, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$18.AdminForceAllocateFundsResponse>
+      adminForceAllocateFunds($18.AdminForceAllocateFundsRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminForceAllocateFunds, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$18.AdminRemoveFamilyMemberResponse>
+      adminRemoveFamilyMember($18.AdminRemoveFamilyMemberRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminRemoveFamilyMember, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$18.AdminUpdateFamilyAccountNotesResponse>
+      adminUpdateFamilyAccountNotes(
+          $18.AdminUpdateFamilyAccountNotesRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminUpdateFamilyAccountNotes, request,
         options: options);
   }
 }
@@ -330,6 +467,24 @@ abstract class FamilyAccountsServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $18.GetPendingInvitationsRequest.fromBuffer(value),
         ($18.GetPendingInvitationsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$18.GetMyInvitationHistoryRequest,
+            $18.GetMyInvitationHistoryResponse>(
+        'GetMyInvitationHistory',
+        getMyInvitationHistory_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $18.GetMyInvitationHistoryRequest.fromBuffer(value),
+        ($18.GetMyInvitationHistoryResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$18.GetSentInvitationsRequest,
+            $18.GetSentInvitationsResponse>(
+        'GetSentInvitations',
+        getSentInvitations_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $18.GetSentInvitationsRequest.fromBuffer(value),
+        ($18.GetSentInvitationsResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$18.GetFamilyTransactionsRequest,
             $18.GetFamilyTransactionsResponse>(
         'GetFamilyTransactions',
@@ -413,6 +568,80 @@ abstract class FamilyAccountsServiceBase extends $grpc.Service {
             $18.UpdateFundDistributionModeRequest.fromBuffer(value),
         ($18.UpdateFundDistributionModeResponse value) =>
             value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$18.AdminListFamilyAccountsRequest,
+            $18.AdminListFamilyAccountsResponse>(
+        'AdminListFamilyAccounts',
+        adminListFamilyAccounts_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $18.AdminListFamilyAccountsRequest.fromBuffer(value),
+        ($18.AdminListFamilyAccountsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$18.AdminGetFamilyAccountRequest,
+            $18.AdminGetFamilyAccountResponse>(
+        'AdminGetFamilyAccount',
+        adminGetFamilyAccount_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $18.AdminGetFamilyAccountRequest.fromBuffer(value),
+        ($18.AdminGetFamilyAccountResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$18.AdminFreezeFamilyAccountRequest,
+            $18.AdminFreezeFamilyAccountResponse>(
+        'AdminFreezeFamilyAccount',
+        adminFreezeFamilyAccount_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $18.AdminFreezeFamilyAccountRequest.fromBuffer(value),
+        ($18.AdminFreezeFamilyAccountResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$18.AdminUnfreezeFamilyAccountRequest,
+            $18.AdminUnfreezeFamilyAccountResponse>(
+        'AdminUnfreezeFamilyAccount',
+        adminUnfreezeFamilyAccount_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $18.AdminUnfreezeFamilyAccountRequest.fromBuffer(value),
+        ($18.AdminUnfreezeFamilyAccountResponse value) =>
+            value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$18.AdminDeleteFamilyAccountRequest,
+            $18.AdminDeleteFamilyAccountResponse>(
+        'AdminDeleteFamilyAccount',
+        adminDeleteFamilyAccount_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $18.AdminDeleteFamilyAccountRequest.fromBuffer(value),
+        ($18.AdminDeleteFamilyAccountResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$18.AdminForceAllocateFundsRequest,
+            $18.AdminForceAllocateFundsResponse>(
+        'AdminForceAllocateFunds',
+        adminForceAllocateFunds_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $18.AdminForceAllocateFundsRequest.fromBuffer(value),
+        ($18.AdminForceAllocateFundsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$18.AdminRemoveFamilyMemberRequest,
+            $18.AdminRemoveFamilyMemberResponse>(
+        'AdminRemoveFamilyMember',
+        adminRemoveFamilyMember_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $18.AdminRemoveFamilyMemberRequest.fromBuffer(value),
+        ($18.AdminRemoveFamilyMemberResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$18.AdminUpdateFamilyAccountNotesRequest,
+            $18.AdminUpdateFamilyAccountNotesResponse>(
+        'AdminUpdateFamilyAccountNotes',
+        adminUpdateFamilyAccountNotes_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $18.AdminUpdateFamilyAccountNotesRequest.fromBuffer(value),
+        ($18.AdminUpdateFamilyAccountNotesResponse value) =>
+            value.writeToBuffer()));
   }
 
   $async.Future<$18.CreateFamilyAccountResponse> createFamilyAccount_Pre(
@@ -469,6 +698,18 @@ abstract class FamilyAccountsServiceBase extends $grpc.Service {
     return getPendingInvitations(call, await request);
   }
 
+  $async.Future<$18.GetMyInvitationHistoryResponse> getMyInvitationHistory_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$18.GetMyInvitationHistoryRequest> request) async {
+    return getMyInvitationHistory(call, await request);
+  }
+
+  $async.Future<$18.GetSentInvitationsResponse> getSentInvitations_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$18.GetSentInvitationsRequest> request) async {
+    return getSentInvitations(call, await request);
+  }
+
   $async.Future<$18.GetFamilyTransactionsResponse> getFamilyTransactions_Pre(
       $grpc.ServiceCall call,
       $async.Future<$18.GetFamilyTransactionsRequest> request) async {
@@ -523,6 +764,56 @@ abstract class FamilyAccountsServiceBase extends $grpc.Service {
     return updateFundDistributionMode(call, await request);
   }
 
+  $async.Future<$18.AdminListFamilyAccountsResponse>
+      adminListFamilyAccounts_Pre($grpc.ServiceCall call,
+          $async.Future<$18.AdminListFamilyAccountsRequest> request) async {
+    return adminListFamilyAccounts(call, await request);
+  }
+
+  $async.Future<$18.AdminGetFamilyAccountResponse> adminGetFamilyAccount_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$18.AdminGetFamilyAccountRequest> request) async {
+    return adminGetFamilyAccount(call, await request);
+  }
+
+  $async.Future<$18.AdminFreezeFamilyAccountResponse>
+      adminFreezeFamilyAccount_Pre($grpc.ServiceCall call,
+          $async.Future<$18.AdminFreezeFamilyAccountRequest> request) async {
+    return adminFreezeFamilyAccount(call, await request);
+  }
+
+  $async.Future<$18.AdminUnfreezeFamilyAccountResponse>
+      adminUnfreezeFamilyAccount_Pre($grpc.ServiceCall call,
+          $async.Future<$18.AdminUnfreezeFamilyAccountRequest> request) async {
+    return adminUnfreezeFamilyAccount(call, await request);
+  }
+
+  $async.Future<$18.AdminDeleteFamilyAccountResponse>
+      adminDeleteFamilyAccount_Pre($grpc.ServiceCall call,
+          $async.Future<$18.AdminDeleteFamilyAccountRequest> request) async {
+    return adminDeleteFamilyAccount(call, await request);
+  }
+
+  $async.Future<$18.AdminForceAllocateFundsResponse>
+      adminForceAllocateFunds_Pre($grpc.ServiceCall call,
+          $async.Future<$18.AdminForceAllocateFundsRequest> request) async {
+    return adminForceAllocateFunds(call, await request);
+  }
+
+  $async.Future<$18.AdminRemoveFamilyMemberResponse>
+      adminRemoveFamilyMember_Pre($grpc.ServiceCall call,
+          $async.Future<$18.AdminRemoveFamilyMemberRequest> request) async {
+    return adminRemoveFamilyMember(call, await request);
+  }
+
+  $async.Future<$18.AdminUpdateFamilyAccountNotesResponse>
+      adminUpdateFamilyAccountNotes_Pre(
+          $grpc.ServiceCall call,
+          $async.Future<$18.AdminUpdateFamilyAccountNotesRequest>
+              request) async {
+    return adminUpdateFamilyAccountNotes(call, await request);
+  }
+
   $async.Future<$18.CreateFamilyAccountResponse> createFamilyAccount(
       $grpc.ServiceCall call, $18.CreateFamilyAccountRequest request);
   $async.Future<$18.GetFamilyAccountsResponse> getFamilyAccounts(
@@ -541,6 +832,10 @@ abstract class FamilyAccountsServiceBase extends $grpc.Service {
       $grpc.ServiceCall call, $18.DeclineFamilyInvitationRequest request);
   $async.Future<$18.GetPendingInvitationsResponse> getPendingInvitations(
       $grpc.ServiceCall call, $18.GetPendingInvitationsRequest request);
+  $async.Future<$18.GetMyInvitationHistoryResponse> getMyInvitationHistory(
+      $grpc.ServiceCall call, $18.GetMyInvitationHistoryRequest request);
+  $async.Future<$18.GetSentInvitationsResponse> getSentInvitations(
+      $grpc.ServiceCall call, $18.GetSentInvitationsRequest request);
   $async.Future<$18.GetFamilyTransactionsResponse> getFamilyTransactions(
       $grpc.ServiceCall call, $18.GetFamilyTransactionsRequest request);
   $async.Future<$18.AllocateFundsResponse> allocateFunds(
@@ -561,4 +856,22 @@ abstract class FamilyAccountsServiceBase extends $grpc.Service {
   $async.Future<$18.UpdateFundDistributionModeResponse>
       updateFundDistributionMode($grpc.ServiceCall call,
           $18.UpdateFundDistributionModeRequest request);
+  $async.Future<$18.AdminListFamilyAccountsResponse> adminListFamilyAccounts(
+      $grpc.ServiceCall call, $18.AdminListFamilyAccountsRequest request);
+  $async.Future<$18.AdminGetFamilyAccountResponse> adminGetFamilyAccount(
+      $grpc.ServiceCall call, $18.AdminGetFamilyAccountRequest request);
+  $async.Future<$18.AdminFreezeFamilyAccountResponse> adminFreezeFamilyAccount(
+      $grpc.ServiceCall call, $18.AdminFreezeFamilyAccountRequest request);
+  $async.Future<$18.AdminUnfreezeFamilyAccountResponse>
+      adminUnfreezeFamilyAccount($grpc.ServiceCall call,
+          $18.AdminUnfreezeFamilyAccountRequest request);
+  $async.Future<$18.AdminDeleteFamilyAccountResponse> adminDeleteFamilyAccount(
+      $grpc.ServiceCall call, $18.AdminDeleteFamilyAccountRequest request);
+  $async.Future<$18.AdminForceAllocateFundsResponse> adminForceAllocateFunds(
+      $grpc.ServiceCall call, $18.AdminForceAllocateFundsRequest request);
+  $async.Future<$18.AdminRemoveFamilyMemberResponse> adminRemoveFamilyMember(
+      $grpc.ServiceCall call, $18.AdminRemoveFamilyMemberRequest request);
+  $async.Future<$18.AdminUpdateFamilyAccountNotesResponse>
+      adminUpdateFamilyAccountNotes($grpc.ServiceCall call,
+          $18.AdminUpdateFamilyAccountNotesRequest request);
 }

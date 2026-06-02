@@ -5,6 +5,7 @@ import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/exceptions/server_exception.dart';
 import 'package:lazervault/core/network/retry_policy.dart';
 import 'package:lazervault/core/services/grpc_call_options_helper.dart';
+import 'package:lazervault/src/features/funds/domain/entities/transfer_success_prediction.dart';
 import 'package:lazervault/src/generated/payments.pbgrpc.dart' as payments;
 
 /// Transfer types supported by the payments service
@@ -95,6 +96,8 @@ abstract class IPaymentsTransferDataSource {
     required String description,        // Transfer description
     required String transactionId,      // Transaction ID for PIN verification
     required String verificationToken,  // Token from TransactionPinService
+    String? destinationBankCode,        // External: bank code (NUBAN sort code)
+    String? beneficiaryName,            // External: recipient name as shown on the bank account
     DateTime? scheduledAt,              // Optional: schedule for future execution
     int? expenseCategory,              // Budget category enum value selected by user
   });
@@ -104,6 +107,13 @@ abstract class IPaymentsTransferDataSource {
     required String accountId,
     int? limit,
     int? offset,
+  });
+
+  /// Informational, READ-ONLY success prediction for an EXTERNAL transfer.
+  /// Returns null on any error (the feature is non-blocking and best-effort).
+  Future<TransferSuccessPrediction?> getTransferSuccessPrediction({
+    required String bankCode,
+    required String accountNumber,
   });
 }
 
@@ -149,6 +159,8 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
     required String description,
     required String transactionId,
     required String verificationToken,
+    String? destinationBankCode,
+    String? beneficiaryName,
     DateTime? scheduledAt,
     int? expenseCategory,
   }) async {
@@ -163,6 +175,8 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
           description: description,
           transactionId: transactionId,
           verificationToken: verificationToken,
+          destinationBankCode: destinationBankCode ?? '',
+          beneficiaryName: beneficiaryName ?? '',
           expenseCategory: expenseCategory ?? 0,
         );
 
@@ -255,6 +269,54 @@ class PaymentsTransferDataSourceImpl implements IPaymentsTransferDataSource {
       throw ServerException(
         message: 'Failed to get payment history: ${e.message ?? "Unknown error"}',
       );
+    }
+  }
+
+  @override
+  Future<TransferSuccessPrediction?> getTransferSuccessPrediction({
+    required String bankCode,
+    required String accountNumber,
+  }) async {
+    // Best-effort + non-blocking: never throw to the caller. A failure here
+    // must never interfere with the transfer the user is about to confirm.
+    if (bankCode.isEmpty || accountNumber.isEmpty) return null;
+
+    final request = payments.GetTransferSuccessPredictionRequest(
+      bankCode: bankCode,
+      accountNumber: accountNumber,
+    );
+
+    try {
+      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+        final callOptions = await _callOptionsHelper.withAuth();
+        return await _client.getTransferSuccessPrediction(
+          request,
+          options: callOptions.mergedWith(
+            CallOptions(timeout: const Duration(seconds: 8)),
+          ),
+        );
+      });
+
+      final knownSinceUnix = response.recipientKnownSinceUnix.toInt();
+      return TransferSuccessPrediction(
+        bankAvailabilityPct: response.bankAvailabilityPct,
+        bankBand: response.bankBand.isNotEmpty ? response.bankBand : 'unknown',
+        bankSampleSize: response.bankSampleSize,
+        recipientTrustBand: response.recipientTrustBand.isNotEmpty
+            ? response.recipientTrustBand
+            : 'unknown',
+        priorTransferCount: response.priorTransferCount,
+        knownSince: knownSinceUnix > 0
+            ? DateTime.fromMillisecondsSinceEpoch(knownSinceUnix * 1000)
+            : null,
+        blocklisted: response.blocklisted,
+      );
+    } on GrpcError catch (e) {
+      print('gRPC Error getting transfer success prediction: ${e.code} - ${e.message}');
+      return null;
+    } catch (e) {
+      print('Error getting transfer success prediction: $e');
+      return null;
     }
   }
 

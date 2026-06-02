@@ -99,6 +99,8 @@ extension DirectPayStageExtension on DirectPayStage {
 class DirectPayProgressController extends ChangeNotifier {
   DirectPayStage _stage = DirectPayStage.linking;
   String? _errorMessage;
+  String? _errorTitle;
+  bool _retryable = true;
   String? _bankName;
   double? _amount;
   String? _currency;
@@ -106,6 +108,8 @@ class DirectPayProgressController extends ChangeNotifier {
 
   DirectPayStage get stage => _stage;
   String? get errorMessage => _errorMessage;
+  String? get errorTitle => _errorTitle;
+  bool get retryable => _retryable;
   String? get bankName => _bankName;
   double? get amount => _amount;
   String? get currency => _currency;
@@ -121,13 +125,22 @@ class DirectPayProgressController extends ChangeNotifier {
     _currency = currency;
     _stage = DirectPayStage.linking;
     _errorMessage = null;
+    _errorTitle = null;
+    _retryable = true;
     _isVisible = true;
     notifyListeners();
   }
 
-  void updateStage(DirectPayStage stage, {String? errorMessage}) {
+  void updateStage(
+    DirectPayStage stage, {
+    String? errorMessage,
+    String? errorTitle,
+    bool retryable = true,
+  }) {
     _stage = stage;
     _errorMessage = errorMessage;
+    _errorTitle = errorTitle;
+    _retryable = retryable;
     notifyListeners();
   }
 
@@ -139,6 +152,8 @@ class DirectPayProgressController extends ChangeNotifier {
   void reset() {
     _stage = DirectPayStage.linking;
     _errorMessage = null;
+    _errorTitle = null;
+    _retryable = true;
     _bankName = null;
     _amount = null;
     _currency = null;
@@ -153,11 +168,21 @@ class DirectPayProgressBottomsheet extends StatefulWidget {
   final VoidCallback? onDismiss;
   final VoidCallback? onSuccess;
 
+  /// Re-run the whole deposit (re-link + re-authorize). Shown as the primary
+  /// action when a failure is classified as retryable.
+  final VoidCallback? onRetry;
+
+  /// Leave the deposit flow and go to the dashboard. Shown as the secondary
+  /// action on any failure.
+  final VoidCallback? onExit;
+
   const DirectPayProgressBottomsheet({
     super.key,
     required this.controller,
     this.onDismiss,
     this.onSuccess,
+    this.onRetry,
+    this.onExit,
   });
 
   @override
@@ -213,16 +238,20 @@ class _DirectPayProgressBottomsheetState
         _slideController.reverse();
       }
 
-      // Handle success navigation
-      if (widget.controller.stage == DirectPayStage.success) {
-        Future.delayed(const Duration(seconds: 2), () {
+      setState(() {});
+
+      // Handle success navigation — no timer. Run after this frame (not a
+      // timed wait) so navigating away can't dispose the sheet mid-notify
+      // and trip setState-after-dispose. The host screen redirects to the
+      // dashboard as soon as settlement lands.
+      if (widget.controller.stage == DirectPayStage.success &&
+          widget.onSuccess != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted && widget.onSuccess != null) {
             widget.onSuccess!();
           }
         });
       }
-
-      setState(() {});
     }
   }
 
@@ -322,17 +351,25 @@ class _DirectPayProgressBottomsheetState
               ),
               SizedBox(height: 20.h),
 
-              // Stage title
+              // Stage title (failure can override with a friendlier title)
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
-                child: Text(
-                  stage.title,
-                  key: ValueKey(stage.title),
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 22.sp,
-                    fontWeight: FontWeight.w700,
-                  ),
+                child: Builder(
+                  builder: (_) {
+                    final title = (stage == DirectPayStage.failed
+                            ? widget.controller.errorTitle
+                            : null) ??
+                        stage.title;
+                    return Text(
+                      title,
+                      key: ValueKey(title),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    );
+                  },
                 ),
               ),
               SizedBox(height: 8.h),
@@ -401,47 +438,105 @@ class _DirectPayProgressBottomsheetState
                 ),
               SizedBox(height: 24.h),
 
-              // Action button for terminal states
-              if (isTerminal)
+              // Action buttons for terminal states
+              if (stage == DirectPayStage.success)
+                _buildPrimaryButton(
+                  label: 'Go to Dashboard',
+                  color: const Color(0xFF10B981),
+                  onPressed: () {
+                    widget.controller.hide();
+                    if (widget.onSuccess != null) widget.onSuccess!();
+                  },
+                )
+              else if (stage == DirectPayStage.failed) ...[
+                // Primary recovery action depends on whether retrying the
+                // exact same deposit can plausibly succeed. Transient errors
+                // (network, provider down, timeout, cancelled auth) → re-run
+                // the deposit. Terminal errors (insufficient funds, currency
+                // mismatch, unsupported bank) → send the user back to the
+                // form to fix the input, since an identical retry would fail.
+                if (widget.controller.retryable && widget.onRetry != null)
+                  _buildPrimaryButton(
+                    label: 'Try Again',
+                    color: const Color.fromARGB(255, 78, 3, 208),
+                    onPressed: () {
+                      widget.controller.hide();
+                      widget.onRetry!();
+                    },
+                  )
+                else
+                  _buildPrimaryButton(
+                    label: 'Edit Deposit',
+                    color: Colors.grey.shade700,
+                    onPressed: () {
+                      widget.controller.hide();
+                      if (widget.onDismiss != null) widget.onDismiss!();
+                    },
+                  ),
+                SizedBox(height: 8.h),
+                // Secondary: bail out to the dashboard.
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 24.w),
                   child: SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton(
+                    child: TextButton(
                       onPressed: () {
                         widget.controller.hide();
-                        if (stage == DirectPayStage.success &&
-                            widget.onSuccess != null) {
-                          widget.onSuccess!();
+                        if (widget.onExit != null) {
+                          widget.onExit!();
                         } else if (widget.onDismiss != null) {
                           widget.onDismiss!();
                         }
                       },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: stage == DirectPayStage.success
-                            ? const Color(0xFF10B981)
-                            : Colors.grey.shade700,
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(vertical: 16.h),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                        elevation: 0,
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.white.withValues(alpha: 0.7),
+                        padding: EdgeInsets.symmetric(vertical: 14.h),
                       ),
                       child: Text(
-                        stage == DirectPayStage.success
-                            ? 'Go to Dashboard'
-                            : 'Try Again',
+                        'Back to Dashboard',
                         style: TextStyle(
-                          fontSize: 16.sp,
+                          fontSize: 15.sp,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
                   ),
                 ),
+              ],
               SizedBox(height: 24.h),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPrimaryButton({
+    required String label,
+    required Color color,
+    required VoidCallback onPressed,
+  }) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 24.w),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: onPressed,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: color,
+            foregroundColor: Colors.white,
+            padding: EdgeInsets.symmetric(vertical: 16.h),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            elevation: 0,
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ),
@@ -557,6 +652,8 @@ void showDirectPayProgressOverlay({
   required DirectPayProgressController controller,
   VoidCallback? onSuccess,
   VoidCallback? onDismiss,
+  VoidCallback? onRetry,
+  VoidCallback? onExit,
 }) {
   showModalBottomSheet(
     context: context,
@@ -574,6 +671,13 @@ void showDirectPayProgressOverlay({
         Navigator.of(context).pop();
         if (onDismiss != null) onDismiss();
       },
+      onRetry: onRetry == null
+          ? null
+          : () {
+              if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+              onRetry();
+            },
+      onExit: onExit,
     ),
   );
 }

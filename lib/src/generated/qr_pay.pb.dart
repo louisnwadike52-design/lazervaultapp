@@ -9,7 +9,7 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $48;
+import 'google/protobuf/timestamp.pb.dart' as $49;
 
 import 'qr_pay.pbenum.dart';
 
@@ -27,9 +27,9 @@ class QRCode extends $pb.GeneratedMessage {
     ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
     ..e<QRType>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'qrType', $pb.PbFieldType.OE, defaultOrMaker: QRType.QR_TYPE_DYNAMIC, valueOf: QRType.valueOf, enumValues: QRType.values)
     ..e<QRStatus>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: QRStatus.QR_STATUS_PENDING, valueOf: QRStatus.valueOf, enumValues: QRStatus.values)
-    ..aOM<$48.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $48.Timestamp.create)
-    ..aOM<$48.Timestamp>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt', subBuilder: $48.Timestamp.create)
-    ..aOM<$48.Timestamp>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paidAt', subBuilder: $48.Timestamp.create)
+    ..aOM<$49.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $49.Timestamp.create)
+    ..aOM<$49.Timestamp>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt', subBuilder: $49.Timestamp.create)
+    ..aOM<$49.Timestamp>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paidAt', subBuilder: $49.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -45,9 +45,9 @@ class QRCode extends $pb.GeneratedMessage {
     $core.String? description,
     QRType? qrType,
     QRStatus? status,
-    $48.Timestamp? createdAt,
-    $48.Timestamp? expiresAt,
-    $48.Timestamp? paidAt,
+    $49.Timestamp? createdAt,
+    $49.Timestamp? expiresAt,
+    $49.Timestamp? paidAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -203,37 +203,37 @@ class QRCode extends $pb.GeneratedMessage {
   void clearStatus() => clearField(10);
 
   @$pb.TagNumber(11)
-  $48.Timestamp get createdAt => $_getN(10);
+  $49.Timestamp get createdAt => $_getN(10);
   @$pb.TagNumber(11)
-  set createdAt($48.Timestamp v) { setField(11, v); }
+  set createdAt($49.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasCreatedAt() => $_has(10);
   @$pb.TagNumber(11)
   void clearCreatedAt() => clearField(11);
   @$pb.TagNumber(11)
-  $48.Timestamp ensureCreatedAt() => $_ensure(10);
+  $49.Timestamp ensureCreatedAt() => $_ensure(10);
 
   @$pb.TagNumber(12)
-  $48.Timestamp get expiresAt => $_getN(11);
+  $49.Timestamp get expiresAt => $_getN(11);
   @$pb.TagNumber(12)
-  set expiresAt($48.Timestamp v) { setField(12, v); }
+  set expiresAt($49.Timestamp v) { setField(12, v); }
   @$pb.TagNumber(12)
   $core.bool hasExpiresAt() => $_has(11);
   @$pb.TagNumber(12)
   void clearExpiresAt() => clearField(12);
   @$pb.TagNumber(12)
-  $48.Timestamp ensureExpiresAt() => $_ensure(11);
+  $49.Timestamp ensureExpiresAt() => $_ensure(11);
 
   @$pb.TagNumber(13)
-  $48.Timestamp get paidAt => $_getN(12);
+  $49.Timestamp get paidAt => $_getN(12);
   @$pb.TagNumber(13)
-  set paidAt($48.Timestamp v) { setField(13, v); }
+  set paidAt($49.Timestamp v) { setField(13, v); }
   @$pb.TagNumber(13)
   $core.bool hasPaidAt() => $_has(12);
   @$pb.TagNumber(13)
   void clearPaidAt() => clearField(13);
   @$pb.TagNumber(13)
-  $48.Timestamp ensurePaidAt() => $_ensure(12);
+  $49.Timestamp ensurePaidAt() => $_ensure(12);
 }
 
 class QRTransaction extends $pb.GeneratedMessage {
@@ -251,7 +251,7 @@ class QRTransaction extends $pb.GeneratedMessage {
     ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
     ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'referenceNumber')
     ..e<QRStatus>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: QRStatus.QR_STATUS_PENDING, valueOf: QRStatus.valueOf, enumValues: QRStatus.values)
-    ..aOM<$48.Timestamp>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $48.Timestamp.create)
+    ..aOM<$49.Timestamp>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $49.Timestamp.create)
     ..hasRequiredFields = false
   ;
 
@@ -270,7 +270,7 @@ class QRTransaction extends $pb.GeneratedMessage {
     $core.String? description,
     $core.String? referenceNumber,
     QRStatus? status,
-    $48.Timestamp? createdAt,
+    $49.Timestamp? createdAt,
   }) {
     final _result = create();
     if (id != null) {
@@ -456,15 +456,15 @@ class QRTransaction extends $pb.GeneratedMessage {
   void clearStatus() => clearField(13);
 
   @$pb.TagNumber(14)
-  $48.Timestamp get createdAt => $_getN(13);
+  $49.Timestamp get createdAt => $_getN(13);
   @$pb.TagNumber(14)
-  set createdAt($48.Timestamp v) { setField(14, v); }
+  set createdAt($49.Timestamp v) { setField(14, v); }
   @$pb.TagNumber(14)
   $core.bool hasCreatedAt() => $_has(13);
   @$pb.TagNumber(14)
   void clearCreatedAt() => clearField(14);
   @$pb.TagNumber(14)
-  $48.Timestamp ensureCreatedAt() => $_ensure(13);
+  $49.Timestamp ensureCreatedAt() => $_ensure(13);
 }
 
 class GenerateQRRequest extends $pb.GeneratedMessage {

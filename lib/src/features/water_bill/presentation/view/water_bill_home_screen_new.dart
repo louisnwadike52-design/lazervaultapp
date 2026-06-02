@@ -12,6 +12,8 @@ import '../cubit/water_bill_state.dart';
 import '../../../../../core/types/app_routes.dart';
 import '../../../../../core/widgets/bill_history_item.dart';
 import '../widgets/water_history_actions_sheet.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 
 /// Water Bill landing screen.
 ///
@@ -76,6 +78,24 @@ class _WaterBillHomeScreenNewState extends State<WaterBillHomeScreenNew> {
             ),
           ),
           centerTitle: true,
+          actions: [
+            // Per-bill voice + chat icons — pin every session to
+            // the water flow on chat-products-service
+            // (DIRECT_ROUTES['water'] → primary 'utility').
+            ServiceVoiceButton(
+              serviceName: 'water',
+              iconColor: const Color(0xFF3B82F6),
+              backgroundColor: const Color(0xFF3B82F6),
+            ),
+            SizedBox(width: 8.w),
+            MicroserviceChatIcon(
+              serviceName: 'Water',
+              sourceContext: 'water',
+              icon: Icons.chat_bubble_outline,
+              iconColor: const Color(0xFF3B82F6),
+            ),
+            SizedBox(width: 12.w),
+          ],
         ),
         body: SafeArea(
           child: BlocConsumer<WaterBillCubit, WaterBillState>(

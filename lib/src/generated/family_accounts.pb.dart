@@ -15,6 +15,1306 @@ import 'family_accounts.pbenum.dart';
 
 export 'family_accounts.pbenum.dart';
 
+class AdminListFamilyAccountsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AdminListFamilyAccountsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts.v1'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'creatorId')
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'minMembers', $pb.PbFieldType.O3)
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAfter')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdBefore')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'search')
+    ..a<$core.int>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  AdminListFamilyAccountsRequest._() : super();
+  factory AdminListFamilyAccountsRequest({
+    $core.String? status,
+    $core.String? creatorId,
+    $core.int? minMembers,
+    $core.String? createdAfter,
+    $core.String? createdBefore,
+    $core.String? search,
+    $core.int? page,
+    $core.int? pageSize,
+  }) {
+    final _result = create();
+    if (status != null) {
+      _result.status = status;
+    }
+    if (creatorId != null) {
+      _result.creatorId = creatorId;
+    }
+    if (minMembers != null) {
+      _result.minMembers = minMembers;
+    }
+    if (createdAfter != null) {
+      _result.createdAfter = createdAfter;
+    }
+    if (createdBefore != null) {
+      _result.createdBefore = createdBefore;
+    }
+    if (search != null) {
+      _result.search = search;
+    }
+    if (page != null) {
+      _result.page = page;
+    }
+    if (pageSize != null) {
+      _result.pageSize = pageSize;
+    }
+    return _result;
+  }
+  factory AdminListFamilyAccountsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory AdminListFamilyAccountsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  AdminListFamilyAccountsRequest clone() => AdminListFamilyAccountsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  AdminListFamilyAccountsRequest copyWith(void Function(AdminListFamilyAccountsRequest) updates) => super.copyWith((message) => updates(message as AdminListFamilyAccountsRequest)) as AdminListFamilyAccountsRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static AdminListFamilyAccountsRequest create() => AdminListFamilyAccountsRequest._();
+  AdminListFamilyAccountsRequest createEmptyInstance() => create();
+  static $pb.PbList<AdminListFamilyAccountsRequest> createRepeated() => $pb.PbList<AdminListFamilyAccountsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AdminListFamilyAccountsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AdminListFamilyAccountsRequest>(create);
+  static AdminListFamilyAccountsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get status => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set status($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasStatus() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearStatus() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get creatorId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set creatorId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasCreatorId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCreatorId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get minMembers => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set minMembers($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasMinMembers() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearMinMembers() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get createdAfter => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set createdAfter($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasCreatedAfter() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCreatedAfter() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get createdBefore => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set createdBefore($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasCreatedBefore() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearCreatedBefore() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get search => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set search($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasSearch() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearSearch() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.int get page => $_getIZ(6);
+  @$pb.TagNumber(7)
+  set page($core.int v) { $_setSignedInt32(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasPage() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearPage() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.int get pageSize => $_getIZ(7);
+  @$pb.TagNumber(8)
+  set pageSize($core.int v) { $_setSignedInt32(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasPageSize() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearPageSize() => clearField(8);
+}
+
+class AdminListFamilyAccountsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AdminListFamilyAccountsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts.v1'), createEmptyInstance: create)
+    ..pc<FamilyAccount>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'familyAccounts', $pb.PbFieldType.PM, subBuilder: FamilyAccount.create)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalCount', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalPages', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  AdminListFamilyAccountsResponse._() : super();
+  factory AdminListFamilyAccountsResponse({
+    $core.Iterable<FamilyAccount>? familyAccounts,
+    $core.int? totalCount,
+    $core.int? page,
+    $core.int? pageSize,
+    $core.int? totalPages,
+  }) {
+    final _result = create();
+    if (familyAccounts != null) {
+      _result.familyAccounts.addAll(familyAccounts);
+    }
+    if (totalCount != null) {
+      _result.totalCount = totalCount;
+    }
+    if (page != null) {
+      _result.page = page;
+    }
+    if (pageSize != null) {
+      _result.pageSize = pageSize;
+    }
+    if (totalPages != null) {
+      _result.totalPages = totalPages;
+    }
+    return _result;
+  }
+  factory AdminListFamilyAccountsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory AdminListFamilyAccountsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  AdminListFamilyAccountsResponse clone() => AdminListFamilyAccountsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  AdminListFamilyAccountsResponse copyWith(void Function(AdminListFamilyAccountsResponse) updates) => super.copyWith((message) => updates(message as AdminListFamilyAccountsResponse)) as AdminListFamilyAccountsResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static AdminListFamilyAccountsResponse create() => AdminListFamilyAccountsResponse._();
+  AdminListFamilyAccountsResponse createEmptyInstance() => create();
+  static $pb.PbList<AdminListFamilyAccountsResponse> createRepeated() => $pb.PbList<AdminListFamilyAccountsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static AdminListFamilyAccountsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AdminListFamilyAccountsResponse>(create);
+  static AdminListFamilyAccountsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<FamilyAccount> get familyAccounts => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get totalCount => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set totalCount($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTotalCount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotalCount() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get page => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set page($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPage() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get pageSize => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set pageSize($core.int v) { $_setSignedInt32(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasPageSize() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPageSize() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get totalPages => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set totalPages($core.int v) { $_setSignedInt32(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasTotalPages() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearTotalPages() => clearField(5);
+}
+
+class AdminGetFamilyAccountRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AdminGetFamilyAccountRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts.v1'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'familyId')
+    ..hasRequiredFields = false
+  ;
+
+  AdminGetFamilyAccountRequest._() : super();
+  factory AdminGetFamilyAccountRequest({
+    $core.String? familyId,
+  }) {
+    final _result = create();
+    if (familyId != null) {
+      _result.familyId = familyId;
+    }
+    return _result;
+  }
+  factory AdminGetFamilyAccountRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory AdminGetFamilyAccountRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  AdminGetFamilyAccountRequest clone() => AdminGetFamilyAccountRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  AdminGetFamilyAccountRequest copyWith(void Function(AdminGetFamilyAccountRequest) updates) => super.copyWith((message) => updates(message as AdminGetFamilyAccountRequest)) as AdminGetFamilyAccountRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static AdminGetFamilyAccountRequest create() => AdminGetFamilyAccountRequest._();
+  AdminGetFamilyAccountRequest createEmptyInstance() => create();
+  static $pb.PbList<AdminGetFamilyAccountRequest> createRepeated() => $pb.PbList<AdminGetFamilyAccountRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AdminGetFamilyAccountRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AdminGetFamilyAccountRequest>(create);
+  static AdminGetFamilyAccountRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get familyId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set familyId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasFamilyId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFamilyId() => clearField(1);
+}
+
+class AdminGetFamilyAccountResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AdminGetFamilyAccountResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts.v1'), createEmptyInstance: create)
+    ..aOM<FamilyAccount>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'familyAccount', subBuilder: FamilyAccount.create)
+    ..pc<FamilyTransaction>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recentTransactions', $pb.PbFieldType.PM, subBuilder: FamilyTransaction.create)
+    ..aOM<FamilyAccountSummary>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'summary', subBuilder: FamilyAccountSummary.create)
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'adminNotes')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'adminFrozenReason')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastAdminActionAt')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastAdminActionBy')
+    ..hasRequiredFields = false
+  ;
+
+  AdminGetFamilyAccountResponse._() : super();
+  factory AdminGetFamilyAccountResponse({
+    FamilyAccount? familyAccount,
+    $core.Iterable<FamilyTransaction>? recentTransactions,
+    FamilyAccountSummary? summary,
+    $core.String? adminNotes,
+    $core.String? adminFrozenReason,
+    $core.String? lastAdminActionAt,
+    $core.String? lastAdminActionBy,
+  }) {
+    final _result = create();
+    if (familyAccount != null) {
+      _result.familyAccount = familyAccount;
+    }
+    if (recentTransactions != null) {
+      _result.recentTransactions.addAll(recentTransactions);
+    }
+    if (summary != null) {
+      _result.summary = summary;
+    }
+    if (adminNotes != null) {
+      _result.adminNotes = adminNotes;
+    }
+    if (adminFrozenReason != null) {
+      _result.adminFrozenReason = adminFrozenReason;
+    }
+    if (lastAdminActionAt != null) {
+      _result.lastAdminActionAt = lastAdminActionAt;
+    }
+    if (lastAdminActionBy != null) {
+      _result.lastAdminActionBy = lastAdminActionBy;
+    }
+    return _result;
+  }
+  factory AdminGetFamilyAccountResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory AdminGetFamilyAccountResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  AdminGetFamilyAccountResponse clone() => AdminGetFamilyAccountResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  AdminGetFamilyAccountResponse copyWith(void Function(AdminGetFamilyAccountResponse) updates) => super.copyWith((message) => updates(message as AdminGetFamilyAccountResponse)) as AdminGetFamilyAccountResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static AdminGetFamilyAccountResponse create() => AdminGetFamilyAccountResponse._();
+  AdminGetFamilyAccountResponse createEmptyInstance() => create();
+  static $pb.PbList<AdminGetFamilyAccountResponse> createRepeated() => $pb.PbList<AdminGetFamilyAccountResponse>();
+  @$core.pragma('dart2js:noInline')
+  static AdminGetFamilyAccountResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AdminGetFamilyAccountResponse>(create);
+  static AdminGetFamilyAccountResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  FamilyAccount get familyAccount => $_getN(0);
+  @$pb.TagNumber(1)
+  set familyAccount(FamilyAccount v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasFamilyAccount() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFamilyAccount() => clearField(1);
+  @$pb.TagNumber(1)
+  FamilyAccount ensureFamilyAccount() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.List<FamilyTransaction> get recentTransactions => $_getList(1);
+
+  @$pb.TagNumber(3)
+  FamilyAccountSummary get summary => $_getN(2);
+  @$pb.TagNumber(3)
+  set summary(FamilyAccountSummary v) { setField(3, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasSummary() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearSummary() => clearField(3);
+  @$pb.TagNumber(3)
+  FamilyAccountSummary ensureSummary() => $_ensure(2);
+
+  @$pb.TagNumber(4)
+  $core.String get adminNotes => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set adminNotes($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasAdminNotes() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearAdminNotes() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get adminFrozenReason => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set adminFrozenReason($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasAdminFrozenReason() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearAdminFrozenReason() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get lastAdminActionAt => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set lastAdminActionAt($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasLastAdminActionAt() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearLastAdminActionAt() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get lastAdminActionBy => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set lastAdminActionBy($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasLastAdminActionBy() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearLastAdminActionBy() => clearField(7);
+}
+
+class AdminFreezeFamilyAccountRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AdminFreezeFamilyAccountRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts.v1'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'familyId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reason')
+    ..hasRequiredFields = false
+  ;
+
+  AdminFreezeFamilyAccountRequest._() : super();
+  factory AdminFreezeFamilyAccountRequest({
+    $core.String? familyId,
+    $core.String? reason,
+  }) {
+    final _result = create();
+    if (familyId != null) {
+      _result.familyId = familyId;
+    }
+    if (reason != null) {
+      _result.reason = reason;
+    }
+    return _result;
+  }
+  factory AdminFreezeFamilyAccountRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory AdminFreezeFamilyAccountRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  AdminFreezeFamilyAccountRequest clone() => AdminFreezeFamilyAccountRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  AdminFreezeFamilyAccountRequest copyWith(void Function(AdminFreezeFamilyAccountRequest) updates) => super.copyWith((message) => updates(message as AdminFreezeFamilyAccountRequest)) as AdminFreezeFamilyAccountRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static AdminFreezeFamilyAccountRequest create() => AdminFreezeFamilyAccountRequest._();
+  AdminFreezeFamilyAccountRequest createEmptyInstance() => create();
+  static $pb.PbList<AdminFreezeFamilyAccountRequest> createRepeated() => $pb.PbList<AdminFreezeFamilyAccountRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AdminFreezeFamilyAccountRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AdminFreezeFamilyAccountRequest>(create);
+  static AdminFreezeFamilyAccountRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get familyId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set familyId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasFamilyId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFamilyId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get reason => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set reason($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasReason() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearReason() => clearField(2);
+}
+
+class AdminFreezeFamilyAccountResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AdminFreezeFamilyAccountResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts.v1'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOM<FamilyAccount>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'familyAccount', subBuilder: FamilyAccount.create)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  AdminFreezeFamilyAccountResponse._() : super();
+  factory AdminFreezeFamilyAccountResponse({
+    $core.bool? success,
+    FamilyAccount? familyAccount,
+    $core.String? message,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    if (familyAccount != null) {
+      _result.familyAccount = familyAccount;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    return _result;
+  }
+  factory AdminFreezeFamilyAccountResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory AdminFreezeFamilyAccountResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  AdminFreezeFamilyAccountResponse clone() => AdminFreezeFamilyAccountResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  AdminFreezeFamilyAccountResponse copyWith(void Function(AdminFreezeFamilyAccountResponse) updates) => super.copyWith((message) => updates(message as AdminFreezeFamilyAccountResponse)) as AdminFreezeFamilyAccountResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static AdminFreezeFamilyAccountResponse create() => AdminFreezeFamilyAccountResponse._();
+  AdminFreezeFamilyAccountResponse createEmptyInstance() => create();
+  static $pb.PbList<AdminFreezeFamilyAccountResponse> createRepeated() => $pb.PbList<AdminFreezeFamilyAccountResponse>();
+  @$core.pragma('dart2js:noInline')
+  static AdminFreezeFamilyAccountResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AdminFreezeFamilyAccountResponse>(create);
+  static AdminFreezeFamilyAccountResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  FamilyAccount get familyAccount => $_getN(1);
+  @$pb.TagNumber(2)
+  set familyAccount(FamilyAccount v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasFamilyAccount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearFamilyAccount() => clearField(2);
+  @$pb.TagNumber(2)
+  FamilyAccount ensureFamilyAccount() => $_ensure(1);
+
+  @$pb.TagNumber(3)
+  $core.String get message => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set message($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearMessage() => clearField(3);
+}
+
+class AdminUnfreezeFamilyAccountRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AdminUnfreezeFamilyAccountRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts.v1'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'familyId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reason')
+    ..hasRequiredFields = false
+  ;
+
+  AdminUnfreezeFamilyAccountRequest._() : super();
+  factory AdminUnfreezeFamilyAccountRequest({
+    $core.String? familyId,
+    $core.String? reason,
+  }) {
+    final _result = create();
+    if (familyId != null) {
+      _result.familyId = familyId;
+    }
+    if (reason != null) {
+      _result.reason = reason;
+    }
+    return _result;
+  }
+  factory AdminUnfreezeFamilyAccountRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory AdminUnfreezeFamilyAccountRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  AdminUnfreezeFamilyAccountRequest clone() => AdminUnfreezeFamilyAccountRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  AdminUnfreezeFamilyAccountRequest copyWith(void Function(AdminUnfreezeFamilyAccountRequest) updates) => super.copyWith((message) => updates(message as AdminUnfreezeFamilyAccountRequest)) as AdminUnfreezeFamilyAccountRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static AdminUnfreezeFamilyAccountRequest create() => AdminUnfreezeFamilyAccountRequest._();
+  AdminUnfreezeFamilyAccountRequest createEmptyInstance() => create();
+  static $pb.PbList<AdminUnfreezeFamilyAccountRequest> createRepeated() => $pb.PbList<AdminUnfreezeFamilyAccountRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AdminUnfreezeFamilyAccountRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AdminUnfreezeFamilyAccountRequest>(create);
+  static AdminUnfreezeFamilyAccountRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get familyId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set familyId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasFamilyId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFamilyId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get reason => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set reason($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasReason() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearReason() => clearField(2);
+}
+
+class AdminUnfreezeFamilyAccountResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AdminUnfreezeFamilyAccountResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts.v1'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOM<FamilyAccount>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'familyAccount', subBuilder: FamilyAccount.create)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  AdminUnfreezeFamilyAccountResponse._() : super();
+  factory AdminUnfreezeFamilyAccountResponse({
+    $core.bool? success,
+    FamilyAccount? familyAccount,
+    $core.String? message,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    if (familyAccount != null) {
+      _result.familyAccount = familyAccount;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    return _result;
+  }
+  factory AdminUnfreezeFamilyAccountResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory AdminUnfreezeFamilyAccountResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  AdminUnfreezeFamilyAccountResponse clone() => AdminUnfreezeFamilyAccountResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  AdminUnfreezeFamilyAccountResponse copyWith(void Function(AdminUnfreezeFamilyAccountResponse) updates) => super.copyWith((message) => updates(message as AdminUnfreezeFamilyAccountResponse)) as AdminUnfreezeFamilyAccountResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static AdminUnfreezeFamilyAccountResponse create() => AdminUnfreezeFamilyAccountResponse._();
+  AdminUnfreezeFamilyAccountResponse createEmptyInstance() => create();
+  static $pb.PbList<AdminUnfreezeFamilyAccountResponse> createRepeated() => $pb.PbList<AdminUnfreezeFamilyAccountResponse>();
+  @$core.pragma('dart2js:noInline')
+  static AdminUnfreezeFamilyAccountResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AdminUnfreezeFamilyAccountResponse>(create);
+  static AdminUnfreezeFamilyAccountResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  FamilyAccount get familyAccount => $_getN(1);
+  @$pb.TagNumber(2)
+  set familyAccount(FamilyAccount v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasFamilyAccount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearFamilyAccount() => clearField(2);
+  @$pb.TagNumber(2)
+  FamilyAccount ensureFamilyAccount() => $_ensure(1);
+
+  @$pb.TagNumber(3)
+  $core.String get message => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set message($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearMessage() => clearField(3);
+}
+
+class AdminDeleteFamilyAccountRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AdminDeleteFamilyAccountRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts.v1'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'familyId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reason')
+    ..hasRequiredFields = false
+  ;
+
+  AdminDeleteFamilyAccountRequest._() : super();
+  factory AdminDeleteFamilyAccountRequest({
+    $core.String? familyId,
+    $core.String? reason,
+  }) {
+    final _result = create();
+    if (familyId != null) {
+      _result.familyId = familyId;
+    }
+    if (reason != null) {
+      _result.reason = reason;
+    }
+    return _result;
+  }
+  factory AdminDeleteFamilyAccountRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory AdminDeleteFamilyAccountRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  AdminDeleteFamilyAccountRequest clone() => AdminDeleteFamilyAccountRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  AdminDeleteFamilyAccountRequest copyWith(void Function(AdminDeleteFamilyAccountRequest) updates) => super.copyWith((message) => updates(message as AdminDeleteFamilyAccountRequest)) as AdminDeleteFamilyAccountRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static AdminDeleteFamilyAccountRequest create() => AdminDeleteFamilyAccountRequest._();
+  AdminDeleteFamilyAccountRequest createEmptyInstance() => create();
+  static $pb.PbList<AdminDeleteFamilyAccountRequest> createRepeated() => $pb.PbList<AdminDeleteFamilyAccountRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AdminDeleteFamilyAccountRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AdminDeleteFamilyAccountRequest>(create);
+  static AdminDeleteFamilyAccountRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get familyId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set familyId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasFamilyId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFamilyId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get reason => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set reason($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasReason() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearReason() => clearField(2);
+}
+
+class AdminDeleteFamilyAccountResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AdminDeleteFamilyAccountResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts.v1'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'returnedBalance', $pb.PbFieldType.OD)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  AdminDeleteFamilyAccountResponse._() : super();
+  factory AdminDeleteFamilyAccountResponse({
+    $core.bool? success,
+    $core.double? returnedBalance,
+    $core.String? message,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    if (returnedBalance != null) {
+      _result.returnedBalance = returnedBalance;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    return _result;
+  }
+  factory AdminDeleteFamilyAccountResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory AdminDeleteFamilyAccountResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  AdminDeleteFamilyAccountResponse clone() => AdminDeleteFamilyAccountResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  AdminDeleteFamilyAccountResponse copyWith(void Function(AdminDeleteFamilyAccountResponse) updates) => super.copyWith((message) => updates(message as AdminDeleteFamilyAccountResponse)) as AdminDeleteFamilyAccountResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static AdminDeleteFamilyAccountResponse create() => AdminDeleteFamilyAccountResponse._();
+  AdminDeleteFamilyAccountResponse createEmptyInstance() => create();
+  static $pb.PbList<AdminDeleteFamilyAccountResponse> createRepeated() => $pb.PbList<AdminDeleteFamilyAccountResponse>();
+  @$core.pragma('dart2js:noInline')
+  static AdminDeleteFamilyAccountResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AdminDeleteFamilyAccountResponse>(create);
+  static AdminDeleteFamilyAccountResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.double get returnedBalance => $_getN(1);
+  @$pb.TagNumber(2)
+  set returnedBalance($core.double v) { $_setDouble(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasReturnedBalance() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearReturnedBalance() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get message => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set message($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearMessage() => clearField(3);
+}
+
+class AdminForceAllocateFundsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AdminForceAllocateFundsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts.v1'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'familyId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'memberId')
+    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reason')
+    ..hasRequiredFields = false
+  ;
+
+  AdminForceAllocateFundsRequest._() : super();
+  factory AdminForceAllocateFundsRequest({
+    $core.String? familyId,
+    $core.String? memberId,
+    $core.double? amount,
+    $core.String? reason,
+  }) {
+    final _result = create();
+    if (familyId != null) {
+      _result.familyId = familyId;
+    }
+    if (memberId != null) {
+      _result.memberId = memberId;
+    }
+    if (amount != null) {
+      _result.amount = amount;
+    }
+    if (reason != null) {
+      _result.reason = reason;
+    }
+    return _result;
+  }
+  factory AdminForceAllocateFundsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory AdminForceAllocateFundsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  AdminForceAllocateFundsRequest clone() => AdminForceAllocateFundsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  AdminForceAllocateFundsRequest copyWith(void Function(AdminForceAllocateFundsRequest) updates) => super.copyWith((message) => updates(message as AdminForceAllocateFundsRequest)) as AdminForceAllocateFundsRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static AdminForceAllocateFundsRequest create() => AdminForceAllocateFundsRequest._();
+  AdminForceAllocateFundsRequest createEmptyInstance() => create();
+  static $pb.PbList<AdminForceAllocateFundsRequest> createRepeated() => $pb.PbList<AdminForceAllocateFundsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AdminForceAllocateFundsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AdminForceAllocateFundsRequest>(create);
+  static AdminForceAllocateFundsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get familyId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set familyId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasFamilyId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFamilyId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get memberId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set memberId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMemberId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMemberId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.double get amount => $_getN(2);
+  @$pb.TagNumber(3)
+  set amount($core.double v) { $_setDouble(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasAmount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAmount() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get reason => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set reason($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasReason() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearReason() => clearField(4);
+}
+
+class AdminForceAllocateFundsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AdminForceAllocateFundsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts.v1'), createEmptyInstance: create)
+    ..aOM<FamilyMember>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'member', subBuilder: FamilyMember.create)
+    ..aOM<FamilyTransaction>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transaction', subBuilder: FamilyTransaction.create)
+    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'remainingPoolBalance', $pb.PbFieldType.OD)
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  AdminForceAllocateFundsResponse._() : super();
+  factory AdminForceAllocateFundsResponse({
+    FamilyMember? member,
+    FamilyTransaction? transaction,
+    $core.double? remainingPoolBalance,
+    $core.String? message,
+  }) {
+    final _result = create();
+    if (member != null) {
+      _result.member = member;
+    }
+    if (transaction != null) {
+      _result.transaction = transaction;
+    }
+    if (remainingPoolBalance != null) {
+      _result.remainingPoolBalance = remainingPoolBalance;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    return _result;
+  }
+  factory AdminForceAllocateFundsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory AdminForceAllocateFundsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  AdminForceAllocateFundsResponse clone() => AdminForceAllocateFundsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  AdminForceAllocateFundsResponse copyWith(void Function(AdminForceAllocateFundsResponse) updates) => super.copyWith((message) => updates(message as AdminForceAllocateFundsResponse)) as AdminForceAllocateFundsResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static AdminForceAllocateFundsResponse create() => AdminForceAllocateFundsResponse._();
+  AdminForceAllocateFundsResponse createEmptyInstance() => create();
+  static $pb.PbList<AdminForceAllocateFundsResponse> createRepeated() => $pb.PbList<AdminForceAllocateFundsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static AdminForceAllocateFundsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AdminForceAllocateFundsResponse>(create);
+  static AdminForceAllocateFundsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  FamilyMember get member => $_getN(0);
+  @$pb.TagNumber(1)
+  set member(FamilyMember v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasMember() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearMember() => clearField(1);
+  @$pb.TagNumber(1)
+  FamilyMember ensureMember() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  FamilyTransaction get transaction => $_getN(1);
+  @$pb.TagNumber(2)
+  set transaction(FamilyTransaction v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTransaction() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTransaction() => clearField(2);
+  @$pb.TagNumber(2)
+  FamilyTransaction ensureTransaction() => $_ensure(1);
+
+  @$pb.TagNumber(3)
+  $core.double get remainingPoolBalance => $_getN(2);
+  @$pb.TagNumber(3)
+  set remainingPoolBalance($core.double v) { $_setDouble(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasRemainingPoolBalance() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearRemainingPoolBalance() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get message => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set message($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasMessage() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearMessage() => clearField(4);
+}
+
+class AdminRemoveFamilyMemberRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AdminRemoveFamilyMemberRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts.v1'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'familyId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'memberId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reason')
+    ..aOB(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'returnBalanceToPool')
+    ..hasRequiredFields = false
+  ;
+
+  AdminRemoveFamilyMemberRequest._() : super();
+  factory AdminRemoveFamilyMemberRequest({
+    $core.String? familyId,
+    $core.String? memberId,
+    $core.String? reason,
+    $core.bool? returnBalanceToPool,
+  }) {
+    final _result = create();
+    if (familyId != null) {
+      _result.familyId = familyId;
+    }
+    if (memberId != null) {
+      _result.memberId = memberId;
+    }
+    if (reason != null) {
+      _result.reason = reason;
+    }
+    if (returnBalanceToPool != null) {
+      _result.returnBalanceToPool = returnBalanceToPool;
+    }
+    return _result;
+  }
+  factory AdminRemoveFamilyMemberRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory AdminRemoveFamilyMemberRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  AdminRemoveFamilyMemberRequest clone() => AdminRemoveFamilyMemberRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  AdminRemoveFamilyMemberRequest copyWith(void Function(AdminRemoveFamilyMemberRequest) updates) => super.copyWith((message) => updates(message as AdminRemoveFamilyMemberRequest)) as AdminRemoveFamilyMemberRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static AdminRemoveFamilyMemberRequest create() => AdminRemoveFamilyMemberRequest._();
+  AdminRemoveFamilyMemberRequest createEmptyInstance() => create();
+  static $pb.PbList<AdminRemoveFamilyMemberRequest> createRepeated() => $pb.PbList<AdminRemoveFamilyMemberRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AdminRemoveFamilyMemberRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AdminRemoveFamilyMemberRequest>(create);
+  static AdminRemoveFamilyMemberRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get familyId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set familyId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasFamilyId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFamilyId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get memberId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set memberId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMemberId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMemberId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get reason => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set reason($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasReason() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearReason() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.bool get returnBalanceToPool => $_getBF(3);
+  @$pb.TagNumber(4)
+  set returnBalanceToPool($core.bool v) { $_setBool(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasReturnBalanceToPool() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearReturnBalanceToPool() => clearField(4);
+}
+
+class AdminRemoveFamilyMemberResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AdminRemoveFamilyMemberResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts.v1'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'returnedBalance', $pb.PbFieldType.OD)
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  AdminRemoveFamilyMemberResponse._() : super();
+  factory AdminRemoveFamilyMemberResponse({
+    $core.bool? success,
+    $core.double? returnedBalance,
+    $core.String? message,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    if (returnedBalance != null) {
+      _result.returnedBalance = returnedBalance;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    return _result;
+  }
+  factory AdminRemoveFamilyMemberResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory AdminRemoveFamilyMemberResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  AdminRemoveFamilyMemberResponse clone() => AdminRemoveFamilyMemberResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  AdminRemoveFamilyMemberResponse copyWith(void Function(AdminRemoveFamilyMemberResponse) updates) => super.copyWith((message) => updates(message as AdminRemoveFamilyMemberResponse)) as AdminRemoveFamilyMemberResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static AdminRemoveFamilyMemberResponse create() => AdminRemoveFamilyMemberResponse._();
+  AdminRemoveFamilyMemberResponse createEmptyInstance() => create();
+  static $pb.PbList<AdminRemoveFamilyMemberResponse> createRepeated() => $pb.PbList<AdminRemoveFamilyMemberResponse>();
+  @$core.pragma('dart2js:noInline')
+  static AdminRemoveFamilyMemberResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AdminRemoveFamilyMemberResponse>(create);
+  static AdminRemoveFamilyMemberResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.double get returnedBalance => $_getN(1);
+  @$pb.TagNumber(2)
+  set returnedBalance($core.double v) { $_setDouble(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasReturnedBalance() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearReturnedBalance() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get message => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set message($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearMessage() => clearField(3);
+}
+
+class AdminUpdateFamilyAccountNotesRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AdminUpdateFamilyAccountNotesRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts.v1'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'familyId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'adminNotes')
+    ..hasRequiredFields = false
+  ;
+
+  AdminUpdateFamilyAccountNotesRequest._() : super();
+  factory AdminUpdateFamilyAccountNotesRequest({
+    $core.String? familyId,
+    $core.String? adminNotes,
+  }) {
+    final _result = create();
+    if (familyId != null) {
+      _result.familyId = familyId;
+    }
+    if (adminNotes != null) {
+      _result.adminNotes = adminNotes;
+    }
+    return _result;
+  }
+  factory AdminUpdateFamilyAccountNotesRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory AdminUpdateFamilyAccountNotesRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  AdminUpdateFamilyAccountNotesRequest clone() => AdminUpdateFamilyAccountNotesRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  AdminUpdateFamilyAccountNotesRequest copyWith(void Function(AdminUpdateFamilyAccountNotesRequest) updates) => super.copyWith((message) => updates(message as AdminUpdateFamilyAccountNotesRequest)) as AdminUpdateFamilyAccountNotesRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static AdminUpdateFamilyAccountNotesRequest create() => AdminUpdateFamilyAccountNotesRequest._();
+  AdminUpdateFamilyAccountNotesRequest createEmptyInstance() => create();
+  static $pb.PbList<AdminUpdateFamilyAccountNotesRequest> createRepeated() => $pb.PbList<AdminUpdateFamilyAccountNotesRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AdminUpdateFamilyAccountNotesRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AdminUpdateFamilyAccountNotesRequest>(create);
+  static AdminUpdateFamilyAccountNotesRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get familyId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set familyId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasFamilyId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFamilyId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get adminNotes => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set adminNotes($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasAdminNotes() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAdminNotes() => clearField(2);
+}
+
+class AdminUpdateFamilyAccountNotesResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AdminUpdateFamilyAccountNotesResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts.v1'), createEmptyInstance: create)
+    ..aOM<FamilyAccount>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'familyAccount', subBuilder: FamilyAccount.create)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'message')
+    ..hasRequiredFields = false
+  ;
+
+  AdminUpdateFamilyAccountNotesResponse._() : super();
+  factory AdminUpdateFamilyAccountNotesResponse({
+    FamilyAccount? familyAccount,
+    $core.String? message,
+  }) {
+    final _result = create();
+    if (familyAccount != null) {
+      _result.familyAccount = familyAccount;
+    }
+    if (message != null) {
+      _result.message = message;
+    }
+    return _result;
+  }
+  factory AdminUpdateFamilyAccountNotesResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory AdminUpdateFamilyAccountNotesResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  AdminUpdateFamilyAccountNotesResponse clone() => AdminUpdateFamilyAccountNotesResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  AdminUpdateFamilyAccountNotesResponse copyWith(void Function(AdminUpdateFamilyAccountNotesResponse) updates) => super.copyWith((message) => updates(message as AdminUpdateFamilyAccountNotesResponse)) as AdminUpdateFamilyAccountNotesResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static AdminUpdateFamilyAccountNotesResponse create() => AdminUpdateFamilyAccountNotesResponse._();
+  AdminUpdateFamilyAccountNotesResponse createEmptyInstance() => create();
+  static $pb.PbList<AdminUpdateFamilyAccountNotesResponse> createRepeated() => $pb.PbList<AdminUpdateFamilyAccountNotesResponse>();
+  @$core.pragma('dart2js:noInline')
+  static AdminUpdateFamilyAccountNotesResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AdminUpdateFamilyAccountNotesResponse>(create);
+  static AdminUpdateFamilyAccountNotesResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  FamilyAccount get familyAccount => $_getN(0);
+  @$pb.TagNumber(1)
+  set familyAccount(FamilyAccount v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasFamilyAccount() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFamilyAccount() => clearField(1);
+  @$pb.TagNumber(1)
+  FamilyAccount ensureFamilyAccount() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => clearField(2);
+}
+
 class CreateFamilyAccountRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateFamilyAccountRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts.v1'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
@@ -1355,6 +2655,864 @@ class GetPendingInvitationsResponse extends $pb.GeneratedMessage {
   $core.bool hasTotalCount() => $_has(1);
   @$pb.TagNumber(2)
   void clearTotalCount() => clearField(2);
+}
+
+class GetMyInvitationHistoryRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetMyInvitationHistoryRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts.v1'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'statusFilter')
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  GetMyInvitationHistoryRequest._() : super();
+  factory GetMyInvitationHistoryRequest({
+    $core.String? statusFilter,
+    $core.int? page,
+    $core.int? pageSize,
+  }) {
+    final _result = create();
+    if (statusFilter != null) {
+      _result.statusFilter = statusFilter;
+    }
+    if (page != null) {
+      _result.page = page;
+    }
+    if (pageSize != null) {
+      _result.pageSize = pageSize;
+    }
+    return _result;
+  }
+  factory GetMyInvitationHistoryRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetMyInvitationHistoryRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetMyInvitationHistoryRequest clone() => GetMyInvitationHistoryRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetMyInvitationHistoryRequest copyWith(void Function(GetMyInvitationHistoryRequest) updates) => super.copyWith((message) => updates(message as GetMyInvitationHistoryRequest)) as GetMyInvitationHistoryRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetMyInvitationHistoryRequest create() => GetMyInvitationHistoryRequest._();
+  GetMyInvitationHistoryRequest createEmptyInstance() => create();
+  static $pb.PbList<GetMyInvitationHistoryRequest> createRepeated() => $pb.PbList<GetMyInvitationHistoryRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetMyInvitationHistoryRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetMyInvitationHistoryRequest>(create);
+  static GetMyInvitationHistoryRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get statusFilter => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set statusFilter($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasStatusFilter() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearStatusFilter() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get page => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set page($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasPage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPage() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get pageSize => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set pageSize($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPageSize() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPageSize() => clearField(3);
+}
+
+class InvitationHistoryEntry extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'InvitationHistoryEntry', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts.v1'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invitationToken')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'familyId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'familyName')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'creatorName')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'creatorAvatar')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invitedBy')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invitationStatus')
+    ..a<$core.double>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'initialAllocation', $pb.PbFieldType.OD)
+    ..a<$core.double>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dailyLimit', $pb.PbFieldType.OD)
+    ..a<$core.double>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'monthlyLimit', $pb.PbFieldType.OD)
+    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invitationMethod')
+    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invitationDestination')
+    ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt')
+    ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt')
+    ..aOS(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'respondedAt')
+    ..hasRequiredFields = false
+  ;
+
+  InvitationHistoryEntry._() : super();
+  factory InvitationHistoryEntry({
+    $core.String? invitationToken,
+    $core.String? familyId,
+    $core.String? familyName,
+    $core.String? creatorName,
+    $core.String? creatorAvatar,
+    $core.String? invitedBy,
+    $core.String? invitationStatus,
+    $core.double? initialAllocation,
+    $core.double? dailyLimit,
+    $core.double? monthlyLimit,
+    $core.String? invitationMethod,
+    $core.String? invitationDestination,
+    $core.String? createdAt,
+    $core.String? expiresAt,
+    $core.String? respondedAt,
+  }) {
+    final _result = create();
+    if (invitationToken != null) {
+      _result.invitationToken = invitationToken;
+    }
+    if (familyId != null) {
+      _result.familyId = familyId;
+    }
+    if (familyName != null) {
+      _result.familyName = familyName;
+    }
+    if (creatorName != null) {
+      _result.creatorName = creatorName;
+    }
+    if (creatorAvatar != null) {
+      _result.creatorAvatar = creatorAvatar;
+    }
+    if (invitedBy != null) {
+      _result.invitedBy = invitedBy;
+    }
+    if (invitationStatus != null) {
+      _result.invitationStatus = invitationStatus;
+    }
+    if (initialAllocation != null) {
+      _result.initialAllocation = initialAllocation;
+    }
+    if (dailyLimit != null) {
+      _result.dailyLimit = dailyLimit;
+    }
+    if (monthlyLimit != null) {
+      _result.monthlyLimit = monthlyLimit;
+    }
+    if (invitationMethod != null) {
+      _result.invitationMethod = invitationMethod;
+    }
+    if (invitationDestination != null) {
+      _result.invitationDestination = invitationDestination;
+    }
+    if (createdAt != null) {
+      _result.createdAt = createdAt;
+    }
+    if (expiresAt != null) {
+      _result.expiresAt = expiresAt;
+    }
+    if (respondedAt != null) {
+      _result.respondedAt = respondedAt;
+    }
+    return _result;
+  }
+  factory InvitationHistoryEntry.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory InvitationHistoryEntry.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  InvitationHistoryEntry clone() => InvitationHistoryEntry()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  InvitationHistoryEntry copyWith(void Function(InvitationHistoryEntry) updates) => super.copyWith((message) => updates(message as InvitationHistoryEntry)) as InvitationHistoryEntry; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static InvitationHistoryEntry create() => InvitationHistoryEntry._();
+  InvitationHistoryEntry createEmptyInstance() => create();
+  static $pb.PbList<InvitationHistoryEntry> createRepeated() => $pb.PbList<InvitationHistoryEntry>();
+  @$core.pragma('dart2js:noInline')
+  static InvitationHistoryEntry getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<InvitationHistoryEntry>(create);
+  static InvitationHistoryEntry? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get invitationToken => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set invitationToken($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasInvitationToken() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearInvitationToken() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get familyId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set familyId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasFamilyId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearFamilyId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get familyName => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set familyName($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasFamilyName() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearFamilyName() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get creatorName => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set creatorName($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasCreatorName() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCreatorName() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get creatorAvatar => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set creatorAvatar($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasCreatorAvatar() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearCreatorAvatar() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get invitedBy => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set invitedBy($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasInvitedBy() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearInvitedBy() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get invitationStatus => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set invitationStatus($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasInvitationStatus() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearInvitationStatus() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.double get initialAllocation => $_getN(7);
+  @$pb.TagNumber(8)
+  set initialAllocation($core.double v) { $_setDouble(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasInitialAllocation() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearInitialAllocation() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.double get dailyLimit => $_getN(8);
+  @$pb.TagNumber(9)
+  set dailyLimit($core.double v) { $_setDouble(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasDailyLimit() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearDailyLimit() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.double get monthlyLimit => $_getN(9);
+  @$pb.TagNumber(10)
+  set monthlyLimit($core.double v) { $_setDouble(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasMonthlyLimit() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearMonthlyLimit() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get invitationMethod => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set invitationMethod($core.String v) { $_setString(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasInvitationMethod() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearInvitationMethod() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get invitationDestination => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set invitationDestination($core.String v) { $_setString(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasInvitationDestination() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearInvitationDestination() => clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.String get createdAt => $_getSZ(12);
+  @$pb.TagNumber(13)
+  set createdAt($core.String v) { $_setString(12, v); }
+  @$pb.TagNumber(13)
+  $core.bool hasCreatedAt() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearCreatedAt() => clearField(13);
+
+  @$pb.TagNumber(14)
+  $core.String get expiresAt => $_getSZ(13);
+  @$pb.TagNumber(14)
+  set expiresAt($core.String v) { $_setString(13, v); }
+  @$pb.TagNumber(14)
+  $core.bool hasExpiresAt() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearExpiresAt() => clearField(14);
+
+  @$pb.TagNumber(15)
+  $core.String get respondedAt => $_getSZ(14);
+  @$pb.TagNumber(15)
+  set respondedAt($core.String v) { $_setString(14, v); }
+  @$pb.TagNumber(15)
+  $core.bool hasRespondedAt() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearRespondedAt() => clearField(15);
+}
+
+class GetMyInvitationHistoryResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetMyInvitationHistoryResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts.v1'), createEmptyInstance: create)
+    ..pc<InvitationHistoryEntry>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'entries', $pb.PbFieldType.PM, subBuilder: InvitationHistoryEntry.create)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalCount', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalPages', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  GetMyInvitationHistoryResponse._() : super();
+  factory GetMyInvitationHistoryResponse({
+    $core.Iterable<InvitationHistoryEntry>? entries,
+    $core.int? totalCount,
+    $core.int? page,
+    $core.int? pageSize,
+    $core.int? totalPages,
+  }) {
+    final _result = create();
+    if (entries != null) {
+      _result.entries.addAll(entries);
+    }
+    if (totalCount != null) {
+      _result.totalCount = totalCount;
+    }
+    if (page != null) {
+      _result.page = page;
+    }
+    if (pageSize != null) {
+      _result.pageSize = pageSize;
+    }
+    if (totalPages != null) {
+      _result.totalPages = totalPages;
+    }
+    return _result;
+  }
+  factory GetMyInvitationHistoryResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetMyInvitationHistoryResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetMyInvitationHistoryResponse clone() => GetMyInvitationHistoryResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetMyInvitationHistoryResponse copyWith(void Function(GetMyInvitationHistoryResponse) updates) => super.copyWith((message) => updates(message as GetMyInvitationHistoryResponse)) as GetMyInvitationHistoryResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetMyInvitationHistoryResponse create() => GetMyInvitationHistoryResponse._();
+  GetMyInvitationHistoryResponse createEmptyInstance() => create();
+  static $pb.PbList<GetMyInvitationHistoryResponse> createRepeated() => $pb.PbList<GetMyInvitationHistoryResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetMyInvitationHistoryResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetMyInvitationHistoryResponse>(create);
+  static GetMyInvitationHistoryResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<InvitationHistoryEntry> get entries => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get totalCount => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set totalCount($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTotalCount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotalCount() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get page => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set page($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPage() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get pageSize => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set pageSize($core.int v) { $_setSignedInt32(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasPageSize() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPageSize() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get totalPages => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set totalPages($core.int v) { $_setSignedInt32(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasTotalPages() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearTotalPages() => clearField(5);
+}
+
+class GetSentInvitationsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetSentInvitationsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts.v1'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'familyId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'statusFilter')
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  GetSentInvitationsRequest._() : super();
+  factory GetSentInvitationsRequest({
+    $core.String? familyId,
+    $core.String? statusFilter,
+    $core.int? page,
+    $core.int? pageSize,
+  }) {
+    final _result = create();
+    if (familyId != null) {
+      _result.familyId = familyId;
+    }
+    if (statusFilter != null) {
+      _result.statusFilter = statusFilter;
+    }
+    if (page != null) {
+      _result.page = page;
+    }
+    if (pageSize != null) {
+      _result.pageSize = pageSize;
+    }
+    return _result;
+  }
+  factory GetSentInvitationsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetSentInvitationsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetSentInvitationsRequest clone() => GetSentInvitationsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetSentInvitationsRequest copyWith(void Function(GetSentInvitationsRequest) updates) => super.copyWith((message) => updates(message as GetSentInvitationsRequest)) as GetSentInvitationsRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetSentInvitationsRequest create() => GetSentInvitationsRequest._();
+  GetSentInvitationsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetSentInvitationsRequest> createRepeated() => $pb.PbList<GetSentInvitationsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetSentInvitationsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetSentInvitationsRequest>(create);
+  static GetSentInvitationsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get familyId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set familyId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasFamilyId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearFamilyId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get statusFilter => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set statusFilter($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasStatusFilter() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearStatusFilter() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get page => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set page($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPage() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get pageSize => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set pageSize($core.int v) { $_setSignedInt32(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasPageSize() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPageSize() => clearField(4);
+}
+
+class SentInvitationEntry extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SentInvitationEntry', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts.v1'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'memberId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'familyId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'familyName')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invitationMethod')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invitationDestination')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invitationStatus')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invitedUserId')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invitedUserName')
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'invitedUserAvatar')
+    ..a<$core.double>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'initialAllocation', $pb.PbFieldType.OD)
+    ..a<$core.double>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dailyLimit', $pb.PbFieldType.OD)
+    ..a<$core.double>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'monthlyLimit', $pb.PbFieldType.OD)
+    ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'role')
+    ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt')
+    ..aOS(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt')
+    ..aOS(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'respondedAt')
+    ..hasRequiredFields = false
+  ;
+
+  SentInvitationEntry._() : super();
+  factory SentInvitationEntry({
+    $core.String? memberId,
+    $core.String? familyId,
+    $core.String? familyName,
+    $core.String? invitationMethod,
+    $core.String? invitationDestination,
+    $core.String? invitationStatus,
+    $core.String? invitedUserId,
+    $core.String? invitedUserName,
+    $core.String? invitedUserAvatar,
+    $core.double? initialAllocation,
+    $core.double? dailyLimit,
+    $core.double? monthlyLimit,
+    $core.String? role,
+    $core.String? createdAt,
+    $core.String? expiresAt,
+    $core.String? respondedAt,
+  }) {
+    final _result = create();
+    if (memberId != null) {
+      _result.memberId = memberId;
+    }
+    if (familyId != null) {
+      _result.familyId = familyId;
+    }
+    if (familyName != null) {
+      _result.familyName = familyName;
+    }
+    if (invitationMethod != null) {
+      _result.invitationMethod = invitationMethod;
+    }
+    if (invitationDestination != null) {
+      _result.invitationDestination = invitationDestination;
+    }
+    if (invitationStatus != null) {
+      _result.invitationStatus = invitationStatus;
+    }
+    if (invitedUserId != null) {
+      _result.invitedUserId = invitedUserId;
+    }
+    if (invitedUserName != null) {
+      _result.invitedUserName = invitedUserName;
+    }
+    if (invitedUserAvatar != null) {
+      _result.invitedUserAvatar = invitedUserAvatar;
+    }
+    if (initialAllocation != null) {
+      _result.initialAllocation = initialAllocation;
+    }
+    if (dailyLimit != null) {
+      _result.dailyLimit = dailyLimit;
+    }
+    if (monthlyLimit != null) {
+      _result.monthlyLimit = monthlyLimit;
+    }
+    if (role != null) {
+      _result.role = role;
+    }
+    if (createdAt != null) {
+      _result.createdAt = createdAt;
+    }
+    if (expiresAt != null) {
+      _result.expiresAt = expiresAt;
+    }
+    if (respondedAt != null) {
+      _result.respondedAt = respondedAt;
+    }
+    return _result;
+  }
+  factory SentInvitationEntry.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory SentInvitationEntry.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  SentInvitationEntry clone() => SentInvitationEntry()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  SentInvitationEntry copyWith(void Function(SentInvitationEntry) updates) => super.copyWith((message) => updates(message as SentInvitationEntry)) as SentInvitationEntry; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static SentInvitationEntry create() => SentInvitationEntry._();
+  SentInvitationEntry createEmptyInstance() => create();
+  static $pb.PbList<SentInvitationEntry> createRepeated() => $pb.PbList<SentInvitationEntry>();
+  @$core.pragma('dart2js:noInline')
+  static SentInvitationEntry getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SentInvitationEntry>(create);
+  static SentInvitationEntry? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get memberId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set memberId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasMemberId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearMemberId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get familyId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set familyId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasFamilyId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearFamilyId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get familyName => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set familyName($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasFamilyName() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearFamilyName() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get invitationMethod => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set invitationMethod($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasInvitationMethod() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearInvitationMethod() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get invitationDestination => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set invitationDestination($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasInvitationDestination() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearInvitationDestination() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get invitationStatus => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set invitationStatus($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasInvitationStatus() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearInvitationStatus() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get invitedUserId => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set invitedUserId($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasInvitedUserId() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearInvitedUserId() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get invitedUserName => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set invitedUserName($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasInvitedUserName() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearInvitedUserName() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get invitedUserAvatar => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set invitedUserAvatar($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasInvitedUserAvatar() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearInvitedUserAvatar() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.double get initialAllocation => $_getN(9);
+  @$pb.TagNumber(10)
+  set initialAllocation($core.double v) { $_setDouble(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasInitialAllocation() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearInitialAllocation() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.double get dailyLimit => $_getN(10);
+  @$pb.TagNumber(11)
+  set dailyLimit($core.double v) { $_setDouble(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasDailyLimit() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearDailyLimit() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.double get monthlyLimit => $_getN(11);
+  @$pb.TagNumber(12)
+  set monthlyLimit($core.double v) { $_setDouble(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasMonthlyLimit() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearMonthlyLimit() => clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.String get role => $_getSZ(12);
+  @$pb.TagNumber(13)
+  set role($core.String v) { $_setString(12, v); }
+  @$pb.TagNumber(13)
+  $core.bool hasRole() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearRole() => clearField(13);
+
+  @$pb.TagNumber(14)
+  $core.String get createdAt => $_getSZ(13);
+  @$pb.TagNumber(14)
+  set createdAt($core.String v) { $_setString(13, v); }
+  @$pb.TagNumber(14)
+  $core.bool hasCreatedAt() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearCreatedAt() => clearField(14);
+
+  @$pb.TagNumber(15)
+  $core.String get expiresAt => $_getSZ(14);
+  @$pb.TagNumber(15)
+  set expiresAt($core.String v) { $_setString(14, v); }
+  @$pb.TagNumber(15)
+  $core.bool hasExpiresAt() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearExpiresAt() => clearField(15);
+
+  @$pb.TagNumber(16)
+  $core.String get respondedAt => $_getSZ(15);
+  @$pb.TagNumber(16)
+  set respondedAt($core.String v) { $_setString(15, v); }
+  @$pb.TagNumber(16)
+  $core.bool hasRespondedAt() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearRespondedAt() => clearField(16);
+}
+
+class GetSentInvitationsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetSentInvitationsResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts.v1'), createEmptyInstance: create)
+    ..pc<SentInvitationEntry>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'entries', $pb.PbFieldType.PM, subBuilder: SentInvitationEntry.create)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalCount', $pb.PbFieldType.O3)
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'page', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pageSize', $pb.PbFieldType.O3)
+    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalPages', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  GetSentInvitationsResponse._() : super();
+  factory GetSentInvitationsResponse({
+    $core.Iterable<SentInvitationEntry>? entries,
+    $core.int? totalCount,
+    $core.int? page,
+    $core.int? pageSize,
+    $core.int? totalPages,
+  }) {
+    final _result = create();
+    if (entries != null) {
+      _result.entries.addAll(entries);
+    }
+    if (totalCount != null) {
+      _result.totalCount = totalCount;
+    }
+    if (page != null) {
+      _result.page = page;
+    }
+    if (pageSize != null) {
+      _result.pageSize = pageSize;
+    }
+    if (totalPages != null) {
+      _result.totalPages = totalPages;
+    }
+    return _result;
+  }
+  factory GetSentInvitationsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetSentInvitationsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetSentInvitationsResponse clone() => GetSentInvitationsResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetSentInvitationsResponse copyWith(void Function(GetSentInvitationsResponse) updates) => super.copyWith((message) => updates(message as GetSentInvitationsResponse)) as GetSentInvitationsResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetSentInvitationsResponse create() => GetSentInvitationsResponse._();
+  GetSentInvitationsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetSentInvitationsResponse> createRepeated() => $pb.PbList<GetSentInvitationsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetSentInvitationsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetSentInvitationsResponse>(create);
+  static GetSentInvitationsResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<SentInvitationEntry> get entries => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get totalCount => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set totalCount($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTotalCount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotalCount() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get page => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set page($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPage() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get pageSize => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set pageSize($core.int v) { $_setSignedInt32(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasPageSize() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPageSize() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get totalPages => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set totalPages($core.int v) { $_setSignedInt32(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasTotalPages() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearTotalPages() => clearField(5);
 }
 
 class GetFamilyTransactionsRequest extends $pb.GeneratedMessage {

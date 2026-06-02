@@ -997,6 +997,12 @@ message BillPayment {
   string token = 11;                    // For prepaid electricity
   string metadata = 12;                 // JSON metadata
   string created_at = 13;
+  // Non-empty when a `failed` row had its fund hold released — the
+  // Flutter clients read this to promote the chip from "Failed" to
+  // "Refunded". Possible values include `auto_released`,
+  // `vtpass_failed`, `reloadly_primary_failed`, `both_failed`,
+  // `admin_disabled_all_gateways`, `kafka_publish_failed`, etc.
+  string refund_source = 14;
 }
 
 message BillProvider {
@@ -1177,12 +1183,17 @@ message ScanToPayResponse {
 // NOTE: user_id extracted from JWT token, not from request
 message GetBillPaymentHistoryRequest {
   string account_id = 1;                // Optional filter
-  string bill_type = 2;                 // Optional filter
+  string bill_type = 2;                 // Optional single-value filter
   string status = 3;                    // Optional filter
   string start_date = 4;
   string end_date = 5;
   int32 limit = 6;
   int32 offset = 7;
+  // Multi-value filter — server returns rows where bill_type IN (bill_type_in).
+  // Used for families like airtime that map to multiple rows (airtime,
+  // intl_airtime, airtime_to_cash). Takes precedence over `bill_type` when
+  // non-empty.
+  repeated string bill_type_in = 8;
 }
 
 message GetBillPaymentHistoryResponse {
@@ -1744,6 +1755,12 @@ message WaterProvider {
   string logo_url = 4;
   bool is_active = 5;
   double commission_rate = 6;
+  // Per-disco amount bounds surfaced from VTpass's service-variation catalogue
+  // so the client can render + enforce the exact range (e.g. Lagos Water
+  // ₦1,000–₦500,000). Zero = field not populated by the backend; Flutter
+  // falls back to 0/infinity (no range guard) in that case.
+  double min_amount = 7;
+  double max_amount = 8;
 }
 
 message GetWaterProvidersRequest {

@@ -15,6 +15,8 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_stat
 import 'package:lazervault/core/utils/kyc_error_handler.dart';
 import 'package:lazervault/src/features/funds/cubit/transfer_cubit.dart';
 import 'package:lazervault/src/features/funds/cubit/transfer_state.dart';
+import 'package:lazervault/src/features/funds/cubit/transfer_prediction_cubit.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/transfer_prediction_alert.dart';
 import 'package:lazervault/src/features/recipients/data/models/recipient_model.dart';
 import 'package:lazervault/src/features/recipients/domain/usecases/add_recipient_usecase.dart';
 import 'package:lazervault/src/features/recipients/presentation/cubit/recipient_cubit.dart';
@@ -129,6 +131,12 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
   // Prevents race condition where Get.offAllNamed disposes the tree before
   // the fire-and-forget save completes (especially when recurring is enabled).
   Future<void>? _pendingRecipientSave;
+
+  // Informational, READ-ONLY transfer success prediction (non-blocking).
+  // Owned by this screen so it survives the confirmation dialog's lifecycle.
+  // Driven only for EXTERNAL transfers (recipient bank != 'LazerVault').
+  final TransferPredictionCubit _predictionCubit =
+      serviceLocator<TransferPredictionCubit>();
 
   // --- Fetch Accounts on Init ---
   @override
@@ -915,11 +923,25 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       destinationBankCode: _recipient!.sortCode,
     );
 
+    // Informational, READ-ONLY transfer success prediction (non-blocking).
+    // Only for EXTERNAL transfers; internal LazerVault transfers stay neutral.
+    if (isExternalTransfer) {
+      _predictionCubit.fetch(
+        bankCode: _recipient!.sortCode,
+        accountNumber: _recipient!.accountNumber,
+      );
+    } else {
+      _predictionCubit.reset();
+    }
+
     showDialog(
       context: context,
       barrierColor: Colors.black.withValues(alpha: 0.85),
-      builder: (dialogContext) => BlocProvider.value(
-        value: transferCubit,
+      builder: (dialogContext) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: transferCubit),
+          BlocProvider<TransferPredictionCubit>.value(value: _predictionCubit),
+        ],
         child: Dialog(
         backgroundColor: Colors.transparent,
         insetPadding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -1094,6 +1116,12 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
                             ],
                           ),
                         ),
+                        // Informational, READ-ONLY transfer success prediction
+                        // (bank network + recipient trust). Shown AFTER the
+                        // recipient/amount/fee rows and BEFORE the PIN/Send
+                        // action. EXTERNAL transfers only; never blocks money.
+                        if (isExternalTransfer)
+                          const TransferPredictionAlert(),
                         // Budget warning (flexible mode exceeded or near limit)
                         if (_lastBudgetResult != null && _lastBudgetResult!.shouldShowWarning)
                           Padding(
@@ -1486,6 +1514,8 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       description: narration,
       transactionId: transactionId,
       verificationToken: verificationToken,
+      destinationBankCode: transferType == 'external' ? _recipient!.sortCode : null,
+      beneficiaryName: transferType == 'external' ? _recipient!.name : null,
       scheduledAt: scheduledDate,
       expenseCategory: selectedCategory?.budgetCategory,
     );
@@ -1829,6 +1859,7 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
       print("dispose: Recurring setup still pending — backend will complete independently.");
     }
     _resetRecurringState();
+    _predictionCubit.close();
     super.dispose();
   }
 

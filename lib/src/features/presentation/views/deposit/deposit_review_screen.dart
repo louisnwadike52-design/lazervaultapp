@@ -79,7 +79,6 @@ class _DepositReviewScreenState extends State<DepositReviewScreen>
           processingTime = 3; // Longer for crypto
           break;
         case 'flutterwave':
-        case 'test_deposit':
           processingTime = 0; // Backend handles timing
           break;
         case 'digital_wallet':
@@ -147,9 +146,6 @@ class _DepositReviewScreenState extends State<DepositReviewScreen>
       case 'flutterwave':
         await _processFlutterwaveDeposit();
         break;
-      case 'test_deposit':
-        await _processTestDeposit();
-        break;
       case 'digital_wallet':
       case 'bank_transfer':
         await _processRegularDeposit();
@@ -186,12 +182,19 @@ class _DepositReviewScreenState extends State<DepositReviewScreen>
       throw Exception('Missing account or currency information');
     }
 
+    // The deposit-method picker stores the user's choice as `id` on the
+    // payment-method map (see deposit_method_selection_screen.dart:73-97).
+    // We pass it through so the backend can restrict the Flutterwave hosted
+    // page to that single rail (e.g. land directly on the Apple Pay sheet).
+    final paymentMethodId = (_paymentMethod['id'] ?? '') as String;
+
     final result = await repo.initiateDeposit(
       targetAccountId: targetAccountId,
       amount: _amount,
       currency: currency,
       sourceBankName: sourceBankName,
       countryCode: countryCode,
+      paymentMethod: paymentMethodId.isNotEmpty ? paymentMethodId : null,
     );
 
     await result.fold(
@@ -215,33 +218,6 @@ class _DepositReviewScreenState extends State<DepositReviewScreen>
           // Payment completed on Flutterwave side — webhook will credit account
         }
       },
-    );
-  }
-
-  /// Process simulated test deposit (sandbox only — instant credit)
-  Future<void> _processTestDeposit() async {
-    if (!GetIt.instance.isRegistered<IDepositRepository>()) {
-      throw Exception('Deposit service is not available. Please restart the app.');
-    }
-    final repo = GetIt.instance<IDepositRepository>();
-    final targetAccountId = (_currency['id'] ?? _currency['accountId'] ?? '') as String;
-    final currency = (_currency['code'] ?? _currency['currency'] ?? '') as String;
-    final countryCode = (_paymentMethod['country_code'] ?? _currency['country_code'] ?? '') as String;
-
-    if (targetAccountId.isEmpty || currency.isEmpty) {
-      throw Exception('Missing account or currency information');
-    }
-
-    final result = await repo.simulateTestDeposit(
-      destinationAccountId: targetAccountId,
-      amount: _amount,
-      currency: currency,
-      countryCode: countryCode,
-    );
-
-    result.fold(
-      (failure) => throw Exception(failure.message),
-      (_) {}, // Instant success
     );
   }
 

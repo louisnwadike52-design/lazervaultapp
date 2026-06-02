@@ -4411,6 +4411,198 @@ class VerifyBankAccountResponse extends $pb.GeneratedMessage {
   void clearUserMessage() => clearField(9);
 }
 
+class GetTransferSuccessPredictionRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTransferSuccessPredictionRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'payments'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bankCode')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountNumber')
+    ..hasRequiredFields = false
+  ;
+
+  GetTransferSuccessPredictionRequest._() : super();
+  factory GetTransferSuccessPredictionRequest({
+    $core.String? bankCode,
+    $core.String? accountNumber,
+  }) {
+    final _result = create();
+    if (bankCode != null) {
+      _result.bankCode = bankCode;
+    }
+    if (accountNumber != null) {
+      _result.accountNumber = accountNumber;
+    }
+    return _result;
+  }
+  factory GetTransferSuccessPredictionRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetTransferSuccessPredictionRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetTransferSuccessPredictionRequest clone() => GetTransferSuccessPredictionRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetTransferSuccessPredictionRequest copyWith(void Function(GetTransferSuccessPredictionRequest) updates) => super.copyWith((message) => updates(message as GetTransferSuccessPredictionRequest)) as GetTransferSuccessPredictionRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetTransferSuccessPredictionRequest create() => GetTransferSuccessPredictionRequest._();
+  GetTransferSuccessPredictionRequest createEmptyInstance() => create();
+  static $pb.PbList<GetTransferSuccessPredictionRequest> createRepeated() => $pb.PbList<GetTransferSuccessPredictionRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetTransferSuccessPredictionRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetTransferSuccessPredictionRequest>(create);
+  static GetTransferSuccessPredictionRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get bankCode => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set bankCode($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasBankCode() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearBankCode() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get accountNumber => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set accountNumber($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasAccountNumber() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAccountNumber() => clearField(2);
+}
+
+class GetTransferSuccessPredictionResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTransferSuccessPredictionResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'payments'), createEmptyInstance: create)
+    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bankAvailabilityPct', $pb.PbFieldType.O3)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bankBand')
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bankSampleSize', $pb.PbFieldType.O3)
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientTrustBand')
+    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'priorTransferCount', $pb.PbFieldType.O3)
+    ..aInt64(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientKnownSinceUnix')
+    ..aOB(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'blocklisted')
+    ..hasRequiredFields = false
+  ;
+
+  GetTransferSuccessPredictionResponse._() : super();
+  factory GetTransferSuccessPredictionResponse({
+    $core.int? bankAvailabilityPct,
+    $core.String? bankBand,
+    $core.int? bankSampleSize,
+    $core.String? recipientTrustBand,
+    $core.int? priorTransferCount,
+    $fixnum.Int64? recipientKnownSinceUnix,
+    $core.bool? blocklisted,
+  }) {
+    final _result = create();
+    if (bankAvailabilityPct != null) {
+      _result.bankAvailabilityPct = bankAvailabilityPct;
+    }
+    if (bankBand != null) {
+      _result.bankBand = bankBand;
+    }
+    if (bankSampleSize != null) {
+      _result.bankSampleSize = bankSampleSize;
+    }
+    if (recipientTrustBand != null) {
+      _result.recipientTrustBand = recipientTrustBand;
+    }
+    if (priorTransferCount != null) {
+      _result.priorTransferCount = priorTransferCount;
+    }
+    if (recipientKnownSinceUnix != null) {
+      _result.recipientKnownSinceUnix = recipientKnownSinceUnix;
+    }
+    if (blocklisted != null) {
+      _result.blocklisted = blocklisted;
+    }
+    return _result;
+  }
+  factory GetTransferSuccessPredictionResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetTransferSuccessPredictionResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetTransferSuccessPredictionResponse clone() => GetTransferSuccessPredictionResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetTransferSuccessPredictionResponse copyWith(void Function(GetTransferSuccessPredictionResponse) updates) => super.copyWith((message) => updates(message as GetTransferSuccessPredictionResponse)) as GetTransferSuccessPredictionResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetTransferSuccessPredictionResponse create() => GetTransferSuccessPredictionResponse._();
+  GetTransferSuccessPredictionResponse createEmptyInstance() => create();
+  static $pb.PbList<GetTransferSuccessPredictionResponse> createRepeated() => $pb.PbList<GetTransferSuccessPredictionResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetTransferSuccessPredictionResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetTransferSuccessPredictionResponse>(create);
+  static GetTransferSuccessPredictionResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get bankAvailabilityPct => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set bankAvailabilityPct($core.int v) { $_setSignedInt32(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasBankAvailabilityPct() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearBankAvailabilityPct() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get bankBand => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set bankBand($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasBankBand() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearBankBand() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get bankSampleSize => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set bankSampleSize($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasBankSampleSize() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearBankSampleSize() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get recipientTrustBand => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set recipientTrustBand($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasRecipientTrustBand() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearRecipientTrustBand() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get priorTransferCount => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set priorTransferCount($core.int v) { $_setSignedInt32(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasPriorTransferCount() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearPriorTransferCount() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $fixnum.Int64 get recipientKnownSinceUnix => $_getI64(5);
+  @$pb.TagNumber(6)
+  set recipientKnownSinceUnix($fixnum.Int64 v) { $_setInt64(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasRecipientKnownSinceUnix() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearRecipientKnownSinceUnix() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.bool get blocklisted => $_getBF(6);
+  @$pb.TagNumber(7)
+  set blocklisted($core.bool v) { $_setBool(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasBlocklisted() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearBlocklisted() => clearField(7);
+}
+
 class InitiateDomesticTransferRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'InitiateDomesticTransferRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'payments'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceAccountId')

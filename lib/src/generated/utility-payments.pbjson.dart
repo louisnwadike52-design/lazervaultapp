@@ -1235,11 +1235,13 @@ const WaterProvider$json = const {
     const {'1': 'logo_url', '3': 4, '4': 1, '5': 9, '10': 'logoUrl'},
     const {'1': 'is_active', '3': 5, '4': 1, '5': 8, '10': 'isActive'},
     const {'1': 'commission_rate', '3': 6, '4': 1, '5': 1, '10': 'commissionRate'},
+    const {'1': 'min_amount', '3': 7, '4': 1, '5': 1, '10': 'minAmount'},
+    const {'1': 'max_amount', '3': 8, '4': 1, '5': 1, '10': 'maxAmount'},
   ],
 };
 
 /// Descriptor for `WaterProvider`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List waterProviderDescriptor = $convert.base64Decode('Cg1XYXRlclByb3ZpZGVyEg4KAmlkGAEgASgJUgJpZBISCgRuYW1lGAIgASgJUgRuYW1lEh0KCnNlcnZpY2VfaWQYAyABKAlSCXNlcnZpY2VJZBIZCghsb2dvX3VybBgEIAEoCVIHbG9nb1VybBIbCglpc19hY3RpdmUYBSABKAhSCGlzQWN0aXZlEicKD2NvbW1pc3Npb25fcmF0ZRgGIAEoAVIOY29tbWlzc2lvblJhdGU=');
+final $typed_data.Uint8List waterProviderDescriptor = $convert.base64Decode('Cg1XYXRlclByb3ZpZGVyEg4KAmlkGAEgASgJUgJpZBISCgRuYW1lGAIgASgJUgRuYW1lEh0KCnNlcnZpY2VfaWQYAyABKAlSCXNlcnZpY2VJZBIZCghsb2dvX3VybBgEIAEoCVIHbG9nb1VybBIbCglpc19hY3RpdmUYBSABKAhSCGlzQWN0aXZlEicKD2NvbW1pc3Npb25fcmF0ZRgGIAEoAVIOY29tbWlzc2lvblJhdGUSHQoKbWluX2Ftb3VudBgHIAEoAVIJbWluQW1vdW50Eh0KCm1heF9hbW91bnQYCCABKAFSCW1heEFtb3VudA==');
 @$core.Deprecated('Use getWaterProvidersRequestDescriptor instead')
 const GetWaterProvidersRequest$json = const {
   '1': 'GetWaterProvidersRequest',

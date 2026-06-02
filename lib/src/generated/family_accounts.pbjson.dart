@@ -21,6 +21,205 @@ const FundDistributionMode$json = const {
 
 /// Descriptor for `FundDistributionMode`. Decode as a `google.protobuf.EnumDescriptorProto`.
 final $typed_data.Uint8List fundDistributionModeDescriptor = $convert.base64Decode('ChRGdW5kRGlzdHJpYnV0aW9uTW9kZRImCiJGVU5EX0RJU1RSSUJVVElPTl9NT0RFX1VOU1BFQ0lGSUVEEAASDwoLU0hBUkVEX1BPT0wQARIPCgtFUVVBTF9TUExJVBACEhUKEUNVU1RPTV9BTExPQ0FUSU9OEAM=');
+@$core.Deprecated('Use adminListFamilyAccountsRequestDescriptor instead')
+const AdminListFamilyAccountsRequest$json = const {
+  '1': 'AdminListFamilyAccountsRequest',
+  '2': const [
+    const {'1': 'status', '3': 1, '4': 1, '5': 9, '10': 'status'},
+    const {'1': 'creator_id', '3': 2, '4': 1, '5': 9, '10': 'creatorId'},
+    const {'1': 'min_members', '3': 3, '4': 1, '5': 5, '10': 'minMembers'},
+    const {'1': 'created_after', '3': 4, '4': 1, '5': 9, '10': 'createdAfter'},
+    const {'1': 'created_before', '3': 5, '4': 1, '5': 9, '10': 'createdBefore'},
+    const {'1': 'search', '3': 6, '4': 1, '5': 9, '10': 'search'},
+    const {'1': 'page', '3': 7, '4': 1, '5': 5, '10': 'page'},
+    const {'1': 'page_size', '3': 8, '4': 1, '5': 5, '10': 'pageSize'},
+  ],
+};
+
+/// Descriptor for `AdminListFamilyAccountsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminListFamilyAccountsRequestDescriptor = $convert.base64Decode('Ch5BZG1pbkxpc3RGYW1pbHlBY2NvdW50c1JlcXVlc3QSFgoGc3RhdHVzGAEgASgJUgZzdGF0dXMSHQoKY3JlYXRvcl9pZBgCIAEoCVIJY3JlYXRvcklkEh8KC21pbl9tZW1iZXJzGAMgASgFUgptaW5NZW1iZXJzEiMKDWNyZWF0ZWRfYWZ0ZXIYBCABKAlSDGNyZWF0ZWRBZnRlchIlCg5jcmVhdGVkX2JlZm9yZRgFIAEoCVINY3JlYXRlZEJlZm9yZRIWCgZzZWFyY2gYBiABKAlSBnNlYXJjaBISCgRwYWdlGAcgASgFUgRwYWdlEhsKCXBhZ2Vfc2l6ZRgIIAEoBVIIcGFnZVNpemU=');
+@$core.Deprecated('Use adminListFamilyAccountsResponseDescriptor instead')
+const AdminListFamilyAccountsResponse$json = const {
+  '1': 'AdminListFamilyAccountsResponse',
+  '2': const [
+    const {'1': 'family_accounts', '3': 1, '4': 3, '5': 11, '6': '.accounts.v1.FamilyAccount', '10': 'familyAccounts'},
+    const {'1': 'total_count', '3': 2, '4': 1, '5': 5, '10': 'totalCount'},
+    const {'1': 'page', '3': 3, '4': 1, '5': 5, '10': 'page'},
+    const {'1': 'page_size', '3': 4, '4': 1, '5': 5, '10': 'pageSize'},
+    const {'1': 'total_pages', '3': 5, '4': 1, '5': 5, '10': 'totalPages'},
+  ],
+};
+
+/// Descriptor for `AdminListFamilyAccountsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminListFamilyAccountsResponseDescriptor = $convert.base64Decode('Ch9BZG1pbkxpc3RGYW1pbHlBY2NvdW50c1Jlc3BvbnNlEkMKD2ZhbWlseV9hY2NvdW50cxgBIAMoCzIaLmFjY291bnRzLnYxLkZhbWlseUFjY291bnRSDmZhbWlseUFjY291bnRzEh8KC3RvdGFsX2NvdW50GAIgASgFUgp0b3RhbENvdW50EhIKBHBhZ2UYAyABKAVSBHBhZ2USGwoJcGFnZV9zaXplGAQgASgFUghwYWdlU2l6ZRIfCgt0b3RhbF9wYWdlcxgFIAEoBVIKdG90YWxQYWdlcw==');
+@$core.Deprecated('Use adminGetFamilyAccountRequestDescriptor instead')
+const AdminGetFamilyAccountRequest$json = const {
+  '1': 'AdminGetFamilyAccountRequest',
+  '2': const [
+    const {'1': 'family_id', '3': 1, '4': 1, '5': 9, '10': 'familyId'},
+  ],
+};
+
+/// Descriptor for `AdminGetFamilyAccountRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminGetFamilyAccountRequestDescriptor = $convert.base64Decode('ChxBZG1pbkdldEZhbWlseUFjY291bnRSZXF1ZXN0EhsKCWZhbWlseV9pZBgBIAEoCVIIZmFtaWx5SWQ=');
+@$core.Deprecated('Use adminGetFamilyAccountResponseDescriptor instead')
+const AdminGetFamilyAccountResponse$json = const {
+  '1': 'AdminGetFamilyAccountResponse',
+  '2': const [
+    const {'1': 'family_account', '3': 1, '4': 1, '5': 11, '6': '.accounts.v1.FamilyAccount', '10': 'familyAccount'},
+    const {'1': 'recent_transactions', '3': 2, '4': 3, '5': 11, '6': '.accounts.v1.FamilyTransaction', '10': 'recentTransactions'},
+    const {'1': 'summary', '3': 3, '4': 1, '5': 11, '6': '.accounts.v1.FamilyAccountSummary', '10': 'summary'},
+    const {'1': 'admin_notes', '3': 4, '4': 1, '5': 9, '10': 'adminNotes'},
+    const {'1': 'admin_frozen_reason', '3': 5, '4': 1, '5': 9, '10': 'adminFrozenReason'},
+    const {'1': 'last_admin_action_at', '3': 6, '4': 1, '5': 9, '10': 'lastAdminActionAt'},
+    const {'1': 'last_admin_action_by', '3': 7, '4': 1, '5': 9, '10': 'lastAdminActionBy'},
+  ],
+};
+
+/// Descriptor for `AdminGetFamilyAccountResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminGetFamilyAccountResponseDescriptor = $convert.base64Decode('Ch1BZG1pbkdldEZhbWlseUFjY291bnRSZXNwb25zZRJBCg5mYW1pbHlfYWNjb3VudBgBIAEoCzIaLmFjY291bnRzLnYxLkZhbWlseUFjY291bnRSDWZhbWlseUFjY291bnQSTwoTcmVjZW50X3RyYW5zYWN0aW9ucxgCIAMoCzIeLmFjY291bnRzLnYxLkZhbWlseVRyYW5zYWN0aW9uUhJyZWNlbnRUcmFuc2FjdGlvbnMSOwoHc3VtbWFyeRgDIAEoCzIhLmFjY291bnRzLnYxLkZhbWlseUFjY291bnRTdW1tYXJ5UgdzdW1tYXJ5Eh8KC2FkbWluX25vdGVzGAQgASgJUgphZG1pbk5vdGVzEi4KE2FkbWluX2Zyb3plbl9yZWFzb24YBSABKAlSEWFkbWluRnJvemVuUmVhc29uEi8KFGxhc3RfYWRtaW5fYWN0aW9uX2F0GAYgASgJUhFsYXN0QWRtaW5BY3Rpb25BdBIvChRsYXN0X2FkbWluX2FjdGlvbl9ieRgHIAEoCVIRbGFzdEFkbWluQWN0aW9uQnk=');
+@$core.Deprecated('Use adminFreezeFamilyAccountRequestDescriptor instead')
+const AdminFreezeFamilyAccountRequest$json = const {
+  '1': 'AdminFreezeFamilyAccountRequest',
+  '2': const [
+    const {'1': 'family_id', '3': 1, '4': 1, '5': 9, '10': 'familyId'},
+    const {'1': 'reason', '3': 2, '4': 1, '5': 9, '10': 'reason'},
+  ],
+};
+
+/// Descriptor for `AdminFreezeFamilyAccountRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminFreezeFamilyAccountRequestDescriptor = $convert.base64Decode('Ch9BZG1pbkZyZWV6ZUZhbWlseUFjY291bnRSZXF1ZXN0EhsKCWZhbWlseV9pZBgBIAEoCVIIZmFtaWx5SWQSFgoGcmVhc29uGAIgASgJUgZyZWFzb24=');
+@$core.Deprecated('Use adminFreezeFamilyAccountResponseDescriptor instead')
+const AdminFreezeFamilyAccountResponse$json = const {
+  '1': 'AdminFreezeFamilyAccountResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'family_account', '3': 2, '4': 1, '5': 11, '6': '.accounts.v1.FamilyAccount', '10': 'familyAccount'},
+    const {'1': 'message', '3': 3, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `AdminFreezeFamilyAccountResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminFreezeFamilyAccountResponseDescriptor = $convert.base64Decode('CiBBZG1pbkZyZWV6ZUZhbWlseUFjY291bnRSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEkEKDmZhbWlseV9hY2NvdW50GAIgASgLMhouYWNjb3VudHMudjEuRmFtaWx5QWNjb3VudFINZmFtaWx5QWNjb3VudBIYCgdtZXNzYWdlGAMgASgJUgdtZXNzYWdl');
+@$core.Deprecated('Use adminUnfreezeFamilyAccountRequestDescriptor instead')
+const AdminUnfreezeFamilyAccountRequest$json = const {
+  '1': 'AdminUnfreezeFamilyAccountRequest',
+  '2': const [
+    const {'1': 'family_id', '3': 1, '4': 1, '5': 9, '10': 'familyId'},
+    const {'1': 'reason', '3': 2, '4': 1, '5': 9, '10': 'reason'},
+  ],
+};
+
+/// Descriptor for `AdminUnfreezeFamilyAccountRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminUnfreezeFamilyAccountRequestDescriptor = $convert.base64Decode('CiFBZG1pblVuZnJlZXplRmFtaWx5QWNjb3VudFJlcXVlc3QSGwoJZmFtaWx5X2lkGAEgASgJUghmYW1pbHlJZBIWCgZyZWFzb24YAiABKAlSBnJlYXNvbg==');
+@$core.Deprecated('Use adminUnfreezeFamilyAccountResponseDescriptor instead')
+const AdminUnfreezeFamilyAccountResponse$json = const {
+  '1': 'AdminUnfreezeFamilyAccountResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'family_account', '3': 2, '4': 1, '5': 11, '6': '.accounts.v1.FamilyAccount', '10': 'familyAccount'},
+    const {'1': 'message', '3': 3, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `AdminUnfreezeFamilyAccountResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminUnfreezeFamilyAccountResponseDescriptor = $convert.base64Decode('CiJBZG1pblVuZnJlZXplRmFtaWx5QWNjb3VudFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSQQoOZmFtaWx5X2FjY291bnQYAiABKAsyGi5hY2NvdW50cy52MS5GYW1pbHlBY2NvdW50Ug1mYW1pbHlBY2NvdW50EhgKB21lc3NhZ2UYAyABKAlSB21lc3NhZ2U=');
+@$core.Deprecated('Use adminDeleteFamilyAccountRequestDescriptor instead')
+const AdminDeleteFamilyAccountRequest$json = const {
+  '1': 'AdminDeleteFamilyAccountRequest',
+  '2': const [
+    const {'1': 'family_id', '3': 1, '4': 1, '5': 9, '10': 'familyId'},
+    const {'1': 'reason', '3': 2, '4': 1, '5': 9, '10': 'reason'},
+  ],
+};
+
+/// Descriptor for `AdminDeleteFamilyAccountRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminDeleteFamilyAccountRequestDescriptor = $convert.base64Decode('Ch9BZG1pbkRlbGV0ZUZhbWlseUFjY291bnRSZXF1ZXN0EhsKCWZhbWlseV9pZBgBIAEoCVIIZmFtaWx5SWQSFgoGcmVhc29uGAIgASgJUgZyZWFzb24=');
+@$core.Deprecated('Use adminDeleteFamilyAccountResponseDescriptor instead')
+const AdminDeleteFamilyAccountResponse$json = const {
+  '1': 'AdminDeleteFamilyAccountResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'returned_balance', '3': 2, '4': 1, '5': 1, '10': 'returnedBalance'},
+    const {'1': 'message', '3': 3, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `AdminDeleteFamilyAccountResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminDeleteFamilyAccountResponseDescriptor = $convert.base64Decode('CiBBZG1pbkRlbGV0ZUZhbWlseUFjY291bnRSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEikKEHJldHVybmVkX2JhbGFuY2UYAiABKAFSD3JldHVybmVkQmFsYW5jZRIYCgdtZXNzYWdlGAMgASgJUgdtZXNzYWdl');
+@$core.Deprecated('Use adminForceAllocateFundsRequestDescriptor instead')
+const AdminForceAllocateFundsRequest$json = const {
+  '1': 'AdminForceAllocateFundsRequest',
+  '2': const [
+    const {'1': 'family_id', '3': 1, '4': 1, '5': 9, '10': 'familyId'},
+    const {'1': 'member_id', '3': 2, '4': 1, '5': 9, '10': 'memberId'},
+    const {'1': 'amount', '3': 3, '4': 1, '5': 1, '10': 'amount'},
+    const {'1': 'reason', '3': 4, '4': 1, '5': 9, '10': 'reason'},
+  ],
+};
+
+/// Descriptor for `AdminForceAllocateFundsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminForceAllocateFundsRequestDescriptor = $convert.base64Decode('Ch5BZG1pbkZvcmNlQWxsb2NhdGVGdW5kc1JlcXVlc3QSGwoJZmFtaWx5X2lkGAEgASgJUghmYW1pbHlJZBIbCgltZW1iZXJfaWQYAiABKAlSCG1lbWJlcklkEhYKBmFtb3VudBgDIAEoAVIGYW1vdW50EhYKBnJlYXNvbhgEIAEoCVIGcmVhc29u');
+@$core.Deprecated('Use adminForceAllocateFundsResponseDescriptor instead')
+const AdminForceAllocateFundsResponse$json = const {
+  '1': 'AdminForceAllocateFundsResponse',
+  '2': const [
+    const {'1': 'member', '3': 1, '4': 1, '5': 11, '6': '.accounts.v1.FamilyMember', '10': 'member'},
+    const {'1': 'transaction', '3': 2, '4': 1, '5': 11, '6': '.accounts.v1.FamilyTransaction', '10': 'transaction'},
+    const {'1': 'remaining_pool_balance', '3': 3, '4': 1, '5': 1, '10': 'remainingPoolBalance'},
+    const {'1': 'message', '3': 4, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `AdminForceAllocateFundsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminForceAllocateFundsResponseDescriptor = $convert.base64Decode('Ch9BZG1pbkZvcmNlQWxsb2NhdGVGdW5kc1Jlc3BvbnNlEjEKBm1lbWJlchgBIAEoCzIZLmFjY291bnRzLnYxLkZhbWlseU1lbWJlclIGbWVtYmVyEkAKC3RyYW5zYWN0aW9uGAIgASgLMh4uYWNjb3VudHMudjEuRmFtaWx5VHJhbnNhY3Rpb25SC3RyYW5zYWN0aW9uEjQKFnJlbWFpbmluZ19wb29sX2JhbGFuY2UYAyABKAFSFHJlbWFpbmluZ1Bvb2xCYWxhbmNlEhgKB21lc3NhZ2UYBCABKAlSB21lc3NhZ2U=');
+@$core.Deprecated('Use adminRemoveFamilyMemberRequestDescriptor instead')
+const AdminRemoveFamilyMemberRequest$json = const {
+  '1': 'AdminRemoveFamilyMemberRequest',
+  '2': const [
+    const {'1': 'family_id', '3': 1, '4': 1, '5': 9, '10': 'familyId'},
+    const {'1': 'member_id', '3': 2, '4': 1, '5': 9, '10': 'memberId'},
+    const {'1': 'reason', '3': 3, '4': 1, '5': 9, '10': 'reason'},
+    const {'1': 'return_balance_to_pool', '3': 4, '4': 1, '5': 8, '10': 'returnBalanceToPool'},
+  ],
+};
+
+/// Descriptor for `AdminRemoveFamilyMemberRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminRemoveFamilyMemberRequestDescriptor = $convert.base64Decode('Ch5BZG1pblJlbW92ZUZhbWlseU1lbWJlclJlcXVlc3QSGwoJZmFtaWx5X2lkGAEgASgJUghmYW1pbHlJZBIbCgltZW1iZXJfaWQYAiABKAlSCG1lbWJlcklkEhYKBnJlYXNvbhgDIAEoCVIGcmVhc29uEjMKFnJldHVybl9iYWxhbmNlX3RvX3Bvb2wYBCABKAhSE3JldHVybkJhbGFuY2VUb1Bvb2w=');
+@$core.Deprecated('Use adminRemoveFamilyMemberResponseDescriptor instead')
+const AdminRemoveFamilyMemberResponse$json = const {
+  '1': 'AdminRemoveFamilyMemberResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'returned_balance', '3': 2, '4': 1, '5': 1, '10': 'returnedBalance'},
+    const {'1': 'message', '3': 3, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `AdminRemoveFamilyMemberResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminRemoveFamilyMemberResponseDescriptor = $convert.base64Decode('Ch9BZG1pblJlbW92ZUZhbWlseU1lbWJlclJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSKQoQcmV0dXJuZWRfYmFsYW5jZRgCIAEoAVIPcmV0dXJuZWRCYWxhbmNlEhgKB21lc3NhZ2UYAyABKAlSB21lc3NhZ2U=');
+@$core.Deprecated('Use adminUpdateFamilyAccountNotesRequestDescriptor instead')
+const AdminUpdateFamilyAccountNotesRequest$json = const {
+  '1': 'AdminUpdateFamilyAccountNotesRequest',
+  '2': const [
+    const {'1': 'family_id', '3': 1, '4': 1, '5': 9, '10': 'familyId'},
+    const {'1': 'admin_notes', '3': 2, '4': 1, '5': 9, '10': 'adminNotes'},
+  ],
+};
+
+/// Descriptor for `AdminUpdateFamilyAccountNotesRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminUpdateFamilyAccountNotesRequestDescriptor = $convert.base64Decode('CiRBZG1pblVwZGF0ZUZhbWlseUFjY291bnROb3Rlc1JlcXVlc3QSGwoJZmFtaWx5X2lkGAEgASgJUghmYW1pbHlJZBIfCgthZG1pbl9ub3RlcxgCIAEoCVIKYWRtaW5Ob3Rlcw==');
+@$core.Deprecated('Use adminUpdateFamilyAccountNotesResponseDescriptor instead')
+const AdminUpdateFamilyAccountNotesResponse$json = const {
+  '1': 'AdminUpdateFamilyAccountNotesResponse',
+  '2': const [
+    const {'1': 'family_account', '3': 1, '4': 1, '5': 11, '6': '.accounts.v1.FamilyAccount', '10': 'familyAccount'},
+    const {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `AdminUpdateFamilyAccountNotesResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminUpdateFamilyAccountNotesResponseDescriptor = $convert.base64Decode('CiVBZG1pblVwZGF0ZUZhbWlseUFjY291bnROb3Rlc1Jlc3BvbnNlEkEKDmZhbWlseV9hY2NvdW50GAEgASgLMhouYWNjb3VudHMudjEuRmFtaWx5QWNjb3VudFINZmFtaWx5QWNjb3VudBIYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdl');
 @$core.Deprecated('Use createFamilyAccountRequestDescriptor instead')
 const CreateFamilyAccountRequest$json = const {
   '1': 'CreateFamilyAccountRequest',
@@ -235,6 +434,108 @@ const GetPendingInvitationsResponse$json = const {
 
 /// Descriptor for `GetPendingInvitationsResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getPendingInvitationsResponseDescriptor = $convert.base64Decode('Ch1HZXRQZW5kaW5nSW52aXRhdGlvbnNSZXNwb25zZRJACgtpbnZpdGF0aW9ucxgBIAMoCzIeLmFjY291bnRzLnYxLlBlbmRpbmdJbnZpdGF0aW9uUgtpbnZpdGF0aW9ucxIfCgt0b3RhbF9jb3VudBgCIAEoBVIKdG90YWxDb3VudA==');
+@$core.Deprecated('Use getMyInvitationHistoryRequestDescriptor instead')
+const GetMyInvitationHistoryRequest$json = const {
+  '1': 'GetMyInvitationHistoryRequest',
+  '2': const [
+    const {'1': 'status_filter', '3': 1, '4': 1, '5': 9, '10': 'statusFilter'},
+    const {'1': 'page', '3': 2, '4': 1, '5': 5, '10': 'page'},
+    const {'1': 'page_size', '3': 3, '4': 1, '5': 5, '10': 'pageSize'},
+  ],
+};
+
+/// Descriptor for `GetMyInvitationHistoryRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getMyInvitationHistoryRequestDescriptor = $convert.base64Decode('Ch1HZXRNeUludml0YXRpb25IaXN0b3J5UmVxdWVzdBIjCg1zdGF0dXNfZmlsdGVyGAEgASgJUgxzdGF0dXNGaWx0ZXISEgoEcGFnZRgCIAEoBVIEcGFnZRIbCglwYWdlX3NpemUYAyABKAVSCHBhZ2VTaXpl');
+@$core.Deprecated('Use invitationHistoryEntryDescriptor instead')
+const InvitationHistoryEntry$json = const {
+  '1': 'InvitationHistoryEntry',
+  '2': const [
+    const {'1': 'invitation_token', '3': 1, '4': 1, '5': 9, '10': 'invitationToken'},
+    const {'1': 'family_id', '3': 2, '4': 1, '5': 9, '10': 'familyId'},
+    const {'1': 'family_name', '3': 3, '4': 1, '5': 9, '10': 'familyName'},
+    const {'1': 'creator_name', '3': 4, '4': 1, '5': 9, '10': 'creatorName'},
+    const {'1': 'creator_avatar', '3': 5, '4': 1, '5': 9, '10': 'creatorAvatar'},
+    const {'1': 'invited_by', '3': 6, '4': 1, '5': 9, '10': 'invitedBy'},
+    const {'1': 'invitation_status', '3': 7, '4': 1, '5': 9, '10': 'invitationStatus'},
+    const {'1': 'initial_allocation', '3': 8, '4': 1, '5': 1, '10': 'initialAllocation'},
+    const {'1': 'daily_limit', '3': 9, '4': 1, '5': 1, '10': 'dailyLimit'},
+    const {'1': 'monthly_limit', '3': 10, '4': 1, '5': 1, '10': 'monthlyLimit'},
+    const {'1': 'invitation_method', '3': 11, '4': 1, '5': 9, '10': 'invitationMethod'},
+    const {'1': 'invitation_destination', '3': 12, '4': 1, '5': 9, '10': 'invitationDestination'},
+    const {'1': 'created_at', '3': 13, '4': 1, '5': 9, '10': 'createdAt'},
+    const {'1': 'expires_at', '3': 14, '4': 1, '5': 9, '10': 'expiresAt'},
+    const {'1': 'responded_at', '3': 15, '4': 1, '5': 9, '10': 'respondedAt'},
+  ],
+};
+
+/// Descriptor for `InvitationHistoryEntry`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List invitationHistoryEntryDescriptor = $convert.base64Decode('ChZJbnZpdGF0aW9uSGlzdG9yeUVudHJ5EikKEGludml0YXRpb25fdG9rZW4YASABKAlSD2ludml0YXRpb25Ub2tlbhIbCglmYW1pbHlfaWQYAiABKAlSCGZhbWlseUlkEh8KC2ZhbWlseV9uYW1lGAMgASgJUgpmYW1pbHlOYW1lEiEKDGNyZWF0b3JfbmFtZRgEIAEoCVILY3JlYXRvck5hbWUSJQoOY3JlYXRvcl9hdmF0YXIYBSABKAlSDWNyZWF0b3JBdmF0YXISHQoKaW52aXRlZF9ieRgGIAEoCVIJaW52aXRlZEJ5EisKEWludml0YXRpb25fc3RhdHVzGAcgASgJUhBpbnZpdGF0aW9uU3RhdHVzEi0KEmluaXRpYWxfYWxsb2NhdGlvbhgIIAEoAVIRaW5pdGlhbEFsbG9jYXRpb24SHwoLZGFpbHlfbGltaXQYCSABKAFSCmRhaWx5TGltaXQSIwoNbW9udGhseV9saW1pdBgKIAEoAVIMbW9udGhseUxpbWl0EisKEWludml0YXRpb25fbWV0aG9kGAsgASgJUhBpbnZpdGF0aW9uTWV0aG9kEjUKFmludml0YXRpb25fZGVzdGluYXRpb24YDCABKAlSFWludml0YXRpb25EZXN0aW5hdGlvbhIdCgpjcmVhdGVkX2F0GA0gASgJUgljcmVhdGVkQXQSHQoKZXhwaXJlc19hdBgOIAEoCVIJZXhwaXJlc0F0EiEKDHJlc3BvbmRlZF9hdBgPIAEoCVILcmVzcG9uZGVkQXQ=');
+@$core.Deprecated('Use getMyInvitationHistoryResponseDescriptor instead')
+const GetMyInvitationHistoryResponse$json = const {
+  '1': 'GetMyInvitationHistoryResponse',
+  '2': const [
+    const {'1': 'entries', '3': 1, '4': 3, '5': 11, '6': '.accounts.v1.InvitationHistoryEntry', '10': 'entries'},
+    const {'1': 'total_count', '3': 2, '4': 1, '5': 5, '10': 'totalCount'},
+    const {'1': 'page', '3': 3, '4': 1, '5': 5, '10': 'page'},
+    const {'1': 'page_size', '3': 4, '4': 1, '5': 5, '10': 'pageSize'},
+    const {'1': 'total_pages', '3': 5, '4': 1, '5': 5, '10': 'totalPages'},
+  ],
+};
+
+/// Descriptor for `GetMyInvitationHistoryResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getMyInvitationHistoryResponseDescriptor = $convert.base64Decode('Ch5HZXRNeUludml0YXRpb25IaXN0b3J5UmVzcG9uc2USPQoHZW50cmllcxgBIAMoCzIjLmFjY291bnRzLnYxLkludml0YXRpb25IaXN0b3J5RW50cnlSB2VudHJpZXMSHwoLdG90YWxfY291bnQYAiABKAVSCnRvdGFsQ291bnQSEgoEcGFnZRgDIAEoBVIEcGFnZRIbCglwYWdlX3NpemUYBCABKAVSCHBhZ2VTaXplEh8KC3RvdGFsX3BhZ2VzGAUgASgFUgp0b3RhbFBhZ2Vz');
+@$core.Deprecated('Use getSentInvitationsRequestDescriptor instead')
+const GetSentInvitationsRequest$json = const {
+  '1': 'GetSentInvitationsRequest',
+  '2': const [
+    const {'1': 'family_id', '3': 1, '4': 1, '5': 9, '10': 'familyId'},
+    const {'1': 'status_filter', '3': 2, '4': 1, '5': 9, '10': 'statusFilter'},
+    const {'1': 'page', '3': 3, '4': 1, '5': 5, '10': 'page'},
+    const {'1': 'page_size', '3': 4, '4': 1, '5': 5, '10': 'pageSize'},
+  ],
+};
+
+/// Descriptor for `GetSentInvitationsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getSentInvitationsRequestDescriptor = $convert.base64Decode('ChlHZXRTZW50SW52aXRhdGlvbnNSZXF1ZXN0EhsKCWZhbWlseV9pZBgBIAEoCVIIZmFtaWx5SWQSIwoNc3RhdHVzX2ZpbHRlchgCIAEoCVIMc3RhdHVzRmlsdGVyEhIKBHBhZ2UYAyABKAVSBHBhZ2USGwoJcGFnZV9zaXplGAQgASgFUghwYWdlU2l6ZQ==');
+@$core.Deprecated('Use sentInvitationEntryDescriptor instead')
+const SentInvitationEntry$json = const {
+  '1': 'SentInvitationEntry',
+  '2': const [
+    const {'1': 'member_id', '3': 1, '4': 1, '5': 9, '10': 'memberId'},
+    const {'1': 'family_id', '3': 2, '4': 1, '5': 9, '10': 'familyId'},
+    const {'1': 'family_name', '3': 3, '4': 1, '5': 9, '10': 'familyName'},
+    const {'1': 'invitation_method', '3': 4, '4': 1, '5': 9, '10': 'invitationMethod'},
+    const {'1': 'invitation_destination', '3': 5, '4': 1, '5': 9, '10': 'invitationDestination'},
+    const {'1': 'invitation_status', '3': 6, '4': 1, '5': 9, '10': 'invitationStatus'},
+    const {'1': 'invited_user_id', '3': 7, '4': 1, '5': 9, '10': 'invitedUserId'},
+    const {'1': 'invited_user_name', '3': 8, '4': 1, '5': 9, '10': 'invitedUserName'},
+    const {'1': 'invited_user_avatar', '3': 9, '4': 1, '5': 9, '10': 'invitedUserAvatar'},
+    const {'1': 'initial_allocation', '3': 10, '4': 1, '5': 1, '10': 'initialAllocation'},
+    const {'1': 'daily_limit', '3': 11, '4': 1, '5': 1, '10': 'dailyLimit'},
+    const {'1': 'monthly_limit', '3': 12, '4': 1, '5': 1, '10': 'monthlyLimit'},
+    const {'1': 'role', '3': 13, '4': 1, '5': 9, '10': 'role'},
+    const {'1': 'created_at', '3': 14, '4': 1, '5': 9, '10': 'createdAt'},
+    const {'1': 'expires_at', '3': 15, '4': 1, '5': 9, '10': 'expiresAt'},
+    const {'1': 'responded_at', '3': 16, '4': 1, '5': 9, '10': 'respondedAt'},
+  ],
+};
+
+/// Descriptor for `SentInvitationEntry`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List sentInvitationEntryDescriptor = $convert.base64Decode('ChNTZW50SW52aXRhdGlvbkVudHJ5EhsKCW1lbWJlcl9pZBgBIAEoCVIIbWVtYmVySWQSGwoJZmFtaWx5X2lkGAIgASgJUghmYW1pbHlJZBIfCgtmYW1pbHlfbmFtZRgDIAEoCVIKZmFtaWx5TmFtZRIrChFpbnZpdGF0aW9uX21ldGhvZBgEIAEoCVIQaW52aXRhdGlvbk1ldGhvZBI1ChZpbnZpdGF0aW9uX2Rlc3RpbmF0aW9uGAUgASgJUhVpbnZpdGF0aW9uRGVzdGluYXRpb24SKwoRaW52aXRhdGlvbl9zdGF0dXMYBiABKAlSEGludml0YXRpb25TdGF0dXMSJgoPaW52aXRlZF91c2VyX2lkGAcgASgJUg1pbnZpdGVkVXNlcklkEioKEWludml0ZWRfdXNlcl9uYW1lGAggASgJUg9pbnZpdGVkVXNlck5hbWUSLgoTaW52aXRlZF91c2VyX2F2YXRhchgJIAEoCVIRaW52aXRlZFVzZXJBdmF0YXISLQoSaW5pdGlhbF9hbGxvY2F0aW9uGAogASgBUhFpbml0aWFsQWxsb2NhdGlvbhIfCgtkYWlseV9saW1pdBgLIAEoAVIKZGFpbHlMaW1pdBIjCg1tb250aGx5X2xpbWl0GAwgASgBUgxtb250aGx5TGltaXQSEgoEcm9sZRgNIAEoCVIEcm9sZRIdCgpjcmVhdGVkX2F0GA4gASgJUgljcmVhdGVkQXQSHQoKZXhwaXJlc19hdBgPIAEoCVIJZXhwaXJlc0F0EiEKDHJlc3BvbmRlZF9hdBgQIAEoCVILcmVzcG9uZGVkQXQ=');
+@$core.Deprecated('Use getSentInvitationsResponseDescriptor instead')
+const GetSentInvitationsResponse$json = const {
+  '1': 'GetSentInvitationsResponse',
+  '2': const [
+    const {'1': 'entries', '3': 1, '4': 3, '5': 11, '6': '.accounts.v1.SentInvitationEntry', '10': 'entries'},
+    const {'1': 'total_count', '3': 2, '4': 1, '5': 5, '10': 'totalCount'},
+    const {'1': 'page', '3': 3, '4': 1, '5': 5, '10': 'page'},
+    const {'1': 'page_size', '3': 4, '4': 1, '5': 5, '10': 'pageSize'},
+    const {'1': 'total_pages', '3': 5, '4': 1, '5': 5, '10': 'totalPages'},
+  ],
+};
+
+/// Descriptor for `GetSentInvitationsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getSentInvitationsResponseDescriptor = $convert.base64Decode('ChpHZXRTZW50SW52aXRhdGlvbnNSZXNwb25zZRI6CgdlbnRyaWVzGAEgAygLMiAuYWNjb3VudHMudjEuU2VudEludml0YXRpb25FbnRyeVIHZW50cmllcxIfCgt0b3RhbF9jb3VudBgCIAEoBVIKdG90YWxDb3VudBISCgRwYWdlGAMgASgFUgRwYWdlEhsKCXBhZ2Vfc2l6ZRgEIAEoBVIIcGFnZVNpemUSHwoLdG90YWxfcGFnZXMYBSABKAVSCnRvdGFsUGFnZXM=');
 @$core.Deprecated('Use getFamilyTransactionsRequestDescriptor instead')
 const GetFamilyTransactionsRequest$json = const {
   '1': 'GetFamilyTransactionsRequest',

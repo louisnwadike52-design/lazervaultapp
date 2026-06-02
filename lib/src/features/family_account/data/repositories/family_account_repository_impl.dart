@@ -96,13 +96,16 @@ class FamilyAccountRepositoryImpl implements FamilyAccountRepository {
     required double allocationPercentageCap,
     required String role,
     String? personalMessage,
+    String? displayName,
   }) async {
     try {
-      // Extract full name from invitation destination (email or phone)
-      // TODO: Allow user to provide full name separately
-      final fullName = invitationMethod == 'email'
-          ? (invitationDestination.split('@')[0])
-          : 'Member';
+      // displayName comes from the UI's contact-method step:
+      //   - username invite: pre-filled from the user-search result
+      //   - email/phone invite: pulled from the "Name (optional)" text field
+      // If still empty, leave it empty. The backend's auth-service enrichment
+      // will populate full_name once the invitee accepts and the member is
+      // linked to a real user account.
+      final fullName = (displayName ?? '').trim();
 
       final request = AddFamilyMemberRequest(
         familyId: familyId,
@@ -435,6 +438,52 @@ class FamilyAccountRepositoryImpl implements FamilyAccountRepository {
         allocations: protoAllocations,
       );
       return Right(account.toDomain());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message, statusCode: e.code ?? 500));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString(), statusCode: 500));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<InvitationHistoryEntry>>> getMyInvitationHistory({
+    String statusFilter = '',
+    int page = 1,
+    int pageSize = 25,
+  }) async {
+    try {
+      final rows = await remoteDataSource.getMyInvitationHistory(
+        statusFilter: statusFilter,
+        page: page,
+        pageSize: pageSize,
+      );
+      return Right(rows.map((r) => r.toDomain()).toList());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message, statusCode: e.code ?? 500));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
+    } catch (e) {
+      return Left(ServerFailure(message: e.toString(), statusCode: 500));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<SentInvitationEntry>>> getSentInvitations({
+    String? familyId,
+    String statusFilter = '',
+    int page = 1,
+    int pageSize = 25,
+  }) async {
+    try {
+      final rows = await remoteDataSource.getSentInvitations(
+        familyId: familyId,
+        statusFilter: statusFilter,
+        page: page,
+        pageSize: pageSize,
+      );
+      return Right(rows.map((r) => r.toDomain()).toList());
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message, statusCode: e.code ?? 500));
     } on NetworkException catch (e) {

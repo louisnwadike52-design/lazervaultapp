@@ -20,10 +20,17 @@ final class TransferLoading extends TransferState {
 final class TransferSuccess extends TransferState {
   final TransferEntity response;
 
-  const TransferSuccess({required this.response});
+  /// True when the transfer was accepted but is still in-flight (external
+  /// Flutterwave transfer waiting on the webhook). Receipt screens should
+  /// render a "Processing" badge and rely on the balance WebSocket for the
+  /// terminal transition. Defaults to false (internal / scheduled / terminal
+  /// success). New in the hold-then-capture flow.
+  final bool isInFlight;
+
+  const TransferSuccess({required this.response, this.isInFlight = false});
 
   @override
-  List<Object?> get props => [response];
+  List<Object?> get props => [response, isInFlight];
 }
 
 final class TransferFailure extends TransferState {

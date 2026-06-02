@@ -320,12 +320,6 @@ class BankingServiceClient extends $grpc.Client {
       ($0.CalculateDepositFeeRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
           $0.CalculateDepositFeeResponse.fromBuffer(value));
-  static final _$simulateTestDeposit =
-      $grpc.ClientMethod<$0.SimulateTestDepositRequest, $0.DepositResponse>(
-          '/banking.BankingService/SimulateTestDeposit',
-          ($0.SimulateTestDepositRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) =>
-              $0.DepositResponse.fromBuffer(value));
   static final _$getDepositMethods = $grpc.ClientMethod<
           $0.GetDepositMethodsRequest, $0.GetDepositMethodsResponse>(
       '/banking.BankingService/GetDepositMethods',
@@ -772,12 +766,6 @@ class BankingServiceClient extends $grpc.Client {
       $0.CalculateDepositFeeRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$calculateDepositFee, request, options: options);
-  }
-
-  $grpc.ResponseFuture<$0.DepositResponse> simulateTestDeposit(
-      $0.SimulateTestDepositRequest request,
-      {$grpc.CallOptions? options}) {
-    return $createUnaryCall(_$simulateTestDeposit, request, options: options);
   }
 
   $grpc.ResponseFuture<$0.GetDepositMethodsResponse> getDepositMethods(
@@ -1366,15 +1354,6 @@ abstract class BankingServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.CalculateDepositFeeRequest.fromBuffer(value),
         ($0.CalculateDepositFeeResponse value) => value.writeToBuffer()));
-    $addMethod(
-        $grpc.ServiceMethod<$0.SimulateTestDepositRequest, $0.DepositResponse>(
-            'SimulateTestDeposit',
-            simulateTestDeposit_Pre,
-            false,
-            false,
-            ($core.List<$core.int> value) =>
-                $0.SimulateTestDepositRequest.fromBuffer(value),
-            ($0.DepositResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.GetDepositMethodsRequest,
             $0.GetDepositMethodsResponse>(
         'GetDepositMethods',
@@ -1858,12 +1837,6 @@ abstract class BankingServiceBase extends $grpc.Service {
     return calculateDepositFee(call, await request);
   }
 
-  $async.Future<$0.DepositResponse> simulateTestDeposit_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$0.SimulateTestDepositRequest> request) async {
-    return simulateTestDeposit(call, await request);
-  }
-
   $async.Future<$0.GetDepositMethodsResponse> getDepositMethods_Pre(
       $grpc.ServiceCall call,
       $async.Future<$0.GetDepositMethodsRequest> request) async {
@@ -2091,8 +2064,6 @@ abstract class BankingServiceBase extends $grpc.Service {
       $grpc.ServiceCall call, $0.CancelDepositRequest request);
   $async.Future<$0.CalculateDepositFeeResponse> calculateDepositFee(
       $grpc.ServiceCall call, $0.CalculateDepositFeeRequest request);
-  $async.Future<$0.DepositResponse> simulateTestDeposit(
-      $grpc.ServiceCall call, $0.SimulateTestDepositRequest request);
   $async.Future<$0.GetDepositMethodsResponse> getDepositMethods(
       $grpc.ServiceCall call, $0.GetDepositMethodsRequest request);
   $async.Future<$0.MandateResponse> createMandate(

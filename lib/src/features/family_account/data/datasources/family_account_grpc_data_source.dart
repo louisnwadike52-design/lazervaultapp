@@ -515,4 +515,87 @@ class FamilyAccountGrpcDataSource implements FamilyAccountRemoteDataSource {
       expiresAt: proto.expiresAt,
     );
   }
+
+  @override
+  Future<List<InvitationHistoryEntryProto>> getMyInvitationHistory({
+    String statusFilter = '',
+    int page = 1,
+    int pageSize = 25,
+  }) async {
+    try {
+      final request = family_pb.GetMyInvitationHistoryRequest(
+        statusFilter: statusFilter,
+        page: page,
+        pageSize: pageSize,
+      );
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _client.getMyInvitationHistory(request, options: callOptions);
+      return response.entries.map(_mapInvitationHistoryFromProto).toList();
+    } on GrpcError catch (e) {
+      throw mapGrpcError(e);
+    }
+  }
+
+  @override
+  Future<List<SentInvitationEntryProto>> getSentInvitations({
+    String? familyId,
+    String statusFilter = '',
+    int page = 1,
+    int pageSize = 25,
+  }) async {
+    try {
+      final request = family_pb.GetSentInvitationsRequest(
+        familyId: familyId ?? '',
+        statusFilter: statusFilter,
+        page: page,
+        pageSize: pageSize,
+      );
+      final callOptions = await _callOptionsHelper.withAuth();
+      final response = await _client.getSentInvitations(request, options: callOptions);
+      return response.entries.map(_mapSentInvitationFromProto).toList();
+    } on GrpcError catch (e) {
+      throw mapGrpcError(e);
+    }
+  }
+
+  InvitationHistoryEntryProto _mapInvitationHistoryFromProto(family_pb.InvitationHistoryEntry p) {
+    return InvitationHistoryEntryProto(
+      invitationToken: p.invitationToken,
+      familyId: p.familyId,
+      familyName: p.familyName,
+      creatorName: p.creatorName,
+      creatorAvatar: p.creatorAvatar.isNotEmpty ? p.creatorAvatar : null,
+      invitedBy: p.invitedBy,
+      invitationStatus: p.invitationStatus,
+      initialAllocation: p.initialAllocation,
+      dailyLimit: p.dailyLimit,
+      monthlyLimit: p.monthlyLimit,
+      invitationMethod: p.invitationMethod,
+      invitationDestination: p.invitationDestination,
+      createdAt: p.createdAt,
+      expiresAt: p.expiresAt,
+      respondedAt: p.respondedAt.isNotEmpty ? p.respondedAt : null,
+    );
+  }
+
+  SentInvitationEntryProto _mapSentInvitationFromProto(family_pb.SentInvitationEntry p) {
+    return SentInvitationEntryProto(
+      memberId: p.memberId,
+      familyId: p.familyId,
+      familyName: p.familyName,
+      invitationMethod: p.invitationMethod,
+      invitationDestination: p.invitationDestination,
+      invitationStatus: p.invitationStatus,
+      invitedUserId: p.invitedUserId.isNotEmpty ? p.invitedUserId : null,
+      invitedUserName: p.invitedUserName,
+      invitedUserAvatar: p.invitedUserAvatar.isNotEmpty ? p.invitedUserAvatar : null,
+      initialAllocation: p.initialAllocation,
+      dailyLimit: p.dailyLimit,
+      monthlyLimit: p.monthlyLimit,
+      role: p.role,
+      createdAt: p.createdAt,
+      expiresAt: p.expiresAt,
+      respondedAt: p.respondedAt.isNotEmpty ? p.respondedAt : null,
+    );
+  }
 }

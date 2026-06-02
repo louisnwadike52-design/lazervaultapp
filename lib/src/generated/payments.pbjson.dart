@@ -597,6 +597,33 @@ const VerifyBankAccountResponse$json = const {
 
 /// Descriptor for `VerifyBankAccountResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List verifyBankAccountResponseDescriptor = $convert.base64Decode('ChlWZXJpZnlCYW5rQWNjb3VudFJlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSJQoOYWNjb3VudF9udW1iZXIYAiABKAlSDWFjY291bnROdW1iZXISIQoMYWNjb3VudF9uYW1lGAMgASgJUgthY2NvdW50TmFtZRIbCgliYW5rX25hbWUYBCABKAlSCGJhbmtOYW1lEhsKCWJhbmtfY29kZRgFIAEoCVIIYmFua0NvZGUSLwoTdmVyaWZpY2F0aW9uX3N0YXR1cxgGIAEoCVISdmVyaWZpY2F0aW9uU3RhdHVzEh0KCmVycm9yX2NvZGUYByABKAlSCWVycm9yQ29kZRIjCg1lcnJvcl9tZXNzYWdlGAggASgJUgxlcnJvck1lc3NhZ2USIQoMdXNlcl9tZXNzYWdlGAkgASgJUgt1c2VyTWVzc2FnZQ==');
+@$core.Deprecated('Use getTransferSuccessPredictionRequestDescriptor instead')
+const GetTransferSuccessPredictionRequest$json = const {
+  '1': 'GetTransferSuccessPredictionRequest',
+  '2': const [
+    const {'1': 'bank_code', '3': 1, '4': 1, '5': 9, '10': 'bankCode'},
+    const {'1': 'account_number', '3': 2, '4': 1, '5': 9, '10': 'accountNumber'},
+  ],
+};
+
+/// Descriptor for `GetTransferSuccessPredictionRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getTransferSuccessPredictionRequestDescriptor = $convert.base64Decode('CiNHZXRUcmFuc2ZlclN1Y2Nlc3NQcmVkaWN0aW9uUmVxdWVzdBIbCgliYW5rX2NvZGUYASABKAlSCGJhbmtDb2RlEiUKDmFjY291bnRfbnVtYmVyGAIgASgJUg1hY2NvdW50TnVtYmVy');
+@$core.Deprecated('Use getTransferSuccessPredictionResponseDescriptor instead')
+const GetTransferSuccessPredictionResponse$json = const {
+  '1': 'GetTransferSuccessPredictionResponse',
+  '2': const [
+    const {'1': 'bank_availability_pct', '3': 1, '4': 1, '5': 5, '10': 'bankAvailabilityPct'},
+    const {'1': 'bank_band', '3': 2, '4': 1, '5': 9, '10': 'bankBand'},
+    const {'1': 'bank_sample_size', '3': 3, '4': 1, '5': 5, '10': 'bankSampleSize'},
+    const {'1': 'recipient_trust_band', '3': 4, '4': 1, '5': 9, '10': 'recipientTrustBand'},
+    const {'1': 'prior_transfer_count', '3': 5, '4': 1, '5': 5, '10': 'priorTransferCount'},
+    const {'1': 'recipient_known_since_unix', '3': 6, '4': 1, '5': 3, '10': 'recipientKnownSinceUnix'},
+    const {'1': 'blocklisted', '3': 7, '4': 1, '5': 8, '10': 'blocklisted'},
+  ],
+};
+
+/// Descriptor for `GetTransferSuccessPredictionResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getTransferSuccessPredictionResponseDescriptor = $convert.base64Decode('CiRHZXRUcmFuc2ZlclN1Y2Nlc3NQcmVkaWN0aW9uUmVzcG9uc2USMgoVYmFua19hdmFpbGFiaWxpdHlfcGN0GAEgASgFUhNiYW5rQXZhaWxhYmlsaXR5UGN0EhsKCWJhbmtfYmFuZBgCIAEoCVIIYmFua0JhbmQSKAoQYmFua19zYW1wbGVfc2l6ZRgDIAEoBVIOYmFua1NhbXBsZVNpemUSMAoUcmVjaXBpZW50X3RydXN0X2JhbmQYBCABKAlSEnJlY2lwaWVudFRydXN0QmFuZBIwChRwcmlvcl90cmFuc2Zlcl9jb3VudBgFIAEoBVIScHJpb3JUcmFuc2ZlckNvdW50EjsKGnJlY2lwaWVudF9rbm93bl9zaW5jZV91bml4GAYgASgDUhdyZWNpcGllbnRLbm93blNpbmNlVW5peBIgCgtibG9ja2xpc3RlZBgHIAEoCFILYmxvY2tsaXN0ZWQ=');
 @$core.Deprecated('Use initiateDomesticTransferRequestDescriptor instead')
 const InitiateDomesticTransferRequest$json = const {
   '1': 'InitiateDomesticTransferRequest',

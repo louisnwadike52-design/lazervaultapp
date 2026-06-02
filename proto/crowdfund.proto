@@ -17,6 +17,8 @@ enum CrowdfundStatus {
   CROWDFUND_STATUS_PAUSED = 2;
   CROWDFUND_STATUS_COMPLETED = 3;
   CROWDFUND_STATUS_CANCELLED = 4;
+  CROWDFUND_STATUS_CANCELLING = 5;
+  CROWDFUND_STATUS_EXPIRED = 6;
 }
 
 enum CrowdfundVisibility {
@@ -72,6 +74,20 @@ message CrowdfundMessage {
   google.protobuf.Timestamp created_at = 19;
   google.protobuf.Timestamp updated_at = 20;
   repeated CrowdfundDonationMessage recent_donations = 21; // Top 5
+
+  // Cancellation context (set when status transitions to CANCELLING;
+  // persists onto CANCELLED).
+  string cancel_reason = 22;
+  string cancel_initiated_by = 23;       // "creator"|"admin"|"system"
+  string cancel_initiator_user_id = 24;
+  google.protobuf.Timestamp cancelled_at = 25;
+
+  // Refund progress (denormalized counters maintained by the
+  // refund worker; safe to read directly in list endpoints).
+  int32  refunds_pending   = 26;
+  int32  refunds_completed = 27;
+  int32  refunds_failed    = 28;
+  uint64 total_refunded    = 29;
 }
 
 message CrowdfundDonorMessage {
@@ -181,6 +197,8 @@ message UpdateCrowdfundRequest {
   CrowdfundStatus status = 6;
   string image_url = 7;
   string metadata = 8;
+  string category = 9;
+  uint64 target_amount = 10;             // kobo
 }
 
 message UpdateCrowdfundResponse {
@@ -438,6 +456,58 @@ message CrowdfundReceiptPaginationInfo {
 }
 
 // ============================================================================
+// CANCEL + REFUND
+// ============================================================================
+
+message CancelCrowdfundRequest {
+  string crowdfund_id = 1;
+  string reason = 2;
+  string transaction_pin = 3;
+  string transaction_id = 4;
+}
+
+message CancelCrowdfundResponse {
+  CrowdfundMessage crowdfund = 1;
+  int32 total_contributions = 2;
+  int32 refunds_queued = 3;
+  uint64 total_refund_amount = 4;   // kobo
+  string message = 5;
+}
+
+message CrowdfundRefundRecord {
+  string id = 1;
+  string contribution_id = 2;
+  string crowdfund_id = 3;
+  uint64 contributor_user_id = 4;
+  string contributor_display_name = 5;
+  string destination_account_id = 6;
+  uint64 amount = 7;
+  string currency = 8;
+  string status = 9;
+  string initiated_by = 10;
+  string reason = 11;
+  int32  attempt_count = 12;
+  string last_error = 13;
+  string created_at = 14;
+  string updated_at = 15;
+}
+
+message ListCrowdfundRefundsRequest {
+  string crowdfund_id = 1;
+  string status = 2;
+  int32  page = 3;
+  int32  page_size = 4;
+}
+
+message ListCrowdfundRefundsResponse {
+  repeated CrowdfundRefundRecord refunds = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+  bool  has_more = 5;
+}
+
+// ============================================================================
 // SERVICE DEFINITION
 // ============================================================================
 
@@ -536,6 +606,22 @@ service CrowdfundService {
   rpc GetCrowdfundWithdrawalFeeQuote(GetCrowdfundWithdrawalFeeQuoteRequest) returns (GetCrowdfundWithdrawalFeeQuoteResponse) {
     option (google.api.http) = {
       get: "/v1/crowdfunds/{crowdfund_id}/withdraw/fee-quote"
+    };
+  }
+
+  // Cancel campaign and auto-refund every outstanding contribution.
+  rpc CancelCrowdfund(CancelCrowdfundRequest) returns (CancelCrowdfundResponse) {
+    option (google.api.http) = {
+      post: "/v1/crowdfunds/{crowdfund_id}/cancel"
+      body: "*"
+    };
+  }
+
+  // List per-campaign refund audit rows (used by the cancel
+  // progress screen).
+  rpc ListCrowdfundRefunds(ListCrowdfundRefundsRequest) returns (ListCrowdfundRefundsResponse) {
+    option (google.api.http) = {
+      get: "/v1/crowdfunds/{crowdfund_id}/refunds"
     };
   }
 

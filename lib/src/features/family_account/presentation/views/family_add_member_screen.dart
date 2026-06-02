@@ -30,6 +30,11 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
   String _invitationMethod = 'email';
   final TextEditingController _invitationDestinationController = TextEditingController();
 
+  // Optional display name — used when the invitee isn't already a platform
+  // user (email/phone invites). Once they accept, auth-service enrichment
+  // overwrites this with their real account name.
+  final TextEditingController _displayNameController = TextEditingController();
+
   // Initial allocation
   final TextEditingController _initialAllocationController = TextEditingController(text: '0');
 
@@ -48,6 +53,7 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
   @override
   void dispose() {
     _invitationDestinationController.dispose();
+    _displayNameController.dispose();
     _initialAllocationController.dispose();
     _dailyLimitController.dispose();
     _monthlyLimitController.dispose();
@@ -58,6 +64,7 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
 
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
+      final typedName = _displayNameController.text.trim();
       _cubit.addMember(
         familyId: widget.familyId,
         invitationMethod: _invitationMethod,
@@ -71,6 +78,7 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
         personalMessage: _personalMessageController.text.trim().isEmpty
             ? null
             : _personalMessageController.text.trim(),
+        displayName: typedName.isEmpty ? null : typedName,
       );
     }
   }
@@ -196,6 +204,39 @@ class _FamilyAddMemberScreenState extends State<FamilyAddMemberScreen> {
                   }
                   return null;
                 },
+              ),
+              SizedBox(height: 16.h),
+
+              // Optional display name. For username invites the server resolves
+              // the real name from auth-service; for email/phone invites
+              // typing one here gives the invitee a friendly label until they
+              // accept and we can pull the canonical name from their profile.
+              Text(
+                'Name (optional)',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              SizedBox(height: 8.h),
+              TextFormField(
+                controller: _displayNameController,
+                style: TextStyle(color: Colors.white, fontSize: 14.sp),
+                decoration: InputDecoration(
+                  hintText: 'How should this person be labeled?',
+                  hintStyle: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.4),
+                    fontSize: 14.sp,
+                  ),
+                  filled: true,
+                  fillColor: const Color(0xFF1F1F1F),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                ),
               ),
               SizedBox(height: 24.h),
 

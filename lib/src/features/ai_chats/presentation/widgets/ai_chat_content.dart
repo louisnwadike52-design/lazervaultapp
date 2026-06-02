@@ -176,6 +176,13 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
   final ScrollController _scrollController = ScrollController();
   bool _isAttaching = false; // Kept for local UI state during image preview
   bool _isPinMode = false; // Hides chat history when entering a PIN
+  // Re-entrancy guard for _handleSubmitted. Without this, a rapid double-tap
+  // on a suggestion pill or send button fires two simultaneous /chat POSTs
+  // (same session, same message) — the user sees the message echoed twice
+  // and the LLM responds twice. The guard releases on the next tick after
+  // the cubit's sendMessage call is dispatched (the cubit owns the typing
+  // state from there) so the user can immediately type a follow-up.
+  bool _isSubmitting = false;
   late AnimationController _typingDotsController;
   AiChatSettings _settings = AiChatSettings();
 
@@ -264,6 +271,13 @@ class _AiChatContentState extends State<AiChatContent> with TickerProviderStateM
   Future<void> _handleSubmitted(String text, {File? image}) async {
     final messageText = text.trim();
     if (messageText.isEmpty && image == null) return;
+
+    // Drop duplicate taps within the same frame (pill double-tap, accidental
+    // tap-then-Enter, framework re-fires on hot-reload). Re-armed on the
+    // next microtask so legitimate back-to-back sends still work.
+    if (_isSubmitting) return;
+    _isSubmitting = true;
+    scheduleMicrotask(() => _isSubmitting = false);
 
     _messageController.clear();
     if (_isPinMode) {

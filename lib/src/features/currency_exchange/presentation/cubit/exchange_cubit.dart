@@ -118,6 +118,11 @@ class ExchangeCubit extends Cubit<ExchangeState> {
 
   /// Set the amount and recalculate with current rate.
   /// Emits ExchangeHomeWithRate when on the home screen.
+  ///
+  /// When no rate is loaded yet (e.g. the initial loadHome() rate-fetch
+  /// failed because the upstream provider was momentarily down), kick off
+  /// a fresh fetch so typing an amount self-heals into a visible rate
+  /// instead of silently doing nothing.
   void setAmount(double newAmount) {
     _amount = newAmount;
     if (_currentRate != null && !_currentRate!.isExpired) {
@@ -129,6 +134,13 @@ class ExchangeCubit extends Cubit<ExchangeState> {
         amount: newAmount,
         convertedAmount: converted,
       ));
+      return;
+    }
+    // No rate cached — fetch one now in the background. The amount the
+    // user just typed feeds the request so the converted value reflects
+    // exactly what they entered.
+    if (newAmount > 0) {
+      fetchRateForHome(forAmount: newAmount);
     }
   }
 

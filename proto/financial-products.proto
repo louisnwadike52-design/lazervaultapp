@@ -1,0 +1,2976 @@
+syntax = "proto3";
+
+package financialproducts;
+
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+option go_package = "financial-products-service/proto";
+
+// Financial Products Service - Group accounts, insurance, and crowdfunding
+service FinancialProductsService {
+  // === GROUP ACCOUNT OPERATIONS ===
+
+  // Create group savings account (groupAccount from AppServiceName)
+  rpc CreateGroupAccount(CreateGroupAccountRequest) returns (CreateGroupAccountResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/products/creategroupaccount"
+      body: "*"
+    };
+  }
+
+  // Get group accounts
+  rpc GetGroupAccounts(GetGroupAccountsRequest) returns (GetGroupAccountsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/groupaccounts"
+    };
+  }
+
+  // Get specific group account
+  rpc GetGroupAccount(GetGroupAccountRequest) returns (GetGroupAccountResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/groupaccount"
+    };
+  }
+
+  // Add member to group
+  rpc AddGroupMember(AddGroupMemberRequest) returns (AddGroupMemberResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/products/addgroupmember"
+      body: "*"
+    };
+  }
+
+  // Remove member from group
+  rpc RemoveGroupMember(RemoveGroupMemberRequest) returns (RemoveGroupMemberResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/products/groupmember"
+    };
+  }
+
+  // Contribute to group account
+  rpc ContributeToGroup(ContributeToGroupRequest) returns (ContributeToGroupResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/products/contributetogroup"
+      body: "*"
+    };
+  }
+
+  // Withdraw from group account
+  rpc WithdrawFromGroup(WithdrawFromGroupRequest) returns (WithdrawFromGroupResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/products/withdrawfromgroup"
+      body: "*"
+    };
+  }
+
+  // Close group account
+  rpc CloseGroupAccount(CloseGroupAccountRequest) returns (CloseGroupAccountResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/products/closegroupaccount"
+      body: "*"
+    };
+  }
+
+  // === INSURANCE OPERATIONS ===
+
+  // Buy insurance policy (insurance from AppServiceName)
+  rpc BuyInsurance(BuyInsuranceRequest) returns (BuyInsuranceResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/products/buyinsurance"
+      body: "*"
+    };
+  }
+
+  // Get insurance policies
+  rpc GetInsurancePolicies(GetInsurancePoliciesRequest) returns (GetInsurancePoliciesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/insurancepolicies"
+    };
+  }
+
+  // Get specific insurance policy
+  rpc GetInsurancePolicy(GetInsurancePolicyRequest) returns (GetInsurancePolicyResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/insurancepolicy"
+    };
+  }
+
+  // Make insurance claim
+  rpc MakeInsuranceClaim(MakeInsuranceClaimRequest) returns (MakeInsuranceClaimResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/products/makeinsuranceclaim"
+      body: "*"
+    };
+  }
+
+  // Cancel insurance policy
+  rpc CancelInsurance(CancelInsuranceRequest) returns (CancelInsuranceResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/products/cancelinsurance"
+      body: "*"
+    };
+  }
+
+  // Get available insurance plans
+  rpc GetInsurancePlans(GetInsurancePlansRequest) returns (GetInsurancePlansResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/insuranceplans"
+    };
+  }
+
+  // === MYCOVER.AI INSURANCE MARKETPLACE ===
+
+  // Get insurance products from MyCover.ai
+  rpc GetInsuranceMarketplaceProducts(GetInsuranceMarketplaceProductsRequest) returns (GetInsuranceMarketplaceProductsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/insurance/marketplace/products"
+    };
+  }
+
+  // Get insurance categories
+  rpc GetInsuranceMarketplaceCategories(GetInsuranceMarketplaceCategoriesRequest) returns (GetInsuranceMarketplaceCategoriesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/insurance/marketplace/categories"
+    };
+  }
+
+  // Get insurance quote
+  rpc GetInsuranceQuote(GetInsuranceQuoteRequest) returns (GetInsuranceQuoteResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/products/insurance/marketplace/quote"
+      body: "*"
+    };
+  }
+
+  // Purchase insurance via MyCover.ai
+  rpc PurchaseMarketplaceInsurance(PurchaseMarketplaceInsuranceRequest) returns (PurchaseMarketplaceInsuranceResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/products/insurance/marketplace/purchase"
+      body: "*"
+    };
+  }
+
+  // Get insurance purchase status
+  rpc GetInsurancePurchaseStatus(GetInsurancePurchaseStatusRequest) returns (GetInsurancePurchaseStatusResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/insurance/marketplace/purchase/status"
+    };
+  }
+
+  // Upload file for insurance documents (ID, proof of purchase, claim evidence)
+  rpc UploadInsuranceDocument(UploadInsuranceDocumentRequest) returns (UploadInsuranceDocumentResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/products/insurance/upload-document"
+      body: "*"
+    };
+  }
+
+  // Pre-construct a deterministic public URL for an insurance document
+  // BEFORE the bytes are uploaded. See backend proto for details — the
+  // Flutter cubit calls this on file stage and stamps public_url into
+  // form_data immediately.
+  rpc GetInsuranceDocumentUploadURL(GetInsuranceDocumentUploadURLRequest) returns (GetInsuranceDocumentUploadURLResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/products/insurance/document-upload-url"
+      body: "*"
+    };
+  }
+
+  // Get auxiliary data (states, vehicle makes, vehicle models, genders, etc.)
+  rpc GetInsuranceAuxiliaryData(GetInsuranceAuxiliaryDataRequest) returns (GetInsuranceAuxiliaryDataResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/insurance/auxiliary/{utility_id}"
+    };
+  }
+
+  // === INSURANCE PAYMENT & CLAIMS MANAGEMENT ===
+
+  // Get payments for a specific policy
+  rpc GetInsurancePayments(GetInsurancePaymentsRequest) returns (GetInsurancePaymentsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/insurance/payments"
+    };
+  }
+
+  // Get all user insurance payments
+  rpc GetUserInsurancePayments(GetUserInsurancePaymentsRequest) returns (GetUserInsurancePaymentsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/insurance/payments/all"
+    };
+  }
+
+  // Create insurance payment record
+  rpc CreateInsurancePayment(CreateInsurancePaymentRequest) returns (CreateInsurancePaymentResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/products/insurance/payment"
+      body: "*"
+    };
+  }
+
+  // Process a pending insurance payment
+  rpc ProcessInsurancePayment(ProcessInsurancePaymentRequest) returns (ProcessInsurancePaymentResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/products/insurance/payment/process"
+      body: "*"
+    };
+  }
+
+  // Get a specific payment by ID
+  rpc GetInsurancePaymentById(GetInsurancePaymentByIdRequest) returns (GetInsurancePaymentByIdResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/insurance/payment"
+    };
+  }
+
+  // Get overdue insurance payments
+  rpc GetOverdueInsurancePayments(GetOverdueInsurancePaymentsRequest) returns (GetOverdueInsurancePaymentsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/insurance/payments/overdue"
+    };
+  }
+
+  // Get claims for a specific policy
+  rpc GetInsuranceClaims(GetInsuranceClaimsRequest) returns (GetInsuranceClaimsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/insurance/claims"
+    };
+  }
+
+  // Get all user insurance claims
+  rpc GetUserInsuranceClaims(GetUserInsuranceClaimsRequest) returns (GetUserInsuranceClaimsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/insurance/claims/all"
+    };
+  }
+
+  // Update an insurance claim
+  rpc UpdateInsuranceClaim(UpdateInsuranceClaimRequest) returns (UpdateInsuranceClaimResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/products/insurance/claim"
+      body: "*"
+    };
+  }
+
+  // Get a specific claim by ID
+  rpc GetInsuranceClaimById(GetInsuranceClaimByIdRequest) returns (GetInsuranceClaimByIdResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/insurance/claim"
+    };
+  }
+
+  // Update insurance policy details
+  rpc UpdateInsurancePolicy(UpdateInsurancePolicyRequest) returns (UpdateInsurancePolicyResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/products/insurance/policy"
+      body: "*"
+    };
+  }
+
+  // Generate payment receipt
+  rpc GenerateInsuranceReceipt(GenerateInsuranceReceiptRequest) returns (GenerateInsuranceReceiptResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/products/insurance/receipt"
+      body: "*"
+    };
+  }
+
+  // Get user insurance receipts
+  rpc GetUserInsuranceReceipts(GetUserInsuranceReceiptsRequest) returns (GetUserInsuranceReceiptsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/insurance/receipts"
+    };
+  }
+
+  // Get insurance statistics
+  rpc GetInsuranceStatistics(GetInsuranceStatisticsRequest) returns (GetInsuranceStatisticsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/insurance/statistics"
+    };
+  }
+
+  // Get insurance payment statistics
+  rpc GetInsurancePaymentStatistics(GetInsurancePaymentStatisticsRequest) returns (GetInsurancePaymentStatisticsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/insurance/payment-statistics"
+    };
+  }
+
+  // === MYCOVER.AI MANAGEMENT APIs ===
+
+  // Get MyCover customers
+  rpc GetMyCoverCustomers(GetMyCoverCustomersRequest) returns (GetMyCoverCustomersResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/insurance/customers"
+    };
+  }
+
+  // Get specific MyCover customer
+  rpc GetMyCoverCustomerById(GetMyCoverCustomerByIdRequest) returns (GetMyCoverCustomerByIdResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/insurance/customer/{customer_id}"
+    };
+  }
+
+  // Get policies for a specific customer
+  rpc GetMyCoverCustomerPolicies(GetMyCoverCustomerPoliciesRequest) returns (GetMyCoverCustomerPoliciesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/insurance/customer/{customer_id}/policies"
+    };
+  }
+
+  // Get purchases for a specific customer
+  rpc GetMyCoverCustomerPurchases(GetMyCoverCustomerPurchasesRequest) returns (GetMyCoverCustomerPurchasesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/insurance/customer/{customer_id}/purchases"
+    };
+  }
+
+  // Get all MyCover purchases
+  rpc GetMyCoverPurchases(GetMyCoverPurchasesRequest) returns (GetMyCoverPurchasesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/insurance/purchases"
+    };
+  }
+
+  // Get specific MyCover purchase by ID
+  rpc GetMyCoverPurchaseById(GetMyCoverPurchaseByIdRequest) returns (GetMyCoverPurchaseByIdResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/insurance/purchase/{purchase_id}"
+    };
+  }
+
+  // Get MyCover provider claims (from MyCover API, not local DB)
+  rpc GetMyCoverClaims(GetMyCoverClaimsRequest) returns (GetMyCoverClaimsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/insurance/mycover/claims"
+    };
+  }
+
+  // Get specific MyCover provider claim by ID
+  rpc GetMyCoverClaimById(GetMyCoverClaimByIdRequest) returns (GetMyCoverClaimByIdResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/insurance/mycover/claim/{claim_id}"
+    };
+  }
+
+  // File a credit-life claim
+  rpc FileCreditLifeClaim(FileCreditLifeClaimRequest) returns (FileCreditLifeClaimResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/products/insurance/claims/credit-life"
+      body: "*"
+    };
+  }
+
+  // Get Nigerian states (auxiliary)
+  rpc GetInsuranceStates(GetInsuranceStatesRequest) returns (GetInsuranceStatesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/insurance/auxiliary/states"
+    };
+  }
+
+  // Get vehicle makes (auxiliary)
+  rpc GetInsuranceVehicleMakes(GetInsuranceVehicleMakesRequest) returns (GetInsuranceVehicleMakesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/insurance/auxiliary/vehicle-makes"
+    };
+  }
+
+  // Get notification preferences
+  rpc GetMyCoverNotificationPreferences(GetMyCoverNotificationPreferencesRequest) returns (GetMyCoverNotificationPreferencesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/insurance/notifications/preferences"
+    };
+  }
+
+  // Update notification preferences
+  rpc UpdateMyCoverNotificationPreferences(UpdateMyCoverNotificationPreferencesRequest) returns (UpdateMyCoverNotificationPreferencesResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/products/insurance/notifications/preferences"
+      body: "*"
+    };
+  }
+
+  // === WALLET & REFUND OPERATIONS ===
+
+  // Get MyCover wallet balance
+  rpc GetMyCoverWalletBalance(GetMyCoverWalletBalanceRequest) returns (GetMyCoverWalletBalanceResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/insurance/wallet/balance"
+    };
+  }
+
+  // Request insurance refund for a cancelled policy
+  rpc RequestInsuranceRefund(RequestInsuranceRefundRequest) returns (RequestInsuranceRefundResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/products/insurance/refund"
+      body: "*"
+    };
+  }
+
+  // Get insurance refund status
+  rpc GetInsuranceRefundStatus(GetInsuranceRefundStatusRequest) returns (GetInsuranceRefundStatusResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/insurance/refund/{policy_reference}"
+    };
+  }
+
+  // === ADMIN RECONCILIATION & MANAGEMENT ===
+
+  rpc GetInsuranceReconciliationOverview(GetInsuranceReconciliationOverviewRequest) returns (GetInsuranceReconciliationOverviewResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/insurance/reconciliation/overview"
+    };
+  }
+
+  rpc GetOrphanedInsuranceTransactions(GetOrphanedInsuranceTransactionsRequest) returns (GetOrphanedInsuranceTransactionsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/insurance/reconciliation/orphaned"
+    };
+  }
+
+  rpc ManualReconcilePurchase(ManualReconcilePurchaseRequest) returns (ManualReconcilePurchaseResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/insurance/reconciliation/reconcile"
+      body: "*"
+    };
+  }
+
+  rpc AdminTriggerRefund(AdminTriggerRefundRequest) returns (AdminTriggerRefundResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/insurance/refund/trigger"
+      body: "*"
+    };
+  }
+
+  rpc GetInsuranceWebhookEvents(GetInsuranceWebhookEventsRequest) returns (GetInsuranceWebhookEventsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/insurance/webhooks/events"
+    };
+  }
+
+  rpc RetryFailedWebhookEvent(RetryFailedWebhookEventRequest) returns (RetryFailedWebhookEventResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/admin/insurance/webhooks/retry"
+      body: "*"
+    };
+  }
+
+  rpc GetFailedInsuranceTransactions(GetFailedInsuranceTransactionsRequest) returns (GetFailedInsuranceTransactionsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/insurance/transactions/failed"
+    };
+  }
+
+  rpc UpdateProductMargin(UpdateProductMarginRequest) returns (UpdateProductMarginResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/admin/insurance/products/margin"
+      body: "*"
+    };
+  }
+
+  rpc GetInsurancePlatformWallets(GetInsurancePlatformWalletsRequest) returns (GetInsurancePlatformWalletsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/admin/insurance/wallets/platform"
+    };
+  }
+
+  // === CROWDFUNDING OPERATIONS ===
+
+  // Create crowdfund campaign (crowdfund from AppServiceName)
+  rpc CreateCrowdfund(CreateCrowdfundRequest) returns (CreateCrowdfundResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/products/createcrowdfund"
+      body: "*"
+    };
+  }
+
+  // Get crowdfund campaigns
+  rpc GetCrowdfunds(GetCrowdfundsRequest) returns (GetCrowdfundsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/crowdfunds"
+    };
+  }
+
+  // Get specific crowdfund campaign
+  rpc GetCrowdfund(GetCrowdfundRequest) returns (GetCrowdfundResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/crowdfund"
+    };
+  }
+
+  // Contribute to crowdfund
+  rpc ContributeToCrowdfund(ContributeToCrowdfundRequest) returns (ContributeToCrowdfundResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/products/contributetocrowdfund"
+      body: "*"
+    };
+  }
+
+  // Withdraw from crowdfund (creator only)
+  rpc WithdrawFromCrowdfund(WithdrawFromCrowdfundRequest) returns (WithdrawFromCrowdfundResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/products/withdrawfromcrowdfund"
+      body: "*"
+    };
+  }
+
+  // Quote the platform fee + net amount for a hypothetical withdrawal
+  // without touching balances. The Flutter sheet calls this on every
+  // amount change so the user sees the breakdown before confirming
+  // their PIN. Uses the same precedence rule as the actual withdrawal:
+  // flat fee overrides margin when both are configured, otherwise the
+  // single configured value applies.
+  rpc GetCrowdfundWithdrawalFeeQuote(GetCrowdfundWithdrawalFeeQuoteRequest) returns (GetCrowdfundWithdrawalFeeQuoteResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/crowdfund/withdrawal/fee-quote"
+    };
+  }
+
+  // User-scoped custom categories. The seven built-in categories
+  // (Medical, Education, ...) live in the Flutter client; this RPC
+  // only persists what the user has added themselves so a refreshed
+  // wizard rehydrates the same chip list.
+  rpc ListCrowdfundCustomCategories(ListCrowdfundCustomCategoriesRequest) returns (ListCrowdfundCustomCategoriesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/crowdfund/categories/custom"
+    };
+  }
+  rpc AddCrowdfundCustomCategory(AddCrowdfundCustomCategoryRequest) returns (AddCrowdfundCustomCategoryResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/products/crowdfund/categories/custom"
+      body: "*"
+    };
+  }
+  rpc DeleteCrowdfundCustomCategory(DeleteCrowdfundCustomCategoryRequest) returns (DeleteCrowdfundCustomCategoryResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/products/crowdfund/categories/custom/{category_id}"
+    };
+  }
+
+  // List crowdfund withdrawals (audit trail). Caller filters by
+  // crowdfund_id (campaign-scoped history), user_id (per-creator), or
+  // neither (admin global view). Authorization is enforced by the
+  // handler — non-admins only see rows where user_id == self.
+  rpc ListCrowdfundWithdrawals(ListCrowdfundWithdrawalsRequest) returns (ListCrowdfundWithdrawalsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/crowdfund/withdrawals"
+    };
+  }
+
+  // Close crowdfund campaign (legacy; flips status without refunds).
+  // Use CancelCrowdfund for the user-facing flow.
+  rpc CloseCrowdfund(CloseCrowdfundRequest) returns (CloseCrowdfundResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/products/closecrowdfund"
+      body: "*"
+    };
+  }
+
+  // Cancel campaign and queue auto-refunds for every outstanding
+  // contribution. Synchronous DB transition (status='cancelling')
+  // plus async worker that drains the refund queue and advances
+  // status to 'cancelled' once all refunds settle.
+  rpc CancelCrowdfund(CancelCrowdfundRequest) returns (CancelCrowdfundResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/products/crowdfund/cancel"
+      body: "*"
+    };
+  }
+
+  // Admin force-complete: flip status to 'completed' without
+  // refunds. Used for stuck campaigns where the contributors got
+  // the outcome they pledged for (e.g. campaign delivered but
+  // never hit numerical target).
+  rpc ForceCompleteCrowdfund(ForceCompleteCrowdfundRequest) returns (ForceCompleteCrowdfundResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/products/crowdfund/force-complete"
+      body: "*"
+    };
+  }
+
+  // List per-campaign refund audit rows. Admin sees all rows for
+  // a campaign; non-admins see only refunds where they are the
+  // contributor.
+  rpc ListCrowdfundRefunds(ListCrowdfundRefundsRequest) returns (ListCrowdfundRefundsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/crowdfund/refunds"
+    };
+  }
+
+  // Operator escape hatch: flip a 'failed' refund row back to
+  // 'pending' so the worker re-picks it. Used after fixing the
+  // underlying account_unavailable / network error.
+  rpc RetryCrowdfundRefund(RetryCrowdfundRefundRequest) returns (RetryCrowdfundRefundResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/products/crowdfund/refunds/retry"
+      body: "*"
+    };
+  }
+
+  // Get crowdfund statistics with enhanced analytics
+  rpc GetCrowdfundStatistics(GetCrowdfundStatisticsRequest) returns (GetCrowdfundStatisticsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/crowdfund/statistics"
+    };
+  }
+
+  // Search crowdfunds by query (title, creator username, or crowdfund code)
+  rpc SearchCrowdfunds(SearchCrowdfundsRequest) returns (SearchCrowdfundsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/crowdfunds/search"
+    };
+  }
+
+  // Update crowdfund campaign (creator only)
+  rpc UpdateCrowdfund(UpdateCrowdfundRequest) returns (UpdateCrowdfundResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/products/crowdfund"
+      body: "*"
+    };
+  }
+
+  // Delete crowdfund campaign (creator only, must have no contributions)
+  rpc DeleteCrowdfund(DeleteCrowdfundRequest) returns (DeleteCrowdfundResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/products/crowdfund"
+    };
+  }
+
+  // Get donations for a specific crowdfund
+  rpc GetCrowdfundDonations(GetCrowdfundDonationsRequest) returns (GetCrowdfundDonationsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/crowdfund/donations"
+    };
+  }
+
+  // Get all donations made by current user
+  rpc GetUserDonations(GetUserDonationsRequest) returns (GetUserDonationsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/donations"
+    };
+  }
+
+  // Generate donation receipt
+  rpc GenerateDonationReceipt(GenerateDonationReceiptRequest) returns (GenerateDonationReceiptResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/products/donation/receipt"
+      body: "*"
+    };
+  }
+
+  // Get all crowdfund receipts for current user
+  rpc GetUserCrowdfundReceipts(GetUserCrowdfundReceiptsRequest) returns (GetUserCrowdfundReceiptsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/crowdfund/receipts"
+    };
+  }
+
+  // === NOTIFICATION CHANNEL OPERATIONS ===
+
+  // Connect a notification channel (Telegram, Discord, WhatsApp Business)
+  rpc ConnectNotificationChannel(ConnectNotificationChannelRequest) returns (ConnectNotificationChannelResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/products/notification-channels/connect"
+      body: "*"
+    };
+  }
+
+  // Disconnect a notification channel
+  rpc DisconnectNotificationChannel(DisconnectNotificationChannelRequest) returns (DisconnectNotificationChannelResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/products/notification-channels/{channel_id}"
+    };
+  }
+
+  // Get all notification channels for a crowdfund
+  rpc GetNotificationChannels(GetNotificationChannelsRequest) returns (GetNotificationChannelsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/crowdfund/{crowdfund_id}/notification-channels"
+    };
+  }
+
+  // Update notification channel settings
+  rpc UpdateNotificationChannel(UpdateNotificationChannelRequest) returns (UpdateNotificationChannelResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/products/notification-channels/{channel_id}"
+      body: "*"
+    };
+  }
+
+  // Test notification channel (send test message)
+  rpc TestNotificationChannel(TestNotificationChannelRequest) returns (TestNotificationChannelResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/products/notification-channels/{channel_id}/test"
+      body: "*"
+    };
+  }
+
+  // Get Telegram bot info for linking
+  rpc GetTelegramBotInfo(GetTelegramBotInfoRequest) returns (GetTelegramBotInfoResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/notification-channels/telegram/bot-info"
+    };
+  }
+
+  // Verify Telegram channel connection
+  rpc VerifyTelegramChannel(VerifyTelegramChannelRequest) returns (VerifyTelegramChannelResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/products/notification-channels/telegram/verify"
+      body: "*"
+    };
+  }
+
+  // Get notification delivery history
+  rpc GetNotificationHistory(GetNotificationHistoryRequest) returns (GetNotificationHistoryResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/crowdfund/{crowdfund_id}/notification-history"
+    };
+  }
+
+  // === CROWDFUND LEADERBOARD ===
+
+  // Get crowdfund leaderboard (public, no auth required)
+  rpc GetCrowdfundLeaderboard(GetCrowdfundLeaderboardRequest) returns (GetCrowdfundLeaderboardResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/products/crowdfunds/leaderboard"
+    };
+  }
+
+  // === AUTOSAVE OPERATIONS ===
+
+  // Create auto-save rule
+  rpc CreateAutoSaveRule(CreateAutoSaveRuleRequest2) returns (CreateAutoSaveRuleResponse2) {
+    option (google.api.http) = {
+      post: "/api/v1/products/autosave/rules"
+      body: "*"
+    };
+  }
+
+  // Get auto-save rules
+  rpc GetAutoSaveRules(GetAutoSaveRulesRequest2) returns (GetAutoSaveRulesResponse2) {
+    option (google.api.http) = {
+      get: "/api/v1/products/autosave/rules"
+    };
+  }
+
+  // Update auto-save rule
+  rpc UpdateAutoSaveRule(UpdateAutoSaveRuleRequest2) returns (UpdateAutoSaveRuleResponse2) {
+    option (google.api.http) = {
+      put: "/api/v1/products/autosave/rules"
+      body: "*"
+    };
+  }
+
+  // Toggle auto-save rule (pause/resume)
+  rpc ToggleAutoSaveRule(ToggleAutoSaveRuleRequest2) returns (ToggleAutoSaveRuleResponse2) {
+    option (google.api.http) = {
+      post: "/api/v1/products/autosave/rules/toggle"
+      body: "*"
+    };
+  }
+
+  // Delete auto-save rule
+  rpc DeleteAutoSaveRule(DeleteAutoSaveRuleRequest2) returns (DeleteAutoSaveRuleResponse2) {
+    option (google.api.http) = {
+      delete: "/api/v1/products/autosave/rules"
+    };
+  }
+
+  // Get auto-save transactions
+  rpc GetAutoSaveTransactions(GetAutoSaveTransactionsRequest2) returns (GetAutoSaveTransactionsResponse2) {
+    option (google.api.http) = {
+      get: "/api/v1/products/autosave/transactions"
+    };
+  }
+
+  // Get auto-save statistics
+  rpc GetAutoSaveStatistics(GetAutoSaveStatisticsRequest2) returns (GetAutoSaveStatisticsResponse2) {
+    option (google.api.http) = {
+      get: "/api/v1/products/autosave/statistics"
+    };
+  }
+
+  // Manually trigger auto-save
+  rpc TriggerAutoSave(TriggerAutoSaveRequest2) returns (TriggerAutoSaveResponse2) {
+    option (google.api.http) = {
+      post: "/api/v1/products/autosave/trigger"
+      body: "*"
+    };
+  }
+}
+
+// ===== MODELS =====
+
+// Group Account Models
+message GroupAccount {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string creator_id = 4;
+  double balance = 5;
+  double target_amount = 6;
+  string status = 7;                    // "active", "closed", "locked"
+  repeated GroupMember members = 8;
+  string withdrawal_rules = 9;          // JSON: voting, threshold, etc.
+  string created_at = 10;
+  string updated_at = 11;
+}
+
+message GroupMember {
+  string user_id = 1;
+  string name = 2;
+  string role = 3;                      // "admin", "member"
+  double contribution = 4;
+  string joined_at = 5;
+}
+
+// Insurance Models
+message Insurance {
+  string id = 1;
+  string user_id = 2;
+  string account_id = 3;
+  string policy_number = 4;
+  string plan_id = 5;
+  string plan_name = 6;
+  string coverage_type = 7;             // "health", "life", "auto", "property"
+  double premium = 8;
+  double coverage_amount = 9;
+  string payment_frequency = 10;        // "monthly", "quarterly", "annually"
+  string status = 11;                   // "active", "expired", "cancelled", "claimed"
+  string start_date = 12;
+  string end_date = 13;
+  string next_payment_date = 14;
+  string beneficiary = 15;
+  string metadata = 16;                 // JSON metadata
+  string created_at = 17;
+  string updated_at = 18;
+}
+
+message InsurancePlan {
+  string id = 1;
+  string name = 2;
+  string coverage_type = 3;
+  string description = 4;
+  double min_premium = 5;
+  double max_premium = 6;
+  double coverage_amount = 7;
+  repeated string benefits = 8;
+  string terms = 9;
+  bool is_active = 10;
+}
+
+message InsuranceClaim {
+  string id = 1;
+  string policy_id = 2;
+  string user_id = 3;
+  double claim_amount = 4;
+  string reason = 5;
+  string status = 6;                    // "pending", "approved", "rejected", "paid"
+  string documents = 7;                 // JSON array of document URLs
+  string created_at = 8;
+  string updated_at = 9;
+}
+
+// Crowdfund Models
+message Crowdfund {
+  string id = 1;
+  string user_id = 2;                   // Campaign creator
+  string account_id = 3;                // Account to receive funds
+  string title = 4;
+  string description = 5;
+  string category = 6;                  // "medical", "education", "business", "charity"
+  double target_amount = 7;
+  double current_amount = 8;
+  double percentage_funded = 9;
+  int32 total_contributors = 10;
+  string status = 11;                   // "active","paused","cancelling","cancelled","completed","expired"
+  string image_url = 12;
+  string deadline = 13;
+  string created_at = 14;
+  string updated_at = 15;
+  string crowdfund_code = 16;           // Unique short code (e.g. CF-A3B5K7)
+  string creator_first_name = 17;
+  string creator_last_name = 18;
+  string creator_username = 19;
+  string creator_email = 20;
+
+  // Cancellation context (set when status transitions to
+  // 'cancelling'; persists onto 'cancelled').
+  string cancel_reason = 21;
+  string cancel_initiated_by = 22;       // "creator"|"admin"|"system"
+  string cancel_initiator_user_id = 23;
+  string cancelled_at = 24;              // ISO-8601 string when set
+
+  // Refund progress counters (denormalized by the refund worker).
+  int32  refunds_pending   = 25;
+  int32  refunds_completed = 26;
+  int32  refunds_failed    = 27;
+  double total_refunded    = 28;
+}
+
+message CrowdfundContribution {
+  string id = 1;
+  string crowdfund_id = 2;
+  string user_id = 3;
+  double amount = 4;
+  string message = 5;
+  bool is_anonymous = 6;
+  string created_at = 7;
+}
+
+// ===== CREATE GROUP ACCOUNT =====
+
+// NOTE: user_id extracted from JWT token, not from request
+message CreateGroupAccountRequest {
+  string account_id = 1;               // Account to use for currency and funding
+  string name = 2;
+  string description = 3;
+  double target_amount = 4;
+  string withdrawal_rules = 5;          // JSON
+  repeated string member_ids = 6;
+}
+
+message CreateGroupAccountResponse {
+  GroupAccount group_account = 1;
+  string message = 2;
+}
+
+// ===== GET GROUP ACCOUNTS =====
+
+// NOTE: user_id extracted from JWT token, not from request
+message GetGroupAccountsRequest {
+  string status = 1;                    // Optional filter
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message GetGroupAccountsResponse {
+  repeated GroupAccount group_accounts = 1;
+  int32 total = 2;
+}
+
+// ===== GET GROUP ACCOUNT =====
+
+// NOTE: user_id extracted from JWT token, not from request
+message GetGroupAccountRequest {
+  string group_id = 1;
+}
+
+message GetGroupAccountResponse {
+  GroupAccount group_account = 1;
+}
+
+// ===== ADD GROUP MEMBER =====
+
+// NOTE: user_id extracted from JWT token, not from request
+message AddGroupMemberRequest {
+  string group_id = 1;
+  string member_id = 2;
+  string role = 3;
+}
+
+message AddGroupMemberResponse {
+  GroupAccount group_account = 1;
+  string message = 2;
+}
+
+// ===== REMOVE GROUP MEMBER =====
+
+// NOTE: user_id extracted from JWT token, not from request
+message RemoveGroupMemberRequest {
+  string group_id = 1;
+  string member_id = 2;
+}
+
+message RemoveGroupMemberResponse {
+  GroupAccount group_account = 1;
+  string message = 2;
+}
+
+// ===== CONTRIBUTE TO GROUP =====
+
+// NOTE: user_id extracted from JWT token, not from request
+message ContributeToGroupRequest {
+  string group_id = 1;
+  string account_id = 2;
+  double amount = 3;
+  string pin = 4;
+}
+
+message ContributeToGroupResponse {
+  GroupAccount group_account = 1;
+  double new_balance = 2;
+  string message = 3;
+}
+
+// ===== WITHDRAW FROM GROUP =====
+
+// NOTE: user_id extracted from JWT token, not from request
+message WithdrawFromGroupRequest {
+  string group_id = 1;
+  double amount = 2;
+  string reason = 3;
+  string pin = 4;
+}
+
+message WithdrawFromGroupResponse {
+  GroupAccount group_account = 1;
+  string message = 2;
+}
+
+// ===== CLOSE GROUP ACCOUNT =====
+
+// NOTE: user_id extracted from JWT token, not from request
+message CloseGroupAccountRequest {
+  string group_id = 1;
+  string pin = 2;
+}
+
+message CloseGroupAccountResponse {
+  GroupAccount group_account = 1;
+  string message = 2;
+}
+
+// ===== BUY INSURANCE =====
+
+// NOTE: user_id extracted from JWT token, not from request
+message BuyInsuranceRequest {
+  string account_id = 1;
+  string plan_id = 2;
+  double coverage_amount = 3;
+  string payment_frequency = 4;
+  string beneficiary = 5;
+  string pin = 6;
+}
+
+message BuyInsuranceResponse {
+  Insurance insurance = 1;
+  double first_premium = 2;
+  double new_balance = 3;
+  string message = 4;
+}
+
+// ===== GET INSURANCE POLICIES =====
+
+// NOTE: user_id extracted from JWT token, not from request
+message GetInsurancePoliciesRequest {
+  string status = 1;                    // Optional filter
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message GetInsurancePoliciesResponse {
+  repeated Insurance policies = 1;
+  int32 total = 2;
+  double total_coverage = 3;
+  double total_premiums_paid = 4;
+}
+
+// ===== GET INSURANCE POLICY =====
+
+// NOTE: user_id extracted from JWT token, not from request
+message GetInsurancePolicyRequest {
+  string policy_id = 1;
+}
+
+message GetInsurancePolicyResponse {
+  Insurance insurance = 1;
+}
+
+// ===== MAKE INSURANCE CLAIM =====
+
+// NOTE: user_id extracted from JWT token, not from request
+message MakeInsuranceClaimRequest {
+  string policy_id = 1;
+  double claim_amount = 2;
+  string reason = 3;                    // Maps to description
+  repeated string documents = 4;        // Document URLs
+  string claim_type = 5;               // medical, accident, theft, damage, loss, general
+  string title = 6;                    // Claim title/summary
+  string incident_date = 7;            // ISO8601 date
+  string incident_location = 8;
+  map<string, string> additional_info = 9;
+  string idempotency_key = 10;
+  string currency = 11;               // Default: NGN
+  repeated string attachments = 12;    // Photo/video evidence URLs
+}
+
+message MakeInsuranceClaimResponse {
+  InsuranceClaimRecord claim = 1;      // Use InsuranceClaimRecord (not legacy InsuranceClaim)
+  string message = 2;
+}
+
+// ===== CANCEL INSURANCE =====
+
+// NOTE: user_id extracted from JWT token, not from request
+message CancelInsuranceRequest {
+  string policy_id = 1;
+  string reason = 2;
+}
+
+message CancelInsuranceResponse {
+  Insurance insurance = 1;
+  string message = 2;
+}
+
+// ===== GET INSURANCE PLANS =====
+
+message GetInsurancePlansRequest {
+  string coverage_type = 1;             // Optional filter
+}
+
+message GetInsurancePlansResponse {
+  repeated InsurancePlan plans = 1;
+  int32 total = 2;
+}
+
+// ===== MYCOVER.AI INSURANCE MARKETPLACE =====
+
+// MyCover.ai product form field definition
+message MarketplaceProductFormField {
+  string name = 1;
+  string label = 2;
+  string type = 3;                        // "text", "number", "date", "select", "boolean", "email", "phone"
+  bool required = 4;
+  repeated string options = 5;
+  string default_value = 6;
+  string validation_regex = 7;
+  string placeholder = 8;
+  string description = 9;
+  // utility_id is the MyCover.ai utility-list UUID that powers this
+  // field's options when the values come from
+  // /v2/products/utility/{id}. Non-empty implies type == "select"
+  // and Flutter should fetch options from that endpoint instead of
+  // using the static `options` array.
+  string utility_id = 10;
+  // depends_on is the name of another field whose value scopes this
+  // field's utility query (e.g. vehicle_model depends on
+  // vehicle_make). Empty for independent selects.
+  string depends_on = 11;
+  // item_fields describes the per-item sub-fields of a structured
+  // (object-per-item) array field — e.g. benefit_details items are
+  // {benefit(select), sum_insured(number)} while item_details items
+  // are {name, value, quantity, image_url, description}. Empty for
+  // non-array fields and for array fields where the client should use
+  // the default cargo item shape.
+  repeated MarketplaceProductFormItemField item_fields = 12;
+}
+
+// One sub-field of a structured-array item (see
+// MarketplaceProductFormField.item_fields).
+message MarketplaceProductFormItemField {
+  string name = 1;
+  string label = 2;
+  string type = 3;          // "text" | "number" | "monetary" | "select" | "image"
+  bool required = 4;
+  repeated string options = 5;
+  string placeholder = 6;
+}
+
+// MyCover.ai insurance product
+message MarketplaceInsuranceProduct {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string category = 4;                    // "auto", "health", "travel", "gadget", "home", "life", "package", "content"
+  string provider_name = 5;
+  string provider_logo = 6;
+  double min_premium = 7;                 // User-facing price (includes margin)
+  double max_premium = 8;                 // User-facing price (includes margin)
+  string currency = 9;
+  repeated string benefits = 10;
+  string terms_url = 11;
+  map<string, string> metadata = 12;
+  repeated MarketplaceProductFormField form_fields = 13;
+  bool is_active = 14;
+  string purchase_route = 15;             // Provider-specific route: "leadway/buy-third-party"
+  string provider_id = 16;               // MyCover provider UUID
+  double base_price = 17;                // Original MyCover price before margin
+  string how_it_works = 18;              // HTML how-it-works text
+  string full_benefits = 19;             // HTML benefits text
+  bool is_renewable = 20;
+  bool is_claimable = 21;
+}
+
+// Insurance category metadata
+message MarketplaceInsuranceCategory {
+  string id = 1;
+  string name = 2;
+  string icon = 3;
+  string description = 4;
+  int32 product_count = 5;
+}
+
+// Quote result
+message MarketplaceInsuranceQuote {
+  string quote_id = 1;
+  string product_id = 2;
+  double premium = 3;
+  string currency = 4;
+  string coverage_summary = 5;
+  repeated string coverage_items = 6;
+  string valid_until = 7;
+  map<string, string> quote_details = 8;
+}
+
+// Purchase result
+message MarketplaceInsurancePurchaseResult {
+  string policy_id = 1;
+  string policy_number = 2;
+  string reference = 3;
+  string status = 4;                      // "completed", "pending", "failed"
+  string provider_reference = 5;
+  Insurance insurance = 6;
+  string certificate_url = 7;             // Provider-issued PDF cert (may be empty for async)
+  double premium = 8;                     // Confirmed premium (major units, e.g. NGN)
+  string currency = 9;                    // ISO 4217, typically "NGN"
+  double coverage_amount = 10;            // Sum insured, where surfaced
+  string start_date = 11;                 // ISO-8601 policy start
+  string end_date = 12;                   // ISO-8601 policy end
+}
+
+// Get marketplace products
+message GetInsuranceMarketplaceProductsRequest {
+  string category = 1;
+  string locale = 2;                      // "NG", "US", "GB"
+  int32 page = 3;
+  int32 limit = 4;
+}
+
+message GetInsuranceMarketplaceProductsResponse {
+  repeated MarketplaceInsuranceProduct products = 1;
+  int32 total = 2;
+}
+
+// Get marketplace categories
+message GetInsuranceMarketplaceCategoriesRequest {
+  string locale = 1;
+}
+
+message GetInsuranceMarketplaceCategoriesResponse {
+  repeated MarketplaceInsuranceCategory categories = 1;
+  // Admin-editable insurance terms & conditions link. Loaded by the
+  // Flutter app into an in-app webview bottom sheet on the Review step.
+  // Source of truth: system_settings.insurance.mycover.terms_link.
+  // Empty when not configured — Flutter renders an unavailable state.
+  string terms_link = 2;
+}
+
+// Get insurance quote
+message GetInsuranceQuoteRequest {
+  string product_id = 1;
+  map<string, string> form_data = 2;
+  string locale = 3;
+}
+
+message GetInsuranceQuoteResponse {
+  MarketplaceInsuranceQuote quote = 1;
+}
+
+// Purchase marketplace insurance
+message PurchaseMarketplaceInsuranceRequest {
+  string quote_id = 1;
+  string product_id = 2;
+  string account_id = 3;
+  string transaction_pin_token = 4;       // Pre-validated PIN token
+  string idempotency_key = 5;
+  map<string, string> form_data = 6;
+  string locale = 7;
+  string pin_transaction_id = 8;          // Transaction ID used during PIN verification
+}
+
+message PurchaseMarketplaceInsuranceResponse {
+  MarketplaceInsurancePurchaseResult result = 1;
+  string message = 2;
+}
+
+// Get insurance purchase status
+message GetInsurancePurchaseStatusRequest {
+  string reference = 1;
+}
+
+message GetInsurancePurchaseStatusResponse {
+  MarketplaceInsurancePurchaseResult result = 1;
+}
+
+// Upload insurance document (ID, proof of purchase, claim evidence, device photo)
+message UploadInsuranceDocumentRequest {
+  bytes file_data = 1;
+  string filename = 2;
+  string document_type = 3;               // "id_document", "proof_of_purchase", "claim_evidence", "device_photo"
+}
+
+message UploadInsuranceDocumentResponse {
+  string upload_id = 1;
+  string file_url = 2;
+  bool success = 3;
+  string msg = 4;
+}
+
+// Pre-constructed public URL for a deferred insurance document upload.
+message GetInsuranceDocumentUploadURLRequest {
+  string filename = 1;
+  string content_type = 2;
+  string document_type = 3;
+}
+
+message GetInsuranceDocumentUploadURLResponse {
+  string upload_url = 1;
+  string public_url = 2;
+  string storage_key = 3;
+  int64 expires_at = 4;
+}
+
+// Get auxiliary data (states, vehicle makes/models, genders, etc.)
+message GetInsuranceAuxiliaryDataRequest {
+  string utility_id = 1;                  // UUID of the utility endpoint
+  string query = 2;                       // Optional query param (e.g., vehicle make for models)
+}
+
+message GetInsuranceAuxiliaryDataResponse {
+  repeated InsuranceAuxiliaryItem items = 1;
+  bool success = 2;
+  string msg = 3;
+}
+
+message InsuranceAuxiliaryItem {
+  string label = 1;
+  string value = 2;
+}
+
+// ===== CREATE CROWDFUND =====
+
+// NOTE: user_id extracted from JWT token, not from request
+message CreateCrowdfundRequest {
+  string account_id = 1;
+  string title = 2;
+  string description = 3;
+  string category = 4;
+  double target_amount = 5;
+  string deadline = 6;
+  string image_url = 7;
+}
+
+message CreateCrowdfundResponse {
+  Crowdfund crowdfund = 1;
+  string message = 2;
+}
+
+// ===== GET CROWDFUNDS =====
+
+// NOTE: user_id extracted from JWT token, not from request.
+// `my_crowdfunds_only` controls scope:
+//   true  → only campaigns the JWT user created (My Campaigns)
+//   false → all campaigns regardless of creator (Browse All)
+message GetCrowdfundsRequest {
+  string category = 1;                  // Optional filter
+  string status = 2;                    // Optional filter
+  int32 limit = 3;
+  int32 offset = 4;
+  bool my_crowdfunds_only = 5;
+}
+
+message GetCrowdfundsResponse {
+  repeated Crowdfund crowdfunds = 1;
+  int32 total = 2;
+}
+
+// ===== GET CROWDFUND =====
+
+message GetCrowdfundRequest {
+  string crowdfund_id = 1;
+}
+
+message GetCrowdfundResponse {
+  Crowdfund crowdfund = 1;
+  repeated CrowdfundContribution recent_contributions = 2;
+}
+
+// ===== CONTRIBUTE TO CROWDFUND =====
+
+// NOTE: user_id extracted from JWT token, not from request
+message ContributeToCrowdfundRequest {
+  string crowdfund_id = 1;
+  string account_id = 2;
+  double amount = 3;
+  string message = 4;
+  bool is_anonymous = 5;
+  string pin = 6;
+  // transaction_id MUST match the value the client used when minting
+  // the PIN verification token via /api/v1/auth/verify-transaction-pin.
+  // The server-side PIN validator looks up the token by
+  // (token, user_id, transaction_id), so the two must agree exactly —
+  // previously the server reconstructed this string with time.Now()
+  // which guaranteed a mismatch.
+  string transaction_id = 7;
+}
+
+message ContributeToCrowdfundResponse {
+  Crowdfund crowdfund = 1;
+  CrowdfundContribution contribution = 2;
+  double new_balance = 3;
+  string message = 4;
+}
+
+// ===== WITHDRAW FROM CROWDFUND =====
+
+// NOTE: user_id extracted from JWT token, not from request
+message WithdrawFromCrowdfundRequest {
+  string crowdfund_id = 1;
+  double amount = 2;
+  string pin = 3;
+  // Destination account for withdrawal - one of the following must be specified:
+  // If destination_account_id is set, funds go to that specific account
+  // If destination_account_type is set, funds go to user's account of that type
+  // If neither is set, funds go to user's primary account
+  string destination_account_id = 4;    // Optional: specific account UUID
+  string destination_account_type = 5;  // Optional: "personal", "savings", or "investment"
+  // transaction_id MUST match the value the client used when minting
+  // the PIN verification token. Same fix as ContributeToCrowdfund —
+  // the auth-service token validator looks up by
+  // (token, user_id, transaction_id), so the two MUST agree exactly.
+  string transaction_id = 6;
+}
+
+message WithdrawFromCrowdfundResponse {
+  Crowdfund crowdfund = 1;
+  double amount_withdrawn = 2;
+  string message = 3;
+  string destination_account_id = 4;    // Account where funds were credited
+  double destination_new_balance = 5;   // New balance of destination account (in kobo)
+  // Fee snapshot. Zero / empty when no platform commission was
+  // applied. amount_withdrawn always reflects the GROSS the user
+  // requested; net_amount is what landed in their destination
+  // account, fee_amount is what was credited to the platform
+  // revenue wallet.
+  double fee_amount = 6;
+  double net_amount = 7;
+  string fee_type = 8;          // ""|"flat"|"percentage"
+  int32 fee_basis_points = 9;   // populated when fee_type == "percentage"
+  int64 fee_fixed_kobo = 10;    // populated when fee_type == "flat"
+}
+
+message GetCrowdfundWithdrawalFeeQuoteRequest {
+  string crowdfund_id = 1;
+  double amount = 2;
+}
+
+message GetCrowdfundWithdrawalFeeQuoteResponse {
+  double gross_amount = 1;
+  double fee_amount = 2;
+  double net_amount = 3;
+  string currency = 4;
+  bool fee_enabled = 5;
+  string fee_type = 6;          // ""|"flat"|"percentage"
+  int32 fee_basis_points = 7;   // when fee_type == "percentage"
+  int64 fee_fixed_kobo = 8;     // when fee_type == "flat"
+}
+
+// ===== USER-SCOPED CUSTOM CATEGORIES =====
+
+message CrowdfundCustomCategory {
+  string id = 1;
+  string name = 2;
+  string created_at = 3; // RFC3339
+}
+
+message ListCrowdfundCustomCategoriesRequest {}
+
+message ListCrowdfundCustomCategoriesResponse {
+  repeated CrowdfundCustomCategory categories = 1;
+}
+
+message AddCrowdfundCustomCategoryRequest {
+  // Display name (trimmed server-side, max 64 chars). The unique
+  // index dedupes case-insensitively, so "music" and "Music" map
+  // to a single row.
+  string name = 1;
+}
+
+message AddCrowdfundCustomCategoryResponse {
+  CrowdfundCustomCategory category = 1;
+  // True when the row was freshly created on this call. False when
+  // a case-insensitive match already existed (the response still
+  // returns that row so the client can select it).
+  bool created = 2;
+}
+
+message DeleteCrowdfundCustomCategoryRequest {
+  string category_id = 1;
+}
+
+message DeleteCrowdfundCustomCategoryResponse {
+  bool deleted = 1;
+}
+
+// ===== CROWDFUND WITHDRAWAL AUDIT (admin / per-creator history) =====
+
+message CrowdfundWithdrawalRecord {
+  string id = 1;
+  string crowdfund_id = 2;
+  string user_id = 3;
+  double amount = 4;
+  string currency = 5;
+  string destination_account_id = 6;
+  string destination_account_type = 7;
+  string idempotency_key = 8;
+  string status = 9;            // pending|completed|failed|reversed
+  double balance_before = 10;
+  double balance_after = 11;
+  string notes = 12;
+  string created_at = 13;       // RFC3339
+  // Fee snapshot frozen at withdrawal time so historical records
+  // are reproducible without re-reading current system_settings.
+  double fee_amount = 14;
+  double net_amount = 15;
+  string fee_type = 16;
+  int32 fee_basis_points = 17;
+  int64 fee_fixed_kobo = 18;
+}
+
+message ListCrowdfundWithdrawalsRequest {
+  // Filters; any combination is supported. Authorization is enforced
+  // server-side: non-admins only see rows where user_id == caller.
+  string crowdfund_id = 1;
+  string user_id = 2;
+  string status = 3;
+  int32 page = 4;
+  int32 page_size = 5;
+}
+
+message ListCrowdfundWithdrawalsResponse {
+  repeated CrowdfundWithdrawalRecord withdrawals = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+  bool has_more = 5;
+}
+
+// ===== CLOSE CROWDFUND =====
+
+// NOTE: user_id extracted from JWT token, not from request
+message CloseCrowdfundRequest {
+  string crowdfund_id = 1;
+}
+
+message CloseCrowdfundResponse {
+  Crowdfund crowdfund = 1;
+  string message = 2;
+}
+
+// ===== CANCEL CROWDFUND (with auto-refund) =====
+
+// NOTE: initiator_user_id extracted from JWT token. initiated_by is
+// inferred by the handler (creator if owner; admin if reached via
+// admin-gateway with operator JWT).
+message CancelCrowdfundRequest {
+  string crowdfund_id = 1;
+  string reason = 2;                    // Required; ≥10 chars enforced server-side
+  // PIN token required for the creator path (refund is a money
+  // movement). Empty when called by the admin path.
+  string transaction_pin = 3;
+  string transaction_id = 4;
+  // Admin override: when true and wallet < pledged, refunds are
+  // queued pro-rata using the available balance. Ignored on the
+  // creator path. Defaults to false.
+  bool   force_partial_refund = 5;
+}
+
+message CancelCrowdfundResponse {
+  Crowdfund crowdfund = 1;
+  int32 total_contributions = 2;
+  int32 refunds_queued = 3;
+  double total_refund_amount = 4;
+  bool   was_pro_rata = 5;
+  string message = 6;
+}
+
+// ===== FORCE COMPLETE CROWDFUND (admin only) =====
+
+message ForceCompleteCrowdfundRequest {
+  string crowdfund_id = 1;
+  string reason = 2;
+}
+
+message ForceCompleteCrowdfundResponse {
+  Crowdfund crowdfund = 1;
+  string message = 2;
+}
+
+// ===== LIST CROWDFUND REFUNDS =====
+
+message ListCrowdfundRefundsRequest {
+  string crowdfund_id = 1;              // Optional; admin-only when empty
+  string status = 2;                     // Optional filter
+  int32  page = 3;
+  int32  page_size = 4;
+}
+
+message CrowdfundRefundEntry {
+  string id = 1;
+  string contribution_id = 2;
+  string crowdfund_id = 3;
+  string contributor_user_id = 4;
+  string contributor_display_name = 5;
+  string destination_account_id = 6;
+  double amount = 7;
+  string currency = 8;
+  string status = 9;
+  string initiated_by = 10;
+  string reason = 11;
+  int32  attempt_count = 12;
+  string last_error = 13;
+  string created_at = 14;
+  string updated_at = 15;
+}
+
+message ListCrowdfundRefundsResponse {
+  repeated CrowdfundRefundEntry refunds = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+// ===== RETRY REFUND =====
+
+message RetryCrowdfundRefundRequest {
+  string refund_id = 1;
+}
+
+message RetryCrowdfundRefundResponse {
+  CrowdfundRefundEntry refund = 1;
+  string message = 2;
+}
+
+// ===== GET CROWDFUND STATISTICS =====
+
+message GetCrowdfundStatisticsRequest {
+  string crowdfund_id = 1;
+  bool include_leaderboard = 2;      // Include top contributors
+  bool include_daily_progress = 3;   // Include daily/weekly progress data
+  int32 leaderboard_limit = 4;       // Max contributors in leaderboard (default 10)
+  int32 progress_days = 5;           // Number of days for progress history (default 30)
+}
+
+message GetCrowdfundStatisticsResponse {
+  CrowdfundStatistics statistics = 1;
+}
+
+// Enhanced crowdfund statistics with analytics
+message CrowdfundStatistics {
+  string crowdfund_id = 1;
+  double total_raised = 2;
+  double target_amount = 3;
+  double progress_percentage = 4;
+  int32 donor_count = 5;
+  double average_donation = 6;
+  double largest_donation = 7;
+  double smallest_donation = 8;
+  int32 days_remaining = 9;
+  int32 days_active = 10;
+  bool is_completed = 11;
+  string created_at = 12;
+
+  // Enhanced analytics
+  repeated ContributorLeaderboardEntry top_contributors = 13;
+  repeated DailyProgress daily_progress = 14;
+  double funding_velocity = 15;           // Average amount raised per day
+  string projected_completion_date = 16;  // Estimated date to reach target (if applicable)
+  int32 new_donors_today = 17;
+  int32 new_donors_this_week = 18;
+  double amount_raised_today = 19;
+  double amount_raised_this_week = 20;
+}
+
+// Leaderboard entry for top contributors
+message ContributorLeaderboardEntry {
+  int32 rank = 1;
+  string user_id = 2;
+  string display_name = 3;
+  string profile_picture = 4;
+  double total_amount = 5;
+  int32 contribution_count = 6;
+  bool is_anonymous = 7;
+  string first_contribution_date = 8;
+  string last_contribution_date = 9;
+}
+
+// Daily progress tracking for charts
+message DailyProgress {
+  string date = 1;                    // YYYY-MM-DD format
+  double amount_raised = 2;
+  int32 new_donors = 3;
+  int32 total_contributions = 4;
+  double cumulative_amount = 5;       // Running total
+  double progress_percentage = 6;     // Progress at end of day
+}
+
+// ===== SEARCH CROWDFUNDS =====
+
+message SearchCrowdfundsRequest {
+  string query = 1;                   // Search by title, creator username, or crowdfund code
+  int32 limit = 2;                    // Max results (default 10)
+}
+
+message SearchCrowdfundsResponse {
+  repeated Crowdfund crowdfunds = 1;
+}
+
+// ===== UPDATE CROWDFUND =====
+
+// NOTE: user_id extracted from JWT token, not from request
+message UpdateCrowdfundRequest {
+  string crowdfund_id = 1;
+  string title = 2;                   // Optional
+  string description = 3;             // Optional
+  string category = 4;                // Optional
+  double target_amount = 5;           // Optional (can only increase)
+  string deadline = 6;                // Optional (can only extend)
+  string image_url = 7;               // Optional
+  string status = 8;                  // Optional: "active", "paused"
+}
+
+message UpdateCrowdfundResponse {
+  Crowdfund crowdfund = 1;
+  string message = 2;
+}
+
+// ===== DELETE CROWDFUND =====
+
+// NOTE: user_id extracted from JWT token, not from request
+message DeleteCrowdfundRequest {
+  string crowdfund_id = 1;
+}
+
+message DeleteCrowdfundResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// ===== GET CROWDFUND DONATIONS =====
+
+message GetCrowdfundDonationsRequest {
+  string crowdfund_id = 1;
+  int32 page = 2;
+  int32 page_size = 3;
+}
+
+message GetCrowdfundDonationsResponse {
+  repeated CrowdfundContribution donations = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+  bool has_more = 5;
+}
+
+// ===== GET USER DONATIONS =====
+
+// NOTE: user_id extracted from JWT token, not from request
+message GetUserDonationsRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+}
+
+message GetUserDonationsResponse {
+  repeated CrowdfundContribution donations = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+  bool has_more = 5;
+}
+
+// ===== GENERATE DONATION RECEIPT =====
+
+// NOTE: user_id extracted from JWT token, not from request
+message GenerateDonationReceiptRequest {
+  string donation_id = 1;
+}
+
+message GenerateDonationReceiptResponse {
+  CrowdfundReceipt receipt = 1;
+}
+
+// ===== GET USER CROWDFUND RECEIPTS =====
+
+// NOTE: user_id extracted from JWT token, not from request
+message GetUserCrowdfundReceiptsRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+}
+
+message GetUserCrowdfundReceiptsResponse {
+  repeated CrowdfundReceipt receipts = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+  bool has_more = 5;
+}
+
+// Crowdfund donation receipt model
+message CrowdfundReceipt {
+  string id = 1;
+  string donation_id = 2;
+  string crowdfund_id = 3;
+  string crowdfund_title = 4;
+  string donor_user_id = 5;
+  string donor_name = 6;
+  double amount = 7;
+  string currency = 8;
+  string donation_date = 9;
+  string generated_at = 10;
+  string receipt_number = 11;
+  string receipt_data = 12;           // JSON string with additional receipt details
+}
+
+// ===== INSURANCE PAYMENT & CLAIMS MESSAGES =====
+
+// Insurance payment record
+message InsurancePaymentRecord {
+  string id = 1;
+  string user_id = 2;
+  string policy_id = 3;
+  string account_id = 4;
+  string purchase_id = 5;
+  int64 amount = 6;                          // Minor units (kobo)
+  string currency = 7;
+  string payment_method = 8;
+  string status = 9;                         // pending, processing, completed, failed, refunded
+  string transaction_reference = 10;
+  string idempotency_key = 11;
+  string narration = 12;
+  string failure_reason = 13;
+  string receipt_number = 14;
+  string processed_at = 15;
+  string created_at = 16;
+  string updated_at = 17;
+}
+
+// Insurance claim record (detailed)
+message InsuranceClaimRecord {
+  string id = 1;
+  string user_id = 2;
+  string policy_id = 3;
+  string claim_number = 4;
+  string claim_type = 5;
+  int64 claim_amount = 6;                    // Minor units
+  int64 approved_amount = 7;
+  string currency = 8;
+  string status = 9;                         // submitted, under_review, approved, rejected, settled, cancelled
+  string title = 10;
+  string description = 11;
+  string incident_date = 12;
+  string incident_location = 13;
+  repeated string documents = 14;
+  map<string, string> additional_info = 15;
+  string rejection_reason = 16;
+  string settlement_date = 17;
+  string settlement_details = 18;
+  string provider_claim_id = 19;
+  string created_at = 20;
+  string updated_at = 21;
+  repeated string attachments = 22;
+}
+
+// Get payments by policy
+message GetInsurancePaymentsRequest {
+  string policy_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message GetInsurancePaymentsResponse {
+  repeated InsurancePaymentRecord payments = 1;
+  int32 total = 2;
+}
+
+// Get all user payments
+message GetUserInsurancePaymentsRequest {
+  string status = 1;                         // Optional filter
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message GetUserInsurancePaymentsResponse {
+  repeated InsurancePaymentRecord payments = 1;
+  int32 total = 2;
+}
+
+// Create payment
+message CreateInsurancePaymentRequest {
+  string policy_id = 1;
+  string account_id = 2;
+  int64 amount = 3;
+  string currency = 4;
+  string payment_method = 5;
+  string narration = 6;
+  string idempotency_key = 7;
+}
+
+message CreateInsurancePaymentResponse {
+  InsurancePaymentRecord payment = 1;
+  string message = 2;
+}
+
+// Process payment
+message ProcessInsurancePaymentRequest {
+  string payment_id = 1;
+  string transaction_pin_token = 2;          // Pre-validated PIN token
+  string idempotency_key = 3;                // Optional: prevents duplicate processing
+}
+
+message ProcessInsurancePaymentResponse {
+  InsurancePaymentRecord payment = 1;
+  string message = 2;
+}
+
+// Get payment by ID
+message GetInsurancePaymentByIdRequest {
+  string payment_id = 1;
+}
+
+message GetInsurancePaymentByIdResponse {
+  InsurancePaymentRecord payment = 1;
+}
+
+// Get overdue payments
+message GetOverdueInsurancePaymentsRequest {}
+
+message GetOverdueInsurancePaymentsResponse {
+  repeated InsurancePaymentRecord payments = 1;
+}
+
+// Get claims by policy
+message GetInsuranceClaimsRequest {
+  string policy_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message GetInsuranceClaimsResponse {
+  repeated InsuranceClaimRecord claims = 1;
+  int32 total = 2;
+}
+
+// Get all user claims
+message GetUserInsuranceClaimsRequest {
+  string status = 1;                         // Optional filter
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message GetUserInsuranceClaimsResponse {
+  repeated InsuranceClaimRecord claims = 1;
+  int32 total = 2;
+}
+
+// Update claim
+message UpdateInsuranceClaimRequest {
+  string claim_id = 1;
+  string title = 2;
+  string description = 3;
+  repeated string documents = 4;
+  map<string, string> additional_info = 5;
+  string status = 6;                        // cancelled (user-initiated)
+  repeated string attachments = 7;
+}
+
+message UpdateInsuranceClaimResponse {
+  InsuranceClaimRecord claim = 1;
+  string message = 2;
+}
+
+// Get claim by ID
+message GetInsuranceClaimByIdRequest {
+  string claim_id = 1;
+}
+
+message GetInsuranceClaimByIdResponse {
+  InsuranceClaimRecord claim = 1;
+}
+
+// Update insurance policy
+message UpdateInsurancePolicyRequest {
+  string policy_id = 1;
+  string beneficiary = 2;
+  string payment_frequency = 3;
+  string metadata = 4;                       // JSON metadata
+}
+
+message UpdateInsurancePolicyResponse {
+  Insurance insurance = 1;
+  string message = 2;
+}
+
+// Generate receipt
+message GenerateInsuranceReceiptRequest {
+  string payment_id = 1;
+}
+
+message GenerateInsuranceReceiptResponse {
+  string receipt_id = 1;
+  string receipt_number = 2;
+  InsurancePaymentRecord payment = 3;
+  string policy_number = 4;
+  string policy_type = 5;
+  string message = 6;
+}
+
+// Get user receipts
+message GetUserInsuranceReceiptsRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+}
+
+message GetUserInsuranceReceiptsResponse {
+  repeated InsurancePaymentRecord receipts = 1;
+  int32 total = 2;
+}
+
+// Insurance statistics
+message GetInsuranceStatisticsRequest {}
+
+message GetInsuranceStatisticsResponse {
+  int32 active_policies = 1;
+  int32 total_policies = 2;
+  int64 total_coverage = 3;                  // Minor units
+  int64 total_premiums_paid = 4;             // Minor units
+  int32 total_claims = 5;
+  int32 pending_claims = 6;
+  int64 total_claimed_amount = 7;
+  int64 total_approved_amount = 8;
+  string next_payment_due = 9;               // ISO timestamp of nearest due date
+  map<string, int32> policies_by_type = 10;
+}
+
+// Payment statistics
+message GetInsurancePaymentStatisticsRequest {
+  string start_date = 1;                     // ISO date (optional)
+  string end_date = 2;                       // ISO date (optional)
+}
+
+message GetInsurancePaymentStatisticsResponse {
+  int32 total_payments = 1;
+  int32 completed_payments = 2;
+  int32 pending_payments = 3;
+  int32 failed_payments = 4;
+  int64 total_amount = 5;                    // Minor units
+  int64 completed_amount = 6;                // Minor units
+}
+
+// ===== AUTOSAVE MODELS =====
+
+// Auto-save trigger types
+enum AutoSaveTriggerType {
+  AUTO_SAVE_TRIGGER_UNKNOWN = 0;
+  AUTO_SAVE_TRIGGER_ON_DEPOSIT = 1;
+  AUTO_SAVE_TRIGGER_SCHEDULED = 2;
+  AUTO_SAVE_TRIGGER_ROUND_UP = 3;
+}
+
+// Schedule frequency for scheduled auto-saves
+enum AutoSaveScheduleFrequency {
+  AUTO_SAVE_FREQUENCY_UNKNOWN = 0;
+  AUTO_SAVE_FREQUENCY_DAILY = 1;
+  AUTO_SAVE_FREQUENCY_WEEKLY = 2;
+  AUTO_SAVE_FREQUENCY_BIWEEKLY = 3;
+  AUTO_SAVE_FREQUENCY_MONTHLY = 4;
+}
+
+// Auto-save rule status
+enum AutoSaveRuleStatus {
+  AUTO_SAVE_STATUS_UNKNOWN = 0;
+  AUTO_SAVE_STATUS_ACTIVE = 1;
+  AUTO_SAVE_STATUS_PAUSED = 2;
+  AUTO_SAVE_STATUS_COMPLETED = 3;
+  AUTO_SAVE_STATUS_CANCELLED = 4;
+}
+
+// Amount calculation type
+enum AutoSaveAmountType {
+  AUTO_SAVE_AMOUNT_UNKNOWN = 0;
+  AUTO_SAVE_AMOUNT_FIXED = 1;
+  AUTO_SAVE_AMOUNT_PERCENTAGE = 2;
+}
+
+// Auto-save rule model
+message AutoSaveRule {
+  string id = 1;
+  string user_id = 2;
+  string name = 3;
+  string description = 4;
+  string trigger_type = 5;           // "on_deposit", "scheduled", "round_up"
+  string amount_type = 6;            // "fixed", "percentage"
+  double amount_value = 7;
+  string source_account_id = 8;
+  string destination_account_id = 9;
+  string status = 10;                // "active", "paused", "completed", "cancelled"
+
+  // For scheduled triggers
+  string frequency = 11;             // "daily", "weekly", "biweekly", "monthly"
+  string schedule_time = 12;         // HH:MM format
+  int32 schedule_day = 13;
+
+  // For round-up triggers
+  int32 round_up_to = 14;
+
+  // Goals and limits
+  double target_amount = 15;
+  double minimum_balance = 16;
+  double maximum_per_save = 17;
+
+  // Metadata
+  string created_at = 18;
+  string updated_at = 19;
+  string last_triggered_at = 20;
+  int32 trigger_count = 21;
+  double total_saved = 22;
+}
+
+// Auto-save transaction record
+message AutoSaveTransaction {
+  string id = 1;
+  string rule_id = 2;
+  string user_id = 3;
+  string source_account_id = 4;
+  string destination_account_id = 5;
+  double amount = 6;
+  string trigger_type = 7;
+  string trigger_reason = 8;
+  bool success = 9;
+  string error_message = 10;
+  string created_at = 11;
+}
+
+// Auto-save statistics
+message AutoSaveStatistics {
+  string user_id = 1;
+  int32 active_rules_count = 2;
+  double total_saved_all_time = 3;
+  double total_saved_this_month = 4;
+  double total_saved_this_week = 5;
+  int32 total_transactions = 6;
+  double average_save_amount = 7;
+  AutoSaveRule most_active_rule = 8;
+  // top_rule_by_total_saved is the single rule with the highest
+  // lifetime total_saved. Distinct from most_active_rule (highest
+  // trigger_count) because a rare-but-large save can outscore a
+  // frequent-but-tiny one. Maintained denormalized in
+  // auto_save_user_stats so it doesn't require an O(N) scan.
+  AutoSaveRule top_rule_by_total_saved = 9;
+  // Status counters maintained alongside active_rules_count so the
+  // All-Rules screen filter pills (Active / Paused / Completed)
+  // can render counts without re-fetching rules in every status.
+  int32 paused_rules_count = 10;
+  int32 completed_rules_count = 11;
+  int32 cancelled_rules_count = 12;
+}
+
+// ===== AUTOSAVE REQUESTS/RESPONSES =====
+
+// Create auto-save rule
+message CreateAutoSaveRuleRequest2 {
+  string name = 1;
+  string description = 2;
+  string trigger_type = 3;
+  string amount_type = 4;
+  double amount_value = 5;
+  string source_account_id = 6;
+  string destination_account_id = 7;
+  string frequency = 8;
+  string schedule_time = 9;
+  int32 schedule_day = 10;
+  int32 round_up_to = 11;
+  double target_amount = 12;
+  double minimum_balance = 13;
+  double maximum_per_save = 14;
+}
+
+message CreateAutoSaveRuleResponse2 {
+  AutoSaveRule rule = 1;
+  string message = 2;
+}
+
+// Get auto-save rules. Server-side filter / sort / pagination so the
+// Flutter All-Rules screen can scroll through hundreds of rules
+// without loading the full set on every interaction.
+message GetAutoSaveRulesRequest2 {
+  string account_id = 1;
+  string status = 2;
+  // Substring match against name + description (case-insensitive).
+  // Empty string means "no search".
+  string search = 3;
+  // sort_by: one of "created_at", "name", "total_saved",
+  // "last_triggered_at". Defaults to "created_at" when empty.
+  string sort_by = 4;
+  // sort_dir: "asc" or "desc". Defaults to "desc" when empty.
+  string sort_dir = 5;
+  // limit: maximum rows to return. Server caps this at 100; the
+  // typical page size for the Flutter list is 25.
+  int32 limit = 6;
+  // offset: classical OFFSET pagination. Combined with the
+  // (user_id, sort_field) covering indexes from migration 018 this
+  // stays cheap for the depths users actually scroll to.
+  int32 offset = 7;
+  // trigger_type: optional filter (scheduled / on_deposit / round_up).
+  string trigger_type = 8;
+}
+
+message GetAutoSaveRulesResponse2 {
+  repeated AutoSaveRule rules = 1;
+  int32 total = 2;
+  // has_more is convenience: clients can keep paging until this is
+  // false instead of comparing offset+len(rules) vs total.
+  bool has_more = 3;
+}
+
+// Update auto-save rule
+message UpdateAutoSaveRuleRequest2 {
+  string rule_id = 1;
+  string name = 2;
+  string description = 3;
+  string amount_type = 4;
+  double amount_value = 5;
+  string frequency = 6;
+  string schedule_time = 7;
+  int32 schedule_day = 8;
+  int32 round_up_to = 9;
+  double target_amount = 10;
+  double minimum_balance = 11;
+  double maximum_per_save = 12;
+}
+
+message UpdateAutoSaveRuleResponse2 {
+  AutoSaveRule rule = 1;
+  string message = 2;
+}
+
+// Toggle auto-save rule (pause/resume)
+message ToggleAutoSaveRuleRequest2 {
+  string rule_id = 1;
+  string action = 2;  // "pause" or "resume"
+}
+
+message ToggleAutoSaveRuleResponse2 {
+  AutoSaveRule rule = 1;
+  string message = 2;
+}
+
+// Delete auto-save rule
+message DeleteAutoSaveRuleRequest2 {
+  string rule_id = 1;
+}
+
+message DeleteAutoSaveRuleResponse2 {
+  bool success = 1;
+  string message = 2;
+}
+
+// Get auto-save transactions
+message GetAutoSaveTransactionsRequest2 {
+  string rule_id = 1;
+  string account_id = 2;
+  int32 limit = 3;
+  int32 offset = 4;
+}
+
+message GetAutoSaveTransactionsResponse2 {
+  repeated AutoSaveTransaction transactions = 1;
+  int32 total = 2;
+}
+
+// Get auto-save statistics
+message GetAutoSaveStatisticsRequest2 {}
+
+message GetAutoSaveStatisticsResponse2 {
+  AutoSaveStatistics statistics = 1;
+}
+
+// Trigger auto-save manually
+message TriggerAutoSaveRequest2 {
+  string rule_id = 1;
+  double custom_amount = 2;
+  string transaction_pin_token = 4;  // Pre-validated PIN token for financial security
+}
+
+message TriggerAutoSaveResponse2 {
+  AutoSaveTransaction transaction = 1;
+  string message = 2;
+}
+
+// ===== NOTIFICATION CHANNEL MODELS =====
+
+// Notification channel types
+enum NotificationChannelType {
+  NOTIFICATION_CHANNEL_TYPE_UNSPECIFIED = 0;
+  NOTIFICATION_CHANNEL_TYPE_TELEGRAM = 1;
+  NOTIFICATION_CHANNEL_TYPE_DISCORD = 2;
+  NOTIFICATION_CHANNEL_TYPE_WHATSAPP_BUSINESS = 3;
+  NOTIFICATION_CHANNEL_TYPE_SLACK = 4;
+}
+
+// Notification channel status
+enum NotificationChannelStatus {
+  NOTIFICATION_CHANNEL_STATUS_UNSPECIFIED = 0;
+  NOTIFICATION_CHANNEL_STATUS_PENDING = 1;      // Awaiting verification
+  NOTIFICATION_CHANNEL_STATUS_ACTIVE = 2;       // Verified and active
+  NOTIFICATION_CHANNEL_STATUS_PAUSED = 3;       // Temporarily paused
+  NOTIFICATION_CHANNEL_STATUS_ERROR = 4;        // Error state (e.g., bot removed)
+  NOTIFICATION_CHANNEL_STATUS_DISCONNECTED = 5; // Manually disconnected
+}
+
+// Notification event types
+enum NotificationEventType {
+  NOTIFICATION_EVENT_TYPE_UNSPECIFIED = 0;
+  NOTIFICATION_EVENT_TYPE_NEW_DONATION = 1;           // When someone donates
+  NOTIFICATION_EVENT_TYPE_MILESTONE_REACHED = 2;      // 25%, 50%, 75%, 100%
+  NOTIFICATION_EVENT_TYPE_GOAL_REACHED = 3;           // Campaign fully funded
+  NOTIFICATION_EVENT_TYPE_NEW_CONTRIBUTOR = 4;        // First-time contributor
+  NOTIFICATION_EVENT_TYPE_LARGE_DONATION = 5;         // Donation above threshold
+  NOTIFICATION_EVENT_TYPE_DAILY_SUMMARY = 6;          // Daily progress summary
+  NOTIFICATION_EVENT_TYPE_CAMPAIGN_ENDING = 7;        // Campaign ending soon
+  NOTIFICATION_EVENT_TYPE_CAMPAIGN_ENDED = 8;         // Campaign ended
+  NOTIFICATION_EVENT_TYPE_WITHDRAWAL = 9;             // Creator withdrew funds
+}
+
+// Notification channel model
+message NotificationChannel {
+  string id = 1;
+  string crowdfund_id = 2;
+  string creator_user_id = 3;
+  NotificationChannelType channel_type = 4;
+  NotificationChannelStatus status = 5;
+  string channel_name = 6;              // Display name (e.g., "My Telegram Group")
+  string channel_identifier = 7;        // Platform-specific ID (chat_id, webhook_url, etc.)
+  string channel_username = 8;          // @username for Telegram/Discord
+  repeated NotificationEventType enabled_events = 9;
+  NotificationPreferences preferences = 10;
+  string last_notification_at = 11;
+  int32 notification_count = 12;
+  int32 failure_count = 13;
+  string last_error = 14;
+  string created_at = 15;
+  string updated_at = 16;
+}
+
+// Notification preferences for a channel
+message NotificationPreferences {
+  bool include_donor_name = 1;          // Show donor name (if not anonymous)
+  bool include_amount = 2;              // Show donation amount
+  bool include_message = 3;             // Show donor's message
+  bool include_progress = 4;            // Show campaign progress
+  bool include_leaderboard = 5;         // Show top contributors
+  double large_donation_threshold = 6;  // Threshold for large donation alerts
+  string message_template = 7;          // Custom message template (optional)
+  string language = 8;                  // Preferred language (en, fr, etc.)
+  bool quiet_hours_enabled = 9;         // Enable quiet hours
+  string quiet_hours_start = 10;        // Start time (HH:MM)
+  string quiet_hours_end = 11;          // End time (HH:MM)
+  string timezone = 12;                 // User timezone
+}
+
+// Notification delivery record
+message NotificationDelivery {
+  string id = 1;
+  string channel_id = 2;
+  string crowdfund_id = 3;
+  NotificationEventType event_type = 4;
+  string event_data = 5;                // JSON: donation details, milestone info, etc.
+  string message_content = 6;           // Actual message sent
+  bool success = 7;
+  string error_message = 8;
+  int32 retry_count = 9;
+  string platform_message_id = 10;      // Message ID from platform
+  string created_at = 11;
+  string delivered_at = 12;
+}
+
+// ===== NOTIFICATION CHANNEL REQUESTS/RESPONSES =====
+
+// Connect notification channel
+message ConnectNotificationChannelRequest {
+  string crowdfund_id = 1;
+  NotificationChannelType channel_type = 2;
+  string channel_name = 3;
+  // Platform-specific connection data
+  oneof connection_data {
+    TelegramConnectionData telegram = 4;
+    DiscordConnectionData discord = 5;
+    WhatsAppBusinessConnectionData whatsapp_business = 6;
+    SlackConnectionData slack = 7;
+  }
+  repeated NotificationEventType enabled_events = 8;
+  NotificationPreferences preferences = 9;
+}
+
+message TelegramConnectionData {
+  string chat_id = 1;                   // Group/channel chat ID
+  string verification_code = 2;         // Code sent by bot to verify
+}
+
+message DiscordConnectionData {
+  string webhook_url = 1;               // Discord webhook URL
+  string server_name = 2;               // Server name for display
+  string channel_name = 3;              // Channel name for display
+}
+
+message WhatsAppBusinessConnectionData {
+  string phone_number_id = 1;           // WhatsApp Business phone number ID
+  string access_token = 2;              // Meta access token
+  string recipient_id = 3;              // Group or broadcast list ID
+}
+
+message SlackConnectionData {
+  string webhook_url = 1;               // Slack incoming webhook URL
+  string workspace_name = 2;            // Workspace name for display
+  string channel_name = 3;              // Channel name for display
+}
+
+message ConnectNotificationChannelResponse {
+  NotificationChannel channel = 1;
+  bool requires_verification = 2;       // True for Telegram (need bot verification)
+  string verification_instructions = 3; // Instructions for verification
+  string message = 4;
+}
+
+// Disconnect notification channel
+message DisconnectNotificationChannelRequest {
+  string channel_id = 1;
+}
+
+message DisconnectNotificationChannelResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// Get notification channels
+message GetNotificationChannelsRequest {
+  string crowdfund_id = 1;
+}
+
+message GetNotificationChannelsResponse {
+  repeated NotificationChannel channels = 1;
+}
+
+// Update notification channel
+message UpdateNotificationChannelRequest {
+  string channel_id = 1;
+  string channel_name = 2;
+  repeated NotificationEventType enabled_events = 3;
+  NotificationPreferences preferences = 4;
+  NotificationChannelStatus status = 5;   // For pause/resume
+}
+
+message UpdateNotificationChannelResponse {
+  NotificationChannel channel = 1;
+  string message = 2;
+}
+
+// Test notification channel
+message TestNotificationChannelRequest {
+  string channel_id = 1;
+}
+
+message TestNotificationChannelResponse {
+  bool success = 1;
+  string message = 2;
+  string platform_message_id = 3;
+}
+
+// Get Telegram bot info
+message GetTelegramBotInfoRequest {}
+
+message GetTelegramBotInfoResponse {
+  string bot_username = 1;              // @YourBotName
+  string bot_name = 2;                  // Display name
+  string bot_link = 3;                  // t.me/YourBotName
+  string instructions = 4;              // How to add bot to group
+}
+
+// Verify Telegram channel
+message VerifyTelegramChannelRequest {
+  string crowdfund_id = 1;
+  string chat_id = 2;
+  string verification_code = 3;
+}
+
+message VerifyTelegramChannelResponse {
+  bool success = 1;
+  NotificationChannel channel = 2;
+  string message = 3;
+}
+
+// Get notification history
+message GetNotificationHistoryRequest {
+  string crowdfund_id = 1;
+  string channel_id = 2;                // Optional: filter by channel
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+message GetNotificationHistoryResponse {
+  repeated NotificationDelivery deliveries = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+  bool has_more = 5;
+}
+
+// ===== CROWDFUND LEADERBOARD =====
+
+enum LeaderboardSortBy {
+  LEADERBOARD_SORT_UNSPECIFIED = 0;
+  LEADERBOARD_SORT_MOST_FUNDED = 1;
+  LEADERBOARD_SORT_MOST_DONORS = 2;
+  LEADERBOARD_SORT_TRENDING = 3;
+  LEADERBOARD_SORT_NEARLY_COMPLETE = 4;
+  LEADERBOARD_SORT_NEWEST = 5;
+}
+
+message GetCrowdfundLeaderboardRequest {
+  LeaderboardSortBy sort_by = 1;
+  string category = 2;
+  int32 limit = 3;
+  int32 offset = 4;
+}
+
+message GetCrowdfundLeaderboardResponse {
+  repeated LeaderboardCrowdfundEntry entries = 1;
+  int32 total_count = 2;
+}
+
+message LeaderboardCrowdfundEntry {
+  int32 rank = 1;
+  Crowdfund crowdfund = 2;
+}
+
+// ===== MYCOVER MANAGEMENT API MESSAGES =====
+
+// MyCover Customer
+message MyCoverCustomer {
+  string id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string email = 4;
+  string phone_number = 5;
+  string gender = 6;
+  string date_of_birth = 7;
+  string created_at = 8;
+  string updated_at = 9;
+}
+
+// MyCover Purchase
+message MyCoverPurchase {
+  string id = 1;
+  string app_mode = 2;
+  bool is_renewal = 3;
+  string amount = 4;
+  string customer_id = 5;
+  string distributor_id = 6;
+  string payment_channel = 7;
+  string payment_option = 8;
+  string policy_id = 9;
+  string product_category_id = 10;
+  string product_id = 11;
+  string provider_id = 12;
+  string country_id = 13;
+  string currency_id = 14;
+  string created_at = 15;
+  string updated_at = 16;
+  // Nested info
+  string customer_name = 17;
+  string customer_email = 18;
+  string customer_phone = 19;
+  string policy_number = 20;
+  string certificate_url = 21;
+  bool policy_is_active = 22;
+  string policy_amount = 23;
+  string provider_name = 24;
+  string product_name = 25;
+  string product_category_name = 26;
+}
+
+// MyCover Claim (from provider API)
+message MyCoverClaim {
+  string id = 1;
+  string status = 2;
+  string type = 3;
+  double amount = 4;
+  string description = 5;
+  string policy_id = 6;
+  string customer_id = 7;
+  string claim_number = 8;
+  repeated string documents = 9;
+  string rejection_reason = 10;
+  double approved_amount = 11;
+  string created_at = 12;
+  string updated_at = 13;
+}
+
+// Customers
+message GetMyCoverCustomersRequest {
+  int32 page = 1;
+  int32 limit = 2;
+}
+
+message GetMyCoverCustomersResponse {
+  repeated MyCoverCustomer customers = 1;
+  int32 total = 2;
+}
+
+message GetMyCoverCustomerByIdRequest {
+  string customer_id = 1;
+}
+
+message GetMyCoverCustomerByIdResponse {
+  MyCoverCustomer customer = 1;
+}
+
+message GetMyCoverCustomerPoliciesRequest {
+  string customer_id = 1;
+  int32 page = 2;
+  int32 limit = 3;
+}
+
+message GetMyCoverCustomerPoliciesResponse {
+  repeated InsurancePolicyDetail policies = 1;
+  int32 total = 2;
+}
+
+message GetMyCoverCustomerPurchasesRequest {
+  string customer_id = 1;
+  int32 page = 2;
+  int32 limit = 3;
+}
+
+message GetMyCoverCustomerPurchasesResponse {
+  repeated MyCoverPurchase purchases = 1;
+  int32 total = 2;
+}
+
+// Purchases
+message GetMyCoverPurchasesRequest {
+  int32 page = 1;
+  int32 limit = 2;
+}
+
+message GetMyCoverPurchasesResponse {
+  repeated MyCoverPurchase purchases = 1;
+  int32 total = 2;
+}
+
+message GetMyCoverPurchaseByIdRequest {
+  string purchase_id = 1;
+}
+
+message GetMyCoverPurchaseByIdResponse {
+  MyCoverPurchase purchase = 1;
+}
+
+// MyCover Claims (from provider)
+message GetMyCoverClaimsRequest {
+  string status = 1;
+  int32 page = 2;
+  int32 limit = 3;
+}
+
+message GetMyCoverClaimsResponse {
+  repeated MyCoverClaim claims = 1;
+  int32 total = 2;
+}
+
+message GetMyCoverClaimByIdRequest {
+  string claim_id = 1;
+}
+
+message GetMyCoverClaimByIdResponse {
+  MyCoverClaim claim = 1;
+}
+
+// Credit-Life Claim
+message FileCreditLifeClaimRequest {
+  string policy_id = 1;
+  string claim_type = 2;
+  string description = 3;
+  double amount = 4;
+  repeated string documents = 5;
+  map<string, string> additional_info = 6;
+}
+
+message FileCreditLifeClaimResponse {
+  string claim_id = 1;
+  string claim_number = 2;
+  string status = 3;
+  string message = 4;
+}
+
+// Auxiliary: States
+message GetInsuranceStatesRequest {}
+
+message GetInsuranceStatesResponse {
+  repeated InsuranceAuxiliaryItem states = 1;
+}
+
+// Auxiliary: Vehicle Makes
+message GetInsuranceVehicleMakesRequest {}
+
+message GetInsuranceVehicleMakesResponse {
+  repeated InsuranceAuxiliaryItem makes = 1;
+}
+
+// InsurancePolicyDetail - MyCover policy detail for management APIs
+message InsurancePolicyDetail {
+  string id = 1;
+  string app_mode = 2;
+  string first_name = 3;
+  string last_name = 4;
+  string email = 5;
+  string phone_number = 6;
+  string date_of_birth = 7;
+  string activation_date = 8;
+  string start_date = 9;
+  string expiration_date = 10;
+  string amount = 11;
+  bool is_active = 12;
+  bool is_submitted_to_provider = 13;
+  string customer_id = 14;
+  string product_id = 15;
+  string product_category_id = 16;
+  string provider_id = 17;
+  string purchase_id = 18;
+  string policy_number = 19;
+  string certificate_url = 20;
+  string created_at = 21;
+  string updated_at = 22;
+  string provider_name = 23;
+  string product_name = 24;
+}
+
+// Notification Preferences
+message MyCoverNotificationPreference {
+  string key = 1;           // e.g., "email_purchase_confirmation"
+  string category = 2;      // "email" or "sms"
+  string label = 3;         // Human-readable label
+  string description = 4;   // Description of what this notification does
+  bool enabled = 5;
+}
+
+message GetMyCoverNotificationPreferencesRequest {}
+
+message GetMyCoverNotificationPreferencesResponse {
+  repeated MyCoverNotificationPreference preferences = 1;
+}
+
+message UpdateMyCoverNotificationPreferencesRequest {
+  repeated MyCoverNotificationPreference preferences = 1;
+}
+
+message UpdateMyCoverNotificationPreferencesResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// ===== WALLET & REFUND =====
+
+message GetMyCoverWalletBalanceRequest {}
+
+message GetMyCoverWalletBalanceResponse {
+  double balance = 1;
+  string currency = 2;
+  bool success = 3;
+  string message = 4;
+}
+
+message RequestInsuranceRefundRequest {
+  string policy_reference = 1;
+  string reason = 2;
+}
+
+message RequestInsuranceRefundResponse {
+  InsuranceRefundInfo refund = 1;
+  bool success = 2;
+  string message = 3;
+}
+
+message GetInsuranceRefundStatusRequest {
+  string policy_reference = 1;
+}
+
+message GetInsuranceRefundStatusResponse {
+  InsuranceRefundInfo refund = 1;
+  bool success = 2;
+  string message = 3;
+}
+
+message InsuranceRefundInfo {
+  string refund_id = 1;
+  string policy_reference = 2;
+  string status = 3;              // initiated, processing, completed, failed
+  double amount = 4;
+  string currency = 5;
+  bool provider_refunded = 6;
+  bool wallet_credited = 7;
+  string reason = 8;
+  string failure_reason = 9;
+  string initiated_at = 10;
+  string completed_at = 11;
+}
+
+// ===== Admin Reconciliation & Management Messages =====
+
+message GetInsuranceReconciliationOverviewRequest {}
+
+message GetInsuranceReconciliationOverviewResponse {
+  int32 orphaned_transactions = 1;
+  int32 pending_verification = 2;
+  int32 failed_rollbacks = 3;
+  int32 resolved_today = 4;
+  double float_variance = 5;
+  bool float_variance_critical = 6;
+  string last_reconciliation = 7;
+  bool success = 8;
+  string message = 9;
+}
+
+message GetOrphanedInsuranceTransactionsRequest {
+  int32 page = 1;
+  int32 limit = 2;
+}
+
+message OrphanedInsuranceTransaction {
+  string purchase_id = 1;
+  string user_id = 2;
+  string policy_reference = 3;
+  double amount = 4;
+  string currency = 5;
+  string status = 6;
+  string created_at = 7;
+  string issue_type = 8;
+}
+
+message GetOrphanedInsuranceTransactionsResponse {
+  repeated OrphanedInsuranceTransaction transactions = 1;
+  int32 total_count = 2;
+  bool success = 3;
+  string message = 4;
+}
+
+message ManualReconcilePurchaseRequest {
+  string purchase_id = 1;
+  string action = 2;  // "mark_completed", "mark_failed", "sync_with_provider"
+  string reason = 3;
+}
+
+message ManualReconcilePurchaseResponse {
+  string purchase_id = 1;
+  string previous_status = 2;
+  string new_status = 3;
+  bool action_taken = 4;
+  bool success = 5;
+  string message = 6;
+}
+
+message AdminTriggerRefundRequest {
+  string purchase_id = 1;
+  string reason = 2;
+  bool force = 3;
+}
+
+message AdminTriggerRefundResponse {
+  string refund_id = 1;
+  string purchase_id = 2;
+  string status = 3;
+  bool initiated = 4;
+  bool success = 5;
+  string message = 6;
+}
+
+message GetInsuranceWebhookEventsRequest {
+  string event_type = 1;
+  string status = 2;
+  int32 page = 3;
+  int32 limit = 4;
+}
+
+message InsuranceWebhookEvent {
+  string event_id = 1;
+  string event_type = 2;
+  string aggregate_id = 3;
+  string status = 4;
+  string received_at = 5;
+  string processed_at = 6;
+  int32 retry_count = 7;
+  string error_message = 8;
+}
+
+message GetInsuranceWebhookEventsResponse {
+  repeated InsuranceWebhookEvent events = 1;
+  int32 total_count = 2;
+  bool success = 3;
+  string message = 4;
+}
+
+message RetryFailedWebhookEventRequest {
+  string event_id = 1;
+}
+
+message RetryFailedWebhookEventResponse {
+  string event_id = 1;
+  bool queued = 2;
+  bool success = 3;
+  string message = 4;
+}
+
+message GetFailedInsuranceTransactionsRequest {
+  int32 page = 1;
+  int32 limit = 2;
+}
+
+message FailedInsuranceTransaction {
+  string purchase_id = 1;
+  string user_id = 2;
+  string product_id = 3;
+  double amount = 4;
+  string currency = 5;
+  string status = 6;
+  string error_message = 7;
+  string failed_at = 8;
+  int32 retry_count = 9;
+  bool requires_manual_review = 10;
+}
+
+message GetFailedInsuranceTransactionsResponse {
+  repeated FailedInsuranceTransaction transactions = 1;
+  int32 total_count = 2;
+  bool success = 3;
+  string message = 4;
+}
+
+message UpdateProductMarginRequest {
+  string product_id = 1;
+  double margin_percentage = 2;
+  string reason = 3;
+}
+
+message UpdateProductMarginResponse {
+  string product_id = 1;
+  double previous_margin = 2;
+  double new_margin = 3;
+  bool success = 4;
+  string message = 5;
+}
+
+message PlatformWalletBalance {
+  string wallet_type = 1;
+  double balance = 2;
+  string currency = 3;
+  int32 pending_transactions = 4;
+}
+
+message GetInsurancePlatformWalletsRequest {}
+
+message GetInsurancePlatformWalletsResponse {
+  repeated PlatformWalletBalance wallets = 1;
+  bool success = 2;
+  string message = 3;
+}

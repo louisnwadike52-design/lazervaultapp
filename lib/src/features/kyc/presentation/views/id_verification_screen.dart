@@ -1,33 +1,39 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
+import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/features/kyc/domain/entities/kyc_tier_entity.dart';
 import 'package:lazervault/src/features/kyc/presentation/cubits/kyc_cubit.dart';
 import 'package:lazervault/src/features/kyc/presentation/views/kyc_provider_webview_screen.dart';
 import 'package:lazervault/src/features/kyc/presentation/views/mono_identity_screen.dart';
-import 'package:lazervault/core/shared_widgets/app_loading_button.dart';
-import 'package:lazervault/core/config/country_config.dart';
+import 'package:lazervault/src/features/kyc/presentation/widgets/light_theme/kyc_header.dart';
+import 'package:lazervault/src/features/kyc/presentation/widgets/light_theme/kyc_info_card.dart';
+import 'package:lazervault/src/features/kyc/presentation/widgets/light_theme/kyc_light_scaffold.dart';
+import 'package:lazervault/src/features/kyc/presentation/widgets/light_theme/kyc_primary_button.dart';
+import 'package:lazervault/src/features/kyc/presentation/widgets/light_theme/kyc_skip_button.dart';
+import 'package:lazervault/src/features/kyc/presentation/widgets/light_theme/kyc_terms_checkbox.dart';
+import 'package:lazervault/src/features/widgets/build_form_field.dart';
 
-/// ID Verification screen for BVN/NIN input
+/// BVN verification screen for Tier-2 KYC.
+///
+/// The previous version was a multi-ID-type selector (BVN/NIN/Driver's
+/// License/SSN/etc.) with name + DOB collection. The flow in production
+/// only ever uses BVN for NG tier-2 today, and the user's name + DOB are
+/// already collected during signup. The screen has been simplified to
+/// BVN-only and switched to the light/signup theme.
+///
+/// Multi-ID flows for non-NG tiers should be a separate screen (deferred).
 class IdVerificationScreen extends StatefulWidget {
   final KYCTier targetTier;
-  final IDType? preferredIdType;
-  final String? countryCode; // ISO country code for showing country-specific ID options
-  /// Tier-2 onboarding path: only BVN (no NIN chip), Mono-backed flow.
-  final bool bvnOnlyEntry;
-  /// When set (e.g. progressive KYC), skip triggers backend skip + dashboard; otherwise just pops.
   final VoidCallback? onSkipPressed;
 
   const IdVerificationScreen({
     super.key,
     this.targetTier = KYCTier.tier2,
-    this.preferredIdType,
-    this.countryCode,
-    this.bvnOnlyEntry = false,
     this.onSkipPressed,
   });
 
@@ -39,151 +45,22 @@ class IdVerificationScreen extends StatefulWidget {
 
 class _IdVerificationScreenState extends State<IdVerificationScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _idNumberController = TextEditingController();
-  final _firstNameController = TextEditingController();
-  final _lastNameController = TextEditingController();
-  final _dobController = TextEditingController();
+  final _bvnController = TextEditingController();
 
-  IDType _selectedIdType = IDType.bvn;
   bool _acceptTerms = false;
   bool _isSubmitting = false;
-  late final CountryConfig? _countryConfig;
-
-  @override
-  void initState() {
-    super.initState();
-    _countryConfig = widget.countryCode != null
-        ? CountryConfigs.getByCode(widget.countryCode!)
-        : null;
-    if (widget.bvnOnlyEntry) {
-      _selectedIdType = IDType.bvn;
-    } else {
-      _selectedIdType = widget.preferredIdType ?? _getDefaultIdType();
-    }
-  }
-
-  /// Get the default ID type based on country or fallback to BVN
-  IDType _getDefaultIdType() {
-    if (_countryConfig != null && _countryConfig!.supportedIdTypes.isNotEmpty) {
-      final defaultDocType = _countryConfig!.defaultIdType;
-      // Convert IdentityDocumentType to IDType
-      return _mapDocTypeToIDType(defaultDocType);
-    }
-    return IDType.bvn;
-  }
-
-  /// Map IdentityDocumentType to IDType enum
-  IDType _mapDocTypeToIDType(IdentityDocumentType docType) {
-    switch (docType) {
-      // Nigeria
-      case IdentityDocumentType.bvn:
-        return IDType.bvn;
-      case IdentityDocumentType.nin:
-        return IDType.nin;
-      case IdentityDocumentType.intlPassport:
-        return IDType.internationalPassport;
-      case IdentityDocumentType.driverLicense:
-        return IDType.driversLicense;
-
-      // UK
-      case IdentityDocumentType.ukPassport:
-        return IDType.ukPassport;
-      case IdentityDocumentType.ukDriverLicense:
-        return IDType.ukDrivingLicense;
-      case IdentityDocumentType.niNumber:
-        return IDType.ukDrivingLicense; // NI Number not separately supported; closest UK ID
-
-      // US
-      case IdentityDocumentType.ssn:
-        return IDType.usSsn;
-      case IdentityDocumentType.ssnLast4:
-        return IDType.usSsn; // Full SSN required by provider
-      case IdentityDocumentType.usPassport:
-        return IDType.usPassport;
-      case IdentityDocumentType.usStateId:
-        return IDType.usStateId;
-
-      // Ghana
-      case IdentityDocumentType.ghanaCard:
-        return IDType.ghanaCard;
-      case IdentityDocumentType.ghanaVoterCard:
-        return IDType.votersCard;
-      case IdentityDocumentType.ghanaSsnit:
-        return IDType.ghanaCard; // SSNIT not separately supported; use Ghana Card
-      case IdentityDocumentType.ghanaPassport:
-        return IDType.internationalPassport;
-
-      // Kenya
-      case IdentityDocumentType.kenyaNationalId:
-        return IDType.kenyaNationalId;
-      case IdentityDocumentType.kenyaKraPin:
-        return IDType.kraPin;
-      case IdentityDocumentType.kenyaPassport:
-        return IDType.internationalPassport;
-      case IdentityDocumentType.kenyaAlienId:
-        return IDType.kenyaNationalId; // Alien ID verified via same flow
-
-      // South Africa
-      case IdentityDocumentType.saId:
-        return IDType.saIdCard;
-      case IdentityDocumentType.saPassport:
-        return IDType.saPassport;
-
-      default:
-        return IDType.unknown;
-    }
-  }
-
-  /// Get available ID types based on country AND target tier (CBN compliance)
-  List<IDType> _getAvailableIdTypes() {
-    if (widget.bvnOnlyEntry) {
-      return [IDType.bvn];
-    }
-    if (_countryConfig != null) {
-      // Check tier-specific mandatory types first
-      final kycLevel = widget.targetTier == KYCTier.tier3
-          ? KycLevel.advanced
-          : KycLevel.standard;
-      final tierTypes = _countryConfig!.tierIdTypes[kycLevel];
-      if (tierTypes != null && tierTypes.isNotEmpty) {
-        return tierTypes
-            .map((docType) => _mapDocTypeToIDType(docType))
-            .toSet()
-            .toList();
-      }
-      // Fallback to all supported types if no tier-specific config
-      return _countryConfig!.supportedIdTypes
-          .map((docType) => _mapDocTypeToIDType(docType))
-          .toSet()
-          .toList();
-    }
-    // Default to BVN only for Nigeria Tier 2
-    return [IDType.bvn];
-  }
 
   @override
   void dispose() {
-    _idNumberController.dispose();
-    _firstNameController.dispose();
-    _lastNameController.dispose();
-    _dobController.dispose();
+    _bvnController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final isTier2 = widget.targetTier == KYCTier.tier2;
-    final appBarTitle = widget.bvnOnlyEntry || isTier2 ? 'Verify your BVN' : 'Verify your identity';
-
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0A),
-      appBar: AppBar(
-        title: Text(appBarTitle),
-        elevation: 0,
-        backgroundColor: const Color(0xFF0A0A0A),
-        foregroundColor: Colors.white,
-      ),
-      body: BlocListener<KYCCubit, KYCState>(
+    return KycLightScaffold(
+      title: 'Verify your BVN',
+      child: BlocListener<KYCCubit, KYCState>(
         listener: (context, state) {
           if (!mounted) return;
           if (state is VerificationSessionCreated) {
@@ -197,694 +74,142 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
             _showError(context, state);
           }
         },
-        child: Theme(
-          data: Theme.of(context).copyWith(
-            brightness: Brightness.dark,
-            inputDecorationTheme: InputDecorationTheme(
-              filled: true,
-              fillColor: const Color(0xFF1F1F1F),
-              labelStyle: const TextStyle(color: Color(0xFF9CA3AF)),
-              hintStyle: const TextStyle(color: Color(0xFF6B7280)),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 1.5),
-              ),
-              prefixIconColor: const Color(0xFF9CA3AF),
-            ),
-            textSelectionTheme: const TextSelectionThemeData(cursorColor: Color(0xFF3B82F6)),
-            textTheme: Theme.of(context).textTheme.apply(
-                  bodyColor: Colors.white,
-                  displayColor: Colors.white,
-                ),
-          ),
-          child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: MediaQuery.of(context).size.height * 0.05),
-                _buildHeader(context),
-                const SizedBox(height: 32),
-                if (!widget.bvnOnlyEntry) _buildIdTypeSelector(context),
-                if (!widget.bvnOnlyEntry) const SizedBox(height: 24),
-                if (widget.bvnOnlyEntry) _buildBvnOnlyHint(context),
-                if (widget.bvnOnlyEntry) const SizedBox(height: 24),
-                _buildIdNumberField(context),
-                const SizedBox(height: 24),
-                _buildNameFields(context),
-                const SizedBox(height: 24),
-                _buildDobField(context),
-                const SizedBox(height: 32),
-                _buildTermsSection(context),
-                const SizedBox(height: 32),
-                _buildSubmitButton(context),
-                const SizedBox(height: 16),
-                _buildSkipButton(context),
-              ],
-            ),
-          ),
-        ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Verify Your Identity',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'Enter your details to verify your identity. This helps us keep your account secure.',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: const Color(0xFF9CA3AF),
-              ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBvnOnlyHint(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF2D2D2D)),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.info_outline, color: const Color(0xFF3B82F6), size: 22),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              'We verify your 11-digit BVN with our partner. Your number is encrypted and only used for compliance.',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: const Color(0xFF9CA3AF),
-                    height: 1.35,
+        child: BlocBuilder<KYCCubit, KYCState>(
+          builder: (context, state) {
+            final isLoading = state is KYCLoading;
+            return Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const KycHeader(
+                    title: 'Verify Your Identity',
+                    subtitle: 'Enter your BVN to complete Tier 2 verification',
                   ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildIdTypeSelector(BuildContext context) {
-    final theme = Theme.of(context);
-    final availableTypes = _getAvailableIdTypes();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Select ID Type',
-          style: theme.textTheme.labelLarge?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        if (_countryConfig != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 4, bottom: 8),
-            child: Text(
-              'Verifying for ${_countryConfig!.name}',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.primary,
-              ),
-            ),
-          ),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: availableTypes.map((type) {
-            return SizedBox(
-              width: availableTypes.length > 2
-                  ? (MediaQuery.of(context).size.width - 72) / 2
-                  : (MediaQuery.of(context).size.width - 48) / availableTypes.length,
-              child: _buildIdTypeChip(
-                context,
-                type: type,
-                label: _getIdTypeLabel(type),
-                description: _getIdTypeDescription(type),
+                  const KycInfoCard(
+                    icon: Icons.security,
+                    text:
+                        'We verify your BVN securely with our partner. Your information is encrypted and only used for CBN compliance.',
+                  ),
+                  const SizedBox(height: 24),
+                  BuildFormField(
+                    name: 'bvn',
+                    placeholder: 'Enter your 11-digit BVN',
+                    keyboardType: TextInputType.number,
+                    prefixIcon:
+                        const Icon(Icons.badge, color: Colors.black45),
+                    controller: _bvnController,
+                    maxLength: 11,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'BVN is required';
+                      }
+                      if (value.length != 11) {
+                        return 'BVN must be 11 digits';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                  KycTermsCheckbox(
+                    value: _acceptTerms,
+                    onChanged: (v) => setState(() => _acceptTerms = v),
+                  ),
+                  const SizedBox(height: 32),
+                  KycPrimaryButton(
+                    text: 'Verify BVN',
+                    onPressed: isLoading ? null : _submit,
+                    isLoading: isLoading || _isSubmitting,
+                  ),
+                  const SizedBox(height: 16),
+                  KycSkipButton(onPressed: _handleSkip),
+                  const SizedBox(height: 20),
+                ],
               ),
             );
-          }).toList(),
-        ),
-      ],
-    );
-  }
-
-  String _getIdTypeLabel(IDType type) {
-    return type.displayName;
-  }
-
-  String _getIdTypeDescription(IDType type) {
-    switch (type) {
-      case IDType.bvn:
-        return 'Bank Verification Number';
-      case IDType.nin:
-        return 'National Identity Number';
-      case IDType.driversLicense:
-        return "Driver's License";
-      case IDType.internationalPassport:
-        return 'International Passport';
-      case IDType.ghanaCard:
-        return 'Ghana Card';
-      case IDType.kenyaNationalId:
-        return 'National ID';
-      case IDType.kraPin:
-        return 'KRA PIN';
-      case IDType.saIdCard:
-        return 'Smart ID Card';
-      case IDType.saPassport:
-        return 'SA Passport';
-      case IDType.ukPassport:
-        return 'UK Passport';
-      case IDType.ukDrivingLicense:
-        return 'Driving Licence';
-      case IDType.usSsn:
-        return 'Social Security Number';
-      case IDType.usStateId:
-        return 'State ID';
-      case IDType.usPassport:
-        return 'US Passport';
-      default:
-        return 'Identity Document';
-    }
-  }
-
-  Widget _buildIdTypeChip(
-    BuildContext context, {
-    required IDType type,
-    required String label,
-    required String description,
-  }) {
-    final theme = Theme.of(context);
-    final isSelected = _selectedIdType == type;
-
-    return InkWell(
-      onTap: () => setState(() {
-        if (_selectedIdType != type) {
-          _idNumberController.clear();
-          _selectedIdType = type;
-        }
-      }),
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? theme.colorScheme.primary.withValues(alpha: 0.1)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected
-                ? theme.colorScheme.primary
-                : theme.dividerColor,
-            width: isSelected ? 2 : 1,
-          ),
-        ),
-        child: Column(
-          children: [
-            Text(
-              label,
-              style: theme.textTheme.labelLarge?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: isSelected
-                    ? theme.colorScheme.primary
-                    : theme.textTheme.labelLarge?.color,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              description,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
+          },
         ),
       ),
     );
   }
 
-  Widget _buildIdNumberField(BuildContext context) {
-    final label = _selectedIdType.displayName;
-    final hint = _getIdNumberHint(_selectedIdType);
-    final controller = _getIdController(_selectedIdType);
-    final maxLength = _getIdNumberMaxLength(_selectedIdType);
-
-    return TextFormField(
-      controller: controller,
-      keyboardType: _getIdNumberKeyboardType(_selectedIdType),
-      inputFormatters: _getIdNumberInputFormatters(_selectedIdType, maxLength),
-      style: const TextStyle(color: Colors.white),
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        prefixIcon: const Icon(Icons.badge),
-      ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter your $label';
-        }
-        if (value.length < _getIdNumberMinLength(_selectedIdType)) {
-          return '$label must be at least ${_getIdNumberMinLength(_selectedIdType)} characters';
-        }
-        return null;
-      },
-    );
-  }
-
-  TextEditingController _getIdController(IDType type) {
-    return _idNumberController;
-  }
-
-  String _getIdNumberHint(IDType type) {
-    switch (type) {
-      case IDType.bvn:
-        return 'Enter your 11-digit BVN';
-      case IDType.nin:
-        return 'Enter your 11-digit NIN';
-      case IDType.ghanaCard:
-        return 'Enter your Ghana Card (GHA-XXXXXXXXX-X)';
-      case IDType.kenyaNationalId:
-        return 'Enter your 7-8 digit National ID';
-      case IDType.saIdCard:
-        return 'Enter your 13-digit South African ID';
-      case IDType.driversLicense:
-        return "Enter your Driver's License number";
-      case IDType.internationalPassport:
-        return 'Enter your Passport number';
-      case IDType.ukPassport:
-        return 'Enter your 9-digit UK Passport number';
-      case IDType.ukDrivingLicense:
-        return 'Enter your Driving Licence number';
-      case IDType.usSsn:
-        return 'Enter your 9-digit SSN';
-      case IDType.usStateId:
-        return 'Enter your State ID number';
-      case IDType.usPassport:
-        return 'Enter your US Passport number';
-      case IDType.kraPin:
-        return 'Enter your KRA PIN (e.g., A123456789B)';
-      case IDType.saPassport:
-        return 'Enter your South African Passport number';
-      default:
-        return 'Enter your ID number';
-    }
-  }
-
-  int _getIdNumberMaxLength(IDType type) {
-    switch (type) {
-      case IDType.bvn:
-      case IDType.nin:
-        return 11;
-      case IDType.saIdCard:
-        return 13;
-      case IDType.kenyaNationalId:
-        return 8;
-      case IDType.ghanaCard:
-        return 15;
-      case IDType.usSsn:
-        return 9;
-      case IDType.ukPassport:
-      case IDType.usPassport:
-        return 9;
-      case IDType.kraPin:
-        return 11;
-      case IDType.ukDrivingLicense:
-        return 16;
-      case IDType.saPassport:
-        return 9;
-      default:
-        return 20;
-    }
-  }
-
-  int _getIdNumberMinLength(IDType type) {
-    switch (type) {
-      case IDType.bvn:
-      case IDType.nin:
-        return 11;
-      case IDType.saIdCard:
-        return 13;
-      case IDType.kenyaNationalId:
-        return 7;
-      case IDType.usSsn:
-      case IDType.ukPassport:
-      case IDType.usPassport:
-        return 9;
-      case IDType.kraPin:
-        return 11;
-      case IDType.ghanaCard:
-        return 15;
-      case IDType.ukDrivingLicense:
-        return 16;
-      case IDType.saPassport:
-        return 8;
-      default:
-        return 6;
-    }
-  }
-
-  TextInputType _getIdNumberKeyboardType(IDType type) {
-    switch (type) {
-      case IDType.bvn:
-      case IDType.nin:
-      case IDType.saIdCard:
-      case IDType.kenyaNationalId:
-      case IDType.usSsn:
-      case IDType.ukPassport:
-      case IDType.usPassport:
-        return TextInputType.number;
-      default:
-        return TextInputType.text;
-    }
-  }
-
-  List<TextInputFormatter> _getIdNumberInputFormatters(IDType type, int maxLength) {
-    switch (type) {
-      case IDType.bvn:
-      case IDType.nin:
-      case IDType.saIdCard:
-      case IDType.kenyaNationalId:
-      case IDType.usSsn:
-      case IDType.ukPassport:
-      case IDType.usPassport:
-        return [
-          FilteringTextInputFormatter.digitsOnly,
-          LengthLimitingTextInputFormatter(maxLength),
-        ];
-      case IDType.kraPin:
-        return [
-          FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')),
-          LengthLimitingTextInputFormatter(maxLength),
-        ];
-      default:
-        return [
-          LengthLimitingTextInputFormatter(maxLength),
-        ];
-    }
-  }
-
-  Widget _buildNameFields(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: TextFormField(
-            controller: _firstNameController,
-            textCapitalization: TextCapitalization.words,
-            style: const TextStyle(color: Colors.white),
-            decoration: const InputDecoration(
-              labelText: 'First Name',
-              prefixIcon: Icon(Icons.person),
-            ),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Required';
-              }
-              return null;
-            },
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: TextFormField(
-            controller: _lastNameController,
-            textCapitalization: TextCapitalization.words,
-            style: const TextStyle(color: Colors.white),
-            decoration: const InputDecoration(
-              labelText: 'Last Name',
-              prefixIcon: Icon(Icons.person_outline),
-            ),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Required';
-              }
-              return null;
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDobField(BuildContext context) {
-    return TextFormField(
-      controller: _dobController,
-      readOnly: true,
-      style: const TextStyle(color: Colors.white),
-      decoration: const InputDecoration(
-        labelText: 'Date of Birth',
-        hintText: 'Tap to select date',
-        prefixIcon: Icon(Icons.calendar_today),
-      ),
-      onTap: () async {
-        final date = await showDatePicker(
-          context: context,
-          initialDate: DateTime.now().subtract(const Duration(days: 18 * 365)),
-          firstDate: DateTime(1900),
-          lastDate: DateTime.now(),
-        );
-
-        if (date != null) {
-          _dobController.text =
-              '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
-        }
-      },
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter your date of birth';
-        }
-        // Validate DD/MM/YYYY format
-        final regex = RegExp(r'^\d{2}/\d{2}/\d{4}$');
-        if (!regex.hasMatch(value)) {
-          return 'Use DD/MM/YYYY format';
-        }
-        // Parse and validate date semantically
-        final parts = value.split('/');
-        final day = int.tryParse(parts[0]) ?? 0;
-        final month = int.tryParse(parts[1]) ?? 0;
-        final year = int.tryParse(parts[2]) ?? 0;
-        if (month < 1 || month > 12) return 'Invalid month';
-        if (day < 1 || day > 31) return 'Invalid day';
-        // Check days per month
-        final daysInMonth = DateTime(year, month + 1, 0).day;
-        if (day > daysInMonth) return 'Invalid day for this month';
-        final dob = DateTime(year, month, day);
-        final now = DateTime.now();
-        if (dob.isAfter(now)) return 'Date cannot be in the future';
-        final age = now.year - dob.year - ((now.month < month || (now.month == month && now.day < day)) ? 1 : 0);
-        if (age < 18) return 'You must be at least 18 years old';
-        if (age > 120) return 'Please check the year';
-        return null;
-      },
-    );
-  }
-
-  Widget _buildTermsSection(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1F1F1F),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: const Color(0xFF3B82F6).withValues(alpha: 0.35),
-        ),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Checkbox(
-            activeColor: const Color(0xFF3B82F6),
-            value: _acceptTerms,
-            onChanged: (value) => setState(() => _acceptTerms = value ?? false),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: GestureDetector(
-                onTap: () =>
-                    setState(() => _acceptTerms = !_acceptTerms),
-                child: RichText(
-                  text: TextSpan(
-                    style: const TextStyle(color: Color(0xFF9CA3AF), height: 1.4),
-                    children: [
-                      const TextSpan(
-                        text: 'I agree to the ',
-                      ),
-                      TextSpan(
-                        text: 'Terms of Service',
-                        style: const TextStyle(
-                          color: Color(0xFF3B82F6),
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                      const TextSpan(
-                        text: ' and ',
-                      ),
-                      TextSpan(
-                        text: 'Privacy Policy',
-                        style: const TextStyle(
-                          color: Color(0xFF3B82F6),
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                      const TextSpan(
-                        text: '. I understand that my information will be verified securely.',
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSubmitButton(BuildContext context) {
-    return BlocBuilder<KYCCubit, KYCState>(
-      builder: (context, state) {
-        final isLoading = state is KYCLoading;
-        return SizedBox(
-          width: double.infinity,
-          child: AppLoadingButton(
-            onPressed: isLoading ? null : _submitVerification,
-            isLoading: isLoading,
-            text: 'Verify Identity',
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildSkipButton(BuildContext context) {
-    return Center(
-      child: TextButton(
-        onPressed: () {
-          if (widget.onSkipPressed != null) {
-            widget.onSkipPressed!();
-          } else {
-            Navigator.of(context).pop();
-          }
-        },
-        child: const Text(
-          'Skip for now',
-          style: TextStyle(
-            color: Color(0xFF9CA3AF),
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _submitVerification() {
-    if (_isSubmitting || !mounted) return;
-
-    if (!_formKey.currentState!.validate()) {
+  void _handleSkip() {
+    if (widget.onSkipPressed != null) {
+      widget.onSkipPressed!();
       return;
     }
+    try {
+      final cubit = context.read<KYCCubit>();
+      final authCubit = context.read<AuthenticationCubit>();
+      final userId = authCubit.userId ?? '';
+      if (userId.isNotEmpty) {
+        cubit.skipKYCUpgrade(
+          userId: userId,
+          skipTier2: widget.targetTier != KYCTier.tier1,
+        );
+      }
+    } catch (_) {
+      // No cubit in scope (deep-link / standalone) — fall through to navigation.
+    }
+    Get.offAllNamed(AppRoutes.dashboard);
+  }
 
+  void _submit() {
+    if (_isSubmitting || !mounted) return;
+    if (!_formKey.currentState!.validate()) return;
     if (!_acceptTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please accept the terms to continue')),
+        const SnackBar(
+          content: Text('Please accept the terms to continue'),
+          backgroundColor: Colors.orange,
+          behavior: SnackBarBehavior.floating,
+        ),
       );
       return;
     }
 
     final cubit = context.read<KYCCubit>();
-    final controller = _getIdController(_selectedIdType);
     final authCubit = context.read<AuthenticationCubit>();
     final userId = authCubit.userId ?? '';
 
-    // Convert DD/MM/YYYY to YYYY-MM-DD for backend/providers
-    final dobText = _dobController.text;
-    String formattedDob = dobText;
-    if (dobText.contains('/')) {
-      final parts = dobText.split('/');
-      if (parts.length == 3) {
-        formattedDob = '${parts[2]}-${parts[1]}-${parts[0]}';
-      }
-    }
+    // Pull name + DOB from signup state (collected at signup); fall back to
+    // the loaded profile when this screen is reached post-login.
+    String firstName = '';
+    String lastName = '';
+    String dateOfBirth = '';
+    String? phoneNumber;
 
-    // Sanitize ID number: trim whitespace, strip dashes for SSN
-    var idNumber = controller.text.trim();
-    if (_selectedIdType == IDType.usSsn) {
-      idNumber = idNumber.replaceAll('-', '');
+    final authState = authCubit.state;
+    if (authState is SignUpInProgress) {
+      firstName = authState.firstName;
+      lastName = authState.lastName;
+      dateOfBirth = authState.selectedDate?.toIso8601String().split('T').first ?? '';
+      phoneNumber = authState.phoneNumber;
+    } else if (authCubit.currentProfile != null) {
+      firstName = authCubit.currentProfile!.user.firstName;
+      lastName = authCubit.currentProfile!.user.lastName;
+      phoneNumber = authCubit.currentProfile!.user.phoneNumber;
     }
-
-    // Resolve country code from widget or ID type
-    final countryCode = _resolveCountryCode(widget.preferredIdType ?? _selectedIdType);
 
     _isSubmitting = true;
+
+    // Strip any non-digit characters the user may have pasted in (BVNs are
+    // 11 digits exactly). The validator already ran, but a paste of
+    // "12345-67890-1" passes maxLength then fails server-side.
+    final cleanBvn =
+        _bvnController.text.trim().replaceAll(RegExp(r'[^0-9]'), '');
 
     cubit.createVerificationSession(
       userId: userId,
       targetTier: widget.targetTier,
-      countryCode: countryCode,
-      idType: _selectedIdType,
-      idNumber: idNumber,
-      firstName: _firstNameController.text.trim(),
-      lastName: _lastNameController.text.trim(),
-      dateOfBirth: formattedDob,
-      phoneNumber: authCubit.currentProfile?.user.phoneNumber ?? '',
+      countryCode: 'NG',
+      idType: IDType.bvn,
+      idNumber: cleanBvn,
+      firstName: firstName,
+      lastName: lastName,
+      dateOfBirth: dateOfBirth,
+      phoneNumber: phoneNumber,
     );
-  }
-
-  /// Resolve country code from ID type for provider routing
-  String _resolveCountryCode(IDType idType) {
-    // Use explicit country code from widget if available
-    if (widget.countryCode != null && widget.countryCode!.isNotEmpty) {
-      return widget.countryCode!;
-    }
-    // Fallback: infer from ID type
-    switch (idType) {
-      case IDType.bvn:
-      case IDType.nin:
-        return 'NG';
-      case IDType.ghanaCard:
-      case IDType.votersCard:
-        return 'GH';
-      case IDType.kenyaNationalId:
-      case IDType.kraPin:
-        return 'KE';
-      case IDType.saIdCard:
-      case IDType.saPassport:
-        return 'ZA';
-      case IDType.ukPassport:
-      case IDType.ukDrivingLicense:
-        return 'GB';
-      case IDType.usSsn:
-      case IDType.usStateId:
-      case IDType.usPassport:
-        return 'US';
-      default:
-        return 'NG';
-    }
   }
 
   void _handleSessionCreated(BuildContext context, VerificationSession session) {
@@ -895,6 +220,9 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
     switch (session.provider) {
       case 'mono':
         if (session.sessionToken == null || session.sessionToken!.isEmpty) {
+          // No session token means Mono didn't give us a launch credential.
+          // Reset the submit flag so the user can retry without a forced rebuild.
+          setState(() => _isSubmitting = false);
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Session not available. Please try again.')),
           );
@@ -905,7 +233,9 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
             builder: (_) => MonoIdentityScreen(
               sessionToken: session.sessionToken!,
               verificationId: session.verificationId,
-              userName: '${authCubit.currentProfile?.user.firstName ?? ''} ${authCubit.currentProfile?.user.lastName ?? ''}'.trim(),
+              userName:
+                  '${authCubit.currentProfile?.user.firstName ?? ''} ${authCubit.currentProfile?.user.lastName ?? ''}'
+                      .trim(),
               userEmail: authCubit.currentProfile?.user.email ?? '',
               onSuccess: (authCode) {
                 cubit.confirmVerification(
@@ -924,6 +254,7 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
       case 'persona':
       case 'onfido':
         if (session.sessionUrl == null || session.sessionUrl!.isEmpty) {
+          setState(() => _isSubmitting = false);
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Verification URL not available.')),
           );
@@ -957,7 +288,6 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
         );
         break;
       default:
-        // Unknown provider or inline verification — show in-progress
         Navigator.of(context).popUntil((route) => route.isFirst);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -973,7 +303,6 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
     BuildContext context,
     VerifyIDResponse response,
   ) {
-    // Check if this is an async verification with a session URL (Onfido/Persona)
     if (response.sessionUrl != null && response.sessionUrl!.isNotEmpty) {
       Navigator.of(context).push(
         MaterialPageRoute(
@@ -985,11 +314,10 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
       );
       return;
     }
-
     Navigator.of(context).popUntil((route) => route.isFirst);
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text(
+      const SnackBar(
+        content: Text(
           'Verification submitted successfully! We\'ll notify you once approved.',
         ),
         backgroundColor: Colors.green,
@@ -1007,45 +335,16 @@ class _IdVerificationScreenState extends State<IdVerificationScreen> {
         action: SnackBarAction(
           label: 'Retry',
           textColor: Colors.white,
-          onPressed: _submitVerification,
+          onPressed: _submit,
         ),
       ),
     );
   }
 }
 
-/// Date input formatter for DD/MM/YYYY
-class _DateInputFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    var text = newValue.text;
-
-    // Remove any non-digit characters
-    text = text.replaceAll(RegExp(r'[^\d]'), '');
-
-    // Add slashes
-    if (text.length >= 2 && text.length < 4) {
-      text = '${text.substring(0, 2)}/${text.substring(2)}';
-    } else if (text.length >= 4) {
-      text = '${text.substring(0, 2)}/${text.substring(2, 4)}/${text.substring(4, math.min(8, text.length))}';
-    }
-
-    // Limit to 10 characters (DD/MM/YYYY)
-    if (text.length > 10) {
-      text = text.substring(0, 10);
-    }
-
-    return newValue.copyWith(
-      text: text,
-      selection: TextSelection.collapsed(offset: text.length),
-    );
-  }
-}
-
-/// WebView screen for async identity verification (Onfido/Persona SDK)
+/// Fallback external-browser verification step used when the backend returns
+/// a session URL (Onfido / Persona). Visual chrome inherits the parent
+/// theme so it now renders against the light palette automatically.
 class _VerificationWebViewScreen extends StatefulWidget {
   final String sessionUrl;
   final String? verificationId;
@@ -1056,7 +355,8 @@ class _VerificationWebViewScreen extends StatefulWidget {
   });
 
   @override
-  State<_VerificationWebViewScreen> createState() => _VerificationWebViewScreenState();
+  State<_VerificationWebViewScreen> createState() =>
+      _VerificationWebViewScreenState();
 }
 
 class _VerificationWebViewScreenState extends State<_VerificationWebViewScreen> {
@@ -1071,7 +371,9 @@ class _VerificationWebViewScreenState extends State<_VerificationWebViewScreen> 
     if (uri == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Invalid verification URL'), backgroundColor: Colors.red),
+          const SnackBar(
+              content: Text('Invalid verification URL'),
+              backgroundColor: Colors.red),
         );
         setState(() => _launching = false);
       }
@@ -1079,7 +381,8 @@ class _VerificationWebViewScreenState extends State<_VerificationWebViewScreen> 
     }
 
     try {
-      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      final launched =
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
       if (mounted) {
         setState(() {
           _launched = launched;
@@ -1087,7 +390,9 @@ class _VerificationWebViewScreenState extends State<_VerificationWebViewScreen> 
         });
         if (!launched) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Could not open verification page'), backgroundColor: Colors.red),
+            const SnackBar(
+                content: Text('Could not open verification page'),
+                backgroundColor: Colors.red),
           );
         }
       }
@@ -1095,44 +400,63 @@ class _VerificationWebViewScreenState extends State<_VerificationWebViewScreen> 
       if (mounted) {
         setState(() => _launching = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to open: $e'), backgroundColor: Colors.red),
+          SnackBar(
+              content: Text('Failed to open: $e'),
+              backgroundColor: Colors.red),
         );
       }
     }
   }
 
+  void _showPendingAndPop(BuildContext context) {
+    Navigator.of(context).popUntil((route) => route.isFirst);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+            'Verification in progress. We\'ll notify you once it completes.'),
+        backgroundColor: Colors.orange,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Verify Identity'),
+        backgroundColor: Colors.transparent,
         elevation: 0,
+        foregroundColor: Colors.black,
+        title: const Text('Verify Identity'),
         actions: [
           TextButton(
             onPressed: () => _showPendingAndPop(context),
-            child: const Text('Done'),
+            child: const Text(
+              'Done',
+              style: TextStyle(color: Colors.blue),
+            ),
           ),
         ],
       ),
       body: Column(
         children: [
-          // Info banner
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(12),
-            color: theme.colorScheme.primary.withValues(alpha: 0.1),
+            color: Colors.blue.withValues(alpha: 0.1),
             child: Row(
               children: [
-                Icon(Icons.info_outline, size: 18, color: theme.colorScheme.primary),
+                const Icon(Icons.info_outline, size: 18, color: Colors.blue),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     _launched
                         ? 'Complete verification in your browser, then tap Done.'
                         : 'You will be redirected to our verification partner.',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.primary,
+                    style: const TextStyle(
+                      color: Colors.blue,
+                      fontSize: 13,
                     ),
                   ),
                 ),
@@ -1147,12 +471,16 @@ class _VerificationWebViewScreenState extends State<_VerificationWebViewScreen> 
                   Icon(
                     _launched ? Icons.open_in_browser : Icons.verified_user,
                     size: 64,
-                    color: theme.colorScheme.primary,
+                    color: Colors.blue,
                   ),
                   const SizedBox(height: 16),
                   Text(
                     _launched ? 'Verification Opened' : 'Identity Verification',
-                    style: theme.textTheme.titleLarge,
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Padding(
@@ -1162,9 +490,7 @@ class _VerificationWebViewScreenState extends State<_VerificationWebViewScreen> 
                           ? 'Complete the steps in your browser. When you\'re done, come back here and tap "Done".'
                           : 'Tap below to open the verification page in your browser.',
                       textAlign: TextAlign.center,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
-                      ),
+                      style: const TextStyle(color: Colors.black54),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -1172,7 +498,11 @@ class _VerificationWebViewScreenState extends State<_VerificationWebViewScreen> 
                     FilledButton.icon(
                       onPressed: _launching ? null : _launchVerificationUrl,
                       icon: _launching
-                          ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: Colors.white))
                           : const Icon(Icons.open_in_new),
                       label: Text(_launching ? 'Opening...' : 'Start Verification'),
                     )
@@ -1194,19 +524,6 @@ class _VerificationWebViewScreenState extends State<_VerificationWebViewScreen> 
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  void _showPendingAndPop(BuildContext context) {
-    Navigator.of(context).popUntil((route) => route.isFirst);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text(
-          'Verification in progress. We\'ll notify you once it\'s complete.',
-        ),
-        backgroundColor: Colors.orange,
-        behavior: SnackBarBehavior.floating,
       ),
     );
   }

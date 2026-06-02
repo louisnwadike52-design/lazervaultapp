@@ -40,14 +40,6 @@ class DepositRequiresAuthorization extends DepositState {
   List<Object?> get props => [paymentUrl, depositId, provider];
 }
 
-/// Emitted when a simulated test deposit succeeds instantly
-class SimulateDepositSuccess extends DepositState {
-  final DepositDetails depositDetails;
-  const SimulateDepositSuccess(this.depositDetails);
-  @override
-  List<Object?> get props => [depositDetails];
-}
-
 /// Emitted when deposit methods are loaded for a country
 class DepositMethodsLoaded extends DepositState {
   final List<DepositMethodInfo> methods;

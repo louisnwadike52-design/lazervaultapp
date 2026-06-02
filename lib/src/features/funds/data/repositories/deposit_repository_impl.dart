@@ -26,6 +26,7 @@ class DepositRepositoryImpl implements IDepositRepository {
     required String sourceBankName,
     String? countryCode,
     String? accessToken,
+    String? paymentMethod,
   }) async {
     try {
       final response = await _callOptionsHelper.executeWithTokenRotation(() async {
@@ -39,6 +40,9 @@ class DepositRepositoryImpl implements IDepositRepository {
         );
         if (countryCode != null && countryCode.isNotEmpty) {
           request.countryCode = countryCode;
+        }
+        if (paymentMethod != null && paymentMethod.isNotEmpty) {
+          request.paymentMethod = paymentMethod;
         }
 
         final callOptions = await _callOptionsHelper.withAuth();
@@ -58,39 +62,6 @@ class DepositRepositoryImpl implements IDepositRepository {
     } catch (e) {
       return Left(ServerFailure(
         message: 'An unexpected error occurred during deposit initiation.',
-        statusCode: 500,
-      ));
-    }
-  }
-
-  @override
-  Future<Either<Failure, DepositDetails>> simulateTestDeposit({
-    required String destinationAccountId,
-    required double amount,
-    required String currency,
-    required String countryCode,
-  }) async {
-    try {
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
-        final amountMinorUnits = Int64((amount * 100).round());
-
-        final request = req_resp.SimulateTestDepositRequest(
-          destinationAccountId: destinationAccountId,
-          amount: amountMinorUnits,
-          currency: currency,
-          countryCode: countryCode,
-        );
-
-        final callOptions = await _callOptionsHelper.withAuth();
-        return await _depositServiceClient.simulateTestDeposit(request, options: callOptions);
-      });
-
-      return Right(DepositModel.fromProto(response));
-    } on GrpcError catch (e) {
-      return Left(_mapGrpcError(e, 'Test deposit simulation'));
-    } catch (e) {
-      return Left(ServerFailure(
-        message: 'An unexpected error occurred during test deposit simulation.',
         statusCode: 500,
       ));
     }

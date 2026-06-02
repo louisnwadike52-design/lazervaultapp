@@ -199,8 +199,16 @@ class _TransferProcessingScreenState extends State<TransferProcessingScreen>
       return;
     }
 
-    // Safety timeout: if no WebSocket update in 30s, check API status
-    _timeoutTimer = Timer(const Duration(seconds: 30), () {
+    // Safety timeout: if no WebSocket update by this point, navigate the
+    // user off the "Processing..." spinner. Was 30s — too long for a
+    // Nigerian 4G user staring at a spinner; most webhooks land in 1-5s,
+    // so 10s is a comfortable upper bound. When transferId is present,
+    // the SendFunds RPC already returned status=pending|processing
+    // (server accepted it + hold created), so navigating to the receipt
+    // with "submitted" copy is accurate even if the bank-side terminal
+    // status hasn't landed yet — the receipt screen owns long-tail
+    // updates from there.
+    _timeoutTimer = Timer(const Duration(seconds: 10), () {
       if (!_isCompleted && mounted) {
         // If we have a transferId, the transfer was accepted — treat as success
         if (transferDetails['transferId'] != null) {

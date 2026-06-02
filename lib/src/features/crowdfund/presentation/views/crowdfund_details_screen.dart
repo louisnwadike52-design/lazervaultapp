@@ -16,6 +16,11 @@ import '../cubit/crowdfund_cubit.dart';
 import '../cubit/crowdfund_state.dart';
 import '../widgets/donor_card.dart';
 import '../widgets/withdraw_funds_sheet.dart';
+import '../widgets/cancel_crowdfund_sheet.dart';
+import '../widgets/cancel_progress_screen.dart';
+import '../widgets/delete_confirmation_sheet.dart';
+import '../widgets/edit_crowdfund_screen.dart';
+import '../widgets/pause_confirmation_sheet.dart';
 import 'crowdfund_report_screen.dart';
 import 'donation_payment_screen.dart';
 
@@ -116,13 +121,18 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
           curr is CrowdfundLoading ||
           curr is CrowdfundError ||
           curr is CrowdfundInitial,
-      // Only fire side-effects (snackbars) for state transitions that
-      // this screen drove. The cubit is shared with sibling features
-      // (report flow, list refresh, my-campaigns) — without listenWhen
-      // a CrowdfundError emitted by an unrelated background fetch
+      // Only fire side-effects (snackbars, navigation) for state
+      // transitions that this screen drove. The cubit is shared with
+      // sibling features (report flow, list refresh, my-campaigns) —
+      // without listenWhen an unrelated background CrowdfundError
       // would pop a snackbar on top of the donor list.
       listenWhen: (prev, curr) =>
-          curr is CrowdfundError && prev is! CrowdfundError,
+          (curr is CrowdfundError && prev is! CrowdfundError) ||
+          curr is CrowdfundPaused ||
+          curr is CrowdfundResumed ||
+          curr is CancelInitiated ||
+          curr is CrowdfundDeleted ||
+          curr is CrowdfundUpdated,
       listener: (context, state) {
         if (state is CrowdfundError) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -131,6 +141,59 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
               backgroundColor: const Color(0xFFEF4444),
             ),
           );
+          return;
+        }
+        if (state is CrowdfundUpdated || state is CrowdfundPaused || state is CrowdfundResumed) {
+          // The Edit screen / pause sheet pop themselves; we just
+          // refresh the details surface so the new title/status
+          // shows immediately.
+          final id = (state is CrowdfundUpdated)
+              ? state.crowdfund.id
+              : (state is CrowdfundPaused
+                  ? state.crowdfund.id
+                  : (state as CrowdfundResumed).crowdfund.id);
+          context.read<CrowdfundCubit>().loadCrowdfundDetails(id);
+          final label = state is CrowdfundPaused
+              ? 'Campaign paused'
+              : state is CrowdfundResumed
+                  ? 'Campaign resumed'
+                  : 'Campaign updated';
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(label),
+              backgroundColor: const Color(0xFF10B981),
+            ),
+          );
+          return;
+        }
+        if (state is CancelInitiated) {
+          // Refunds are now async. Push a non-dismissible progress
+          // screen so the user sees the campaign drain in real time.
+          Navigator.push(
+            context,
+            MaterialPageRoute<void>(
+              builder: (_) => BlocProvider.value(
+                value: context.read<CrowdfundCubit>(),
+                child: CancelProgressScreen(
+                  crowdfundId: state.crowdfund.id,
+                  initialCrowdfund: state.crowdfund,
+                  refundsQueued: state.refundsQueued,
+                  totalContributions: state.totalContributions,
+                ),
+              ),
+            ),
+          );
+          return;
+        }
+        if (state is CrowdfundDeleted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Campaign deleted'),
+              backgroundColor: Color(0xFF10B981),
+            ),
+          );
+          _exitToCrowdfundHome();
+          return;
         }
       },
       builder: (context, state) {
@@ -369,18 +432,94 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
                   case 'withdraw':
                     _showWithdrawSheet(crowdfund);
                     break;
+                  case 'edit':
+                    _navigateToEdit(crowdfund);
+                    break;
+                  case 'pause':
+                    _confirmPause(crowdfund);
+                    break;
+                  case 'resume':
+                    _confirmResume(crowdfund);
+                    break;
+                  case 'cancel':
+                    _showCancelSheet(crowdfund);
+                    break;
+                  case 'delete':
+                    _confirmDelete(crowdfund);
+                    break;
                 }
               },
-              itemBuilder: (_) => [
-                if (_isCampaignCreator(crowdfund) && crowdfund.currentAmount > 0)
+              // Menu visibility follows the status-transition matrix
+              // in the plan. `cancelling` is read-only — only Share /
+              // Copy code / AI Report stay visible.
+              itemBuilder: (_) {
+                final isOwner = _isCampaignCreator(crowdfund);
+                final isMutating = crowdfund.isCancelling;
+                final isTerminal =
+                    crowdfund.isCompleted || crowdfund.isCancelled;
+                final canEdit = isOwner &&
+                    !isMutating &&
+                    (crowdfund.isActive || crowdfund.isPaused);
+                final canWithdraw = isOwner &&
+                    !isMutating &&
+                    !isTerminal &&
+                    crowdfund.currentAmount > 0;
+                final canPause = isOwner && crowdfund.isActive;
+                final canResume = isOwner && crowdfund.isPaused;
+                // Cancel allowed from active/paused/server-expired.
+                final canCancel = isOwner &&
+                    !isMutating &&
+                    !isTerminal &&
+                    (crowdfund.isActive ||
+                        crowdfund.isPaused ||
+                        crowdfund.isServerExpired);
+                // Hard-delete only when there's nothing to refund/audit.
+                final canDelete = isOwner &&
+                    crowdfund.currentAmount == 0 &&
+                    crowdfund.donorCount == 0;
+                return [
+                  if (canWithdraw)
+                    _menuItem(
+                        value: 'withdraw',
+                        icon: Icons.account_balance_wallet,
+                        label: 'Withdraw funds'),
+                  if (canEdit)
+                    _menuItem(
+                        value: 'edit',
+                        icon: Icons.edit_outlined,
+                        label: 'Edit campaign'),
+                  if (canPause)
+                    _menuItem(
+                        value: 'pause',
+                        icon: Icons.pause_circle_outline,
+                        label: 'Pause campaign'),
+                  if (canResume)
+                    _menuItem(
+                        value: 'resume',
+                        icon: Icons.play_circle_outline,
+                        label: 'Resume campaign'),
+                  if (canCancel)
+                    _menuItem(
+                        value: 'cancel',
+                        icon: Icons.cancel_outlined,
+                        label: 'Cancel & refund all'),
+                  if (canDelete)
+                    _menuItem(
+                        value: 'delete',
+                        icon: Icons.delete_outline,
+                        label: 'Delete campaign'),
                   _menuItem(
-                      value: 'withdraw',
-                      icon: Icons.account_balance_wallet,
-                      label: 'Withdraw funds'),
-                _menuItem(value: 'report', icon: Icons.auto_awesome, label: 'AI Report'),
-                _menuItem(value: 'share', icon: Icons.share, label: 'Share'),
-                _menuItem(value: 'copy_code', icon: Icons.content_copy, label: 'Copy code'),
-              ],
+                      value: 'report',
+                      icon: Icons.auto_awesome,
+                      label: 'AI Report'),
+                  _menuItem(
+                      value: 'share', icon: Icons.share, label: 'Share'),
+                  _menuItem(
+                      value: 'copy_code',
+                      icon: Icons.content_copy,
+                      label: 'Copy code'),
+                ];
+              },
             ),
           ],
           flexibleSpace: FlexibleSpaceBar(
@@ -617,6 +756,72 @@ class _CrowdfundDetailsScreenState extends State<CrowdfundDetailsScreen>
       builder: (_) => BlocProvider.value(
         value: cubit,
         child: WithdrawFundsSheet(crowdfund: crowdfund),
+      ),
+    );
+  }
+
+  Future<void> _navigateToEdit(Crowdfund crowdfund) async {
+    final cubit = context.read<CrowdfundCubit>();
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => BlocProvider.value(
+          value: cubit,
+          child: EditCrowdfundScreen(crowdfund: crowdfund),
+        ),
+      ),
+    );
+  }
+
+  /// Pause is reversible and doesn't move money, so we use a
+  /// lightweight bottom sheet rather than the full PIN/reason flow.
+  void _confirmPause(Crowdfund crowdfund) {
+    final cubit = context.read<CrowdfundCubit>();
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => BlocProvider.value(
+        value: cubit,
+        child: PauseConfirmationSheet(crowdfund: crowdfund),
+      ),
+    );
+  }
+
+  void _confirmResume(Crowdfund crowdfund) {
+    final cubit = context.read<CrowdfundCubit>();
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => BlocProvider.value(
+        value: cubit,
+        child: ResumeConfirmationSheet(crowdfund: crowdfund),
+      ),
+    );
+  }
+
+  void _showCancelSheet(Crowdfund crowdfund) {
+    final cubit = context.read<CrowdfundCubit>();
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => BlocProvider.value(
+        value: cubit,
+        child: CancelCrowdfundSheet(crowdfund: crowdfund),
+      ),
+    );
+  }
+
+  void _confirmDelete(Crowdfund crowdfund) {
+    final cubit = context.read<CrowdfundCubit>();
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => BlocProvider.value(
+        value: cubit,
+        child: DeleteConfirmationSheet(crowdfund: crowdfund),
       ),
     );
   }

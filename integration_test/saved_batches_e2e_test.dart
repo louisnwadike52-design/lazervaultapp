@@ -452,7 +452,11 @@ void main() {
       // ─── 1) Boot + login (mirrors transfer-send harness timing) ───────────
       await tester.runAsync(() async {
         app.main();
-        final realBootEnd = DateTime.now().add(const Duration(seconds: 90));
+        // Cold-emulator + memory-pressure can stretch the real-clock boot well
+        // past 90s before GetX populates a context. The bound only governs how
+        // long we sit in real time waiting for the first signal; the second
+        // (tester.pump) loop below is what actually decides readiness.
+        final realBootEnd = DateTime.now().add(const Duration(seconds: 120));
         while (DateTime.now().isBefore(realBootEnd)) {
           await Future<void>.delayed(const Duration(milliseconds: 250));
           if (WidgetsBinding.instance.rootElement != null &&
@@ -461,7 +465,10 @@ void main() {
           }
         }
       });
-      final bootDeadline = DateTime.now().add(const Duration(seconds: 60));
+      // 180s pump window (was 60s) — Get.context only materialises after the
+      // first GetX-aware widget builds, and on a slow/cold emulator this can
+      // take noticeably longer than 60s. Same readiness contract; more headroom.
+      final bootDeadline = DateTime.now().add(const Duration(seconds: 180));
       while (DateTime.now().isBefore(bootDeadline)) {
         if (find.byType(Navigator).evaluate().isNotEmpty &&
             (Get.key.currentState != null || Get.context != null)) {

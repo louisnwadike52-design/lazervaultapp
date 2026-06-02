@@ -36,8 +36,9 @@ enum ExchangeStatus {
 
 enum ExchangeType {
   EXCHANGE_TYPE_UNSPECIFIED = 0;
-  CONVERSION = 1;      // Wallet-to-wallet conversion
-  INTERNATIONAL = 2;   // International transfer with FX
+  CONVERSION = 1;        // Wallet-to-wallet conversion
+  INTERNATIONAL = 2;     // International transfer with FX
+  PLATFORM_BRIDGE = 3;   // Admin-initiated platform-wallet bridge (slice 11)
 }
 
 // --- Messages ---
@@ -89,6 +90,11 @@ message ReceiverDetails {
   string branch_code = 9;       // Branch code (GHS, UGX)
   string phone = 10;            // Recipient phone number
   string address = 11;          // Recipient address (required for USD, GBP, EUR)
+  // "individual" or "business". Drives UK Confirmation-of-Payee alignment
+  // (name-pattern matching by recipient account type). Carried into the
+  // Flutterwave meta.beneficiary_type field — v3 ignores unknown meta
+  // keys; v4 will consume it natively once we migrate.
+  string beneficiary_type = 12;
 }
 
 // Request to initiate an international currency transfer
@@ -248,6 +254,40 @@ message GetSupportedCurrenciesResponse {
   repeated SupportedCurrency currencies = 1;
 }
 
+// --- Admin: Currency-bridge for platform wallets (slice 11) ---
+
+message AdminConvertPlatformWalletsRequest {
+  string from_wallet_code = 1;
+  string from_currency    = 2;
+  string to_wallet_code   = 3;
+  string to_currency      = 4;
+  // We owe N units in destination currency; bridge that much.
+  double amount_in_destination_currency = 5;
+  string admin_user_id    = 6;
+  string approval_token   = 7; // HMAC-signed link from the alert email
+  string idempotency_key  = 8;
+}
+
+message AdminConvertPlatformWalletsResponse {
+  ExchangeTransaction transaction = 1;
+  double fx_rate_used = 2;
+  // amount actually debited from the source wallet (in source currency).
+  double from_amount  = 3;
+}
+
+message AdminBridgePreviewRequest {
+  string from_currency = 1;
+  string to_currency   = 2;
+  double amount_in_destination_currency = 3;
+}
+
+message AdminBridgePreviewResponse {
+  double fx_rate = 1;
+  double from_amount = 2;
+  double margin_amount = 3;
+  string rate_id = 4;
+}
+
 // --- Exchange Limits Messages ---
 
 message GetExchangeLimitsRequest {
@@ -398,5 +438,27 @@ service ExchangeService {
                 }
             }
 		};
+  }
+
+  // --- Admin: PiggyVault currency-bridge (slice 11) ---
+
+  // Bridge funds between two platform wallets via FX. Used when one
+  // REVENUE-currency wallet is underfunded and a sibling has surplus
+  // in another currency. Human-in-the-loop: caller (admin-gateway)
+  // must present a valid HMAC approval_token minted by the
+  // accounts-service alert email.
+  rpc AdminConvertPlatformWallets (AdminConvertPlatformWalletsRequest) returns (AdminConvertPlatformWalletsResponse) {
+    option (google.api.http) = {
+      post: "/v1/admin/exchange/bridge-platform-wallets"
+      body: "*"
+    };
+  }
+
+  // Preview the rate + computed source-amount without executing.
+  // The dashboard calls this on the bridge approval screen.
+  rpc AdminBridgePreview (AdminBridgePreviewRequest) returns (AdminBridgePreviewResponse) {
+    option (google.api.http) = {
+      get: "/v1/admin/exchange/bridge-preview"
+    };
   }
 }

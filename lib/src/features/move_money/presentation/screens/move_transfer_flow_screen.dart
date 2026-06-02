@@ -12,6 +12,8 @@ import 'package:lazervault/src/features/ai_scan_to_pay/presentation/widgets/mono
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
 import 'package:lazervault/src/features/open_banking/domain/entities/linked_bank_account.dart';
+import 'package:lazervault/src/features/funds/cubit/transfer_prediction_cubit.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/transfer_prediction_alert.dart';
 import 'package:lazervault/src/features/transaction_pin/mixins/transaction_pin_mixin.dart';
 import 'package:lazervault/src/features/transaction_pin/services/transaction_pin_service.dart';
 import 'package:uuid/uuid.dart';
@@ -74,11 +76,35 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
   // Track which side triggered "Link New Account" so we can auto-select it
   bool? _pendingLinkIsSource;
 
+  // Informational, READ-ONLY transfer success prediction (non-blocking).
+  // Owned by this screen so we can drive it as the destination changes.
+  final TransferPredictionCubit _predictionCubit =
+      serviceLocator<TransferPredictionCubit>();
+  String? _lastPredictedDestKey;
+
   @override
   void initState() {
     super.initState();
     _loadAccounts();
     _amountController.addListener(_onAmountChanged);
+  }
+
+  /// Fetch the success prediction once the destination bank code + account
+  /// number are known. Best-effort and non-blocking; safe to call repeatedly.
+  void _maybeFetchPrediction() {
+    final dest = _destinationAccount;
+    if (dest == null || dest.bankCode.isEmpty || dest.accountNumber.isEmpty) {
+      _lastPredictedDestKey = null;
+      _predictionCubit.reset();
+      return;
+    }
+    final key = '${dest.bankCode}|${dest.accountNumber}';
+    if (key == _lastPredictedDestKey) return;
+    _lastPredictedDestKey = key;
+    _predictionCubit.fetch(
+      bankCode: dest.bankCode,
+      accountNumber: dest.accountNumber,
+    );
   }
 
   void _loadAccounts() {
@@ -98,6 +124,7 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
   void dispose() {
     _amountController.dispose();
     _narrationController.dispose();
+    _predictionCubit.close();
     // Stop any active polling when leaving the screen
     context.read<MoveMoneyCubit>().stopPolling();
     super.dispose();
@@ -547,6 +574,12 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
         _amountError == null &&
         !_isCalculatingFee;
 
+    // Kick off the (non-blocking) success prediction after this frame so we
+    // never emit a new cubit state mid-build. Guarded by destination key.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _maybeFetchPrediction();
+    });
+
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A0A),
       appBar: AppBar(
@@ -566,7 +599,9 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
         ),
         centerTitle: true,
       ),
-      body: MultiBlocListener(
+      body: BlocProvider<TransferPredictionCubit>.value(
+        value: _predictionCubit,
+        child: MultiBlocListener(
         listeners: [
           BlocListener<MoveMoneyCubit, MoveMoneyState>(
             listener: (context, state) {
@@ -856,6 +891,13 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
 
                         // Narration
                         _buildNarrationInput(),
+
+                        // Informational, READ-ONLY transfer success prediction
+                        // (bank network + recipient trust). Shown BEFORE the
+                        // PIN/Transfer action; never blocks or moves money.
+                        if (_destinationAccount != null)
+                          const TransferPredictionAlert(),
+
                         SizedBox(height: 80.h),
                       ],
                     ),
@@ -896,6 +938,7 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
             );
           },
         ),
+      ),
       ),
     );
   }

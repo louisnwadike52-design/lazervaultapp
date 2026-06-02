@@ -10,13 +10,7 @@ abstract class IDepositRepository {
     required String sourceBankName,
     String? countryCode,
     String? accessToken,
-  });
-
-  Future<Either<Failure, DepositDetails>> simulateTestDeposit({
-    required String destinationAccountId,
-    required double amount,
-    required String currency,
-    required String countryCode,
+    String? paymentMethod,
   });
 
   Future<Either<Failure, List<DepositMethodInfo>>> getDepositMethods({

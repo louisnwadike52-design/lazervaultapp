@@ -10,264 +10,264 @@ import 'dart:async' as $async;
 import 'dart:core' as $core;
 
 import 'package:grpc/service_api.dart' as $grpc;
-import 'tagged_invoice.pb.dart' as $37;
+import 'tagged_invoice.pb.dart' as $38;
 export 'tagged_invoice.pb.dart';
 
 class TaggedInvoiceServiceClient extends $grpc.Client {
   static final _$getTaggedInvoices = $grpc.ClientMethod<
-          $37.GetTaggedInvoicesRequest, $37.GetTaggedInvoicesResponse>(
+          $38.GetTaggedInvoicesRequest, $38.GetTaggedInvoicesResponse>(
       '/pb.TaggedInvoiceService/GetTaggedInvoices',
-      ($37.GetTaggedInvoicesRequest value) => value.writeToBuffer(),
+      ($38.GetTaggedInvoicesRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $37.GetTaggedInvoicesResponse.fromBuffer(value));
+          $38.GetTaggedInvoicesResponse.fromBuffer(value));
   static final _$getTaggedInvoicesByStatus = $grpc.ClientMethod<
-          $37.GetTaggedInvoicesByStatusRequest,
-          $37.GetTaggedInvoicesByStatusResponse>(
+          $38.GetTaggedInvoicesByStatusRequest,
+          $38.GetTaggedInvoicesByStatusResponse>(
       '/pb.TaggedInvoiceService/GetTaggedInvoicesByStatus',
-      ($37.GetTaggedInvoicesByStatusRequest value) => value.writeToBuffer(),
+      ($38.GetTaggedInvoicesByStatusRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $37.GetTaggedInvoicesByStatusResponse.fromBuffer(value));
+          $38.GetTaggedInvoicesByStatusResponse.fromBuffer(value));
   static final _$getTaggedInvoiceById = $grpc.ClientMethod<
-          $37.GetTaggedInvoiceByIdRequest, $37.GetTaggedInvoiceByIdResponse>(
+          $38.GetTaggedInvoiceByIdRequest, $38.GetTaggedInvoiceByIdResponse>(
       '/pb.TaggedInvoiceService/GetTaggedInvoiceById',
-      ($37.GetTaggedInvoiceByIdRequest value) => value.writeToBuffer(),
+      ($38.GetTaggedInvoiceByIdRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $37.GetTaggedInvoiceByIdResponse.fromBuffer(value));
+          $38.GetTaggedInvoiceByIdResponse.fromBuffer(value));
   static final _$getOverdueTaggedInvoices = $grpc.ClientMethod<
-          $37.GetOverdueTaggedInvoicesRequest,
-          $37.GetOverdueTaggedInvoicesResponse>(
+          $38.GetOverdueTaggedInvoicesRequest,
+          $38.GetOverdueTaggedInvoicesResponse>(
       '/pb.TaggedInvoiceService/GetOverdueTaggedInvoices',
-      ($37.GetOverdueTaggedInvoicesRequest value) => value.writeToBuffer(),
+      ($38.GetOverdueTaggedInvoicesRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $37.GetOverdueTaggedInvoicesResponse.fromBuffer(value));
+          $38.GetOverdueTaggedInvoicesResponse.fromBuffer(value));
   static final _$getUpcomingTaggedInvoices = $grpc.ClientMethod<
-          $37.GetUpcomingTaggedInvoicesRequest,
-          $37.GetUpcomingTaggedInvoicesResponse>(
+          $38.GetUpcomingTaggedInvoicesRequest,
+          $38.GetUpcomingTaggedInvoicesResponse>(
       '/pb.TaggedInvoiceService/GetUpcomingTaggedInvoices',
-      ($37.GetUpcomingTaggedInvoicesRequest value) => value.writeToBuffer(),
+      ($38.GetUpcomingTaggedInvoicesRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $37.GetUpcomingTaggedInvoicesResponse.fromBuffer(value));
+          $38.GetUpcomingTaggedInvoicesResponse.fromBuffer(value));
   static final _$searchTaggedInvoices = $grpc.ClientMethod<
-          $37.SearchTaggedInvoicesRequest, $37.SearchTaggedInvoicesResponse>(
+          $38.SearchTaggedInvoicesRequest, $38.SearchTaggedInvoicesResponse>(
       '/pb.TaggedInvoiceService/SearchTaggedInvoices',
-      ($37.SearchTaggedInvoicesRequest value) => value.writeToBuffer(),
+      ($38.SearchTaggedInvoicesRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $37.SearchTaggedInvoicesResponse.fromBuffer(value));
+          $38.SearchTaggedInvoicesResponse.fromBuffer(value));
   static final _$filterTaggedInvoicesByPriority = $grpc.ClientMethod<
-          $37.FilterTaggedInvoicesByPriorityRequest,
-          $37.FilterTaggedInvoicesByPriorityResponse>(
+          $38.FilterTaggedInvoicesByPriorityRequest,
+          $38.FilterTaggedInvoicesByPriorityResponse>(
       '/pb.TaggedInvoiceService/FilterTaggedInvoicesByPriority',
-      ($37.FilterTaggedInvoicesByPriorityRequest value) =>
+      ($38.FilterTaggedInvoicesByPriorityRequest value) =>
           value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $37.FilterTaggedInvoicesByPriorityResponse.fromBuffer(value));
+          $38.FilterTaggedInvoicesByPriorityResponse.fromBuffer(value));
   static final _$filterTaggedInvoicesByDateRange = $grpc.ClientMethod<
-          $37.FilterTaggedInvoicesByDateRangeRequest,
-          $37.FilterTaggedInvoicesByDateRangeResponse>(
+          $38.FilterTaggedInvoicesByDateRangeRequest,
+          $38.FilterTaggedInvoicesByDateRangeResponse>(
       '/pb.TaggedInvoiceService/FilterTaggedInvoicesByDateRange',
-      ($37.FilterTaggedInvoicesByDateRangeRequest value) =>
+      ($38.FilterTaggedInvoicesByDateRangeRequest value) =>
           value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $37.FilterTaggedInvoicesByDateRangeResponse.fromBuffer(value));
+          $38.FilterTaggedInvoicesByDateRangeResponse.fromBuffer(value));
   static final _$filterTaggedInvoicesByAmount = $grpc.ClientMethod<
-          $37.FilterTaggedInvoicesByAmountRequest,
-          $37.FilterTaggedInvoicesByAmountResponse>(
+          $38.FilterTaggedInvoicesByAmountRequest,
+          $38.FilterTaggedInvoicesByAmountResponse>(
       '/pb.TaggedInvoiceService/FilterTaggedInvoicesByAmount',
-      ($37.FilterTaggedInvoicesByAmountRequest value) => value.writeToBuffer(),
+      ($38.FilterTaggedInvoicesByAmountRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $37.FilterTaggedInvoicesByAmountResponse.fromBuffer(value));
+          $38.FilterTaggedInvoicesByAmountResponse.fromBuffer(value));
   static final _$markTaggedInvoiceAsViewed = $grpc.ClientMethod<
-          $37.MarkTaggedInvoiceAsViewedRequest,
-          $37.MarkTaggedInvoiceAsViewedResponse>(
+          $38.MarkTaggedInvoiceAsViewedRequest,
+          $38.MarkTaggedInvoiceAsViewedResponse>(
       '/pb.TaggedInvoiceService/MarkTaggedInvoiceAsViewed',
-      ($37.MarkTaggedInvoiceAsViewedRequest value) => value.writeToBuffer(),
+      ($38.MarkTaggedInvoiceAsViewedRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $37.MarkTaggedInvoiceAsViewedResponse.fromBuffer(value));
+          $38.MarkTaggedInvoiceAsViewedResponse.fromBuffer(value));
   static final _$setInvoicePaymentReminder = $grpc.ClientMethod<
-          $37.SetInvoicePaymentReminderRequest,
-          $37.SetInvoicePaymentReminderResponse>(
+          $38.SetInvoicePaymentReminderRequest,
+          $38.SetInvoicePaymentReminderResponse>(
       '/pb.TaggedInvoiceService/SetInvoicePaymentReminder',
-      ($37.SetInvoicePaymentReminderRequest value) => value.writeToBuffer(),
+      ($38.SetInvoicePaymentReminderRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $37.SetInvoicePaymentReminderResponse.fromBuffer(value));
+          $38.SetInvoicePaymentReminderResponse.fromBuffer(value));
   static final _$requestTaggedInvoiceDetails = $grpc.ClientMethod<
-          $37.RequestTaggedInvoiceDetailsRequest,
-          $37.RequestTaggedInvoiceDetailsResponse>(
+          $38.RequestTaggedInvoiceDetailsRequest,
+          $38.RequestTaggedInvoiceDetailsResponse>(
       '/pb.TaggedInvoiceService/RequestTaggedInvoiceDetails',
-      ($37.RequestTaggedInvoiceDetailsRequest value) => value.writeToBuffer(),
+      ($38.RequestTaggedInvoiceDetailsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $37.RequestTaggedInvoiceDetailsResponse.fromBuffer(value));
+          $38.RequestTaggedInvoiceDetailsResponse.fromBuffer(value));
   static final _$getInvoicePaymentNotifications = $grpc.ClientMethod<
-          $37.GetInvoicePaymentNotificationsRequest,
-          $37.GetInvoicePaymentNotificationsResponse>(
+          $38.GetInvoicePaymentNotificationsRequest,
+          $38.GetInvoicePaymentNotificationsResponse>(
       '/pb.TaggedInvoiceService/GetInvoicePaymentNotifications',
-      ($37.GetInvoicePaymentNotificationsRequest value) =>
+      ($38.GetInvoicePaymentNotificationsRequest value) =>
           value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $37.GetInvoicePaymentNotificationsResponse.fromBuffer(value));
+          $38.GetInvoicePaymentNotificationsResponse.fromBuffer(value));
   static final _$updateTaggedInvoiceStatus = $grpc.ClientMethod<
-          $37.UpdateTaggedInvoiceStatusRequest,
-          $37.UpdateTaggedInvoiceStatusResponse>(
+          $38.UpdateTaggedInvoiceStatusRequest,
+          $38.UpdateTaggedInvoiceStatusResponse>(
       '/pb.TaggedInvoiceService/UpdateTaggedInvoiceStatus',
-      ($37.UpdateTaggedInvoiceStatusRequest value) => value.writeToBuffer(),
+      ($38.UpdateTaggedInvoiceStatusRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $37.UpdateTaggedInvoiceStatusResponse.fromBuffer(value));
+          $38.UpdateTaggedInvoiceStatusResponse.fromBuffer(value));
   static final _$deleteTaggedInvoice = $grpc.ClientMethod<
-          $37.DeleteTaggedInvoiceRequest, $37.DeleteTaggedInvoiceResponse>(
+          $38.DeleteTaggedInvoiceRequest, $38.DeleteTaggedInvoiceResponse>(
       '/pb.TaggedInvoiceService/DeleteTaggedInvoice',
-      ($37.DeleteTaggedInvoiceRequest value) => value.writeToBuffer(),
+      ($38.DeleteTaggedInvoiceRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $37.DeleteTaggedInvoiceResponse.fromBuffer(value));
+          $38.DeleteTaggedInvoiceResponse.fromBuffer(value));
   static final _$markMultipleInvoicesAsViewed = $grpc.ClientMethod<
-          $37.MarkMultipleInvoicesAsViewedRequest,
-          $37.MarkMultipleInvoicesAsViewedResponse>(
+          $38.MarkMultipleInvoicesAsViewedRequest,
+          $38.MarkMultipleInvoicesAsViewedResponse>(
       '/pb.TaggedInvoiceService/MarkMultipleInvoicesAsViewed',
-      ($37.MarkMultipleInvoicesAsViewedRequest value) => value.writeToBuffer(),
+      ($38.MarkMultipleInvoicesAsViewedRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $37.MarkMultipleInvoicesAsViewedResponse.fromBuffer(value));
+          $38.MarkMultipleInvoicesAsViewedResponse.fromBuffer(value));
   static final _$bulkSetPaymentReminders = $grpc.ClientMethod<
-          $37.BulkSetPaymentRemindersRequest,
-          $37.BulkSetPaymentRemindersResponse>(
+          $38.BulkSetPaymentRemindersRequest,
+          $38.BulkSetPaymentRemindersResponse>(
       '/pb.TaggedInvoiceService/BulkSetPaymentReminders',
-      ($37.BulkSetPaymentRemindersRequest value) => value.writeToBuffer(),
+      ($38.BulkSetPaymentRemindersRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $37.BulkSetPaymentRemindersResponse.fromBuffer(value));
+          $38.BulkSetPaymentRemindersResponse.fromBuffer(value));
   static final _$getTaggedInvoiceStatistics = $grpc.ClientMethod<
-          $37.GetTaggedInvoiceStatisticsRequest,
-          $37.GetTaggedInvoiceStatisticsResponse>(
+          $38.GetTaggedInvoiceStatisticsRequest,
+          $38.GetTaggedInvoiceStatisticsResponse>(
       '/pb.TaggedInvoiceService/GetTaggedInvoiceStatistics',
-      ($37.GetTaggedInvoiceStatisticsRequest value) => value.writeToBuffer(),
+      ($38.GetTaggedInvoiceStatisticsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $37.GetTaggedInvoiceStatisticsResponse.fromBuffer(value));
+          $38.GetTaggedInvoiceStatisticsResponse.fromBuffer(value));
 
   TaggedInvoiceServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
       $core.Iterable<$grpc.ClientInterceptor>? interceptors})
       : super(channel, options: options, interceptors: interceptors);
 
-  $grpc.ResponseFuture<$37.GetTaggedInvoicesResponse> getTaggedInvoices(
-      $37.GetTaggedInvoicesRequest request,
+  $grpc.ResponseFuture<$38.GetTaggedInvoicesResponse> getTaggedInvoices(
+      $38.GetTaggedInvoicesRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getTaggedInvoices, request, options: options);
   }
 
-  $grpc.ResponseFuture<$37.GetTaggedInvoicesByStatusResponse>
-      getTaggedInvoicesByStatus($37.GetTaggedInvoicesByStatusRequest request,
+  $grpc.ResponseFuture<$38.GetTaggedInvoicesByStatusResponse>
+      getTaggedInvoicesByStatus($38.GetTaggedInvoicesByStatusRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getTaggedInvoicesByStatus, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$37.GetTaggedInvoiceByIdResponse> getTaggedInvoiceById(
-      $37.GetTaggedInvoiceByIdRequest request,
+  $grpc.ResponseFuture<$38.GetTaggedInvoiceByIdResponse> getTaggedInvoiceById(
+      $38.GetTaggedInvoiceByIdRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getTaggedInvoiceById, request, options: options);
   }
 
-  $grpc.ResponseFuture<$37.GetOverdueTaggedInvoicesResponse>
-      getOverdueTaggedInvoices($37.GetOverdueTaggedInvoicesRequest request,
+  $grpc.ResponseFuture<$38.GetOverdueTaggedInvoicesResponse>
+      getOverdueTaggedInvoices($38.GetOverdueTaggedInvoicesRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getOverdueTaggedInvoices, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$37.GetUpcomingTaggedInvoicesResponse>
-      getUpcomingTaggedInvoices($37.GetUpcomingTaggedInvoicesRequest request,
+  $grpc.ResponseFuture<$38.GetUpcomingTaggedInvoicesResponse>
+      getUpcomingTaggedInvoices($38.GetUpcomingTaggedInvoicesRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getUpcomingTaggedInvoices, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$37.SearchTaggedInvoicesResponse> searchTaggedInvoices(
-      $37.SearchTaggedInvoicesRequest request,
+  $grpc.ResponseFuture<$38.SearchTaggedInvoicesResponse> searchTaggedInvoices(
+      $38.SearchTaggedInvoicesRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$searchTaggedInvoices, request, options: options);
   }
 
-  $grpc.ResponseFuture<$37.FilterTaggedInvoicesByPriorityResponse>
+  $grpc.ResponseFuture<$38.FilterTaggedInvoicesByPriorityResponse>
       filterTaggedInvoicesByPriority(
-          $37.FilterTaggedInvoicesByPriorityRequest request,
+          $38.FilterTaggedInvoicesByPriorityRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$filterTaggedInvoicesByPriority, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$37.FilterTaggedInvoicesByDateRangeResponse>
+  $grpc.ResponseFuture<$38.FilterTaggedInvoicesByDateRangeResponse>
       filterTaggedInvoicesByDateRange(
-          $37.FilterTaggedInvoicesByDateRangeRequest request,
+          $38.FilterTaggedInvoicesByDateRangeRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$filterTaggedInvoicesByDateRange, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$37.FilterTaggedInvoicesByAmountResponse>
+  $grpc.ResponseFuture<$38.FilterTaggedInvoicesByAmountResponse>
       filterTaggedInvoicesByAmount(
-          $37.FilterTaggedInvoicesByAmountRequest request,
+          $38.FilterTaggedInvoicesByAmountRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$filterTaggedInvoicesByAmount, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$37.MarkTaggedInvoiceAsViewedResponse>
-      markTaggedInvoiceAsViewed($37.MarkTaggedInvoiceAsViewedRequest request,
+  $grpc.ResponseFuture<$38.MarkTaggedInvoiceAsViewedResponse>
+      markTaggedInvoiceAsViewed($38.MarkTaggedInvoiceAsViewedRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$markTaggedInvoiceAsViewed, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$37.SetInvoicePaymentReminderResponse>
-      setInvoicePaymentReminder($37.SetInvoicePaymentReminderRequest request,
+  $grpc.ResponseFuture<$38.SetInvoicePaymentReminderResponse>
+      setInvoicePaymentReminder($38.SetInvoicePaymentReminderRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$setInvoicePaymentReminder, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$37.RequestTaggedInvoiceDetailsResponse>
+  $grpc.ResponseFuture<$38.RequestTaggedInvoiceDetailsResponse>
       requestTaggedInvoiceDetails(
-          $37.RequestTaggedInvoiceDetailsRequest request,
+          $38.RequestTaggedInvoiceDetailsRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$requestTaggedInvoiceDetails, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$37.GetInvoicePaymentNotificationsResponse>
+  $grpc.ResponseFuture<$38.GetInvoicePaymentNotificationsResponse>
       getInvoicePaymentNotifications(
-          $37.GetInvoicePaymentNotificationsRequest request,
+          $38.GetInvoicePaymentNotificationsRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getInvoicePaymentNotifications, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$37.UpdateTaggedInvoiceStatusResponse>
-      updateTaggedInvoiceStatus($37.UpdateTaggedInvoiceStatusRequest request,
+  $grpc.ResponseFuture<$38.UpdateTaggedInvoiceStatusResponse>
+      updateTaggedInvoiceStatus($38.UpdateTaggedInvoiceStatusRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$updateTaggedInvoiceStatus, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$37.DeleteTaggedInvoiceResponse> deleteTaggedInvoice(
-      $37.DeleteTaggedInvoiceRequest request,
+  $grpc.ResponseFuture<$38.DeleteTaggedInvoiceResponse> deleteTaggedInvoice(
+      $38.DeleteTaggedInvoiceRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$deleteTaggedInvoice, request, options: options);
   }
 
-  $grpc.ResponseFuture<$37.MarkMultipleInvoicesAsViewedResponse>
+  $grpc.ResponseFuture<$38.MarkMultipleInvoicesAsViewedResponse>
       markMultipleInvoicesAsViewed(
-          $37.MarkMultipleInvoicesAsViewedRequest request,
+          $38.MarkMultipleInvoicesAsViewedRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$markMultipleInvoicesAsViewed, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$37.BulkSetPaymentRemindersResponse>
-      bulkSetPaymentReminders($37.BulkSetPaymentRemindersRequest request,
+  $grpc.ResponseFuture<$38.BulkSetPaymentRemindersResponse>
+      bulkSetPaymentReminders($38.BulkSetPaymentRemindersRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$bulkSetPaymentReminders, request,
         options: options);
   }
 
-  $grpc.ResponseFuture<$37.GetTaggedInvoiceStatisticsResponse>
-      getTaggedInvoiceStatistics($37.GetTaggedInvoiceStatisticsRequest request,
+  $grpc.ResponseFuture<$38.GetTaggedInvoiceStatisticsResponse>
+      getTaggedInvoiceStatistics($38.GetTaggedInvoiceStatisticsRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getTaggedInvoiceStatistics, request,
         options: options);
@@ -278,346 +278,346 @@ abstract class TaggedInvoiceServiceBase extends $grpc.Service {
   $core.String get $name => 'pb.TaggedInvoiceService';
 
   TaggedInvoiceServiceBase() {
-    $addMethod($grpc.ServiceMethod<$37.GetTaggedInvoicesRequest,
-            $37.GetTaggedInvoicesResponse>(
+    $addMethod($grpc.ServiceMethod<$38.GetTaggedInvoicesRequest,
+            $38.GetTaggedInvoicesResponse>(
         'GetTaggedInvoices',
         getTaggedInvoices_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $37.GetTaggedInvoicesRequest.fromBuffer(value),
-        ($37.GetTaggedInvoicesResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$37.GetTaggedInvoicesByStatusRequest,
-            $37.GetTaggedInvoicesByStatusResponse>(
+            $38.GetTaggedInvoicesRequest.fromBuffer(value),
+        ($38.GetTaggedInvoicesResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$38.GetTaggedInvoicesByStatusRequest,
+            $38.GetTaggedInvoicesByStatusResponse>(
         'GetTaggedInvoicesByStatus',
         getTaggedInvoicesByStatus_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $37.GetTaggedInvoicesByStatusRequest.fromBuffer(value),
-        ($37.GetTaggedInvoicesByStatusResponse value) =>
+            $38.GetTaggedInvoicesByStatusRequest.fromBuffer(value),
+        ($38.GetTaggedInvoicesByStatusResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$37.GetTaggedInvoiceByIdRequest,
-            $37.GetTaggedInvoiceByIdResponse>(
+    $addMethod($grpc.ServiceMethod<$38.GetTaggedInvoiceByIdRequest,
+            $38.GetTaggedInvoiceByIdResponse>(
         'GetTaggedInvoiceById',
         getTaggedInvoiceById_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $37.GetTaggedInvoiceByIdRequest.fromBuffer(value),
-        ($37.GetTaggedInvoiceByIdResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$37.GetOverdueTaggedInvoicesRequest,
-            $37.GetOverdueTaggedInvoicesResponse>(
+            $38.GetTaggedInvoiceByIdRequest.fromBuffer(value),
+        ($38.GetTaggedInvoiceByIdResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$38.GetOverdueTaggedInvoicesRequest,
+            $38.GetOverdueTaggedInvoicesResponse>(
         'GetOverdueTaggedInvoices',
         getOverdueTaggedInvoices_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $37.GetOverdueTaggedInvoicesRequest.fromBuffer(value),
-        ($37.GetOverdueTaggedInvoicesResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$37.GetUpcomingTaggedInvoicesRequest,
-            $37.GetUpcomingTaggedInvoicesResponse>(
+            $38.GetOverdueTaggedInvoicesRequest.fromBuffer(value),
+        ($38.GetOverdueTaggedInvoicesResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$38.GetUpcomingTaggedInvoicesRequest,
+            $38.GetUpcomingTaggedInvoicesResponse>(
         'GetUpcomingTaggedInvoices',
         getUpcomingTaggedInvoices_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $37.GetUpcomingTaggedInvoicesRequest.fromBuffer(value),
-        ($37.GetUpcomingTaggedInvoicesResponse value) =>
+            $38.GetUpcomingTaggedInvoicesRequest.fromBuffer(value),
+        ($38.GetUpcomingTaggedInvoicesResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$37.SearchTaggedInvoicesRequest,
-            $37.SearchTaggedInvoicesResponse>(
+    $addMethod($grpc.ServiceMethod<$38.SearchTaggedInvoicesRequest,
+            $38.SearchTaggedInvoicesResponse>(
         'SearchTaggedInvoices',
         searchTaggedInvoices_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $37.SearchTaggedInvoicesRequest.fromBuffer(value),
-        ($37.SearchTaggedInvoicesResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$37.FilterTaggedInvoicesByPriorityRequest,
-            $37.FilterTaggedInvoicesByPriorityResponse>(
+            $38.SearchTaggedInvoicesRequest.fromBuffer(value),
+        ($38.SearchTaggedInvoicesResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$38.FilterTaggedInvoicesByPriorityRequest,
+            $38.FilterTaggedInvoicesByPriorityResponse>(
         'FilterTaggedInvoicesByPriority',
         filterTaggedInvoicesByPriority_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $37.FilterTaggedInvoicesByPriorityRequest.fromBuffer(value),
-        ($37.FilterTaggedInvoicesByPriorityResponse value) =>
+            $38.FilterTaggedInvoicesByPriorityRequest.fromBuffer(value),
+        ($38.FilterTaggedInvoicesByPriorityResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$37.FilterTaggedInvoicesByDateRangeRequest,
-            $37.FilterTaggedInvoicesByDateRangeResponse>(
+    $addMethod($grpc.ServiceMethod<$38.FilterTaggedInvoicesByDateRangeRequest,
+            $38.FilterTaggedInvoicesByDateRangeResponse>(
         'FilterTaggedInvoicesByDateRange',
         filterTaggedInvoicesByDateRange_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $37.FilterTaggedInvoicesByDateRangeRequest.fromBuffer(value),
-        ($37.FilterTaggedInvoicesByDateRangeResponse value) =>
+            $38.FilterTaggedInvoicesByDateRangeRequest.fromBuffer(value),
+        ($38.FilterTaggedInvoicesByDateRangeResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$37.FilterTaggedInvoicesByAmountRequest,
-            $37.FilterTaggedInvoicesByAmountResponse>(
+    $addMethod($grpc.ServiceMethod<$38.FilterTaggedInvoicesByAmountRequest,
+            $38.FilterTaggedInvoicesByAmountResponse>(
         'FilterTaggedInvoicesByAmount',
         filterTaggedInvoicesByAmount_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $37.FilterTaggedInvoicesByAmountRequest.fromBuffer(value),
-        ($37.FilterTaggedInvoicesByAmountResponse value) =>
+            $38.FilterTaggedInvoicesByAmountRequest.fromBuffer(value),
+        ($38.FilterTaggedInvoicesByAmountResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$37.MarkTaggedInvoiceAsViewedRequest,
-            $37.MarkTaggedInvoiceAsViewedResponse>(
+    $addMethod($grpc.ServiceMethod<$38.MarkTaggedInvoiceAsViewedRequest,
+            $38.MarkTaggedInvoiceAsViewedResponse>(
         'MarkTaggedInvoiceAsViewed',
         markTaggedInvoiceAsViewed_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $37.MarkTaggedInvoiceAsViewedRequest.fromBuffer(value),
-        ($37.MarkTaggedInvoiceAsViewedResponse value) =>
+            $38.MarkTaggedInvoiceAsViewedRequest.fromBuffer(value),
+        ($38.MarkTaggedInvoiceAsViewedResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$37.SetInvoicePaymentReminderRequest,
-            $37.SetInvoicePaymentReminderResponse>(
+    $addMethod($grpc.ServiceMethod<$38.SetInvoicePaymentReminderRequest,
+            $38.SetInvoicePaymentReminderResponse>(
         'SetInvoicePaymentReminder',
         setInvoicePaymentReminder_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $37.SetInvoicePaymentReminderRequest.fromBuffer(value),
-        ($37.SetInvoicePaymentReminderResponse value) =>
+            $38.SetInvoicePaymentReminderRequest.fromBuffer(value),
+        ($38.SetInvoicePaymentReminderResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$37.RequestTaggedInvoiceDetailsRequest,
-            $37.RequestTaggedInvoiceDetailsResponse>(
+    $addMethod($grpc.ServiceMethod<$38.RequestTaggedInvoiceDetailsRequest,
+            $38.RequestTaggedInvoiceDetailsResponse>(
         'RequestTaggedInvoiceDetails',
         requestTaggedInvoiceDetails_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $37.RequestTaggedInvoiceDetailsRequest.fromBuffer(value),
-        ($37.RequestTaggedInvoiceDetailsResponse value) =>
+            $38.RequestTaggedInvoiceDetailsRequest.fromBuffer(value),
+        ($38.RequestTaggedInvoiceDetailsResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$37.GetInvoicePaymentNotificationsRequest,
-            $37.GetInvoicePaymentNotificationsResponse>(
+    $addMethod($grpc.ServiceMethod<$38.GetInvoicePaymentNotificationsRequest,
+            $38.GetInvoicePaymentNotificationsResponse>(
         'GetInvoicePaymentNotifications',
         getInvoicePaymentNotifications_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $37.GetInvoicePaymentNotificationsRequest.fromBuffer(value),
-        ($37.GetInvoicePaymentNotificationsResponse value) =>
+            $38.GetInvoicePaymentNotificationsRequest.fromBuffer(value),
+        ($38.GetInvoicePaymentNotificationsResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$37.UpdateTaggedInvoiceStatusRequest,
-            $37.UpdateTaggedInvoiceStatusResponse>(
+    $addMethod($grpc.ServiceMethod<$38.UpdateTaggedInvoiceStatusRequest,
+            $38.UpdateTaggedInvoiceStatusResponse>(
         'UpdateTaggedInvoiceStatus',
         updateTaggedInvoiceStatus_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $37.UpdateTaggedInvoiceStatusRequest.fromBuffer(value),
-        ($37.UpdateTaggedInvoiceStatusResponse value) =>
+            $38.UpdateTaggedInvoiceStatusRequest.fromBuffer(value),
+        ($38.UpdateTaggedInvoiceStatusResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$37.DeleteTaggedInvoiceRequest,
-            $37.DeleteTaggedInvoiceResponse>(
+    $addMethod($grpc.ServiceMethod<$38.DeleteTaggedInvoiceRequest,
+            $38.DeleteTaggedInvoiceResponse>(
         'DeleteTaggedInvoice',
         deleteTaggedInvoice_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $37.DeleteTaggedInvoiceRequest.fromBuffer(value),
-        ($37.DeleteTaggedInvoiceResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$37.MarkMultipleInvoicesAsViewedRequest,
-            $37.MarkMultipleInvoicesAsViewedResponse>(
+            $38.DeleteTaggedInvoiceRequest.fromBuffer(value),
+        ($38.DeleteTaggedInvoiceResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$38.MarkMultipleInvoicesAsViewedRequest,
+            $38.MarkMultipleInvoicesAsViewedResponse>(
         'MarkMultipleInvoicesAsViewed',
         markMultipleInvoicesAsViewed_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $37.MarkMultipleInvoicesAsViewedRequest.fromBuffer(value),
-        ($37.MarkMultipleInvoicesAsViewedResponse value) =>
+            $38.MarkMultipleInvoicesAsViewedRequest.fromBuffer(value),
+        ($38.MarkMultipleInvoicesAsViewedResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$37.BulkSetPaymentRemindersRequest,
-            $37.BulkSetPaymentRemindersResponse>(
+    $addMethod($grpc.ServiceMethod<$38.BulkSetPaymentRemindersRequest,
+            $38.BulkSetPaymentRemindersResponse>(
         'BulkSetPaymentReminders',
         bulkSetPaymentReminders_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $37.BulkSetPaymentRemindersRequest.fromBuffer(value),
-        ($37.BulkSetPaymentRemindersResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$37.GetTaggedInvoiceStatisticsRequest,
-            $37.GetTaggedInvoiceStatisticsResponse>(
+            $38.BulkSetPaymentRemindersRequest.fromBuffer(value),
+        ($38.BulkSetPaymentRemindersResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$38.GetTaggedInvoiceStatisticsRequest,
+            $38.GetTaggedInvoiceStatisticsResponse>(
         'GetTaggedInvoiceStatistics',
         getTaggedInvoiceStatistics_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $37.GetTaggedInvoiceStatisticsRequest.fromBuffer(value),
-        ($37.GetTaggedInvoiceStatisticsResponse value) =>
+            $38.GetTaggedInvoiceStatisticsRequest.fromBuffer(value),
+        ($38.GetTaggedInvoiceStatisticsResponse value) =>
             value.writeToBuffer()));
   }
 
-  $async.Future<$37.GetTaggedInvoicesResponse> getTaggedInvoices_Pre(
+  $async.Future<$38.GetTaggedInvoicesResponse> getTaggedInvoices_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$37.GetTaggedInvoicesRequest> request) async {
+      $async.Future<$38.GetTaggedInvoicesRequest> request) async {
     return getTaggedInvoices(call, await request);
   }
 
-  $async.Future<$37.GetTaggedInvoicesByStatusResponse>
+  $async.Future<$38.GetTaggedInvoicesByStatusResponse>
       getTaggedInvoicesByStatus_Pre($grpc.ServiceCall call,
-          $async.Future<$37.GetTaggedInvoicesByStatusRequest> request) async {
+          $async.Future<$38.GetTaggedInvoicesByStatusRequest> request) async {
     return getTaggedInvoicesByStatus(call, await request);
   }
 
-  $async.Future<$37.GetTaggedInvoiceByIdResponse> getTaggedInvoiceById_Pre(
+  $async.Future<$38.GetTaggedInvoiceByIdResponse> getTaggedInvoiceById_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$37.GetTaggedInvoiceByIdRequest> request) async {
+      $async.Future<$38.GetTaggedInvoiceByIdRequest> request) async {
     return getTaggedInvoiceById(call, await request);
   }
 
-  $async.Future<$37.GetOverdueTaggedInvoicesResponse>
+  $async.Future<$38.GetOverdueTaggedInvoicesResponse>
       getOverdueTaggedInvoices_Pre($grpc.ServiceCall call,
-          $async.Future<$37.GetOverdueTaggedInvoicesRequest> request) async {
+          $async.Future<$38.GetOverdueTaggedInvoicesRequest> request) async {
     return getOverdueTaggedInvoices(call, await request);
   }
 
-  $async.Future<$37.GetUpcomingTaggedInvoicesResponse>
+  $async.Future<$38.GetUpcomingTaggedInvoicesResponse>
       getUpcomingTaggedInvoices_Pre($grpc.ServiceCall call,
-          $async.Future<$37.GetUpcomingTaggedInvoicesRequest> request) async {
+          $async.Future<$38.GetUpcomingTaggedInvoicesRequest> request) async {
     return getUpcomingTaggedInvoices(call, await request);
   }
 
-  $async.Future<$37.SearchTaggedInvoicesResponse> searchTaggedInvoices_Pre(
+  $async.Future<$38.SearchTaggedInvoicesResponse> searchTaggedInvoices_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$37.SearchTaggedInvoicesRequest> request) async {
+      $async.Future<$38.SearchTaggedInvoicesRequest> request) async {
     return searchTaggedInvoices(call, await request);
   }
 
-  $async.Future<$37.FilterTaggedInvoicesByPriorityResponse>
+  $async.Future<$38.FilterTaggedInvoicesByPriorityResponse>
       filterTaggedInvoicesByPriority_Pre(
           $grpc.ServiceCall call,
-          $async.Future<$37.FilterTaggedInvoicesByPriorityRequest>
+          $async.Future<$38.FilterTaggedInvoicesByPriorityRequest>
               request) async {
     return filterTaggedInvoicesByPriority(call, await request);
   }
 
-  $async.Future<$37.FilterTaggedInvoicesByDateRangeResponse>
+  $async.Future<$38.FilterTaggedInvoicesByDateRangeResponse>
       filterTaggedInvoicesByDateRange_Pre(
           $grpc.ServiceCall call,
-          $async.Future<$37.FilterTaggedInvoicesByDateRangeRequest>
+          $async.Future<$38.FilterTaggedInvoicesByDateRangeRequest>
               request) async {
     return filterTaggedInvoicesByDateRange(call, await request);
   }
 
-  $async.Future<$37.FilterTaggedInvoicesByAmountResponse>
+  $async.Future<$38.FilterTaggedInvoicesByAmountResponse>
       filterTaggedInvoicesByAmount_Pre(
           $grpc.ServiceCall call,
-          $async.Future<$37.FilterTaggedInvoicesByAmountRequest>
+          $async.Future<$38.FilterTaggedInvoicesByAmountRequest>
               request) async {
     return filterTaggedInvoicesByAmount(call, await request);
   }
 
-  $async.Future<$37.MarkTaggedInvoiceAsViewedResponse>
+  $async.Future<$38.MarkTaggedInvoiceAsViewedResponse>
       markTaggedInvoiceAsViewed_Pre($grpc.ServiceCall call,
-          $async.Future<$37.MarkTaggedInvoiceAsViewedRequest> request) async {
+          $async.Future<$38.MarkTaggedInvoiceAsViewedRequest> request) async {
     return markTaggedInvoiceAsViewed(call, await request);
   }
 
-  $async.Future<$37.SetInvoicePaymentReminderResponse>
+  $async.Future<$38.SetInvoicePaymentReminderResponse>
       setInvoicePaymentReminder_Pre($grpc.ServiceCall call,
-          $async.Future<$37.SetInvoicePaymentReminderRequest> request) async {
+          $async.Future<$38.SetInvoicePaymentReminderRequest> request) async {
     return setInvoicePaymentReminder(call, await request);
   }
 
-  $async.Future<$37.RequestTaggedInvoiceDetailsResponse>
+  $async.Future<$38.RequestTaggedInvoiceDetailsResponse>
       requestTaggedInvoiceDetails_Pre($grpc.ServiceCall call,
-          $async.Future<$37.RequestTaggedInvoiceDetailsRequest> request) async {
+          $async.Future<$38.RequestTaggedInvoiceDetailsRequest> request) async {
     return requestTaggedInvoiceDetails(call, await request);
   }
 
-  $async.Future<$37.GetInvoicePaymentNotificationsResponse>
+  $async.Future<$38.GetInvoicePaymentNotificationsResponse>
       getInvoicePaymentNotifications_Pre(
           $grpc.ServiceCall call,
-          $async.Future<$37.GetInvoicePaymentNotificationsRequest>
+          $async.Future<$38.GetInvoicePaymentNotificationsRequest>
               request) async {
     return getInvoicePaymentNotifications(call, await request);
   }
 
-  $async.Future<$37.UpdateTaggedInvoiceStatusResponse>
+  $async.Future<$38.UpdateTaggedInvoiceStatusResponse>
       updateTaggedInvoiceStatus_Pre($grpc.ServiceCall call,
-          $async.Future<$37.UpdateTaggedInvoiceStatusRequest> request) async {
+          $async.Future<$38.UpdateTaggedInvoiceStatusRequest> request) async {
     return updateTaggedInvoiceStatus(call, await request);
   }
 
-  $async.Future<$37.DeleteTaggedInvoiceResponse> deleteTaggedInvoice_Pre(
+  $async.Future<$38.DeleteTaggedInvoiceResponse> deleteTaggedInvoice_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$37.DeleteTaggedInvoiceRequest> request) async {
+      $async.Future<$38.DeleteTaggedInvoiceRequest> request) async {
     return deleteTaggedInvoice(call, await request);
   }
 
-  $async.Future<$37.MarkMultipleInvoicesAsViewedResponse>
+  $async.Future<$38.MarkMultipleInvoicesAsViewedResponse>
       markMultipleInvoicesAsViewed_Pre(
           $grpc.ServiceCall call,
-          $async.Future<$37.MarkMultipleInvoicesAsViewedRequest>
+          $async.Future<$38.MarkMultipleInvoicesAsViewedRequest>
               request) async {
     return markMultipleInvoicesAsViewed(call, await request);
   }
 
-  $async.Future<$37.BulkSetPaymentRemindersResponse>
+  $async.Future<$38.BulkSetPaymentRemindersResponse>
       bulkSetPaymentReminders_Pre($grpc.ServiceCall call,
-          $async.Future<$37.BulkSetPaymentRemindersRequest> request) async {
+          $async.Future<$38.BulkSetPaymentRemindersRequest> request) async {
     return bulkSetPaymentReminders(call, await request);
   }
 
-  $async.Future<$37.GetTaggedInvoiceStatisticsResponse>
+  $async.Future<$38.GetTaggedInvoiceStatisticsResponse>
       getTaggedInvoiceStatistics_Pre($grpc.ServiceCall call,
-          $async.Future<$37.GetTaggedInvoiceStatisticsRequest> request) async {
+          $async.Future<$38.GetTaggedInvoiceStatisticsRequest> request) async {
     return getTaggedInvoiceStatistics(call, await request);
   }
 
-  $async.Future<$37.GetTaggedInvoicesResponse> getTaggedInvoices(
-      $grpc.ServiceCall call, $37.GetTaggedInvoicesRequest request);
-  $async.Future<$37.GetTaggedInvoicesByStatusResponse>
+  $async.Future<$38.GetTaggedInvoicesResponse> getTaggedInvoices(
+      $grpc.ServiceCall call, $38.GetTaggedInvoicesRequest request);
+  $async.Future<$38.GetTaggedInvoicesByStatusResponse>
       getTaggedInvoicesByStatus(
-          $grpc.ServiceCall call, $37.GetTaggedInvoicesByStatusRequest request);
-  $async.Future<$37.GetTaggedInvoiceByIdResponse> getTaggedInvoiceById(
-      $grpc.ServiceCall call, $37.GetTaggedInvoiceByIdRequest request);
-  $async.Future<$37.GetOverdueTaggedInvoicesResponse> getOverdueTaggedInvoices(
-      $grpc.ServiceCall call, $37.GetOverdueTaggedInvoicesRequest request);
-  $async.Future<$37.GetUpcomingTaggedInvoicesResponse>
+          $grpc.ServiceCall call, $38.GetTaggedInvoicesByStatusRequest request);
+  $async.Future<$38.GetTaggedInvoiceByIdResponse> getTaggedInvoiceById(
+      $grpc.ServiceCall call, $38.GetTaggedInvoiceByIdRequest request);
+  $async.Future<$38.GetOverdueTaggedInvoicesResponse> getOverdueTaggedInvoices(
+      $grpc.ServiceCall call, $38.GetOverdueTaggedInvoicesRequest request);
+  $async.Future<$38.GetUpcomingTaggedInvoicesResponse>
       getUpcomingTaggedInvoices(
-          $grpc.ServiceCall call, $37.GetUpcomingTaggedInvoicesRequest request);
-  $async.Future<$37.SearchTaggedInvoicesResponse> searchTaggedInvoices(
-      $grpc.ServiceCall call, $37.SearchTaggedInvoicesRequest request);
-  $async.Future<$37.FilterTaggedInvoicesByPriorityResponse>
+          $grpc.ServiceCall call, $38.GetUpcomingTaggedInvoicesRequest request);
+  $async.Future<$38.SearchTaggedInvoicesResponse> searchTaggedInvoices(
+      $grpc.ServiceCall call, $38.SearchTaggedInvoicesRequest request);
+  $async.Future<$38.FilterTaggedInvoicesByPriorityResponse>
       filterTaggedInvoicesByPriority($grpc.ServiceCall call,
-          $37.FilterTaggedInvoicesByPriorityRequest request);
-  $async.Future<$37.FilterTaggedInvoicesByDateRangeResponse>
+          $38.FilterTaggedInvoicesByPriorityRequest request);
+  $async.Future<$38.FilterTaggedInvoicesByDateRangeResponse>
       filterTaggedInvoicesByDateRange($grpc.ServiceCall call,
-          $37.FilterTaggedInvoicesByDateRangeRequest request);
-  $async.Future<$37.FilterTaggedInvoicesByAmountResponse>
+          $38.FilterTaggedInvoicesByDateRangeRequest request);
+  $async.Future<$38.FilterTaggedInvoicesByAmountResponse>
       filterTaggedInvoicesByAmount($grpc.ServiceCall call,
-          $37.FilterTaggedInvoicesByAmountRequest request);
-  $async.Future<$37.MarkTaggedInvoiceAsViewedResponse>
+          $38.FilterTaggedInvoicesByAmountRequest request);
+  $async.Future<$38.MarkTaggedInvoiceAsViewedResponse>
       markTaggedInvoiceAsViewed(
-          $grpc.ServiceCall call, $37.MarkTaggedInvoiceAsViewedRequest request);
-  $async.Future<$37.SetInvoicePaymentReminderResponse>
+          $grpc.ServiceCall call, $38.MarkTaggedInvoiceAsViewedRequest request);
+  $async.Future<$38.SetInvoicePaymentReminderResponse>
       setInvoicePaymentReminder(
-          $grpc.ServiceCall call, $37.SetInvoicePaymentReminderRequest request);
-  $async.Future<$37.RequestTaggedInvoiceDetailsResponse>
+          $grpc.ServiceCall call, $38.SetInvoicePaymentReminderRequest request);
+  $async.Future<$38.RequestTaggedInvoiceDetailsResponse>
       requestTaggedInvoiceDetails($grpc.ServiceCall call,
-          $37.RequestTaggedInvoiceDetailsRequest request);
-  $async.Future<$37.GetInvoicePaymentNotificationsResponse>
+          $38.RequestTaggedInvoiceDetailsRequest request);
+  $async.Future<$38.GetInvoicePaymentNotificationsResponse>
       getInvoicePaymentNotifications($grpc.ServiceCall call,
-          $37.GetInvoicePaymentNotificationsRequest request);
-  $async.Future<$37.UpdateTaggedInvoiceStatusResponse>
+          $38.GetInvoicePaymentNotificationsRequest request);
+  $async.Future<$38.UpdateTaggedInvoiceStatusResponse>
       updateTaggedInvoiceStatus(
-          $grpc.ServiceCall call, $37.UpdateTaggedInvoiceStatusRequest request);
-  $async.Future<$37.DeleteTaggedInvoiceResponse> deleteTaggedInvoice(
-      $grpc.ServiceCall call, $37.DeleteTaggedInvoiceRequest request);
-  $async.Future<$37.MarkMultipleInvoicesAsViewedResponse>
+          $grpc.ServiceCall call, $38.UpdateTaggedInvoiceStatusRequest request);
+  $async.Future<$38.DeleteTaggedInvoiceResponse> deleteTaggedInvoice(
+      $grpc.ServiceCall call, $38.DeleteTaggedInvoiceRequest request);
+  $async.Future<$38.MarkMultipleInvoicesAsViewedResponse>
       markMultipleInvoicesAsViewed($grpc.ServiceCall call,
-          $37.MarkMultipleInvoicesAsViewedRequest request);
-  $async.Future<$37.BulkSetPaymentRemindersResponse> bulkSetPaymentReminders(
-      $grpc.ServiceCall call, $37.BulkSetPaymentRemindersRequest request);
-  $async.Future<$37.GetTaggedInvoiceStatisticsResponse>
+          $38.MarkMultipleInvoicesAsViewedRequest request);
+  $async.Future<$38.BulkSetPaymentRemindersResponse> bulkSetPaymentReminders(
+      $grpc.ServiceCall call, $38.BulkSetPaymentRemindersRequest request);
+  $async.Future<$38.GetTaggedInvoiceStatisticsResponse>
       getTaggedInvoiceStatistics($grpc.ServiceCall call,
-          $37.GetTaggedInvoiceStatisticsRequest request);
+          $38.GetTaggedInvoiceStatisticsRequest request);
 }

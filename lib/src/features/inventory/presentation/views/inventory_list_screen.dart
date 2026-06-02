@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/core/utils/debouncer.dart';
 import 'package:lazervault/src/features/inventory/domain/entities/inventory_item_entity.dart';
+import 'package:lazervault/src/features/microservice_chat/presentation/widgets/microservice_chat_icon.dart';
+import 'package:lazervault/src/features/widgets/service_voice_button.dart';
 import '../cubit/inventory_cubit.dart';
 import '../cubit/inventory_state.dart';
 
@@ -83,6 +85,26 @@ class _InventoryListScreenState extends State<InventoryListScreen> {
           ),
         ),
         centerTitle: true,
+        actions: [
+          // Per-service voice + chat icons — pin every voice/chat
+          // session opened from this screen to the inventory flow
+          // on chat-business-service (DIRECT_ROUTES['inventory']
+          // → SERVICE_AGENTS['inventory']). Same pattern as
+          // crowdfund, autosave, lock-funds, tax, customers.
+          ServiceVoiceButton(
+            serviceName: 'inventory',
+            iconColor: const Color(0xFF3B82F6),
+            backgroundColor: const Color(0xFF3B82F6),
+          ),
+          SizedBox(width: 8.w),
+          MicroserviceChatIcon(
+            serviceName: 'Inventory',
+            sourceContext: 'inventory',
+            icon: Icons.chat_bubble_outline,
+            iconColor: const Color(0xFF3B82F6),
+          ),
+          SizedBox(width: 12.w),
+        ],
       ),
       body: SafeArea(
         child: Column(
