@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/core/config/mono_config.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
@@ -850,27 +851,24 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
   }
 
   /// Navigate back to dashboard after successful deposit
+  // Guards against the redirect firing more than once (the success stage
+  // can be observed by both the poll listener and the sheet's timer).
+  bool _dashboardRedirectDone = false;
+
   void _navigateToDashboard() {
+    if (_dashboardRedirectDone) return;
+    _dashboardRedirectDone = true;
+
     // Clear form
     _amountController.clear();
-    setState(() {
-      _selectedBank = '';
-      _wasSelectedFromBottomSheet = false;
-      _linkedAccountId = null;
-    });
 
-    // Pop back to the app root (the dashboard shell with the bottom nav).
-    // A bare Navigator.pop() only goes one level back — which is wherever
-    // the deposit screen was pushed from (a card-detail screen, etc.), NOT
-    // the dashboard. Get.until(isFirst) reliably returns to the root.
-    if (!mounted) return;
-    try {
-      Get.until((route) => route.isFirst);
-    } catch (_) {
-      if (Navigator.canPop(context)) {
-        Navigator.of(context).pop();
-      }
-    }
+    // Go straight to the dashboard, clearing the whole navigation stack.
+    // Get.offAllNamed removes every route (including any still-open modal
+    // bottom sheet) and pushes DashboardScreen fresh — so it loads the
+    // updated balance. The previous Get.until((route) => route.isFirst)
+    // landed on the INITIAL route (authCheck), not the dashboard, which is
+    // why the redirect appeared to do nothing.
+    Get.offAllNamed(AppRoutes.dashboard);
   }
 
   /// Handle DirectPay authorization in-app using WebView
@@ -1048,10 +1046,17 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         // Deposit completed - refresh balances
         _refreshAccountBalances(context);
 
-        // Update progress to success
+        // Update progress to success (shows the green check briefly)
         _progressController.updateStage(DirectPayStage.success);
 
-        // Navigation will be handled by the progress sheet's onSuccess callback
+        // Drive the redirect OURSELVES rather than relying on the progress
+        // sheet's internal 2s onSuccess timer — that timer is gated on the
+        // sheet widget still being mounted, which isn't guaranteed by the
+        // time settlement lands. Short delay lets the user see the success
+        // check, then go to the dashboard with the fresh balance.
+        Future.delayed(const Duration(milliseconds: 1200), () {
+          if (mounted) _navigateToDashboard();
+        });
       } else if (deposit.status == DepositStatus.failed) {
         _progressController.updateStage(
           DirectPayStage.failed,
