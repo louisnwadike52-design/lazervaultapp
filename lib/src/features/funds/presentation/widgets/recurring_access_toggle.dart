@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-/// Persistent Access Toggle - Lets user choose between one-time and persistent bank access
-/// One-time: Uses Mono DirectPay (user authorizes each transaction)
-/// Persistent: Uses Mono Mandate (user authorizes once, the authorisation persists for future debits)
+/// Auto-mandate Toggle - lets the user opt into an auto-mandate when linking a bank.
+/// Off (one-time): Uses Mono DirectPay (user authorises each deposit at their bank).
+/// On (auto-mandate): Creates a Mono mandate so future deposits are seamless (DebitMandate,
+/// no per-deposit approval). The account is still linked either way; the mandate is what
+/// makes it "Persistent" for instant future deposits.
 class RecurringAccessToggle extends StatelessWidget {
   final bool isRecurringEnabled;
   final ValueChanged<bool> onToggle;
@@ -55,7 +57,7 @@ class RecurringAccessToggle extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Keep this account linked',
+                            'Set up auto-mandate',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 14.sp,
@@ -65,8 +67,8 @@ class RecurringAccessToggle extends StatelessWidget {
                           SizedBox(height: 2.h),
                           Text(
                             isRecurringEnabled
-                                ? 'The authorisation persists so you won\'t approve again'
-                                : 'You will approve each deposit individually',
+                                ? 'Future deposits are instant. No bank approval each time'
+                                : 'You will approve each deposit at your bank',
                             style: TextStyle(
                               color: Colors.white.withValues(alpha: 0.5),
                               fontSize: 11.sp,

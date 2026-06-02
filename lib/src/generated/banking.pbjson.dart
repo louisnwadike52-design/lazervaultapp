@@ -1607,11 +1607,12 @@ const InitiateWithdrawalRequest$json = const {
     const {'1': 'amount', '3': 6, '4': 1, '5': 3, '10': 'amount'},
     const {'1': 'narration', '3': 7, '4': 1, '5': 9, '10': 'narration'},
     const {'1': 'idempotency_key', '3': 8, '4': 1, '5': 9, '10': 'idempotencyKey'},
+    const {'1': 'linked_account_id', '3': 9, '4': 1, '5': 9, '10': 'linkedAccountId'},
   ],
 };
 
 /// Descriptor for `InitiateWithdrawalRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List initiateWithdrawalRequestDescriptor = $convert.base64Decode('ChlJbml0aWF0ZVdpdGhkcmF3YWxSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZBIqChFzb3VyY2VfYWNjb3VudF9pZBgCIAEoCVIPc291cmNlQWNjb3VudElkEhsKCWJhbmtfY29kZRgDIAEoCVIIYmFua0NvZGUSJQoOYWNjb3VudF9udW1iZXIYBCABKAlSDWFjY291bnROdW1iZXISIQoMYWNjb3VudF9uYW1lGAUgASgJUgthY2NvdW50TmFtZRIWCgZhbW91bnQYBiABKANSBmFtb3VudBIcCgluYXJyYXRpb24YByABKAlSCW5hcnJhdGlvbhInCg9pZGVtcG90ZW5jeV9rZXkYCCABKAlSDmlkZW1wb3RlbmN5S2V5');
+final $typed_data.Uint8List initiateWithdrawalRequestDescriptor = $convert.base64Decode('ChlJbml0aWF0ZVdpdGhkcmF3YWxSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZBIqChFzb3VyY2VfYWNjb3VudF9pZBgCIAEoCVIPc291cmNlQWNjb3VudElkEhsKCWJhbmtfY29kZRgDIAEoCVIIYmFua0NvZGUSJQoOYWNjb3VudF9udW1iZXIYBCABKAlSDWFjY291bnROdW1iZXISIQoMYWNjb3VudF9uYW1lGAUgASgJUgthY2NvdW50TmFtZRIWCgZhbW91bnQYBiABKANSBmFtb3VudBIcCgluYXJyYXRpb24YByABKAlSCW5hcnJhdGlvbhInCg9pZGVtcG90ZW5jeV9rZXkYCCABKAlSDmlkZW1wb3RlbmN5S2V5EioKEWxpbmtlZF9hY2NvdW50X2lkGAkgASgJUg9saW5rZWRBY2NvdW50SWQ=');
 @$core.Deprecated('Use withdrawalResponseDescriptor instead')
 const WithdrawalResponse$json = const {
   '1': 'WithdrawalResponse',

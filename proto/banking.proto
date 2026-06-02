@@ -1533,6 +1533,7 @@ message InitiateWithdrawalRequest {
     int64 amount = 6;                 // Amount in minor units (kobo)
     string narration = 7;
     string idempotency_key = 8;
+    string linked_account_id = 9;     // Optional: withdraw to a linked bank account (server resolves bank/account)
 }
 
 message WithdrawalResponse {
