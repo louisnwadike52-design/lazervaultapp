@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-/// Recurring Access Toggle - Lets user choose between one-time and recurring bank access
+/// Persistent Access Toggle - Lets user choose between one-time and persistent bank access
 /// One-time: Uses Mono DirectPay (user authorizes each transaction)
-/// Recurring: Uses Mono Mandate (user authorizes once for future debits)
+/// Persistent: Uses Mono Mandate (user authorizes once, the authorisation persists for future debits)
 class RecurringAccessToggle extends StatelessWidget {
   final bool isRecurringEnabled;
   final ValueChanged<bool> onToggle;
@@ -44,7 +44,7 @@ class RecurringAccessToggle extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8.r),
                       ),
                       child: Icon(
-                        isRecurringEnabled ? Icons.repeat : Icons.looks_one,
+                        isRecurringEnabled ? Icons.link : Icons.looks_one,
                         color: const Color.fromARGB(255, 78, 3, 208),
                         size: 18.sp,
                       ),
@@ -55,7 +55,7 @@ class RecurringAccessToggle extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Allow recurring access',
+                            'Keep this account linked',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 14.sp,
@@ -65,8 +65,8 @@ class RecurringAccessToggle extends StatelessWidget {
                           SizedBox(height: 2.h),
                           Text(
                             isRecurringEnabled
-                                ? 'Authorize once for faster future deposits'
-                                : 'Authorize each deposit individually',
+                                ? 'The authorisation persists so you won\'t approve again'
+                                : 'You will approve each deposit individually',
                             style: TextStyle(
                               color: Colors.white.withValues(alpha: 0.5),
                               fontSize: 11.sp,

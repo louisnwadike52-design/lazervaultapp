@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
@@ -93,6 +94,33 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
   // DirectPay progress controller for animated bottomsheet
   final DirectPayProgressController _progressController = DirectPayProgressController();
   bool _isProgressSheetShown = false;
+
+  // Watchdog: if linking/initiating stalls (e.g. a provider call hangs), flip the
+  // progress sheet to a retryable failure instead of spinning on "Linking Account"
+  // forever. Cancelled as soon as the flow advances to authorizing/processing.
+  Timer? _linkWatchdog;
+
+  void _startLinkWatchdog() {
+    _linkWatchdog?.cancel();
+    _linkWatchdog = Timer(const Duration(seconds: 30), () {
+      if (!mounted || !_isProgressSheetShown) return;
+      final stage = _progressController.stage;
+      if (stage == DirectPayStage.linking || stage == DirectPayStage.initiating) {
+        _progressController.updateStage(
+          DirectPayStage.failed,
+          errorTitle: 'Taking too long',
+          errorMessage:
+              "We couldn't finish linking your bank in time. Please check your connection and try again.",
+          retryable: true,
+        );
+      }
+    });
+  }
+
+  void _cancelLinkWatchdog() {
+    _linkWatchdog?.cancel();
+    _linkWatchdog = null;
+  }
 
   // The user's previously-linked bank accounts (shown in the "Deposit again"
   // carousel). A linked account may or may not have an active recurring
@@ -718,13 +746,13 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
   /// LINK ACCOUNT (Mono direct debit) — recurring toggle + Link & Deposit.
 
   /// SAVED BANKS CAROUSEL — a horizontally-swipeable strip of the user's
-  /// previously-linked bank accounts. Each shows a "Recurring" badge when it
+  /// previously-linked bank accounts. Each shows a "Persistent" badge when it
   /// has an active mandate (reusable with no re-auth via Mono DebitMandate).
   /// Tapping opens a deposit-amount sheet; the overflow menu offers manage +
   /// unlink. "View all" lists them all in a modal.
   Widget _buildSavedBanksCarousel(BuildContext context) {
     if (_linkedAccounts.isEmpty) return const SizedBox.shrink();
-    // Rebuild on mandate-cache changes so the Recurring badge stays accurate.
+    // Rebuild on mandate-cache changes so the Persistent badge stays accurate.
     return BlocBuilder<MandateCubit, MandateState>(
       builder: (context, _) {
         final accounts = _linkedAccounts;
@@ -780,7 +808,6 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
   }
 
   Widget _buildLinkedAccountCard(BuildContext context, LinkedBankAccount account) {
-    final accent = const Color.fromARGB(255, 78, 3, 208);
     final mandate = _mandateForAccount(account);
     final recurring = mandate != null;
     return InkWell(
@@ -799,14 +826,10 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
           children: [
             Row(
               children: [
-                Container(
-                  width: 36.w,
-                  height: 36.w,
-                  decoration: BoxDecoration(color: accent.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(9.r)),
-                  child: Icon(Icons.account_balance, color: Colors.white, size: 18.sp),
-                ),
+                _bankLogoAvatar(account.bankName, size: 36),
                 const Spacer(),
-                if (recurring) _recurringBadge(),
+                _accessChip(persistent: recurring),
+                SizedBox(width: 4.w),
                 InkWell(
                   borderRadius: BorderRadius.circular(20.r),
                   onTap: () => _showAccountActions(context, account),
@@ -847,26 +870,6 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     );
   }
 
-  Widget _recurringBadge() {
-    return Container(
-      margin: EdgeInsets.only(right: 4.w),
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
-      decoration: BoxDecoration(
-        color: const Color(0xFF10B981).withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(6.r),
-        border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.autorenew, color: const Color(0xFF10B981), size: 11.sp),
-          SizedBox(width: 3.w),
-          Text('Recurring',
-              style: TextStyle(color: const Color(0xFF10B981), fontSize: 10.sp, fontWeight: FontWeight.w700)),
-        ],
-      ),
-    );
-  }
 
   /// Deposit-amount sheet for a linked account. Reuses the mandate when one is
   /// active (DebitMandate, no re-auth); otherwise a one-time DirectPay deposit.
@@ -1018,8 +1021,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
               ),
               if (mandate != null)
                 ListTile(
-                  leading: Icon(Icons.autorenew, color: const Color(0xFF10B981)),
-                  title: Text('Manage recurring', style: TextStyle(color: Colors.white, fontSize: 15.sp)),
+                  leading: Icon(Icons.link, color: const Color(0xFF10B981)),
+                  title: Text('Manage persistent access', style: TextStyle(color: Colors.white, fontSize: 15.sp)),
                   subtitle: Text('Pause, reinstate or cancel', style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12.sp)),
                   onTap: () {
                     Navigator.of(sheetCtx).pop();
@@ -1051,7 +1054,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         backgroundColor: const Color(0xFF1F1F1F),
         title: Text('Unlink ${account.bankName}?', style: const TextStyle(color: Colors.white)),
         content: Text(
-          'You will need to re-link this bank to deposit from it again. Any recurring authorization will be cancelled.',
+          'You will need to re-link this bank to deposit from it again. Any persistent authorisation will be cancelled.',
           style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
         ),
         actions: [
@@ -1085,8 +1088,9 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       builder: (sheetCtx) => Container(
         constraints: BoxConstraints(maxHeight: MediaQuery.of(sheetCtx).size.height * 0.8),
         decoration: BoxDecoration(
-          color: const Color(0xFF1A1A1A),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+          // Lighter, airier surface than the old near-black sheet.
+          color: const Color(0xFF26262E),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
         ),
         child: SafeArea(
           top: false,
@@ -1097,20 +1101,27 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
               SizedBox(height: 12.h),
               Center(
                 child: Container(
-                  width: 40.w,
+                  width: 44.w,
                   height: 4.h,
-                  decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.3), borderRadius: BorderRadius.circular(2.r)),
+                  decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.25), borderRadius: BorderRadius.circular(2.r)),
                 ),
               ),
               Padding(
-                padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 8.h),
+                padding: EdgeInsets.fromLTRB(22.w, 18.h, 22.w, 2.h),
                 child: Text('Your linked banks',
-                    style: TextStyle(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w700)),
+                    style: TextStyle(color: Colors.white, fontSize: 19.sp, fontWeight: FontWeight.w700)),
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(22.w, 0, 22.w, 10.h),
+                child: Text(
+                  '${_linkedAccounts.length} ${_linkedAccounts.length == 1 ? 'account' : 'accounts'}. Persistent banks let you deposit again without re-approving.',
+                  style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12.sp),
+                ),
               ),
               Flexible(
                 child: ListView(
                   shrinkWrap: true,
-                  padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 24.h),
+                  padding: EdgeInsets.fromLTRB(18.w, 4.h, 18.w, 24.h),
                   children: _linkedAccounts.map((a) => _buildLinkedAccountRow(context, a)).toList(),
                 ),
               ),
@@ -1121,40 +1132,93 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     );
   }
 
+  /// Bank "logo" as a gradient-initial avatar (remote bank logo URLs are disabled
+  /// app-wide; the gradient initial is the standard fallback). Colour is derived
+  /// deterministically from the bank name so each bank keeps a stable look.
+  Widget _bankLogoAvatar(String bankName, {double size = 42}) {
+    final name = bankName.trim().isEmpty ? 'Bank' : bankName.trim();
+    final initials = name.length >= 2
+        ? name.substring(0, 2).toUpperCase()
+        : name.substring(0, 1).toUpperCase();
+    final palettes = <List<Color>>[
+      [const Color(0xFF6366F1), const Color(0xFF8B5CF6)],
+      [const Color(0xFF0EA5E9), const Color(0xFF2563EB)],
+      [const Color(0xFF10B981), const Color(0xFF059669)],
+      [const Color(0xFFF59E0B), const Color(0xFFEF4444)],
+      [const Color(0xFFEC4899), const Color(0xFF8B5CF6)],
+      [const Color(0xFF14B8A6), const Color(0xFF0EA5E9)],
+    ];
+    final pair = palettes[name.codeUnits.fold<int>(0, (a, b) => a + b) % palettes.length];
+    return Container(
+      width: size.w,
+      height: size.w,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(colors: pair, begin: Alignment.topLeft, end: Alignment.bottomRight),
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      alignment: Alignment.center,
+      child: Text(initials,
+          style: TextStyle(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
+    );
+  }
+
+  /// One-time vs Persistent access chip for a linked account.
+  Widget _accessChip({required bool persistent}) {
+    final color = persistent ? const Color(0xFF10B981) : const Color(0xFF9CA3AF);
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(6.r),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(persistent ? Icons.link : Icons.schedule, color: color, size: 11.sp),
+          SizedBox(width: 3.w),
+          Text(persistent ? 'Persistent' : 'One-time',
+              style: TextStyle(color: color, fontSize: 10.sp, fontWeight: FontWeight.w700)),
+        ],
+      ),
+    );
+  }
+
   Widget _buildLinkedAccountRow(BuildContext context, LinkedBankAccount account) {
-    final mandate = _mandateForAccount(account);
+    final persistent = _mandateForAccount(account) != null;
     return Container(
       margin: EdgeInsets.only(bottom: 10.h),
-      padding: EdgeInsets.all(14.w),
+      padding: EdgeInsets.all(13.w),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        color: Colors.white.withValues(alpha: 0.07),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
       ),
       child: Row(
         children: [
-          Icon(Icons.account_balance, color: Colors.white.withValues(alpha: 0.8), size: 22.sp),
+          _bankLogoAvatar(account.bankName),
           SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(
+                  account.bankName.isNotEmpty ? account.bankName : 'Linked bank',
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w700),
+                ),
+                SizedBox(height: 3.h),
                 Row(
                   children: [
                     Flexible(
-                      child: Text(
-                        account.bankName.isNotEmpty ? account.bankName : 'Linked bank',
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w600),
-                      ),
+                      child: Text(account.displayAccountNumber,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(color: Colors.white.withValues(alpha: 0.55), fontSize: 12.sp)),
                     ),
                     SizedBox(width: 8.w),
-                    if (mandate != null) _recurringBadge(),
+                    _accessChip(persistent: persistent),
                   ],
                 ),
-                SizedBox(height: 2.h),
-                Text(account.displayAccountNumber,
-                    style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 12.sp)),
               ],
             ),
           ),
@@ -1458,6 +1522,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
   void _showProgressBottomsheet(BuildContext context) {
     if (_isProgressSheetShown) return;
     _isProgressSheetShown = true;
+    _startLinkWatchdog();
 
     showModalBottomSheet(
       context: context,
@@ -1499,6 +1564,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       ),
     ).whenComplete(() {
       _isProgressSheetShown = false;
+      _cancelLinkWatchdog();
     });
   }
 
@@ -1807,6 +1873,8 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       // failed (this deposit uses DirectPay), proceed with the deposit now.
       _proceedWithMonoDeposit(context);
     } else if (state is DepositInitiated) {
+      // Past linking — the deposit exists now, so the link watchdog is no longer needed.
+      _cancelLinkWatchdog();
       // Deposit initiated - check if DirectPay authorization is needed
       final deposit = state.deposit;
       debugPrint('[Deposit] Deposit initiated: ${deposit.id}');
@@ -2331,6 +2399,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
 
   @override
   void dispose() {
+    _cancelLinkWatchdog();
     _amountController.removeListener(_onAmountChanged);
     _amountController.dispose();
     _flutterTts.stop();
