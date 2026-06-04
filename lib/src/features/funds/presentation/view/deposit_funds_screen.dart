@@ -1022,7 +1022,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
               if (mandate != null)
                 ListTile(
                   leading: Icon(Icons.link, color: const Color(0xFF10B981)),
-                  title: Text('Manage persistent access', style: TextStyle(color: Colors.white, fontSize: 15.sp)),
+                  title: Text('Manage Direct Debit', style: TextStyle(color: Colors.white, fontSize: 15.sp)),
                   subtitle: Text('Pause, reinstate or cancel', style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12.sp)),
                   onTap: () {
                     Navigator.of(sheetCtx).pop();
@@ -1716,8 +1716,27 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     );
   }
 
-  /// Push a classified failure into the progress sheet.
+  /// Push a classified failure into the progress sheet — UNLESS the backend
+  /// signalled the KYC gate, in which case route the user into identity
+  /// verification (DirectPay/Direct Debit refuse without a verified BVN).
   void _showDepositFailure(String? raw) {
+    final lower = (raw ?? '').toLowerCase();
+    if (lower.contains('kyc_required') ||
+        lower.contains('kyc required') ||
+        lower.contains('verify your identity')) {
+      // Close the progress sheet, then send the user to KYC.
+      if (Get.isBottomSheetOpen ?? false) {
+        Get.back();
+      }
+      Get.snackbar(
+        'Verify your identity',
+        'Complete a quick BVN verification to deposit from your bank account.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      Get.toNamed(AppRoutes.kycBVNVerification);
+      return;
+    }
+
     final info = _classifyDepositFailure(raw);
     _progressController.updateStage(
       DirectPayStage.failed,

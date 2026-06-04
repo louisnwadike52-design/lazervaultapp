@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:fixnum/fixnum.dart';
 import 'package:grpc/grpc.dart';
 import 'package:uuid/uuid.dart';
@@ -1223,6 +1225,217 @@ class OpenBankingGrpcDataSource {
       );
     } on GrpcError catch (e) {
       throw _mapGrpcError(e, 'refreshAccountTransactions');
+    }
+  }
+
+  // ===== Connect financial data (Mono Bank Data) =====
+
+  /// Fetch a Mono bank statement (1-12 months) for a linked account. Returns the
+  /// decoded statement JSON (transactions + meta) under 'json', plus any PDF job
+  /// info when output == 'pdf'.
+  Future<Map<String, dynamic>> getAccountStatement({
+    required String accountId,
+    required String userId,
+    String period = 'last12months',
+    String output = '',
+  }) async {
+    try {
+      final request = banking_pb.GetAccountStatementRequest(
+        accountId: accountId,
+        userId: userId,
+        period: period,
+        output: output,
+      );
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
+        final callOptions = await _callOptionsHelper.withAuth();
+        return await _client.getAccountStatement(
+          request,
+          options: callOptions.mergedWith(
+            CallOptions(timeout: const Duration(seconds: 45)),
+          ),
+        );
+      });
+      if (!response.success) {
+        throw _mapRefreshError(response.errorCode, response.errorMessage);
+      }
+      return {
+        'json': response.json.isNotEmpty ? jsonDecode(response.json) : null,
+        'pdf_job_id': response.pdfJobId,
+        'pdf_url': response.pdfUrl,
+      };
+    } on GrpcError catch (e) {
+      throw _mapGrpcError(e, 'getAccountStatement');
+    }
+  }
+
+  /// Mono statement insights for a linked account (budgeting backbone).
+  Future<Map<String, dynamic>> getStatementInsights({
+    required String accountId,
+    required String userId,
+  }) async {
+    return _connectJson('getStatementInsights', () async {
+      final callOptions = await _callOptionsHelper.withAuth();
+      return await _client.getStatementInsights(
+        banking_pb.GetStatementInsightsRequest(
+            accountId: accountId, userId: userId),
+        options: callOptions
+            .mergedWith(CallOptions(timeout: const Duration(seconds: 30))),
+      );
+    });
+  }
+
+  /// Mono income analysis for a linked account. period in months (0 = lifetime).
+  Future<Map<String, dynamic>> getAccountIncome({
+    required String accountId,
+    required String userId,
+    int period = 0,
+  }) async {
+    return _connectJson('getAccountIncome', () async {
+      final callOptions = await _callOptionsHelper.withAuth();
+      return await _client.getAccountIncome(
+        banking_pb.GetAccountIncomeRequest(
+            accountId: accountId, userId: userId, period: period),
+        options: callOptions
+            .mergedWith(CallOptions(timeout: const Duration(seconds: 30))),
+      );
+    });
+  }
+
+  /// Mono creditworthiness assessment. principal in kobo, rate e.g. 5, term in
+  /// months. Returns Mono's raw assessment decoded.
+  Future<Map<String, dynamic>> assessCreditworthiness({
+    required String accountId,
+    required String userId,
+    required int principal,
+    required double interestRate,
+    required int term,
+    bool runCreditCheck = true,
+  }) async {
+    return _connectJson('assessCreditworthiness', () async {
+      final callOptions = await _callOptionsHelper.withAuth();
+      return await _client.assessCreditworthiness(
+        banking_pb.AssessCreditworthinessRequest(
+          accountId: accountId,
+          userId: userId,
+          principal: Int64(principal),
+          interestRate: interestRate,
+          term: term,
+          runCreditCheck: runCreditCheck,
+        ),
+        options: callOptions
+            .mergedWith(CallOptions(timeout: const Duration(seconds: 45))),
+      );
+    });
+  }
+
+  /// Shared executor for ConnectDataResponse RPCs: runs with token rotation,
+  /// checks success, and decodes the raw Mono JSON payload into a map.
+  Future<Map<String, dynamic>> _connectJson(
+    String op,
+    Future<banking_pb.ConnectDataResponse> Function() call,
+  ) async {
+    try {
+      final response = await _callOptionsHelper.executeWithTokenRotation(call);
+      if (!response.success) {
+        throw _mapRefreshError(response.errorCode, response.errorMessage);
+      }
+      if (response.json.isEmpty) return <String, dynamic>{};
+      final decoded = jsonDecode(response.json);
+      return decoded is Map<String, dynamic>
+          ? decoded
+          : <String, dynamic>{'data': decoded};
+    } on GrpcError catch (e) {
+      throw _mapGrpcError(e, op);
+    }
+  }
+
+  // ===== Mono Prove — 3-tier KYC =====
+
+  /// Start a Mono Prove KYC session. Returns the hosted mono_url to open in a
+  /// webview, plus the reference to pass back to [completeProveKYC] on redirect.
+  Future<Map<String, String>> initiateProveKYC({
+    required String userId,
+    required String idType,
+    required String idNumber,
+    required String firstName,
+    required String lastName,
+    required String phone,
+    String email = '',
+    String address = '',
+    String tier = 'tier_1',
+    String redirectUrl = 'lazervault://kyc/callback',
+  }) async {
+    try {
+      final request = banking_pb.InitiateProveKYCRequest(
+        userId: userId,
+        idType: idType,
+        idNumber: idNumber,
+        firstName: firstName,
+        lastName: lastName,
+        phone: phone,
+        email: email,
+        address: address,
+        tier: tier,
+        redirectUrl: redirectUrl,
+      );
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
+        final callOptions = await _callOptionsHelper.withAuth();
+        return await _client.initiateProveKYC(
+          request,
+          options: callOptions
+              .mergedWith(CallOptions(timeout: const Duration(seconds: 30))),
+        );
+      });
+      if (!response.success) {
+        throw _mapRefreshError(response.errorCode, response.errorMessage);
+      }
+      return {
+        'mono_url': response.monoUrl,
+        'reference': response.reference,
+        'session_id': response.sessionId,
+        'status': response.status,
+      };
+    } on GrpcError catch (e) {
+      throw _mapGrpcError(e, 'initiateProveKYC');
+    }
+  }
+
+  /// Fetch a Prove session's result by reference (call after the user returns
+  /// from the Prove widget). Returns verified + the proven identity.
+  Future<Map<String, dynamic>> completeProveKYC({
+    required String userId,
+    required String reference,
+  }) async {
+    try {
+      final request = banking_pb.CompleteProveKYCRequest(
+        userId: userId,
+        reference: reference,
+      );
+      final response =
+          await _callOptionsHelper.executeWithTokenRotation(() async {
+        final callOptions = await _callOptionsHelper.withAuth();
+        return await _client.completeProveKYC(
+          request,
+          options: callOptions
+              .mergedWith(CallOptions(timeout: const Duration(seconds: 30))),
+        );
+      });
+      if (!response.success) {
+        throw _mapRefreshError(response.errorCode, response.errorMessage);
+      }
+      return {
+        'verified': response.verified,
+        'status': response.status,
+        'bvn': response.bvn,
+        'nin': response.nin,
+        'first_name': response.firstName,
+        'last_name': response.lastName,
+        'date_of_birth': response.dateOfBirth,
+      };
+    } on GrpcError catch (e) {
+      throw _mapGrpcError(e, 'completeProveKYC');
     }
   }
 }

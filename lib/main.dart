@@ -196,7 +196,7 @@ Future<String> _determineInitialRoute() async {
       final kycOnboardingPending = await storage.read(key: 'kyc_onboarding_pending');
       if (kycOnboardingPending == 'true' && hasSkippedKyc != 'true') {
         print('📋 KYC onboarding pending - showing progressive KYC');
-        return AppRoutes.kycProgressive;
+        return AppRoutes.kycBVNVerification;
       }
 
       print('🔐 User was previously logged in, requiring re-authentication via email');

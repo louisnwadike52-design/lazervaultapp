@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/utils/kyc_error_handler.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/core/config/mono_config.dart';
@@ -68,6 +69,8 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
   bool _isCalculatingFee = false;
   bool _isTransferInProgress = false;
   String? _amountError;
+  // Per-transfer debit choice: false = DirectPay (default), true = Direct Debit mandate.
+  bool _useDirectDebit = false;
 
   // Drag-to-swap visual state
   bool _isHoveringFrom = false;
@@ -268,6 +271,166 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
     }
   }
 
+  /// Shown when the backend gates a money move on identity verification
+  /// (KYC_REQUIRED). Routes the user into the progressive KYC flow so they can
+  /// verify their BVN, after which DirectPay / Direct Debit can move money.
+  void _showKYCRequiredSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1F1F1F),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetCtx) => Padding(
+        padding: EdgeInsets.fromLTRB(
+            24.w, 20.h, 24.w, 24.h + MediaQuery.of(sheetCtx).viewInsets.bottom),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: const Color(0xFF6B7280),
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            ),
+            SizedBox(height: 20.h),
+            Container(
+              width: 56.w,
+              height: 56.w,
+              decoration: BoxDecoration(
+                color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.verified_user_outlined,
+                  color: const Color(0xFF3B82F6), size: 28.sp),
+            ),
+            SizedBox(height: 16.h),
+            Text('Verify your identity',
+                style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w700)),
+            SizedBox(height: 8.h),
+            Text(
+              'To move money from your bank we need to confirm your identity with your BVN. It only takes a moment.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                  color: const Color(0xFF9CA3AF), fontSize: 13.sp),
+            ),
+            SizedBox(height: 20.h),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.of(sheetCtx).pop();
+                  Get.toNamed('/kyc/progressive');
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF3B82F6),
+                  padding: EdgeInsets.symmetric(vertical: 14.h),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r)),
+                  elevation: 0,
+                ),
+                child: Text('Verify identity',
+                    style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w600)),
+              ),
+            ),
+            SizedBox(height: 8.h),
+            TextButton(
+              onPressed: () => Navigator.of(sheetCtx).pop(),
+              child: Text('Not now',
+                  style: GoogleFonts.inter(
+                      color: const Color(0xFF9CA3AF), fontSize: 14.sp)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Compact debit-method control on the transfer screen. DirectPay is the
+  /// DEFAULT (the user approves each transfer at their bank); toggling Direct
+  /// Debit on opens the mandate setup so future transfers debit instantly
+  /// (authorize once). Reflects the source account's current mandate state, so
+  /// it lights up automatically once Mono enables Direct Debit and a mandate
+  /// becomes ready.
+  Widget _buildDebitModeToggle() {
+    if (_sourceAccount == null) return const SizedBox.shrink();
+    final mandate =
+        context.read<MandateCubit>().getMandateForAccount(_sourceAccount!.id);
+    final mandateReady = mandate != null &&
+        (mandate.status == MandateStatus.readyToDebit ||
+            mandate.status == MandateStatus.active);
+    final on = _useDirectDebit;
+    return Container(
+      margin: EdgeInsets.only(bottom: 16.h),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F1F1F),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: const Color(0xFF2D2D2D)),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            on ? Icons.flash_on_rounded : Icons.verified_user_outlined,
+            color: on ? const Color(0xFF10B981) : const Color(0xFF9CA3AF),
+            size: 18.sp,
+          ),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  on ? 'Direct Debit' : 'DirectPay',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  on
+                      ? (mandateReady
+                          ? 'Authorized once. This transfer debits instantly.'
+                          : 'Set up Direct Debit to skip bank approval.')
+                      : 'You approve this transfer at your bank.',
+                  style: GoogleFonts.inter(
+                    color: on && !mandateReady
+                        ? const Color(0xFFFB923C)
+                        : const Color(0xFF9CA3AF),
+                    fontSize: 11.sp,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: on,
+            activeThumbColor: const Color(0xFF10B981),
+            onChanged: (v) {
+              setState(() => _useDirectDebit = v);
+              // Turning Direct Debit on without a ready mandate → offer to set
+              // one up now (the transfer still falls back to DirectPay if none).
+              if (v && !mandateReady) {
+                _showMandateManagement(_sourceAccount!, mandate);
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _showMandateManagement(
     LinkedBankAccount account,
     MandateEntity? mandate,
@@ -309,8 +472,8 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
     final user = authState.profile.user;
 
     Get.snackbar(
-      'Setting Up Auto-Debit',
-      'Creating auto-debit authorization for this account...',
+      'Setting Up Direct Debit',
+      'Creating Direct Debit authorization for this account...',
       snackPosition: SnackPosition.BOTTOM,
       backgroundColor: const Color(0xFF1F1F1F),
       colorText: const Color(0xFFFB923C),
@@ -502,6 +665,7 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
       verificationToken: verificationToken!,
       transactionId: moveTransactionId,
       idempotencyKey: const Uuid().v4(),
+      useDirectDebit: _useDirectDebit,
     );
 
     if (!mounted) return;
@@ -715,14 +879,19 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
                   ),
                 );
               } else if (state is MoveMoneyError) {
-                Get.snackbar(
-                  'Transfer Failed',
-                  state.message,
-                  snackPosition: SnackPosition.BOTTOM,
-                  backgroundColor: const Color(0xFF1F1F1F),
-                  colorText: const Color(0xFFEF4444),
-                  duration: const Duration(seconds: 4),
-                );
+                if (isKYCRequiredError(state.errorCode) ||
+                    isKYCRequiredError(state.message)) {
+                  _showKYCRequiredSheet(context);
+                } else {
+                  Get.snackbar(
+                    'Transfer Failed',
+                    state.message,
+                    snackPosition: SnackPosition.BOTTOM,
+                    backgroundColor: const Color(0xFF1F1F1F),
+                    colorText: const Color(0xFFEF4444),
+                    duration: const Duration(seconds: 4),
+                  );
+                }
               }
             },
           ),
@@ -753,8 +922,8 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
 
                 if (state is AccountLinkedWithMandate && state.mandateFailed) {
                   Get.snackbar(
-                    'Auto-Debit Pending',
-                    'Account linked. Auto-debit setup will retry automatically.',
+                    'Direct Debit Pending',
+                    'Account linked. Direct Debit setup will retry automatically.',
                     backgroundColor: const Color(0xFFFB923C),
                     colorText: Colors.white,
                     snackPosition: SnackPosition.BOTTOM,
@@ -774,7 +943,7 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
                 setState(() {}); // Trigger rebuild so badges reflect new state
               } else if (state is MandateError) {
                 Get.snackbar(
-                  'Auto-Debit Issue',
+                  'Direct Debit Issue',
                   state.message,
                   snackPosition: SnackPosition.BOTTOM,
                   backgroundColor: const Color(0xFF1F1F1F),
@@ -837,7 +1006,10 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
 
                         // From / swap / To – with drag-to-swap
                         _buildDraggableAccountPair(),
-                        SizedBox(height: 20.h),
+                        SizedBox(height: 16.h),
+
+                        // Debit method — DirectPay (default) vs Direct Debit
+                        _buildDebitModeToggle(),
 
                         // Amount input
                         _buildAmountInput(),
@@ -882,6 +1054,53 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
                                       color: const Color(0xFFFB923C),
                                       fontSize: 11.sp,
                                     ),
+                                  ),
+                                ),
+                                // Inline refresh CTA — re-pulls the live balance
+                                // from the linked bank (Mono) for this account.
+                                GestureDetector(
+                                  onTap: () {
+                                    if (_sourceAccount == null) return;
+                                    final authState = context
+                                        .read<AuthenticationCubit>()
+                                        .state;
+                                    if (authState is AuthenticationSuccess) {
+                                      context
+                                          .read<OpenBankingCubit>()
+                                          .refreshBalance(
+                                            accountId: _sourceAccount!.id,
+                                            userId: authState.profile.userId,
+                                            accessToken: authState
+                                                .profile.session.accessToken,
+                                          );
+                                      Get.snackbar(
+                                        'Refreshing',
+                                        'Updating balance from your bank...',
+                                        snackPosition: SnackPosition.BOTTOM,
+                                        backgroundColor: const Color(0xFF1F1F1F),
+                                        colorText: const Color(0xFFFB923C),
+                                        duration: const Duration(seconds: 2),
+                                      );
+                                    }
+                                  },
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.refresh_rounded,
+                                        color: const Color(0xFFFB923C),
+                                        size: 14.sp,
+                                      ),
+                                      SizedBox(width: 3.w),
+                                      Text(
+                                        'Refresh',
+                                        style: GoogleFonts.inter(
+                                          color: const Color(0xFFFB923C),
+                                          fontSize: 11.sp,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
@@ -1573,8 +1792,8 @@ class _AccountPickerSheetState extends State<_AccountPickerSheet> {
                 controller: scrollController,
                 itemCount: _filtered.length + 1,
                 itemBuilder: (context, index) {
-                  // "Link New Account" at end
-                  if (index == _filtered.length) {
+                  // "Link New Account" pinned at the top
+                  if (index == 0) {
                     return ListTile(
                       onTap: widget.onAddAccount,
                       leading: Container(
@@ -1606,7 +1825,7 @@ class _AccountPickerSheetState extends State<_AccountPickerSheet> {
                     );
                   }
 
-                  final account = _filtered[index];
+                  final account = _filtered[index - 1];
                   final isSelected = account.id == widget.selectedId;
                   final isExcluded = account.id == widget.excludeId;
 

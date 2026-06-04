@@ -121,6 +121,11 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is! AuthenticationSuccess) return;
 
+    // Choose how money will be pulled from this bank: Direct Debit (default —
+    // sign once, debit repeatedly) or DirectPay (approve each transfer).
+    final useDirectDebit = await _chooseDebitMode();
+    if (useDirectDebit == null || !mounted) return;
+
     final user = authState.profile.user;
     final customerName = '${user.firstName} ${user.lastName}'.trim();
 
@@ -133,13 +138,118 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
     );
 
     if (result != null && mounted) {
+      // autoCreateMandate=true → Direct Debit (Mono pulls without per-transfer
+      // approval); false → DirectPay (user authorises each transfer).
       context.read<OpenBankingCubit>().linkAccount(
             userId: user.id,
             code: result.code,
             accessToken: authState.profile.session.accessToken,
+            autoCreateMandate: useDirectDebit,
+            userEmail: user.email.isNotEmpty ? user.email : null,
+            userName: customerName.isNotEmpty ? customerName : null,
+            userPhone:
+                (user.phoneNumber?.isNotEmpty ?? false) ? user.phoneNumber : null,
           );
       _loadData();
     }
+  }
+
+  /// Bottom sheet to pick the debit mode before linking. Returns true for
+  /// Direct Debit (default), false for DirectPay, null if cancelled.
+  Future<bool?> _chooseDebitMode() {
+    bool useDirectDebit = true;
+    return showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF15151B),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetCtx) => StatefulBuilder(
+        builder: (sheetCtx, setSheet) => Padding(
+          padding: EdgeInsets.fromLTRB(20.w, 18.h, 20.w,
+              20.h + MediaQuery.of(sheetCtx).viewInsets.bottom),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 44.w, height: 4.h,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.25),
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
+                ),
+              ),
+              SizedBox(height: 18.h),
+              Text('How should we move money from this bank?',
+                  style: TextStyle(color: Colors.white, fontSize: 17.sp, fontWeight: FontWeight.w800)),
+              SizedBox(height: 6.h),
+              Text(
+                useDirectDebit
+                    ? 'Direct Debit: authorise once, then transfers are instant with no bank approval each time.'
+                    : 'DirectPay: you approve each transfer at your bank.',
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 12.5.sp),
+              ),
+              SizedBox(height: 18.h),
+              Container(
+                padding: EdgeInsets.all(14.w),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(14.r),
+                  border: Border.all(
+                    color: useDirectDebit
+                        ? const Color(0xFF10B981).withValues(alpha: 0.5)
+                        : Colors.white.withValues(alpha: 0.1),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(useDirectDebit ? Icons.bolt_rounded : Icons.verified_user_outlined,
+                        color: useDirectDebit ? const Color(0xFF10B981) : const Color(0xFF9CA3AF),
+                        size: 22.sp),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(useDirectDebit ? 'Direct Debit' : 'DirectPay',
+                              style: TextStyle(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w700)),
+                          SizedBox(height: 2.h),
+                          Text(useDirectDebit ? 'Recommended' : 'One-time approval per transfer',
+                              style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 11.5.sp)),
+                        ],
+                      ),
+                    ),
+                    Switch(
+                      value: useDirectDebit,
+                      onChanged: (v) => setSheet(() => useDirectDebit = v),
+                      activeThumbColor: const Color(0xFF10B981),
+                      activeTrackColor: const Color(0xFF10B981).withValues(alpha: 0.3),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 18.h),
+              SizedBox(
+                width: double.infinity,
+                height: 52.h,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(sheetCtx).pop(useDirectDebit),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF3B82F6),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
+                  ),
+                  child: Text('Continue to link',
+                      style: TextStyle(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w700)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _showMandateManagement(
@@ -232,8 +342,8 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                 Get.snackbar(
                   'Account Linked',
                   state.mandateFailed
-                      ? '${state.account.bankName} linked. Auto-debit setup pending — tap account to retry.'
-                      : '${state.account.bankName} linked with auto-debit enabled.',
+                      ? '${state.account.bankName} linked. Direct Debit setup pending — tap account to retry.'
+                      : '${state.account.bankName} linked with Direct Debit enabled.',
                   backgroundColor: state.mandateFailed
                       ? const Color(0xFFFB923C)
                       : const Color(0xFF10B981),
@@ -1529,18 +1639,21 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
   // ---------------------------------------------------------------------------
 
   Widget _buildAccountsList(List<LinkedBankAccount> accounts) {
+    // Show the most recently linked account first, so a bank you just added
+    // via "Link New" appears at the front of the carousel.
+    final sorted = [...accounts]..sort((a, b) => b.linkedAt.compareTo(a.linkedAt));
     return SizedBox(
       height: 150.h,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.symmetric(horizontal: 16.w),
-        itemCount: accounts.length + 1,
+        itemCount: sorted.length + 1,
         separatorBuilder: (_, __) => SizedBox(width: 12.w),
         itemBuilder: (context, index) {
-          if (index == accounts.length) {
+          if (index == sorted.length) {
             return _buildAddAccountCard();
           }
-          final account = accounts[index];
+          final account = sorted[index];
           final mandate =
               context.read<MandateCubit>().getMandateForAccount(account.id);
           return MoveAccountCard(
@@ -2437,27 +2550,11 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
           _buildSheetDetailRow('Amount', _formatNaira(transfer.amountNaira)),
           if (transfer.totalFee > 0) ...[
             _buildSheetDivider(),
+            // Single consolidated fee for the user. The itemized breakdown
+            // (Mono debit, Flutterwave payout, levy, stamp duty) lives on the
+            // backend + admin transaction-detail page.
             _buildSheetDetailRow(
-              'Debit Fee',
-              _formatNaira(transfer.debitFee / 100.0),
-            ),
-            _buildSheetDetailRow(
-              'Transfer Fee',
-              _formatNaira(transfer.transferFee / 100.0),
-            ),
-            if (transfer.stampDuty > 0)
-              _buildSheetDetailRow(
-                'Stamp Duty',
-                _formatNaira(transfer.stampDuty / 100.0),
-              ),
-            if (transfer.serviceFee > 0)
-              _buildSheetDetailRow(
-                'Service Fee',
-                _formatNaira(transfer.serviceFee / 100.0),
-              ),
-            _buildSheetDivider(),
-            _buildSheetDetailRow(
-              'Total Fees',
+              'Transfer fee',
               _formatNaira(transfer.totalFeeNaira),
               isBold: true,
             ),

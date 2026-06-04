@@ -1,4 +1,5 @@
 import 'package:fixnum/fixnum.dart';
+import 'package:lazervault/core/utilities/banks_data.dart';
 import 'package:lazervault/src/generated/recipient.pb.dart' as proto;
 
 class RecipientModel {
@@ -39,6 +40,11 @@ class RecipientModel {
     this.type,
     this.internalUserId,
   });
+
+  /// Bank label to SHOW the user — resolves a bare/numeric code (e.g. "001")
+  /// to the real bank name via the canonical list. The code still goes to the
+  /// payout provider; the user only ever sees the name.
+  String get displayBankName => BanksData.displayName(bankName, sortCode);
 
   factory RecipientModel.fromProto(proto.Recipient recipient) {
     // Determine type: LazerVault bank recipients are internal, not external

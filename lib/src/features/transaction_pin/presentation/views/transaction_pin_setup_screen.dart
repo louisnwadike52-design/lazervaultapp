@@ -336,7 +336,7 @@ class _TransactionPinSetupScreenState extends State<TransactionPinSetupScreen> {
     }
 
     // Signup flow — proceed to KYC progressive onboarding
-    Get.offAllNamed(AppRoutes.kycProgressive);
+    Get.offAllNamed(AppRoutes.kycBVNVerification);
   }
 
   String _getTitle() {

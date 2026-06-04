@@ -169,6 +169,43 @@ service BankingService {
             get: "/api/v1/accounts/{account_id}/transactions"
         };
     }
+
+    // ===== CONNECT FINANCIAL DATA (Mono Bank Data: statement, insights, income, creditworthiness) =====
+    rpc GetAccountStatement(GetAccountStatementRequest) returns (AccountStatementResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/accounts/{account_id}/statement"
+        };
+    }
+    rpc GetStatementInsights(GetStatementInsightsRequest) returns (ConnectDataResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/accounts/{account_id}/statement/insights"
+        };
+    }
+    rpc GetAccountIncome(GetAccountIncomeRequest) returns (ConnectDataResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/accounts/{account_id}/income"
+        };
+    }
+    rpc AssessCreditworthiness(AssessCreditworthinessRequest) returns (ConnectDataResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/accounts/{account_id}/creditworthiness"
+            body: "*"
+        };
+    }
+
+    // ===== MONO PROVE — 3-TIER KYC (biometric ownership of BVN/NIN) =====
+    rpc InitiateProveKYC(InitiateProveKYCRequest) returns (InitiateProveKYCResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/kyc/prove/initiate"
+            body: "*"
+        };
+    }
+    rpc CompleteProveKYC(CompleteProveKYCRequest) returns (CompleteProveKYCResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/kyc/prove/complete"
+            body: "*"
+        };
+    }
     rpc GetPrimaryAccount(GetPrimaryAccountRequest) returns (VirtualAccountResponse) {
         option (google.api.http) = {
             get: "/api/v1/users/{user_id}/primary-account"
@@ -986,6 +1023,92 @@ message TransactionsResponse {
     string error_code = 2;
     string error_message = 3;
     repeated Transaction transactions = 4;
+}
+
+// ===== CONNECT FINANCIAL DATA (Mono Bank Data) =====
+message GetAccountStatementRequest {
+    string account_id = 1;
+    string user_id = 2;
+    string period = 3;
+    string output = 4;
+}
+
+message AccountStatementResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    string json = 4;
+    string pdf_job_id = 5;
+    string pdf_url = 6;
+}
+
+message GetStatementInsightsRequest {
+    string account_id = 1;
+    string user_id = 2;
+}
+
+message GetAccountIncomeRequest {
+    string account_id = 1;
+    string user_id = 2;
+    int32 period = 3;
+}
+
+message AssessCreditworthinessRequest {
+    string account_id = 1;
+    string user_id = 2;
+    int64 principal = 3;
+    double interest_rate = 4;
+    int32 term = 5;
+    bool run_credit_check = 6;
+}
+
+message ConnectDataResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    string json = 4;
+}
+
+// ===== MONO PROVE — 3-TIER KYC =====
+message InitiateProveKYCRequest {
+    string user_id = 1;
+    string id_type = 2;
+    string id_number = 3;
+    string first_name = 4;
+    string last_name = 5;
+    string phone = 6;
+    string email = 7;
+    string address = 8;
+    string tier = 9;
+    string redirect_url = 10;
+}
+
+message InitiateProveKYCResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    string mono_url = 4;
+    string reference = 5;
+    string session_id = 6;
+    string status = 7;
+}
+
+message CompleteProveKYCRequest {
+    string user_id = 1;
+    string reference = 2;
+}
+
+message CompleteProveKYCResponse {
+    bool success = 1;
+    string error_code = 2;
+    string error_message = 3;
+    bool verified = 4;
+    string status = 5;
+    string bvn = 6;
+    string nin = 7;
+    string first_name = 8;
+    string last_name = 9;
+    string date_of_birth = 10;
 }
 
 message Transaction {
@@ -1918,6 +2041,7 @@ message InitiateMoveTransferRequest {
     string idempotency_key = 8;               // Idempotency key
     string verification_token = 9;            // Token from TransactionPinService validation
     string transaction_id = 10;               // Unique transaction identifier for PIN verification
+    bool use_direct_debit = 11;               // Per-transfer choice: false = DirectPay (default, approve each transfer); true = use the account's Direct Debit mandate
 }
 
 message MoveTransferResponse {

@@ -8,6 +8,7 @@ import 'package:lazervault/core/extensions/app_colors.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/statistics/cubit/statistics_cubit.dart';
 import 'package:lazervault/src/features/statistics/cubit/statistics_state.dart';
+import 'package:lazervault/src/features/statistics/presentation/widgets/statistics_source_sheet.dart';
 import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
 import 'package:lazervault/src/features/statistics/cubit/budget_state.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
@@ -144,6 +145,7 @@ class _StatisticsState extends State<Statistics> {
   bool showIncome = true;
   bool _isSyncing = false;
   bool _includeExternalBanks = true; // Track external banks filter state
+  StatisticsSource _statsSource = StatisticsSource.both; // 3-way source filter
   String _userId = '';
   String _accessToken = '';
 
@@ -239,9 +241,13 @@ class _StatisticsState extends State<Statistics> {
           if (capitalized != selectedPeriod) {
             setState(() => selectedPeriod = capitalized);
           }
-          // Sync external banks filter state
-          if (_includeExternalBanks != state.includeExternalBanks) {
-            setState(() => _includeExternalBanks = state.includeExternalBanks);
+          // Sync source filter state
+          if (_includeExternalBanks != state.includeExternalBanks ||
+              _statsSource != state.source) {
+            setState(() {
+              _includeExternalBanks = state.includeExternalBanks;
+              _statsSource = state.source;
+            });
           }
         }
 
@@ -895,93 +901,53 @@ class _StatisticsState extends State<Statistics> {
     );
   }
 
-  /// Toggle widget to filter data source (LazerVault only vs All Accounts)
+  /// Source filter chip — opens a bottom sheet to pick LazerVault / Bank / both,
+  /// then re-renders the overview content for the selected source.
   Widget _buildAccountSourceFilter() {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 4.h),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2D2D3F),
-        borderRadius: BorderRadius.circular(10.r),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // LazerVault Only option
-          GestureDetector(
-            onTap: () {
-              if (_includeExternalBanks) {
-                setState(() => _includeExternalBanks = false);
-                context.read<StatisticsCubit>().toggleExternalBanks(false);
-              }
-            },
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-              decoration: BoxDecoration(
-                color: !_includeExternalBanks
-                    ? const Color(0xFF10B981)
-                    : Colors.transparent,
-                borderRadius: BorderRadius.circular(8.r),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.account_balance_wallet,
-                    size: 14.sp,
-                    color: !_includeExternalBanks ? Colors.white : Colors.white60,
-                  ),
-                  SizedBox(width: 4.w),
-                  Text(
-                    'Wallet Only',
-                    style: GoogleFonts.inter(
-                      color: !_includeExternalBanks ? Colors.white : Colors.white60,
-                      fontSize: 11.sp,
-                      fontWeight: !_includeExternalBanks ? FontWeight.w600 : FontWeight.w500,
-                    ),
-                  ),
-                ],
+    final source = _statsSource;
+    return GestureDetector(
+      onTap: () async {
+        final picked = await showStatisticsSourceSheet(context, current: source);
+        if (picked != null && mounted) {
+          setState(() {
+            _statsSource = picked;
+            _includeExternalBanks = picked.includesExternal;
+          });
+          context.read<StatisticsCubit>().changeSource(picked);
+        }
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFF2D2D3F),
+          borderRadius: BorderRadius.circular(10.r),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              source == StatisticsSource.bank
+                  ? Icons.account_balance
+                  : source == StatisticsSource.lazervault
+                      ? Icons.account_balance_wallet
+                      : Icons.dashboard_rounded,
+              size: 14.sp,
+              color: const Color(0xFF10B981),
+            ),
+            SizedBox(width: 6.w),
+            Text(
+              source.label,
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 11.sp,
+                fontWeight: FontWeight.w600,
               ),
             ),
-          ),
-          SizedBox(width: 4.w),
-          // All Accounts option
-          GestureDetector(
-            onTap: () {
-              if (!_includeExternalBanks) {
-                setState(() => _includeExternalBanks = true);
-                context.read<StatisticsCubit>().toggleExternalBanks(true);
-              }
-            },
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-              decoration: BoxDecoration(
-                color: _includeExternalBanks
-                    ? const Color(0xFF10B981)
-                    : Colors.transparent,
-                borderRadius: BorderRadius.circular(8.r),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.account_balance,
-                    size: 14.sp,
-                    color: _includeExternalBanks ? Colors.white : Colors.white60,
-                  ),
-                  SizedBox(width: 4.w),
-                  Text(
-                    'All Accounts',
-                    style: GoogleFonts.inter(
-                      color: _includeExternalBanks ? Colors.white : Colors.white60,
-                      fontSize: 11.sp,
-                      fontWeight: _includeExternalBanks ? FontWeight.w600 : FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+            SizedBox(width: 2.w),
+            Icon(Icons.keyboard_arrow_down_rounded,
+                size: 16.sp, color: Colors.white60),
+          ],
+        ),
       ),
     );
   }

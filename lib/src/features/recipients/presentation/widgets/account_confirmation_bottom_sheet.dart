@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lazervault/core/utilities/banks_data.dart';
 
 /// Account confirmation bottomsheet widget.
 ///
@@ -218,7 +219,7 @@ class AccountConfirmationBottomSheetState
               SizedBox(width: 10.w),
               Expanded(
                 child: Text(
-                  widget.bankName,
+                  BanksData.displayName(widget.bankName, widget.bankCode),
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.9),
                     fontSize: 14.sp,

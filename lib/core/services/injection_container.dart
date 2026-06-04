@@ -1129,6 +1129,7 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<KYCGrpcDataSource>(
       () => KYCGrpcDataSource(
           authClient: serviceLocator<auth_proto.AuthServiceClient>(),
+          callOptionsHelper: serviceLocator<GrpcCallOptionsHelper>(),
         ),
       );
 

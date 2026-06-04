@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/utilities/banks_data.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../domain/entities/move_transfer.dart';
@@ -213,7 +214,7 @@ class MoveTransferReceiptScreen extends StatelessWidget {
                           _buildDivider(),
                           _buildDetailRow(
                             'To',
-                            '${transfer.destinationBankName}\n${transfer.destinationAccountName}\n${transfer.destinationAccountNumber}',
+                            '${BanksData.displayName(transfer.destinationBankName, null)}\n${transfer.destinationAccountName}\n${transfer.destinationAccountNumber}',
                           ),
                           _buildDivider(),
                           _buildDetailRow(
@@ -222,27 +223,10 @@ class MoveTransferReceiptScreen extends StatelessWidget {
                           ),
                           if (transfer.totalFee > 0) ...[
                             _buildDivider(),
+                            // Single consolidated fee for the user; itemized
+                            // breakdown lives on the backend + admin console.
                             _buildDetailRow(
-                              'Debit Fee',
-                              _formatNaira(transfer.debitFee / 100.0),
-                            ),
-                            _buildDetailRow(
-                              'Transfer Fee',
-                              _formatNaira(transfer.transferFee / 100.0),
-                            ),
-                            if (transfer.stampDuty > 0)
-                              _buildDetailRow(
-                                'Stamp Duty',
-                                _formatNaira(transfer.stampDuty / 100.0),
-                              ),
-                            if (transfer.serviceFee > 0)
-                              _buildDetailRow(
-                                'Service Fee',
-                                _formatNaira(
-                                    transfer.serviceFee / 100.0),
-                              ),
-                            _buildDetailRow(
-                              'Total Fees',
+                              'Transfer fee',
                               _formatNaira(transfer.totalFeeNaira),
                               isBold: true,
                             ),

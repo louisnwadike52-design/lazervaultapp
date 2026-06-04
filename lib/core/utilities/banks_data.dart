@@ -111,6 +111,21 @@ class BanksData {
     return bank.isNotEmpty ? bank['code'] : null;
   }
 
+  /// Returns the bank label to SHOW the user. Prefers a real name, but if
+  /// [bankName] is empty or just a numeric code (older records stored the NIP
+  /// code in the name field), it is resolved to the proper bank name via the
+  /// canonical list using [code] (or the name-as-code). The raw code is what
+  /// gets sent to the payout provider — this is purely for display, so the user
+  /// never sees a bare code like "001".
+  static String displayName(String? bankName, String? code) {
+    final name = (bankName ?? '').trim();
+    final c = (code ?? '').trim();
+    final looksLikeCode = name.isEmpty || RegExp(r'^\d{2,8}$').hasMatch(name);
+    if (!looksLikeCode) return name;
+    final lookup = c.isNotEmpty ? c : name;
+    return getBankNameByCode(lookup) ?? (name.isNotEmpty ? name : c);
+  }
+
   /// Get bank name by code (searches all countries)
   static String? getBankNameByCode(String bankCode) {
     for (final country in ['NG', 'GB', 'US', 'GH', 'KE', 'ZA']) {

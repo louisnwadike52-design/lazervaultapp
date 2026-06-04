@@ -312,7 +312,7 @@ class _AddRecipientSheetBodyState extends State<_AddRecipientSheetBody>
                                     fontWeight: FontWeight.w600)),
                             SizedBox(height: 2.h),
                             Text(
-                                '${r.bankName.isEmpty ? r.sortCode : r.bankName} • ${r.accountNumber}',
+                                '${r.displayBankName} • ${r.accountNumber}',
                                 style: GoogleFonts.inter(
                                     color: btTextSecondary,
                                     fontSize: 11.sp)),

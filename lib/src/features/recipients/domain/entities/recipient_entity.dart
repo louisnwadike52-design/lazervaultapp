@@ -1,3 +1,5 @@
+import 'package:lazervault/core/utilities/banks_data.dart';
+
 class RecipientEntity {
   final String id;
   final String name;
@@ -34,6 +36,13 @@ class RecipientEntity {
     this.alias,
     this.type,
   });
+
+  /// The bank label to SHOW the user. Prefers a real name; if [bankName] is
+  /// empty or just a numeric code (older recipients stored the NIP code here),
+  /// it is resolved to the proper bank name via the canonical bank list. The
+  /// raw code is still what gets sent to the payout provider — it is never
+  /// shown to the user.
+  String get displayBankName => BanksData.displayName(bankName, sortCode);
 
   RecipientEntity copyWith({
     String? id,

@@ -221,7 +221,9 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
     }
     if (!mounted) return;
 
-    // Execute transfer AFTER modal is dismissed
+    // Execute the transfer AFTER the PIN modal is dismissed. The BlocListener
+    // (subscribed for the whole screen) handles the success → receipt navigation
+    // and the failure → snackbar, so there is no stream-subscription race here.
     context.read<WalletTransferCubit>().transferBetweenAccounts(
           fromAccountId: source.id,
           toAccountNumber: toAccountNumber,
@@ -234,35 +236,6 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
           destinationAccountName: _accountDisplayLabel(destination),
           currency: source.currency,
         );
-
-    // Wait for cubit result
-    await for (final state
-        in context.read<WalletTransferCubit>().stream) {
-      if (state is WalletTransferSuccess) {
-        if (mounted) {
-          Get.offNamed(
-            AppRoutes.walletTransferReceipt,
-            arguments: {
-              'sourceAccount': state.sourceAccountName,
-              'destinationAccount': state.destinationAccountName,
-              'amount': state.amount,
-              'currency': state.currency,
-              'reference': state.reference ?? '',
-              'transferId': state.transferId ?? '',
-              'newBalance': state.newBalance,
-            },
-          );
-        }
-        break;
-      } else if (state is WalletTransferError) {
-        if (mounted) {
-          Get.snackbar('Transfer Failed', state.message,
-              backgroundColor: const Color(0xFFEF4444), colorText: Colors.white,
-              snackPosition: SnackPosition.TOP);
-        }
-        break;
-      }
-    }
   }
 
   @override
@@ -293,10 +266,27 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
       body: SafeArea(
         child: BlocListener<WalletTransferCubit, WalletTransferState>(
           listener: (context, state) {
-            if (state is WalletTransferError && _currentStep < 2) {
-              Get.snackbar('Error', state.message,
+            // Drive the result here (not via a race-prone stream loop): the
+            // listener is subscribed before the transfer is triggered, so the
+            // success/failure state is never missed.
+            if (state is WalletTransferSuccess) {
+              Get.offNamed(
+                AppRoutes.walletTransferReceipt,
+                arguments: {
+                  'sourceAccount': state.sourceAccountName,
+                  'destinationAccount': state.destinationAccountName,
+                  'amount': state.amount,
+                  'currency': state.currency,
+                  'reference': state.reference ?? '',
+                  'transferId': state.transferId ?? '',
+                  'newBalance': state.newBalance,
+                },
+              );
+            } else if (state is WalletTransferError) {
+              Get.snackbar('Transfer Failed', state.message,
                   backgroundColor: const Color(0xFFEF4444),
-                  colorText: Colors.white);
+                  colorText: Colors.white,
+                  snackPosition: SnackPosition.TOP);
             }
           },
           child: AnimatedSwitcher(

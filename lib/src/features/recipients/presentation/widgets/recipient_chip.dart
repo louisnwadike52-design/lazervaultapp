@@ -80,7 +80,7 @@ class RecipientChip extends StatelessWidget {
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      '${recipient.bankName} • ${recipient.sortCode}',
+                      recipient.displayBankName,
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.5),
                         fontSize: 12.sp,

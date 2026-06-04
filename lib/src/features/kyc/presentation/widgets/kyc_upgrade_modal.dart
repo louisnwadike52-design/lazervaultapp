@@ -94,7 +94,7 @@ class KYCUpgradeModal extends StatelessWidget {
               onPressed: () async {
                 Get.back();
                 await Future.delayed(const Duration(milliseconds: 150));
-                Get.toNamed(AppRoutes.kycProgressive);
+                Get.toNamed(AppRoutes.kycBVNVerification);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF3B82F6),

@@ -181,7 +181,7 @@ class _MandateManagementSheetState extends State<_MandateManagementSheet> {
                 if (widget.mandate!.isActive) ...[
                   _buildActionButton(
                     context: context,
-                    label: 'Pause Auto-Debit',
+                    label: 'Pause Direct Debit',
                     color: const Color(0xFFFBBF24),
                     icon: Icons.pause_circle_outline,
                     isLoading: isLoading,
@@ -196,7 +196,7 @@ class _MandateManagementSheetState extends State<_MandateManagementSheet> {
                 ] else if (widget.mandate!.status == MandateStatus.paused) ...[
                   _buildActionButton(
                     context: context,
-                    label: 'Resume Auto-Debit',
+                    label: 'Resume Direct Debit',
                     color: const Color(0xFF10B981),
                     icon: Icons.play_circle_outline,
                     isLoading: isLoading,
@@ -213,7 +213,7 @@ class _MandateManagementSheetState extends State<_MandateManagementSheet> {
                     widget.mandate!.status == MandateStatus.cancelled) ...[
                   _buildActionButton(
                     context: context,
-                    label: 'Set Up Auto-Debit',
+                    label: 'Set Up Direct Debit',
                     color: const Color(0xFF10B981),
                     icon: Icons.verified_user_rounded,
                     isLoading: isLoading,
@@ -239,7 +239,7 @@ class _MandateManagementSheetState extends State<_MandateManagementSheet> {
                         ? null
                         : () => _showCancelConfirmation(context),
                     child: Text(
-                      'Cancel Auto-Debit',
+                      'Cancel Direct Debit',
                       style: GoogleFonts.inter(
                         color: const Color(0xFFEF4444),
                         fontSize: 14.sp,
@@ -253,7 +253,7 @@ class _MandateManagementSheetState extends State<_MandateManagementSheet> {
                 Padding(
                   padding: EdgeInsets.symmetric(vertical: 12.h),
                   child: Text(
-                    'No auto-debit set up for this account. '
+                    'No Direct Debit set up for this account. '
                     'Enable it to skip bank login for future transfers.',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
@@ -265,7 +265,7 @@ class _MandateManagementSheetState extends State<_MandateManagementSheet> {
                 ),
                 _buildActionButton(
                   context: context,
-                  label: 'Set Up Auto-Debit',
+                  label: 'Set Up Direct Debit',
                   color: const Color(0xFF10B981),
                   icon: Icons.verified_user_rounded,
                   isLoading: isLoading,
@@ -369,7 +369,7 @@ class _MandateManagementSheetState extends State<_MandateManagementSheet> {
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         title: Text(
-          'Cancel Auto-Debit?',
+          'Cancel Direct Debit?',
           style: GoogleFonts.inter(
             color: Colors.white,
             fontWeight: FontWeight.w600,
@@ -377,7 +377,7 @@ class _MandateManagementSheetState extends State<_MandateManagementSheet> {
         ),
         content: Text(
           'You will need to authorize each transfer manually via bank login. '
-          'You can set up auto-debit again later.',
+          'You can set up Direct Debit again later.',
           style: GoogleFonts.inter(
             color: const Color(0xFF9CA3AF),
             fontSize: 13.sp,
@@ -403,7 +403,7 @@ class _MandateManagementSheetState extends State<_MandateManagementSheet> {
               );
             },
             child: Text(
-              'Cancel Auto-Debit',
+              'Cancel Direct Debit',
               style: GoogleFonts.inter(color: const Color(0xFFEF4444)),
             ),
           ),

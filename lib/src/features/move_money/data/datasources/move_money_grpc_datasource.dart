@@ -37,6 +37,7 @@ class MoveMoneyGrpcDataSource {
     String? idempotencyKey,
     String? verificationToken,
     String? transactionId,
+    bool useDirectDebit = false,
   }) async {
     final response = await _callOptionsHelper.executeWithTokenRotation(() async {
       final callOptions = await _callOptionsHelper.withAuth();
@@ -52,6 +53,7 @@ class MoveMoneyGrpcDataSource {
           idempotencyKey: idempotencyKey ?? '',
           verificationToken: verificationToken ?? '',
           transactionId: transactionId ?? '',
+          useDirectDebit: useDirectDebit,
         ),
         options: callOptions.mergedWith(
           CallOptions(timeout: const Duration(seconds: 30)),

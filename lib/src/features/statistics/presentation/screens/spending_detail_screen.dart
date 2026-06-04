@@ -6,6 +6,7 @@ import 'package:lazervault/core/extensions/app_colors.dart';
 import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/src/features/statistics/cubit/statistics_cubit.dart';
 import 'package:lazervault/src/features/statistics/cubit/statistics_state.dart';
+import 'package:lazervault/src/features/statistics/presentation/widgets/statistics_source_sheet.dart';
 import 'package:lazervault/src/features/statistics/data/budget_ai_service.dart';
 import 'package:lazervault/core/utils/currency_formatter.dart';
 
@@ -168,6 +169,17 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
           ),
         ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.tune_rounded, color: Colors.white),
+            tooltip: 'Filter source',
+            onPressed: () => _openSourceSheet(
+              context,
+              context.read<StatisticsCubit>().source,
+            ),
+          ),
+          SizedBox(width: 4.w),
+        ],
       ),
       body: BlocBuilder<StatisticsCubit, StatisticsState>(
         builder: (context, state) {
@@ -184,6 +196,8 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
               physics: const AlwaysScrollableScrollPhysics(),
               padding: EdgeInsets.all(16.r),
               children: [
+                _buildSourceChip(context, state.source),
+                SizedBox(height: 14.h),
                 _buildFullChart(state),
                 SizedBox(height: 24.h),
                 _buildSummaryCards(state),
@@ -197,6 +211,62 @@ class _SpendingDetailScreenState extends State<SpendingDetailScreen> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  /// Opens the source filter sheet; on pick, re-renders content for that source.
+  Future<void> _openSourceSheet(
+    BuildContext context,
+    StatisticsSource current,
+  ) async {
+    final picked = await showStatisticsSourceSheet(context, current: current);
+    if (picked != null && context.mounted) {
+      context.read<StatisticsCubit>().changeSource(picked);
+    }
+  }
+
+  /// Header chip showing the active money source; tap to change it.
+  Widget _buildSourceChip(BuildContext context, StatisticsSource source) {
+    return GestureDetector(
+      onTap: () => _openSourceSheet(context, source),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              source == StatisticsSource.bank
+                  ? Icons.account_balance_rounded
+                  : source == StatisticsSource.lazervault
+                      ? Icons.account_balance_wallet_rounded
+                      : Icons.dashboard_rounded,
+              color: const Color(0xFF3B82F6),
+              size: 18.sp,
+            ),
+            SizedBox(width: 10.w),
+            Text(
+              'Showing: ',
+              style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: 13.sp),
+            ),
+            Expanded(
+              child: Text(
+                source.label,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            Icon(Icons.keyboard_arrow_down_rounded,
+                color: const Color(0xFF9CA3AF), size: 20.sp),
+          ],
+        ),
       ),
     );
   }

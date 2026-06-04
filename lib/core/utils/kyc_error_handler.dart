@@ -67,3 +67,11 @@ bool isKYCLimitError(String? errorMessage) {
   if (errorMessage == null) return false;
   return errorMessage.contains('KYC_TIER_INSUFFICIENT');
 }
+
+/// True when a money operation was blocked because the user must first complete
+/// identity verification. The backend (DirectPay / Direct Debit / Beam) returns a
+/// "KYC_REQUIRED" code/message when there is no verified identity for the user.
+bool isKYCRequiredError(String? errorMessage) {
+  if (errorMessage == null) return false;
+  return errorMessage.contains('KYC_REQUIRED');
+}

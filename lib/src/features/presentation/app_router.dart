@@ -488,11 +488,7 @@ import 'package:lazervault/src/features/channel_management/presentation/screens/
 import 'package:lazervault/src/features/channel_management/presentation/screens/channel_pin_setup_screen.dart';
 
 // KYC imports
-import 'package:lazervault/src/features/kyc/presentation/views/progressive_kyc_screen.dart';
-import 'package:lazervault/src/features/kyc/presentation/views/id_verification_screen.dart';
 import 'package:lazervault/src/features/kyc/presentation/views/bvn_verification_screen.dart';
-import 'package:lazervault/src/features/kyc/presentation/cubits/kyc_cubit.dart';
-import 'package:lazervault/src/features/kyc/domain/entities/kyc_tier_entity.dart';
 // Payroll imports (Business)
 import 'package:lazervault/src/features/payroll/presentation/cubit/payroll_cubit.dart';
 import 'package:lazervault/src/features/payroll/presentation/views/payroll_home_screen.dart';
@@ -3278,34 +3274,23 @@ GetPage(
       transition: Transition.rightToLeft,
     ),
 
-    // KYC Routes - Progressive Onboarding (gRPC-based)
+    // KYC verification — the single refactored BVN screen (Mono Prove over
+    // HTTP). The old "proceed to BVN" intro (ProgressiveKYCScreen) and the
+    // legacy IdVerificationScreen are retired; kycProgressive / kycVerifyId now
+    // redirect here so any lingering navigation still lands on the working flow.
     GetPage(
       name: AppRoutes.kycProgressive,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<KYCCubit>(),
-        child: const ProgressiveKYCScreen(),
-      ),
+      page: () => const BVNVerificationScreen(),
       transition: Transition.rightToLeft,
     ),
     GetPage(
       name: AppRoutes.kycVerifyId,
-      page: () {
-        final args = Get.arguments as Map<String, dynamic>? ?? {};
-        return BlocProvider(
-          create: (_) => serviceLocator<KYCCubit>(),
-          child: IdVerificationScreen(
-            targetTier: args['targetTier'] as KYCTier? ?? KYCTier.tier2,
-          ),
-        );
-      },
+      page: () => const BVNVerificationScreen(),
       transition: Transition.rightToLeft,
     ),
     GetPage(
       name: AppRoutes.kycBVNVerification,
-      page: () => BlocProvider(
-        create: (_) => serviceLocator<KYCCubit>(),
-        child: const BVNVerificationScreen(),
-      ),
+      page: () => const BVNVerificationScreen(),
       transition: Transition.rightToLeft,
     ),
 

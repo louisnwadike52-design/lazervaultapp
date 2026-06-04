@@ -5443,6 +5443,1092 @@ class TransactionsResponse extends $pb.GeneratedMessage {
   $core.List<Transaction> get transactions => $_getList(3);
 }
 
+class GetAccountStatementRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetAccountStatementRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'banking'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'period')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'output')
+    ..hasRequiredFields = false
+  ;
+
+  GetAccountStatementRequest._() : super();
+  factory GetAccountStatementRequest({
+    $core.String? accountId,
+    $core.String? userId,
+    $core.String? period,
+    $core.String? output,
+  }) {
+    final _result = create();
+    if (accountId != null) {
+      _result.accountId = accountId;
+    }
+    if (userId != null) {
+      _result.userId = userId;
+    }
+    if (period != null) {
+      _result.period = period;
+    }
+    if (output != null) {
+      _result.output = output;
+    }
+    return _result;
+  }
+  factory GetAccountStatementRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetAccountStatementRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetAccountStatementRequest clone() => GetAccountStatementRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetAccountStatementRequest copyWith(void Function(GetAccountStatementRequest) updates) => super.copyWith((message) => updates(message as GetAccountStatementRequest)) as GetAccountStatementRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetAccountStatementRequest create() => GetAccountStatementRequest._();
+  GetAccountStatementRequest createEmptyInstance() => create();
+  static $pb.PbList<GetAccountStatementRequest> createRepeated() => $pb.PbList<GetAccountStatementRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetAccountStatementRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetAccountStatementRequest>(create);
+  static GetAccountStatementRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get accountId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set accountId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAccountId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAccountId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get userId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set userId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasUserId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearUserId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get period => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set period($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPeriod() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPeriod() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get output => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set output($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasOutput() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearOutput() => clearField(4);
+}
+
+class AccountStatementResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AccountStatementResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'banking'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorCode')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorMessage')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'json')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pdfJobId')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pdfUrl')
+    ..hasRequiredFields = false
+  ;
+
+  AccountStatementResponse._() : super();
+  factory AccountStatementResponse({
+    $core.bool? success,
+    $core.String? errorCode,
+    $core.String? errorMessage,
+    $core.String? json,
+    $core.String? pdfJobId,
+    $core.String? pdfUrl,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    if (errorCode != null) {
+      _result.errorCode = errorCode;
+    }
+    if (errorMessage != null) {
+      _result.errorMessage = errorMessage;
+    }
+    if (json != null) {
+      _result.json = json;
+    }
+    if (pdfJobId != null) {
+      _result.pdfJobId = pdfJobId;
+    }
+    if (pdfUrl != null) {
+      _result.pdfUrl = pdfUrl;
+    }
+    return _result;
+  }
+  factory AccountStatementResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory AccountStatementResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  AccountStatementResponse clone() => AccountStatementResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  AccountStatementResponse copyWith(void Function(AccountStatementResponse) updates) => super.copyWith((message) => updates(message as AccountStatementResponse)) as AccountStatementResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static AccountStatementResponse create() => AccountStatementResponse._();
+  AccountStatementResponse createEmptyInstance() => create();
+  static $pb.PbList<AccountStatementResponse> createRepeated() => $pb.PbList<AccountStatementResponse>();
+  @$core.pragma('dart2js:noInline')
+  static AccountStatementResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AccountStatementResponse>(create);
+  static AccountStatementResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get errorCode => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set errorCode($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasErrorCode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearErrorCode() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get errorMessage => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set errorMessage($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasErrorMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearErrorMessage() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get json => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set json($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasJson() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearJson() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get pdfJobId => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set pdfJobId($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasPdfJobId() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearPdfJobId() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get pdfUrl => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set pdfUrl($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasPdfUrl() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearPdfUrl() => clearField(6);
+}
+
+class GetStatementInsightsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetStatementInsightsRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'banking'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..hasRequiredFields = false
+  ;
+
+  GetStatementInsightsRequest._() : super();
+  factory GetStatementInsightsRequest({
+    $core.String? accountId,
+    $core.String? userId,
+  }) {
+    final _result = create();
+    if (accountId != null) {
+      _result.accountId = accountId;
+    }
+    if (userId != null) {
+      _result.userId = userId;
+    }
+    return _result;
+  }
+  factory GetStatementInsightsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetStatementInsightsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetStatementInsightsRequest clone() => GetStatementInsightsRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetStatementInsightsRequest copyWith(void Function(GetStatementInsightsRequest) updates) => super.copyWith((message) => updates(message as GetStatementInsightsRequest)) as GetStatementInsightsRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetStatementInsightsRequest create() => GetStatementInsightsRequest._();
+  GetStatementInsightsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetStatementInsightsRequest> createRepeated() => $pb.PbList<GetStatementInsightsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetStatementInsightsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetStatementInsightsRequest>(create);
+  static GetStatementInsightsRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get accountId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set accountId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAccountId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAccountId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get userId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set userId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasUserId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearUserId() => clearField(2);
+}
+
+class GetAccountIncomeRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetAccountIncomeRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'banking'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'period', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  GetAccountIncomeRequest._() : super();
+  factory GetAccountIncomeRequest({
+    $core.String? accountId,
+    $core.String? userId,
+    $core.int? period,
+  }) {
+    final _result = create();
+    if (accountId != null) {
+      _result.accountId = accountId;
+    }
+    if (userId != null) {
+      _result.userId = userId;
+    }
+    if (period != null) {
+      _result.period = period;
+    }
+    return _result;
+  }
+  factory GetAccountIncomeRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetAccountIncomeRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetAccountIncomeRequest clone() => GetAccountIncomeRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetAccountIncomeRequest copyWith(void Function(GetAccountIncomeRequest) updates) => super.copyWith((message) => updates(message as GetAccountIncomeRequest)) as GetAccountIncomeRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetAccountIncomeRequest create() => GetAccountIncomeRequest._();
+  GetAccountIncomeRequest createEmptyInstance() => create();
+  static $pb.PbList<GetAccountIncomeRequest> createRepeated() => $pb.PbList<GetAccountIncomeRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetAccountIncomeRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetAccountIncomeRequest>(create);
+  static GetAccountIncomeRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get accountId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set accountId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAccountId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAccountId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get userId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set userId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasUserId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearUserId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get period => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set period($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPeriod() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPeriod() => clearField(3);
+}
+
+class AssessCreditworthinessRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AssessCreditworthinessRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'banking'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aInt64(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'principal')
+    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'interestRate', $pb.PbFieldType.OD)
+    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'term', $pb.PbFieldType.O3)
+    ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'runCreditCheck')
+    ..hasRequiredFields = false
+  ;
+
+  AssessCreditworthinessRequest._() : super();
+  factory AssessCreditworthinessRequest({
+    $core.String? accountId,
+    $core.String? userId,
+    $fixnum.Int64? principal,
+    $core.double? interestRate,
+    $core.int? term,
+    $core.bool? runCreditCheck,
+  }) {
+    final _result = create();
+    if (accountId != null) {
+      _result.accountId = accountId;
+    }
+    if (userId != null) {
+      _result.userId = userId;
+    }
+    if (principal != null) {
+      _result.principal = principal;
+    }
+    if (interestRate != null) {
+      _result.interestRate = interestRate;
+    }
+    if (term != null) {
+      _result.term = term;
+    }
+    if (runCreditCheck != null) {
+      _result.runCreditCheck = runCreditCheck;
+    }
+    return _result;
+  }
+  factory AssessCreditworthinessRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory AssessCreditworthinessRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  AssessCreditworthinessRequest clone() => AssessCreditworthinessRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  AssessCreditworthinessRequest copyWith(void Function(AssessCreditworthinessRequest) updates) => super.copyWith((message) => updates(message as AssessCreditworthinessRequest)) as AssessCreditworthinessRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static AssessCreditworthinessRequest create() => AssessCreditworthinessRequest._();
+  AssessCreditworthinessRequest createEmptyInstance() => create();
+  static $pb.PbList<AssessCreditworthinessRequest> createRepeated() => $pb.PbList<AssessCreditworthinessRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AssessCreditworthinessRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AssessCreditworthinessRequest>(create);
+  static AssessCreditworthinessRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get accountId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set accountId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAccountId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAccountId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get userId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set userId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasUserId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearUserId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get principal => $_getI64(2);
+  @$pb.TagNumber(3)
+  set principal($fixnum.Int64 v) { $_setInt64(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPrincipal() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPrincipal() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.double get interestRate => $_getN(3);
+  @$pb.TagNumber(4)
+  set interestRate($core.double v) { $_setDouble(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasInterestRate() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearInterestRate() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get term => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set term($core.int v) { $_setSignedInt32(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasTerm() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearTerm() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.bool get runCreditCheck => $_getBF(5);
+  @$pb.TagNumber(6)
+  set runCreditCheck($core.bool v) { $_setBool(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasRunCreditCheck() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearRunCreditCheck() => clearField(6);
+}
+
+class ConnectDataResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ConnectDataResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'banking'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorCode')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorMessage')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'json')
+    ..hasRequiredFields = false
+  ;
+
+  ConnectDataResponse._() : super();
+  factory ConnectDataResponse({
+    $core.bool? success,
+    $core.String? errorCode,
+    $core.String? errorMessage,
+    $core.String? json,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    if (errorCode != null) {
+      _result.errorCode = errorCode;
+    }
+    if (errorMessage != null) {
+      _result.errorMessage = errorMessage;
+    }
+    if (json != null) {
+      _result.json = json;
+    }
+    return _result;
+  }
+  factory ConnectDataResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ConnectDataResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ConnectDataResponse clone() => ConnectDataResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ConnectDataResponse copyWith(void Function(ConnectDataResponse) updates) => super.copyWith((message) => updates(message as ConnectDataResponse)) as ConnectDataResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static ConnectDataResponse create() => ConnectDataResponse._();
+  ConnectDataResponse createEmptyInstance() => create();
+  static $pb.PbList<ConnectDataResponse> createRepeated() => $pb.PbList<ConnectDataResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ConnectDataResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ConnectDataResponse>(create);
+  static ConnectDataResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get errorCode => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set errorCode($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasErrorCode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearErrorCode() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get errorMessage => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set errorMessage($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasErrorMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearErrorMessage() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get json => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set json($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasJson() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearJson() => clearField(4);
+}
+
+class InitiateProveKYCRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'InitiateProveKYCRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'banking'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'idType')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'idNumber')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'firstName')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastName')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phone')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'email')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'address')
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'tier')
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'redirectUrl')
+    ..hasRequiredFields = false
+  ;
+
+  InitiateProveKYCRequest._() : super();
+  factory InitiateProveKYCRequest({
+    $core.String? userId,
+    $core.String? idType,
+    $core.String? idNumber,
+    $core.String? firstName,
+    $core.String? lastName,
+    $core.String? phone,
+    $core.String? email,
+    $core.String? address,
+    $core.String? tier,
+    $core.String? redirectUrl,
+  }) {
+    final _result = create();
+    if (userId != null) {
+      _result.userId = userId;
+    }
+    if (idType != null) {
+      _result.idType = idType;
+    }
+    if (idNumber != null) {
+      _result.idNumber = idNumber;
+    }
+    if (firstName != null) {
+      _result.firstName = firstName;
+    }
+    if (lastName != null) {
+      _result.lastName = lastName;
+    }
+    if (phone != null) {
+      _result.phone = phone;
+    }
+    if (email != null) {
+      _result.email = email;
+    }
+    if (address != null) {
+      _result.address = address;
+    }
+    if (tier != null) {
+      _result.tier = tier;
+    }
+    if (redirectUrl != null) {
+      _result.redirectUrl = redirectUrl;
+    }
+    return _result;
+  }
+  factory InitiateProveKYCRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory InitiateProveKYCRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  InitiateProveKYCRequest clone() => InitiateProveKYCRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  InitiateProveKYCRequest copyWith(void Function(InitiateProveKYCRequest) updates) => super.copyWith((message) => updates(message as InitiateProveKYCRequest)) as InitiateProveKYCRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static InitiateProveKYCRequest create() => InitiateProveKYCRequest._();
+  InitiateProveKYCRequest createEmptyInstance() => create();
+  static $pb.PbList<InitiateProveKYCRequest> createRepeated() => $pb.PbList<InitiateProveKYCRequest>();
+  @$core.pragma('dart2js:noInline')
+  static InitiateProveKYCRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<InitiateProveKYCRequest>(create);
+  static InitiateProveKYCRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get idType => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set idType($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasIdType() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearIdType() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get idNumber => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set idNumber($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasIdNumber() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearIdNumber() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get firstName => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set firstName($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasFirstName() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearFirstName() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get lastName => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set lastName($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasLastName() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearLastName() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get phone => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set phone($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasPhone() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearPhone() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get email => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set email($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasEmail() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearEmail() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get address => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set address($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasAddress() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearAddress() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get tier => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set tier($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasTier() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearTier() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get redirectUrl => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set redirectUrl($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasRedirectUrl() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearRedirectUrl() => clearField(10);
+}
+
+class InitiateProveKYCResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'InitiateProveKYCResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'banking'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorCode')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorMessage')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'monoUrl')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reference')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sessionId')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+    ..hasRequiredFields = false
+  ;
+
+  InitiateProveKYCResponse._() : super();
+  factory InitiateProveKYCResponse({
+    $core.bool? success,
+    $core.String? errorCode,
+    $core.String? errorMessage,
+    $core.String? monoUrl,
+    $core.String? reference,
+    $core.String? sessionId,
+    $core.String? status,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    if (errorCode != null) {
+      _result.errorCode = errorCode;
+    }
+    if (errorMessage != null) {
+      _result.errorMessage = errorMessage;
+    }
+    if (monoUrl != null) {
+      _result.monoUrl = monoUrl;
+    }
+    if (reference != null) {
+      _result.reference = reference;
+    }
+    if (sessionId != null) {
+      _result.sessionId = sessionId;
+    }
+    if (status != null) {
+      _result.status = status;
+    }
+    return _result;
+  }
+  factory InitiateProveKYCResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory InitiateProveKYCResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  InitiateProveKYCResponse clone() => InitiateProveKYCResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  InitiateProveKYCResponse copyWith(void Function(InitiateProveKYCResponse) updates) => super.copyWith((message) => updates(message as InitiateProveKYCResponse)) as InitiateProveKYCResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static InitiateProveKYCResponse create() => InitiateProveKYCResponse._();
+  InitiateProveKYCResponse createEmptyInstance() => create();
+  static $pb.PbList<InitiateProveKYCResponse> createRepeated() => $pb.PbList<InitiateProveKYCResponse>();
+  @$core.pragma('dart2js:noInline')
+  static InitiateProveKYCResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<InitiateProveKYCResponse>(create);
+  static InitiateProveKYCResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get errorCode => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set errorCode($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasErrorCode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearErrorCode() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get errorMessage => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set errorMessage($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasErrorMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearErrorMessage() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get monoUrl => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set monoUrl($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasMonoUrl() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearMonoUrl() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get reference => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set reference($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasReference() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearReference() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get sessionId => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set sessionId($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasSessionId() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearSessionId() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get status => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set status($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasStatus() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearStatus() => clearField(7);
+}
+
+class CompleteProveKYCRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CompleteProveKYCRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'banking'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reference')
+    ..hasRequiredFields = false
+  ;
+
+  CompleteProveKYCRequest._() : super();
+  factory CompleteProveKYCRequest({
+    $core.String? userId,
+    $core.String? reference,
+  }) {
+    final _result = create();
+    if (userId != null) {
+      _result.userId = userId;
+    }
+    if (reference != null) {
+      _result.reference = reference;
+    }
+    return _result;
+  }
+  factory CompleteProveKYCRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CompleteProveKYCRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CompleteProveKYCRequest clone() => CompleteProveKYCRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CompleteProveKYCRequest copyWith(void Function(CompleteProveKYCRequest) updates) => super.copyWith((message) => updates(message as CompleteProveKYCRequest)) as CompleteProveKYCRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static CompleteProveKYCRequest create() => CompleteProveKYCRequest._();
+  CompleteProveKYCRequest createEmptyInstance() => create();
+  static $pb.PbList<CompleteProveKYCRequest> createRepeated() => $pb.PbList<CompleteProveKYCRequest>();
+  @$core.pragma('dart2js:noInline')
+  static CompleteProveKYCRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CompleteProveKYCRequest>(create);
+  static CompleteProveKYCRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get reference => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set reference($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasReference() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearReference() => clearField(2);
+}
+
+class CompleteProveKYCResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CompleteProveKYCResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'banking'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorCode')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorMessage')
+    ..aOB(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verified')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bvn')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'nin')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'firstName')
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastName')
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'dateOfBirth')
+    ..hasRequiredFields = false
+  ;
+
+  CompleteProveKYCResponse._() : super();
+  factory CompleteProveKYCResponse({
+    $core.bool? success,
+    $core.String? errorCode,
+    $core.String? errorMessage,
+    $core.bool? verified,
+    $core.String? status,
+    $core.String? bvn,
+    $core.String? nin,
+    $core.String? firstName,
+    $core.String? lastName,
+    $core.String? dateOfBirth,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    if (errorCode != null) {
+      _result.errorCode = errorCode;
+    }
+    if (errorMessage != null) {
+      _result.errorMessage = errorMessage;
+    }
+    if (verified != null) {
+      _result.verified = verified;
+    }
+    if (status != null) {
+      _result.status = status;
+    }
+    if (bvn != null) {
+      _result.bvn = bvn;
+    }
+    if (nin != null) {
+      _result.nin = nin;
+    }
+    if (firstName != null) {
+      _result.firstName = firstName;
+    }
+    if (lastName != null) {
+      _result.lastName = lastName;
+    }
+    if (dateOfBirth != null) {
+      _result.dateOfBirth = dateOfBirth;
+    }
+    return _result;
+  }
+  factory CompleteProveKYCResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CompleteProveKYCResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CompleteProveKYCResponse clone() => CompleteProveKYCResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CompleteProveKYCResponse copyWith(void Function(CompleteProveKYCResponse) updates) => super.copyWith((message) => updates(message as CompleteProveKYCResponse)) as CompleteProveKYCResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static CompleteProveKYCResponse create() => CompleteProveKYCResponse._();
+  CompleteProveKYCResponse createEmptyInstance() => create();
+  static $pb.PbList<CompleteProveKYCResponse> createRepeated() => $pb.PbList<CompleteProveKYCResponse>();
+  @$core.pragma('dart2js:noInline')
+  static CompleteProveKYCResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CompleteProveKYCResponse>(create);
+  static CompleteProveKYCResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get errorCode => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set errorCode($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasErrorCode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearErrorCode() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get errorMessage => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set errorMessage($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasErrorMessage() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearErrorMessage() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.bool get verified => $_getBF(3);
+  @$pb.TagNumber(4)
+  set verified($core.bool v) { $_setBool(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasVerified() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearVerified() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get status => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set status($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasStatus() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearStatus() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get bvn => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set bvn($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasBvn() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearBvn() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get nin => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set nin($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasNin() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearNin() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get firstName => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set firstName($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasFirstName() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearFirstName() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get lastName => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set lastName($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasLastName() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearLastName() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get dateOfBirth => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set dateOfBirth($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasDateOfBirth() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearDateOfBirth() => clearField(10);
+}
+
 class Transaction extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'Transaction', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'banking'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
@@ -15681,6 +16767,7 @@ class InitiateMoveTransferRequest extends $pb.GeneratedMessage {
     ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'idempotencyKey')
     ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verificationToken')
     ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionId')
+    ..aOB(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'useDirectDebit')
     ..hasRequiredFields = false
   ;
 
@@ -15696,6 +16783,7 @@ class InitiateMoveTransferRequest extends $pb.GeneratedMessage {
     $core.String? idempotencyKey,
     $core.String? verificationToken,
     $core.String? transactionId,
+    $core.bool? useDirectDebit,
   }) {
     final _result = create();
     if (userId != null) {
@@ -15727,6 +16815,9 @@ class InitiateMoveTransferRequest extends $pb.GeneratedMessage {
     }
     if (transactionId != null) {
       _result.transactionId = transactionId;
+    }
+    if (useDirectDebit != null) {
+      _result.useDirectDebit = useDirectDebit;
     }
     return _result;
   }
@@ -15840,6 +16931,15 @@ class InitiateMoveTransferRequest extends $pb.GeneratedMessage {
   $core.bool hasTransactionId() => $_has(9);
   @$pb.TagNumber(10)
   void clearTransactionId() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.bool get useDirectDebit => $_getBF(10);
+  @$pb.TagNumber(11)
+  set useDirectDebit($core.bool v) { $_setBool(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasUseDirectDebit() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearUseDirectDebit() => clearField(11);
 }
 
 class MoveTransferResponse extends $pb.GeneratedMessage {

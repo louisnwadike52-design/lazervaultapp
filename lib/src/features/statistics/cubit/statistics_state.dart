@@ -1,6 +1,29 @@
 import 'package:equatable/equatable.dart';
 import '../../../generated/accounts.pb.dart' as accounts_pb;
 
+/// Which money sources the budgeting/statistics content reflects.
+/// - [lazervault]: internal LazerVault wallet only.
+/// - [bank]: linked external bank accounts only (Mono).
+/// - [both]: LazerVault wallet + linked banks combined.
+enum StatisticsSource { lazervault, bank, both }
+
+extension StatisticsSourceX on StatisticsSource {
+  /// Human label shown in the filter bottom sheet / header chip.
+  String get label {
+    switch (this) {
+      case StatisticsSource.lazervault:
+        return 'LazerVault';
+      case StatisticsSource.bank:
+        return 'Bank';
+      case StatisticsSource.both:
+        return 'LazerVault & Bank';
+    }
+  }
+
+  /// Whether external (bank) transactions are part of this source.
+  bool get includesExternal => this != StatisticsSource.lazervault;
+}
+
 /// Base class for all statistics states
 abstract class StatisticsState extends Equatable {
   const StatisticsState();
@@ -35,6 +58,8 @@ class StatisticsLoaded extends StatisticsState {
   final accounts_pb.GetTransactionHistoryResponse? failedTransactions;
   final String currentPeriod;
   final bool includeExternalBanks;
+  // Selected money source the content reflects (drives the filter chip + sheet).
+  final StatisticsSource source;
 
   const StatisticsLoaded({
     required this.startDate,
@@ -46,6 +71,7 @@ class StatisticsLoaded extends StatisticsState {
     this.failedTransactions,
     this.currentPeriod = 'month',
     this.includeExternalBanks = true,
+    this.source = StatisticsSource.both,
   });
 
   @override
@@ -59,6 +85,7 @@ class StatisticsLoaded extends StatisticsState {
         failedTransactions,
         currentPeriod,
         includeExternalBanks,
+        source,
       ];
 
   /// Create a copy with updated fields
@@ -72,6 +99,7 @@ class StatisticsLoaded extends StatisticsState {
     accounts_pb.GetTransactionHistoryResponse? failedTransactions,
     String? currentPeriod,
     bool? includeExternalBanks,
+    StatisticsSource? source,
   }) {
     return StatisticsLoaded(
       startDate: startDate ?? this.startDate,
@@ -83,6 +111,7 @@ class StatisticsLoaded extends StatisticsState {
       failedTransactions: failedTransactions ?? this.failedTransactions,
       currentPeriod: currentPeriod ?? this.currentPeriod,
       includeExternalBanks: includeExternalBanks ?? this.includeExternalBanks,
+      source: source ?? this.source,
     );
   }
 }

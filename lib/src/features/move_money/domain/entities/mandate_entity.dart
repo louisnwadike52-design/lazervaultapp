@@ -111,7 +111,7 @@ class MandateEntity extends Equatable {
     this.description,
   });
 
-  /// Whether this mandate is in a usable state for auto-debit
+  /// Whether this mandate is in a usable state for Direct Debit
   bool get isActive =>
       status == MandateStatus.active ||
       status == MandateStatus.readyToDebit;

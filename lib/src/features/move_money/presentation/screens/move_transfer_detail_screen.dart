@@ -507,32 +507,16 @@ class _MoveTransferDetailScreenState extends State<MoveTransferDetailScreen> {
             ),
           ),
           SizedBox(height: 14.h),
+          // Single consolidated fee for the user; itemized breakdown lives on
+          // the backend + admin transaction-detail page.
           _buildRow(
-            'Debit Fee',
-            _formatNaira(_transfer.debitFee / 100.0),
+            'Transfer fee',
+            _formatNaira(_transfer.totalFeeNaira),
+            isBold: true,
           ),
-          _buildRow(
-            'Transfer Fee',
-            _formatNaira(_transfer.transferFee / 100.0),
-          ),
-          if (_transfer.stampDuty > 0)
-            _buildRow(
-              'Stamp Duty',
-              _formatNaira(_transfer.stampDuty / 100.0),
-            ),
-          if (_transfer.serviceFee > 0)
-            _buildRow(
-              'Service Fee',
-              _formatNaira(_transfer.serviceFee / 100.0),
-            ),
           Divider(
             color: const Color(0xFF2D2D2D),
             height: 16.h,
-          ),
-          _buildRow(
-            'Total Fees',
-            _formatNaira(_transfer.totalFeeNaira),
-            isBold: true,
           ),
           _buildRow(
             'Total Debit',

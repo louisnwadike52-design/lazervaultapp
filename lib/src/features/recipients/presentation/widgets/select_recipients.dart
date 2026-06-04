@@ -922,7 +922,7 @@ class _SelectRecipientsState extends State<SelectRecipients> {
                             SizedBox(width: 8.w),
                             Flexible(
                               child: Text(
-                                '• ${recipient.bankName}',
+                                '• ${recipient.displayBankName}',
                                 style: TextStyle(
                                   fontSize: 13.sp,
                                   color: Colors.grey[500],

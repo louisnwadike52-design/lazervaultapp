@@ -57,7 +57,7 @@ class RecurringAccessToggle extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Set up auto-mandate',
+                            'Set up Direct Debit',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 14.sp,
@@ -67,8 +67,8 @@ class RecurringAccessToggle extends StatelessWidget {
                           SizedBox(height: 2.h),
                           Text(
                             isRecurringEnabled
-                                ? 'Future deposits are instant. No bank approval each time'
-                                : 'You will approve each deposit at your bank',
+                                ? 'Direct Debit: future deposits are instant. No bank approval each time'
+                                : 'You will approve each deposit at your bank (one-time)',
                             style: TextStyle(
                               color: Colors.white.withValues(alpha: 0.5),
                               fontSize: 11.sp,

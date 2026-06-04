@@ -163,6 +163,42 @@ class BankingServiceClient extends $grpc.Client {
       ($0.GetAccountTransactionsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
           $0.TransactionsResponse.fromBuffer(value));
+  static final _$getAccountStatement = $grpc.ClientMethod<
+          $0.GetAccountStatementRequest, $0.AccountStatementResponse>(
+      '/banking.BankingService/GetAccountStatement',
+      ($0.GetAccountStatementRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.AccountStatementResponse.fromBuffer(value));
+  static final _$getStatementInsights = $grpc.ClientMethod<
+          $0.GetStatementInsightsRequest, $0.ConnectDataResponse>(
+      '/banking.BankingService/GetStatementInsights',
+      ($0.GetStatementInsightsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.ConnectDataResponse.fromBuffer(value));
+  static final _$getAccountIncome =
+      $grpc.ClientMethod<$0.GetAccountIncomeRequest, $0.ConnectDataResponse>(
+          '/banking.BankingService/GetAccountIncome',
+          ($0.GetAccountIncomeRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.ConnectDataResponse.fromBuffer(value));
+  static final _$assessCreditworthiness = $grpc.ClientMethod<
+          $0.AssessCreditworthinessRequest, $0.ConnectDataResponse>(
+      '/banking.BankingService/AssessCreditworthiness',
+      ($0.AssessCreditworthinessRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.ConnectDataResponse.fromBuffer(value));
+  static final _$initiateProveKYC = $grpc.ClientMethod<
+          $0.InitiateProveKYCRequest, $0.InitiateProveKYCResponse>(
+      '/banking.BankingService/InitiateProveKYC',
+      ($0.InitiateProveKYCRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.InitiateProveKYCResponse.fromBuffer(value));
+  static final _$completeProveKYC = $grpc.ClientMethod<
+          $0.CompleteProveKYCRequest, $0.CompleteProveKYCResponse>(
+      '/banking.BankingService/CompleteProveKYC',
+      ($0.CompleteProveKYCRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.CompleteProveKYCResponse.fromBuffer(value));
   static final _$getPrimaryAccount = $grpc.ClientMethod<
           $0.GetPrimaryAccountRequest, $0.VirtualAccountResponse>(
       '/banking.BankingService/GetPrimaryAccount',
@@ -607,6 +643,43 @@ class BankingServiceClient extends $grpc.Client {
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getAccountTransactions, request,
         options: options);
+  }
+
+  $grpc.ResponseFuture<$0.AccountStatementResponse> getAccountStatement(
+      $0.GetAccountStatementRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getAccountStatement, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.ConnectDataResponse> getStatementInsights(
+      $0.GetStatementInsightsRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getStatementInsights, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.ConnectDataResponse> getAccountIncome(
+      $0.GetAccountIncomeRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getAccountIncome, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.ConnectDataResponse> assessCreditworthiness(
+      $0.AssessCreditworthinessRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$assessCreditworthiness, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$0.InitiateProveKYCResponse> initiateProveKYC(
+      $0.InitiateProveKYCRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$initiateProveKYC, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.CompleteProveKYCResponse> completeProveKYC(
+      $0.CompleteProveKYCRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$completeProveKYC, request, options: options);
   }
 
   $grpc.ResponseFuture<$0.VirtualAccountResponse> getPrimaryAccount(
@@ -1125,6 +1198,60 @@ abstract class BankingServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.GetAccountTransactionsRequest.fromBuffer(value),
         ($0.TransactionsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetAccountStatementRequest,
+            $0.AccountStatementResponse>(
+        'GetAccountStatement',
+        getAccountStatement_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetAccountStatementRequest.fromBuffer(value),
+        ($0.AccountStatementResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetStatementInsightsRequest,
+            $0.ConnectDataResponse>(
+        'GetStatementInsights',
+        getStatementInsights_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetStatementInsightsRequest.fromBuffer(value),
+        ($0.ConnectDataResponse value) => value.writeToBuffer()));
+    $addMethod(
+        $grpc.ServiceMethod<$0.GetAccountIncomeRequest, $0.ConnectDataResponse>(
+            'GetAccountIncome',
+            getAccountIncome_Pre,
+            false,
+            false,
+            ($core.List<$core.int> value) =>
+                $0.GetAccountIncomeRequest.fromBuffer(value),
+            ($0.ConnectDataResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AssessCreditworthinessRequest,
+            $0.ConnectDataResponse>(
+        'AssessCreditworthiness',
+        assessCreditworthiness_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.AssessCreditworthinessRequest.fromBuffer(value),
+        ($0.ConnectDataResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.InitiateProveKYCRequest,
+            $0.InitiateProveKYCResponse>(
+        'InitiateProveKYC',
+        initiateProveKYC_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.InitiateProveKYCRequest.fromBuffer(value),
+        ($0.InitiateProveKYCResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.CompleteProveKYCRequest,
+            $0.CompleteProveKYCResponse>(
+        'CompleteProveKYC',
+        completeProveKYC_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.CompleteProveKYCRequest.fromBuffer(value),
+        ($0.CompleteProveKYCResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.GetPrimaryAccountRequest,
             $0.VirtualAccountResponse>(
         'GetPrimaryAccount',
@@ -1691,6 +1818,42 @@ abstract class BankingServiceBase extends $grpc.Service {
     return getAccountTransactions(call, await request);
   }
 
+  $async.Future<$0.AccountStatementResponse> getAccountStatement_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.GetAccountStatementRequest> request) async {
+    return getAccountStatement(call, await request);
+  }
+
+  $async.Future<$0.ConnectDataResponse> getStatementInsights_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.GetStatementInsightsRequest> request) async {
+    return getStatementInsights(call, await request);
+  }
+
+  $async.Future<$0.ConnectDataResponse> getAccountIncome_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.GetAccountIncomeRequest> request) async {
+    return getAccountIncome(call, await request);
+  }
+
+  $async.Future<$0.ConnectDataResponse> assessCreditworthiness_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.AssessCreditworthinessRequest> request) async {
+    return assessCreditworthiness(call, await request);
+  }
+
+  $async.Future<$0.InitiateProveKYCResponse> initiateProveKYC_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.InitiateProveKYCRequest> request) async {
+    return initiateProveKYC(call, await request);
+  }
+
+  $async.Future<$0.CompleteProveKYCResponse> completeProveKYC_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.CompleteProveKYCRequest> request) async {
+    return completeProveKYC(call, await request);
+  }
+
   $async.Future<$0.VirtualAccountResponse> getPrimaryAccount_Pre(
       $grpc.ServiceCall call,
       $async.Future<$0.GetPrimaryAccountRequest> request) async {
@@ -2010,6 +2173,18 @@ abstract class BankingServiceBase extends $grpc.Service {
       $grpc.ServiceCall call, $0.GetAccountBalanceRequest request);
   $async.Future<$0.TransactionsResponse> getAccountTransactions(
       $grpc.ServiceCall call, $0.GetAccountTransactionsRequest request);
+  $async.Future<$0.AccountStatementResponse> getAccountStatement(
+      $grpc.ServiceCall call, $0.GetAccountStatementRequest request);
+  $async.Future<$0.ConnectDataResponse> getStatementInsights(
+      $grpc.ServiceCall call, $0.GetStatementInsightsRequest request);
+  $async.Future<$0.ConnectDataResponse> getAccountIncome(
+      $grpc.ServiceCall call, $0.GetAccountIncomeRequest request);
+  $async.Future<$0.ConnectDataResponse> assessCreditworthiness(
+      $grpc.ServiceCall call, $0.AssessCreditworthinessRequest request);
+  $async.Future<$0.InitiateProveKYCResponse> initiateProveKYC(
+      $grpc.ServiceCall call, $0.InitiateProveKYCRequest request);
+  $async.Future<$0.CompleteProveKYCResponse> completeProveKYC(
+      $grpc.ServiceCall call, $0.CompleteProveKYCRequest request);
   $async.Future<$0.VirtualAccountResponse> getPrimaryAccount(
       $grpc.ServiceCall call, $0.GetPrimaryAccountRequest request);
   $async.Future<$0.FreezeAccountResponse> freezeAccount(

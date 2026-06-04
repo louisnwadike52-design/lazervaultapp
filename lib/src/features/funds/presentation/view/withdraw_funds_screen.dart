@@ -50,14 +50,16 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
   static const _divider = Color(0xFF2D2D2D);
   static const _textSecondary = Color(0xFF9CA3AF);
   static const _accent = Color(0xFF3B82F6);
+  static const _orange = Color(0xFFF97316); // Withdraw CTA
+  static const _onOrange = Color(0xFF1A1206); // high-contrast text on orange
   static const _success = Color(0xFF10B981);
   static const _error = Color(0xFFEF4444);
 
   final TextEditingController _amountController = TextEditingController();
+  final FocusNode _amountFocus = FocusNode();
   List<LinkedBankAccount> _linkedAccounts = [];
   LinkedBankAccount? _selected;
   bool _loadingAccounts = true;
-  bool _submitting = false;
   bool _linking = false;
 
   String get _sourceAccountId =>
@@ -88,6 +90,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
   @override
   void dispose() {
     _amountController.dispose();
+    _amountFocus.dispose();
     super.dispose();
   }
 
@@ -140,11 +143,37 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
       if (i >= 0) {
         _linkedAccounts[i] = account;
       } else {
+        // New bank becomes the first card in the carousel + the selection.
         _linkedAccounts.insert(0, account);
       }
       _selected = account;
     });
     _snack('${account.bankName} linked.', _success);
+
+    // Flow straight into completing the withdrawal: if an amount is already
+    // entered, open the confirm/PIN txbottomsheet now; otherwise prompt for the
+    // amount by focusing the field so the user can finish in one continuous flow.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (_enteredAmount > 0) {
+        _onWithdraw();
+      } else {
+        FocusScope.of(context).requestFocus(_amountFocus);
+        _snack('Bank linked. Enter an amount to withdraw.', _accent);
+      }
+    });
+  }
+
+  /// Select a destination bank and move it to the FRONT of the carousel so the
+  /// chosen account is always the first card shown.
+  void _selectAccount(LinkedBankAccount account) {
+    setState(() {
+      _selected = account;
+      final i = _linkedAccounts.indexWhere((a) => a.id == account.id);
+      if (i > 0) {
+        _linkedAccounts.insert(0, _linkedAccounts.removeAt(i));
+      }
+    });
   }
 
   // ===== Fee (mirrors banking-service CalculateWithdrawalFee NIP tiers) =====
@@ -173,6 +202,12 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
   }
 
   // ===== Submit =====
+  // The destination (a Mono-linked account) is already bank-verified, so the
+  // confirm sheet shows the verified holder name, then the PIN sheet processes
+  // the payout IN-SHEET (verify -> process -> success/failed) like the transfer
+  // txbottomsheet: the real gRPC call runs inside onPinValidated so the sheet's
+  // result reflects the actual outcome. On success we land on the receipt; on
+  // failure the error is shown inside the sheet (no navigation).
   Future<void> _onWithdraw() async {
     final err = _validate();
     if (err != null) {
@@ -183,8 +218,11 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
     final account = _selected!;
     final amount = _enteredAmount;
     final transactionId = const Uuid().v4();
+    final destName =
+        account.accountName.isNotEmpty ? account.accountName : account.bankName;
 
-    String? token;
+    banking_pb.WithdrawalResponse? resp;
+
     final ok = await validateTransactionPin(
       context: context,
       transactionId: transactionId,
@@ -196,61 +234,55 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
       currencySymbol: _currencySymbol,
       title: 'Confirm withdrawal',
       message:
-          'Send ${_money(amount)} to ${account.bankName}. ${_money(_fee)} fee. ${_money(_totalDebit)} will leave your balance.',
-      onPinValidated: (t) async {
-        token = t;
+          'Send ${_money(amount)} to $destName · ${account.bankName} (${account.displayAccountNumber}). ${_money(_fee)} fee.',
+      // Run the payout inside the sheet's processing phase (transfer pattern).
+      // A thrown error here makes the sheet show the failure inline.
+      showProcessingPhase: true,
+      onPinValidated: (token) async {
+        resp = await _runWithdrawal(account, amount, transactionId, token);
+        if (resp == null || !resp!.success) {
+          throw Exception(
+              (resp?.errorMessage.isNotEmpty ?? false) ? resp!.errorMessage : 'Withdrawal failed');
+        }
       },
     );
-    if (!ok || token == null) return;
+
+    // Failure path already surfaced inside the sheet.
+    if (!ok || resp == null || !resp!.success) return;
     if (!mounted) return;
-    await _submit(account, amount, transactionId, token!);
+
+    final fee = _feeFor(amount);
+    Get.off(() => WithdrawalReceiptScreen(
+          amount: amount,
+          fee: fee,
+          totalDebited: amount + fee,
+          bankName: account.bankName.isNotEmpty ? account.bankName : 'Bank',
+          accountNumber: account.displayAccountNumber,
+          reference: resp!.withdrawal.reference,
+          currencySymbol: _currencySymbol,
+          status: resp!.withdrawal.status,
+        ));
   }
 
-  Future<void> _submit(LinkedBankAccount account, double amount,
-      String transactionId, String verificationToken) async {
-    setState(() => _submitting = true);
-    try {
-      final req = banking_pb.InitiateWithdrawalRequest()
-        ..sourceAccountId = _sourceAccountId
-        ..linkedAccountId = account.id
-        ..amount = Int64((amount * 100).round())
-        ..narration = 'Withdrawal to ${account.bankName}'
-        ..idempotencyKey = transactionId;
+  /// Fires the withdrawal gRPC. Returns the response (success or business
+  /// failure); throws on transport error so the sheet shows a failure state.
+  Future<banking_pb.WithdrawalResponse> _runWithdrawal(
+      LinkedBankAccount account, double amount, String transactionId, String verificationToken) async {
+    final req = banking_pb.InitiateWithdrawalRequest()
+      ..sourceAccountId = _sourceAccountId
+      ..linkedAccountId = account.id
+      ..amount = Int64((amount * 100).round())
+      ..narration = 'Withdrawal to ${account.bankName}'
+      ..idempotencyKey = transactionId;
 
-      var callOptions = await serviceLocator<GrpcCallOptionsHelper>().withAuth();
-      callOptions = callOptions.mergedWith(CallOptions(metadata: {
-        'x-verification-token': verificationToken,
-        'x-transaction-id': transactionId,
-      }));
+    var callOptions = await serviceLocator<GrpcCallOptionsHelper>().withAuth();
+    callOptions = callOptions.mergedWith(CallOptions(metadata: {
+      'x-verification-token': verificationToken,
+      'x-transaction-id': transactionId,
+    }));
 
-      final client = serviceLocator<banking_grpc.BankingServiceClient>();
-      final resp = await client.initiateWithdrawal(req, options: callOptions);
-
-      if (!mounted) return;
-
-      if (resp.success) {
-        final fee = _feeFor(amount);
-        // Straight to the receipt — no intermediate processing modal.
-        Get.off(() => WithdrawalReceiptScreen(
-              amount: amount,
-              fee: fee,
-              totalDebited: amount + fee,
-              bankName: account.bankName.isNotEmpty ? account.bankName : 'Bank',
-              accountNumber: account.displayAccountNumber,
-              reference: resp.withdrawal.reference,
-              currencySymbol: _currencySymbol,
-              status: resp.withdrawal.status,
-            ));
-      } else {
-        _snack(resp.errorMessage.isNotEmpty ? resp.errorMessage : 'Withdrawal failed', _error);
-      }
-    } catch (e) {
-      if (mounted) {
-        _snack('Withdrawal failed. Please try again.', _error);
-      }
-    } finally {
-      if (mounted) setState(() => _submitting = false);
-    }
+    final client = serviceLocator<banking_grpc.BankingServiceClient>();
+    return client.initiateWithdrawal(req, options: callOptions);
   }
 
   void _snack(String msg, Color color) {
@@ -342,10 +374,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
                         SizedBox(height: 20.h),
                         _buildAmountField(),
                         SizedBox(height: 24.h),
-                        Text('Withdraw to',
-                            style: TextStyle(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w700)),
-                        SizedBox(height: 12.h),
-                        _buildDestinationSelector(),
+                        _buildDestinationCarousel(),
                       ],
                     ),
                   ),
@@ -355,10 +384,34 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
             ),
           ),
               if (_linking)
-                const Positioned.fill(
+                Positioned.fill(
                   child: ColoredBox(
-                    color: Color(0x99000000),
-                    child: Center(child: CircularProgressIndicator(color: _accent)),
+                    color: const Color(0xCC000000),
+                    child: Center(
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 28.w, vertical: 26.h),
+                        decoration: BoxDecoration(
+                          color: _card,
+                          borderRadius: BorderRadius.circular(18.r),
+                          border: Border.all(color: _divider),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SizedBox(
+                              width: 38.w, height: 38.w,
+                              child: const CircularProgressIndicator(color: _accent, strokeWidth: 3),
+                            ),
+                            SizedBox(height: 16.h),
+                            Text('Linking your bank…',
+                                style: TextStyle(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w700)),
+                            SizedBox(height: 4.h),
+                            Text('Securely connecting via Mono',
+                                style: TextStyle(color: _textSecondary, fontSize: 12.sp)),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                 ),
             ],
@@ -410,6 +463,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
               Expanded(
                 child: TextField(
                   controller: _amountController,
+                  focusNode: _amountFocus,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))],
                   onChanged: (_) => setState(() {}),
@@ -440,48 +494,239 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
     );
   }
 
-  /// Tappable destination row — opens the bank picker bottomsheet.
-  Widget _buildDestinationSelector() {
-    final acct = _selected;
-    return GestureDetector(
-      onTap: _loadingAccounts ? null : _openAccountSheet,
-      child: Container(
-        padding: EdgeInsets.all(14.w),
-        decoration: BoxDecoration(
-          color: _card,
-          borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: acct != null ? _accent.withValues(alpha: 0.4) : _divider),
-        ),
-        child: Row(
+  /// "Withdraw to" section: header + horizontal carousel of linked banks (tap to
+  /// select, swipe to browse) ending with an "add bank" card, plus a "View all"
+  /// link opening the full picker bottomsheet. Mirrors the deposit screen carousel.
+  Widget _buildDestinationCarousel() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            if (_loadingAccounts)
-              SizedBox(width: 42.w, height: 42.w, child: const Center(child: CircularProgressIndicator(color: _accent, strokeWidth: 2)))
-            else if (acct != null)
-              _bankLogoAvatar(acct.bankName)
-            else
-              Container(
-                width: 42.w, height: 42.w,
-                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(12.r)),
-                child: Icon(Icons.account_balance_outlined, color: _textSecondary, size: 20.sp),
-              ),
-            SizedBox(width: 12.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(acct != null ? acct.bankName : 'Select a bank',
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w700)),
+                  Text('Withdraw to',
+                      style: TextStyle(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w700)),
                   SizedBox(height: 3.h),
                   Text(
-                    acct != null ? acct.displayAccountNumber : 'Choose or link a bank to withdraw to',
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: Colors.white.withValues(alpha: 0.55), fontSize: 12.sp),
+                    _linkedAccounts.isEmpty
+                        ? 'Link a bank to withdraw to'
+                        : 'Tap a bank to select, swipe to browse',
+                    style: TextStyle(color: _textSecondary, fontSize: 12.sp),
                   ),
                 ],
               ),
             ),
-            Icon(Icons.keyboard_arrow_down, color: _textSecondary, size: 22.sp),
+            // Link a new bank — always available right here on the page.
+            GestureDetector(
+              onTap: _linking ? null : _linkNewBank,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 4.h),
+                child: Row(
+                  children: [
+                    Icon(Icons.add_circle_outline, color: _accent, size: 16.sp),
+                    SizedBox(width: 3.w),
+                    Text('Link new',
+                        style: TextStyle(color: _accent, fontSize: 13.sp, fontWeight: FontWeight.w700)),
+                  ],
+                ),
+              ),
+            ),
+            if (_linkedAccounts.length > 1) ...[
+              SizedBox(width: 10.w),
+              GestureDetector(
+                onTap: _openAccountSheet,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 4.h),
+                  child: Row(
+                    children: [
+                      Text('View all',
+                          style: TextStyle(color: _accent, fontSize: 13.sp, fontWeight: FontWeight.w700)),
+                      Icon(Icons.chevron_right, color: _accent, size: 18.sp),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+        SizedBox(height: 14.h),
+        if (_loadingAccounts)
+          _buildCarouselLoading()
+        else if (_linkedAccounts.isEmpty)
+          _buildLinkBankCta()
+        else
+          SizedBox(
+            height: 150.h,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: EdgeInsets.zero,
+              itemCount: _linkedAccounts.length + 1,
+              separatorBuilder: (_, __) => SizedBox(width: 12.w),
+              itemBuilder: (ctx, i) {
+                if (i == _linkedAccounts.length) return _buildAddBankCard();
+                return _buildCarouselCard(_linkedAccounts[i]);
+              },
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildCarouselLoading() {
+    return SizedBox(
+      height: 150.h,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.zero,
+        itemCount: 2,
+        separatorBuilder: (_, __) => SizedBox(width: 12.w),
+        itemBuilder: (_, __) => Container(
+          width: 230.w,
+          decoration: BoxDecoration(
+            color: _card,
+            borderRadius: BorderRadius.circular(16.r),
+            border: Border.all(color: _divider),
+          ),
+          child: const Center(child: CircularProgressIndicator(color: _accent, strokeWidth: 2)),
+        ),
+      ),
+    );
+  }
+
+  /// A single linked-bank card in the carousel. Tap to select; the selected card
+  /// gets an accent border + check. Shows the Mono-verified holder name + account.
+  Widget _buildCarouselCard(LinkedBankAccount a) {
+    final selected = _selected?.id == a.id;
+    return GestureDetector(
+      onTap: () => _selectAccount(a),
+      child: Container(
+        width: 230.w,
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: selected ? _accent.withValues(alpha: 0.14) : _card,
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(color: selected ? _accent : _divider, width: selected ? 1.5 : 1),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                _bankLogoAvatar(a.bankName, size: 38),
+                const Spacer(),
+                if (selected)
+                  Icon(Icons.check_circle, color: _accent, size: 22.sp)
+                else if (a.isVerified)
+                  Icon(Icons.verified_rounded, color: _success, size: 18.sp),
+              ],
+            ),
+            const Spacer(),
+            Text(a.bankName.isNotEmpty ? a.bankName : 'Linked bank',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w700)),
+            if (a.accountName.isNotEmpty) ...[
+              SizedBox(height: 3.h),
+              Text(a.accountName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 12.sp)),
+            ],
+            SizedBox(height: 2.h),
+            Text(a.displayAccountNumber,
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 11.5.sp, letterSpacing: 0.3)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Trailing carousel card to link another bank.
+  Widget _buildAddBankCard() {
+    return GestureDetector(
+      onTap: _linkNewBank,
+      child: Container(
+        width: 150.w,
+        padding: EdgeInsets.all(14.w),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF6366F1), Color(0xFF3B82F6)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 40.w, height: 40.w,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.22),
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: Icon(Icons.add_rounded, color: Colors.white, size: 24.sp),
+            ),
+            const Spacer(),
+            Text('Link a new bank',
+                style: TextStyle(color: Colors.white, fontSize: 13.sp, fontWeight: FontWeight.w800)),
+            SizedBox(height: 3.h),
+            Text('Withdraw to another account',
+                maxLines: 2,
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 10.5.sp)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Full-width CTA shown when the user has no linked banks yet.
+  Widget _buildLinkBankCta() {
+    return GestureDetector(
+      onTap: _linkNewBank,
+      child: Container(
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF6366F1), Color(0xFF3B82F6)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(18.r),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF3B82F6).withValues(alpha: 0.35),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 46.w, height: 46.w,
+              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.22), borderRadius: BorderRadius.circular(13.r)),
+              child: Icon(Icons.add_rounded, color: Colors.white, size: 26.sp),
+            ),
+            SizedBox(width: 14.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Link a bank to withdraw',
+                      style: TextStyle(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w800)),
+                  SizedBox(height: 3.h),
+                  Text('Securely connect a bank via Mono',
+                      style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 12.sp)),
+                ],
+              ),
+            ),
+            Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 22.sp),
           ],
         ),
       ),
@@ -551,7 +796,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
     final selected = _selected?.id == account.id;
     return GestureDetector(
       onTap: () {
-        setState(() => _selected = account);
+        _selectAccount(account);
         Navigator.of(sheetCtx).pop();
       },
       child: Container(
@@ -648,7 +893,7 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
   }
 
   Widget _buildBottomBar() {
-    final ready = _enteredAmount > 0 && _selected != null && !_submitting;
+    final ready = _enteredAmount > 0 && _selected != null;
     return Container(
       padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h),
       decoration: BoxDecoration(
@@ -661,17 +906,13 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
         child: ElevatedButton(
           onPressed: ready ? _onWithdraw : null,
           style: ElevatedButton.styleFrom(
-            backgroundColor: _accent,
-            disabledBackgroundColor: _accent.withValues(alpha: 0.3),
+            backgroundColor: _orange,
+            disabledBackgroundColor: _orange.withValues(alpha: 0.3),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
           ),
-          child: _submitting
-              ? SizedBox(
-                  width: 22.w, height: 22.w,
-                  child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-              : Text(
-                  _enteredAmount > 0 ? 'Withdraw ${_money(_totalDebit)}' : 'Withdraw',
-                  style: TextStyle(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w700)),
+          child: Text(
+              _enteredAmount > 0 ? 'Withdraw ${_money(_totalDebit)}' : 'Withdraw',
+              style: TextStyle(color: _onOrange, fontSize: 16.sp, fontWeight: FontWeight.w800)),
         ),
       ),
     );

@@ -1,7 +1,11 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_android/webview_flutter_android.dart';
 
 /// DirectPay Authorization Result
 class DirectPayAuthResult {
@@ -110,6 +114,16 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
   bool _hasError = false;
   String? _errorMessage;
 
+  // Mono Prove "blocked-continue" detection. The Prove consent screen disables
+  // its "Grant Permission" button until every required verification document is
+  // provided; the user gets no explanation. We poll the page, and when the
+  // continue action stays disabled with incomplete items, we tell them what to
+  // do. Gated to prove.mono.co so DirectPay bank-auth flows are unaffected.
+  String _currentUrl = '';
+  Timer? _proveProbeTimer;
+  String? _lastBlockedKey;
+  bool _blockedDialogOpen = false;
+
   // Redirect patterns to detect completion
   late final List<String> _successPatterns;
   late final List<String> _failurePatterns;
@@ -117,8 +131,28 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
   @override
   void initState() {
     super.initState();
+    _currentUrl = widget.paymentUrl;
     _initializePatterns();
     _initializeWebView();
+    // Poll for (a) the Prove "can't-continue" state (disabled Grant Permission
+    // with outstanding documents) and (b) a provider client-side crash. The
+    // Mono SPA can throw an UNCAUGHT exception on an in-app transition (e.g.
+    // tapping Continue on the "remember me" resume screen) — that fires no page
+    // load, no network error and no console message, so onPageFinished's
+    // detector never runs. Polling here catches it within a tick. Cheap JS read.
+    _proveProbeTimer = Timer.periodic(
+      const Duration(seconds: 3),
+      (_) {
+        _probeProveBlockedState();
+        _detectClientSideError();
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _proveProbeTimer?.cancel();
+    super.dispose();
   }
 
   void _initializePatterns() {
@@ -147,31 +181,54 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(Colors.white)
+      // Mono's Prove/DirectPay widgets are Next.js SPAs that sniff the UA and
+      // crash ("client-side exception") when they see a bare WebView agent.
+      // Present as Chrome-on-Android so feature detection succeeds.
+      ..setUserAgent(
+        'Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 '
+        '(KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36')
+      // Surface the real JS error instead of the generic Next.js boundary text.
+      ..setOnConsoleMessage((msg) {
+        debugPrint('[DirectPay][JS:${msg.level.name}] ${msg.message}');
+      })
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (url) {
             debugPrint('[DirectPay] Page started: $url');
+            _currentUrl = url;
             if (mounted) {
               setState(() => _isLoading = true);
             }
           },
           onPageFinished: (url) {
             debugPrint('[DirectPay] Page finished: $url');
+            _currentUrl = url;
             if (mounted) {
               setState(() => _isLoading = false);
             }
+            // Mono's SPA renders its crash as a normal HTTP-200 page ("Application
+            // error: a client-side exception…"), so onWebResourceError never
+            // fires. Sniff the rendered text and surface our own clean error view
+            // instead of leaving the user on the broken Mono page.
+            _detectClientSideError();
           },
           onWebResourceError: (error) {
-            debugPrint('[DirectPay] WebView error: ${error.description}');
-            // Don't show error for redirect URLs
-            if (!_isRedirectUrl(error.url ?? '')) {
-              if (mounted) {
-                setState(() {
-                  _hasError = true;
-                  _errorMessage = error.description;
-                  _isLoading = false;
-                });
-              }
+            debugPrint('[DirectPay] WebView error: ${error.description} '
+                '(mainFrame=${error.isForMainFrame})');
+            // Ignore sub-resource failures (fonts, analytics, etc.) — only a
+            // main-frame load failure should surface the error view.
+            if (error.isForMainFrame == false) return;
+            // The deep-link redirect "fails" to load by design — not an error.
+            if (_isRedirectUrl(error.url ?? '')) return;
+            if (mounted) {
+              setState(() {
+                _hasError = true;
+                // Never leak a raw "net::ERR_FAILED" to the user.
+                _errorMessage =
+                    'We couldn\'t reach the verification service. Please check '
+                    'your connection and try again.';
+                _isLoading = false;
+              });
             }
           },
           onNavigationRequest: (request) {
@@ -190,6 +247,182 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
         ),
       )
       ..loadRequest(Uri.parse(widget.paymentUrl));
+
+    // Android: grant camera/microphone to the page (Mono Prove does a live
+    // facial/biometric check) and allow media without a user gesture. Without
+    // this, getUserMedia() throws inside the SPA and the React tree unmounts.
+    final platform = _controller.platform;
+    if (platform is AndroidWebViewController) {
+      platform.setMediaPlaybackRequiresUserGesture(false);
+      platform.setOnPlatformPermissionRequest((request) {
+        request.grant();
+      });
+    }
+  }
+
+  /// Reads the rendered page text and, if it matches a known provider crash
+  /// boundary (Next.js "client-side exception", Mono "Application error"),
+  /// flips to our graceful error view. No-op on healthy pages.
+  Future<void> _detectClientSideError() async {
+    if (!mounted || _hasError) return;
+    try {
+      final raw = await _controller.runJavaScriptReturningResult(
+        "(document.body ? document.body.innerText : '').slice(0, 600)",
+      );
+      final text = raw.toString().toLowerCase();
+      final crashed = text.contains('client-side exception') ||
+          (text.contains('application error') &&
+              text.contains('browser console'));
+      if (crashed && mounted) {
+        debugPrint('[DirectPay] Detected provider client-side crash');
+        setState(() {
+          _hasError = true;
+          _errorMessage =
+              'The verification service hit a problem loading. Please try again '
+              'in a moment.';
+          _isLoading = false;
+        });
+      }
+    } catch (_) {
+      // JS eval can fail on some pages (CSP / about:blank); ignore — a real
+      // network failure still routes through onWebResourceError.
+    }
+  }
+
+  // JS read: is this the Prove consent screen, is "Grant Permission" disabled,
+  // and which verification documents are still outstanding (action Upload/Add/
+  // Verify/Pending)? Validated against the live Prove DOM.
+  static const String _proveProbeJs = r'''
+(function(){
+  try{
+    var btns=[].slice.call(document.querySelectorAll('button'));
+    var grant=btns.filter(function(b){return /grant permission/i.test(b.innerText||'')})[0];
+    if(!grant) return JSON.stringify({prove:false});
+    var labels=[];
+    [].slice.call(document.querySelectorAll('*')).forEach(function(e){
+      var t=(e.innerText||'').trim();
+      var m=t.match(/^([A-Za-z ]{2,20})\s*[-–]\s*(Upload|Add|Verify|Pending)$/);
+      if(m && e.children.length<=4) labels.push(m[1].trim());
+    });
+    var uniq=labels.filter(function(v,i){return labels.indexOf(v)===i});
+    return JSON.stringify({prove:true,disabled:!!grant.disabled,incomplete:uniq});
+  }catch(err){ return JSON.stringify({prove:false}); }
+})()
+''';
+
+  Future<void> _probeProveBlockedState() async {
+    if (!mounted || _hasError || _blockedDialogOpen) return;
+    if (!_currentUrl.toLowerCase().contains('prove.mono.co')) return;
+    try {
+      final raw = await _controller.runJavaScriptReturningResult(_proveProbeJs);
+      final map = _asJsonMap(raw);
+      if (map == null || map['prove'] != true) return;
+      final disabled = map['disabled'] == true;
+      final incomplete = (map['incomplete'] as List?)
+              ?.map((e) => e.toString())
+              .where((s) => s.isNotEmpty)
+              .toList() ??
+          <String>[];
+      if (!disabled || incomplete.isEmpty) {
+        _lastBlockedKey = null; // resolved — allow a fresh prompt if it recurs
+        return;
+      }
+      final key = incomplete.join(',');
+      if (key == _lastBlockedKey) return; // already guided for this exact set
+      _lastBlockedKey = key;
+      _showProveActionNeededDialog(incomplete);
+    } catch (_) {
+      // Page not ready / eval blocked — ignore and try again next tick.
+    }
+  }
+
+  /// Decodes a JS result that may arrive as a JSON string (Android) or an
+  /// already-decoded value (iOS), tolerating one layer of double-encoding.
+  Map<String, dynamic>? _asJsonMap(Object? raw) {
+    dynamic v = raw;
+    for (var i = 0; i < 2; i++) {
+      if (v is Map) return v.cast<String, dynamic>();
+      if (v is String) {
+        try {
+          v = jsonDecode(v);
+        } catch (_) {
+          return null;
+        }
+      } else {
+        return null;
+      }
+    }
+    return v is Map ? v.cast<String, dynamic>() : null;
+  }
+
+  void _showProveActionNeededDialog(List<String> items) {
+    if (!mounted) return;
+    _blockedDialogOpen = true;
+    showDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        title: Row(
+          children: [
+            Icon(Icons.assignment_late_outlined,
+                color: const Color(0xFF4E03D0), size: 24.sp),
+            SizedBox(width: 10.w),
+            Expanded(
+              child: Text('One more step',
+                  style: TextStyle(
+                      fontSize: 17.sp,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF1E3A5F))),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'To finish verifying your identity, please provide the following '
+              'in the Verification Documents section:',
+              style: TextStyle(
+                  fontSize: 14.sp, color: Colors.grey[700], height: 1.4),
+            ),
+            SizedBox(height: 12.h),
+            ...items.map((it) => Padding(
+                  padding: EdgeInsets.symmetric(vertical: 4.h),
+                  child: Row(
+                    children: [
+                      Icon(Icons.upload_file_rounded,
+                          size: 18.sp, color: const Color(0xFF4E03D0)),
+                      SizedBox(width: 8.w),
+                      Text(it,
+                          style: TextStyle(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF1E3A5F))),
+                    ],
+                  ),
+                )),
+            SizedBox(height: 12.h),
+            Text(
+              'Tap each item above and follow the prompts. "Grant Permission" '
+              'will become available once they are complete.',
+              style: TextStyle(
+                  fontSize: 13.sp, color: Colors.grey[600], height: 1.4),
+            ),
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4E03D0)),
+            child: const Text('Got it'),
+          ),
+        ],
+      ),
+    ).then((_) => _blockedDialogOpen = false);
   }
 
   bool _isRedirectUrl(String url) {

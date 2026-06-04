@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:grpc/grpc.dart';
 import 'package:lazervault/core/errors/exceptions.dart';
+import 'package:lazervault/core/services/grpc_call_options_helper.dart';
 import 'package:lazervault/src/core/errors/failures.dart';
 import 'package:lazervault/src/generated/auth.pbgrpc.dart' as auth_proto;
 import 'package:lazervault/src/generated/auth.pb.dart' as auth_pb;
@@ -13,8 +14,19 @@ import 'package:lazervault/src/features/kyc/domain/entities/kyc_tier_entity.dart
 /// All KYC RPCs are on AuthService (auth-service backend)
 class KYCGrpcDataSource {
   final auth_proto.AuthServiceClient authClient;
+  final GrpcCallOptionsHelper callOptionsHelper;
 
-  KYCGrpcDataSource({required this.authClient});
+  KYCGrpcDataSource({required this.authClient, required this.callOptionsHelper});
+
+  /// Builds CallOptions carrying the user's JWT (Bearer) plus a timeout. The
+  /// AuthServiceClient has no auth interceptor, so every authenticated KYC RPC
+  /// MUST attach this — otherwise the call is UNAUTHENTICATED ("Session expired").
+  Future<CallOptions> _authOptions({int timeoutSeconds = 30}) async {
+    final base = await callOptionsHelper.withAuth();
+    return base.mergedWith(
+      CallOptions(timeout: Duration(seconds: timeoutSeconds)),
+    );
+  }
 
   /// Verify ID (BVN, NIN, Ghana Card, UK Passport, SSN, etc.) via gRPC
   /// Uses AuthService.verifyIdentity gRPC method
@@ -42,7 +54,7 @@ class KYCGrpcDataSource {
       // Make gRPC call with 45s timeout (providers may take time)
       final response = await authClient.verifyIdentity(
         grpcRequest,
-        options: CallOptions(timeout: const Duration(seconds: 45)),
+        options: await _authOptions(timeoutSeconds: 45),
       );
 
       // Check for async verification (Onfido/Persona - returns session URL)
@@ -221,7 +233,7 @@ class KYCGrpcDataSource {
       final request = auth_proto.GetMeRequest();
 
       // Make gRPC call
-      final response = await authClient.getMe(request);
+      final response = await authClient.getMe(request, options: await _authOptions());
       final user = response.user;
 
       // Determine KYC status from user data — prefer explicit kyc fields, fallback to identity_verified
@@ -283,7 +295,7 @@ class KYCGrpcDataSource {
         ..countryCode = countryCode;
 
       final response = await authClient
-          .getCountryRequirements(grpcRequest, options: CallOptions(timeout: const Duration(seconds: 15)));
+          .getCountryRequirements(grpcRequest, options: await _authOptions(timeoutSeconds: 15));
 
       if (!response.success) {
         throw APIException(
@@ -359,7 +371,7 @@ class KYCGrpcDataSource {
       ..countryCode = countryCode;
 
     try {
-      final response = await authClient.initiateKYC(request);
+      final response = await authClient.initiateKYC(request, options: await _authOptions());
 
       if (!response.success) {
         throw APIException(
@@ -407,7 +419,7 @@ class KYCGrpcDataSource {
       ..proofOfAddressUrl = request.proofOfAddressUrl ?? '';
 
     try {
-      final response = await authClient.uploadDocument(grpcRequest);
+      final response = await authClient.uploadDocument(grpcRequest, options: await _authOptions());
 
       if (!response.success) {
         throw APIException(
@@ -448,7 +460,7 @@ class KYCGrpcDataSource {
       ..skipTier2 = skipTier2;
 
     try {
-      final response = await authClient.skipKYCUpgrade(request);
+      final response = await authClient.skipKYCUpgrade(request, options: await _authOptions());
 
       // Map proto tier to entity tier
       final assignedTier = response.assignedTier == auth_proto.KYCTier.KYC_TIER_1
@@ -483,7 +495,7 @@ class KYCGrpcDataSource {
     final request = auth_proto.GetUserDocumentsRequest();
 
     try {
-      final response = await authClient.getUserDocuments(request);
+      final response = await authClient.getUserDocuments(request, options: await _authOptions());
 
       final documents = response.documents.map((doc) {
         return {
@@ -611,7 +623,7 @@ class KYCGrpcDataSource {
     try {
       final response = await authClient.createVerificationSession(
         grpcRequest,
-        options: CallOptions(timeout: const Duration(seconds: 45)),
+        options: await _authOptions(timeoutSeconds: 45),
       );
 
       if (!response.success) {
@@ -698,7 +710,7 @@ class KYCGrpcDataSource {
     try {
       final response = await authClient.confirmVerification(
         grpcRequest,
-        options: CallOptions(timeout: const Duration(seconds: 30)),
+        options: await _authOptions(timeoutSeconds: 30),
       );
 
       // Map proto KYCTier to entity KYCTier
@@ -780,7 +792,7 @@ class KYCGrpcDataSource {
     try {
       final response = await authClient.getDocumentUploadURL(
         grpcRequest,
-        options: CallOptions(timeout: const Duration(seconds: 30)),
+        options: await _authOptions(timeoutSeconds: 30),
       );
 
       if (!response.success) {
@@ -848,7 +860,7 @@ class KYCGrpcDataSource {
     try {
       final response = await authClient.submitDocumentsForReview(
         grpcRequest,
-        options: CallOptions(timeout: const Duration(seconds: 30)),
+        options: await _authOptions(timeoutSeconds: 30),
       );
 
       if (!response.success) {
@@ -908,7 +920,7 @@ class KYCGrpcDataSource {
     try {
       final response = await authClient.confirmBVNName(
         grpcRequest,
-        options: CallOptions(timeout: const Duration(seconds: 30)),
+        options: await _authOptions(timeoutSeconds: 30),
       );
 
       if (!response.success) {

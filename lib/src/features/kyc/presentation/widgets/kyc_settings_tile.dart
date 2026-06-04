@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:hybrid_hex_color_converter/hybrid_hex_color_converter.dart';
+import 'package:lazervault/core/services/injection_container.dart';
+import 'package:lazervault/core/services/secure_storage_service.dart';
 import 'package:lazervault/core/utilities/responsive_controller.dart';
-import 'package:lazervault/src/features/authentication/cubit/authentication_cubit.dart';
 import 'package:lazervault/src/features/widgets/rounded_centered_image.dart';
-import 'package:lazervault/src/features/kyc/domain/entities/kyc_tier_entity.dart';
-import 'package:lazervault/src/features/kyc/presentation/cubits/kyc_cubit.dart';
-import 'package:lazervault/src/features/kyc/presentation/views/progressive_kyc_screen.dart';
+import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/kyc/data/services/prove_kyc_http_service.dart';
 
 /// KYC Settings Tile Widget
-/// Shows verification status and allows users to complete KYC
+///
+/// Shows the user's CURRENT verification standing and routes to the KYC flow.
+/// The tier is read from banking-service's Prove status (the source of truth for
+/// what the user actually completed) — the SAME source the verification screen
+/// uses — so the tile and the detail screen never disagree. It refreshes on
+/// return from the flow so a just-completed tier shows immediately.
 class KYCSettingsTile extends StatefulWidget {
   const KYCSettingsTile({super.key});
 
@@ -20,62 +24,40 @@ class KYCSettingsTile extends StatefulWidget {
 }
 
 class _KYCSettingsTileState extends State<KYCSettingsTile> {
+  late final ProveKycHttpService _prove =
+      ProveKycHttpService(serviceLocator<SecureStorageService>());
+  ProveKycStatus? _status;
+  bool _loading = true;
+
   @override
   void initState() {
     super.initState();
-    // Load KYC status when widget initializes
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final userId = context.read<AuthenticationCubit>().userId ?? '';
-      context.read<KYCCubit>().getKYCStatus(userId);
-    });
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final s = await _prove.status();
+      if (mounted) {
+        setState(() {
+          _status = s;
+          _loading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<KYCCubit, KYCState>(
-      builder: (context, state) {
-        KYCTier tier = KYCTier.tier1;
-        KYCStatus status = KYCStatus.notStarted;
-
-        if (state is KYCStatusLoaded) {
-          tier = state.profile.currentTier;
-          status = state.profile.status;
-        } else if (state is IDVerificationSuccess) {
-          tier = state.response.currentTier;
-          status = state.response.status;
-        } else if (state is KYCError) {
-          // Show default tier 1 on error — user can tap to retry
-          tier = KYCTier.tier1;
-          status = KYCStatus.notStarted;
-        }
-
-        return _buildListTile(
-          context,
-          title: 'Identity Verification',
-          imagePath: 'assets/images/profile/shield-tick.png',
-          color: status == KYCStatus.approved
-              ? '#4CAF50'
-              : '#FF9800',
-          tier: tier,
-          status: status,
-          onTap: () {
-            Get.toNamed(ProgressiveKYCScreen.route);
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildListTile(
-    BuildContext context, {
-    required String title,
-    required String imagePath,
-    required String color,
-    required KYCTier tier,
-    required KYCStatus status,
-    VoidCallback? onTap,
-  }) {
     final responsiveController = ResponsiveController(context);
+    final tier = _status?.tier ?? 0;
+    final verified = _status?.verified ?? false; // Tier 2+
+    final isMax = (_status?.isMaxTier) ?? false;
+
+    // Avatar tint: green once verified, amber while basic/unverified.
+    final avatarColor = verified ? '#4CAF50' : '#FF9800';
 
     return Row(
       children: [
@@ -83,43 +65,54 @@ class _KYCSettingsTileState extends State<KYCSettingsTile> {
           children: [
             RoundedCenteredImage(
               size: responsiveController.isMobile ? 40.w : 48.0,
-              backgroundColor: HybridHexColor.fromHex(color),
-              imagePath: imagePath,
+              backgroundColor: HybridHexColor.fromHex(avatarColor),
+              imagePath: 'assets/images/profile/shield-tick.png',
             ),
-            if (status == KYCStatus.approved)
+            if (verified)
               Positioned.fill(
                 child: Align(
-                  alignment: Alignment.center,
-                  child: Icon(
-                    Icons.check,
-                    color: Colors.white,
-                    size: responsiveController.isMobile ? 20.w : 24.0,
-                  ),
+                  child: Icon(Icons.check,
+                      color: Colors.white,
+                      size: responsiveController.isMobile ? 20.w : 24.0),
                 ),
               ),
           ],
         ),
         Expanded(
           child: ListTile(
-            onTap: onTap,
-            title: Text(title),
+            onTap: () async {
+              await Get.toNamed(AppRoutes.kycBVNVerification);
+              // Refresh after the user returns so a new tier reflects at once.
+              _load();
+            },
+            title: const Text('Identity Verification'),
             subtitle: Text(
-              _getStatusText(tier, status),
+              _subtitle(tier, verified, isMax),
               style: TextStyle(
-                color: _getStatusColor(status),
+                color: verified
+                    ? const Color(0xFF4CAF50)
+                    : const Color(0xFF9E9E9E),
                 fontSize: responsiveController.isMobile ? 12.sp : 14,
               ),
             ),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _buildStatusBadge(tier, status),
+                _buildBadge(tier, verified),
                 const SizedBox(width: 8),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  size: 16.0,
-                  color: Colors.grey,
-                ),
+                if (_loading)
+                  SizedBox(
+                    width: 14,
+                    height: 14,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                          Colors.grey.withValues(alpha: 0.5)),
+                    ),
+                  )
+                else
+                  const Icon(Icons.arrow_forward_ios,
+                      size: 16.0, color: Colors.grey),
               ],
             ),
           ),
@@ -128,76 +121,31 @@ class _KYCSettingsTileState extends State<KYCSettingsTile> {
     );
   }
 
-  Widget _buildStatusBadge(KYCTier tier, KYCStatus status) {
-    final String badgeText;
-    final Color badgeColor;
-
-    if (status == KYCStatus.approved) {
-      badgeText = 'Tier ${tier.index}';
-      badgeColor = const Color(0xFF4CAF50);
-    } else if (status == KYCStatus.inProgress ||
-        status == KYCStatus.pendingReview) {
-      badgeText = 'Pending';
-      badgeColor = const Color(0xFFFF9800);
-    } else if (status == KYCStatus.rejected) {
-      badgeText = 'Failed';
-      badgeColor = const Color(0xFFF44336);
-    } else {
-      badgeText = 'Tier ${tier.index}';
-      badgeColor = const Color(0xFF9E9E9E);
-    }
+  Widget _buildBadge(int tier, bool verified) {
+    final String text = tier <= 0 ? 'Unverified' : 'Tier $tier';
+    final Color color = verified
+        ? const Color(0xFF4CAF50) // Tier 2+
+        : (tier == 1 ? const Color(0xFFFF9800) : const Color(0xFF9E9E9E));
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: badgeColor.withValues(alpha: 0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: badgeColor, width: 1),
+        border: Border.all(color: color, width: 1),
       ),
       child: Text(
-        badgeText,
+        text,
         style: TextStyle(
-          color: badgeColor,
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-        ),
+            color: color, fontSize: 11, fontWeight: FontWeight.w600),
       ),
     );
   }
 
-  String _getStatusText(KYCTier tier, KYCStatus status) {
-    switch (status) {
-      case KYCStatus.approved:
-        return 'Verified - Tier ${tier.index} Account';
-      case KYCStatus.inProgress:
-        return 'Verification in progress...';
-      case KYCStatus.pendingReview:
-        return 'Pending review';
-      case KYCStatus.rejected:
-        return 'Verification failed - Try again';
-      case KYCStatus.expired:
-        return 'Verification expired - Update now';
-      default:
-        if (tier == KYCTier.tier1) {
-          return 'Basic account - Upgrade for higher limits';
-        }
-        return 'Not verified - Complete KYC now';
-    }
-  }
-
-  Color _getStatusColor(KYCStatus status) {
-    switch (status) {
-      case KYCStatus.approved:
-        return const Color(0xFF4CAF50);
-      case KYCStatus.inProgress:
-      case KYCStatus.pendingReview:
-        return const Color(0xFFFF9800);
-      case KYCStatus.rejected:
-        return const Color(0xFFF44336);
-      case KYCStatus.expired:
-        return const Color(0xFFE91E63);
-      default:
-        return const Color(0xFF9E9E9E);
-    }
+  String _subtitle(int tier, bool verified, bool isMax) {
+    if (isMax) return 'Fully verified - Tier 3, full access';
+    if (verified) return 'Verified - Tier $tier. Upgrade for higher limits';
+    if (tier == 1) return 'Tier 1 - add your second ID to raise limits';
+    return 'Verify your identity to unlock higher limits';
   }
 }

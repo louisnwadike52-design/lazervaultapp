@@ -73,6 +73,7 @@ class MoveMoneyCubit extends Cubit<MoveMoneyState> {
     String? idempotencyKey,
     String? verificationToken,
     String? transactionId,
+    bool useDirectDebit = false,
   }) async {
     emit(MoveMoneyLoading());
 
@@ -88,6 +89,7 @@ class MoveMoneyCubit extends Cubit<MoveMoneyState> {
         idempotencyKey: idempotencyKey,
         verificationToken: verificationToken,
         transactionId: transactionId,
+        useDirectDebit: useDirectDebit,
       );
 
       emit(MoveTransferInitiated(

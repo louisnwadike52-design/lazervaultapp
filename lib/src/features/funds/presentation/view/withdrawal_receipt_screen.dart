@@ -2,12 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/core/utilities/banks_data.dart';
 
-/// Receipt shown after a withdrawal is initiated. The payout is asynchronous
-/// (held now, sent to the bank, settled via webhook/reconciler), so this reads
-/// as "on its way" rather than a final "completed".
+/// Withdrawal receipt — a withdrawal variant of the send-funds (Beam) transfer
+/// receipt: same dark layout (status icon, title, amount, status badge, details
+/// card, action button) plus a QR code encoding the reference so it can be
+/// scanned to verify/look up the payout. The payout is asynchronous (held now,
+/// sent to the bank, settled via webhook/reconciler), so a processing status
+/// reads as "on its way" rather than a final "completed".
 class WithdrawalReceiptScreen extends StatelessWidget {
   final double amount;
   final double fee;
@@ -16,7 +22,7 @@ class WithdrawalReceiptScreen extends StatelessWidget {
   final String accountNumber; // masked is fine
   final String reference;
   final String currencySymbol;
-  final String status; // backend status: pending|processing|completed
+  final String status; // backend status: pending|processing|completed|failed
 
   const WithdrawalReceiptScreen({
     super.key,
@@ -34,40 +40,44 @@ class WithdrawalReceiptScreen extends StatelessWidget {
   static const _card = Color(0xFF1F1F1F);
   static const _divider = Color(0xFF2D2D2D);
   static const _textSecondary = Color(0xFF9CA3AF);
-  static const _accent = Color(0xFF3B82F6);
   static const _success = Color(0xFF10B981);
+  static const _error = Color(0xFFEF4444);
+  static const _orange = Color(0xFFF97316);
+  static const _onOrange = Color(0xFF1A1206);
+
+  bool get _completed => status == 'completed' || status == 'successful';
+  bool get _failed => status == 'failed';
+
+  Color get _statusColor => _completed
+      ? _success
+      : _failed
+          ? _error
+          : _orange;
+
+  IconData get _statusIcon => _completed
+      ? Icons.check_rounded
+      : _failed
+          ? Icons.close_rounded
+          : Icons.north_east_rounded;
+
+  String get _statusTitle => _completed
+      ? 'Withdrawal complete'
+      : _failed
+          ? 'Withdrawal failed'
+          : 'Withdrawal on its way';
+
+  String get _statusLabel => _completed
+      ? 'Completed'
+      : _failed
+          ? 'Failed'
+          : 'Processing';
 
   String _money(double v) =>
       '$currencySymbol${v.toStringAsFixed(2).replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+\.)'), (m) => '${m[1]},')}';
 
-  bool get _completed => status == 'completed' || status == 'successful';
-
-  Widget _bankLogoAvatar(String name, {double size = 48}) {
-    final n = name.trim().isEmpty ? 'Bank' : name.trim();
-    final initials = n.length >= 2 ? n.substring(0, 2).toUpperCase() : n.substring(0, 1).toUpperCase();
-    final palettes = <List<Color>>[
-      [const Color(0xFF6366F1), const Color(0xFF8B5CF6)],
-      [const Color(0xFF0EA5E9), const Color(0xFF2563EB)],
-      [const Color(0xFF10B981), const Color(0xFF059669)],
-      [const Color(0xFFF59E0B), const Color(0xFFEF4444)],
-      [const Color(0xFFEC4899), const Color(0xFF8B5CF6)],
-      [const Color(0xFF14B8A6), const Color(0xFF0EA5E9)],
-    ];
-    final pair = palettes[n.codeUnits.fold<int>(0, (a, b) => a + b) % palettes.length];
-    return Container(
-      width: size.w,
-      height: size.w,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(colors: pair, begin: Alignment.topLeft, end: Alignment.bottomRight),
-        borderRadius: BorderRadius.circular(14.r),
-      ),
-      alignment: Alignment.center,
-      child: Text(initials, style: TextStyle(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w800)),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    final destBank = BanksData.displayName(bankName, null);
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
@@ -75,78 +85,70 @@ class WithdrawalReceiptScreen extends StatelessWidget {
       },
       child: Scaffold(
         backgroundColor: _bg,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            onPressed: () => Get.offAllNamed(AppRoutes.dashboard),
+            icon: const Icon(Icons.close, color: Colors.white),
+          ),
+          title: Text('Withdrawal Receipt',
+              style: GoogleFonts.inter(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w600)),
+          centerTitle: true,
+        ),
         body: SafeArea(
           child: Column(
             children: [
               Expanded(
                 child: SingleChildScrollView(
-                  padding: EdgeInsets.fromLTRB(24.w, 32.h, 24.w, 24.h),
+                  padding: EdgeInsets.all(16.w),
                   child: Column(
                     children: [
+                      // Status icon
                       Container(
-                        width: 84.w,
-                        height: 84.w,
+                        width: 80.w,
+                        height: 80.w,
                         decoration: BoxDecoration(
+                          color: _statusColor.withValues(alpha: 0.15),
                           shape: BoxShape.circle,
-                          color: _success.withValues(alpha: 0.15),
-                          border: Border.all(color: _success.withValues(alpha: 0.4), width: 2),
                         ),
-                        child: Icon(_completed ? Icons.check_rounded : Icons.north_east_rounded,
-                            color: _success, size: 42.sp),
+                        child: Icon(_statusIcon, color: _statusColor, size: 42.sp),
                       ),
-                      SizedBox(height: 18.h),
-                      Text(_completed ? 'Withdrawal complete' : 'Withdrawal on its way',
-                          style: TextStyle(color: Colors.white, fontSize: 20.sp, fontWeight: FontWeight.w800)),
+                      SizedBox(height: 16.h),
+                      Text(_statusTitle,
+                          style: GoogleFonts.inter(color: Colors.white, fontSize: 20.sp, fontWeight: FontWeight.w700)),
                       SizedBox(height: 6.h),
-                      Text(
-                        _completed
-                            ? 'Your money has been sent to $bankName.'
-                            : 'We\'re sending your money to $bankName. It usually lands within minutes.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: _textSecondary, fontSize: 13.sp),
-                      ),
-                      SizedBox(height: 22.h),
                       Text(_money(amount),
-                          style: TextStyle(color: Colors.white, fontSize: 34.sp, fontWeight: FontWeight.w800)),
+                          style: GoogleFonts.inter(color: _textSecondary, fontSize: 16.sp, fontWeight: FontWeight.w500)),
+                      SizedBox(height: 10.h),
+                      _statusBadge(),
                       SizedBox(height: 24.h),
+
+                      // QR code for the reference
+                      _buildQrCard(),
+                      SizedBox(height: 16.h),
+
+                      // Details card
                       Container(
-                        padding: EdgeInsets.all(18.w),
+                        width: double.infinity,
+                        padding: EdgeInsets.all(16.w),
                         decoration: BoxDecoration(
                           color: _card,
-                          borderRadius: BorderRadius.circular(18.r),
+                          borderRadius: BorderRadius.circular(14.r),
                           border: Border.all(color: _divider),
                         ),
                         child: Column(
                           children: [
-                            Row(
-                              children: [
-                                _bankLogoAvatar(bankName),
-                                SizedBox(width: 12.w),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(bankName,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(color: Colors.white, fontSize: 15.sp, fontWeight: FontWeight.w700)),
-                                      SizedBox(height: 3.h),
-                                      Text(accountNumber,
-                                          style: TextStyle(color: _textSecondary, fontSize: 12.sp)),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Padding(
-                              padding: EdgeInsets.symmetric(vertical: 14.h),
-                              child: Divider(color: _divider, height: 1),
-                            ),
+                            _row('Reference', reference, isCopyable: true, context: context),
+                            _dividerLine(),
+                            _row('To', '$destBank\n$accountNumber'),
+                            _dividerLine(),
                             _row('Amount', _money(amount)),
                             _row('Fee', _money(fee)),
-                            _row('Total debited', _money(totalDebited), bold: true),
-                            _row('Status', _completed ? 'Completed' : 'Processing',
-                                valueColor: _completed ? _success : const Color(0xFFFB923C)),
-                            _row('Reference', reference, copyable: true),
+                            _row('Total debited', _money(totalDebited),
+                                isBold: true, valueColor: _orange),
+                            _dividerLine(),
+                            _row('Status', _statusLabel, valueColor: _statusColor),
                           ],
                         ),
                       ),
@@ -154,22 +156,7 @@ class WithdrawalReceiptScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(24.w, 8.h, 24.w, 20.h),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 54.h,
-                  child: ElevatedButton(
-                    onPressed: () => Get.offAllNamed(AppRoutes.dashboard),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _accent,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
-                    ),
-                    child: Text('Done',
-                        style: TextStyle(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w700)),
-                  ),
-                ),
-              ),
+              _buildActions(context),
             ],
           ),
         ),
@@ -177,24 +164,124 @@ class WithdrawalReceiptScreen extends StatelessWidget {
     );
   }
 
-  Widget _row(String label, String value, {bool bold = false, Color? valueColor, bool copyable = false}) {
+  Widget _statusBadge() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: _statusColor.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: _statusColor.withValues(alpha: 0.4)),
+      ),
+      child: Text(_statusLabel,
+          style: GoogleFonts.inter(color: _statusColor, fontSize: 12.sp, fontWeight: FontWeight.w700)),
+    );
+  }
+
+  Widget _buildQrCard() {
+    return Container(
+      padding: EdgeInsets.all(18.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+      ),
+      child: Column(
+        children: [
+          QrImageView(
+            data: reference,
+            version: QrVersions.auto,
+            size: 150.w,
+            backgroundColor: Colors.white,
+            eyeStyle: const QrEyeStyle(eyeShape: QrEyeShape.square, color: Color(0xFF0A0A0A)),
+            dataModuleStyle: const QrDataModuleStyle(
+                dataModuleShape: QrDataModuleShape.square, color: Color(0xFF0A0A0A)),
+          ),
+          SizedBox(height: 10.h),
+          Text('Scan to verify this withdrawal',
+              style: GoogleFonts.inter(color: const Color(0xFF6B7280), fontSize: 11.sp, fontWeight: FontWeight.w500)),
+          SizedBox(height: 2.h),
+          Text(reference,
+              style: GoogleFonts.inter(color: const Color(0xFF111827), fontSize: 12.sp, fontWeight: FontWeight.w700)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActions(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: const BoxDecoration(
+        color: _bg,
+        border: Border(top: BorderSide(color: _divider)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: () {
+                Clipboard.setData(ClipboardData(text: reference));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Reference copied', style: GoogleFonts.inter()),
+                    backgroundColor: _success,
+                    duration: const Duration(seconds: 1),
+                  ),
+                );
+              },
+              icon: Icon(Icons.copy_rounded, size: 18.sp),
+              label: Text('Copy ref',
+                  style: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600)),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white,
+                side: const BorderSide(color: _divider),
+                padding: EdgeInsets.symmetric(vertical: 14.h),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+              ),
+            ),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: ElevatedButton(
+              onPressed: () => Get.offAllNamed(AppRoutes.dashboard),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _orange,
+                foregroundColor: _onOrange,
+                padding: EdgeInsets.symmetric(vertical: 14.h),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                elevation: 0,
+              ),
+              child: Text('Done',
+                  style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w800, color: _onOrange)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _dividerLine() => Divider(color: _divider, height: 16.h);
+
+  Widget _row(String label, String value,
+      {bool isBold = false, bool isCopyable = false, Color? valueColor, BuildContext? context}) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 7.h),
+      padding: EdgeInsets.symmetric(vertical: 6.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(color: _textSecondary, fontSize: 13.sp)),
-          const Spacer(),
+          Text(label, style: GoogleFonts.inter(color: _textSecondary, fontSize: 13.sp)),
+          SizedBox(width: 16.w),
           Flexible(
             child: GestureDetector(
-              onTap: copyable
+              onTap: isCopyable && context != null
                   ? () {
                       Clipboard.setData(ClipboardData(text: value));
-                      Get.snackbar('Copied', 'Reference copied',
-                          snackPosition: SnackPosition.BOTTOM,
-                          backgroundColor: _accent.withValues(alpha: 0.9),
-                          colorText: Colors.white,
-                          margin: EdgeInsets.all(12.w));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Copied to clipboard', style: GoogleFonts.inter()),
+                          backgroundColor: _success,
+                          duration: const Duration(seconds: 1),
+                        ),
+                      );
                     }
                   : null,
               child: Row(
@@ -203,15 +290,15 @@ class WithdrawalReceiptScreen extends StatelessWidget {
                   Flexible(
                     child: Text(value,
                         textAlign: TextAlign.right,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            color: valueColor ?? Colors.white,
-                            fontSize: 13.sp,
-                            fontWeight: bold ? FontWeight.w800 : FontWeight.w600)),
+                        style: GoogleFonts.inter(
+                          color: valueColor ?? Colors.white,
+                          fontSize: 13.sp,
+                          fontWeight: isBold ? FontWeight.w700 : FontWeight.w500,
+                        )),
                   ),
-                  if (copyable) ...[
-                    SizedBox(width: 6.w),
-                    Icon(Icons.copy_rounded, color: _textSecondary, size: 14.sp),
+                  if (isCopyable) ...[
+                    SizedBox(width: 4.w),
+                    Icon(Icons.copy_rounded, color: const Color(0xFF6B7280), size: 14.sp),
                   ],
                 ],
               ),

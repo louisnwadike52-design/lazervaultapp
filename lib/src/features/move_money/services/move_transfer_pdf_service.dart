@@ -243,16 +243,12 @@ class MoveTransferPdfService {
                   ),
                   child: pw.Column(
                     children: [
-                      _buildDetailRow('Debit Fee', _formatNaira(transfer.debitFee / 100.0)),
-                      _buildDetailRow('Transfer Fee', _formatNaira(transfer.transferFee / 100.0)),
-                      if (transfer.stampDuty > 0)
-                        _buildDetailRow('Stamp Duty', _formatNaira(transfer.stampDuty / 100.0)),
-                      if (transfer.serviceFee > 0)
-                        _buildDetailRow('Service Fee', _formatNaira(transfer.serviceFee / 100.0)),
+                      // Single consolidated fee on the user receipt; itemized
+                      // breakdown is retained on the backend + admin console.
+                      _buildDetailRow('Transfer fee', _formatNaira(transfer.totalFeeNaira),
+                          isBold: true),
                       pw.Divider(color: PdfColors.grey300),
                       pw.SizedBox(height: 8),
-                      _buildDetailRow('Total Fees', _formatNaira(transfer.totalFeeNaira),
-                          isBold: true),
                       _buildDetailRow('Total Debit', _formatNaira(transfer.totalDebitNaira),
                           isBold: true, color: PdfColors.blue600),
                     ],

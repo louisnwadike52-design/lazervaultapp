@@ -51,7 +51,7 @@ class MandateActivatingBanner extends StatelessWidget {
               SizedBox(width: 8.w),
               Expanded(
                 child: Text(
-                  'Auto-debit activating for $bankName',
+                  'Direct Debit activating for $bankName',
                   style: GoogleFonts.inter(
                     color: const Color(0xFFFB923C),
                     fontSize: 13.sp,

@@ -119,7 +119,7 @@ class MoveMoneyMandateRequired extends MoveMoneyState {
 
   const MoveMoneyMandateRequired({
     required this.accountId,
-    this.message = 'Auto-debit authorization is required for this account.',
+    this.message = 'Direct Debit authorization is required for this account.',
   });
 
   @override

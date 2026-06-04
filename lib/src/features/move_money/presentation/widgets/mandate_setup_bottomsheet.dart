@@ -9,7 +9,7 @@ import '../../cubit/mandate_state.dart';
 
 /// Bottom sheet shown after account linking to offer mandate setup.
 ///
-/// If the user enables auto-debit and the mandate requires e-mandate
+/// If the user enables Direct Debit and the mandate requires e-mandate
 /// authorization, opens the authorization URL in the browser.
 Future<bool> showMandateSetupBottomSheet({
   required BuildContext context,
@@ -75,17 +75,25 @@ class _MandateSetupSheetState extends State<_MandateSetupSheet> {
     return BlocConsumer<MandateCubit, MandateState>(
       listener: (context, state) async {
         if (state is MandateCreated) {
+          // Capture the Navigator BEFORE any await so we never do an inherited-
+          // widget lookup on a context that may be deactivated after the await
+          // (that's what threw "Looking up a deactivated widget's ancestor").
+          final navigator = Navigator.of(context);
           if (state.needsAuthorization && state.authorizationUrl != null) {
             final uri = Uri.parse(state.authorizationUrl!);
-            if (await canLaunchUrl(uri)) {
-              await launchUrl(uri, mode: LaunchMode.externalApplication);
-            }
+            try {
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              }
+            } catch (_) {/* ignore launch failures — mandate is still created */}
           }
-          if (context.mounted) Navigator.of(context).pop(true);
+          if (mounted) navigator.pop(true);
         } else if (state is MandateError) {
-          setState(() {
-            _errorMessage = state.message;
-          });
+          if (mounted) {
+            setState(() {
+              _errorMessage = state.message;
+            });
+          }
         }
       },
       builder: (context, state) {
@@ -130,7 +138,7 @@ class _MandateSetupSheetState extends State<_MandateSetupSheet> {
 
               // Title
               Text(
-                'Enable Auto-Debit',
+                'Enable Direct Debit',
                 style: GoogleFonts.inter(
                   color: Colors.white,
                   fontSize: 18.sp,
@@ -166,7 +174,7 @@ class _MandateSetupSheetState extends State<_MandateSetupSheet> {
               SizedBox(height: 8.h),
 
               // Benefits
-              _buildBenefitRow(Icons.flash_on_rounded, 'Instant transfers without WebView'),
+              _buildBenefitRow(Icons.flash_on_rounded, 'Instant transfers — no bank approval each time'),
               _buildBenefitRow(Icons.lock_outline_rounded, 'You control limits & can cancel'),
               _buildBenefitRow(Icons.shield_outlined, 'Bank-level security & encryption'),
               SizedBox(height: 16.h),
@@ -193,7 +201,7 @@ class _MandateSetupSheetState extends State<_MandateSetupSheet> {
                       SizedBox(width: 8.w),
                       Expanded(
                         child: Text(
-                          'Failed to enable auto-debit. Please try again.',
+                          'Failed to enable Direct Debit. Please try again.',
                           style: GoogleFonts.inter(
                             color: const Color(0xFFFCA5A5),
                             fontSize: 12.sp,
@@ -242,7 +250,7 @@ class _MandateSetupSheetState extends State<_MandateSetupSheet> {
                           ),
                         )
                       : Text(
-                          'Enable Auto-Debit',
+                          'Enable Direct Debit',
                           style: GoogleFonts.inter(
                             color: Colors.white,
                             fontSize: 15.sp,
