@@ -240,13 +240,15 @@ class _DirectPayProgressBottomsheetState
 
       setState(() {});
 
-      // Handle success navigation — no timer. Run after this frame (not a
-      // timed wait) so navigating away can't dispose the sheet mid-notify
-      // and trip setState-after-dispose. The host screen redirects to the
-      // dashboard as soon as settlement lands.
+      // Handle success navigation. Hold on the success state briefly so the
+      // user actually SEES "Deposit Successful" complete on the deposit screen
+      // before we auto-advance to the dashboard (the host used to navigate
+      // synchronously, flashing the dashboard before this rendered). The
+      // `mounted` guard makes this safe if the user taps "Go to Dashboard"
+      // first (that pops/disposes the sheet, so this no-ops).
       if (widget.controller.stage == DirectPayStage.success &&
           widget.onSuccess != null) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
+        Future.delayed(const Duration(milliseconds: 1400), () {
           if (mounted && widget.onSuccess != null) {
             widget.onSuccess!();
           }

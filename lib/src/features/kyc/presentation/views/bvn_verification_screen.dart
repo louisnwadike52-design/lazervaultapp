@@ -493,6 +493,7 @@ class _BVNVerificationScreenState extends State<BVNVerificationScreen> {
         paymentId: session.reference,
         reference: session.reference,
         redirectPath: '/kyc/callback',
+        flow: DirectPayFlow.kyc,
       );
       if (!mounted) return;
 

@@ -121,6 +121,19 @@ class MandateEntity extends Equatable {
       status == MandateStatus.awaitingAuthorization ||
       status == MandateStatus.authorized;
 
+  /// Temporarily paused by the user — reinstate to use again.
+  bool get isPaused => status == MandateStatus.paused;
+
+  bool get isCancelled => status == MandateStatus.cancelled;
+
+  bool get isRejected => status == MandateStatus.rejected;
+
+  /// A previously-set-up mandate that can no longer be debited and needs a brand
+  /// new authorization. `isExpired` (a field) factors the mandate end date;
+  /// status==expired covers the reconciler/webhook-driven expiry.
+  bool get needsReauthorization =>
+      isExpired || status == MandateStatus.expired || isCancelled || isRejected;
+
   @override
   List<Object?> get props => [
         id,

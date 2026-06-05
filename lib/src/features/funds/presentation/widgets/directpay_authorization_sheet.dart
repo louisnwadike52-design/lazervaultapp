@@ -7,6 +7,49 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 
+/// Which flow is hosting the Mono webview. Drives the sheet chrome (header copy,
+/// cancel-dialog wording, and whether we render our own close button). The
+/// webview behaviour and redirect handling are identical across flows.
+enum DirectPayFlow { deposit, mandate, kyc }
+
+extension DirectPayFlowChrome on DirectPayFlow {
+  String get headerTitle {
+    switch (this) {
+      case DirectPayFlow.kyc:
+        return 'Identity Verification';
+      case DirectPayFlow.mandate:
+        return 'Set up Direct Debit';
+      case DirectPayFlow.deposit:
+        return 'Secure Payment';
+    }
+  }
+
+  String get headerSubtitle {
+    switch (this) {
+      case DirectPayFlow.kyc:
+        return 'Verify your identity securely';
+      case DirectPayFlow.mandate:
+        return 'Authorize recurring access';
+      case DirectPayFlow.deposit:
+        return 'Authorize with your bank';
+    }
+  }
+
+  /// KYC uses Mono's own close control inside the widget, so we don't render a
+  /// second one in our header. Deposit/mandate keep our close affordance.
+  bool get showCloseButton => this != DirectPayFlow.kyc;
+
+  String get cancelTitle =>
+      this == DirectPayFlow.kyc ? 'Stop verification?' : 'Cancel Payment?';
+
+  String get cancelBody => this == DirectPayFlow.kyc
+      ? 'Are you sure you want to stop identity verification? You will need to start over.'
+      : 'Are you sure you want to cancel this payment authorization? You will need to start over.';
+
+  String get cancelConfirmLabel =>
+      this == DirectPayFlow.kyc ? 'Stop' : 'Cancel Payment';
+}
+
 /// DirectPay Authorization Result
 class DirectPayAuthResult {
   final bool success;
@@ -68,6 +111,7 @@ Future<DirectPayAuthResult> showDirectPayAuthorizationSheet({
   String? reference,
   String redirectScheme = 'lazervault',
   String redirectPath = '/deposit/callback',
+  DirectPayFlow flow = DirectPayFlow.deposit,
 }) async {
   final result = await showModalBottomSheet<DirectPayAuthResult>(
     context: context,
@@ -83,6 +127,7 @@ Future<DirectPayAuthResult> showDirectPayAuthorizationSheet({
       reference: reference,
       redirectScheme: redirectScheme,
       redirectPath: redirectPath,
+      flow: flow,
     ),
   );
 
@@ -95,6 +140,7 @@ class _DirectPayAuthSheet extends StatefulWidget {
   final String? reference;
   final String redirectScheme;
   final String redirectPath;
+  final DirectPayFlow flow;
 
   const _DirectPayAuthSheet({
     required this.paymentUrl,
@@ -102,6 +148,7 @@ class _DirectPayAuthSheet extends StatefulWidget {
     this.reference,
     required this.redirectScheme,
     required this.redirectPath,
+    this.flow = DirectPayFlow.deposit,
   });
 
   @override
@@ -123,6 +170,11 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
   Timer? _proveProbeTimer;
   String? _lastBlockedKey;
   bool _blockedDialogOpen = false;
+  // Consecutive probe ticks where "Grant Permission" is disabled but we found
+  // no actionable item to surface (e.g. the provider rejected a detail like an
+  // invalid date of birth). After a few ticks we show a generic "couldn't
+  // complete" hint so the user isn't stuck on a dead button.
+  int _disabledNoActionTicks = 0;
 
   // Redirect patterns to detect completion
   late final List<String> _successPatterns;
@@ -323,14 +375,29 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
               .where((s) => s.isNotEmpty)
               .toList() ??
           <String>[];
-      if (!disabled || incomplete.isEmpty) {
-        _lastBlockedKey = null; // resolved — allow a fresh prompt if it recurs
+      if (!disabled) {
+        // Grant Permission is enabled (or the page moved on) — fully resolved.
+        _lastBlockedKey = null;
+        _disabledNoActionTicks = 0;
         return;
       }
-      final key = incomplete.join(',');
-      if (key == _lastBlockedKey) return; // already guided for this exact set
-      _lastBlockedKey = key;
-      _showProveActionNeededDialog(incomplete);
+      if (incomplete.isNotEmpty) {
+        // We know exactly what is outstanding — guide the user to provide it.
+        _disabledNoActionTicks = 0;
+        final key = incomplete.join(',');
+        if (key == _lastBlockedKey) return; // already guided for this exact set
+        _lastBlockedKey = key;
+        _showProveActionNeededDialog(incomplete);
+        return;
+      }
+      // Grant Permission disabled but nothing actionable we can detect (e.g. the
+      // provider rejected a detail like an invalid date of birth). Give it a few
+      // ticks in case it is still validating, then surface a generic "couldn't
+      // complete" hint so the user isn't stuck staring at a dead button.
+      _disabledNoActionTicks++;
+      if (_disabledNoActionTicks >= 4) {
+        _showProveStuckDialog();
+      }
     } catch (_) {
       // Page not ready / eval blocked — ignore and try again next tick.
     }
@@ -425,6 +492,63 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
     ).then((_) => _blockedDialogOpen = false);
   }
 
+  /// Shown when "Grant Permission" stays disabled with nothing actionable we can
+  /// detect (e.g. the provider rejected a detail like an invalid date of birth),
+  /// so the user isn't left staring at a dead button. Offers a retry (reload) or
+  /// a clean close (returns cancelled — the host can then offer skip/continue).
+  void _showProveStuckDialog() {
+    if (!mounted || _blockedDialogOpen) return;
+    _blockedDialogOpen = true;
+    showDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        title: Row(
+          children: [
+            Icon(Icons.error_outline_rounded,
+                color: const Color(0xFFEF4444), size: 24.sp),
+            SizedBox(width: 10.w),
+            Expanded(
+              child: Text("We couldn't complete verification",
+                  style: TextStyle(
+                      fontSize: 17.sp,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF1E3A5F))),
+            ),
+          ],
+        ),
+        content: Text(
+          "Some of your details couldn't be confirmed by our verification "
+          'partner. Please try again, or close and continue — you can finish '
+          'verifying later.',
+          style: TextStyle(fontSize: 14.sp, color: Colors.grey[700], height: 1.4),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              Navigator.of(context).pop(DirectPayAuthResult.cancelled());
+            },
+            child: Text('Close', style: TextStyle(color: Colors.grey[700])),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              _disabledNoActionTicks = 0;
+              _lastBlockedKey = null;
+              _controller.reload();
+            },
+            style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4E03D0)),
+            child: const Text('Try Again'),
+          ),
+        ],
+      ),
+    ).then((_) => _blockedDialogOpen = false);
+  }
+
   bool _isRedirectUrl(String url) {
     final lowerUrl = url.toLowerCase();
 
@@ -488,11 +612,8 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Cancel Payment?'),
-        content: const Text(
-          'Are you sure you want to cancel this payment authorization? '
-          'You will need to start over.',
-        ),
+        title: Text(widget.flow.cancelTitle),
+        content: Text(widget.flow.cancelBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
@@ -504,7 +625,7 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
               Navigator.of(context).pop(DirectPayAuthResult.cancelled());
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Cancel Payment'),
+            child: Text(widget.flow.cancelConfirmLabel),
           ),
         ],
       ),
@@ -564,15 +685,21 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
           // Title row
           Row(
             children: [
-              IconButton(
-                onPressed: _handleCancel,
-                icon: Icon(
-                  Icons.close,
-                  color: Colors.grey[600],
-                  size: 24.sp,
-                ),
-                tooltip: 'Cancel',
-              ),
+              // Our close control. Hidden for KYC (Mono renders its own X inside
+              // the widget, so a second one is confusing); a matching spacer
+              // keeps the title centered in that case.
+              if (widget.flow.showCloseButton)
+                IconButton(
+                  onPressed: _handleCancel,
+                  icon: Icon(
+                    Icons.close,
+                    color: Colors.grey[600],
+                    size: 24.sp,
+                  ),
+                  tooltip: 'Cancel',
+                )
+              else
+                SizedBox(width: 48.w),
               Expanded(
                 child: Column(
                   children: [
@@ -586,7 +713,7 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
                         ),
                         SizedBox(width: 4.w),
                         Text(
-                          'Secure Payment',
+                          widget.flow.headerTitle,
                           style: TextStyle(
                             color: const Color(0xFF1E3A5F),
                             fontSize: 16.sp,
@@ -597,7 +724,7 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
                     ),
                     SizedBox(height: 2.h),
                     Text(
-                      'Authorize with your bank',
+                      widget.flow.headerSubtitle,
                       style: TextStyle(
                         color: Colors.grey[600],
                         fontSize: 12.sp,

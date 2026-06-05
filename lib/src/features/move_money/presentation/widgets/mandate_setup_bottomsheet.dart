@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:url_launcher/url_launcher.dart';
 
+import '../../../funds/presentation/widgets/directpay_authorization_sheet.dart';
 import '../../cubit/mandate_cubit.dart';
 import '../../cubit/mandate_state.dart';
 
@@ -75,17 +75,32 @@ class _MandateSetupSheetState extends State<_MandateSetupSheet> {
     return BlocConsumer<MandateCubit, MandateState>(
       listener: (context, state) async {
         if (state is MandateCreated) {
-          // Capture the Navigator BEFORE any await so we never do an inherited-
-          // widget lookup on a context that may be deactivated after the await
-          // (that's what threw "Looking up a deactivated widget's ancestor").
+          // Capture the Navigator + cubit BEFORE any await so we never do an
+          // inherited-widget lookup on a context that may be deactivated after
+          // the await (that's what threw "Looking up a deactivated widget's
+          // ancestor").
           final navigator = Navigator.of(context);
+          final cubit = context.read<MandateCubit>();
           if (state.needsAuthorization && state.authorizationUrl != null) {
-            final uri = Uri.parse(state.authorizationUrl!);
-            try {
-              if (await canLaunchUrl(uri)) {
-                await launchUrl(uri, mode: LaunchMode.externalApplication);
-              }
-            } catch (_) {/* ignore launch failures — mandate is still created */}
+            // Authorize the mandate IN-APP. This used to bounce to an external
+            // browser (LaunchMode.externalApplication) with no progress and no
+            // status refresh on return. Reuse the shared Mono webview sheet in
+            // mandate mode; on a successful authorization, poll the mandate so
+            // its status flips to authorized/ready/active in the UI.
+            final authResult = await showDirectPayAuthorizationSheet(
+              context: context,
+              paymentUrl: state.authorizationUrl!,
+              paymentId: state.mandate.id,
+              reference: state.mandate.reference,
+              redirectPath: '/mandate/callback',
+              flow: DirectPayFlow.mandate,
+            );
+            if (authResult.success) {
+              cubit.pollMandateStatus(
+                mandateId: state.mandate.id,
+                userId: widget.userId,
+              );
+            }
           }
           if (mounted) navigator.pop(true);
         } else if (state is MandateError) {

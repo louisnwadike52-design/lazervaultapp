@@ -875,7 +875,34 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
   /// active (DebitMandate, no re-auth); otherwise a one-time DirectPay deposit.
   void _openRedepositSheet(BuildContext screenCtx, LinkedBankAccount account) {
     _amountController.clear();
-    final recurring = _mandateForAccount(account) != null;
+    // Read the latest mandate for this account (ANY status), so a paused or
+    // expired Direct Debit is handled explicitly instead of silently falling
+    // back to a one-time payment.
+    final mandate = serviceLocator<MandateCubit>().getMandateForAccount(account.id);
+    if (mandate != null && mandate.isPaused) {
+      _showMandateActionSheet(
+        screenCtx,
+        title: 'Direct Debit paused',
+        body: 'Your saved Direct Debit for ${account.bankName} is paused. '
+            'Reinstate it to deposit again without re-authorizing.',
+        actionLabel: 'Reinstate Direct Debit',
+        onAction: () => _reinstateMandateThenRedeposit(account, mandate),
+      );
+      return;
+    }
+    if (mandate != null && mandate.needsReauthorization) {
+      _showMandateActionSheet(
+        screenCtx,
+        title: 'Direct Debit ${mandate.isExpired ? 'expired' : 'ended'}',
+        body: 'Your saved Direct Debit for ${account.bankName} can no longer be '
+            'used. Re-authorize once to keep depositing without a bank login '
+            'each time.',
+        actionLabel: 'Re-authorize Direct Debit',
+        onAction: () => _reauthorizeMandateThenRedeposit(account),
+      );
+      return;
+    }
+    final recurring = mandate != null && mandate.isActive;
     showModalBottomSheet(
       context: screenCtx,
       isScrollControlled: true,
@@ -952,6 +979,119 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         ),
       ),
     );
+  }
+
+  /// Dark action sheet used when a saved Direct Debit can't be used as-is
+  /// (paused or expired) — explains why and offers the corrective action.
+  void _showMandateActionSheet(
+    BuildContext screenCtx, {
+    required String title,
+    required String body,
+    required String actionLabel,
+    required VoidCallback onAction,
+  }) {
+    showModalBottomSheet(
+      context: screenCtx,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) => Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A1A1A),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40.w,
+                    height: 4.h,
+                    margin: EdgeInsets.only(bottom: 16.h),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(2.r),
+                    ),
+                  ),
+                ),
+                Text(title,
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w700)),
+                SizedBox(height: 8.h),
+                Text(body,
+                    style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 13.sp,
+                        height: 1.45)),
+                SizedBox(height: 20.h),
+                _sheetPrimaryButton(
+                  label: actionLabel,
+                  icon: Icons.verified_user_outlined,
+                  onPressed: () {
+                    Navigator.of(sheetCtx).pop();
+                    onAction();
+                  },
+                ),
+                SizedBox(height: 6.h),
+                Center(
+                  child: TextButton(
+                    onPressed: () => Navigator.of(sheetCtx).pop(),
+                    child: Text('Not now',
+                        style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.6),
+                            fontSize: 14.sp)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Reinstate a paused mandate, then reopen the deposit sheet so the user can
+  /// deposit once it's active again.
+  void _reinstateMandateThenRedeposit(
+      LinkedBankAccount account, MandateEntity mandate) {
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) return;
+    serviceLocator<MandateCubit>().reinstateMandate(
+      mandateId: mandate.id,
+      userId: authState.profile.user.id,
+    );
+    Get.snackbar('Direct Debit', 'Reinstating your Direct Debit...',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFF10B981).withValues(alpha: 0.9),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 2));
+    Future.delayed(const Duration(milliseconds: 700), () {
+      if (mounted) _openRedepositSheet(context, account);
+    });
+  }
+
+  /// Re-authorize an expired/cancelled mandate by creating a fresh one (in-app),
+  /// then reopen the deposit sheet so the user can deposit via the new mandate.
+  Future<void> _reauthorizeMandateThenRedeposit(LinkedBankAccount account) async {
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) return;
+    final user = authState.profile.user;
+    final ok = await showMandateSetupBottomSheet(
+      context: context,
+      linkedAccountId: account.id,
+      userId: user.id,
+      bankName: account.bankName,
+      accountName: account.accountName,
+      userEmail: user.email,
+      userName: '${user.firstName} ${user.lastName}'.trim(),
+    );
+    if (ok && mounted) _openRedepositSheet(context, account);
   }
 
   /// Fire a deposit from an existing linked account. Reuses the mandate when
@@ -1535,8 +1675,11 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         onSuccess: () {
           _isProgressSheetShown = false;
           Navigator.of(sheetContext).pop();
-          // Navigate back to dashboard
+          // Navigate back to dashboard, then surface the success snackbar so it
+          // lands over the dashboard (Get.snackbar is a global overlay that
+          // survives the route change).
           _navigateToDashboard();
+          _showDepositCompletedSnackbar();
         },
         onDismiss: () {
           _isProgressSheetShown = false;
@@ -1763,11 +1906,14 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       debugPrint('[DirectPay] Authorization successful');
       // Update progress to processing stage
       _progressController.updateStage(DirectPayStage.processing);
-      // Poll the deposit settlement status. The backend verifies with Mono
-      // and credits on poll (so this works even when Mono's webhook can't
-      // reach us — local dev, or a delayed webhook in prod). Each poll
-      // emits DepositStatusUpdated which advances the progress sheet to
-      // success → onSuccess → dashboard redirect.
+      // PRIMARY (no polling): subscribe to the ws-balance WebSocket for this
+      // deposit. When the backend settles (webhook → credit → NotifyDeposit), it
+      // pushes DepositWebSocketCompleted, which advances the progress sheet to
+      // success. DepositCubit owns the WS; arm it on the deposit reference.
+      serviceLocator<DepositCubit>().onPaymentCompleted(_currentDepositId ?? paymentId);
+      // FALLBACK only: a sparse settlement watchdog that also triggers the
+      // backend's poll-on-read crediting for environments where Mono's webhook
+      // can't reach us (local dev / a delayed webhook). Not a tight UI loop.
       _pollDepositSettlement(context);
     } else {
       debugPrint('[DirectPay] Authorization failed: ${result.errorMessage}');
@@ -1801,35 +1947,28 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     // async gap + the DirectPay sheet teardown).
     final openBankingCubit = serviceLocator<OpenBankingCubit>();
 
-    // Poll up to ~20 times over ~60s. The backend flips the deposit to
-    // `successful` shortly after crediting, but settlement bookkeeping can
-    // lag a few seconds, so we poll generously. The DepositStatusUpdated
-    // listener advances/closes the sheet on a terminal status; we stop
-    // early once that happens. Each iteration is guarded so a transient
-    // error (e.g. the progress controller disposed) doesn't kill the loop.
-    for (var attempt = 0; attempt < 20; attempt++) {
+    // FALLBACK watchdog (the WebSocket is the primary path). A handful of
+    // SPARSE checks — not a 60s tight loop. The first check is immediate so the
+    // backend's poll-on-read settles + credits in environments where Mono's
+    // webhook can't reach us (local dev); the later checks are a safety net if
+    // no WS event arrives. We stop the instant the sheet reaches a terminal
+    // stage (the WS event usually gets there first).
+    const delaysSeconds = [0, 4, 10, 20, 35];
+    for (final delay in delaysSeconds) {
       if (!mounted) return;
       try {
-        // Stop once the sheet has reached a terminal stage.
         final stage = _progressController.stage;
         if (stage == DirectPayStage.success || stage == DirectPayStage.failed) {
-          return;
+          return; // WS (or an earlier check) already finished it.
         }
       } catch (_) {
-        // controller disposed → the flow already ended; stop polling.
-        return;
+        return; // controller disposed → flow ended.
       }
-      // Check IMMEDIATELY on the first pass (no upfront wait) — settlement is
-      // usually already done by the time DirectPay returns, so the dashboard
-      // redirect fires without delay. The interval below is only a network
-      // retry cadence between checks, not a UI wait.
-      if (attempt > 0) {
-        await Future<void>.delayed(const Duration(seconds: 2));
+      if (delay > 0) {
+        await Future<void>.delayed(Duration(seconds: delay));
         if (!mounted) return;
       }
-      debugPrint('[Deposit] Polling deposit settlement (attempt ${attempt + 1}) id=$depositId');
-      // Fire-and-forget; the cubit emits DepositStatusUpdated which the
-      // listener handles.
+      debugPrint('[Deposit] settlement watchdog check (t+${delay}s) id=$depositId');
       try {
         openBankingCubit.checkDepositStatus(
           depositId: depositId,
@@ -1837,10 +1976,10 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
           accessToken: accessToken,
         );
       } catch (e) {
-        debugPrint('[Deposit] poll checkDepositStatus threw (continuing): $e');
+        debugPrint('[Deposit] watchdog checkDepositStatus threw (continuing): $e');
       }
     }
-    debugPrint('[Deposit] Polling budget exhausted for $depositId (no terminal status)');
+    debugPrint('[Deposit] settlement watchdog done for $depositId (relying on WS)');
   }
 
   /// Handle open banking state changes
@@ -1926,16 +2065,13 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         // Deposit completed - refresh balances
         _refreshAccountBalances(context);
 
-        // Mark the sheet terminal (its own teardown closes it on the route
-        // change below).
+        // Mark the sheet terminal. DO NOT navigate from here — that used to
+        // call _navigateToDashboard() synchronously, tearing the progress sheet
+        // down before it ever rendered its success state (the dashboard flashed
+        // instead of the black sheet completing on the deposit screen). The
+        // sheet's own onSuccess callback drives the pop + navigation AFTER it
+        // shows "Deposit Successful", so the user sees it complete here first.
         _progressController.updateStage(DirectPayStage.success);
-
-        // Go to the dashboard IMMEDIATELY — no timer. Then surface the
-        // success snackbar so it lands over the dashboard (Get.snackbar is
-        // an overlay that survives the route change). The redirect is driven
-        // by the settlement event, not a hardcoded wait.
-        _navigateToDashboard();
-        _showDepositCompletedSnackbar();
       } else if (deposit.status == DepositStatus.failed) {
         _showDepositFailure(deposit.failureReason);
       }
@@ -2020,11 +2156,17 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       // Refresh account balances
       _refreshAccountBalances(context);
 
-      // Go to the dashboard immediately, then show the completion snackbar
-      // over it. No hardcoded wait. (_navigateToDashboard is idempotent, so
-      // this is a no-op if the settlement poll already redirected.)
-      _navigateToDashboard();
-      _showDepositCompletedSnackbar();
+      if (_isProgressSheetShown) {
+        // Mono DirectPay/mandate: let the black progress sheet show "Deposit
+        // Successful" ON the deposit screen, then navigate via its onSuccess
+        // (shares the P1 terminal→navigate path). No dashboard flash.
+        _progressController.updateStage(DirectPayStage.success);
+      } else {
+        // Flutterwave (no progress sheet): go straight to the dashboard, then
+        // show the snackbar over it. (_navigateToDashboard is idempotent.)
+        _navigateToDashboard();
+        _showDepositCompletedSnackbar();
+      }
     } else if (state is DepositReversed) {
       Get.closeAllSnackbars();
       Get.snackbar(
