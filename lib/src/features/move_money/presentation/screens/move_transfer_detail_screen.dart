@@ -165,7 +165,7 @@ class _MoveTransferDetailScreenState extends State<MoveTransferDetailScreen> {
               SizedBox(height: 24.h),
 
               // Status badge
-              MoveStatusBadge(status: _transfer.status),
+              MoveStatusBadge(status: _transfer.status, transfer: _transfer),
               SizedBox(height: 8.h),
 
               // Processing spinner

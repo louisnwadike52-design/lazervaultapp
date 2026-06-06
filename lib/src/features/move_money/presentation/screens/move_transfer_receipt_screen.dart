@@ -146,7 +146,7 @@ class MoveTransferReceiptScreen extends StatelessWidget {
                     SizedBox(height: 10.h),
 
                     // Status badge
-                    MoveStatusBadge(status: transfer.status),
+                    MoveStatusBadge(status: transfer.status, transfer: transfer),
 
                     // Failure info
                     if (transfer.status == MoveTransferStatus.failed &&

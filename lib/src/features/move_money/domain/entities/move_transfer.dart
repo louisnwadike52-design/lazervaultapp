@@ -46,27 +46,119 @@ enum MoveTransferStatus {
   String get displayName {
     switch (this) {
       case MoveTransferStatus.pending:
-        return 'Pending';
-      case MoveTransferStatus.debitInitiated:
-      case MoveTransferStatus.debitProcessing:
-        return 'Debiting';
+        return 'Starting transfer';
       case MoveTransferStatus.debitAuthorizing:
         // Honest label: the transfer is WAITING ON THE USER to approve the
         // debit at their bank — it cannot progress by itself.
-        return 'Awaiting approval';
+        return 'Awaiting your approval';
+      case MoveTransferStatus.debitInitiated:
+      case MoveTransferStatus.debitProcessing:
+        return 'Debiting your bank';
+      // Money has LEFT the source account — never show anything that reads
+      // like "waiting on you" from here on. It is in transit to the
+      // destination (or being returned).
       case MoveTransferStatus.debitCompleted:
-        return 'Debit Complete';
       case MoveTransferStatus.payoutInitiated:
       case MoveTransferStatus.payoutProcessing:
-        return 'Sending';
+        return 'Transfer pending';
       case MoveTransferStatus.completed:
         return 'Completed';
       case MoveTransferStatus.failed:
         return 'Failed';
       case MoveTransferStatus.refunding:
-        return 'Refunding';
+        return 'Refund in progress';
       case MoveTransferStatus.refunded:
         return 'Refunded';
+    }
+  }
+
+  /// True once the debit has settled — the money is OUT of the source
+  /// account (in transit, being refunded, or already refunded).
+  bool get moneyLeftSource {
+    switch (this) {
+      case MoveTransferStatus.debitCompleted:
+      case MoveTransferStatus.payoutInitiated:
+      case MoveTransferStatus.payoutProcessing:
+      case MoveTransferStatus.completed:
+      case MoveTransferStatus.refunding:
+      case MoveTransferStatus.refunded:
+        return true;
+      case MoveTransferStatus.pending:
+      case MoveTransferStatus.debitAuthorizing:
+      case MoveTransferStatus.debitInitiated:
+      case MoveTransferStatus.debitProcessing:
+      case MoveTransferStatus.failed:
+        return false;
+    }
+  }
+
+  /// Short headline for the status-info dialog.
+  String get stageHeadline {
+    switch (this) {
+      case MoveTransferStatus.pending:
+        return 'Setting up your transfer';
+      case MoveTransferStatus.debitAuthorizing:
+        return 'Your bank needs your approval';
+      case MoveTransferStatus.debitInitiated:
+      case MoveTransferStatus.debitProcessing:
+        return 'Collecting from your bank';
+      case MoveTransferStatus.debitCompleted:
+      case MoveTransferStatus.payoutInitiated:
+      case MoveTransferStatus.payoutProcessing:
+        return 'Money is on its way';
+      case MoveTransferStatus.completed:
+        return 'Delivered';
+      case MoveTransferStatus.failed:
+        return 'Transfer failed';
+      case MoveTransferStatus.refunding:
+        return 'Returning your money';
+      case MoveTransferStatus.refunded:
+        return 'Money returned';
+    }
+  }
+
+  /// Full explanation for the status-info dialog. [source] and
+  /// [destination] are bank display names; [refundedToWallet] applies to
+  /// the refunded state only.
+  String stageExplanation({
+    required String source,
+    required String destination,
+    bool refundedToWallet = false,
+  }) {
+    switch (this) {
+      case MoveTransferStatus.pending:
+        return 'We are preparing this transfer. No money has left $source yet.';
+      case MoveTransferStatus.debitAuthorizing:
+        return 'This transfer is waiting for YOU to approve the debit at '
+            '$source. No money has moved yet. If you do not approve it, '
+            'it expires automatically and nothing is charged.';
+      case MoveTransferStatus.debitInitiated:
+      case MoveTransferStatus.debitProcessing:
+        return 'We are collecting the money from $source. This usually takes '
+            'a few seconds. No money reaches $destination until this clears.';
+      case MoveTransferStatus.debitCompleted:
+      case MoveTransferStatus.payoutInitiated:
+      case MoveTransferStatus.payoutProcessing:
+        return 'The money has left $source and is on its way to $destination. '
+            'This usually completes within minutes. If it cannot be '
+            'delivered, the full amount is refunded automatically. You '
+            'never lose money at this stage.';
+      case MoveTransferStatus.completed:
+        return 'The money was delivered to $destination.';
+      case MoveTransferStatus.failed:
+        return 'This transfer did not complete and no money left $source. '
+            'You were not charged.';
+      case MoveTransferStatus.refunding:
+        return 'The money left $source but could not be delivered to '
+            '$destination. We are returning the full amount to you '
+            'automatically. No action is needed.';
+      case MoveTransferStatus.refunded:
+        return refundedToWallet
+            ? 'The money left $source but could not be delivered to '
+                '$destination. The full amount has been credited to your '
+                'LazerVault wallet instead.'
+            : 'The money left $source but could not be delivered to '
+                '$destination. The full amount has been returned to $source.';
     }
   }
 

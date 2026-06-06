@@ -371,7 +371,7 @@ class _MoveHistoryScreenState extends State<MoveHistoryScreen> {
                   ),
                 ),
                 SizedBox(height: 4.h),
-                MoveStatusBadge(status: transfer.status),
+                MoveStatusBadge(status: transfer.status, transfer: transfer),
               ],
             ),
           ],

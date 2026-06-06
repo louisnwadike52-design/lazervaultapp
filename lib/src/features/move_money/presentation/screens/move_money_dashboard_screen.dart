@@ -2283,7 +2283,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                     ),
                   ),
                   SizedBox(height: 4.h),
-                  MoveStatusBadge(status: transfer.status),
+                  MoveStatusBadge(status: transfer.status, transfer: transfer),
                 ],
               ),
             ],
@@ -2942,6 +2942,14 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
         return const Color(0xFF10B981);
       case MoveTransferStatus.failed:
         return const Color(0xFFEF4444);
+      case MoveTransferStatus.refunding:
+      case MoveTransferStatus.refunded:
+        return const Color(0xFF8B5CF6);
+      // Money left the source and is in transit.
+      case MoveTransferStatus.debitCompleted:
+      case MoveTransferStatus.payoutInitiated:
+      case MoveTransferStatus.payoutProcessing:
+        return const Color(0xFFFB923C);
       default:
         return const Color(0xFF3B82F6);
     }
@@ -2959,25 +2967,9 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
   }
 
   String _statusTitleForMoveTransfer(MoveTransferStatus status) {
-    switch (status) {
-      case MoveTransferStatus.completed:
-        return 'Transfer Completed';
-      case MoveTransferStatus.failed:
-        return 'Transfer Failed';
-      case MoveTransferStatus.debitInitiated:
-      case MoveTransferStatus.debitAuthorizing:
-      case MoveTransferStatus.debitProcessing:
-        return 'Debiting Account';
-      case MoveTransferStatus.payoutInitiated:
-      case MoveTransferStatus.payoutProcessing:
-        return 'Sending Funds';
-      case MoveTransferStatus.refunding:
-        return 'Refunding';
-      case MoveTransferStatus.refunded:
-        return 'Refunded';
-      default:
-        return 'Processing';
-    }
+    // Single source of truth — the entity's stage-aware headline. Keeps the
+    // status bottomsheet consistent with the badges and the info sheet.
+    return status.stageHeadline;
   }
 
   // ---------------------------------------------------------------------------
