@@ -857,22 +857,31 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
             SizedBox(height: 4.h),
             // LIVE-ONLY: show a figure only when this session's Mono read
             // landed (within minutes) — never a DB cache as current balance.
-            Text(
-              account.balanceUpdatedAt != null &&
-                      DateTime.now().difference(account.balanceUpdatedAt!).inMinutes < 3
-                  ? '₦${account.lastKnownBalance.toStringAsFixed(2)}'
-                  : 'Fetching balance…',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: account.balanceUpdatedAt != null &&
-                        DateTime.now().difference(account.balanceUpdatedAt!).inMinutes < 3
-                    ? Colors.white
-                    : Colors.white.withValues(alpha: 0.45),
-                fontSize: 13.sp,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
+            Builder(builder: (_) {
+              final fresh = account.balanceUpdatedAt != null &&
+                  DateTime.now().difference(account.balanceUpdatedAt!).inMinutes < 3;
+              if (fresh) {
+                return Text('₦${account.lastKnownBalance.toStringAsFixed(2)}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12.5.sp,
+                        fontWeight: FontWeight.w700));
+              }
+              return Row(mainAxisSize: MainAxisSize.min, children: [
+                SizedBox(
+                    width: 9.w,
+                    height: 9.w,
+                    child: const CircularProgressIndicator(
+                        strokeWidth: 1.5, color: Color(0xFF9CA3AF))),
+                SizedBox(width: 5.w),
+                Text('Fetching balance…',
+                    style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.5),
+                        fontSize: 11.sp)),
+              ]);
+            }),
             SizedBox(height: 8.h),
             Row(
               children: [

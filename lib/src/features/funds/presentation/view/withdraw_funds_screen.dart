@@ -669,22 +669,31 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
                 style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 11.5.sp, letterSpacing: 0.3)),
             SizedBox(height: 3.h),
             // LIVE-ONLY: figure only when this session's Mono read landed.
-            Text(
-              a.balanceUpdatedAt != null &&
-                      DateTime.now().difference(a.balanceUpdatedAt!).inMinutes < 3
-                  ? '₦${a.lastKnownBalance.toStringAsFixed(2)}'
-                  : 'Fetching balance…',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: a.balanceUpdatedAt != null &&
-                        DateTime.now().difference(a.balanceUpdatedAt!).inMinutes < 3
-                    ? Colors.white
-                    : Colors.white.withValues(alpha: 0.45),
-                fontSize: 12.5.sp,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
+            Builder(builder: (_) {
+              final fresh = a.balanceUpdatedAt != null &&
+                  DateTime.now().difference(a.balanceUpdatedAt!).inMinutes < 3;
+              if (fresh) {
+                return Text('₦${a.lastKnownBalance.toStringAsFixed(2)}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12.5.sp,
+                        fontWeight: FontWeight.w700));
+              }
+              return Row(mainAxisSize: MainAxisSize.min, children: [
+                SizedBox(
+                    width: 9.w,
+                    height: 9.w,
+                    child: const CircularProgressIndicator(
+                        strokeWidth: 1.5, color: Color(0xFF9CA3AF))),
+                SizedBox(width: 5.w),
+                Text('Fetching balance…',
+                    style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.5),
+                        fontSize: 11.sp)),
+              ]);
+            }),
           ],
         ),
       ),

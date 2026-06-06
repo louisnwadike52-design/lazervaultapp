@@ -120,26 +120,39 @@ class MoveAccountCard extends StatelessWidget {
             // LIVE-ONLY display: the figure renders ONLY when this session's
             // Mono read has landed (balanceUpdatedAt within minutes) — a DB
             // cache is never shown as a current balance.
-            Text(
-              account.balanceUpdatedAt != null &&
-                      DateTime.now()
-                              .difference(account.balanceUpdatedAt!)
-                              .inMinutes <
-                          3
-                  ? '₦${account.lastKnownBalance.toStringAsFixed(2)}'
-                  : 'Fetching balance…',
-              style: GoogleFonts.inter(
-                color: account.balanceUpdatedAt != null &&
-                        DateTime.now()
-                                .difference(account.balanceUpdatedAt!)
-                                .inMinutes <
-                            3
-                    ? Colors.white
-                    : const Color(0xFF6B7280),
-                fontSize: 12.5.sp,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
+            Builder(builder: (_) {
+              final fresh = account.balanceUpdatedAt != null &&
+                  DateTime.now()
+                          .difference(account.balanceUpdatedAt!)
+                          .inMinutes <
+                      3;
+              if (fresh) {
+                return Text(
+                  '₦${account.lastKnownBalance.toStringAsFixed(2)}',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 12.5.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                );
+              }
+              return Row(mainAxisSize: MainAxisSize.min, children: [
+                SizedBox(
+                  width: 9.w,
+                  height: 9.w,
+                  child: const CircularProgressIndicator(
+                      strokeWidth: 1.5, color: Color(0xFF9CA3AF)),
+                ),
+                SizedBox(width: 5.w),
+                Text(
+                  'Fetching balance…',
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF6B7280),
+                    fontSize: 11.sp,
+                  ),
+                ),
+              ]);
+            }),
             SizedBox(height: 2.h),
 
             // Mandate status badge

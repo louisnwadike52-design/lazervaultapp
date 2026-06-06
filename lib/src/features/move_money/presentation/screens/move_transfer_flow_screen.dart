@@ -720,14 +720,24 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
     // LIVE-ONLY: a figure is current only if this session's Mono read landed.
     final hasFigure = account.balanceUpdatedAt != null &&
         DateTime.now().difference(account.balanceUpdatedAt!).inMinutes < 3;
+    if (!hasFigure) {
+      return Row(mainAxisSize: MainAxisSize.min, children: [
+        SizedBox(
+          width: 9.w,
+          height: 9.w,
+          child: const CircularProgressIndicator(
+              strokeWidth: 1.5, color: Color(0xFF9CA3AF)),
+        ),
+        SizedBox(width: 5.w),
+        Text('Fetching balance…',
+            style: GoogleFonts.inter(
+                color: const Color(0xFF9CA3AF), fontSize: 11.sp)),
+      ]);
+    }
     return Text(
-      hasFigure
-          ? '₦${account.lastKnownBalance.toStringAsFixed(2)}'
-          : 'Fetching balance…',
+      '₦${account.lastKnownBalance.toStringAsFixed(2)}',
       style: GoogleFonts.inter(
-          color: hasFigure ? Colors.white : const Color(0xFF9CA3AF),
-          fontSize: 12.5.sp,
-          fontWeight: FontWeight.w700),
+          color: Colors.white, fontSize: 12.5.sp, fontWeight: FontWeight.w700),
     );
   }
 
