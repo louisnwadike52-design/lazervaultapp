@@ -242,6 +242,32 @@ class TransactionPinService implements ITransactionPinService {
     }
   }
 
+  /// Retries [fn] on TRANSIENT transport failures (UNAVAILABLE / connection
+  /// "shutting down"). The singleton gRPC channel briefly enters a
+  /// shutting-down state when the network blips or a gateway restarts; the
+  /// next attempt gets a fresh HTTP/2 connection. Money-safety: only ever
+  /// used for IDEMPOTENT reads and PIN verification (server-side attempt
+  /// counting is keyed, a retried identical request is safe).
+  Future<T> _retryOnTransient<T>(Future<T> Function() fn,
+      {int retries = 2}) async {
+    var attempt = 0;
+    while (true) {
+      try {
+        return await fn();
+      } on GrpcError catch (e) {
+        final transient = e.code == StatusCode.unavailable ||
+            (e.message?.toLowerCase().contains('shutting down') ?? false) ||
+            (e.message?.toLowerCase().contains('connection terminated') ??
+                false);
+        if (!transient || attempt >= retries) rethrow;
+        attempt++;
+        print(
+            '[TransactionPinService] transient transport error (attempt $attempt/$retries): ${e.codeName} — retrying');
+        await Future.delayed(Duration(milliseconds: 400 * attempt));
+      }
+    }
+  }
+
   @override
   Future<bool> checkUserHasPin() async {
     try {
@@ -250,13 +276,14 @@ class TransactionPinService implements ITransactionPinService {
 
       final request = CheckUserHasPinRequest()..userId = userId;
 
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _retryOnTransient(() => _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth();
         return await _client.checkUserHasPin(
           request,
           options: callOptions,
         );
-      });
+      }));
 
       print('[TransactionPinService] checkUserHasPin response: hasPin=${response.hasPin}, isActive=${response.isActive}');
       return response.hasPin;
@@ -290,13 +317,14 @@ class TransactionPinService implements ITransactionPinService {
         ..currency = currency
         ..deviceId = deviceId;
 
-      final response = await _callOptionsHelper.executeWithTokenRotation(() async {
+      final response =
+          await _retryOnTransient(() => _callOptionsHelper.executeWithTokenRotation(() async {
         final callOptions = await _callOptionsHelper.withAuth();
         return await _client.verifyTransactionPin(
           request,
           options: callOptions,
         );
-      });
+      }));
 
       if (!response.success) {
         // Check if PIN is locked
