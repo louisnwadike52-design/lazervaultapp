@@ -180,6 +180,14 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
   late final List<String> _successPatterns;
   late final List<String> _failurePatterns;
 
+  // The Mono page can fire the redirect deep-link more than once (SPA retries
+  // the lazervault:// navigation until something handles it). Each unguarded
+  // _handleRedirect call pops a route — the first closes this sheet (correct),
+  // the SECOND silently pops whatever is underneath (the black DirectPay
+  // progress sheet), killing the success animation + dashboard redirect.
+  // Handle the redirect exactly once.
+  bool _redirectHandled = false;
+
   @override
   void initState() {
     super.initState();
@@ -567,6 +575,11 @@ class _DirectPayAuthSheetState extends State<_DirectPayAuthSheet> {
   }
 
   void _handleRedirect(String url) {
+    if (_redirectHandled || !mounted) {
+      debugPrint('[DirectPay] Redirect already handled, ignoring: $url');
+      return;
+    }
+    _redirectHandled = true;
     debugPrint('[DirectPay] Handling redirect: $url');
     HapticFeedback.mediumImpact();
 

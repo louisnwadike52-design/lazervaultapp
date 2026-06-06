@@ -80,7 +80,7 @@ class _MoveTransferDetailScreenState extends State<MoveTransferDetailScreen> {
   }
 
   String _formatDate(DateTime date) {
-    return DateFormat('MMM d, yyyy  HH:mm:ss').format(date);
+    return DateFormat('MMM d, yyyy  HH:mm:ss').format(date.toLocal());
   }
 
   // ---------------------------------------------------------------------------

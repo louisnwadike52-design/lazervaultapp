@@ -130,7 +130,7 @@ class _WalletHistoryScreenState extends State<WalletHistoryScreen> {
   }
 
   String _formatDate(DateTime date) {
-    return DateFormat('MMM d, yyyy  HH:mm').format(date);
+    return DateFormat('MMM d, yyyy  HH:mm').format(date.toLocal());
   }
 
   @override

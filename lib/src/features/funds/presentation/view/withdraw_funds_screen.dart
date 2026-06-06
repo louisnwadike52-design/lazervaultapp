@@ -201,6 +201,32 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
     return null;
   }
 
+  /// Map raw backend/provider withdrawal errors to user-facing copy. The raw
+  /// text (e.g. "transfer failed: flutterwave transfer request failed:
+  /// flutterwave HTTP 400: Transfer creation failed") must never reach the UI.
+  String _friendlyWithdrawError(String? raw) {
+    final lower = (raw ?? '').toLowerCase();
+    if (lower.contains('account resolve') || lower.contains('resolve failed')) {
+      return 'We could not verify this bank account with our payout provider. '
+          'Please confirm the account details or try a different bank.';
+    }
+    if (lower.contains('insufficient')) {
+      return 'Insufficient balance for this withdrawal.';
+    }
+    if (lower.contains('limit')) {
+      return 'This withdrawal exceeds your current limit.';
+    }
+    if (lower.contains('timeout') ||
+        lower.contains('deadline') ||
+        lower.contains('unavailable') ||
+        lower.contains('network')) {
+      return 'The payout service is taking too long. Your money has not been '
+          'deducted. Please try again shortly.';
+    }
+    return 'We could not complete this withdrawal. Your money has not been '
+        'deducted. Please try again shortly.';
+  }
+
   // ===== Submit =====
   // The destination (a Mono-linked account) is already bank-verified, so the
   // confirm sheet shows the verified holder name, then the PIN sheet processes
@@ -241,8 +267,10 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
       onPinValidated: (token) async {
         resp = await _runWithdrawal(account, amount, transactionId, token);
         if (resp == null || !resp!.success) {
-          throw Exception(
-              (resp?.errorMessage.isNotEmpty ?? false) ? resp!.errorMessage : 'Withdrawal failed');
+          // Never surface raw provider plumbing ("flutterwave HTTP 400…") to
+          // the user — classify into actionable copy. Money safety: a failed
+          // payout releases its hold, so the balance is untouched.
+          throw Exception(_friendlyWithdrawError(resp?.errorMessage));
         }
       },
     );
@@ -639,6 +667,24 @@ class _WithdrawFundsScreenState extends State<WithdrawFundsScreen>
             SizedBox(height: 2.h),
             Text(a.displayAccountNumber,
                 style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 11.5.sp, letterSpacing: 0.3)),
+            SizedBox(height: 3.h),
+            // LIVE-ONLY: figure only when this session's Mono read landed.
+            Text(
+              a.balanceUpdatedAt != null &&
+                      DateTime.now().difference(a.balanceUpdatedAt!).inMinutes < 3
+                  ? '₦${a.lastKnownBalance.toStringAsFixed(2)}'
+                  : 'Fetching balance…',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: a.balanceUpdatedAt != null &&
+                        DateTime.now().difference(a.balanceUpdatedAt!).inMinutes < 3
+                    ? Colors.white
+                    : Colors.white.withValues(alpha: 0.45),
+                fontSize: 12.5.sp,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ],
         ),
       ),

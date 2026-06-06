@@ -89,15 +89,31 @@ class AccountLinkedWithMandate extends OpenBankingState {
   final bool mandateFailed;
   final String? mandateError;
 
+  /// A freshly created e-mandate is `awaiting_authorization` until the user
+  /// approves it at their bank. Mono returns the hosted authorization URL with
+  /// the create response — surfaced so the deposit screen can open it in our
+  /// themed in-app sheet (DirectPayFlow.mandate) instead of orphaning it.
+  final bool mandateNeedsAuthorization;
+  final String? mandateAuthorizationUrl;
+
   const AccountLinkedWithMandate({
     required this.account,
     this.mandate,
     this.mandateFailed = false,
     this.mandateError,
+    this.mandateNeedsAuthorization = false,
+    this.mandateAuthorizationUrl,
   });
 
   @override
-  List<Object?> get props => [account, mandate, mandateFailed, mandateError];
+  List<Object?> get props => [
+        account,
+        mandate,
+        mandateFailed,
+        mandateError,
+        mandateNeedsAuthorization,
+        mandateAuthorizationUrl,
+      ];
 }
 
 /// Account unlinked

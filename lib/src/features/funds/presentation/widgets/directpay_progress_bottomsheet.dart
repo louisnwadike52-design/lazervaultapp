@@ -11,16 +11,74 @@ enum DirectPayStage {
   failed,
 }
 
+/// Which user journey the dark progress sheet narrates. The step rail and the
+/// stage copy adapt to it:
+/// - [linkAndDeposit]: fresh bank via Mono Connect → 4 steps starting at
+///   "Linking Account".
+/// - [redeposit]: an ALREADY-LINKED bank ("Deposit again" card / post-mandate
+///   resume) → 3 steps, never shows "Linking Account".
+/// - [mandateSetup]: recurring toggle ON → 4 steps with Direct Debit wording
+///   for the setup/authorization stages.
+enum DirectPayProgressFlow {
+  linkAndDeposit,
+  redeposit,
+  mandateSetup,
+}
+
+extension DirectPayProgressFlowSteps on DirectPayProgressFlow {
+  /// The non-terminal stages shown on the step rail, in order.
+  List<DirectPayStage> get steps {
+    switch (this) {
+      case DirectPayProgressFlow.linkAndDeposit:
+      case DirectPayProgressFlow.mandateSetup:
+        return const [
+          DirectPayStage.linking,
+          DirectPayStage.initiating,
+          DirectPayStage.authorizing,
+          DirectPayStage.processing,
+        ];
+      case DirectPayProgressFlow.redeposit:
+        return const [
+          DirectPayStage.initiating,
+          DirectPayStage.authorizing,
+          DirectPayStage.processing,
+        ];
+    }
+  }
+
+  /// Rail position of [stage] for this flow. Terminal stages (success/failed)
+  /// rank past the end so every step renders completed; a stage that isn't on
+  /// this flow's rail (defensive) clamps to 0.
+  int indexOf(DirectPayStage stage) {
+    if (stage == DirectPayStage.success || stage == DirectPayStage.failed) {
+      return steps.length;
+    }
+    final i = steps.indexOf(stage);
+    return i < 0 ? 0 : i;
+  }
+}
+
 /// Extension to get stage details
 extension DirectPayStageExtension on DirectPayStage {
-  String get title {
+  String get title => titleFor(DirectPayProgressFlow.linkAndDeposit);
+
+  /// Flow-aware stage title. The same stage reads differently depending on the
+  /// journey: a redeposit never links, and a mandate setup authorizes a Direct
+  /// Debit rather than a single payment.
+  String titleFor(DirectPayProgressFlow flow) {
     switch (this) {
       case DirectPayStage.linking:
         return 'Linking Account';
       case DirectPayStage.initiating:
-        return 'Initiating Payment';
+        return flow == DirectPayProgressFlow.mandateSetup
+            ? 'Setting Up Direct Debit'
+            : (flow == DirectPayProgressFlow.redeposit
+                ? 'Preparing Deposit'
+                : 'Initiating Payment');
       case DirectPayStage.authorizing:
-        return 'Authorizing Payment';
+        return flow == DirectPayProgressFlow.mandateSetup
+            ? 'Authorize Direct Debit'
+            : 'Authorizing Payment';
       case DirectPayStage.processing:
         return 'Processing Deposit';
       case DirectPayStage.success:
@@ -30,14 +88,22 @@ extension DirectPayStageExtension on DirectPayStage {
     }
   }
 
-  String get description {
+  String get description =>
+      descriptionFor(DirectPayProgressFlow.linkAndDeposit);
+
+  /// Flow-aware stage description (see [titleFor]).
+  String descriptionFor(DirectPayProgressFlow flow) {
     switch (this) {
       case DirectPayStage.linking:
         return 'Securely connecting to your bank...';
       case DirectPayStage.initiating:
-        return 'Setting up your deposit...';
+        return flow == DirectPayProgressFlow.mandateSetup
+            ? 'Creating your Direct Debit mandate...'
+            : 'Setting up your deposit...';
       case DirectPayStage.authorizing:
-        return 'Please complete authorization...';
+        return flow == DirectPayProgressFlow.mandateSetup
+            ? 'Approve the Direct Debit at your bank...'
+            : 'Please complete authorization...';
       case DirectPayStage.processing:
         return 'Your deposit is being processed...';
       case DirectPayStage.success:
@@ -98,6 +164,7 @@ extension DirectPayStageExtension on DirectPayStage {
 /// Controller for managing DirectPay progress
 class DirectPayProgressController extends ChangeNotifier {
   DirectPayStage _stage = DirectPayStage.linking;
+  DirectPayProgressFlow _flow = DirectPayProgressFlow.linkAndDeposit;
   String? _errorMessage;
   String? _errorTitle;
   bool _retryable = true;
@@ -107,6 +174,7 @@ class DirectPayProgressController extends ChangeNotifier {
   bool _isVisible = false;
 
   DirectPayStage get stage => _stage;
+  DirectPayProgressFlow get flow => _flow;
   String? get errorMessage => _errorMessage;
   String? get errorTitle => _errorTitle;
   bool get retryable => _retryable;
@@ -119,11 +187,15 @@ class DirectPayProgressController extends ChangeNotifier {
     required String bankName,
     required double amount,
     required String currency,
+    DirectPayProgressFlow flow = DirectPayProgressFlow.linkAndDeposit,
   }) {
     _bankName = bankName;
     _amount = amount;
     _currency = currency;
-    _stage = DirectPayStage.linking;
+    _flow = flow;
+    // Start at the first stage of THIS journey — a redeposit on an
+    // already-linked bank must never open on "Linking Account".
+    _stage = flow.steps.first;
     _errorMessage = null;
     _errorTitle = null;
     _retryable = true;
@@ -151,6 +223,7 @@ class DirectPayProgressController extends ChangeNotifier {
 
   void reset() {
     _stage = DirectPayStage.linking;
+    _flow = DirectPayProgressFlow.linkAndDeposit;
     _errorMessage = null;
     _errorTitle = null;
     _retryable = true;
@@ -361,7 +434,7 @@ class _DirectPayProgressBottomsheetState
                     final title = (stage == DirectPayStage.failed
                             ? widget.controller.errorTitle
                             : null) ??
-                        stage.title;
+                        stage.titleFor(widget.controller.flow);
                     return Text(
                       title,
                       key: ValueKey(title),
@@ -380,8 +453,10 @@ class _DirectPayProgressBottomsheetState
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
                 child: Text(
-                  widget.controller.errorMessage ?? stage.description,
-                  key: ValueKey(widget.controller.errorMessage ?? stage.description),
+                  widget.controller.errorMessage ??
+                      stage.descriptionFor(widget.controller.flow),
+                  key: ValueKey(widget.controller.errorMessage ??
+                      stage.descriptionFor(widget.controller.flow)),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: stage == DirectPayStage.failed
@@ -546,12 +621,11 @@ class _DirectPayProgressBottomsheetState
   }
 
   Widget _buildProgressSteps(DirectPayStage currentStage) {
-    final stages = [
-      DirectPayStage.linking,
-      DirectPayStage.initiating,
-      DirectPayStage.authorizing,
-      DirectPayStage.processing,
-    ];
+    // The rail is journey-specific: a redeposit on an already-linked bank has
+    // no "Linking Account" step, so it renders 3 dots instead of 4.
+    final flow = widget.controller.flow;
+    final stages = flow.steps;
+    final currentIndex = flow.indexOf(currentStage);
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 32.w),
@@ -560,7 +634,7 @@ class _DirectPayProgressBottomsheetState
           if (index.isOdd) {
             // Connector line
             final prevStageIndex = (index - 1) ~/ 2;
-            final isCompleted = currentStage.stageIndex > prevStageIndex;
+            final isCompleted = currentIndex > prevStageIndex;
             return Expanded(
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
@@ -577,10 +651,11 @@ class _DirectPayProgressBottomsheetState
             // Step indicator
             final stageIndex = index ~/ 2;
             final stage = stages[stageIndex];
-            final isActive = currentStage.stageIndex == stageIndex;
-            final isCompleted = currentStage.stageIndex > stageIndex;
+            final isActive = currentIndex == stageIndex &&
+                currentStage != DirectPayStage.failed;
+            final isCompleted = currentIndex > stageIndex;
             final isFailed = currentStage == DirectPayStage.failed &&
-                currentStage.stageIndex == stageIndex;
+                currentIndex == stageIndex;
 
             return _buildStepIndicator(
               isActive: isActive,

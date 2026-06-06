@@ -122,17 +122,34 @@ Future<MonoConnectResult?> showMonoConnectBottomSheet({
   }
   debugPrint('[MonoConnect] ==========================================');
 
-  // Dismiss the modal sheet that hosts the Mono WebView exactly once. The Mono
-  // SDK's success/close callbacks complete the flow but do NOT close our sheet,
-  // so without this the sheet lingers showing a blank (closed) WebView when the
-  // user taps X / back. Pop it so the user lands back on the deposit screen.
+  // Dismiss the modal sheet that hosts the Mono WebView exactly once.
+  //
+  // IMPORTANT: mono_connect's ConnectWebView ALREADY pops its own host route on
+  // both `account_linked` and `closed` (see connect_web_view.dart) BEFORE it
+  // invokes our onSuccess/onClose. So by the time we're called, the Mono sheet
+  // is usually gone. We must therefore pop via the SHEET'S OWN context and only
+  // when it is still mounted — popping `context` (the caller's screen context)
+  // unconditionally would remove the screen UNDERNEATH the already-closed sheet
+  // (e.g. it dropped the user from the deposit screen to the dashboard, leaving
+  // the progress sheet floating over the wrong page). The `monoSheetContext`
+  // guard makes this a no-op when the SDK has already closed the sheet, and a
+  // safety pop for any SDK version that does not self-close.
+  BuildContext? monoSheetContext;
   var monoSheetDismissed = false;
   void dismissMonoSheet() {
     if (monoSheetDismissed) return;
     monoSheetDismissed = true;
-    if (context.mounted && Navigator.of(context).canPop()) {
-      Navigator.of(context).pop();
-    }
+    final sheetCtx = monoSheetContext;
+    if (sheetCtx == null || !sheetCtx.mounted) return;
+    // `mounted` alone is NOT enough: while the SDK's own pop is animating out,
+    // the sheet subtree is still mounted, so a plain Navigator.pop() here would
+    // pop the route UNDERNEATH (the caller's screen). Route.isActive flips
+    // false the moment the route leaves the navigator's history — the reliable
+    // "has it already been popped" signal. removeRoute targets exactly this
+    // sheet route, never anything below it.
+    final route = ModalRoute.of(sheetCtx);
+    if (route == null || !route.isActive) return; // SDK already closed it
+    Navigator.of(sheetCtx).removeRoute(route);
   }
 
   // Build configuration
@@ -190,8 +207,13 @@ Future<MonoConnectResult?> showMonoConnectBottomSheet({
   // If the sheet is dismissed by ANY means (swipe, barrier tap, or our pop)
   // without a Mono success/close callback, treat it as a cancel so the caller's
   // future never hangs.
-  _launchCustomMonoBottomSheet(context, config).whenComplete(() {
+  _launchCustomMonoBottomSheet(
+    context,
+    config,
+    onSheetContext: (ctx) => monoSheetContext = ctx,
+  ).whenComplete(() {
     monoSheetDismissed = true;
+    monoSheetContext = null;
     if (!completer.isCompleted) {
       completer.complete(null);
     }
@@ -201,7 +223,11 @@ Future<MonoConnectResult?> showMonoConnectBottomSheet({
 }
 
 /// Custom themed Mono Connect bottom sheet with 90% screen height and styled overlay
-Future<dynamic> _launchCustomMonoBottomSheet(BuildContext context, ConnectConfiguration config) {
+Future<dynamic> _launchCustomMonoBottomSheet(
+  BuildContext context,
+  ConnectConfiguration config, {
+  void Function(BuildContext sheetContext)? onSheetContext,
+}) {
   return showModalBottomSheet<dynamic>(
     context: context,
     useSafeArea: true,
@@ -219,7 +245,11 @@ Future<dynamic> _launchCustomMonoBottomSheet(BuildContext context, ConnectConfig
       ),
     ),
     clipBehavior: Clip.hardEdge,
-    builder: (_) => Container(
+    builder: (sheetContext) {
+      // Hand the modal's own context back to the caller so it can close THIS
+      // sheet (and only this sheet) without touching the route underneath.
+      onSheetContext?.call(sheetContext);
+      return Container(
       height: MediaQuery.of(context).size.height * 0.85, // 85% of screen
       decoration: BoxDecoration(
         color: Colors.white,
@@ -265,7 +295,8 @@ Future<dynamic> _launchCustomMonoBottomSheet(BuildContext context, ConnectConfig
           ),
         ],
       ),
-    ),
+      );
+    },
   );
 }
 

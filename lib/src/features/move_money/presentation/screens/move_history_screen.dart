@@ -96,7 +96,9 @@ class _MoveHistoryScreenState extends State<MoveHistoryScreen> {
   }
 
   String _formatDate(DateTime date) {
-    return DateFormat('MMM d, yyyy  HH:mm').format(date);
+    // Backend timestamps are UTC — render in the DEVICE timezone (without
+    // .toLocal() Lagos users saw every entry one hour behind).
+    return DateFormat('MMM d, yyyy  HH:mm').format(date.toLocal());
   }
 
   // ---------------------------------------------------------------------------
@@ -115,7 +117,7 @@ class _MoveHistoryScreenState extends State<MoveHistoryScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
         ),
         title: Text(
-          'Move History',
+          'LazerBeam History',
           style: GoogleFonts.inter(
             color: Colors.white,
             fontSize: 18.sp,

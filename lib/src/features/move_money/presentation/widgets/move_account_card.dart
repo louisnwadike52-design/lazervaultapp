@@ -75,7 +75,7 @@ class MoveAccountCard extends StatelessWidget {
                   ),
               ],
             ),
-            SizedBox(height: 12.h),
+            SizedBox(height: 6.h),
 
             // Bank name
             Text(
@@ -112,7 +112,35 @@ class MoveAccountCard extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            SizedBox(height: 4.h),
+            SizedBox(height: 2.h),
+
+            // Live bank balance (Mono-read; auto/manual refresh keeps it
+            // current). Edge states: unreadable/never-read balances show a
+            // neutral placeholder instead of a misleading ₦0.00.
+            // LIVE-ONLY display: the figure renders ONLY when this session's
+            // Mono read has landed (balanceUpdatedAt within minutes) — a DB
+            // cache is never shown as a current balance.
+            Text(
+              account.balanceUpdatedAt != null &&
+                      DateTime.now()
+                              .difference(account.balanceUpdatedAt!)
+                              .inMinutes <
+                          3
+                  ? '₦${account.lastKnownBalance.toStringAsFixed(2)}'
+                  : 'Fetching balance…',
+              style: GoogleFonts.inter(
+                color: account.balanceUpdatedAt != null &&
+                        DateTime.now()
+                                .difference(account.balanceUpdatedAt!)
+                                .inMinutes <
+                            3
+                    ? Colors.white
+                    : const Color(0xFF6B7280),
+                fontSize: 12.5.sp,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            SizedBox(height: 2.h),
 
             // Mandate status badge
             MandateStatusBadge(mandate: mandate),

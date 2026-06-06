@@ -280,7 +280,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
   }
 
   String _formatDate(DateTime date) {
-    return DateFormat('MMM d, yyyy HH:mm').format(date);
+    return DateFormat('MMM d, yyyy HH:mm').format(date.toLocal());
   }
 
   @override
@@ -295,7 +295,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
           icon: const Icon(Icons.arrow_back, color: Colors.white),
         ),
         title: Text(
-          'Beam',
+          'LazerBeam',
           style: GoogleFonts.inter(
             color: Colors.white,
             fontSize: 18.sp,
@@ -1643,7 +1643,7 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
     // via "Link New" appears at the front of the carousel.
     final sorted = [...accounts]..sort((a, b) => b.linkedAt.compareTo(a.linkedAt));
     return SizedBox(
-      height: 150.h,
+      height: 168.h, // fits the live balance line on each account card
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.symmetric(horizontal: 16.w),

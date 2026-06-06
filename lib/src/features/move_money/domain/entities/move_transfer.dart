@@ -48,9 +48,12 @@ enum MoveTransferStatus {
       case MoveTransferStatus.pending:
         return 'Pending';
       case MoveTransferStatus.debitInitiated:
-      case MoveTransferStatus.debitAuthorizing:
       case MoveTransferStatus.debitProcessing:
         return 'Debiting';
+      case MoveTransferStatus.debitAuthorizing:
+        // Honest label: the transfer is WAITING ON THE USER to approve the
+        // debit at their bank — it cannot progress by itself.
+        return 'Awaiting approval';
       case MoveTransferStatus.debitCompleted:
         return 'Debit Complete';
       case MoveTransferStatus.payoutInitiated:

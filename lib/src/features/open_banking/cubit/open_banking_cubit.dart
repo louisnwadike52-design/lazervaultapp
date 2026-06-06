@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:uuid/uuid.dart';
@@ -137,6 +138,8 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
           emit(AccountLinkedWithMandate(
             account: account,
             mandate: mandateResult.mandate,
+            mandateNeedsAuthorization: mandateResult.needsAuthorization,
+            mandateAuthorizationUrl: mandateResult.authorizationUrl,
           ));
         } catch (_) {
           if (isClosed) return;
@@ -220,6 +223,17 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
         accounts: _linkedAccounts,
         defaultAccount: _defaultAccount,
       ));
+
+      // SOURCE OF TRUTH: commercial-bank balances are NEVER displayed from
+      // our DB — every screen load fires a live Mono read per account
+      // (async, non-blocking). The DB figure is only a before/after
+      // transaction snapshot for reconciliation; widgets render
+      // "Fetching balance…" until this session's live read lands.
+      autoRefreshStaleBalances(
+        userId: userId,
+        accessToken: accessToken,
+        staleAfter: Duration.zero,
+      );
     } catch (e) {
       if (isClosed) return;
       _emitError(e, operation: 'fetchLinkedAccounts');
@@ -304,6 +318,38 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
     } catch (e) {
       if (isClosed) return;
       _emitError(e, operation: 'setDefaultAccount');
+    }
+  }
+
+  /// Linked-bank balances older than this are refreshed AUTOMATICALLY in the
+  /// background whenever a screen loads the accounts — the user should never
+  /// be nagged about a stale balance the app can refresh itself.
+  static const Duration balanceStaleAfter = Duration(minutes: 10);
+  final Set<String> _autoRefreshInFlight = <String>{};
+
+  /// Fire-and-forget background refresh of every STALE linked-account balance.
+  /// Runs concurrently and silently: successes update the cache and emit
+  /// [BalanceRefreshed] per account (screens just re-render with fresh
+  /// figures); a failure flows through the normal refreshBalance error path so
+  /// screens surface a notice ONLY when an actual refresh attempt failed.
+  /// Deduplicated per account so repeated screen loads can't stack calls.
+  void autoRefreshStaleBalances({
+    required String userId,
+    required String accessToken,
+    Duration? staleAfter,
+  }) {
+    final threshold =
+        DateTime.now().subtract(staleAfter ?? balanceStaleAfter);
+    for (final account in List.of(_linkedAccounts)) {
+      final updatedAt = account.balanceUpdatedAt;
+      final isStale = updatedAt == null || updatedAt.isBefore(threshold);
+      if (!isStale) continue;
+      if (!_autoRefreshInFlight.add(account.id)) continue;
+      unawaited(refreshBalance(
+        accountId: account.id,
+        userId: userId,
+        accessToken: accessToken,
+      ).whenComplete(() => _autoRefreshInFlight.remove(account.id)));
     }
   }
 

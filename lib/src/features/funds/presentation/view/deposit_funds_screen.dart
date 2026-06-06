@@ -854,6 +854,25 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 12.sp),
             ),
+            SizedBox(height: 4.h),
+            // LIVE-ONLY: show a figure only when this session's Mono read
+            // landed (within minutes) — never a DB cache as current balance.
+            Text(
+              account.balanceUpdatedAt != null &&
+                      DateTime.now().difference(account.balanceUpdatedAt!).inMinutes < 3
+                  ? '₦${account.lastKnownBalance.toStringAsFixed(2)}'
+                  : 'Fetching balance…',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: account.balanceUpdatedAt != null &&
+                        DateTime.now().difference(account.balanceUpdatedAt!).inMinutes < 3
+                    ? Colors.white
+                    : Colors.white.withValues(alpha: 0.45),
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
             SizedBox(height: 8.h),
             Row(
               children: [
@@ -1094,6 +1113,61 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     if (ok && mounted) _openRedepositSheet(context, account);
   }
 
+  /// In-app authorization for a freshly created e-mandate (the recurring
+  /// toggle flow). Opens Mono's hosted mandate authorization in OUR themed
+  /// bottom sheet (DirectPayFlow.mandate chrome) — same sheet as one-time
+  /// DirectPay — never an external browser. The deposit proceeds afterwards
+  /// whether or not the user completes authorization: an unauthorized mandate
+  /// just means THIS deposit uses one-time approval, and the mandate stays
+  /// awaiting_authorization for the webhook + readiness reconciler to settle.
+  Future<void> _authorizeMandateThenProceed(
+      AccountLinkedWithMandate state) async {
+    final url = state.mandateAuthorizationUrl!;
+    final mandate = state.mandate;
+    debugPrint('[Deposit] Opening in-app mandate authorization sheet');
+    _progressController.updateStage(DirectPayStage.authorizing);
+
+    final result = await showDirectPayAuthorizationSheet(
+      context: context,
+      flow: DirectPayFlow.mandate,
+      paymentUrl: url,
+      paymentId: mandate?.id ?? '',
+      reference: mandate?.reference,
+      redirectPath: '/mandate/callback',
+    );
+    if (!mounted) return;
+
+    if (result.success) {
+      // Background-refresh the mandate until Mono reports it ready. The
+      // webhook + readiness reconciler cover missed updates server-side.
+      final authState = context.read<AuthenticationCubit>().state;
+      if (mandate != null && authState is AuthenticationSuccess) {
+        serviceLocator<MandateCubit>().pollMandateStatus(
+          mandateId: mandate.id,
+          userId: authState.profile.user.id,
+        );
+      }
+      Get.snackbar(
+        'Direct Debit Authorized',
+        'Future deposits from ${state.account.bankName} will be instant.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green.withValues(alpha: 0.9),
+        colorText: Colors.white,
+      );
+    } else {
+      Get.snackbar(
+        'Direct Debit Pending',
+        'You can finish the Direct Debit setup later. This deposit will use one-time approval.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+
+    // Proceed with THIS deposit now (one-time approval until the mandate is
+    // ready to debit).
+    _progressController.updateStage(DirectPayStage.initiating);
+    _proceedWithMonoDeposit(context);
+  }
+
   /// Fire a deposit from an existing linked account. Reuses the mandate when
   /// active (useRecurringAccess: true → DebitMandate); otherwise the backend
   /// returns a DirectPay auth URL which the listener opens in-app.
@@ -1113,7 +1187,17 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     final recurring = _mandateForAccount(account) != null;
     _selectedBank = account.bankName;
     _linkedAccountId = account.id;
-    _progressController.show(bankName: account.bankName, amount: amount, currency: _currency);
+    // Arm "Try Again" on the failure sheet to RE-FIRE this exact redeposit
+    // (without it the button only dismissed the sheet).
+    _retryDeposit = () => _depositFromLinkedAccount(account);
+    // Already-linked bank: the rail starts at "Preparing Deposit" — there is
+    // no linking step on a redeposit.
+    _progressController.show(
+      bankName: account.bankName,
+      amount: amount,
+      currency: _currency,
+      flow: DirectPayProgressFlow.redeposit,
+    );
     _showProgressBottomsheet(context);
     serviceLocator<OpenBankingCubit>().initiateDeposit(
       userId: authState.profile.user.id,
@@ -1639,11 +1723,16 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       debugPrint('[MonoConnect] Success - Code: ${result.code.substring(0, result.code.length > 10 ? 10 : result.code.length)}...');
       debugPrint('[MonoConnect] Institution: ${result.institutionName ?? result.institutionId ?? 'unknown'}');
 
-      // Show progress bottomsheet
+      // Show progress bottomsheet. Fresh-link journeys start at "Linking
+      // Account"; with the recurring toggle ON the rail reads as a Direct
+      // Debit setup ("Setting Up Direct Debit" / "Authorize Direct Debit").
       _progressController.show(
         bankName: result.institutionName ?? 'Bank',
         amount: amount,
         currency: _currency,
+        flow: _useRecurringAccess
+            ? DirectPayProgressFlow.mandateSetup
+            : DirectPayProgressFlow.linkAndDeposit,
       );
       _showProgressBottomsheet(context);
 
@@ -1979,7 +2068,52 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         debugPrint('[Deposit] watchdog checkDepositStatus threw (continuing): $e');
       }
     }
-    debugPrint('[Deposit] settlement watchdog done for $depositId (relying on WS)');
+
+    // SLOW-SETTLEMENT TAIL: mandate debits can take minutes to settle at the
+    // provider, and the WS only pushes COMPLETIONS — if the sparse checks end
+    // while the deposit is still processing, the sheet used to hang on
+    // "Processing Deposit" forever. Keep a slow bounded poll going (every 10s,
+    // up to 5 minutes) until a terminal stage; on timeout flip the sheet to a
+    // retry-less failure telling the user we'll finish in the background (the
+    // backend deposit reconciler keeps settling it server-side).
+    const tailInterval = Duration(seconds: 10);
+    const maxTailTicks = 30; // ~5 minutes
+    for (var tick = 0; tick < maxTailTicks; tick++) {
+      await Future<void>.delayed(tailInterval);
+      if (!mounted) return;
+      try {
+        final stage = _progressController.stage;
+        if (stage == DirectPayStage.success || stage == DirectPayStage.failed) {
+          return;
+        }
+        if (!_isProgressSheetShown) return; // user left the flow
+      } catch (_) {
+        return;
+      }
+      debugPrint('[Deposit] settlement tail poll #$tick id=$depositId');
+      try {
+        openBankingCubit.checkDepositStatus(
+          depositId: depositId,
+          userId: userId,
+          accessToken: accessToken,
+        );
+      } catch (e) {
+        debugPrint('[Deposit] tail poll threw (continuing): $e');
+      }
+    }
+    if (!mounted || !_isProgressSheetShown) return;
+    final stage = _progressController.stage;
+    if (stage != DirectPayStage.success && stage != DirectPayStage.failed) {
+      _progressController.updateStage(
+        DirectPayStage.failed,
+        errorTitle: 'Still processing',
+        errorMessage:
+            'Your bank is taking longer than usual. We will keep processing '
+            'this deposit and credit you automatically once it completes. '
+            'You can check Deposit History for updates.',
+        retryable: false,
+      );
+    }
   }
 
   /// Handle open banking state changes
@@ -1991,6 +2125,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
       debugPrint('[Deposit] Account linked: ${state.account.id}, bankName: ${state.account.bankName}');
       setState(() {
         _linkedAccountId = state.account.id;
+        _selectedBank = state.account.bankName; // narration + receipts
       });
 
       // Update progress to initiating stage
@@ -2018,6 +2153,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
           'mandateFailed=${state.mandateFailed}, mandate=${state.mandate?.id}');
       setState(() {
         _linkedAccountId = state.account.id;
+        _selectedBank = state.account.bankName; // narration + receipts
       });
       _progressController.updateStage(DirectPayStage.initiating);
 
@@ -2026,10 +2162,18 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
         // a one-time DirectPay deposit so the user isn't blocked.
         debugPrint('[Deposit] Mandate failed (${state.mandateError}); '
             'falling back to one-time DirectPay');
+        _proceedWithMonoDeposit(context);
+      } else if (state.mandateNeedsAuthorization &&
+          (state.mandateAuthorizationUrl ?? '').isNotEmpty) {
+        // E-mandate created but awaiting the user's authorization at their
+        // bank. Open it in OUR themed in-app sheet (same chrome as one-time
+        // DirectPay and Connect, with DirectPayFlow.mandate copy) — never an
+        // external browser — then proceed with this deposit either way.
+        _authorizeMandateThenProceed(state);
+      } else {
+        // Mandate is already usable (or no auth step) — proceed directly.
+        _proceedWithMonoDeposit(context);
       }
-      // Whether the mandate succeeded (frictionless future debits) or
-      // failed (this deposit uses DirectPay), proceed with the deposit now.
-      _proceedWithMonoDeposit(context);
     } else if (state is DepositInitiated) {
       // Past linking — the deposit exists now, so the link watchdog is no longer needed.
       _cancelLinkWatchdog();
@@ -2459,12 +2603,15 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
 
     if (!mounted) return;
 
-    // Re-show the progress sheet for the (now-resumed) deposit flow.
+    // Re-show the progress sheet for the (now-resumed) deposit flow. The
+    // account is already linked at this point, so the rail resumes at
+    // "Preparing Deposit" with no linking step.
     final parsedAmount = double.tryParse(_amountController.text) ?? 0.0;
     _progressController.show(
       bankName: state.account.bankName,
       amount: parsedAmount,
       currency: _currency,
+      flow: DirectPayProgressFlow.redeposit,
     );
     _showProgressBottomsheet(context);
     _progressController.updateStage(DirectPayStage.initiating);
@@ -2545,12 +2692,16 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
     // currency + derived country so the backend routes NGN → Mono instead
     // of falling through to Flutterwave (which rejects an empty country
     // with "country  is not supported for Flutterwave deposits").
+    // _selectedBank can be empty on the fresh-link path (it is only set by the
+    // redeposit flow) — without the guard the Mono checkout remark read
+    // "Deposit from to LazerVault".
+    final bankLabel = _selectedBank.isNotEmpty ? _selectedBank : 'your bank';
     serviceLocator<OpenBankingCubit>().initiateDeposit(
       userId: userId,
       linkedAccountId: _linkedAccountId!,
       destinationAccountId: destinationAccountId,
       amount: amount,
-      narration: 'Deposit from $_selectedBank to LazerVault',
+      narration: 'Deposit from $bankLabel to LazerVault',
       accessToken: accessToken,
       currency: _currency,
       countryCode: _countryCodeForCurrency(_currency),

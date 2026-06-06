@@ -23,12 +23,24 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 class MonoConfig {
   MonoConfig._();
 
-  /// Mono public key
+  /// Mono public key for the Mono Connect widget (account linking).
+  ///
+  /// Mono issues a separate app — and key pair — per product (Connect,
+  /// Payments, Prove). Every `MonoConfig.publicKey` use in this app opens a
+  /// Mono Connect widget whose returned auth code is exchanged by
+  /// banking-service against the CONNECT app's secret key
+  /// (MONO_CONNECT_SECRET_KEY / MONO_CONNECT_APP_ID). The widget key and the
+  /// exchange key MUST belong to the same Mono app, or `/v2/accounts/auth`
+  /// fails with "App ID mismatch". So prefer MONO_CONNECT_PUBLIC_KEY; fall back
+  /// to the base MONO_PUBLIC_KEY for single-app setups.
   ///
   /// Get this from Mono Dashboard: https://app.withmono.com
   /// - Development: Use test public key (starts with test_pk_)
   /// - Production: Use live public key (starts with live_pk_)
-  static String get publicKey => dotenv.env['MONO_PUBLIC_KEY'] ?? '';
+  static String get publicKey =>
+      dotenv.env['MONO_CONNECT_PUBLIC_KEY'] ??
+      dotenv.env['MONO_PUBLIC_KEY'] ??
+      '';
 
   /// Mono secret key (for backend API calls only)
   ///

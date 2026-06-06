@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,6 +11,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_cubi
 import 'package:lazervault/src/features/authentication/cubit/authentication_state.dart';
 import 'package:lazervault/src/core/config/mono_config.dart';
 import 'package:lazervault/src/features/ai_scan_to_pay/presentation/widgets/mono_connect_widget.dart';
+import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
 import 'package:lazervault/src/features/open_banking/domain/entities/linked_bank_account.dart';
@@ -24,8 +26,10 @@ import '../../cubit/mandate_state.dart';
 import '../../cubit/move_money_cubit.dart';
 import '../../cubit/move_money_state.dart';
 import '../../domain/entities/mandate_entity.dart';
+import '../../domain/entities/move_transfer.dart';
 import '../../domain/entities/move_fee_calculation.dart';
-import '../widgets/directpay_webview_sheet.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/directpay_authorization_sheet.dart'
+    as shared_auth;
 import '../widgets/mandate_activating_banner.dart';
 import '../widgets/mandate_management_bottomsheet.dart';
 import '../widgets/mandate_status_badge.dart';
@@ -70,7 +74,6 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
   bool _isTransferInProgress = false;
   String? _amountError;
   // Per-transfer debit choice: false = DirectPay (default), true = Direct Debit mandate.
-  bool _useDirectDebit = false;
 
   // Drag-to-swap visual state
   bool _isHoveringFrom = false;
@@ -121,10 +124,53 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
             userId: authState.profile.userId,
           );
     }
+    _listenForBalanceRefreshes();
+  }
+
+  /// Stale balances are refreshed automatically in the background
+  /// (OpenBankingCubit.autoRefreshStaleBalances fires on every account load).
+  /// This listener keeps the screen's picked accounts in sync with the
+  /// refreshed figures and records FAILURES — the only case the user is told
+  /// about (no passive "balance may be outdated" nag).
+  StreamSubscription<OpenBankingState>? _balanceRefreshSub;
+  final Set<String> _balanceRefreshFailedIds = <String>{};
+  final Set<String> _refreshingBalanceIds = <String>{};
+
+  void _listenForBalanceRefreshes() {
+    _balanceRefreshSub ??=
+        context.read<OpenBankingCubit>().stream.listen((s) {
+      if (!mounted) return;
+      if (s is BalanceRefreshing) {
+        setState(() => _refreshingBalanceIds.add(s.accountId));
+      } else if (s is BalanceRefreshed) {
+        setState(() {
+          _refreshingBalanceIds.remove(s.accountId);
+          _balanceRefreshFailedIds.remove(s.accountId);
+          final fresh = context.read<OpenBankingCubit>().linkedAccounts;
+          LinkedBankAccount? pick(String? id) {
+            for (final a in fresh) {
+              if (a.id == id) return a;
+            }
+            return null;
+          }
+
+          _sourceAccount = pick(_sourceAccount?.id) ?? _sourceAccount;
+          _destinationAccount =
+              pick(_destinationAccount?.id) ?? _destinationAccount;
+        });
+      } else if (s is OpenBankingError && s.operation == 'refreshBalance') {
+        setState(() {
+          final inFlight = Set<String>.from(_refreshingBalanceIds);
+          _refreshingBalanceIds.clear();
+          _balanceRefreshFailedIds.addAll(inFlight);
+        });
+      }
+    });
   }
 
   @override
   void dispose() {
+    _balanceRefreshSub?.cancel();
     _amountController.dispose();
     _narrationController.dispose();
     _predictionCubit.close();
@@ -197,11 +243,13 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
           setState(() {
             if (isSource) {
               _sourceAccount = account;
+              _refreshAccountBalance(account.id);
               if (_destinationAccount?.id == account.id) {
                 _destinationAccount = null;
               }
             } else {
               _destinationAccount = account;
+              _refreshAccountBalance(account.id);
               if (_sourceAccount?.id == account.id) {
                 _sourceAccount = null;
               }
@@ -368,29 +416,65 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
     final mandateReady = mandate != null &&
         (mandate.status == MandateStatus.readyToDebit ||
             mandate.status == MandateStatus.active);
-    final on = _useDirectDebit;
+    final mandateActivating = mandate != null &&
+        (mandate.status == MandateStatus.awaitingAuthorization ||
+            mandate.status == MandateStatus.authorized);
+
+    // STATE-DRIVEN row — no switch. The system always uses the best rail for
+    // the source automatically (mandate when ready, one-time DirectPay
+    // otherwise, with server-side fallback if a mandate debit fails), so the
+    // user is INFORMED, and only offered an action when one exists:
+    //  - ready mandate     → info only ("debits instantly")
+    //  - activating        → [Finish setup] resumes the SAME mandate's
+    //                        authorization (backend reuses it — no duplicate)
+    //  - none / terminal   → [Set up Direct Debit] upgrade path
+    final String title;
+    final String subtitle;
+    final IconData icon;
+    final Color accent;
+    String? actionLabel;
+
+    if (mandateReady) {
+      title = 'Direct Debit';
+      subtitle = 'Authorized once. This transfer debits instantly.';
+      icon = Icons.flash_on_rounded;
+      accent = const Color(0xFF10B981);
+    } else if (mandateActivating) {
+      title = 'Direct Debit activating';
+      subtitle = 'One-time approval is used until activation completes.';
+      icon = Icons.hourglass_top_rounded;
+      accent = const Color(0xFFFB923C);
+      actionLabel = 'Finish setup';
+    } else {
+      title = 'One-time approval';
+      subtitle = 'You approve this transfer at your bank.';
+      icon = Icons.verified_user_outlined;
+      accent = const Color(0xFF9CA3AF);
+      actionLabel = 'Set up Direct Debit';
+    }
+
     return Container(
       margin: EdgeInsets.only(bottom: 16.h),
-      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
       decoration: BoxDecoration(
         color: const Color(0xFF1F1F1F),
         borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: const Color(0xFF2D2D2D)),
+        border: Border.all(
+          color: mandateReady
+              ? const Color(0xFF10B981).withValues(alpha: 0.35)
+              : const Color(0xFF2D2D2D),
+        ),
       ),
       child: Row(
         children: [
-          Icon(
-            on ? Icons.flash_on_rounded : Icons.verified_user_outlined,
-            color: on ? const Color(0xFF10B981) : const Color(0xFF9CA3AF),
-            size: 18.sp,
-          ),
+          Icon(icon, color: accent, size: 18.sp),
           SizedBox(width: 10.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  on ? 'Direct Debit' : 'DirectPay',
+                  title,
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 13.sp,
@@ -399,13 +483,9 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
                 ),
                 SizedBox(height: 2.h),
                 Text(
-                  on
-                      ? (mandateReady
-                          ? 'Authorized once. This transfer debits instantly.'
-                          : 'Set up Direct Debit to skip bank approval.')
-                      : 'You approve this transfer at your bank.',
+                  subtitle,
                   style: GoogleFonts.inter(
-                    color: on && !mandateReady
+                    color: mandateActivating
                         ? const Color(0xFFFB923C)
                         : const Color(0xFF9CA3AF),
                     fontSize: 11.sp,
@@ -414,18 +494,33 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
               ],
             ),
           ),
-          Switch(
-            value: on,
-            activeThumbColor: const Color(0xFF10B981),
-            onChanged: (v) {
-              setState(() => _useDirectDebit = v);
-              // Turning Direct Debit on without a ready mandate → offer to set
-              // one up now (the transfer still falls back to DirectPay if none).
-              if (v && !mandateReady) {
-                _showMandateManagement(_sourceAccount!, mandate);
-              }
-            },
-          ),
+          if (actionLabel != null)
+            TextButton(
+              onPressed: () async {
+                await _showMandateManagement(_sourceAccount!, mandate);
+                // The sheet may have created/authorized a mandate — reload so
+                // this row (and the submit rail) reflect the new state.
+                if (!mounted) return;
+                final authState = context.read<AuthenticationCubit>().state;
+                if (authState is AuthenticationSuccess) {
+                  context.read<MandateCubit>().fetchUserMandates(
+                        userId: authState.profile.userId,
+                      );
+                }
+                setState(() {});
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF3B82F6),
+                padding: EdgeInsets.symmetric(horizontal: 10.w),
+              ),
+              child: Text(
+                actionLabel,
+                style: GoogleFonts.inter(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -457,10 +552,16 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
   /// Handle DirectPay authorization when transfer requires it (no mandate).
   /// Opens in-app WebView for bank authorization.
   Future<bool> _handleDirectPayAuthorization(String paymentUrl) async {
-    return await showDirectPayAuthorizationSheet(
+    // ONE PIPELINE: Beam uses the same hardened authorization sheet as
+    // deposits (once-guarded redirect handling, provider-crash detection,
+    // flow-specific chrome) instead of a separate webview variant.
+    final result = await shared_auth.showDirectPayAuthorizationSheet(
       context: context,
       paymentUrl: paymentUrl,
+      paymentId: '',
+      flow: shared_auth.DirectPayFlow.deposit,
     );
+    return result.success;
   }
 
   /// Handle mandate required error — auto-create mandate for the account.
@@ -549,11 +650,96 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
     return null;
   }
 
-  /// Returns a non-blocking warning if balance is stale (shown but doesn't prevent transfer).
+
+
+  /// Beam → SendFunds receipt payload. One receipt experience platform-wide
+  /// (LazerVault logo top-right, QR with the reference, no extra CTAs); only
+  /// the payload varies per money product.
+  Map<String, dynamic> _beamReceiptPayload(MoveTransfer t) {
+    return <String, dynamic>{
+      'transferType': 'LazerBeam',
+      'amount': t.amount / 100.0,
+      'fee': t.totalFee / 100.0,
+      'currency': 'NGN',
+      'status': t.status.displayName,
+      'internalReference': t.reference,
+      'providerReference':
+          (t.debitReference?.isNotEmpty ?? false) ? t.debitReference : null,
+      'transferId': t.id,
+      'recipientName': t.destinationAccountName,
+      'recipientBankName': t.destinationBankName,
+      'recipientAccountMasked': t.destinationAccountNumber,
+      'sourceAccountName': t.sourceAccountName,
+      'sourceAccountInfo': '${t.sourceBankName}  ${t.sourceAccountNumber}',
+      'narration': t.narration,
+      'timestamp': t.createdAt.toLocal(),
+      'createdAt': t.createdAt.toLocal(),
+    };
+  }
+
+  /// Fire a fresh Mono balance read for [accountId] — used whenever the user
+  /// PICKS an account so the figure shown is real-time, not cached.
+  void _refreshAccountBalance(String accountId) {
+    final authState = context.read<AuthenticationCubit>().state;
+    if (authState is! AuthenticationSuccess) return;
+    context.read<OpenBankingCubit>().refreshBalance(
+          accountId: accountId,
+          userId: authState.profile.userId,
+          accessToken: authState.profile.session.accessToken,
+        );
+  }
+
+  /// Balance line for the From/To tiles with explicit states:
+  /// fetching → "Fetching balance…", failed → "Balance unavailable · Retry",
+  /// available → the live figure.
+  Widget _buildTileBalance(LinkedBankAccount account) {
+    if (_refreshingBalanceIds.contains(account.id)) {
+      return Row(mainAxisSize: MainAxisSize.min, children: [
+        SizedBox(
+          width: 10.w,
+          height: 10.w,
+          child: const CircularProgressIndicator(
+              strokeWidth: 1.5, color: Color(0xFF9CA3AF)),
+        ),
+        SizedBox(width: 6.w),
+        Text('Fetching balance…',
+            style: GoogleFonts.inter(
+                color: const Color(0xFF9CA3AF), fontSize: 11.sp)),
+      ]);
+    }
+    if (_balanceRefreshFailedIds.contains(account.id)) {
+      return GestureDetector(
+        onTap: () => _refreshAccountBalance(account.id),
+        child: Text('Balance unavailable · Retry',
+            style: GoogleFonts.inter(
+                color: const Color(0xFFFB923C),
+                fontSize: 11.sp,
+                fontWeight: FontWeight.w600)),
+      );
+    }
+    // LIVE-ONLY: a figure is current only if this session's Mono read landed.
+    final hasFigure = account.balanceUpdatedAt != null &&
+        DateTime.now().difference(account.balanceUpdatedAt!).inMinutes < 3;
+    return Text(
+      hasFigure
+          ? '₦${account.lastKnownBalance.toStringAsFixed(2)}'
+          : 'Fetching balance…',
+      style: GoogleFonts.inter(
+          color: hasFigure ? Colors.white : const Color(0xFF9CA3AF),
+          fontSize: 12.5.sp,
+          fontWeight: FontWeight.w700),
+    );
+  }
+
+  /// Returns a non-blocking warning ONLY when an automatic balance refresh
+  /// FAILED. Plain staleness is handled silently by the background
+  /// auto-refresh, so the user is never nagged about something the app can
+  /// (and does) fix itself.
   String? _getBalanceWarning() {
     if (_sourceAccount == null) return null;
-    if (_sourceAccount!.isBalanceStale && _sourceAccount!.lastKnownBalance > 0) {
-      return 'Balance may be outdated. Last updated: ${_formatLastRefresh(_sourceAccount!)}.';
+    if (_balanceRefreshFailedIds.contains(_sourceAccount!.id)) {
+      return 'Could not refresh this balance (last updated '
+          '${_formatLastRefresh(_sourceAccount!)}). Tap Refresh to retry.';
     }
     if (_sourceAccount!.lastKnownBalance <= 0 && !_sourceAccount!.isBalanceStale) {
       return 'Balance information unavailable for this account.';
@@ -654,6 +840,15 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
     }
 
     final cubit = context.read<MoveMoneyCubit>();
+    // The debit rail is derived LIVE from the source's mandate state — never
+    // from a user toggle. Ready/active mandate → instant Direct Debit;
+    // anything else → one-time DirectPay (the backend also self-falls-back if
+    // a mandate debit errors mid-flight).
+    final srcMandate =
+        context.read<MandateCubit>().getMandateForAccount(_sourceAccount!.id);
+    final useDirectDebit = srcMandate != null &&
+        (srcMandate.status == MandateStatus.readyToDebit ||
+            srcMandate.status == MandateStatus.active);
     await cubit.initiateMoveTransfer(
       userId: authState.profile.userId,
       sourceLinkedAccountId: _sourceAccount!.id,
@@ -665,7 +860,7 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
       verificationToken: verificationToken!,
       transactionId: moveTransactionId,
       idempotencyKey: const Uuid().v4(),
-      useDirectDebit: _useDirectDebit,
+      useDirectDebit: useDirectDebit,
     );
 
     if (!mounted) return;
@@ -686,8 +881,8 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
             transferId: currentState.transfer.id,
             userId: authState.profile.userId,
           );
-          Get.offNamed('/move-money/receipt',
-              arguments: currentState.transfer);
+          Get.offNamed(AppRoutes.transferProof,
+              arguments: _beamReceiptPayload(currentState.transfer));
         } else {
           Get.snackbar(
             'Authorization Cancelled',
@@ -710,8 +905,8 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
         }
       } else {
         // Mandate active — transfer went through without WebView
-        Get.offNamed('/move-money/receipt',
-            arguments: currentState.transfer);
+        Get.offNamed(AppRoutes.transferProof,
+            arguments: _beamReceiptPayload(currentState.transfer));
       }
     } else if (currentState is MoveMoneyNeedsReauth) {
       Get.snackbar('Re-authorization Required', currentState.message,
@@ -754,7 +949,7 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
           icon: const Icon(Icons.arrow_back, color: Colors.white),
         ),
         title: Text(
-          'Beam',
+          'LazerBeam',
           style: GoogleFonts.inter(
             color: Colors.white,
             fontSize: 18.sp,
@@ -1391,6 +1586,12 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
                         fontSize: 12.sp,
                       ),
                     ),
+                    SizedBox(height: 2.h),
+                    // REAL-TIME balance with explicit states: fetching →
+                    // spinner copy; available → figure; failed → retry CTA.
+                    // Selecting an account always triggers a fresh Mono read,
+                    // so a figure shown here is never stale.
+                    _buildTileBalance(account),
                     SizedBox(height: 2.h),
                     if (account.needsReauthorization)
                       Row(
