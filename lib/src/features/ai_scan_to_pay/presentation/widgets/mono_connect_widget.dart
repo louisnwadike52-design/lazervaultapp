@@ -44,6 +44,10 @@ Future<MonoConnectResult?> showMonoConnectBottomSheet({
   String? customerEmail,
   String? customerBvn,
   MonoOperation operation = MonoOperation.accountLinking,
+  // When set, the widget opens in REAUTH mode for this previously-linked Mono
+  // account (token from getReauthorizationToken). The user re-confirms at
+  // their bank and the existing link is refreshed — no duplicate account row.
+  String? reauthAccountId,
 }) async {
   final completer = MonoConnectCompleter();
 
@@ -91,8 +95,11 @@ Future<MonoConnectResult?> showMonoConnectBottomSheet({
 
   final ref = reference ?? 'lzv_${DateTime.now().millisecondsSinceEpoch}';
 
-  // Determine the scope based on the operation type
-  final scope = MonoConfig.getScopeForOperation(operation);
+  // Determine the scope based on the operation type. Reauth overrides: the
+  // widget must open against the existing account, not start a fresh link.
+  final scope = reauthAccountId != null
+      ? 'reauth'
+      : MonoConfig.getScopeForOperation(operation);
 
   debugPrint('[MonoConnect] ========== CONFIGURATION ==========');
   debugPrint('[MonoConnect] Public Key: ${publicKey.substring(0, publicKey.length > 20 ? 20 : publicKey.length)}...');
@@ -158,6 +165,7 @@ Future<MonoConnectResult?> showMonoConnectBottomSheet({
     customer: customer,
     reference: ref,
     scope: scope,
+    accountId: reauthAccountId,
     selectedInstitution: selectedInstitution,
     onSuccess: (code) {
       debugPrint('[MonoConnect] Success - Code: ${code.substring(0, code.length > 10 ? 10 : code.length)}...');

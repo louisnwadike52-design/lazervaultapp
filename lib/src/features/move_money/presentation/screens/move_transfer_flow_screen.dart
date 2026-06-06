@@ -35,6 +35,7 @@ import '../widgets/mandate_management_bottomsheet.dart';
 import '../widgets/mandate_status_badge.dart';
 import '../widgets/move_fee_breakdown.dart';
 import '../widgets/reauth_required_overlay.dart';
+import 'package:lazervault/src/features/open_banking/presentation/helpers/account_reauth_helper.dart';
 
 /// Single-screen Move Money transfer flow (modelled after the Exchange Convert flow).
 ///
@@ -590,15 +591,19 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
   }
 
   /// Handle reauthorization for an expired account.
-  void _handleReauthorization(LinkedBankAccount account) {
-    final authState = context.read<AuthenticationCubit>().state;
-    if (authState is! AuthenticationSuccess) return;
-
-    context.read<OpenBankingCubit>().reauthorizeAccount(
-          accountId: account.id,
-          userId: authState.profile.userId,
-          accessToken: authState.profile.session.accessToken,
-        );
+  void _handleReauthorization(LinkedBankAccount account) async {
+    // Full reconnect: reauth token → Mono Connect (reauth mode) → re-exchange
+    // (backend dedups to the same row) → live balance refresh.
+    await startAccountReauthorization(context, account);
+    if (!mounted) return;
+    // Sync local selections with the refreshed cubit cache.
+    final cubit = context.read<OpenBankingCubit>();
+    setState(() {
+      for (final a in cubit.linkedAccounts) {
+        if (_sourceAccount?.id == a.id) _sourceAccount = a;
+        if (_destinationAccount?.id == a.id) _destinationAccount = a;
+      }
+    });
   }
 
   /// Check source account readiness before proceeding to PIN.

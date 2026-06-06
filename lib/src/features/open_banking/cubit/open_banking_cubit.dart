@@ -159,32 +159,35 @@ class OpenBankingCubit extends Cubit<OpenBankingState> {
     }
   }
 
-  /// Reauthorize a linked account that has an expired bank session
-  Future<void> reauthorizeAccount({
+  /// Reauthorize a linked account that has an expired bank session.
+  /// Returns the Mono reauth token (callers feed it to the Connect widget in
+  /// reauth mode), or null on failure — an error state is emitted too.
+  Future<String?> reauthorizeAccount({
     required String accountId,
     required String userId,
     required String accessToken,
   }) async {
-    if (isClosed) return;
+    if (isClosed) return null;
     emit(OpenBankingLoading());
 
     try {
+      final String token;
       if (useGrpc && _grpcDataSource != null) {
-        final token = await _grpcDataSource!.getReauthorizationToken(accountId: accountId);
-        if (isClosed) return;
-        emit(ReauthorizationTokenReceived(accountId: accountId, token: token));
+        token = await _grpcDataSource!.getReauthorizationToken(accountId: accountId);
       } else {
-        final token = await _restDataSource!.getReauthorizationToken(
+        token = await _restDataSource!.getReauthorizationToken(
           accountId: accountId,
           userId: userId,
           accessToken: accessToken,
         );
-        if (isClosed) return;
-        emit(ReauthorizationTokenReceived(accountId: accountId, token: token));
       }
+      if (isClosed) return null;
+      emit(ReauthorizationTokenReceived(accountId: accountId, token: token));
+      return token;
     } catch (e) {
-      if (isClosed) return;
+      if (isClosed) return null;
       _emitError(e, operation: 'reauthorizeAccount');
+      return null;
     }
   }
 

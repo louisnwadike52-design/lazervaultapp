@@ -9,6 +9,7 @@ import 'package:lazervault/core/services/secure_storage_service.dart';
 import '../../cubit/open_banking_cubit.dart';
 import '../../cubit/open_banking_state.dart';
 import '../../domain/entities/linked_bank_account.dart';
+import '../helpers/account_reauth_helper.dart';
 import '../widgets/linked_account_card.dart';
 import '../widgets/link_bank_button.dart';
 import 'link_bank_screen.dart';
@@ -29,6 +30,9 @@ class LinkedAccountsScreen extends StatefulWidget {
 }
 
 class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
+  // Account a manual balance refresh is in flight for, so a
+  // reauthorizationRequired failure can offer Reconnect for the right bank.
+  LinkedBankAccount? _lastRefreshAccount;
   String? _highlightAccountId;
 
   @override
@@ -142,6 +146,7 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
   }
 
   void _onRefreshBalance(LinkedBankAccount account) async {
+    _lastRefreshAccount = account;
     final userId = widget.userId.isEmpty ? await _getUserId() : widget.userId;
     final accessToken = widget.accessToken.isEmpty ? await _getAccessToken() : widget.accessToken;
     if (userId.isNotEmpty && accessToken.isNotEmpty) {
@@ -174,18 +179,28 @@ class _LinkedAccountsScreenState extends State<LinkedAccountsScreen> {
           if (state is OpenBankingError) {
             if (state.errorType == BankingErrorType.reauthorizationRequired) {
               // Show a more prominent error for expired bank connections
+              final reauthTarget = _lastRefreshAccount;
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: const Text(
-                    'Your bank connection has expired. Please unlink and re-link this account.',
+                  content: Text(
+                    reauthTarget != null
+                        ? '${reauthTarget.bankName} session expired. Reconnect to restore live balances.'
+                        : 'Your bank connection has expired. Reconnect the account to continue.',
                   ),
                   backgroundColor: Colors.orange,
-                  duration: const Duration(seconds: 5),
-                  action: SnackBarAction(
-                    label: 'Refresh List',
-                    textColor: Colors.white,
-                    onPressed: _fetchAccounts,
-                  ),
+                  duration: const Duration(seconds: 6),
+                  action: reauthTarget != null
+                      ? SnackBarAction(
+                          label: 'Reconnect',
+                          textColor: Colors.white,
+                          onPressed: () =>
+                              startAccountReauthorization(context, reauthTarget),
+                        )
+                      : SnackBarAction(
+                          label: 'Refresh List',
+                          textColor: Colors.white,
+                          onPressed: _fetchAccounts,
+                        ),
                 ),
               );
             } else {

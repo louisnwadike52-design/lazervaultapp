@@ -17,6 +17,7 @@ import 'package:lazervault/src/features/account_cards_summary/domain/entities/ac
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
 import 'package:lazervault/src/features/open_banking/domain/entities/linked_bank_account.dart';
+import 'package:lazervault/src/features/open_banking/presentation/helpers/account_reauth_helper.dart';
 
 import 'package:lazervault/src/features/funds/data/datasources/payments_transfer_data_source.dart';
 
@@ -57,6 +58,20 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
   // Drag-to-swap visual state (wallet tab)
   bool _isWalletHoveringFrom = false;
   bool _isWalletHoveringTo = false;
+
+  // Which linked account a manual balance refresh is in flight for — used to
+  // attach the failure snackbar (and its Reconnect action) to the right bank.
+  String? _refreshFeedbackAccountId;
+
+  LinkedBankAccount? _linkedAccountById(String id) {
+    for (final a in context.read<OpenBankingCubit>().linkedAccounts) {
+      if (a.id == id) return a;
+    }
+    return null;
+  }
+
+  String _bankNameFor(String accountId) =>
+      _linkedAccountById(accountId)?.bankName ?? 'your bank';
 
   @override
   void initState() {
@@ -328,8 +343,82 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
             listenWhen: (prev, curr) =>
                 curr is AccountLinked ||
                 curr is AccountLinkedWithMandate ||
-                curr is AccountUnlinked,
+                curr is AccountUnlinked ||
+                curr is BalanceRefreshing ||
+                curr is BalanceRefreshed ||
+                (curr is OpenBankingError &&
+                    curr.operation == 'refreshBalance'),
             listener: (context, state) async {
+              if (state is BalanceRefreshing) {
+                _refreshFeedbackAccountId = state.accountId;
+                final bank = _bankNameFor(state.accountId);
+                Get.closeAllSnackbars();
+                Get.snackbar(
+                  'Refreshing Balance',
+                  'Fetching the live balance for $bank from your bank…',
+                  backgroundColor: const Color(0xFF1F1F1F),
+                  colorText: Colors.white,
+                  snackPosition: SnackPosition.BOTTOM,
+                  showProgressIndicator: true,
+                  progressIndicatorBackgroundColor: const Color(0xFF2D2D2D),
+                  duration: const Duration(seconds: 15),
+                );
+                return;
+              }
+              if (state is BalanceRefreshed) {
+                final bank = _bankNameFor(state.accountId);
+                Get.closeAllSnackbars();
+                Get.snackbar(
+                  'Balance Updated',
+                  '$bank: ₦${state.newBalance.toStringAsFixed(2)}',
+                  backgroundColor: const Color(0xFF10B981),
+                  colorText: Colors.white,
+                  snackPosition: SnackPosition.BOTTOM,
+                  duration: const Duration(seconds: 3),
+                );
+                if (mounted) setState(() {});
+                return;
+              }
+              if (state is OpenBankingError &&
+                  state.operation == 'refreshBalance') {
+                Get.closeAllSnackbars();
+                final failedId = _refreshFeedbackAccountId;
+                final needsReauth = state.errorType ==
+                    BankingErrorType.reauthorizationRequired;
+                final account =
+                    failedId == null ? null : _linkedAccountById(failedId);
+                if (needsReauth && account != null) {
+                  Get.snackbar(
+                    'Bank Session Expired',
+                    '${account.bankName} needs to be reconnected before we can read its balance.',
+                    backgroundColor: const Color(0xFFFB923C),
+                    colorText: Colors.white,
+                    snackPosition: SnackPosition.BOTTOM,
+                    duration: const Duration(seconds: 6),
+                    mainButton: TextButton(
+                      onPressed: () {
+                        Get.closeAllSnackbars();
+                        startAccountReauthorization(context, account);
+                      },
+                      child: const Text('Reconnect',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700)),
+                    ),
+                  );
+                  if (mounted) setState(() {}); // repaint reauth chrome
+                } else {
+                  Get.snackbar(
+                    'Balance Refresh Failed',
+                    state.message,
+                    backgroundColor: const Color(0xFFEF4444),
+                    colorText: Colors.white,
+                    snackPosition: SnackPosition.BOTTOM,
+                    duration: const Duration(seconds: 4),
+                  );
+                }
+                return;
+              }
               if (state is AccountLinkedWithMandate) {
                 // Auto-mandate flow: mandate created automatically
                 final mandateCubit = context.read<MandateCubit>();
