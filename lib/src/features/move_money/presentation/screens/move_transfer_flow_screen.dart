@@ -830,8 +830,8 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
       transactionType: 'move_money_transfer',
       amount: amountNaira,
       currency: 'NGN',
-      title: 'Confirm Transfer',
-      message: 'Confirm move money transfer of NGN ${amountNaira.toStringAsFixed(2)}',
+      title: 'Beam Money',
+      message: 'Confirm LazerBeam transfer of NGN ${amountNaira.toStringAsFixed(2)}',
       onPinValidated: (token) async {
         verificationToken = token;
       },
