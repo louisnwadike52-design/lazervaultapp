@@ -12,6 +12,7 @@ import 'package:lazervault/src/features/authentication/cubit/authentication_stat
 import 'package:lazervault/src/core/config/mono_config.dart';
 import 'package:lazervault/src/features/ai_scan_to_pay/presentation/widgets/mono_connect_widget.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/move_money/data/datasources/move_money_grpc_datasource.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_state.dart';
 import 'package:lazervault/src/features/open_banking/domain/entities/linked_bank_account.dart';
@@ -660,6 +661,15 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
   /// Beam → SendFunds receipt payload. One receipt experience platform-wide
   /// (LazerVault logo top-right, QR with the reference, no extra CTAs); only
   /// the payload varies per money product.
+  /// Builds a GetIt-backed status fetcher that outlives this screen.
+  Future<MoveTransfer> Function() _liveStatusFetcher(MoveTransfer t) {
+    final authState = context.read<AuthenticationCubit>().state;
+    final userId =
+        authState is AuthenticationSuccess ? authState.profile.userId : '';
+    final ds = serviceLocator<MoveMoneyGrpcDataSource>();
+    return () => ds.getMoveTransferStatus(transferId: t.id, userId: userId);
+  }
+
   Map<String, dynamic> _beamReceiptPayload(MoveTransfer t) {
     return <String, dynamic>{
       'transferType': 'LazerBeam',
@@ -680,6 +690,13 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
       // with full account details for both sides.
       'sourceBankName': t.sourceBankName,
       'sourceAccountMasked': t.sourceAccountNumber,
+      // LIVE status on the receipt: fetch-on-load + WS push + pull-to-refresh.
+      // The closure captures GetIt singletons only, so it stays valid after
+      // this screen is disposed by Get.offNamed.
+      'moveStatusFetch': _liveStatusFetcher(t),
+      'liveStatusReference': t.reference,
+      // Back from the Beam receipt returns to the Beam landing page.
+      'backRoute': AppRoutes.moveMoney,
       'narration': t.narration,
       'timestamp': t.createdAt.toLocal(),
       'createdAt': t.createdAt.toLocal(),

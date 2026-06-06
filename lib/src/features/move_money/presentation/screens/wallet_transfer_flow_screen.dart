@@ -200,42 +200,73 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
     // Use accountNumber if available, otherwise use account id
     final toAccountNumber = destination.accountNumber ?? destination.id;
 
-    String? verificationToken;
+    final currency = source.currency.isNotEmpty ? source.currency : 'NGN';
+
+    // The ENTIRE transfer runs INSIDE the PIN sheet's processing phase
+    // (PIN -> Processing -> Success), exactly like the external-bank Beam —
+    // then we land straight on the shared receipt. Failures render in the
+    // same sheet; the user never bounces back to the review step mid-flight.
+    WalletTransferState? postPinState;
 
     final success = await validateTransactionPin(
       context: context,
       transactionId: transactionId,
       transactionType: 'transfer',
       amount: amount,
-      currency: source.currency.isNotEmpty ? source.currency : 'NGN',
-      title: 'Confirm Transfer',
-      message: 'Confirm transfer of ${source.currency.isNotEmpty ? source.currency : 'NGN'} ${amount.toStringAsFixed(2)}',
+      currency: currency,
+      title: 'Beam Money',
+      message: 'Confirm LazerBeam transfer of $currency ${amount.toStringAsFixed(2)}',
       onPinValidated: (token) async {
-        verificationToken = token;
-      },
-    );
-
-    if (!success || verificationToken == null) {
-      if (mounted) context.read<WalletTransferCubit>().reset();
-      return;
-    }
-    if (!mounted) return;
-
-    // Execute the transfer AFTER the PIN modal is dismissed. The BlocListener
-    // (subscribed for the whole screen) handles the success → receipt navigation
-    // and the failure → snackbar, so there is no stream-subscription race here.
-    context.read<WalletTransferCubit>().transferBetweenAccounts(
+        final cubit = context.read<WalletTransferCubit>();
+        await cubit.transferBetweenAccounts(
           fromAccountId: source.id,
           toAccountNumber: toAccountNumber,
           type: 'internal',
           amount: amount,
           description: description,
           transactionId: transactionId,
-          verificationToken: verificationToken!,
+          verificationToken: token,
           sourceAccountName: _accountDisplayLabel(source),
           destinationAccountName: _accountDisplayLabel(destination),
           currency: source.currency,
         );
+        postPinState = cubit.state;
+        if (postPinState is WalletTransferError) {
+          throw Exception((postPinState as WalletTransferError).message);
+        }
+      },
+    );
+
+    if (!success) {
+      if (mounted) context.read<WalletTransferCubit>().reset();
+      return;
+    }
+    if (!mounted) return;
+
+    final result = postPinState;
+    if (result is WalletTransferSuccess) {
+      // Shared SendFunds-style receipt — wallet variant of the Beam payload.
+      // Internal transfers settle synchronously, so the status is final.
+      Get.offNamed(AppRoutes.transferProof, arguments: <String, dynamic>{
+        'transferType': 'LazerBeam Wallet',
+        'amount': result.amount,
+        'fee': 0.0,
+        'currency': result.currency.isNotEmpty ? result.currency : 'NGN',
+        'status': 'completed',
+        'internalReference': result.reference,
+        'transferId': result.transferId,
+        'recipientName': result.destinationAccountName,
+        'recipientBankName': 'LazerVault Wallet',
+        'recipientAccountMasked': destination.accountNumber ?? '',
+        'sourceAccountName': result.sourceAccountName,
+        'sourceBankName': 'LazerVault Wallet',
+        'sourceAccountMasked': source.accountNumber ?? '',
+        'sourceAccountInfo': 'LazerVault Wallet',
+        'narration': description,
+        'timestamp': DateTime.now(),
+        'backRoute': AppRoutes.moveMoney,
+      });
+    }
   }
 
   @override
@@ -269,25 +300,8 @@ class _WalletTransferFlowScreenState extends State<WalletTransferFlowScreen>
             // Drive the result here (not via a race-prone stream loop): the
             // listener is subscribed before the transfer is triggered, so the
             // success/failure state is never missed.
-            if (state is WalletTransferSuccess) {
-              Get.offNamed(
-                AppRoutes.walletTransferReceipt,
-                arguments: {
-                  'sourceAccount': state.sourceAccountName,
-                  'destinationAccount': state.destinationAccountName,
-                  'amount': state.amount,
-                  'currency': state.currency,
-                  'reference': state.reference ?? '',
-                  'transferId': state.transferId ?? '',
-                  'newBalance': state.newBalance,
-                },
-              );
-            } else if (state is WalletTransferError) {
-              Get.snackbar('Transfer Failed', state.message,
-                  backgroundColor: const Color(0xFFEF4444),
-                  colorText: Colors.white,
-                  snackPosition: SnackPosition.TOP);
-            }
+            // Success → receipt navigation and failure rendering both happen
+            // INSIDE the PIN sheet flow (_confirmTransfer); nothing to do here.
           },
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 250),

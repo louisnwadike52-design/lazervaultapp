@@ -350,32 +350,14 @@ class _MoveMoneyDashboardScreenState extends State<MoveMoneyDashboardScreen>
                     curr.operation == 'refreshBalance'),
             listener: (context, state) async {
               if (state is BalanceRefreshing) {
+                // No snackbar — the account card shows an inline
+                // 'Fetching balance…' row with its own spinner.
                 _refreshFeedbackAccountId = state.accountId;
-                final bank = _bankNameFor(state.accountId);
-                Get.closeAllSnackbars();
-                Get.snackbar(
-                  'Refreshing Balance',
-                  'Fetching the live balance for $bank from your bank…',
-                  backgroundColor: const Color(0xFF1F1F1F),
-                  colorText: Colors.white,
-                  snackPosition: SnackPosition.BOTTOM,
-                  showProgressIndicator: true,
-                  progressIndicatorBackgroundColor: const Color(0xFF2D2D2D),
-                  duration: const Duration(seconds: 15),
-                );
+                if (mounted) setState(() {});
                 return;
               }
               if (state is BalanceRefreshed) {
-                final bank = _bankNameFor(state.accountId);
-                Get.closeAllSnackbars();
-                Get.snackbar(
-                  'Balance Updated',
-                  '$bank: ₦${state.newBalance.toStringAsFixed(2)}',
-                  backgroundColor: const Color(0xFF10B981),
-                  colorText: Colors.white,
-                  snackPosition: SnackPosition.BOTTOM,
-                  duration: const Duration(seconds: 3),
-                );
+                // No snackbar — the card flips to the live figure inline.
                 if (mounted) setState(() {});
                 return;
               }

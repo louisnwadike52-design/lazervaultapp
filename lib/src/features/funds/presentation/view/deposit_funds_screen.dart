@@ -786,7 +786,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
             ),
             SizedBox(height: 12.h),
             SizedBox(
-              height: 138.h,
+              height: 158.h,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: accounts.length,
@@ -882,7 +882,7 @@ class _DepositFundsScreenState extends State<DepositFundsScreen> {
                         fontSize: 11.sp)),
               ]);
             }),
-            SizedBox(height: 8.h),
+            SizedBox(height: 6.h),
             Row(
               children: [
                 Text(recurring ? 'Tap to deposit' : 'Tap to deposit (one-time)',

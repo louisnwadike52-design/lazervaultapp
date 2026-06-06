@@ -3,7 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:async';
+import 'package:lazervault/core/services/injection_container.dart';
 import 'package:lazervault/core/types/app_routes.dart';
+import 'package:lazervault/src/features/banking/services/banking_websocket_service.dart';
+import 'package:lazervault/src/features/move_money/domain/entities/move_transfer.dart';
 import 'package:lazervault/src/features/tag_pay/services/tag_pay_pdf_service.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:uuid/uuid.dart';
@@ -23,12 +27,68 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
   final Uuid _uuid = const Uuid();
   String? _qrData;
 
+  // ── Live status (LazerBeam) ──────────────────────────────────────────────
+  // The transfer keeps progressing after this receipt is shown (debiting →
+  // in transit → delivered / refunded). When the payload carries a
+  // 'moveStatusFetch' closure the header reflects the REAL status:
+  //   * fetch-on-load (refresh once immediately)
+  //   * push: banking WebSocket events filtered by the transfer reference
+  //   * pull-to-refresh re-fetches on demand
+  // No periodic polling — per the platform receipt-screen rule.
+  MoveTransfer? _liveTransfer;
+  StreamSubscription<BankingStatusEvent>? _wsSub;
+  bool _statusRefreshing = false;
+
+  Future<MoveTransfer> Function()? get _statusFetch =>
+      transferDetails['moveStatusFetch'] as Future<MoveTransfer> Function()?;
+
   @override
   void initState() {
     super.initState();
     transferDetails = Get.arguments as Map<String, dynamic>? ?? {};
     // Generate QR data on init
     _generateQrData();
+    _initLiveStatus();
+  }
+
+  void _initLiveStatus() {
+    if (_statusFetch == null) return;
+    _refreshLiveStatus();
+    final wsRef = transferDetails['liveStatusReference'] as String?;
+    if (wsRef != null && wsRef.isNotEmpty) {
+      try {
+        _wsSub = serviceLocator<BankingWebSocketService>()
+            .filterByReference(wsRef)
+            .listen((_) => _refreshLiveStatus());
+      } catch (_) {
+        // WS unavailable — fetch-on-load + pull-to-refresh still cover us.
+      }
+    }
+  }
+
+  Future<void> _refreshLiveStatus() async {
+    final fetch = _statusFetch;
+    if (fetch == null || _statusRefreshing) return;
+    _statusRefreshing = true;
+    try {
+      final t = await fetch();
+      if (!mounted) return;
+      setState(() => _liveTransfer = t);
+      if (t.status.isTerminal) {
+        _wsSub?.cancel();
+        _wsSub = null;
+      }
+    } catch (_) {
+      // Keep the last known status; pull-to-refresh can retry.
+    } finally {
+      _statusRefreshing = false;
+    }
+  }
+
+  @override
+  void dispose() {
+    _wsSub?.cancel();
+    super.dispose();
   }
 
   void _generateQrData() {
@@ -122,8 +182,14 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
           children: [
             _buildBackButton(),
             Expanded(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
+              child: RefreshIndicator(
+                onRefresh: _refreshLiveStatus,
+                color: const Color(0xFF3B82F6),
+                backgroundColor: const Color(0xFF1F1F1F),
+                notificationPredicate: (_) => _statusFetch != null,
+                child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(
+                    parent: BouncingScrollPhysics()),
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -138,6 +204,7 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
                     _buildTransactionDetails(),
                   ],
                 ),
+              ),
               ),
             ),
             _buildActions(context),
@@ -154,7 +221,11 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           IconButton(
-            onPressed: () => Get.offAllNamed(AppRoutes.dashboard),
+            // Beam receipts return to the Beam landing page; everything else
+            // returns to the app dashboard.
+            onPressed: () => Get.offAllNamed(
+                (transferDetails['backRoute'] as String?) ??
+                    AppRoutes.dashboard),
             icon: Icon(Icons.arrow_back, color: Colors.white, size: 22.sp),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
@@ -186,18 +257,54 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
     }
     timestamp ??= DateTime.now();
 
+    // Stage-aware visuals when a LIVE status is available (LazerBeam):
+    // green check only when actually delivered; amber in transit; purple on
+    // the refund path; red on failure.
+    final live = _liveTransfer?.status;
+    Color iconBg = const Color(0xFF10B981);
+    IconData iconData = Icons.check;
+    String titleText = isScheduled ? 'Transfer Scheduled' : 'Transfer Successful';
+    String statusLine = _formatStatus(status);
+    if (live != null) {
+      statusLine = live.displayName;
+      switch (live) {
+        case MoveTransferStatus.completed:
+          titleText = 'Transfer Successful';
+          break;
+        case MoveTransferStatus.failed:
+          iconBg = const Color(0xFFEF4444);
+          iconData = Icons.close;
+          titleText = 'Transfer Failed';
+          break;
+        case MoveTransferStatus.refunding:
+          iconBg = const Color(0xFF8B5CF6);
+          iconData = Icons.replay_rounded;
+          titleText = 'Refund in progress';
+          break;
+        case MoveTransferStatus.refunded:
+          iconBg = const Color(0xFF8B5CF6);
+          iconData = Icons.account_balance_wallet_rounded;
+          titleText = 'Refunded';
+          break;
+        default:
+          iconBg = const Color(0xFFFB923C);
+          iconData = Icons.send_rounded;
+          titleText = 'Transfer in progress';
+      }
+    }
+
     return Column(
       children: [
-        // Compact success icon
+        // Compact stage icon
         Container(
           width: 48.w,
           height: 48.w,
-          decoration: const BoxDecoration(
-            color: Color(0xFF10B981),
+          decoration: BoxDecoration(
+            color: iconBg,
             shape: BoxShape.circle,
           ),
           child: Icon(
-            Icons.check,
+            iconData,
             color: Colors.white,
             size: 26.sp,
           ),
@@ -213,7 +320,7 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
         ),
         SizedBox(height: 6.h),
         Text(
-          isScheduled ? 'Transfer Scheduled' : 'Transfer Successful',
+          titleText,
           style: GoogleFonts.inter(
             color: Colors.white,
             fontSize: 14.sp,
@@ -226,7 +333,7 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              _formatStatus(status),
+              statusLine,
               style: GoogleFonts.inter(
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w500,
