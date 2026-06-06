@@ -1,5 +1,6 @@
 import 'package:grpc/grpc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:lazervault/core/services/resilient_client_channel.dart';
 
 /// Factory for creating gRPC channels for different API gateways
 ///
@@ -183,6 +184,17 @@ class GrpcChannelFactory {
   /// Internal method to create channel with standard production-grade options
   /// Includes gzip compression for 60-80% payload reduction on low-bandwidth networks
   static ClientChannel _createChannel(String host, int port, String name) {
+    // Self-healing wrapper: swaps in a fresh inner channel whenever the old
+    // one wedges in SHUTDOWN (see ResilientClientChannel). The builder below
+    // produces the raw channel each time.
+    return ResilientClientChannel(
+      () => _rawChannel(host, port),
+      host: host,
+      name: name,
+    );
+  }
+
+  static ClientChannel _rawChannel(String host, int port) {
     return ClientChannel(
       host,
       port: port,
