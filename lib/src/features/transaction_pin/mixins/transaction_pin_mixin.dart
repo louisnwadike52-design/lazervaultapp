@@ -147,7 +147,9 @@ mixin TransactionPinMixin<T extends StatefulWidget> on State<T> {
                       ? 'Transaction Successful!'
                       : 'PIN Verified',
                 );
-                await Future.delayed(const Duration(milliseconds: 800));
+                // One short animation beat for the success check, then hand
+                // off to the caller (usually a receipt screen) immediately.
+                await Future.delayed(const Duration(milliseconds: 350));
                 if (mounted) {
                   try { Navigator.of(context).pop(); } catch (_) {}
                 }

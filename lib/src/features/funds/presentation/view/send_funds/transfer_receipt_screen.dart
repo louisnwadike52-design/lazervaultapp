@@ -266,6 +266,13 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
     final network = transferDetails['network'] as String?;
     final sourceAccountInfo = transferDetails['sourceAccountInfo'] as String?;
     final sourceAccountName = transferDetails['sourceAccountName'] as String?;
+    // Structured source details (LazerBeam external->external). When BOTH are
+    // present the receipt renders symmetric From/To sections with full
+    // account details instead of the single merged 'From' row.
+    final sourceBank = transferDetails['sourceBankName'] as String?;
+    final sourceAccount = transferDetails['sourceAccountMasked'] as String?;
+    final hasStructuredSource = (sourceBank != null && sourceBank.isNotEmpty) &&
+        (sourceAccount != null && sourceAccount.isNotEmpty);
     final fee = (transferDetails['fee'] as num?)?.toDouble() ?? 0.0;
     final currency = transferDetails['currency'] as String? ?? 'NGN';
     final currencySymbol = _currencySymbol(currency);
@@ -291,18 +298,34 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
             ),
           ),
           SizedBox(height: 14.h),
-          _buildDetailRow('Recipient', recipientName),
-          if (recipientBank != null && recipientBank.isNotEmpty)
-            _buildDetailRow('Bank', recipientBank),
-          if (recipientAccount != null && recipientAccount.isNotEmpty)
-            _buildDetailRow('Account', recipientAccount),
-          if (sourceAccountInfo != null && sourceAccountInfo.isNotEmpty)
-            _buildDetailRow(
-              'From',
-              sourceAccountName != null && sourceAccountName.isNotEmpty
-                  ? '$sourceAccountName ($sourceAccountInfo)'
-                  : sourceAccountInfo,
-            ),
+          if (hasStructuredSource) ...[
+            // Symmetric From / To sections, full account details on BOTH legs.
+            _buildSectionLabel('From'),
+            if (sourceAccountName != null && sourceAccountName.isNotEmpty)
+              _buildDetailRow('Name', sourceAccountName),
+            _buildDetailRow('Bank', sourceBank),
+            _buildDetailRow('Account', sourceAccount),
+            _buildSectionLabel('To'),
+            _buildDetailRow('Name', recipientName),
+            if (recipientBank != null && recipientBank.isNotEmpty)
+              _buildDetailRow('Bank', recipientBank),
+            if (recipientAccount != null && recipientAccount.isNotEmpty)
+              _buildDetailRow('Account', recipientAccount),
+            _buildSectionLabel('Transaction'),
+          ] else ...[
+            _buildDetailRow('Recipient', recipientName),
+            if (recipientBank != null && recipientBank.isNotEmpty)
+              _buildDetailRow('Bank', recipientBank),
+            if (recipientAccount != null && recipientAccount.isNotEmpty)
+              _buildDetailRow('Account', recipientAccount),
+            if (sourceAccountInfo != null && sourceAccountInfo.isNotEmpty)
+              _buildDetailRow(
+                'From',
+                sourceAccountName != null && sourceAccountName.isNotEmpty
+                    ? '$sourceAccountName ($sourceAccountInfo)'
+                    : sourceAccountInfo,
+              ),
+          ],
           if (providerReference != null && providerReference.isNotEmpty)
             _buildDetailRow('Transaction Ref', providerReference),
           if (reference.isNotEmpty)
@@ -357,6 +380,23 @@ class _TransferReceiptScreenState extends State<TransferReceiptScreen> {
             ),
           SizedBox(height: 14.h),
         ],
+      ),
+    );
+  }
+
+  /// Small uppercase section label inside the details card, used by the
+  /// symmetric From / To / Transaction layout.
+  Widget _buildSectionLabel(String label) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 6.h),
+      child: Text(
+        label.toUpperCase(),
+        style: GoogleFonts.inter(
+          color: const Color(0xFF6B7280),
+          fontSize: 11.sp,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1.1,
+        ),
       ),
     );
   }

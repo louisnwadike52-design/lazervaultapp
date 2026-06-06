@@ -676,6 +676,10 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
       'recipientAccountMasked': t.destinationAccountNumber,
       'sourceAccountName': t.sourceAccountName,
       'sourceAccountInfo': '${t.sourceBankName}  ${t.sourceAccountNumber}',
+      // Structured source leg -> receipt renders symmetric From/To sections
+      // with full account details for both sides.
+      'sourceBankName': t.sourceBankName,
+      'sourceAccountMasked': t.sourceAccountNumber,
       'narration': t.narration,
       'timestamp': t.createdAt.toLocal(),
       'createdAt': t.createdAt.toLocal(),
@@ -827,25 +831,7 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
 
     final moveTransactionId = const Uuid().v4();
 
-    String? verificationToken;
-
-    final success = await validateTransactionPin(
-      context: context,
-      transactionId: moveTransactionId,
-      transactionType: 'move_money_transfer',
-      amount: amountNaira,
-      currency: 'NGN',
-      title: 'Beam Money',
-      message: 'Confirm LazerBeam transfer of NGN ${amountNaira.toStringAsFixed(2)}',
-      onPinValidated: (token) async {
-        verificationToken = token;
-      },
-    );
-
-    if (!success || verificationToken == null) return;
-    if (!mounted) return;
-
-    // Execute transfer AFTER modal is dismissed
+    // Fail fast BEFORE the PIN sheet if the session is gone.
     final authState = context.read<AuthenticationCubit>().state;
     if (authState is! AuthenticationSuccess) {
       Get.snackbar('Error', 'Authentication required',
@@ -854,33 +840,65 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
       return;
     }
 
-    final cubit = context.read<MoveMoneyCubit>();
-    // The debit rail is derived LIVE from the source's mandate state — never
-    // from a user toggle. Ready/active mandate → instant Direct Debit;
-    // anything else → one-time DirectPay (the backend also self-falls-back if
-    // a mandate debit errors mid-flight).
-    final srcMandate =
-        context.read<MandateCubit>().getMandateForAccount(_sourceAccount!.id);
-    final useDirectDebit = srcMandate != null &&
-        (srcMandate.status == MandateStatus.readyToDebit ||
-            srcMandate.status == MandateStatus.active);
-    await cubit.initiateMoveTransfer(
-      userId: authState.profile.userId,
-      sourceLinkedAccountId: _sourceAccount!.id,
-      destinationLinkedAccountId: _destinationAccount!.id,
-      amount: amountKobo,
-      narration: _narrationController.text.isNotEmpty
-          ? _narrationController.text
-          : null,
-      verificationToken: verificationToken!,
+    // The ENTIRE initiate (gateway -> banking-service -> Mono debit) runs
+    // INSIDE the PIN sheet's processing phase, so the user watches one
+    // continuous sheet (PIN -> Processing -> Success) and lands straight on
+    // the receipt. A failure renders in the same sheet; the user never
+    // bounces back to the form mid-flight.
+    MoveMoneyState? postPinState;
+
+    final success = await validateTransactionPin(
+      context: context,
       transactionId: moveTransactionId,
-      idempotencyKey: const Uuid().v4(),
-      useDirectDebit: useDirectDebit,
+      transactionType: 'move_money_transfer',
+      amount: amountNaira,
+      fee: _feeCalculation != null ? _feeCalculation!.totalFee / 100.0 : null,
+      totalAmount:
+          _feeCalculation != null ? _feeCalculation!.totalDebit / 100.0 : null,
+      currency: 'NGN',
+      title: 'Beam Money',
+      message: 'Confirm LazerBeam transfer of NGN ${amountNaira.toStringAsFixed(2)}',
+      onPinValidated: (token) async {
+        final cubit = context.read<MoveMoneyCubit>();
+        // The debit rail is derived LIVE from the source's mandate state —
+        // never from a user toggle. Ready/active mandate → instant Direct
+        // Debit; anything else → one-time DirectPay (the backend also
+        // self-falls-back if a mandate debit errors mid-flight).
+        final srcMandate = context
+            .read<MandateCubit>()
+            .getMandateForAccount(_sourceAccount!.id);
+        final useDirectDebit = srcMandate != null &&
+            (srcMandate.status == MandateStatus.readyToDebit ||
+                srcMandate.status == MandateStatus.active);
+        await cubit.initiateMoveTransfer(
+          userId: authState.profile.userId,
+          sourceLinkedAccountId: _sourceAccount!.id,
+          destinationLinkedAccountId: _destinationAccount!.id,
+          amount: amountKobo,
+          narration: _narrationController.text.isNotEmpty
+              ? _narrationController.text
+              : null,
+          verificationToken: token,
+          transactionId: moveTransactionId,
+          idempotencyKey: const Uuid().v4(),
+          useDirectDebit: useDirectDebit,
+        );
+        postPinState = cubit.state;
+        // Throwing here keeps the failure INSIDE the sheet (setFailed) —
+        // the mixin renders the message and closes gracefully.
+        if (postPinState is MoveMoneyError) {
+          throw Exception((postPinState as MoveMoneyError).message);
+        }
+        if (postPinState is MoveMoneyNeedsReauth) {
+          throw Exception((postPinState as MoveMoneyNeedsReauth).message);
+        }
+      },
     );
 
+    if (!success) return;
     if (!mounted) return;
 
-    final currentState = cubit.state;
+    final currentState = postPinState;
     if (currentState is MoveTransferInitiated) {
       if (currentState.requiresAuthorization &&
           currentState.paymentUrl != null &&
@@ -892,7 +910,7 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
 
         if (authSuccess) {
           // Start polling transfer status
-          cubit.startPollingTransferStatus(
+          context.read<MoveMoneyCubit>().startPollingTransferStatus(
             transferId: currentState.transfer.id,
             userId: authState.profile.userId,
           );
@@ -923,15 +941,9 @@ class _MoveTransferFlowScreenState extends State<MoveTransferFlowScreen>
         Get.offNamed(AppRoutes.transferProof,
             arguments: _beamReceiptPayload(currentState.transfer));
       }
-    } else if (currentState is MoveMoneyNeedsReauth) {
-      Get.snackbar('Re-authorization Required', currentState.message,
-          backgroundColor: const Color(0xFFFB923C), colorText: Colors.white,
-          snackPosition: SnackPosition.TOP);
-    } else if (currentState is MoveMoneyError) {
-      Get.snackbar('Transfer Failed', currentState.message,
-          backgroundColor: const Color(0xFFEF4444), colorText: Colors.white,
-          snackPosition: SnackPosition.TOP);
     }
+    // Error / reauth outcomes are rendered INSIDE the PIN sheet (the
+    // onPinValidated callback throws) — nothing further to do here.
   }
 
   // ---------------------------------------------------------------------------
