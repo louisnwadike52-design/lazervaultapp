@@ -151,6 +151,9 @@ class TransactionPinModalState extends State<TransactionPinModal>
     setState(() {
       _phase = PinModalPhase.failed;
       _failureMessage = message;
+      // Honest header: the red X next to a 'Processing...' title read as a
+      // contradiction. The body below carries the detailed reason.
+      _statusMessage = 'Transaction Failed';
     });
   }
 
