@@ -145,6 +145,7 @@ import 'package:lazervault/src/features/ai_scan_to_pay/presentation/view/ai_scan
 import 'package:lazervault/src/features/move_money/cubit/move_money_cubit.dart';
 import 'package:lazervault/src/features/move_money/cubit/mandate_cubit.dart';
 import 'package:lazervault/src/features/move_money/presentation/screens/move_transfer_flow_screen.dart';
+import 'package:lazervault/src/features/move_money/presentation/screens/move_money_dashboard_screen.dart';
 import 'package:lazervault/src/features/move_money/presentation/screens/move_history_screen.dart';
 import 'package:lazervault/src/features/move_money/presentation/screens/move_transfer_receipt_screen.dart';
 import 'package:lazervault/src/features/move_money/presentation/screens/move_transfer_detail_screen.dart';
@@ -4224,6 +4225,33 @@ GetPage(
     ),
 
     // ================== Move Money Routes ==================
+    // Standalone LazerBeam landing page — the same screen the bottom-nav
+    // hosts, registered as a route so Beam receipts can return to it
+    // (receipt 'backRoute'). Mirrors the provider set in screen.dart.
+    GetPage(
+      name: AppRoutes.moveMoney,
+      page: () => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(
+            value: serviceLocator<OpenBankingCubit>(),
+          ),
+          BlocProvider(
+            create: (_) => serviceLocator<MoveMoneyCubit>(),
+          ),
+          BlocProvider.value(
+            value: serviceLocator<MandateCubit>(),
+          ),
+          BlocProvider(
+            create: (_) => serviceLocator<WalletTransferCubit>(),
+          ),
+          BlocProvider(
+            create: (_) => serviceLocator<AccountCardsSummaryCubit>(),
+          ),
+        ],
+        child: const MoveMoneyDashboardScreen(),
+      ),
+      transition: Transition.fadeIn,
+    ),
     GetPage(
       name: AppRoutes.moveMoneyTransfer,
       page: () => MultiBlocProvider(
