@@ -32,6 +32,7 @@ import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/re
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/recurring_transfer_modal.dart';
 import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/transfer_error_bottomsheet.dart';
 import 'package:lazervault/src/features/widgets/category_selection.dart';
+import 'package:lazervault/src/features/funds/presentation/widgets/send_funds/budget_warning_sheet.dart';
 import 'package:lazervault/src/features/widgets/budget_warning_widget.dart';
 import 'package:lazervault/src/features/widgets/budget_override_dialog.dart';
 import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
@@ -901,6 +902,18 @@ class _InitiateSendFundsState extends State<InitiateSendFunds>
             }
           }
           // BudgetOverrideAction.overrideOnce — proceed with transaction
+        } else if (budgetResult.shouldShowWarning) {
+          // FLEXIBLE mode (or near-limit): non-blocking warning. The budget
+          // promised "allows transactions with a warning" — honour that here
+          // so the user makes an informed choice before money moves.
+          if (!mounted) return;
+          final proceed = await showBudgetWarningSheet(
+            context,
+            result: budgetResult,
+            transactionAmount: transferAmountMajor,
+            currency: accountCurrency,
+          );
+          if (proceed != true) return; // user cancelled
         }
       }
     }
