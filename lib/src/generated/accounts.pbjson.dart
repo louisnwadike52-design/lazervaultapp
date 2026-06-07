@@ -205,6 +205,48 @@ const GetAccountByNumberResponse$json = const {
 
 /// Descriptor for `GetAccountByNumberResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getAccountByNumberResponseDescriptor = $convert.base64Decode('ChpHZXRBY2NvdW50QnlOdW1iZXJSZXNwb25zZRIrCgdhY2NvdW50GAEgASgLMhEuYWNjb3VudHMuQWNjb3VudFIHYWNjb3VudA==');
+@$core.Deprecated('Use getAccountByProviderRefRequestDescriptor instead')
+const GetAccountByProviderRefRequest$json = const {
+  '1': 'GetAccountByProviderRefRequest',
+  '2': const [
+    const {'1': 'provider', '3': 1, '4': 1, '5': 9, '10': 'provider'},
+    const {'1': 'provider_ref', '3': 2, '4': 1, '5': 9, '10': 'providerRef'},
+  ],
+};
+
+/// Descriptor for `GetAccountByProviderRefRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getAccountByProviderRefRequestDescriptor = $convert.base64Decode('Ch5HZXRBY2NvdW50QnlQcm92aWRlclJlZlJlcXVlc3QSGgoIcHJvdmlkZXIYASABKAlSCHByb3ZpZGVyEiEKDHByb3ZpZGVyX3JlZhgCIAEoCVILcHJvdmlkZXJSZWY=');
+@$core.Deprecated('Use getAccountByProviderRefResponseDescriptor instead')
+const GetAccountByProviderRefResponse$json = const {
+  '1': 'GetAccountByProviderRefResponse',
+  '2': const [
+    const {'1': 'account', '3': 1, '4': 1, '5': 11, '6': '.accounts.Account', '10': 'account'},
+  ],
+};
+
+/// Descriptor for `GetAccountByProviderRefResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getAccountByProviderRefResponseDescriptor = $convert.base64Decode('Ch9HZXRBY2NvdW50QnlQcm92aWRlclJlZlJlc3BvbnNlEisKB2FjY291bnQYASABKAsyES5hY2NvdW50cy5BY2NvdW50UgdhY2NvdW50');
+@$core.Deprecated('Use getTotalLedgerBalanceRequestDescriptor instead')
+const GetTotalLedgerBalanceRequest$json = const {
+  '1': 'GetTotalLedgerBalanceRequest',
+  '2': const [
+    const {'1': 'currency', '3': 1, '4': 1, '5': 9, '10': 'currency'},
+  ],
+};
+
+/// Descriptor for `GetTotalLedgerBalanceRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getTotalLedgerBalanceRequestDescriptor = $convert.base64Decode('ChxHZXRUb3RhbExlZGdlckJhbGFuY2VSZXF1ZXN0EhoKCGN1cnJlbmN5GAEgASgJUghjdXJyZW5jeQ==');
+@$core.Deprecated('Use getTotalLedgerBalanceResponseDescriptor instead')
+const GetTotalLedgerBalanceResponse$json = const {
+  '1': 'GetTotalLedgerBalanceResponse',
+  '2': const [
+    const {'1': 'total_balance_minor', '3': 1, '4': 1, '5': 3, '10': 'totalBalanceMinor'},
+    const {'1': 'account_count', '3': 2, '4': 1, '5': 3, '10': 'accountCount'},
+  ],
+};
+
+/// Descriptor for `GetTotalLedgerBalanceResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getTotalLedgerBalanceResponseDescriptor = $convert.base64Decode('Ch1HZXRUb3RhbExlZGdlckJhbGFuY2VSZXNwb25zZRIuChN0b3RhbF9iYWxhbmNlX21pbm9yGAEgASgDUhF0b3RhbEJhbGFuY2VNaW5vchIjCg1hY2NvdW50X2NvdW50GAIgASgDUgxhY2NvdW50Q291bnQ=');
 @$core.Deprecated('Use updateAccountRequestDescriptor instead')
 const UpdateAccountRequest$json = const {
   '1': 'UpdateAccountRequest',

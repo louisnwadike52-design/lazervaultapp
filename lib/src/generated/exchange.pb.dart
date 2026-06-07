@@ -9,7 +9,7 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/timestamp.pb.dart' as $2;
+import 'google/protobuf/timestamp.pb.dart' as $49;
 
 import 'exchange.pbenum.dart';
 
@@ -95,7 +95,7 @@ class GetExchangeRateResponse extends $pb.GeneratedMessage {
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fromCurrency')
     ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'toCurrency')
     ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'rate', $pb.PbFieldType.OD)
-    ..aOM<$2.Timestamp>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'timestamp', subBuilder: $2.Timestamp.create)
+    ..aOM<$49.Timestamp>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'timestamp', subBuilder: $49.Timestamp.create)
     ..a<$core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fee', $pb.PbFieldType.OD)
     ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'feePercentage', $pb.PbFieldType.OD)
     ..a<$core.int>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'rateValidSeconds', $pb.PbFieldType.O3)
@@ -108,7 +108,7 @@ class GetExchangeRateResponse extends $pb.GeneratedMessage {
     $core.String? fromCurrency,
     $core.String? toCurrency,
     $core.double? rate,
-    $2.Timestamp? timestamp,
+    $49.Timestamp? timestamp,
     $core.double? fee,
     $core.double? feePercentage,
     $core.int? rateValidSeconds,
@@ -190,15 +190,15 @@ class GetExchangeRateResponse extends $pb.GeneratedMessage {
   void clearRate() => clearField(3);
 
   @$pb.TagNumber(4)
-  $2.Timestamp get timestamp => $_getN(3);
+  $49.Timestamp get timestamp => $_getN(3);
   @$pb.TagNumber(4)
-  set timestamp($2.Timestamp v) { setField(4, v); }
+  set timestamp($49.Timestamp v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasTimestamp() => $_has(3);
   @$pb.TagNumber(4)
   void clearTimestamp() => clearField(4);
   @$pb.TagNumber(4)
-  $2.Timestamp ensureTimestamp() => $_ensure(3);
+  $49.Timestamp ensureTimestamp() => $_ensure(3);
 
   @$pb.TagNumber(5)
   $core.double get fee => $_getN(4);
@@ -597,8 +597,8 @@ class ExchangeTransaction extends $pb.GeneratedMessage {
     ..a<$core.double>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fees', $pb.PbFieldType.OD)
     ..aOM<ReceiverDetails>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'receiverDetails', subBuilder: ReceiverDetails.create)
     ..e<ExchangeStatus>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.OE, defaultOrMaker: ExchangeStatus.PENDING, valueOf: ExchangeStatus.valueOf, enumValues: ExchangeStatus.values)
-    ..aOM<$2.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $2.Timestamp.create)
-    ..aOM<$2.Timestamp>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $2.Timestamp.create)
+    ..aOM<$49.Timestamp>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', subBuilder: $49.Timestamp.create)
+    ..aOM<$49.Timestamp>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt', subBuilder: $49.Timestamp.create)
     ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reference')
     ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'providerReference')
     ..e<ExchangeType>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'exchangeType', $pb.PbFieldType.OE, defaultOrMaker: ExchangeType.EXCHANGE_TYPE_UNSPECIFIED, valueOf: ExchangeType.valueOf, enumValues: ExchangeType.values)
@@ -618,8 +618,8 @@ class ExchangeTransaction extends $pb.GeneratedMessage {
     $core.double? fees,
     ReceiverDetails? receiverDetails,
     ExchangeStatus? status,
-    $2.Timestamp? createdAt,
-    $2.Timestamp? updatedAt,
+    $49.Timestamp? createdAt,
+    $49.Timestamp? updatedAt,
     $core.String? reference,
     $core.String? providerReference,
     ExchangeType? exchangeType,
@@ -790,26 +790,26 @@ class ExchangeTransaction extends $pb.GeneratedMessage {
   void clearStatus() => clearField(10);
 
   @$pb.TagNumber(11)
-  $2.Timestamp get createdAt => $_getN(10);
+  $49.Timestamp get createdAt => $_getN(10);
   @$pb.TagNumber(11)
-  set createdAt($2.Timestamp v) { setField(11, v); }
+  set createdAt($49.Timestamp v) { setField(11, v); }
   @$pb.TagNumber(11)
   $core.bool hasCreatedAt() => $_has(10);
   @$pb.TagNumber(11)
   void clearCreatedAt() => clearField(11);
   @$pb.TagNumber(11)
-  $2.Timestamp ensureCreatedAt() => $_ensure(10);
+  $49.Timestamp ensureCreatedAt() => $_ensure(10);
 
   @$pb.TagNumber(12)
-  $2.Timestamp get updatedAt => $_getN(11);
+  $49.Timestamp get updatedAt => $_getN(11);
   @$pb.TagNumber(12)
-  set updatedAt($2.Timestamp v) { setField(12, v); }
+  set updatedAt($49.Timestamp v) { setField(12, v); }
   @$pb.TagNumber(12)
   $core.bool hasUpdatedAt() => $_has(11);
   @$pb.TagNumber(12)
   void clearUpdatedAt() => clearField(12);
   @$pb.TagNumber(12)
-  $2.Timestamp ensureUpdatedAt() => $_ensure(11);
+  $49.Timestamp ensureUpdatedAt() => $_ensure(11);
 
   @$pb.TagNumber(13)
   $core.String get reference => $_getSZ(12);

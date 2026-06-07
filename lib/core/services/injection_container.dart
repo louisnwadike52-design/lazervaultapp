@@ -2954,6 +2954,7 @@ Future<void> init() async {
   serviceLocator.registerLazySingleton<StatisticsCubit>(
     () => StatisticsCubit(
       analyticsRepository: serviceLocator<FinancialAnalyticsRepository>(),
+      bankingDataSource: serviceLocator<OpenBankingGrpcDataSource>(),
     ),
   );
 

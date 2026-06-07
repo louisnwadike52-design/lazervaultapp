@@ -10767,3 +10767,2192 @@ class GetRecurringTransfersByRecipientResponse extends $pb.GeneratedMessage {
   $core.List<RecurringTransferDetail> get recurringTransfers => $_getList(0);
 }
 
+class SavedBatchItemInput extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SavedBatchItemInput', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'payments'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientType')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientUserId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bankCode')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountNumber')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'beneficiaryName')
+    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'narration')
+    ..a<$core.int>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sortOrder', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  SavedBatchItemInput._() : super();
+  factory SavedBatchItemInput({
+    $core.String? recipientType,
+    $core.String? recipientUserId,
+    $core.String? bankCode,
+    $core.String? accountNumber,
+    $core.String? beneficiaryName,
+    $core.double? amount,
+    $core.String? narration,
+    $core.int? sortOrder,
+  }) {
+    final _result = create();
+    if (recipientType != null) {
+      _result.recipientType = recipientType;
+    }
+    if (recipientUserId != null) {
+      _result.recipientUserId = recipientUserId;
+    }
+    if (bankCode != null) {
+      _result.bankCode = bankCode;
+    }
+    if (accountNumber != null) {
+      _result.accountNumber = accountNumber;
+    }
+    if (beneficiaryName != null) {
+      _result.beneficiaryName = beneficiaryName;
+    }
+    if (amount != null) {
+      _result.amount = amount;
+    }
+    if (narration != null) {
+      _result.narration = narration;
+    }
+    if (sortOrder != null) {
+      _result.sortOrder = sortOrder;
+    }
+    return _result;
+  }
+  factory SavedBatchItemInput.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory SavedBatchItemInput.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  SavedBatchItemInput clone() => SavedBatchItemInput()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  SavedBatchItemInput copyWith(void Function(SavedBatchItemInput) updates) => super.copyWith((message) => updates(message as SavedBatchItemInput)) as SavedBatchItemInput; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static SavedBatchItemInput create() => SavedBatchItemInput._();
+  SavedBatchItemInput createEmptyInstance() => create();
+  static $pb.PbList<SavedBatchItemInput> createRepeated() => $pb.PbList<SavedBatchItemInput>();
+  @$core.pragma('dart2js:noInline')
+  static SavedBatchItemInput getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SavedBatchItemInput>(create);
+  static SavedBatchItemInput? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get recipientType => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set recipientType($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasRecipientType() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearRecipientType() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get recipientUserId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set recipientUserId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasRecipientUserId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearRecipientUserId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get bankCode => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set bankCode($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasBankCode() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearBankCode() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get accountNumber => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set accountNumber($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasAccountNumber() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearAccountNumber() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get beneficiaryName => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set beneficiaryName($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasBeneficiaryName() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearBeneficiaryName() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.double get amount => $_getN(5);
+  @$pb.TagNumber(6)
+  set amount($core.double v) { $_setDouble(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasAmount() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearAmount() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get narration => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set narration($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasNarration() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearNarration() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.int get sortOrder => $_getIZ(7);
+  @$pb.TagNumber(8)
+  set sortOrder($core.int v) { $_setSignedInt32(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasSortOrder() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearSortOrder() => clearField(8);
+}
+
+class SavedBatchItem extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SavedBatchItem', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'payments'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'savedBatchId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientType')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientUserId')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bankCode')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountNumber')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'beneficiaryName')
+    ..a<$core.double>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'narration')
+    ..a<$core.int>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sortOrder', $pb.PbFieldType.O3)
+    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt')
+    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt')
+    ..hasRequiredFields = false
+  ;
+
+  SavedBatchItem._() : super();
+  factory SavedBatchItem({
+    $core.String? id,
+    $core.String? savedBatchId,
+    $core.String? recipientType,
+    $core.String? recipientUserId,
+    $core.String? bankCode,
+    $core.String? accountNumber,
+    $core.String? beneficiaryName,
+    $core.double? amount,
+    $core.String? narration,
+    $core.int? sortOrder,
+    $core.String? createdAt,
+    $core.String? updatedAt,
+  }) {
+    final _result = create();
+    if (id != null) {
+      _result.id = id;
+    }
+    if (savedBatchId != null) {
+      _result.savedBatchId = savedBatchId;
+    }
+    if (recipientType != null) {
+      _result.recipientType = recipientType;
+    }
+    if (recipientUserId != null) {
+      _result.recipientUserId = recipientUserId;
+    }
+    if (bankCode != null) {
+      _result.bankCode = bankCode;
+    }
+    if (accountNumber != null) {
+      _result.accountNumber = accountNumber;
+    }
+    if (beneficiaryName != null) {
+      _result.beneficiaryName = beneficiaryName;
+    }
+    if (amount != null) {
+      _result.amount = amount;
+    }
+    if (narration != null) {
+      _result.narration = narration;
+    }
+    if (sortOrder != null) {
+      _result.sortOrder = sortOrder;
+    }
+    if (createdAt != null) {
+      _result.createdAt = createdAt;
+    }
+    if (updatedAt != null) {
+      _result.updatedAt = updatedAt;
+    }
+    return _result;
+  }
+  factory SavedBatchItem.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory SavedBatchItem.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  SavedBatchItem clone() => SavedBatchItem()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  SavedBatchItem copyWith(void Function(SavedBatchItem) updates) => super.copyWith((message) => updates(message as SavedBatchItem)) as SavedBatchItem; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static SavedBatchItem create() => SavedBatchItem._();
+  SavedBatchItem createEmptyInstance() => create();
+  static $pb.PbList<SavedBatchItem> createRepeated() => $pb.PbList<SavedBatchItem>();
+  @$core.pragma('dart2js:noInline')
+  static SavedBatchItem getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SavedBatchItem>(create);
+  static SavedBatchItem? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get savedBatchId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set savedBatchId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasSavedBatchId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearSavedBatchId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get recipientType => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set recipientType($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasRecipientType() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearRecipientType() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get recipientUserId => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set recipientUserId($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasRecipientUserId() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearRecipientUserId() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get bankCode => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set bankCode($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasBankCode() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearBankCode() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get accountNumber => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set accountNumber($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasAccountNumber() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearAccountNumber() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get beneficiaryName => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set beneficiaryName($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasBeneficiaryName() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearBeneficiaryName() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.double get amount => $_getN(7);
+  @$pb.TagNumber(8)
+  set amount($core.double v) { $_setDouble(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasAmount() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearAmount() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get narration => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set narration($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasNarration() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearNarration() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.int get sortOrder => $_getIZ(9);
+  @$pb.TagNumber(10)
+  set sortOrder($core.int v) { $_setSignedInt32(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasSortOrder() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearSortOrder() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get createdAt => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set createdAt($core.String v) { $_setString(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasCreatedAt() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearCreatedAt() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get updatedAt => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set updatedAt($core.String v) { $_setString(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasUpdatedAt() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearUpdatedAt() => clearField(12);
+}
+
+class SavedBatch extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SavedBatch', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'payments'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceAccountId')
+    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmount', $pb.PbFieldType.OD)
+    ..a<$core.int>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'itemCount', $pb.PbFieldType.O3)
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt')
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt')
+    ..pc<SavedBatchItem>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'items', $pb.PbFieldType.PM, subBuilder: SavedBatchItem.create)
+    ..hasRequiredFields = false
+  ;
+
+  SavedBatch._() : super();
+  factory SavedBatch({
+    $core.String? id,
+    $core.String? userId,
+    $core.String? name,
+    $core.String? currency,
+    $core.String? sourceAccountId,
+    $core.double? totalAmount,
+    $core.int? itemCount,
+    $core.String? createdAt,
+    $core.String? updatedAt,
+    $core.Iterable<SavedBatchItem>? items,
+  }) {
+    final _result = create();
+    if (id != null) {
+      _result.id = id;
+    }
+    if (userId != null) {
+      _result.userId = userId;
+    }
+    if (name != null) {
+      _result.name = name;
+    }
+    if (currency != null) {
+      _result.currency = currency;
+    }
+    if (sourceAccountId != null) {
+      _result.sourceAccountId = sourceAccountId;
+    }
+    if (totalAmount != null) {
+      _result.totalAmount = totalAmount;
+    }
+    if (itemCount != null) {
+      _result.itemCount = itemCount;
+    }
+    if (createdAt != null) {
+      _result.createdAt = createdAt;
+    }
+    if (updatedAt != null) {
+      _result.updatedAt = updatedAt;
+    }
+    if (items != null) {
+      _result.items.addAll(items);
+    }
+    return _result;
+  }
+  factory SavedBatch.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory SavedBatch.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  SavedBatch clone() => SavedBatch()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  SavedBatch copyWith(void Function(SavedBatch) updates) => super.copyWith((message) => updates(message as SavedBatch)) as SavedBatch; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static SavedBatch create() => SavedBatch._();
+  SavedBatch createEmptyInstance() => create();
+  static $pb.PbList<SavedBatch> createRepeated() => $pb.PbList<SavedBatch>();
+  @$core.pragma('dart2js:noInline')
+  static SavedBatch getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SavedBatch>(create);
+  static SavedBatch? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get userId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set userId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasUserId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearUserId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get name => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set name($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasName() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearName() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get currency => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set currency($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasCurrency() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCurrency() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get sourceAccountId => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set sourceAccountId($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasSourceAccountId() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearSourceAccountId() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.double get totalAmount => $_getN(5);
+  @$pb.TagNumber(6)
+  set totalAmount($core.double v) { $_setDouble(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasTotalAmount() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearTotalAmount() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.int get itemCount => $_getIZ(6);
+  @$pb.TagNumber(7)
+  set itemCount($core.int v) { $_setSignedInt32(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasItemCount() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearItemCount() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get createdAt => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set createdAt($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasCreatedAt() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearCreatedAt() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get updatedAt => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set updatedAt($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasUpdatedAt() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearUpdatedAt() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.List<SavedBatchItem> get items => $_getList(9);
+}
+
+class SaveBatchDraftRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'SaveBatchDraftRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'payments'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceAccountId')
+    ..pc<SavedBatchItemInput>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'items', $pb.PbFieldType.PM, subBuilder: SavedBatchItemInput.create)
+    ..hasRequiredFields = false
+  ;
+
+  SaveBatchDraftRequest._() : super();
+  factory SaveBatchDraftRequest({
+    $core.String? name,
+    $core.String? currency,
+    $core.String? sourceAccountId,
+    $core.Iterable<SavedBatchItemInput>? items,
+  }) {
+    final _result = create();
+    if (name != null) {
+      _result.name = name;
+    }
+    if (currency != null) {
+      _result.currency = currency;
+    }
+    if (sourceAccountId != null) {
+      _result.sourceAccountId = sourceAccountId;
+    }
+    if (items != null) {
+      _result.items.addAll(items);
+    }
+    return _result;
+  }
+  factory SaveBatchDraftRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory SaveBatchDraftRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  SaveBatchDraftRequest clone() => SaveBatchDraftRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  SaveBatchDraftRequest copyWith(void Function(SaveBatchDraftRequest) updates) => super.copyWith((message) => updates(message as SaveBatchDraftRequest)) as SaveBatchDraftRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static SaveBatchDraftRequest create() => SaveBatchDraftRequest._();
+  SaveBatchDraftRequest createEmptyInstance() => create();
+  static $pb.PbList<SaveBatchDraftRequest> createRepeated() => $pb.PbList<SaveBatchDraftRequest>();
+  @$core.pragma('dart2js:noInline')
+  static SaveBatchDraftRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<SaveBatchDraftRequest>(create);
+  static SaveBatchDraftRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get name => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set name($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasName() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearName() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get currency => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set currency($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasCurrency() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCurrency() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get sourceAccountId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set sourceAccountId($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasSourceAccountId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearSourceAccountId() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.List<SavedBatchItemInput> get items => $_getList(3);
+}
+
+class ListSavedBatchesRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ListSavedBatchesRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'payments'), createEmptyInstance: create)
+    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'offset', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  ListSavedBatchesRequest._() : super();
+  factory ListSavedBatchesRequest({
+    $core.int? limit,
+    $core.int? offset,
+  }) {
+    final _result = create();
+    if (limit != null) {
+      _result.limit = limit;
+    }
+    if (offset != null) {
+      _result.offset = offset;
+    }
+    return _result;
+  }
+  factory ListSavedBatchesRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ListSavedBatchesRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ListSavedBatchesRequest clone() => ListSavedBatchesRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ListSavedBatchesRequest copyWith(void Function(ListSavedBatchesRequest) updates) => super.copyWith((message) => updates(message as ListSavedBatchesRequest)) as ListSavedBatchesRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static ListSavedBatchesRequest create() => ListSavedBatchesRequest._();
+  ListSavedBatchesRequest createEmptyInstance() => create();
+  static $pb.PbList<ListSavedBatchesRequest> createRepeated() => $pb.PbList<ListSavedBatchesRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ListSavedBatchesRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ListSavedBatchesRequest>(create);
+  static ListSavedBatchesRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get limit => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set limit($core.int v) { $_setSignedInt32(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasLimit() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearLimit() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get offset => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set offset($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasOffset() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearOffset() => clearField(2);
+}
+
+class ListSavedBatchesResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ListSavedBatchesResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'payments'), createEmptyInstance: create)
+    ..pc<SavedBatch>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'batches', $pb.PbFieldType.PM, subBuilder: SavedBatch.create)
+    ..aInt64(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'total')
+    ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'limit', $pb.PbFieldType.O3)
+    ..a<$core.int>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'offset', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  ListSavedBatchesResponse._() : super();
+  factory ListSavedBatchesResponse({
+    $core.Iterable<SavedBatch>? batches,
+    $fixnum.Int64? total,
+    $core.int? limit,
+    $core.int? offset,
+  }) {
+    final _result = create();
+    if (batches != null) {
+      _result.batches.addAll(batches);
+    }
+    if (total != null) {
+      _result.total = total;
+    }
+    if (limit != null) {
+      _result.limit = limit;
+    }
+    if (offset != null) {
+      _result.offset = offset;
+    }
+    return _result;
+  }
+  factory ListSavedBatchesResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ListSavedBatchesResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ListSavedBatchesResponse clone() => ListSavedBatchesResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ListSavedBatchesResponse copyWith(void Function(ListSavedBatchesResponse) updates) => super.copyWith((message) => updates(message as ListSavedBatchesResponse)) as ListSavedBatchesResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static ListSavedBatchesResponse create() => ListSavedBatchesResponse._();
+  ListSavedBatchesResponse createEmptyInstance() => create();
+  static $pb.PbList<ListSavedBatchesResponse> createRepeated() => $pb.PbList<ListSavedBatchesResponse>();
+  @$core.pragma('dart2js:noInline')
+  static ListSavedBatchesResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ListSavedBatchesResponse>(create);
+  static ListSavedBatchesResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<SavedBatch> get batches => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get total => $_getI64(1);
+  @$pb.TagNumber(2)
+  set total($fixnum.Int64 v) { $_setInt64(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTotal() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotal() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get limit => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set limit($core.int v) { $_setSignedInt32(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasLimit() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearLimit() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get offset => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set offset($core.int v) { $_setSignedInt32(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasOffset() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearOffset() => clearField(4);
+}
+
+class GetSavedBatchRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetSavedBatchRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'payments'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..hasRequiredFields = false
+  ;
+
+  GetSavedBatchRequest._() : super();
+  factory GetSavedBatchRequest({
+    $core.String? id,
+  }) {
+    final _result = create();
+    if (id != null) {
+      _result.id = id;
+    }
+    return _result;
+  }
+  factory GetSavedBatchRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetSavedBatchRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetSavedBatchRequest clone() => GetSavedBatchRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetSavedBatchRequest copyWith(void Function(GetSavedBatchRequest) updates) => super.copyWith((message) => updates(message as GetSavedBatchRequest)) as GetSavedBatchRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetSavedBatchRequest create() => GetSavedBatchRequest._();
+  GetSavedBatchRequest createEmptyInstance() => create();
+  static $pb.PbList<GetSavedBatchRequest> createRepeated() => $pb.PbList<GetSavedBatchRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetSavedBatchRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetSavedBatchRequest>(create);
+  static GetSavedBatchRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => clearField(1);
+}
+
+class UpdateSavedBatchRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateSavedBatchRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'payments'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
+    ..hasRequiredFields = false
+  ;
+
+  UpdateSavedBatchRequest._() : super();
+  factory UpdateSavedBatchRequest({
+    $core.String? id,
+    $core.String? name,
+  }) {
+    final _result = create();
+    if (id != null) {
+      _result.id = id;
+    }
+    if (name != null) {
+      _result.name = name;
+    }
+    return _result;
+  }
+  factory UpdateSavedBatchRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateSavedBatchRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UpdateSavedBatchRequest clone() => UpdateSavedBatchRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UpdateSavedBatchRequest copyWith(void Function(UpdateSavedBatchRequest) updates) => super.copyWith((message) => updates(message as UpdateSavedBatchRequest)) as UpdateSavedBatchRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static UpdateSavedBatchRequest create() => UpdateSavedBatchRequest._();
+  UpdateSavedBatchRequest createEmptyInstance() => create();
+  static $pb.PbList<UpdateSavedBatchRequest> createRepeated() => $pb.PbList<UpdateSavedBatchRequest>();
+  @$core.pragma('dart2js:noInline')
+  static UpdateSavedBatchRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateSavedBatchRequest>(create);
+  static UpdateSavedBatchRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get name => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set name($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearName() => clearField(2);
+}
+
+class DeleteSavedBatchRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DeleteSavedBatchRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'payments'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..hasRequiredFields = false
+  ;
+
+  DeleteSavedBatchRequest._() : super();
+  factory DeleteSavedBatchRequest({
+    $core.String? id,
+  }) {
+    final _result = create();
+    if (id != null) {
+      _result.id = id;
+    }
+    return _result;
+  }
+  factory DeleteSavedBatchRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory DeleteSavedBatchRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  DeleteSavedBatchRequest clone() => DeleteSavedBatchRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  DeleteSavedBatchRequest copyWith(void Function(DeleteSavedBatchRequest) updates) => super.copyWith((message) => updates(message as DeleteSavedBatchRequest)) as DeleteSavedBatchRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static DeleteSavedBatchRequest create() => DeleteSavedBatchRequest._();
+  DeleteSavedBatchRequest createEmptyInstance() => create();
+  static $pb.PbList<DeleteSavedBatchRequest> createRepeated() => $pb.PbList<DeleteSavedBatchRequest>();
+  @$core.pragma('dart2js:noInline')
+  static DeleteSavedBatchRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DeleteSavedBatchRequest>(create);
+  static DeleteSavedBatchRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get id => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set id($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => clearField(1);
+}
+
+class DeleteSavedBatchResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'DeleteSavedBatchResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'payments'), createEmptyInstance: create)
+    ..aOB(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..hasRequiredFields = false
+  ;
+
+  DeleteSavedBatchResponse._() : super();
+  factory DeleteSavedBatchResponse({
+    $core.bool? success,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    return _result;
+  }
+  factory DeleteSavedBatchResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory DeleteSavedBatchResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  DeleteSavedBatchResponse clone() => DeleteSavedBatchResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  DeleteSavedBatchResponse copyWith(void Function(DeleteSavedBatchResponse) updates) => super.copyWith((message) => updates(message as DeleteSavedBatchResponse)) as DeleteSavedBatchResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static DeleteSavedBatchResponse create() => DeleteSavedBatchResponse._();
+  DeleteSavedBatchResponse createEmptyInstance() => create();
+  static $pb.PbList<DeleteSavedBatchResponse> createRepeated() => $pb.PbList<DeleteSavedBatchResponse>();
+  @$core.pragma('dart2js:noInline')
+  static DeleteSavedBatchResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DeleteSavedBatchResponse>(create);
+  static DeleteSavedBatchResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+}
+
+class AddSavedBatchItemRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AddSavedBatchItemRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'payments'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'savedBatchId')
+    ..aOM<SavedBatchItemInput>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'item', subBuilder: SavedBatchItemInput.create)
+    ..hasRequiredFields = false
+  ;
+
+  AddSavedBatchItemRequest._() : super();
+  factory AddSavedBatchItemRequest({
+    $core.String? savedBatchId,
+    SavedBatchItemInput? item,
+  }) {
+    final _result = create();
+    if (savedBatchId != null) {
+      _result.savedBatchId = savedBatchId;
+    }
+    if (item != null) {
+      _result.item = item;
+    }
+    return _result;
+  }
+  factory AddSavedBatchItemRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory AddSavedBatchItemRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  AddSavedBatchItemRequest clone() => AddSavedBatchItemRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  AddSavedBatchItemRequest copyWith(void Function(AddSavedBatchItemRequest) updates) => super.copyWith((message) => updates(message as AddSavedBatchItemRequest)) as AddSavedBatchItemRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static AddSavedBatchItemRequest create() => AddSavedBatchItemRequest._();
+  AddSavedBatchItemRequest createEmptyInstance() => create();
+  static $pb.PbList<AddSavedBatchItemRequest> createRepeated() => $pb.PbList<AddSavedBatchItemRequest>();
+  @$core.pragma('dart2js:noInline')
+  static AddSavedBatchItemRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AddSavedBatchItemRequest>(create);
+  static AddSavedBatchItemRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get savedBatchId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set savedBatchId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSavedBatchId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSavedBatchId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  SavedBatchItemInput get item => $_getN(1);
+  @$pb.TagNumber(2)
+  set item(SavedBatchItemInput v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasItem() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearItem() => clearField(2);
+  @$pb.TagNumber(2)
+  SavedBatchItemInput ensureItem() => $_ensure(1);
+}
+
+class RemoveSavedBatchItemRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'RemoveSavedBatchItemRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'payments'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'savedBatchId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'itemId')
+    ..hasRequiredFields = false
+  ;
+
+  RemoveSavedBatchItemRequest._() : super();
+  factory RemoveSavedBatchItemRequest({
+    $core.String? savedBatchId,
+    $core.String? itemId,
+  }) {
+    final _result = create();
+    if (savedBatchId != null) {
+      _result.savedBatchId = savedBatchId;
+    }
+    if (itemId != null) {
+      _result.itemId = itemId;
+    }
+    return _result;
+  }
+  factory RemoveSavedBatchItemRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory RemoveSavedBatchItemRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  RemoveSavedBatchItemRequest clone() => RemoveSavedBatchItemRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  RemoveSavedBatchItemRequest copyWith(void Function(RemoveSavedBatchItemRequest) updates) => super.copyWith((message) => updates(message as RemoveSavedBatchItemRequest)) as RemoveSavedBatchItemRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static RemoveSavedBatchItemRequest create() => RemoveSavedBatchItemRequest._();
+  RemoveSavedBatchItemRequest createEmptyInstance() => create();
+  static $pb.PbList<RemoveSavedBatchItemRequest> createRepeated() => $pb.PbList<RemoveSavedBatchItemRequest>();
+  @$core.pragma('dart2js:noInline')
+  static RemoveSavedBatchItemRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RemoveSavedBatchItemRequest>(create);
+  static RemoveSavedBatchItemRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get savedBatchId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set savedBatchId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSavedBatchId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSavedBatchId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get itemId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set itemId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasItemId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearItemId() => clearField(2);
+}
+
+class UpdateSavedBatchItemAmountRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateSavedBatchItemAmountRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'payments'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'savedBatchId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'itemId')
+    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
+  UpdateSavedBatchItemAmountRequest._() : super();
+  factory UpdateSavedBatchItemAmountRequest({
+    $core.String? savedBatchId,
+    $core.String? itemId,
+    $core.double? amount,
+  }) {
+    final _result = create();
+    if (savedBatchId != null) {
+      _result.savedBatchId = savedBatchId;
+    }
+    if (itemId != null) {
+      _result.itemId = itemId;
+    }
+    if (amount != null) {
+      _result.amount = amount;
+    }
+    return _result;
+  }
+  factory UpdateSavedBatchItemAmountRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateSavedBatchItemAmountRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UpdateSavedBatchItemAmountRequest clone() => UpdateSavedBatchItemAmountRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UpdateSavedBatchItemAmountRequest copyWith(void Function(UpdateSavedBatchItemAmountRequest) updates) => super.copyWith((message) => updates(message as UpdateSavedBatchItemAmountRequest)) as UpdateSavedBatchItemAmountRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static UpdateSavedBatchItemAmountRequest create() => UpdateSavedBatchItemAmountRequest._();
+  UpdateSavedBatchItemAmountRequest createEmptyInstance() => create();
+  static $pb.PbList<UpdateSavedBatchItemAmountRequest> createRepeated() => $pb.PbList<UpdateSavedBatchItemAmountRequest>();
+  @$core.pragma('dart2js:noInline')
+  static UpdateSavedBatchItemAmountRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateSavedBatchItemAmountRequest>(create);
+  static UpdateSavedBatchItemAmountRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get savedBatchId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set savedBatchId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSavedBatchId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSavedBatchId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get itemId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set itemId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasItemId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearItemId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.double get amount => $_getN(2);
+  @$pb.TagNumber(3)
+  set amount($core.double v) { $_setDouble(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasAmount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAmount() => clearField(3);
+}
+
+enum ApplyCollectiveAmountRequest_Mode {
+  multiplier, 
+  amountPerItem, 
+  notSet
+}
+
+class ApplyCollectiveAmountRequest extends $pb.GeneratedMessage {
+  static const $core.Map<$core.int, ApplyCollectiveAmountRequest_Mode> _ApplyCollectiveAmountRequest_ModeByTag = {
+    2 : ApplyCollectiveAmountRequest_Mode.multiplier,
+    3 : ApplyCollectiveAmountRequest_Mode.amountPerItem,
+    0 : ApplyCollectiveAmountRequest_Mode.notSet
+  };
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ApplyCollectiveAmountRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'payments'), createEmptyInstance: create)
+    ..oo(0, [2, 3])
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'savedBatchId')
+    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'multiplier', $pb.PbFieldType.OD)
+    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amountPerItem', $pb.PbFieldType.OD)
+    ..hasRequiredFields = false
+  ;
+
+  ApplyCollectiveAmountRequest._() : super();
+  factory ApplyCollectiveAmountRequest({
+    $core.String? savedBatchId,
+    $core.double? multiplier,
+    $core.double? amountPerItem,
+  }) {
+    final _result = create();
+    if (savedBatchId != null) {
+      _result.savedBatchId = savedBatchId;
+    }
+    if (multiplier != null) {
+      _result.multiplier = multiplier;
+    }
+    if (amountPerItem != null) {
+      _result.amountPerItem = amountPerItem;
+    }
+    return _result;
+  }
+  factory ApplyCollectiveAmountRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ApplyCollectiveAmountRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ApplyCollectiveAmountRequest clone() => ApplyCollectiveAmountRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ApplyCollectiveAmountRequest copyWith(void Function(ApplyCollectiveAmountRequest) updates) => super.copyWith((message) => updates(message as ApplyCollectiveAmountRequest)) as ApplyCollectiveAmountRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static ApplyCollectiveAmountRequest create() => ApplyCollectiveAmountRequest._();
+  ApplyCollectiveAmountRequest createEmptyInstance() => create();
+  static $pb.PbList<ApplyCollectiveAmountRequest> createRepeated() => $pb.PbList<ApplyCollectiveAmountRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ApplyCollectiveAmountRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ApplyCollectiveAmountRequest>(create);
+  static ApplyCollectiveAmountRequest? _defaultInstance;
+
+  ApplyCollectiveAmountRequest_Mode whichMode() => _ApplyCollectiveAmountRequest_ModeByTag[$_whichOneof(0)]!;
+  void clearMode() => clearField($_whichOneof(0));
+
+  @$pb.TagNumber(1)
+  $core.String get savedBatchId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set savedBatchId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSavedBatchId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSavedBatchId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.double get multiplier => $_getN(1);
+  @$pb.TagNumber(2)
+  set multiplier($core.double v) { $_setDouble(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMultiplier() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMultiplier() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.double get amountPerItem => $_getN(2);
+  @$pb.TagNumber(3)
+  set amountPerItem($core.double v) { $_setDouble(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasAmountPerItem() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAmountPerItem() => clearField(3);
+}
+
+class ExecuteFromSavedBatchRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ExecuteFromSavedBatchRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'payments'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'savedBatchId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'idempotencyKey')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionId')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verificationToken')
+    ..m<$core.String, $core.double>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'perItemOverrides', entryClassName: 'ExecuteFromSavedBatchRequest.PerItemOverridesEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OD, packageName: const $pb.PackageName('payments'))
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceAccountId')
+    ..hasRequiredFields = false
+  ;
+
+  ExecuteFromSavedBatchRequest._() : super();
+  factory ExecuteFromSavedBatchRequest({
+    $core.String? savedBatchId,
+    $core.String? idempotencyKey,
+    $core.String? transactionId,
+    $core.String? verificationToken,
+    $core.Map<$core.String, $core.double>? perItemOverrides,
+    $core.String? sourceAccountId,
+  }) {
+    final _result = create();
+    if (savedBatchId != null) {
+      _result.savedBatchId = savedBatchId;
+    }
+    if (idempotencyKey != null) {
+      _result.idempotencyKey = idempotencyKey;
+    }
+    if (transactionId != null) {
+      _result.transactionId = transactionId;
+    }
+    if (verificationToken != null) {
+      _result.verificationToken = verificationToken;
+    }
+    if (perItemOverrides != null) {
+      _result.perItemOverrides.addAll(perItemOverrides);
+    }
+    if (sourceAccountId != null) {
+      _result.sourceAccountId = sourceAccountId;
+    }
+    return _result;
+  }
+  factory ExecuteFromSavedBatchRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ExecuteFromSavedBatchRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  ExecuteFromSavedBatchRequest clone() => ExecuteFromSavedBatchRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  ExecuteFromSavedBatchRequest copyWith(void Function(ExecuteFromSavedBatchRequest) updates) => super.copyWith((message) => updates(message as ExecuteFromSavedBatchRequest)) as ExecuteFromSavedBatchRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static ExecuteFromSavedBatchRequest create() => ExecuteFromSavedBatchRequest._();
+  ExecuteFromSavedBatchRequest createEmptyInstance() => create();
+  static $pb.PbList<ExecuteFromSavedBatchRequest> createRepeated() => $pb.PbList<ExecuteFromSavedBatchRequest>();
+  @$core.pragma('dart2js:noInline')
+  static ExecuteFromSavedBatchRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ExecuteFromSavedBatchRequest>(create);
+  static ExecuteFromSavedBatchRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get savedBatchId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set savedBatchId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSavedBatchId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSavedBatchId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get idempotencyKey => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set idempotencyKey($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasIdempotencyKey() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearIdempotencyKey() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get transactionId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set transactionId($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasTransactionId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearTransactionId() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get verificationToken => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set verificationToken($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasVerificationToken() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearVerificationToken() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.Map<$core.String, $core.double> get perItemOverrides => $_getMap(4);
+
+  @$pb.TagNumber(6)
+  $core.String get sourceAccountId => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set sourceAccountId($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasSourceAccountId() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearSourceAccountId() => clearField(6);
+}
+
+class BatchReceiptItem extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'BatchReceiptItem', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'payments'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'itemId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+    ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.OD)
+    ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fee', $pb.PbFieldType.OD)
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'reference')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientName')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recipientAccount')
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bankCode')
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bankName')
+    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transferType')
+    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'narration')
+    ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failureReason')
+    ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'classification')
+    ..aOS(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'providerName')
+    ..aOS(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'providerRef')
+    ..aOS(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'providerStatus')
+    ..aOS(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paymentId')
+    ..aOS(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paymentStatus')
+    ..aOS(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'paymentReference')
+    ..aOS(21, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt')
+    ..aOS(22, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt')
+    ..aOS(23, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'transactionDate')
+    ..aOS(24, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'holdCapturedAt')
+    ..aOS(25, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'holdReleasedAt')
+    ..hasRequiredFields = false
+  ;
+
+  BatchReceiptItem._() : super();
+  factory BatchReceiptItem({
+    $core.String? itemId,
+    $core.String? status,
+    $core.double? amount,
+    $core.double? fee,
+    $core.String? currency,
+    $core.String? reference,
+    $core.String? recipientName,
+    $core.String? recipientAccount,
+    $core.String? bankCode,
+    $core.String? bankName,
+    $core.String? transferType,
+    $core.String? narration,
+    $core.String? failureReason,
+    $core.String? classification,
+    $core.String? providerName,
+    $core.String? providerRef,
+    $core.String? providerStatus,
+    $core.String? paymentId,
+    $core.String? paymentStatus,
+    $core.String? paymentReference,
+    $core.String? createdAt,
+    $core.String? updatedAt,
+    $core.String? transactionDate,
+    $core.String? holdCapturedAt,
+    $core.String? holdReleasedAt,
+  }) {
+    final _result = create();
+    if (itemId != null) {
+      _result.itemId = itemId;
+    }
+    if (status != null) {
+      _result.status = status;
+    }
+    if (amount != null) {
+      _result.amount = amount;
+    }
+    if (fee != null) {
+      _result.fee = fee;
+    }
+    if (currency != null) {
+      _result.currency = currency;
+    }
+    if (reference != null) {
+      _result.reference = reference;
+    }
+    if (recipientName != null) {
+      _result.recipientName = recipientName;
+    }
+    if (recipientAccount != null) {
+      _result.recipientAccount = recipientAccount;
+    }
+    if (bankCode != null) {
+      _result.bankCode = bankCode;
+    }
+    if (bankName != null) {
+      _result.bankName = bankName;
+    }
+    if (transferType != null) {
+      _result.transferType = transferType;
+    }
+    if (narration != null) {
+      _result.narration = narration;
+    }
+    if (failureReason != null) {
+      _result.failureReason = failureReason;
+    }
+    if (classification != null) {
+      _result.classification = classification;
+    }
+    if (providerName != null) {
+      _result.providerName = providerName;
+    }
+    if (providerRef != null) {
+      _result.providerRef = providerRef;
+    }
+    if (providerStatus != null) {
+      _result.providerStatus = providerStatus;
+    }
+    if (paymentId != null) {
+      _result.paymentId = paymentId;
+    }
+    if (paymentStatus != null) {
+      _result.paymentStatus = paymentStatus;
+    }
+    if (paymentReference != null) {
+      _result.paymentReference = paymentReference;
+    }
+    if (createdAt != null) {
+      _result.createdAt = createdAt;
+    }
+    if (updatedAt != null) {
+      _result.updatedAt = updatedAt;
+    }
+    if (transactionDate != null) {
+      _result.transactionDate = transactionDate;
+    }
+    if (holdCapturedAt != null) {
+      _result.holdCapturedAt = holdCapturedAt;
+    }
+    if (holdReleasedAt != null) {
+      _result.holdReleasedAt = holdReleasedAt;
+    }
+    return _result;
+  }
+  factory BatchReceiptItem.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory BatchReceiptItem.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  BatchReceiptItem clone() => BatchReceiptItem()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  BatchReceiptItem copyWith(void Function(BatchReceiptItem) updates) => super.copyWith((message) => updates(message as BatchReceiptItem)) as BatchReceiptItem; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static BatchReceiptItem create() => BatchReceiptItem._();
+  BatchReceiptItem createEmptyInstance() => create();
+  static $pb.PbList<BatchReceiptItem> createRepeated() => $pb.PbList<BatchReceiptItem>();
+  @$core.pragma('dart2js:noInline')
+  static BatchReceiptItem getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<BatchReceiptItem>(create);
+  static BatchReceiptItem? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get itemId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set itemId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasItemId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearItemId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get status => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set status($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasStatus() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearStatus() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.double get amount => $_getN(2);
+  @$pb.TagNumber(3)
+  set amount($core.double v) { $_setDouble(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasAmount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAmount() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.double get fee => $_getN(3);
+  @$pb.TagNumber(4)
+  set fee($core.double v) { $_setDouble(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasFee() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearFee() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get currency => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set currency($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasCurrency() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearCurrency() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get reference => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set reference($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasReference() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearReference() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get recipientName => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set recipientName($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasRecipientName() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearRecipientName() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.String get recipientAccount => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set recipientAccount($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasRecipientAccount() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearRecipientAccount() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get bankCode => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set bankCode($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasBankCode() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearBankCode() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get bankName => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set bankName($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasBankName() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearBankName() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get transferType => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set transferType($core.String v) { $_setString(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasTransferType() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearTransferType() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get narration => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set narration($core.String v) { $_setString(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasNarration() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearNarration() => clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.String get failureReason => $_getSZ(12);
+  @$pb.TagNumber(13)
+  set failureReason($core.String v) { $_setString(12, v); }
+  @$pb.TagNumber(13)
+  $core.bool hasFailureReason() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearFailureReason() => clearField(13);
+
+  @$pb.TagNumber(14)
+  $core.String get classification => $_getSZ(13);
+  @$pb.TagNumber(14)
+  set classification($core.String v) { $_setString(13, v); }
+  @$pb.TagNumber(14)
+  $core.bool hasClassification() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearClassification() => clearField(14);
+
+  @$pb.TagNumber(15)
+  $core.String get providerName => $_getSZ(14);
+  @$pb.TagNumber(15)
+  set providerName($core.String v) { $_setString(14, v); }
+  @$pb.TagNumber(15)
+  $core.bool hasProviderName() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearProviderName() => clearField(15);
+
+  @$pb.TagNumber(16)
+  $core.String get providerRef => $_getSZ(15);
+  @$pb.TagNumber(16)
+  set providerRef($core.String v) { $_setString(15, v); }
+  @$pb.TagNumber(16)
+  $core.bool hasProviderRef() => $_has(15);
+  @$pb.TagNumber(16)
+  void clearProviderRef() => clearField(16);
+
+  @$pb.TagNumber(17)
+  $core.String get providerStatus => $_getSZ(16);
+  @$pb.TagNumber(17)
+  set providerStatus($core.String v) { $_setString(16, v); }
+  @$pb.TagNumber(17)
+  $core.bool hasProviderStatus() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearProviderStatus() => clearField(17);
+
+  @$pb.TagNumber(18)
+  $core.String get paymentId => $_getSZ(17);
+  @$pb.TagNumber(18)
+  set paymentId($core.String v) { $_setString(17, v); }
+  @$pb.TagNumber(18)
+  $core.bool hasPaymentId() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearPaymentId() => clearField(18);
+
+  @$pb.TagNumber(19)
+  $core.String get paymentStatus => $_getSZ(18);
+  @$pb.TagNumber(19)
+  set paymentStatus($core.String v) { $_setString(18, v); }
+  @$pb.TagNumber(19)
+  $core.bool hasPaymentStatus() => $_has(18);
+  @$pb.TagNumber(19)
+  void clearPaymentStatus() => clearField(19);
+
+  @$pb.TagNumber(20)
+  $core.String get paymentReference => $_getSZ(19);
+  @$pb.TagNumber(20)
+  set paymentReference($core.String v) { $_setString(19, v); }
+  @$pb.TagNumber(20)
+  $core.bool hasPaymentReference() => $_has(19);
+  @$pb.TagNumber(20)
+  void clearPaymentReference() => clearField(20);
+
+  @$pb.TagNumber(21)
+  $core.String get createdAt => $_getSZ(20);
+  @$pb.TagNumber(21)
+  set createdAt($core.String v) { $_setString(20, v); }
+  @$pb.TagNumber(21)
+  $core.bool hasCreatedAt() => $_has(20);
+  @$pb.TagNumber(21)
+  void clearCreatedAt() => clearField(21);
+
+  @$pb.TagNumber(22)
+  $core.String get updatedAt => $_getSZ(21);
+  @$pb.TagNumber(22)
+  set updatedAt($core.String v) { $_setString(21, v); }
+  @$pb.TagNumber(22)
+  $core.bool hasUpdatedAt() => $_has(21);
+  @$pb.TagNumber(22)
+  void clearUpdatedAt() => clearField(22);
+
+  @$pb.TagNumber(23)
+  $core.String get transactionDate => $_getSZ(22);
+  @$pb.TagNumber(23)
+  set transactionDate($core.String v) { $_setString(22, v); }
+  @$pb.TagNumber(23)
+  $core.bool hasTransactionDate() => $_has(22);
+  @$pb.TagNumber(23)
+  void clearTransactionDate() => clearField(23);
+
+  @$pb.TagNumber(24)
+  $core.String get holdCapturedAt => $_getSZ(23);
+  @$pb.TagNumber(24)
+  set holdCapturedAt($core.String v) { $_setString(23, v); }
+  @$pb.TagNumber(24)
+  $core.bool hasHoldCapturedAt() => $_has(23);
+  @$pb.TagNumber(24)
+  void clearHoldCapturedAt() => clearField(24);
+
+  @$pb.TagNumber(25)
+  $core.String get holdReleasedAt => $_getSZ(24);
+  @$pb.TagNumber(25)
+  set holdReleasedAt($core.String v) { $_setString(24, v); }
+  @$pb.TagNumber(25)
+  $core.bool hasHoldReleasedAt() => $_has(24);
+  @$pb.TagNumber(25)
+  void clearHoldReleasedAt() => clearField(25);
+}
+
+class BatchReceipt extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'BatchReceipt', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'payments'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'batchId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..a<$core.int>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalTransfers', $pb.PbFieldType.O3)
+    ..a<$core.int>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'successfulTransfers', $pb.PbFieldType.O3)
+    ..a<$core.int>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'failedTransfers', $pb.PbFieldType.O3)
+    ..a<$core.double>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalAmount', $pb.PbFieldType.OD)
+    ..a<$core.double>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalFees', $pb.PbFieldType.OD)
+    ..aOS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt')
+    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedAt')
+    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'finalizedAt')
+    ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceAccountId')
+    ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceAccountNumber')
+    ..aOS(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceAccountName')
+    ..pc<BatchReceiptItem>(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'items', $pb.PbFieldType.PM, subBuilder: BatchReceiptItem.create)
+    ..hasRequiredFields = false
+  ;
+
+  BatchReceipt._() : super();
+  factory BatchReceipt({
+    $core.String? batchId,
+    $core.String? userId,
+    $core.String? status,
+    $core.String? currency,
+    $core.int? totalTransfers,
+    $core.int? successfulTransfers,
+    $core.int? failedTransfers,
+    $core.double? totalAmount,
+    $core.double? totalFees,
+    $core.String? createdAt,
+    $core.String? updatedAt,
+    $core.String? finalizedAt,
+    $core.String? sourceAccountId,
+    $core.String? sourceAccountNumber,
+    $core.String? sourceAccountName,
+    $core.Iterable<BatchReceiptItem>? items,
+  }) {
+    final _result = create();
+    if (batchId != null) {
+      _result.batchId = batchId;
+    }
+    if (userId != null) {
+      _result.userId = userId;
+    }
+    if (status != null) {
+      _result.status = status;
+    }
+    if (currency != null) {
+      _result.currency = currency;
+    }
+    if (totalTransfers != null) {
+      _result.totalTransfers = totalTransfers;
+    }
+    if (successfulTransfers != null) {
+      _result.successfulTransfers = successfulTransfers;
+    }
+    if (failedTransfers != null) {
+      _result.failedTransfers = failedTransfers;
+    }
+    if (totalAmount != null) {
+      _result.totalAmount = totalAmount;
+    }
+    if (totalFees != null) {
+      _result.totalFees = totalFees;
+    }
+    if (createdAt != null) {
+      _result.createdAt = createdAt;
+    }
+    if (updatedAt != null) {
+      _result.updatedAt = updatedAt;
+    }
+    if (finalizedAt != null) {
+      _result.finalizedAt = finalizedAt;
+    }
+    if (sourceAccountId != null) {
+      _result.sourceAccountId = sourceAccountId;
+    }
+    if (sourceAccountNumber != null) {
+      _result.sourceAccountNumber = sourceAccountNumber;
+    }
+    if (sourceAccountName != null) {
+      _result.sourceAccountName = sourceAccountName;
+    }
+    if (items != null) {
+      _result.items.addAll(items);
+    }
+    return _result;
+  }
+  factory BatchReceipt.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory BatchReceipt.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  BatchReceipt clone() => BatchReceipt()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  BatchReceipt copyWith(void Function(BatchReceipt) updates) => super.copyWith((message) => updates(message as BatchReceipt)) as BatchReceipt; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static BatchReceipt create() => BatchReceipt._();
+  BatchReceipt createEmptyInstance() => create();
+  static $pb.PbList<BatchReceipt> createRepeated() => $pb.PbList<BatchReceipt>();
+  @$core.pragma('dart2js:noInline')
+  static BatchReceipt getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<BatchReceipt>(create);
+  static BatchReceipt? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get batchId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set batchId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasBatchId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearBatchId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get userId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set userId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasUserId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearUserId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get status => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set status($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasStatus() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearStatus() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get currency => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set currency($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasCurrency() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCurrency() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get totalTransfers => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set totalTransfers($core.int v) { $_setSignedInt32(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasTotalTransfers() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearTotalTransfers() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.int get successfulTransfers => $_getIZ(5);
+  @$pb.TagNumber(6)
+  set successfulTransfers($core.int v) { $_setSignedInt32(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasSuccessfulTransfers() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearSuccessfulTransfers() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.int get failedTransfers => $_getIZ(6);
+  @$pb.TagNumber(7)
+  set failedTransfers($core.int v) { $_setSignedInt32(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasFailedTransfers() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearFailedTransfers() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.double get totalAmount => $_getN(7);
+  @$pb.TagNumber(8)
+  set totalAmount($core.double v) { $_setDouble(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasTotalAmount() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearTotalAmount() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.double get totalFees => $_getN(8);
+  @$pb.TagNumber(9)
+  set totalFees($core.double v) { $_setDouble(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasTotalFees() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearTotalFees() => clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.String get createdAt => $_getSZ(9);
+  @$pb.TagNumber(10)
+  set createdAt($core.String v) { $_setString(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasCreatedAt() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearCreatedAt() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.String get updatedAt => $_getSZ(10);
+  @$pb.TagNumber(11)
+  set updatedAt($core.String v) { $_setString(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasUpdatedAt() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearUpdatedAt() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.String get finalizedAt => $_getSZ(11);
+  @$pb.TagNumber(12)
+  set finalizedAt($core.String v) { $_setString(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasFinalizedAt() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearFinalizedAt() => clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.String get sourceAccountId => $_getSZ(12);
+  @$pb.TagNumber(13)
+  set sourceAccountId($core.String v) { $_setString(12, v); }
+  @$pb.TagNumber(13)
+  $core.bool hasSourceAccountId() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearSourceAccountId() => clearField(13);
+
+  @$pb.TagNumber(14)
+  $core.String get sourceAccountNumber => $_getSZ(13);
+  @$pb.TagNumber(14)
+  set sourceAccountNumber($core.String v) { $_setString(13, v); }
+  @$pb.TagNumber(14)
+  $core.bool hasSourceAccountNumber() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearSourceAccountNumber() => clearField(14);
+
+  @$pb.TagNumber(15)
+  $core.String get sourceAccountName => $_getSZ(14);
+  @$pb.TagNumber(15)
+  set sourceAccountName($core.String v) { $_setString(14, v); }
+  @$pb.TagNumber(15)
+  $core.bool hasSourceAccountName() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearSourceAccountName() => clearField(15);
+
+  @$pb.TagNumber(20)
+  $core.List<BatchReceiptItem> get items => $_getList(15);
+}
+
+class GetBatchReceiptRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetBatchReceiptRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'payments'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'batchId')
+    ..hasRequiredFields = false
+  ;
+
+  GetBatchReceiptRequest._() : super();
+  factory GetBatchReceiptRequest({
+    $core.String? batchId,
+  }) {
+    final _result = create();
+    if (batchId != null) {
+      _result.batchId = batchId;
+    }
+    return _result;
+  }
+  factory GetBatchReceiptRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetBatchReceiptRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetBatchReceiptRequest clone() => GetBatchReceiptRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetBatchReceiptRequest copyWith(void Function(GetBatchReceiptRequest) updates) => super.copyWith((message) => updates(message as GetBatchReceiptRequest)) as GetBatchReceiptRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetBatchReceiptRequest create() => GetBatchReceiptRequest._();
+  GetBatchReceiptRequest createEmptyInstance() => create();
+  static $pb.PbList<GetBatchReceiptRequest> createRepeated() => $pb.PbList<GetBatchReceiptRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetBatchReceiptRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetBatchReceiptRequest>(create);
+  static GetBatchReceiptRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get batchId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set batchId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasBatchId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearBatchId() => clearField(1);
+}
+
+class GetBatchItemReceiptRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetBatchItemReceiptRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'payments'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'itemId')
+    ..hasRequiredFields = false
+  ;
+
+  GetBatchItemReceiptRequest._() : super();
+  factory GetBatchItemReceiptRequest({
+    $core.String? itemId,
+  }) {
+    final _result = create();
+    if (itemId != null) {
+      _result.itemId = itemId;
+    }
+    return _result;
+  }
+  factory GetBatchItemReceiptRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetBatchItemReceiptRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetBatchItemReceiptRequest clone() => GetBatchItemReceiptRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetBatchItemReceiptRequest copyWith(void Function(GetBatchItemReceiptRequest) updates) => super.copyWith((message) => updates(message as GetBatchItemReceiptRequest)) as GetBatchItemReceiptRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetBatchItemReceiptRequest create() => GetBatchItemReceiptRequest._();
+  GetBatchItemReceiptRequest createEmptyInstance() => create();
+  static $pb.PbList<GetBatchItemReceiptRequest> createRepeated() => $pb.PbList<GetBatchItemReceiptRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetBatchItemReceiptRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetBatchItemReceiptRequest>(create);
+  static GetBatchItemReceiptRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get itemId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set itemId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasItemId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearItemId() => clearField(1);
+}
+
+class BatchItemReceipt extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'BatchItemReceipt', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'payments'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'batchId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'batchStatus')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceAccountId')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceAccountNumber')
+    ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sourceAccountName')
+    ..aOM<BatchReceiptItem>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'item', subBuilder: BatchReceiptItem.create)
+    ..hasRequiredFields = false
+  ;
+
+  BatchItemReceipt._() : super();
+  factory BatchItemReceipt({
+    $core.String? batchId,
+    $core.String? batchStatus,
+    $core.String? sourceAccountId,
+    $core.String? sourceAccountNumber,
+    $core.String? sourceAccountName,
+    BatchReceiptItem? item,
+  }) {
+    final _result = create();
+    if (batchId != null) {
+      _result.batchId = batchId;
+    }
+    if (batchStatus != null) {
+      _result.batchStatus = batchStatus;
+    }
+    if (sourceAccountId != null) {
+      _result.sourceAccountId = sourceAccountId;
+    }
+    if (sourceAccountNumber != null) {
+      _result.sourceAccountNumber = sourceAccountNumber;
+    }
+    if (sourceAccountName != null) {
+      _result.sourceAccountName = sourceAccountName;
+    }
+    if (item != null) {
+      _result.item = item;
+    }
+    return _result;
+  }
+  factory BatchItemReceipt.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory BatchItemReceipt.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  BatchItemReceipt clone() => BatchItemReceipt()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  BatchItemReceipt copyWith(void Function(BatchItemReceipt) updates) => super.copyWith((message) => updates(message as BatchItemReceipt)) as BatchItemReceipt; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static BatchItemReceipt create() => BatchItemReceipt._();
+  BatchItemReceipt createEmptyInstance() => create();
+  static $pb.PbList<BatchItemReceipt> createRepeated() => $pb.PbList<BatchItemReceipt>();
+  @$core.pragma('dart2js:noInline')
+  static BatchItemReceipt getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<BatchItemReceipt>(create);
+  static BatchItemReceipt? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get batchId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set batchId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasBatchId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearBatchId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get batchStatus => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set batchStatus($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasBatchStatus() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearBatchStatus() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get sourceAccountId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set sourceAccountId($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasSourceAccountId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearSourceAccountId() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get sourceAccountNumber => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set sourceAccountNumber($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasSourceAccountNumber() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearSourceAccountNumber() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get sourceAccountName => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set sourceAccountName($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasSourceAccountName() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearSourceAccountName() => clearField(5);
+
+  @$pb.TagNumber(6)
+  BatchReceiptItem get item => $_getN(5);
+  @$pb.TagNumber(6)
+  set item(BatchReceiptItem v) { setField(6, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasItem() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearItem() => clearField(6);
+  @$pb.TagNumber(6)
+  BatchReceiptItem ensureItem() => $_ensure(5);
+}
+

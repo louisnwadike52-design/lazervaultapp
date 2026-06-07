@@ -346,6 +346,15 @@ service BankingService {
         };
     }
 
+    // Aggregated analytics over synced external-bank transactions for the
+    // AI budgeting / statistics screen. Filterable to ONE linked bank
+    // (linked_account_id) or ALL linked banks (empty).
+    rpc GetExternalBankAnalytics(GetExternalBankAnalyticsRequest) returns (GetExternalBankAnalyticsResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/linked-accounts/analytics"
+        };
+    }
+
     // Refresh transactions and balance for an account
     rpc RefreshAccountTransactions(RefreshAccountTransactionsRequest) returns (RefreshAccountTransactionsResponse) {
         option (google.api.http) = {
@@ -1484,6 +1493,46 @@ message SyncExternalTransactionsResponse {
 }
 
 // Get Account With Transactions
+// ===== EXTERNAL BANK ANALYTICS =====
+
+message GetExternalBankAnalyticsRequest {
+    string user_id = 1;
+    string linked_account_id = 2;     // optional: one bank; empty = all linked banks
+    string start_date = 3;            // RFC3339; required
+    string end_date = 4;              // RFC3339; required
+    string prev_start_date = 5;
+    string prev_end_date = 6;
+}
+
+message ExternalPeriodTotals {
+    double total_income = 1;
+    double total_expenses = 2;
+    int32 transaction_count = 3;
+}
+
+message ExternalCategoryTotal {
+    string category = 1;
+    double amount = 2;
+    int32 transaction_count = 3;
+    double percentage = 4;
+}
+
+message ExternalDailyPoint {
+    string date = 1;
+    double expense_amount = 2;
+}
+
+message GetExternalBankAnalyticsResponse {
+    bool success = 1;
+    ExternalPeriodTotals current_period = 2;
+    ExternalPeriodTotals previous_period = 3;
+    repeated ExternalCategoryTotal expense_categories = 4;
+    repeated ExternalCategoryTotal income_categories = 5;
+    repeated ExternalDailyPoint daily_expenses = 6;
+    int32 linked_account_count = 7;
+    string error_message = 8;
+}
+
 message GetAccountWithTransactionsRequest {
     string account_id = 1;
     int32 limit = 2;                  // Default 50

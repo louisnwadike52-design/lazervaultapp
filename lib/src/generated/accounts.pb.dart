@@ -1511,6 +1511,224 @@ class GetAccountByNumberResponse extends $pb.GeneratedMessage {
   Account ensureAccount() => $_ensure(0);
 }
 
+class GetAccountByProviderRefRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetAccountByProviderRefRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'provider')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'providerRef')
+    ..hasRequiredFields = false
+  ;
+
+  GetAccountByProviderRefRequest._() : super();
+  factory GetAccountByProviderRefRequest({
+    $core.String? provider,
+    $core.String? providerRef,
+  }) {
+    final _result = create();
+    if (provider != null) {
+      _result.provider = provider;
+    }
+    if (providerRef != null) {
+      _result.providerRef = providerRef;
+    }
+    return _result;
+  }
+  factory GetAccountByProviderRefRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetAccountByProviderRefRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetAccountByProviderRefRequest clone() => GetAccountByProviderRefRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetAccountByProviderRefRequest copyWith(void Function(GetAccountByProviderRefRequest) updates) => super.copyWith((message) => updates(message as GetAccountByProviderRefRequest)) as GetAccountByProviderRefRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetAccountByProviderRefRequest create() => GetAccountByProviderRefRequest._();
+  GetAccountByProviderRefRequest createEmptyInstance() => create();
+  static $pb.PbList<GetAccountByProviderRefRequest> createRepeated() => $pb.PbList<GetAccountByProviderRefRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetAccountByProviderRefRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetAccountByProviderRefRequest>(create);
+  static GetAccountByProviderRefRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get provider => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set provider($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasProvider() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearProvider() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get providerRef => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set providerRef($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasProviderRef() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearProviderRef() => clearField(2);
+}
+
+class GetAccountByProviderRefResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetAccountByProviderRefResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOM<Account>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'account', subBuilder: Account.create)
+    ..hasRequiredFields = false
+  ;
+
+  GetAccountByProviderRefResponse._() : super();
+  factory GetAccountByProviderRefResponse({
+    Account? account,
+  }) {
+    final _result = create();
+    if (account != null) {
+      _result.account = account;
+    }
+    return _result;
+  }
+  factory GetAccountByProviderRefResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetAccountByProviderRefResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetAccountByProviderRefResponse clone() => GetAccountByProviderRefResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetAccountByProviderRefResponse copyWith(void Function(GetAccountByProviderRefResponse) updates) => super.copyWith((message) => updates(message as GetAccountByProviderRefResponse)) as GetAccountByProviderRefResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetAccountByProviderRefResponse create() => GetAccountByProviderRefResponse._();
+  GetAccountByProviderRefResponse createEmptyInstance() => create();
+  static $pb.PbList<GetAccountByProviderRefResponse> createRepeated() => $pb.PbList<GetAccountByProviderRefResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetAccountByProviderRefResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetAccountByProviderRefResponse>(create);
+  static GetAccountByProviderRefResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  Account get account => $_getN(0);
+  @$pb.TagNumber(1)
+  set account(Account v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAccount() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAccount() => clearField(1);
+  @$pb.TagNumber(1)
+  Account ensureAccount() => $_ensure(0);
+}
+
+class GetTotalLedgerBalanceRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTotalLedgerBalanceRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'currency')
+    ..hasRequiredFields = false
+  ;
+
+  GetTotalLedgerBalanceRequest._() : super();
+  factory GetTotalLedgerBalanceRequest({
+    $core.String? currency,
+  }) {
+    final _result = create();
+    if (currency != null) {
+      _result.currency = currency;
+    }
+    return _result;
+  }
+  factory GetTotalLedgerBalanceRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetTotalLedgerBalanceRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetTotalLedgerBalanceRequest clone() => GetTotalLedgerBalanceRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetTotalLedgerBalanceRequest copyWith(void Function(GetTotalLedgerBalanceRequest) updates) => super.copyWith((message) => updates(message as GetTotalLedgerBalanceRequest)) as GetTotalLedgerBalanceRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetTotalLedgerBalanceRequest create() => GetTotalLedgerBalanceRequest._();
+  GetTotalLedgerBalanceRequest createEmptyInstance() => create();
+  static $pb.PbList<GetTotalLedgerBalanceRequest> createRepeated() => $pb.PbList<GetTotalLedgerBalanceRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetTotalLedgerBalanceRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetTotalLedgerBalanceRequest>(create);
+  static GetTotalLedgerBalanceRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get currency => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set currency($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCurrency() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCurrency() => clearField(1);
+}
+
+class GetTotalLedgerBalanceResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GetTotalLedgerBalanceResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts'), createEmptyInstance: create)
+    ..aInt64(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'totalBalanceMinor')
+    ..aInt64(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountCount')
+    ..hasRequiredFields = false
+  ;
+
+  GetTotalLedgerBalanceResponse._() : super();
+  factory GetTotalLedgerBalanceResponse({
+    $fixnum.Int64? totalBalanceMinor,
+    $fixnum.Int64? accountCount,
+  }) {
+    final _result = create();
+    if (totalBalanceMinor != null) {
+      _result.totalBalanceMinor = totalBalanceMinor;
+    }
+    if (accountCount != null) {
+      _result.accountCount = accountCount;
+    }
+    return _result;
+  }
+  factory GetTotalLedgerBalanceResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetTotalLedgerBalanceResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetTotalLedgerBalanceResponse clone() => GetTotalLedgerBalanceResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetTotalLedgerBalanceResponse copyWith(void Function(GetTotalLedgerBalanceResponse) updates) => super.copyWith((message) => updates(message as GetTotalLedgerBalanceResponse)) as GetTotalLedgerBalanceResponse; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetTotalLedgerBalanceResponse create() => GetTotalLedgerBalanceResponse._();
+  GetTotalLedgerBalanceResponse createEmptyInstance() => create();
+  static $pb.PbList<GetTotalLedgerBalanceResponse> createRepeated() => $pb.PbList<GetTotalLedgerBalanceResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetTotalLedgerBalanceResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetTotalLedgerBalanceResponse>(create);
+  static GetTotalLedgerBalanceResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $fixnum.Int64 get totalBalanceMinor => $_getI64(0);
+  @$pb.TagNumber(1)
+  set totalBalanceMinor($fixnum.Int64 v) { $_setInt64(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasTotalBalanceMinor() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearTotalBalanceMinor() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get accountCount => $_getI64(1);
+  @$pb.TagNumber(2)
+  set accountCount($fixnum.Int64 v) { $_setInt64(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasAccountCount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAccountCount() => clearField(2);
+}
+
 class UpdateAccountRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateAccountRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'accounts'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accountId')

@@ -8,7 +8,6 @@ import 'package:lazervault/core/extensions/app_colors.dart';
 import 'package:lazervault/core/types/app_routes.dart';
 import 'package:lazervault/src/features/statistics/cubit/statistics_cubit.dart';
 import 'package:lazervault/src/features/statistics/cubit/statistics_state.dart';
-import 'package:lazervault/src/features/statistics/presentation/widgets/statistics_source_sheet.dart';
 import 'package:lazervault/src/features/statistics/cubit/budget_cubit.dart';
 import 'package:lazervault/src/features/statistics/cubit/budget_state.dart';
 import 'package:lazervault/src/features/open_banking/cubit/open_banking_cubit.dart';
@@ -146,6 +145,7 @@ class _StatisticsState extends State<Statistics> {
   bool _isSyncing = false;
   bool _includeExternalBanks = true; // Track external banks filter state
   StatisticsSource _statsSource = StatisticsSource.both; // 3-way source filter
+  String? _selectedBankId; // null = ALL linked banks (when external in scope)
   String _userId = '';
   String _accessToken = '';
 
@@ -153,11 +153,16 @@ class _StatisticsState extends State<Statistics> {
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       _ensureActiveAccount();
-      context.read<StatisticsCubit>().loadStatistics();
       context.read<BudgetCubit>().loadBudgetProgress();
-      _initOpenBanking();
+      // Resolve identity BEFORE the first stats load so the external-bank
+      // leg (banking-service analytics) is included from the start.
+      await _initOpenBanking();
+      if (!mounted) return;
+      context.read<StatisticsCubit>()
+        ..userId = _userId
+        ..loadStatistics();
     });
   }
 
@@ -201,6 +206,13 @@ class _StatisticsState extends State<Statistics> {
       await context.read<OpenBankingCubit>().fetchLinkedAccounts(userId: userId, accessToken: accessToken);
       if (mounted) {
         context.read<OpenBankingCubit>().fetchCreditScore(userId: userId);
+        // Live-only balances: kick a Mono refresh for every stale account so
+        // the bank rows show REAL figures, never a DB cache as truth.
+        context.read<OpenBankingCubit>().autoRefreshStaleBalances(
+              userId: userId,
+              accessToken: accessToken,
+              staleAfter: Duration.zero,
+            );
       }
     }
   }
@@ -243,10 +255,12 @@ class _StatisticsState extends State<Statistics> {
           }
           // Sync source filter state
           if (_includeExternalBanks != state.includeExternalBanks ||
-              _statsSource != state.source) {
+              _statsSource != state.source ||
+              _selectedBankId != state.selectedBankAccountId) {
             setState(() {
               _includeExternalBanks = state.includeExternalBanks;
               _statsSource = state.source;
+              _selectedBankId = state.selectedBankAccountId;
             });
           }
         }
@@ -280,7 +294,7 @@ class _StatisticsState extends State<Statistics> {
           color: const Color(0xFF0A0A0A),
           child: RefreshIndicator(
             onRefresh: () => context.read<StatisticsCubit>().refresh(),
-            color: const Color(0xFF10B981),
+            color: const Color(0xFF3B82F6),
             backgroundColor: const Color(0xFF1F1F1F),
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
@@ -288,10 +302,27 @@ class _StatisticsState extends State<Statistics> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildHeader(),
+                  SizedBox(height: 12.h),
+
+                  // ============ SOURCE FILTER (applies to EVERY section) ============
+                  // LazerVault wallet only / external banks only / combined —
+                  // plus, when banks are in scope, All-banks vs one linked bank.
+                  _buildSourceFilterBar(),
+                  SizedBox(height: 16.h),
+
+                  // ==================== LINKED BANKS + CREDIT (TOP) ====================
+                  // Linking is the gateway to every external-bank number below,
+                  // so it lives at the top beside the credit score whenever
+                  // external banks are in scope.
+                  if (_statsSource.includesExternal) ...[
+                    _buildLinkedBanksSection(),
+                    SizedBox(height: 12.h),
+                  ],
+                  _buildCreditScoreCTA(),
                   SizedBox(height: 16.h),
 
                   // ==================== OVERVIEW SECTION ====================
-                  _buildSectionHeader('Overview', trailing: _buildAccountSourceFilter()),
+                  _buildSectionHeader('Overview', trailing: _buildScopeBadge()),
                   SizedBox(height: 12.h),
                   _buildQuickStats(state),
                   SizedBox(height: 12.h),
@@ -310,14 +341,6 @@ class _StatisticsState extends State<Statistics> {
                   _buildSectionHeader('Quick Actions'),
                   SizedBox(height: 12.h),
                   _buildFeatureGrid(state),
-                  SizedBox(height: 16.h),
-
-                  // ==================== CREDIT SCORE CTA ====================
-                  _buildCreditScoreCTA(),
-                  SizedBox(height: 12.h),
-
-                  // ==================== LINKED BANKS SECTION ====================
-                  _buildLinkedBanksSection(),
                   SizedBox(height: 16.h),
 
                   // ==================== ANALYTICS SECTION ====================
@@ -372,7 +395,7 @@ class _StatisticsState extends State<Statistics> {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              const Color(0xFF10B981).withValues(alpha: 0.08),
+              const Color(0xFF3B82F6).withValues(alpha: 0.10),
               Colors.transparent,
             ],
             begin: Alignment.topCenter,
@@ -389,7 +412,7 @@ class _StatisticsState extends State<Statistics> {
                   children: [
                     Icon(
                       Icons.insights,
-                      color: const Color(0xFF10B981),
+                      color: const Color(0xFF3B82F6),
                       size: 28.sp,
                     ),
                     SizedBox(width: 10.w),
@@ -407,7 +430,7 @@ class _StatisticsState extends State<Statistics> {
                 Text(
                   'Smart budgeting powered by AI',
                   style: TextStyle(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.7),
+                    color: const Color(0xFF9CA3AF),
                     fontSize: 14.sp,
                   ),
                 ),
@@ -419,15 +442,15 @@ class _StatisticsState extends State<Statistics> {
             // pair used across all other dashboard quick services.
             ServiceVoiceButton(
               serviceName: 'statistics',
-              iconColor: const Color(0xFF10B981),
-              backgroundColor: const Color(0xFF10B981),
+              iconColor: const Color(0xFF3B82F6),
+              backgroundColor: const Color(0xFF3B82F6),
             ),
             SizedBox(width: 8.w),
             MicroserviceChatIcon(
               serviceName: 'Statistics',
               sourceContext: 'statistics',
               icon: Icons.chat_bubble_outline,
-              iconColor: const Color(0xFF10B981),
+              iconColor: const Color(0xFF3B82F6),
             ),
             SizedBox(width: 8.w),
             _buildAccountSelector(),
@@ -489,13 +512,13 @@ class _StatisticsState extends State<Statistics> {
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 2.h),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                        color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(4.r),
                       ),
                       child: Text(
                         account.currency,
                         style: TextStyle(
-                          color: const Color(0xFF10B981),
+                          color: const Color(0xFF3B82F6),
                           fontSize: 10.sp,
                           fontWeight: FontWeight.w600,
                         ),
@@ -549,7 +572,7 @@ class _StatisticsState extends State<Statistics> {
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF0D9668), Color(0xFF10B981), Color(0xFF34D399)],
+          colors: [Color(0xFF1D4ED8), Color(0xFF3B82F6), Color(0xFF60A5FA)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -818,7 +841,7 @@ class _StatisticsState extends State<Statistics> {
         title: 'Goals',
         description: 'Track goals',
         icon: Icons.flag,
-        color: const Color(0xFF10B981),
+        color: const Color(0xFFFB923C),
         route: AppRoutes.financialGoals,
       ),
       _FeatureItem(
@@ -874,7 +897,7 @@ class _StatisticsState extends State<Statistics> {
           dropdownColor: const Color(0xFF1F1F1F),
           icon: Icon(
             Icons.keyboard_arrow_down_rounded,
-            color: const Color(0xFF10B981),
+            color: const Color(0xFFFB923C),
             size: 20.sp,
           ),
           style: GoogleFonts.inter(
@@ -901,52 +924,183 @@ class _StatisticsState extends State<Statistics> {
     );
   }
 
-  /// Source filter chip — opens a bottom sheet to pick LazerVault / Bank / both,
-  /// then re-renders the overview content for the selected source.
-  Widget _buildAccountSourceFilter() {
-    final source = _statsSource;
-    return GestureDetector(
-      onTap: () async {
-        final picked = await showStatisticsSourceSheet(context, current: source);
-        if (picked != null && mounted) {
-          setState(() {
-            _statsSource = picked;
-            _includeExternalBanks = picked.includesExternal;
-          });
-          context.read<StatisticsCubit>().changeSource(picked);
+  /// THE source filter — one bar that scopes EVERY section below it.
+  /// Row 1: segmented Wallet / Banks / All. Row 2 (when banks in scope):
+  /// All banks + one chip per linked bank.
+  Widget _buildSourceFilterBar() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: EdgeInsets.all(4.w),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1F1F1F),
+              borderRadius: BorderRadius.circular(14.r),
+              border: Border.all(color: const Color(0xFF2D2D2D)),
+            ),
+            child: Row(
+              children: [
+                _sourceSegment('LazerVault', Icons.account_balance_wallet_rounded,
+                    StatisticsSource.lazervault),
+                _sourceSegment('Banks', Icons.account_balance_rounded,
+                    StatisticsSource.bank),
+                _sourceSegment('All', Icons.dashboard_rounded,
+                    StatisticsSource.both),
+              ],
+            ),
+          ),
+          if (_statsSource.includesExternal) ...[
+            SizedBox(height: 10.h),
+            _buildBankScopeChips(),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _sourceSegment(String label, IconData icon, StatisticsSource value) {
+    final selected = _statsSource == value;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          if (_statsSource == value) return;
+          setState(() => _statsSource = value);
+          context.read<StatisticsCubit>().changeSource(value);
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: EdgeInsets.symmetric(vertical: 9.h),
+          decoration: BoxDecoration(
+            color: selected ? const Color(0xFF3B82F6) : Colors.transparent,
+            borderRadius: BorderRadius.circular(10.r),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon,
+                  size: 14.sp,
+                  color: selected ? Colors.white : const Color(0xFF9CA3AF)),
+              SizedBox(width: 6.w),
+              Text(
+                label,
+                style: GoogleFonts.inter(
+                  color: selected ? Colors.white : const Color(0xFF9CA3AF),
+                  fontSize: 12.sp,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Bank scope chips: [All banks] + one per linked bank. Selecting a bank
+  /// narrows EVERY number on the page to that bank (plus the wallet when the
+  /// source is "All").
+  Widget _buildBankScopeChips() {
+    return BlocBuilder<OpenBankingCubit, OpenBankingState>(
+      buildWhen: (prev, curr) =>
+          curr is LinkedAccountsLoaded ||
+          curr is AccountLinked ||
+          curr is AccountLinkedWithMandate ||
+          curr is AccountUnlinked,
+      builder: (context, _) {
+        final banks = context.read<OpenBankingCubit>().linkedAccounts;
+        if (banks.isEmpty) {
+          return Text(
+            'No banks linked yet. Link one below to see bank activity here.',
+            style: GoogleFonts.inter(
+                color: const Color(0xFF6B7280), fontSize: 11.5.sp),
+          );
         }
+        return SizedBox(
+          height: 34.h,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            children: [
+              _bankChip(label: 'All banks', id: null),
+              for (final b in banks)
+                _bankChip(label: b.bankName, id: b.id),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _bankChip({required String label, required String? id}) {
+    final selected = _selectedBankId == id;
+    return GestureDetector(
+      onTap: () {
+        if (_selectedBankId == id) return;
+        setState(() => _selectedBankId = id);
+        context.read<StatisticsCubit>().changeBank(id);
       },
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+        margin: EdgeInsets.only(right: 8.w),
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 7.h),
         decoration: BoxDecoration(
-          color: const Color(0xFF2D2D3F),
-          borderRadius: BorderRadius.circular(10.r),
+          color: selected
+              ? const Color(0xFFFB923C).withValues(alpha: 0.15)
+              : const Color(0xFF1F1F1F),
+          borderRadius: BorderRadius.circular(20.r),
+          border: Border.all(
+            color: selected ? const Color(0xFFFB923C) : const Color(0xFF2D2D2D),
+          ),
         ),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              source == StatisticsSource.bank
-                  ? Icons.account_balance
-                  : source == StatisticsSource.lazervault
-                      ? Icons.account_balance_wallet
-                      : Icons.dashboard_rounded,
-              size: 14.sp,
-              color: const Color(0xFF10B981),
+              id == null ? Icons.all_inclusive_rounded : Icons.account_balance,
+              size: 13.sp,
+              color: selected ? const Color(0xFFFB923C) : const Color(0xFF9CA3AF),
             ),
             SizedBox(width: 6.w),
             Text(
-              source.label,
+              label,
               style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 11.sp,
-                fontWeight: FontWeight.w600,
+                color: selected ? const Color(0xFFFB923C) : Colors.white70,
+                fontSize: 12.sp,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
               ),
             ),
-            SizedBox(width: 2.w),
-            Icon(Icons.keyboard_arrow_down_rounded,
-                size: 16.sp, color: Colors.white60),
           ],
+        ),
+      ),
+    );
+  }
+
+  /// Small read-only badge restating the active scope next to "Overview" —
+  /// the actual control is the filter bar above.
+  Widget _buildScopeBadge() {
+    String label = _statsSource.label;
+    if (_statsSource.includesExternal && _selectedBankId != null) {
+      final banks = context.read<OpenBankingCubit>().linkedAccounts;
+      for (final b in banks) {
+        if (b.id == _selectedBankId) {
+          label = _statsSource == StatisticsSource.both
+              ? 'Wallet + ${b.bankName}'
+              : b.bankName;
+          break;
+        }
+      }
+    }
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF3B82F6).withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(8.r),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.inter(
+          color: const Color(0xFF3B82F6),
+          fontSize: 11.sp,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
@@ -986,10 +1140,10 @@ class _StatisticsState extends State<Statistics> {
                 Container(
                   padding: EdgeInsets.all(14.w),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                    color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(16.r),
                   ),
-                  child: Icon(Icons.show_chart, color: const Color(0xFF10B981).withValues(alpha: 0.5), size: 32.r),
+                  child: Icon(Icons.show_chart, color: const Color(0xFF3B82F6).withValues(alpha: 0.5), size: 32.r),
                 ),
                 SizedBox(height: 12.h),
                 Text(
@@ -999,7 +1153,7 @@ class _StatisticsState extends State<Statistics> {
                 SizedBox(height: 4.h),
                 Text(
                   'Tap to view detailed spending',
-                  style: TextStyle(color: const Color(0xFF10B981).withValues(alpha: 0.6), fontSize: 12.sp),
+                  style: TextStyle(color: const Color(0xFF6B7280), fontSize: 12.sp),
                 ),
               ],
             ),
@@ -1037,7 +1191,7 @@ class _StatisticsState extends State<Statistics> {
                 Text(
                   'See Details',
                   style: TextStyle(
-                    color: const Color(0xFF10B981),
+                    color: const Color(0xFF3B82F6),
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w600,
                   ),
@@ -1057,7 +1211,7 @@ class _StatisticsState extends State<Statistics> {
                       spots: spots,
                       isCurved: true,
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF10B981), Color(0xFF34D399)],
+                        colors: [Color(0xFF3B82F6), Color(0xFF60A5FA)],
                       ),
                       barWidth: 3,
                       dotData: FlDotData(show: false),
@@ -1065,8 +1219,8 @@ class _StatisticsState extends State<Statistics> {
                         show: true,
                         gradient: LinearGradient(
                           colors: [
-                            const Color(0xFF10B981).withValues(alpha: 0.3),
-                            const Color(0xFF34D399).withValues(alpha: 0.0),
+                            const Color(0xFF3B82F6).withValues(alpha: 0.3),
+                            const Color(0xFF60A5FA).withValues(alpha: 0.0),
                           ],
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
@@ -1112,10 +1266,10 @@ class _StatisticsState extends State<Statistics> {
                 Container(
                   padding: EdgeInsets.all(14.w),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                    color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(16.r),
                   ),
-                  child: Icon(Icons.bar_chart, color: const Color(0xFF10B981).withValues(alpha: 0.5), size: 32.r),
+                  child: Icon(Icons.bar_chart, color: const Color(0xFFFB923C).withValues(alpha: 0.5), size: 32.r),
                 ),
                 SizedBox(height: 12.h),
                 Text(
@@ -1125,7 +1279,7 @@ class _StatisticsState extends State<Statistics> {
                 SizedBox(height: 4.h),
                 Text(
                   'Tap to view monthly trends',
-                  style: TextStyle(color: const Color(0xFF10B981).withValues(alpha: 0.6), fontSize: 12.sp),
+                  style: TextStyle(color: const Color(0xFF6B7280), fontSize: 12.sp),
                 ),
               ],
             ),
@@ -1171,7 +1325,7 @@ class _StatisticsState extends State<Statistics> {
                 Text(
                   'See Details',
                   style: TextStyle(
-                    color: const Color(0xFF10B981),
+                    color: const Color(0xFF3B82F6),
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w600,
                   ),
@@ -1346,12 +1500,12 @@ class _StatisticsState extends State<Statistics> {
               width: 44.w,
               height: 44.w,
               decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                color: const Color(0xFFFB923C).withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Icon(
                 Icons.speed_rounded,
-                color: const Color(0xFF10B981),
+                color: const Color(0xFFFB923C),
                 size: 24.sp,
               ),
             ),
@@ -1450,7 +1604,7 @@ class _StatisticsState extends State<Statistics> {
                 padding: EdgeInsets.symmetric(vertical: 10.h),
                 decoration: BoxDecoration(
                   color: showIncome
-                      ? const Color(0xFF10B981)
+                      ? const Color(0xFF3B82F6)
                       : const Color(0xFF1F1F1F),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
@@ -1474,7 +1628,7 @@ class _StatisticsState extends State<Statistics> {
                 padding: EdgeInsets.symmetric(vertical: 10.h),
                 decoration: BoxDecoration(
                   color: !showIncome
-                      ? const Color(0xFF10B981)
+                      ? const Color(0xFFFB923C)
                       : const Color(0xFF1F1F1F),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
@@ -1725,7 +1879,7 @@ class _StatisticsState extends State<Statistics> {
                   width: 28.w,
                   height: 28.h,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                    color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                 ),
@@ -1747,8 +1901,8 @@ class _StatisticsState extends State<Statistics> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  const Color(0xFF10B981).withValues(alpha: 0.08),
-                  const Color(0xFF10B981).withValues(alpha: 0.03),
+                  const Color(0xFF3B82F6).withValues(alpha: 0.08),
+                  const Color(0xFF3B82F6).withValues(alpha: 0.03),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,

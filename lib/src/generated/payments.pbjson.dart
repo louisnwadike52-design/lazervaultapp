@@ -1434,3 +1434,307 @@ const GetRecurringTransfersByRecipientResponse$json = const {
 
 /// Descriptor for `GetRecurringTransfersByRecipientResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List getRecurringTransfersByRecipientResponseDescriptor = $convert.base64Decode('CihHZXRSZWN1cnJpbmdUcmFuc2ZlcnNCeVJlY2lwaWVudFJlc3BvbnNlElIKE3JlY3VycmluZ190cmFuc2ZlcnMYASADKAsyIS5wYXltZW50cy5SZWN1cnJpbmdUcmFuc2ZlckRldGFpbFIScmVjdXJyaW5nVHJhbnNmZXJz');
+@$core.Deprecated('Use savedBatchItemInputDescriptor instead')
+const SavedBatchItemInput$json = const {
+  '1': 'SavedBatchItemInput',
+  '2': const [
+    const {'1': 'recipient_type', '3': 1, '4': 1, '5': 9, '10': 'recipientType'},
+    const {'1': 'recipient_user_id', '3': 2, '4': 1, '5': 9, '10': 'recipientUserId'},
+    const {'1': 'bank_code', '3': 3, '4': 1, '5': 9, '10': 'bankCode'},
+    const {'1': 'account_number', '3': 4, '4': 1, '5': 9, '10': 'accountNumber'},
+    const {'1': 'beneficiary_name', '3': 5, '4': 1, '5': 9, '10': 'beneficiaryName'},
+    const {'1': 'amount', '3': 6, '4': 1, '5': 1, '10': 'amount'},
+    const {'1': 'narration', '3': 7, '4': 1, '5': 9, '10': 'narration'},
+    const {'1': 'sort_order', '3': 8, '4': 1, '5': 5, '10': 'sortOrder'},
+  ],
+};
+
+/// Descriptor for `SavedBatchItemInput`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List savedBatchItemInputDescriptor = $convert.base64Decode('ChNTYXZlZEJhdGNoSXRlbUlucHV0EiUKDnJlY2lwaWVudF90eXBlGAEgASgJUg1yZWNpcGllbnRUeXBlEioKEXJlY2lwaWVudF91c2VyX2lkGAIgASgJUg9yZWNpcGllbnRVc2VySWQSGwoJYmFua19jb2RlGAMgASgJUghiYW5rQ29kZRIlCg5hY2NvdW50X251bWJlchgEIAEoCVINYWNjb3VudE51bWJlchIpChBiZW5lZmljaWFyeV9uYW1lGAUgASgJUg9iZW5lZmljaWFyeU5hbWUSFgoGYW1vdW50GAYgASgBUgZhbW91bnQSHAoJbmFycmF0aW9uGAcgASgJUgluYXJyYXRpb24SHQoKc29ydF9vcmRlchgIIAEoBVIJc29ydE9yZGVy');
+@$core.Deprecated('Use savedBatchItemDescriptor instead')
+const SavedBatchItem$json = const {
+  '1': 'SavedBatchItem',
+  '2': const [
+    const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    const {'1': 'saved_batch_id', '3': 2, '4': 1, '5': 9, '10': 'savedBatchId'},
+    const {'1': 'recipient_type', '3': 3, '4': 1, '5': 9, '10': 'recipientType'},
+    const {'1': 'recipient_user_id', '3': 4, '4': 1, '5': 9, '10': 'recipientUserId'},
+    const {'1': 'bank_code', '3': 5, '4': 1, '5': 9, '10': 'bankCode'},
+    const {'1': 'account_number', '3': 6, '4': 1, '5': 9, '10': 'accountNumber'},
+    const {'1': 'beneficiary_name', '3': 7, '4': 1, '5': 9, '10': 'beneficiaryName'},
+    const {'1': 'amount', '3': 8, '4': 1, '5': 1, '10': 'amount'},
+    const {'1': 'narration', '3': 9, '4': 1, '5': 9, '10': 'narration'},
+    const {'1': 'sort_order', '3': 10, '4': 1, '5': 5, '10': 'sortOrder'},
+    const {'1': 'created_at', '3': 11, '4': 1, '5': 9, '10': 'createdAt'},
+    const {'1': 'updated_at', '3': 12, '4': 1, '5': 9, '10': 'updatedAt'},
+  ],
+};
+
+/// Descriptor for `SavedBatchItem`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List savedBatchItemDescriptor = $convert.base64Decode('Cg5TYXZlZEJhdGNoSXRlbRIOCgJpZBgBIAEoCVICaWQSJAoOc2F2ZWRfYmF0Y2hfaWQYAiABKAlSDHNhdmVkQmF0Y2hJZBIlCg5yZWNpcGllbnRfdHlwZRgDIAEoCVINcmVjaXBpZW50VHlwZRIqChFyZWNpcGllbnRfdXNlcl9pZBgEIAEoCVIPcmVjaXBpZW50VXNlcklkEhsKCWJhbmtfY29kZRgFIAEoCVIIYmFua0NvZGUSJQoOYWNjb3VudF9udW1iZXIYBiABKAlSDWFjY291bnROdW1iZXISKQoQYmVuZWZpY2lhcnlfbmFtZRgHIAEoCVIPYmVuZWZpY2lhcnlOYW1lEhYKBmFtb3VudBgIIAEoAVIGYW1vdW50EhwKCW5hcnJhdGlvbhgJIAEoCVIJbmFycmF0aW9uEh0KCnNvcnRfb3JkZXIYCiABKAVSCXNvcnRPcmRlchIdCgpjcmVhdGVkX2F0GAsgASgJUgljcmVhdGVkQXQSHQoKdXBkYXRlZF9hdBgMIAEoCVIJdXBkYXRlZEF0');
+@$core.Deprecated('Use savedBatchDescriptor instead')
+const SavedBatch$json = const {
+  '1': 'SavedBatch',
+  '2': const [
+    const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    const {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'name', '3': 3, '4': 1, '5': 9, '10': 'name'},
+    const {'1': 'currency', '3': 4, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'source_account_id', '3': 5, '4': 1, '5': 9, '10': 'sourceAccountId'},
+    const {'1': 'total_amount', '3': 6, '4': 1, '5': 1, '10': 'totalAmount'},
+    const {'1': 'item_count', '3': 7, '4': 1, '5': 5, '10': 'itemCount'},
+    const {'1': 'created_at', '3': 8, '4': 1, '5': 9, '10': 'createdAt'},
+    const {'1': 'updated_at', '3': 9, '4': 1, '5': 9, '10': 'updatedAt'},
+    const {'1': 'items', '3': 10, '4': 3, '5': 11, '6': '.payments.SavedBatchItem', '10': 'items'},
+  ],
+};
+
+/// Descriptor for `SavedBatch`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List savedBatchDescriptor = $convert.base64Decode('CgpTYXZlZEJhdGNoEg4KAmlkGAEgASgJUgJpZBIXCgd1c2VyX2lkGAIgASgJUgZ1c2VySWQSEgoEbmFtZRgDIAEoCVIEbmFtZRIaCghjdXJyZW5jeRgEIAEoCVIIY3VycmVuY3kSKgoRc291cmNlX2FjY291bnRfaWQYBSABKAlSD3NvdXJjZUFjY291bnRJZBIhCgx0b3RhbF9hbW91bnQYBiABKAFSC3RvdGFsQW1vdW50Eh0KCml0ZW1fY291bnQYByABKAVSCWl0ZW1Db3VudBIdCgpjcmVhdGVkX2F0GAggASgJUgljcmVhdGVkQXQSHQoKdXBkYXRlZF9hdBgJIAEoCVIJdXBkYXRlZEF0Ei4KBWl0ZW1zGAogAygLMhgucGF5bWVudHMuU2F2ZWRCYXRjaEl0ZW1SBWl0ZW1z');
+@$core.Deprecated('Use saveBatchDraftRequestDescriptor instead')
+const SaveBatchDraftRequest$json = const {
+  '1': 'SaveBatchDraftRequest',
+  '2': const [
+    const {'1': 'name', '3': 1, '4': 1, '5': 9, '10': 'name'},
+    const {'1': 'currency', '3': 2, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'source_account_id', '3': 3, '4': 1, '5': 9, '10': 'sourceAccountId'},
+    const {'1': 'items', '3': 4, '4': 3, '5': 11, '6': '.payments.SavedBatchItemInput', '10': 'items'},
+  ],
+};
+
+/// Descriptor for `SaveBatchDraftRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List saveBatchDraftRequestDescriptor = $convert.base64Decode('ChVTYXZlQmF0Y2hEcmFmdFJlcXVlc3QSEgoEbmFtZRgBIAEoCVIEbmFtZRIaCghjdXJyZW5jeRgCIAEoCVIIY3VycmVuY3kSKgoRc291cmNlX2FjY291bnRfaWQYAyABKAlSD3NvdXJjZUFjY291bnRJZBIzCgVpdGVtcxgEIAMoCzIdLnBheW1lbnRzLlNhdmVkQmF0Y2hJdGVtSW5wdXRSBWl0ZW1z');
+@$core.Deprecated('Use listSavedBatchesRequestDescriptor instead')
+const ListSavedBatchesRequest$json = const {
+  '1': 'ListSavedBatchesRequest',
+  '2': const [
+    const {'1': 'limit', '3': 1, '4': 1, '5': 5, '10': 'limit'},
+    const {'1': 'offset', '3': 2, '4': 1, '5': 5, '10': 'offset'},
+  ],
+};
+
+/// Descriptor for `ListSavedBatchesRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List listSavedBatchesRequestDescriptor = $convert.base64Decode('ChdMaXN0U2F2ZWRCYXRjaGVzUmVxdWVzdBIUCgVsaW1pdBgBIAEoBVIFbGltaXQSFgoGb2Zmc2V0GAIgASgFUgZvZmZzZXQ=');
+@$core.Deprecated('Use listSavedBatchesResponseDescriptor instead')
+const ListSavedBatchesResponse$json = const {
+  '1': 'ListSavedBatchesResponse',
+  '2': const [
+    const {'1': 'batches', '3': 1, '4': 3, '5': 11, '6': '.payments.SavedBatch', '10': 'batches'},
+    const {'1': 'total', '3': 2, '4': 1, '5': 3, '10': 'total'},
+    const {'1': 'limit', '3': 3, '4': 1, '5': 5, '10': 'limit'},
+    const {'1': 'offset', '3': 4, '4': 1, '5': 5, '10': 'offset'},
+  ],
+};
+
+/// Descriptor for `ListSavedBatchesResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List listSavedBatchesResponseDescriptor = $convert.base64Decode('ChhMaXN0U2F2ZWRCYXRjaGVzUmVzcG9uc2USLgoHYmF0Y2hlcxgBIAMoCzIULnBheW1lbnRzLlNhdmVkQmF0Y2hSB2JhdGNoZXMSFAoFdG90YWwYAiABKANSBXRvdGFsEhQKBWxpbWl0GAMgASgFUgVsaW1pdBIWCgZvZmZzZXQYBCABKAVSBm9mZnNldA==');
+@$core.Deprecated('Use getSavedBatchRequestDescriptor instead')
+const GetSavedBatchRequest$json = const {
+  '1': 'GetSavedBatchRequest',
+  '2': const [
+    const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+  ],
+};
+
+/// Descriptor for `GetSavedBatchRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getSavedBatchRequestDescriptor = $convert.base64Decode('ChRHZXRTYXZlZEJhdGNoUmVxdWVzdBIOCgJpZBgBIAEoCVICaWQ=');
+@$core.Deprecated('Use updateSavedBatchRequestDescriptor instead')
+const UpdateSavedBatchRequest$json = const {
+  '1': 'UpdateSavedBatchRequest',
+  '2': const [
+    const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    const {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
+  ],
+};
+
+/// Descriptor for `UpdateSavedBatchRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List updateSavedBatchRequestDescriptor = $convert.base64Decode('ChdVcGRhdGVTYXZlZEJhdGNoUmVxdWVzdBIOCgJpZBgBIAEoCVICaWQSEgoEbmFtZRgCIAEoCVIEbmFtZQ==');
+@$core.Deprecated('Use deleteSavedBatchRequestDescriptor instead')
+const DeleteSavedBatchRequest$json = const {
+  '1': 'DeleteSavedBatchRequest',
+  '2': const [
+    const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+  ],
+};
+
+/// Descriptor for `DeleteSavedBatchRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List deleteSavedBatchRequestDescriptor = $convert.base64Decode('ChdEZWxldGVTYXZlZEJhdGNoUmVxdWVzdBIOCgJpZBgBIAEoCVICaWQ=');
+@$core.Deprecated('Use deleteSavedBatchResponseDescriptor instead')
+const DeleteSavedBatchResponse$json = const {
+  '1': 'DeleteSavedBatchResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+  ],
+};
+
+/// Descriptor for `DeleteSavedBatchResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List deleteSavedBatchResponseDescriptor = $convert.base64Decode('ChhEZWxldGVTYXZlZEJhdGNoUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2Vzcw==');
+@$core.Deprecated('Use addSavedBatchItemRequestDescriptor instead')
+const AddSavedBatchItemRequest$json = const {
+  '1': 'AddSavedBatchItemRequest',
+  '2': const [
+    const {'1': 'saved_batch_id', '3': 1, '4': 1, '5': 9, '10': 'savedBatchId'},
+    const {'1': 'item', '3': 2, '4': 1, '5': 11, '6': '.payments.SavedBatchItemInput', '10': 'item'},
+  ],
+};
+
+/// Descriptor for `AddSavedBatchItemRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List addSavedBatchItemRequestDescriptor = $convert.base64Decode('ChhBZGRTYXZlZEJhdGNoSXRlbVJlcXVlc3QSJAoOc2F2ZWRfYmF0Y2hfaWQYASABKAlSDHNhdmVkQmF0Y2hJZBIxCgRpdGVtGAIgASgLMh0ucGF5bWVudHMuU2F2ZWRCYXRjaEl0ZW1JbnB1dFIEaXRlbQ==');
+@$core.Deprecated('Use removeSavedBatchItemRequestDescriptor instead')
+const RemoveSavedBatchItemRequest$json = const {
+  '1': 'RemoveSavedBatchItemRequest',
+  '2': const [
+    const {'1': 'saved_batch_id', '3': 1, '4': 1, '5': 9, '10': 'savedBatchId'},
+    const {'1': 'item_id', '3': 2, '4': 1, '5': 9, '10': 'itemId'},
+  ],
+};
+
+/// Descriptor for `RemoveSavedBatchItemRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List removeSavedBatchItemRequestDescriptor = $convert.base64Decode('ChtSZW1vdmVTYXZlZEJhdGNoSXRlbVJlcXVlc3QSJAoOc2F2ZWRfYmF0Y2hfaWQYASABKAlSDHNhdmVkQmF0Y2hJZBIXCgdpdGVtX2lkGAIgASgJUgZpdGVtSWQ=');
+@$core.Deprecated('Use updateSavedBatchItemAmountRequestDescriptor instead')
+const UpdateSavedBatchItemAmountRequest$json = const {
+  '1': 'UpdateSavedBatchItemAmountRequest',
+  '2': const [
+    const {'1': 'saved_batch_id', '3': 1, '4': 1, '5': 9, '10': 'savedBatchId'},
+    const {'1': 'item_id', '3': 2, '4': 1, '5': 9, '10': 'itemId'},
+    const {'1': 'amount', '3': 3, '4': 1, '5': 1, '10': 'amount'},
+  ],
+};
+
+/// Descriptor for `UpdateSavedBatchItemAmountRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List updateSavedBatchItemAmountRequestDescriptor = $convert.base64Decode('CiFVcGRhdGVTYXZlZEJhdGNoSXRlbUFtb3VudFJlcXVlc3QSJAoOc2F2ZWRfYmF0Y2hfaWQYASABKAlSDHNhdmVkQmF0Y2hJZBIXCgdpdGVtX2lkGAIgASgJUgZpdGVtSWQSFgoGYW1vdW50GAMgASgBUgZhbW91bnQ=');
+@$core.Deprecated('Use applyCollectiveAmountRequestDescriptor instead')
+const ApplyCollectiveAmountRequest$json = const {
+  '1': 'ApplyCollectiveAmountRequest',
+  '2': const [
+    const {'1': 'saved_batch_id', '3': 1, '4': 1, '5': 9, '10': 'savedBatchId'},
+    const {'1': 'multiplier', '3': 2, '4': 1, '5': 1, '9': 0, '10': 'multiplier'},
+    const {'1': 'amount_per_item', '3': 3, '4': 1, '5': 1, '9': 0, '10': 'amountPerItem'},
+  ],
+  '8': const [
+    const {'1': 'mode'},
+  ],
+};
+
+/// Descriptor for `ApplyCollectiveAmountRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List applyCollectiveAmountRequestDescriptor = $convert.base64Decode('ChxBcHBseUNvbGxlY3RpdmVBbW91bnRSZXF1ZXN0EiQKDnNhdmVkX2JhdGNoX2lkGAEgASgJUgxzYXZlZEJhdGNoSWQSIAoKbXVsdGlwbGllchgCIAEoAUgAUgptdWx0aXBsaWVyEigKD2Ftb3VudF9wZXJfaXRlbRgDIAEoAUgAUg1hbW91bnRQZXJJdGVtQgYKBG1vZGU=');
+@$core.Deprecated('Use executeFromSavedBatchRequestDescriptor instead')
+const ExecuteFromSavedBatchRequest$json = const {
+  '1': 'ExecuteFromSavedBatchRequest',
+  '2': const [
+    const {'1': 'saved_batch_id', '3': 1, '4': 1, '5': 9, '10': 'savedBatchId'},
+    const {'1': 'idempotency_key', '3': 2, '4': 1, '5': 9, '10': 'idempotencyKey'},
+    const {'1': 'transaction_id', '3': 3, '4': 1, '5': 9, '10': 'transactionId'},
+    const {'1': 'verification_token', '3': 4, '4': 1, '5': 9, '10': 'verificationToken'},
+    const {'1': 'per_item_overrides', '3': 5, '4': 3, '5': 11, '6': '.payments.ExecuteFromSavedBatchRequest.PerItemOverridesEntry', '10': 'perItemOverrides'},
+    const {'1': 'source_account_id', '3': 6, '4': 1, '5': 9, '10': 'sourceAccountId'},
+  ],
+  '3': const [ExecuteFromSavedBatchRequest_PerItemOverridesEntry$json],
+};
+
+@$core.Deprecated('Use executeFromSavedBatchRequestDescriptor instead')
+const ExecuteFromSavedBatchRequest_PerItemOverridesEntry$json = const {
+  '1': 'PerItemOverridesEntry',
+  '2': const [
+    const {'1': 'key', '3': 1, '4': 1, '5': 9, '10': 'key'},
+    const {'1': 'value', '3': 2, '4': 1, '5': 1, '10': 'value'},
+  ],
+  '7': const {'7': true},
+};
+
+/// Descriptor for `ExecuteFromSavedBatchRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List executeFromSavedBatchRequestDescriptor = $convert.base64Decode('ChxFeGVjdXRlRnJvbVNhdmVkQmF0Y2hSZXF1ZXN0EiQKDnNhdmVkX2JhdGNoX2lkGAEgASgJUgxzYXZlZEJhdGNoSWQSJwoPaWRlbXBvdGVuY3lfa2V5GAIgASgJUg5pZGVtcG90ZW5jeUtleRIlCg50cmFuc2FjdGlvbl9pZBgDIAEoCVINdHJhbnNhY3Rpb25JZBItChJ2ZXJpZmljYXRpb25fdG9rZW4YBCABKAlSEXZlcmlmaWNhdGlvblRva2VuEmoKEnBlcl9pdGVtX292ZXJyaWRlcxgFIAMoCzI8LnBheW1lbnRzLkV4ZWN1dGVGcm9tU2F2ZWRCYXRjaFJlcXVlc3QuUGVySXRlbU92ZXJyaWRlc0VudHJ5UhBwZXJJdGVtT3ZlcnJpZGVzEioKEXNvdXJjZV9hY2NvdW50X2lkGAYgASgJUg9zb3VyY2VBY2NvdW50SWQaQwoVUGVySXRlbU92ZXJyaWRlc0VudHJ5EhAKA2tleRgBIAEoCVIDa2V5EhQKBXZhbHVlGAIgASgBUgV2YWx1ZToCOAE=');
+@$core.Deprecated('Use batchReceiptItemDescriptor instead')
+const BatchReceiptItem$json = const {
+  '1': 'BatchReceiptItem',
+  '2': const [
+    const {'1': 'item_id', '3': 1, '4': 1, '5': 9, '10': 'itemId'},
+    const {'1': 'status', '3': 2, '4': 1, '5': 9, '10': 'status'},
+    const {'1': 'amount', '3': 3, '4': 1, '5': 1, '10': 'amount'},
+    const {'1': 'fee', '3': 4, '4': 1, '5': 1, '10': 'fee'},
+    const {'1': 'currency', '3': 5, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'reference', '3': 6, '4': 1, '5': 9, '10': 'reference'},
+    const {'1': 'recipient_name', '3': 7, '4': 1, '5': 9, '10': 'recipientName'},
+    const {'1': 'recipient_account', '3': 8, '4': 1, '5': 9, '10': 'recipientAccount'},
+    const {'1': 'bank_code', '3': 9, '4': 1, '5': 9, '10': 'bankCode'},
+    const {'1': 'bank_name', '3': 10, '4': 1, '5': 9, '10': 'bankName'},
+    const {'1': 'transfer_type', '3': 11, '4': 1, '5': 9, '10': 'transferType'},
+    const {'1': 'narration', '3': 12, '4': 1, '5': 9, '10': 'narration'},
+    const {'1': 'failure_reason', '3': 13, '4': 1, '5': 9, '10': 'failureReason'},
+    const {'1': 'classification', '3': 14, '4': 1, '5': 9, '10': 'classification'},
+    const {'1': 'provider_name', '3': 15, '4': 1, '5': 9, '10': 'providerName'},
+    const {'1': 'provider_ref', '3': 16, '4': 1, '5': 9, '10': 'providerRef'},
+    const {'1': 'provider_status', '3': 17, '4': 1, '5': 9, '10': 'providerStatus'},
+    const {'1': 'payment_id', '3': 18, '4': 1, '5': 9, '10': 'paymentId'},
+    const {'1': 'payment_status', '3': 19, '4': 1, '5': 9, '10': 'paymentStatus'},
+    const {'1': 'payment_reference', '3': 20, '4': 1, '5': 9, '10': 'paymentReference'},
+    const {'1': 'created_at', '3': 21, '4': 1, '5': 9, '10': 'createdAt'},
+    const {'1': 'updated_at', '3': 22, '4': 1, '5': 9, '10': 'updatedAt'},
+    const {'1': 'transaction_date', '3': 23, '4': 1, '5': 9, '10': 'transactionDate'},
+    const {'1': 'hold_captured_at', '3': 24, '4': 1, '5': 9, '10': 'holdCapturedAt'},
+    const {'1': 'hold_released_at', '3': 25, '4': 1, '5': 9, '10': 'holdReleasedAt'},
+  ],
+};
+
+/// Descriptor for `BatchReceiptItem`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List batchReceiptItemDescriptor = $convert.base64Decode('ChBCYXRjaFJlY2VpcHRJdGVtEhcKB2l0ZW1faWQYASABKAlSBml0ZW1JZBIWCgZzdGF0dXMYAiABKAlSBnN0YXR1cxIWCgZhbW91bnQYAyABKAFSBmFtb3VudBIQCgNmZWUYBCABKAFSA2ZlZRIaCghjdXJyZW5jeRgFIAEoCVIIY3VycmVuY3kSHAoJcmVmZXJlbmNlGAYgASgJUglyZWZlcmVuY2USJQoOcmVjaXBpZW50X25hbWUYByABKAlSDXJlY2lwaWVudE5hbWUSKwoRcmVjaXBpZW50X2FjY291bnQYCCABKAlSEHJlY2lwaWVudEFjY291bnQSGwoJYmFua19jb2RlGAkgASgJUghiYW5rQ29kZRIbCgliYW5rX25hbWUYCiABKAlSCGJhbmtOYW1lEiMKDXRyYW5zZmVyX3R5cGUYCyABKAlSDHRyYW5zZmVyVHlwZRIcCgluYXJyYXRpb24YDCABKAlSCW5hcnJhdGlvbhIlCg5mYWlsdXJlX3JlYXNvbhgNIAEoCVINZmFpbHVyZVJlYXNvbhImCg5jbGFzc2lmaWNhdGlvbhgOIAEoCVIOY2xhc3NpZmljYXRpb24SIwoNcHJvdmlkZXJfbmFtZRgPIAEoCVIMcHJvdmlkZXJOYW1lEiEKDHByb3ZpZGVyX3JlZhgQIAEoCVILcHJvdmlkZXJSZWYSJwoPcHJvdmlkZXJfc3RhdHVzGBEgASgJUg5wcm92aWRlclN0YXR1cxIdCgpwYXltZW50X2lkGBIgASgJUglwYXltZW50SWQSJQoOcGF5bWVudF9zdGF0dXMYEyABKAlSDXBheW1lbnRTdGF0dXMSKwoRcGF5bWVudF9yZWZlcmVuY2UYFCABKAlSEHBheW1lbnRSZWZlcmVuY2USHQoKY3JlYXRlZF9hdBgVIAEoCVIJY3JlYXRlZEF0Eh0KCnVwZGF0ZWRfYXQYFiABKAlSCXVwZGF0ZWRBdBIpChB0cmFuc2FjdGlvbl9kYXRlGBcgASgJUg90cmFuc2FjdGlvbkRhdGUSKAoQaG9sZF9jYXB0dXJlZF9hdBgYIAEoCVIOaG9sZENhcHR1cmVkQXQSKAoQaG9sZF9yZWxlYXNlZF9hdBgZIAEoCVIOaG9sZFJlbGVhc2VkQXQ=');
+@$core.Deprecated('Use batchReceiptDescriptor instead')
+const BatchReceipt$json = const {
+  '1': 'BatchReceipt',
+  '2': const [
+    const {'1': 'batch_id', '3': 1, '4': 1, '5': 9, '10': 'batchId'},
+    const {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'status', '3': 3, '4': 1, '5': 9, '10': 'status'},
+    const {'1': 'currency', '3': 4, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'total_transfers', '3': 5, '4': 1, '5': 5, '10': 'totalTransfers'},
+    const {'1': 'successful_transfers', '3': 6, '4': 1, '5': 5, '10': 'successfulTransfers'},
+    const {'1': 'failed_transfers', '3': 7, '4': 1, '5': 5, '10': 'failedTransfers'},
+    const {'1': 'total_amount', '3': 8, '4': 1, '5': 1, '10': 'totalAmount'},
+    const {'1': 'total_fees', '3': 9, '4': 1, '5': 1, '10': 'totalFees'},
+    const {'1': 'created_at', '3': 10, '4': 1, '5': 9, '10': 'createdAt'},
+    const {'1': 'updated_at', '3': 11, '4': 1, '5': 9, '10': 'updatedAt'},
+    const {'1': 'finalized_at', '3': 12, '4': 1, '5': 9, '10': 'finalizedAt'},
+    const {'1': 'source_account_id', '3': 13, '4': 1, '5': 9, '10': 'sourceAccountId'},
+    const {'1': 'source_account_number', '3': 14, '4': 1, '5': 9, '10': 'sourceAccountNumber'},
+    const {'1': 'source_account_name', '3': 15, '4': 1, '5': 9, '10': 'sourceAccountName'},
+    const {'1': 'items', '3': 20, '4': 3, '5': 11, '6': '.payments.BatchReceiptItem', '10': 'items'},
+  ],
+};
+
+/// Descriptor for `BatchReceipt`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List batchReceiptDescriptor = $convert.base64Decode('CgxCYXRjaFJlY2VpcHQSGQoIYmF0Y2hfaWQYASABKAlSB2JhdGNoSWQSFwoHdXNlcl9pZBgCIAEoCVIGdXNlcklkEhYKBnN0YXR1cxgDIAEoCVIGc3RhdHVzEhoKCGN1cnJlbmN5GAQgASgJUghjdXJyZW5jeRInCg90b3RhbF90cmFuc2ZlcnMYBSABKAVSDnRvdGFsVHJhbnNmZXJzEjEKFHN1Y2Nlc3NmdWxfdHJhbnNmZXJzGAYgASgFUhNzdWNjZXNzZnVsVHJhbnNmZXJzEikKEGZhaWxlZF90cmFuc2ZlcnMYByABKAVSD2ZhaWxlZFRyYW5zZmVycxIhCgx0b3RhbF9hbW91bnQYCCABKAFSC3RvdGFsQW1vdW50Eh0KCnRvdGFsX2ZlZXMYCSABKAFSCXRvdGFsRmVlcxIdCgpjcmVhdGVkX2F0GAogASgJUgljcmVhdGVkQXQSHQoKdXBkYXRlZF9hdBgLIAEoCVIJdXBkYXRlZEF0EiEKDGZpbmFsaXplZF9hdBgMIAEoCVILZmluYWxpemVkQXQSKgoRc291cmNlX2FjY291bnRfaWQYDSABKAlSD3NvdXJjZUFjY291bnRJZBIyChVzb3VyY2VfYWNjb3VudF9udW1iZXIYDiABKAlSE3NvdXJjZUFjY291bnROdW1iZXISLgoTc291cmNlX2FjY291bnRfbmFtZRgPIAEoCVIRc291cmNlQWNjb3VudE5hbWUSMAoFaXRlbXMYFCADKAsyGi5wYXltZW50cy5CYXRjaFJlY2VpcHRJdGVtUgVpdGVtcw==');
+@$core.Deprecated('Use getBatchReceiptRequestDescriptor instead')
+const GetBatchReceiptRequest$json = const {
+  '1': 'GetBatchReceiptRequest',
+  '2': const [
+    const {'1': 'batch_id', '3': 1, '4': 1, '5': 9, '10': 'batchId'},
+  ],
+};
+
+/// Descriptor for `GetBatchReceiptRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getBatchReceiptRequestDescriptor = $convert.base64Decode('ChZHZXRCYXRjaFJlY2VpcHRSZXF1ZXN0EhkKCGJhdGNoX2lkGAEgASgJUgdiYXRjaElk');
+@$core.Deprecated('Use getBatchItemReceiptRequestDescriptor instead')
+const GetBatchItemReceiptRequest$json = const {
+  '1': 'GetBatchItemReceiptRequest',
+  '2': const [
+    const {'1': 'item_id', '3': 1, '4': 1, '5': 9, '10': 'itemId'},
+  ],
+};
+
+/// Descriptor for `GetBatchItemReceiptRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getBatchItemReceiptRequestDescriptor = $convert.base64Decode('ChpHZXRCYXRjaEl0ZW1SZWNlaXB0UmVxdWVzdBIXCgdpdGVtX2lkGAEgASgJUgZpdGVtSWQ=');
+@$core.Deprecated('Use batchItemReceiptDescriptor instead')
+const BatchItemReceipt$json = const {
+  '1': 'BatchItemReceipt',
+  '2': const [
+    const {'1': 'batch_id', '3': 1, '4': 1, '5': 9, '10': 'batchId'},
+    const {'1': 'batch_status', '3': 2, '4': 1, '5': 9, '10': 'batchStatus'},
+    const {'1': 'source_account_id', '3': 3, '4': 1, '5': 9, '10': 'sourceAccountId'},
+    const {'1': 'source_account_number', '3': 4, '4': 1, '5': 9, '10': 'sourceAccountNumber'},
+    const {'1': 'source_account_name', '3': 5, '4': 1, '5': 9, '10': 'sourceAccountName'},
+    const {'1': 'item', '3': 6, '4': 1, '5': 11, '6': '.payments.BatchReceiptItem', '10': 'item'},
+  ],
+};
+
+/// Descriptor for `BatchItemReceipt`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List batchItemReceiptDescriptor = $convert.base64Decode('ChBCYXRjaEl0ZW1SZWNlaXB0EhkKCGJhdGNoX2lkGAEgASgJUgdiYXRjaElkEiEKDGJhdGNoX3N0YXR1cxgCIAEoCVILYmF0Y2hTdGF0dXMSKgoRc291cmNlX2FjY291bnRfaWQYAyABKAlSD3NvdXJjZUFjY291bnRJZBIyChVzb3VyY2VfYWNjb3VudF9udW1iZXIYBCABKAlSE3NvdXJjZUFjY291bnROdW1iZXISLgoTc291cmNlX2FjY291bnRfbmFtZRgFIAEoCVIRc291cmNlQWNjb3VudE5hbWUSLgoEaXRlbRgGIAEoCzIaLnBheW1lbnRzLkJhdGNoUmVjZWlwdEl0ZW1SBGl0ZW0=');

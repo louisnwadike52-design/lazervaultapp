@@ -1438,4 +1438,31 @@ class OpenBankingGrpcDataSource {
       throw _mapGrpcError(e, 'completeProveKYC');
     }
   }
+
+  /// Aggregated analytics over synced external-bank transactions for the
+  /// AI budgeting / statistics screen. [linkedAccountId] empty/null = ALL
+  /// linked banks; set = that one bank.
+  Future<banking.GetExternalBankAnalyticsResponse> getExternalBankAnalytics({
+    required String userId,
+    String? linkedAccountId,
+    required DateTime startDate,
+    required DateTime endDate,
+    DateTime? prevStartDate,
+    DateTime? prevEndDate,
+  }) async {
+    return _callOptionsHelper.executeWithTokenRotation(() async {
+      final callOptions = await _callOptionsHelper.withAuth();
+      final req = banking.GetExternalBankAnalyticsRequest(
+        userId: userId,
+        linkedAccountId: linkedAccountId ?? '',
+        startDate: startDate.toUtc().toIso8601String(),
+        endDate: endDate.toUtc().toIso8601String(),
+      );
+      if (prevStartDate != null && prevEndDate != null) {
+        req.prevStartDate = prevStartDate.toUtc().toIso8601String();
+        req.prevEndDate = prevEndDate.toUtc().toIso8601String();
+      }
+      return _client.getExternalBankAnalytics(req, options: callOptions);
+    });
+  }
 }

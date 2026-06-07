@@ -905,11 +905,51 @@ const CompleteProveKYCResponse$json = const {
     const {'1': 'first_name', '3': 8, '4': 1, '5': 9, '10': 'firstName'},
     const {'1': 'last_name', '3': 9, '4': 1, '5': 9, '10': 'lastName'},
     const {'1': 'date_of_birth', '3': 10, '4': 1, '5': 9, '10': 'dateOfBirth'},
+    const {'1': 'tier', '3': 11, '4': 1, '5': 5, '10': 'tier'},
+    const {'1': 'tier_name', '3': 12, '4': 1, '5': 9, '10': 'tierName'},
+    const {'1': 'message', '3': 13, '4': 1, '5': 9, '10': 'message'},
+    const {'1': 'completed_steps', '3': 14, '4': 3, '5': 9, '10': 'completedSteps'},
+    const {'1': 'next_tier', '3': 15, '4': 1, '5': 5, '10': 'nextTier'},
+    const {'1': 'next_requirements', '3': 16, '4': 3, '5': 9, '10': 'nextRequirements'},
+    const {'1': 'daily_limit_kobo', '3': 17, '4': 1, '5': 3, '10': 'dailyLimitKobo'},
   ],
 };
 
 /// Descriptor for `CompleteProveKYCResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List completeProveKYCResponseDescriptor = $convert.base64Decode('ChhDb21wbGV0ZVByb3ZlS1lDUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIdCgplcnJvcl9jb2RlGAIgASgJUgllcnJvckNvZGUSIwoNZXJyb3JfbWVzc2FnZRgDIAEoCVIMZXJyb3JNZXNzYWdlEhoKCHZlcmlmaWVkGAQgASgIUgh2ZXJpZmllZBIWCgZzdGF0dXMYBSABKAlSBnN0YXR1cxIQCgNidm4YBiABKAlSA2J2bhIQCgNuaW4YByABKAlSA25pbhIdCgpmaXJzdF9uYW1lGAggASgJUglmaXJzdE5hbWUSGwoJbGFzdF9uYW1lGAkgASgJUghsYXN0TmFtZRIiCg1kYXRlX29mX2JpcnRoGAogASgJUgtkYXRlT2ZCaXJ0aA==');
+final $typed_data.Uint8List completeProveKYCResponseDescriptor = $convert.base64Decode('ChhDb21wbGV0ZVByb3ZlS1lDUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIdCgplcnJvcl9jb2RlGAIgASgJUgllcnJvckNvZGUSIwoNZXJyb3JfbWVzc2FnZRgDIAEoCVIMZXJyb3JNZXNzYWdlEhoKCHZlcmlmaWVkGAQgASgIUgh2ZXJpZmllZBIWCgZzdGF0dXMYBSABKAlSBnN0YXR1cxIQCgNidm4YBiABKAlSA2J2bhIQCgNuaW4YByABKAlSA25pbhIdCgpmaXJzdF9uYW1lGAggASgJUglmaXJzdE5hbWUSGwoJbGFzdF9uYW1lGAkgASgJUghsYXN0TmFtZRIiCg1kYXRlX29mX2JpcnRoGAogASgJUgtkYXRlT2ZCaXJ0aBISCgR0aWVyGAsgASgFUgR0aWVyEhsKCXRpZXJfbmFtZRgMIAEoCVIIdGllck5hbWUSGAoHbWVzc2FnZRgNIAEoCVIHbWVzc2FnZRInCg9jb21wbGV0ZWRfc3RlcHMYDiADKAlSDmNvbXBsZXRlZFN0ZXBzEhsKCW5leHRfdGllchgPIAEoBVIIbmV4dFRpZXISKwoRbmV4dF9yZXF1aXJlbWVudHMYECADKAlSEG5leHRSZXF1aXJlbWVudHMSKAoQZGFpbHlfbGltaXRfa29ibxgRIAEoA1IOZGFpbHlMaW1pdEtvYm8=');
+@$core.Deprecated('Use getProveKYCStatusRequestDescriptor instead')
+const GetProveKYCStatusRequest$json = const {
+  '1': 'GetProveKYCStatusRequest',
+  '2': const [
+    const {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+  ],
+};
+
+/// Descriptor for `GetProveKYCStatusRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getProveKYCStatusRequestDescriptor = $convert.base64Decode('ChhHZXRQcm92ZUtZQ1N0YXR1c1JlcXVlc3QSFwoHdXNlcl9pZBgBIAEoCVIGdXNlcklk');
+@$core.Deprecated('Use getProveKYCStatusResponseDescriptor instead')
+const GetProveKYCStatusResponse$json = const {
+  '1': 'GetProveKYCStatusResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'error_code', '3': 2, '4': 1, '5': 9, '10': 'errorCode'},
+    const {'1': 'error_message', '3': 3, '4': 1, '5': 9, '10': 'errorMessage'},
+    const {'1': 'verified', '3': 4, '4': 1, '5': 8, '10': 'verified'},
+    const {'1': 'tier', '3': 5, '4': 1, '5': 5, '10': 'tier'},
+    const {'1': 'tier_name', '3': 6, '4': 1, '5': 9, '10': 'tierName'},
+    const {'1': 'completed_steps', '3': 7, '4': 3, '5': 9, '10': 'completedSteps'},
+    const {'1': 'next_tier', '3': 8, '4': 1, '5': 5, '10': 'nextTier'},
+    const {'1': 'next_requirements', '3': 9, '4': 3, '5': 9, '10': 'nextRequirements'},
+    const {'1': 'message', '3': 10, '4': 1, '5': 9, '10': 'message'},
+    const {'1': 'daily_limit_kobo', '3': 11, '4': 1, '5': 3, '10': 'dailyLimitKobo'},
+    const {'1': 'bvn_masked', '3': 12, '4': 1, '5': 9, '10': 'bvnMasked'},
+    const {'1': 'nin_masked', '3': 13, '4': 1, '5': 9, '10': 'ninMasked'},
+    const {'1': 'reference', '3': 14, '4': 1, '5': 9, '10': 'reference'},
+  ],
+};
+
+/// Descriptor for `GetProveKYCStatusResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getProveKYCStatusResponseDescriptor = $convert.base64Decode('ChlHZXRQcm92ZUtZQ1N0YXR1c1Jlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSHQoKZXJyb3JfY29kZRgCIAEoCVIJZXJyb3JDb2RlEiMKDWVycm9yX21lc3NhZ2UYAyABKAlSDGVycm9yTWVzc2FnZRIaCgh2ZXJpZmllZBgEIAEoCFIIdmVyaWZpZWQSEgoEdGllchgFIAEoBVIEdGllchIbCgl0aWVyX25hbWUYBiABKAlSCHRpZXJOYW1lEicKD2NvbXBsZXRlZF9zdGVwcxgHIAMoCVIOY29tcGxldGVkU3RlcHMSGwoJbmV4dF90aWVyGAggASgFUghuZXh0VGllchIrChFuZXh0X3JlcXVpcmVtZW50cxgJIAMoCVIQbmV4dFJlcXVpcmVtZW50cxIYCgdtZXNzYWdlGAogASgJUgdtZXNzYWdlEigKEGRhaWx5X2xpbWl0X2tvYm8YCyABKANSDmRhaWx5TGltaXRLb2JvEh0KCmJ2bl9tYXNrZWQYDCABKAlSCWJ2bk1hc2tlZBIdCgpuaW5fbWFza2VkGA0gASgJUgluaW5NYXNrZWQSHAoJcmVmZXJlbmNlGA4gASgJUglyZWZlcmVuY2U=');
 @$core.Deprecated('Use transactionDescriptor instead')
 const Transaction$json = const {
   '1': 'Transaction',
@@ -1494,6 +1534,74 @@ const SyncExternalTransactionsResponse$json = const {
 
 /// Descriptor for `SyncExternalTransactionsResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List syncExternalTransactionsResponseDescriptor = $convert.base64Decode('CiBTeW5jRXh0ZXJuYWxUcmFuc2FjdGlvbnNSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEi8KE3RyYW5zYWN0aW9uc19zeW5jZWQYAiABKAVSEnRyYW5zYWN0aW9uc1N5bmNlZBIxChR0cmFuc2FjdGlvbnNfc2tpcHBlZBgDIAEoBVITdHJhbnNhY3Rpb25zU2tpcHBlZBIXCgdzeW5jX2lkGAQgASgJUgZzeW5jSWQSRAoMdHJhbnNhY3Rpb25zGAUgAygLMiAuYmFua2luZy5FeHRlcm5hbEJhbmtUcmFuc2FjdGlvblIMdHJhbnNhY3Rpb25z');
+@$core.Deprecated('Use getExternalBankAnalyticsRequestDescriptor instead')
+const GetExternalBankAnalyticsRequest$json = const {
+  '1': 'GetExternalBankAnalyticsRequest',
+  '2': const [
+    const {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'linked_account_id', '3': 2, '4': 1, '5': 9, '10': 'linkedAccountId'},
+    const {'1': 'start_date', '3': 3, '4': 1, '5': 9, '10': 'startDate'},
+    const {'1': 'end_date', '3': 4, '4': 1, '5': 9, '10': 'endDate'},
+    const {'1': 'prev_start_date', '3': 5, '4': 1, '5': 9, '10': 'prevStartDate'},
+    const {'1': 'prev_end_date', '3': 6, '4': 1, '5': 9, '10': 'prevEndDate'},
+  ],
+};
+
+/// Descriptor for `GetExternalBankAnalyticsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getExternalBankAnalyticsRequestDescriptor = $convert.base64Decode('Ch9HZXRFeHRlcm5hbEJhbmtBbmFseXRpY3NSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZBIqChFsaW5rZWRfYWNjb3VudF9pZBgCIAEoCVIPbGlua2VkQWNjb3VudElkEh0KCnN0YXJ0X2RhdGUYAyABKAlSCXN0YXJ0RGF0ZRIZCghlbmRfZGF0ZRgEIAEoCVIHZW5kRGF0ZRImCg9wcmV2X3N0YXJ0X2RhdGUYBSABKAlSDXByZXZTdGFydERhdGUSIgoNcHJldl9lbmRfZGF0ZRgGIAEoCVILcHJldkVuZERhdGU=');
+@$core.Deprecated('Use externalPeriodTotalsDescriptor instead')
+const ExternalPeriodTotals$json = const {
+  '1': 'ExternalPeriodTotals',
+  '2': const [
+    const {'1': 'total_income', '3': 1, '4': 1, '5': 1, '10': 'totalIncome'},
+    const {'1': 'total_expenses', '3': 2, '4': 1, '5': 1, '10': 'totalExpenses'},
+    const {'1': 'transaction_count', '3': 3, '4': 1, '5': 5, '10': 'transactionCount'},
+  ],
+};
+
+/// Descriptor for `ExternalPeriodTotals`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List externalPeriodTotalsDescriptor = $convert.base64Decode('ChRFeHRlcm5hbFBlcmlvZFRvdGFscxIhCgx0b3RhbF9pbmNvbWUYASABKAFSC3RvdGFsSW5jb21lEiUKDnRvdGFsX2V4cGVuc2VzGAIgASgBUg10b3RhbEV4cGVuc2VzEisKEXRyYW5zYWN0aW9uX2NvdW50GAMgASgFUhB0cmFuc2FjdGlvbkNvdW50');
+@$core.Deprecated('Use externalCategoryTotalDescriptor instead')
+const ExternalCategoryTotal$json = const {
+  '1': 'ExternalCategoryTotal',
+  '2': const [
+    const {'1': 'category', '3': 1, '4': 1, '5': 9, '10': 'category'},
+    const {'1': 'amount', '3': 2, '4': 1, '5': 1, '10': 'amount'},
+    const {'1': 'transaction_count', '3': 3, '4': 1, '5': 5, '10': 'transactionCount'},
+    const {'1': 'percentage', '3': 4, '4': 1, '5': 1, '10': 'percentage'},
+  ],
+};
+
+/// Descriptor for `ExternalCategoryTotal`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List externalCategoryTotalDescriptor = $convert.base64Decode('ChVFeHRlcm5hbENhdGVnb3J5VG90YWwSGgoIY2F0ZWdvcnkYASABKAlSCGNhdGVnb3J5EhYKBmFtb3VudBgCIAEoAVIGYW1vdW50EisKEXRyYW5zYWN0aW9uX2NvdW50GAMgASgFUhB0cmFuc2FjdGlvbkNvdW50Eh4KCnBlcmNlbnRhZ2UYBCABKAFSCnBlcmNlbnRhZ2U=');
+@$core.Deprecated('Use externalDailyPointDescriptor instead')
+const ExternalDailyPoint$json = const {
+  '1': 'ExternalDailyPoint',
+  '2': const [
+    const {'1': 'date', '3': 1, '4': 1, '5': 9, '10': 'date'},
+    const {'1': 'expense_amount', '3': 2, '4': 1, '5': 1, '10': 'expenseAmount'},
+  ],
+};
+
+/// Descriptor for `ExternalDailyPoint`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List externalDailyPointDescriptor = $convert.base64Decode('ChJFeHRlcm5hbERhaWx5UG9pbnQSEgoEZGF0ZRgBIAEoCVIEZGF0ZRIlCg5leHBlbnNlX2Ftb3VudBgCIAEoAVINZXhwZW5zZUFtb3VudA==');
+@$core.Deprecated('Use getExternalBankAnalyticsResponseDescriptor instead')
+const GetExternalBankAnalyticsResponse$json = const {
+  '1': 'GetExternalBankAnalyticsResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'current_period', '3': 2, '4': 1, '5': 11, '6': '.banking.ExternalPeriodTotals', '10': 'currentPeriod'},
+    const {'1': 'previous_period', '3': 3, '4': 1, '5': 11, '6': '.banking.ExternalPeriodTotals', '10': 'previousPeriod'},
+    const {'1': 'expense_categories', '3': 4, '4': 3, '5': 11, '6': '.banking.ExternalCategoryTotal', '10': 'expenseCategories'},
+    const {'1': 'income_categories', '3': 5, '4': 3, '5': 11, '6': '.banking.ExternalCategoryTotal', '10': 'incomeCategories'},
+    const {'1': 'daily_expenses', '3': 6, '4': 3, '5': 11, '6': '.banking.ExternalDailyPoint', '10': 'dailyExpenses'},
+    const {'1': 'linked_account_count', '3': 7, '4': 1, '5': 5, '10': 'linkedAccountCount'},
+    const {'1': 'error_message', '3': 8, '4': 1, '5': 9, '10': 'errorMessage'},
+  ],
+};
+
+/// Descriptor for `GetExternalBankAnalyticsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getExternalBankAnalyticsResponseDescriptor = $convert.base64Decode('CiBHZXRFeHRlcm5hbEJhbmtBbmFseXRpY3NSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEkQKDmN1cnJlbnRfcGVyaW9kGAIgASgLMh0uYmFua2luZy5FeHRlcm5hbFBlcmlvZFRvdGFsc1INY3VycmVudFBlcmlvZBJGCg9wcmV2aW91c19wZXJpb2QYAyABKAsyHS5iYW5raW5nLkV4dGVybmFsUGVyaW9kVG90YWxzUg5wcmV2aW91c1BlcmlvZBJNChJleHBlbnNlX2NhdGVnb3JpZXMYBCADKAsyHi5iYW5raW5nLkV4dGVybmFsQ2F0ZWdvcnlUb3RhbFIRZXhwZW5zZUNhdGVnb3JpZXMSSwoRaW5jb21lX2NhdGVnb3JpZXMYBSADKAsyHi5iYW5raW5nLkV4dGVybmFsQ2F0ZWdvcnlUb3RhbFIQaW5jb21lQ2F0ZWdvcmllcxJCCg5kYWlseV9leHBlbnNlcxgGIAMoCzIbLmJhbmtpbmcuRXh0ZXJuYWxEYWlseVBvaW50Ug1kYWlseUV4cGVuc2VzEjAKFGxpbmtlZF9hY2NvdW50X2NvdW50GAcgASgFUhJsaW5rZWRBY2NvdW50Q291bnQSIwoNZXJyb3JfbWVzc2FnZRgIIAEoCVIMZXJyb3JNZXNzYWdl');
 @$core.Deprecated('Use getAccountWithTransactionsRequestDescriptor instead')
 const GetAccountWithTransactionsRequest$json = const {
   '1': 'GetAccountWithTransactionsRequest',
@@ -1555,11 +1663,12 @@ const InitiateDepositRequest$json = const {
     const {'1': 'use_recurring_access', '3': 7, '4': 1, '5': 8, '10': 'useRecurringAccess'},
     const {'1': 'country_code', '3': 8, '4': 1, '5': 9, '10': 'countryCode'},
     const {'1': 'currency', '3': 9, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'payment_method', '3': 10, '4': 1, '5': 9, '10': 'paymentMethod'},
   ],
 };
 
 /// Descriptor for `InitiateDepositRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List initiateDepositRequestDescriptor = $convert.base64Decode('ChZJbml0aWF0ZURlcG9zaXRSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZBIqChFsaW5rZWRfYWNjb3VudF9pZBgCIAEoCVIPbGlua2VkQWNjb3VudElkEjQKFmRlc3RpbmF0aW9uX2FjY291bnRfaWQYAyABKAlSFGRlc3RpbmF0aW9uQWNjb3VudElkEhYKBmFtb3VudBgEIAEoA1IGYW1vdW50EhwKCW5hcnJhdGlvbhgFIAEoCVIJbmFycmF0aW9uEicKD2lkZW1wb3RlbmN5X2tleRgGIAEoCVIOaWRlbXBvdGVuY3lLZXkSMAoUdXNlX3JlY3VycmluZ19hY2Nlc3MYByABKAhSEnVzZVJlY3VycmluZ0FjY2VzcxIhCgxjb3VudHJ5X2NvZGUYCCABKAlSC2NvdW50cnlDb2RlEhoKCGN1cnJlbmN5GAkgASgJUghjdXJyZW5jeQ==');
+final $typed_data.Uint8List initiateDepositRequestDescriptor = $convert.base64Decode('ChZJbml0aWF0ZURlcG9zaXRSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZBIqChFsaW5rZWRfYWNjb3VudF9pZBgCIAEoCVIPbGlua2VkQWNjb3VudElkEjQKFmRlc3RpbmF0aW9uX2FjY291bnRfaWQYAyABKAlSFGRlc3RpbmF0aW9uQWNjb3VudElkEhYKBmFtb3VudBgEIAEoA1IGYW1vdW50EhwKCW5hcnJhdGlvbhgFIAEoCVIJbmFycmF0aW9uEicKD2lkZW1wb3RlbmN5X2tleRgGIAEoCVIOaWRlbXBvdGVuY3lLZXkSMAoUdXNlX3JlY3VycmluZ19hY2Nlc3MYByABKAhSEnVzZVJlY3VycmluZ0FjY2VzcxIhCgxjb3VudHJ5X2NvZGUYCCABKAlSC2NvdW50cnlDb2RlEhoKCGN1cnJlbmN5GAkgASgJUghjdXJyZW5jeRIlCg5wYXltZW50X21ldGhvZBgKIAEoCVINcGF5bWVudE1ldGhvZA==');
 @$core.Deprecated('Use depositResponseDescriptor instead')
 const DepositResponse$json = const {
   '1': 'DepositResponse',
@@ -1650,6 +1759,60 @@ const DepositsResponse$json = const {
 
 /// Descriptor for `DepositsResponse`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List depositsResponseDescriptor = $convert.base64Decode('ChBEZXBvc2l0c1Jlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3MSHQoKZXJyb3JfY29kZRgCIAEoCVIJZXJyb3JDb2RlEiMKDWVycm9yX21lc3NhZ2UYAyABKAlSDGVycm9yTWVzc2FnZRIsCghkZXBvc2l0cxgEIAMoCzIQLmJhbmtpbmcuRGVwb3NpdFIIZGVwb3NpdHMSFAoFdG90YWwYBSABKAVSBXRvdGFs');
+@$core.Deprecated('Use adminListDepositsRequestDescriptor instead')
+const AdminListDepositsRequest$json = const {
+  '1': 'AdminListDepositsRequest',
+  '2': const [
+    const {'1': 'status', '3': 1, '4': 1, '5': 9, '10': 'status'},
+    const {'1': 'payment_method', '3': 2, '4': 1, '5': 9, '10': 'paymentMethod'},
+    const {'1': 'currency', '3': 3, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'provider', '3': 4, '4': 1, '5': 9, '10': 'provider'},
+    const {'1': 'country_code', '3': 5, '4': 1, '5': 9, '10': 'countryCode'},
+    const {'1': 'page', '3': 6, '4': 1, '5': 5, '10': 'page'},
+    const {'1': 'per_page', '3': 7, '4': 1, '5': 5, '10': 'perPage'},
+  ],
+};
+
+/// Descriptor for `AdminListDepositsRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminListDepositsRequestDescriptor = $convert.base64Decode('ChhBZG1pbkxpc3REZXBvc2l0c1JlcXVlc3QSFgoGc3RhdHVzGAEgASgJUgZzdGF0dXMSJQoOcGF5bWVudF9tZXRob2QYAiABKAlSDXBheW1lbnRNZXRob2QSGgoIY3VycmVuY3kYAyABKAlSCGN1cnJlbmN5EhoKCHByb3ZpZGVyGAQgASgJUghwcm92aWRlchIhCgxjb3VudHJ5X2NvZGUYBSABKAlSC2NvdW50cnlDb2RlEhIKBHBhZ2UYBiABKAVSBHBhZ2USGQoIcGVyX3BhZ2UYByABKAVSB3BlclBhZ2U=');
+@$core.Deprecated('Use adminListDepositsResponseDescriptor instead')
+const AdminListDepositsResponse$json = const {
+  '1': 'AdminListDepositsResponse',
+  '2': const [
+    const {'1': 'deposits', '3': 1, '4': 3, '5': 11, '6': '.banking.AdminDepositRow', '10': 'deposits'},
+    const {'1': 'total', '3': 2, '4': 1, '5': 5, '10': 'total'},
+    const {'1': 'page', '3': 3, '4': 1, '5': 5, '10': 'page'},
+    const {'1': 'per_page', '3': 4, '4': 1, '5': 5, '10': 'perPage'},
+  ],
+};
+
+/// Descriptor for `AdminListDepositsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminListDepositsResponseDescriptor = $convert.base64Decode('ChlBZG1pbkxpc3REZXBvc2l0c1Jlc3BvbnNlEjQKCGRlcG9zaXRzGAEgAygLMhguYmFua2luZy5BZG1pbkRlcG9zaXRSb3dSCGRlcG9zaXRzEhQKBXRvdGFsGAIgASgFUgV0b3RhbBISCgRwYWdlGAMgASgFUgRwYWdlEhkKCHBlcl9wYWdlGAQgASgFUgdwZXJQYWdl');
+@$core.Deprecated('Use adminDepositRowDescriptor instead')
+const AdminDepositRow$json = const {
+  '1': 'AdminDepositRow',
+  '2': const [
+    const {'1': 'id', '3': 1, '4': 1, '5': 9, '10': 'id'},
+    const {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'reference', '3': 3, '4': 1, '5': 9, '10': 'reference'},
+    const {'1': 'provider', '3': 4, '4': 1, '5': 9, '10': 'provider'},
+    const {'1': 'payment_method', '3': 5, '4': 1, '5': 9, '10': 'paymentMethod'},
+    const {'1': 'status', '3': 6, '4': 1, '5': 9, '10': 'status'},
+    const {'1': 'amount_minor_units', '3': 7, '4': 1, '5': 3, '10': 'amountMinorUnits'},
+    const {'1': 'fee_minor_units', '3': 8, '4': 1, '5': 3, '10': 'feeMinorUnits'},
+    const {'1': 'currency', '3': 9, '4': 1, '5': 9, '10': 'currency'},
+    const {'1': 'country_code', '3': 10, '4': 1, '5': 9, '10': 'countryCode'},
+    const {'1': 'destination_account_id', '3': 11, '4': 1, '5': 9, '10': 'destinationAccountId'},
+    const {'1': 'narration', '3': 12, '4': 1, '5': 9, '10': 'narration'},
+    const {'1': 'payment_url', '3': 13, '4': 1, '5': 9, '10': 'paymentUrl'},
+    const {'1': 'provider_ref', '3': 14, '4': 1, '5': 9, '10': 'providerRef'},
+    const {'1': 'created_at', '3': 15, '4': 1, '5': 9, '10': 'createdAt'},
+    const {'1': 'updated_at', '3': 16, '4': 1, '5': 9, '10': 'updatedAt'},
+  ],
+};
+
+/// Descriptor for `AdminDepositRow`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List adminDepositRowDescriptor = $convert.base64Decode('Cg9BZG1pbkRlcG9zaXRSb3cSDgoCaWQYASABKAlSAmlkEhcKB3VzZXJfaWQYAiABKAlSBnVzZXJJZBIcCglyZWZlcmVuY2UYAyABKAlSCXJlZmVyZW5jZRIaCghwcm92aWRlchgEIAEoCVIIcHJvdmlkZXISJQoOcGF5bWVudF9tZXRob2QYBSABKAlSDXBheW1lbnRNZXRob2QSFgoGc3RhdHVzGAYgASgJUgZzdGF0dXMSLAoSYW1vdW50X21pbm9yX3VuaXRzGAcgASgDUhBhbW91bnRNaW5vclVuaXRzEiYKD2ZlZV9taW5vcl91bml0cxgIIAEoA1INZmVlTWlub3JVbml0cxIaCghjdXJyZW5jeRgJIAEoCVIIY3VycmVuY3kSIQoMY291bnRyeV9jb2RlGAogASgJUgtjb3VudHJ5Q29kZRI0ChZkZXN0aW5hdGlvbl9hY2NvdW50X2lkGAsgASgJUhRkZXN0aW5hdGlvbkFjY291bnRJZBIcCgluYXJyYXRpb24YDCABKAlSCW5hcnJhdGlvbhIfCgtwYXltZW50X3VybBgNIAEoCVIKcGF5bWVudFVybBIhCgxwcm92aWRlcl9yZWYYDiABKAlSC3Byb3ZpZGVyUmVmEh0KCmNyZWF0ZWRfYXQYDyABKAlSCWNyZWF0ZWRBdBIdCgp1cGRhdGVkX2F0GBAgASgJUgl1cGRhdGVkQXQ=');
 @$core.Deprecated('Use cancelDepositRequestDescriptor instead')
 const CancelDepositRequest$json = const {
   '1': 'CancelDepositRequest',

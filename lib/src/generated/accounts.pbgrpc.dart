@@ -179,6 +179,19 @@ class AccountsServiceClient extends $grpc.Client {
       ($0.GetAccountByNumberRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
           $0.GetAccountByNumberResponse.fromBuffer(value));
+  static final _$getAccountByProviderRef = $grpc.ClientMethod<
+          $0.GetAccountByProviderRefRequest,
+          $0.GetAccountByProviderRefResponse>(
+      '/accounts.AccountsService/GetAccountByProviderRef',
+      ($0.GetAccountByProviderRefRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.GetAccountByProviderRefResponse.fromBuffer(value));
+  static final _$getTotalLedgerBalance = $grpc.ClientMethod<
+          $0.GetTotalLedgerBalanceRequest, $0.GetTotalLedgerBalanceResponse>(
+      '/accounts.AccountsService/GetTotalLedgerBalance',
+      ($0.GetTotalLedgerBalanceRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.GetTotalLedgerBalanceResponse.fromBuffer(value));
   static final _$createTransaction = $grpc.ClientMethod<
           $0.CreateTransactionRequest, $0.CreateTransactionResponse>(
       '/accounts.AccountsService/CreateTransaction',
@@ -761,6 +774,19 @@ class AccountsServiceClient extends $grpc.Client {
       $0.GetAccountByNumberRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getAccountByNumber, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetAccountByProviderRefResponse>
+      getAccountByProviderRef($0.GetAccountByProviderRefRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getAccountByProviderRef, request,
+        options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetTotalLedgerBalanceResponse> getTotalLedgerBalance(
+      $0.GetTotalLedgerBalanceRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getTotalLedgerBalance, request, options: options);
   }
 
   $grpc.ResponseFuture<$0.CreateTransactionResponse> createTransaction(
@@ -1431,6 +1457,24 @@ abstract class AccountsServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.GetAccountByNumberRequest.fromBuffer(value),
         ($0.GetAccountByNumberResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetAccountByProviderRefRequest,
+            $0.GetAccountByProviderRefResponse>(
+        'GetAccountByProviderRef',
+        getAccountByProviderRef_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetAccountByProviderRefRequest.fromBuffer(value),
+        ($0.GetAccountByProviderRefResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetTotalLedgerBalanceRequest,
+            $0.GetTotalLedgerBalanceResponse>(
+        'GetTotalLedgerBalance',
+        getTotalLedgerBalance_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetTotalLedgerBalanceRequest.fromBuffer(value),
+        ($0.GetTotalLedgerBalanceResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.CreateTransactionRequest,
             $0.CreateTransactionResponse>(
         'CreateTransaction',
@@ -2183,6 +2227,18 @@ abstract class AccountsServiceBase extends $grpc.Service {
     return getAccountByNumber(call, await request);
   }
 
+  $async.Future<$0.GetAccountByProviderRefResponse> getAccountByProviderRef_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.GetAccountByProviderRefRequest> request) async {
+    return getAccountByProviderRef(call, await request);
+  }
+
+  $async.Future<$0.GetTotalLedgerBalanceResponse> getTotalLedgerBalance_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.GetTotalLedgerBalanceRequest> request) async {
+    return getTotalLedgerBalance(call, await request);
+  }
+
   $async.Future<$0.CreateTransactionResponse> createTransaction_Pre(
       $grpc.ServiceCall call,
       $async.Future<$0.CreateTransactionRequest> request) async {
@@ -2633,6 +2689,10 @@ abstract class AccountsServiceBase extends $grpc.Service {
           $0.GetPlatformWalletTransactionsRequest request);
   $async.Future<$0.GetAccountByNumberResponse> getAccountByNumber(
       $grpc.ServiceCall call, $0.GetAccountByNumberRequest request);
+  $async.Future<$0.GetAccountByProviderRefResponse> getAccountByProviderRef(
+      $grpc.ServiceCall call, $0.GetAccountByProviderRefRequest request);
+  $async.Future<$0.GetTotalLedgerBalanceResponse> getTotalLedgerBalance(
+      $grpc.ServiceCall call, $0.GetTotalLedgerBalanceRequest request);
   $async.Future<$0.CreateTransactionResponse> createTransaction(
       $grpc.ServiceCall call, $0.CreateTransactionRequest request);
   $async.Future<$0.GetTransactionHistoryResponse> getTransactionHistory(

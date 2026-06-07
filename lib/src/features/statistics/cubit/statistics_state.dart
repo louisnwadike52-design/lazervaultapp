@@ -60,6 +60,9 @@ class StatisticsLoaded extends StatisticsState {
   final bool includeExternalBanks;
   // Selected money source the content reflects (drives the filter chip + sheet).
   final StatisticsSource source;
+  // When external banks are in scope: null/empty = ALL linked banks
+  // (default), otherwise the one linked-account id the numbers reflect.
+  final String? selectedBankAccountId;
 
   const StatisticsLoaded({
     required this.startDate,
@@ -72,6 +75,7 @@ class StatisticsLoaded extends StatisticsState {
     this.currentPeriod = 'month',
     this.includeExternalBanks = true,
     this.source = StatisticsSource.both,
+    this.selectedBankAccountId,
   });
 
   @override
@@ -86,6 +90,7 @@ class StatisticsLoaded extends StatisticsState {
         currentPeriod,
         includeExternalBanks,
         source,
+        selectedBankAccountId,
       ];
 
   /// Create a copy with updated fields
@@ -100,6 +105,7 @@ class StatisticsLoaded extends StatisticsState {
     String? currentPeriod,
     bool? includeExternalBanks,
     StatisticsSource? source,
+    String? selectedBankAccountId,
   }) {
     return StatisticsLoaded(
       startDate: startDate ?? this.startDate,
@@ -112,6 +118,7 @@ class StatisticsLoaded extends StatisticsState {
       currentPeriod: currentPeriod ?? this.currentPeriod,
       includeExternalBanks: includeExternalBanks ?? this.includeExternalBanks,
       source: source ?? this.source,
+      selectedBankAccountId: selectedBankAccountId ?? this.selectedBankAccountId,
     );
   }
 }

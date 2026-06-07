@@ -14,24 +14,6 @@ import 'banking.pb.dart' as $0;
 export 'banking.pb.dart';
 
 class BankingServiceClient extends $grpc.Client {
-  static final _$createVirtualAccount = $grpc.ClientMethod<
-          $0.CreateVirtualAccountRequest, $0.VirtualAccountResponse>(
-      '/banking.BankingService/CreateVirtualAccount',
-      ($0.CreateVirtualAccountRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $0.VirtualAccountResponse.fromBuffer(value));
-  static final _$getVirtualAccount = $grpc.ClientMethod<
-          $0.GetVirtualAccountRequest, $0.VirtualAccountResponse>(
-      '/banking.BankingService/GetVirtualAccount',
-      ($0.GetVirtualAccountRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $0.VirtualAccountResponse.fromBuffer(value));
-  static final _$getUserVirtualAccounts = $grpc.ClientMethod<
-          $0.GetUserVirtualAccountsRequest, $0.VirtualAccountsResponse>(
-      '/banking.BankingService/GetUserVirtualAccounts',
-      ($0.GetUserVirtualAccountsRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $0.VirtualAccountsResponse.fromBuffer(value));
   static final _$initiateDomesticTransfer =
       $grpc.ClientMethod<$0.DomesticTransferRequest, $0.TransferResponse>(
           '/banking.BankingService/InitiateDomesticTransfer',
@@ -109,12 +91,6 @@ class BankingServiceClient extends $grpc.Client {
       ($0.VerifyNINForSignupRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
           $0.SignupIdentityVerificationResponse.fromBuffer(value));
-  static final _$createVirtualAccountForUser = $grpc.ClientMethod<
-          $0.CreateVirtualAccountForUserRequest, $0.VirtualAccountResponse>(
-      '/banking.BankingService/CreateVirtualAccountForUser',
-      ($0.CreateVirtualAccountForUserRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) =>
-          $0.VirtualAccountResponse.fromBuffer(value));
   static final _$initiateUsernameTransfer =
       $grpc.ClientMethod<$0.UsernameTransferRequest, $0.TransferResponse>(
           '/banking.BankingService/InitiateUsernameTransfer',
@@ -199,12 +175,12 @@ class BankingServiceClient extends $grpc.Client {
       ($0.CompleteProveKYCRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
           $0.CompleteProveKYCResponse.fromBuffer(value));
-  static final _$getPrimaryAccount = $grpc.ClientMethod<
-          $0.GetPrimaryAccountRequest, $0.VirtualAccountResponse>(
-      '/banking.BankingService/GetPrimaryAccount',
-      ($0.GetPrimaryAccountRequest value) => value.writeToBuffer(),
+  static final _$getProveKYCStatus = $grpc.ClientMethod<
+          $0.GetProveKYCStatusRequest, $0.GetProveKYCStatusResponse>(
+      '/banking.BankingService/GetProveKYCStatus',
+      ($0.GetProveKYCStatusRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
-          $0.VirtualAccountResponse.fromBuffer(value));
+          $0.GetProveKYCStatusResponse.fromBuffer(value));
   static final _$freezeAccount =
       $grpc.ClientMethod<$0.FreezeAccountRequest, $0.FreezeAccountResponse>(
           '/banking.BankingService/FreezeAccount',
@@ -319,6 +295,13 @@ class BankingServiceClient extends $grpc.Client {
       ($0.GetAccountWithTransactionsRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) =>
           $0.GetAccountWithTransactionsResponse.fromBuffer(value));
+  static final _$getExternalBankAnalytics = $grpc.ClientMethod<
+          $0.GetExternalBankAnalyticsRequest,
+          $0.GetExternalBankAnalyticsResponse>(
+      '/banking.BankingService/GetExternalBankAnalytics',
+      ($0.GetExternalBankAnalyticsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.GetExternalBankAnalyticsResponse.fromBuffer(value));
   static final _$refreshAccountTransactions = $grpc.ClientMethod<
           $0.RefreshAccountTransactionsRequest,
           $0.RefreshAccountTransactionsResponse>(
@@ -344,6 +327,12 @@ class BankingServiceClient extends $grpc.Client {
           ($0.GetUserDepositsRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
               $0.DepositsResponse.fromBuffer(value));
+  static final _$adminListDeposits = $grpc.ClientMethod<
+          $0.AdminListDepositsRequest, $0.AdminListDepositsResponse>(
+      '/banking.BankingService/AdminListDeposits',
+      ($0.AdminListDepositsRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) =>
+          $0.AdminListDepositsResponse.fromBuffer(value));
   static final _$cancelDeposit =
       $grpc.ClientMethod<$0.CancelDepositRequest, $0.CancelDepositResponse>(
           '/banking.BankingService/CancelDeposit',
@@ -489,25 +478,6 @@ class BankingServiceClient extends $grpc.Client {
       $core.Iterable<$grpc.ClientInterceptor>? interceptors})
       : super(channel, options: options, interceptors: interceptors);
 
-  $grpc.ResponseFuture<$0.VirtualAccountResponse> createVirtualAccount(
-      $0.CreateVirtualAccountRequest request,
-      {$grpc.CallOptions? options}) {
-    return $createUnaryCall(_$createVirtualAccount, request, options: options);
-  }
-
-  $grpc.ResponseFuture<$0.VirtualAccountResponse> getVirtualAccount(
-      $0.GetVirtualAccountRequest request,
-      {$grpc.CallOptions? options}) {
-    return $createUnaryCall(_$getVirtualAccount, request, options: options);
-  }
-
-  $grpc.ResponseFuture<$0.VirtualAccountsResponse> getUserVirtualAccounts(
-      $0.GetUserVirtualAccountsRequest request,
-      {$grpc.CallOptions? options}) {
-    return $createUnaryCall(_$getUserVirtualAccounts, request,
-        options: options);
-  }
-
   $grpc.ResponseFuture<$0.TransferResponse> initiateDomesticTransfer(
       $0.DomesticTransferRequest request,
       {$grpc.CallOptions? options}) {
@@ -586,13 +556,6 @@ class BankingServiceClient extends $grpc.Client {
       verifyNINForSignup($0.VerifyNINForSignupRequest request,
           {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$verifyNINForSignup, request, options: options);
-  }
-
-  $grpc.ResponseFuture<$0.VirtualAccountResponse> createVirtualAccountForUser(
-      $0.CreateVirtualAccountForUserRequest request,
-      {$grpc.CallOptions? options}) {
-    return $createUnaryCall(_$createVirtualAccountForUser, request,
-        options: options);
   }
 
   $grpc.ResponseFuture<$0.TransferResponse> initiateUsernameTransfer(
@@ -682,10 +645,10 @@ class BankingServiceClient extends $grpc.Client {
     return $createUnaryCall(_$completeProveKYC, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.VirtualAccountResponse> getPrimaryAccount(
-      $0.GetPrimaryAccountRequest request,
+  $grpc.ResponseFuture<$0.GetProveKYCStatusResponse> getProveKYCStatus(
+      $0.GetProveKYCStatusRequest request,
       {$grpc.CallOptions? options}) {
-    return $createUnaryCall(_$getPrimaryAccount, request, options: options);
+    return $createUnaryCall(_$getProveKYCStatus, request, options: options);
   }
 
   $grpc.ResponseFuture<$0.FreezeAccountResponse> freezeAccount(
@@ -804,6 +767,13 @@ class BankingServiceClient extends $grpc.Client {
         options: options);
   }
 
+  $grpc.ResponseFuture<$0.GetExternalBankAnalyticsResponse>
+      getExternalBankAnalytics($0.GetExternalBankAnalyticsRequest request,
+          {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getExternalBankAnalytics, request,
+        options: options);
+  }
+
   $grpc.ResponseFuture<$0.RefreshAccountTransactionsResponse>
       refreshAccountTransactions($0.RefreshAccountTransactionsRequest request,
           {$grpc.CallOptions? options}) {
@@ -827,6 +797,12 @@ class BankingServiceClient extends $grpc.Client {
       $0.GetUserDepositsRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$getUserDeposits, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.AdminListDepositsResponse> adminListDeposits(
+      $0.AdminListDepositsRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$adminListDeposits, request, options: options);
   }
 
   $grpc.ResponseFuture<$0.CancelDepositResponse> cancelDeposit(
@@ -974,33 +950,6 @@ abstract class BankingServiceBase extends $grpc.Service {
   $core.String get $name => 'banking.BankingService';
 
   BankingServiceBase() {
-    $addMethod($grpc.ServiceMethod<$0.CreateVirtualAccountRequest,
-            $0.VirtualAccountResponse>(
-        'CreateVirtualAccount',
-        createVirtualAccount_Pre,
-        false,
-        false,
-        ($core.List<$core.int> value) =>
-            $0.CreateVirtualAccountRequest.fromBuffer(value),
-        ($0.VirtualAccountResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetVirtualAccountRequest,
-            $0.VirtualAccountResponse>(
-        'GetVirtualAccount',
-        getVirtualAccount_Pre,
-        false,
-        false,
-        ($core.List<$core.int> value) =>
-            $0.GetVirtualAccountRequest.fromBuffer(value),
-        ($0.VirtualAccountResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetUserVirtualAccountsRequest,
-            $0.VirtualAccountsResponse>(
-        'GetUserVirtualAccounts',
-        getUserVirtualAccounts_Pre,
-        false,
-        false,
-        ($core.List<$core.int> value) =>
-            $0.GetUserVirtualAccountsRequest.fromBuffer(value),
-        ($0.VirtualAccountsResponse value) => value.writeToBuffer()));
     $addMethod(
         $grpc.ServiceMethod<$0.DomesticTransferRequest, $0.TransferResponse>(
             'InitiateDomesticTransfer',
@@ -1117,15 +1066,6 @@ abstract class BankingServiceBase extends $grpc.Service {
             $0.VerifyNINForSignupRequest.fromBuffer(value),
         ($0.SignupIdentityVerificationResponse value) =>
             value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.CreateVirtualAccountForUserRequest,
-            $0.VirtualAccountResponse>(
-        'CreateVirtualAccountForUser',
-        createVirtualAccountForUser_Pre,
-        false,
-        false,
-        ($core.List<$core.int> value) =>
-            $0.CreateVirtualAccountForUserRequest.fromBuffer(value),
-        ($0.VirtualAccountResponse value) => value.writeToBuffer()));
     $addMethod(
         $grpc.ServiceMethod<$0.UsernameTransferRequest, $0.TransferResponse>(
             'InitiateUsernameTransfer',
@@ -1252,15 +1192,15 @@ abstract class BankingServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.CompleteProveKYCRequest.fromBuffer(value),
         ($0.CompleteProveKYCResponse value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.GetPrimaryAccountRequest,
-            $0.VirtualAccountResponse>(
-        'GetPrimaryAccount',
-        getPrimaryAccount_Pre,
+    $addMethod($grpc.ServiceMethod<$0.GetProveKYCStatusRequest,
+            $0.GetProveKYCStatusResponse>(
+        'GetProveKYCStatus',
+        getProveKYCStatus_Pre,
         false,
         false,
         ($core.List<$core.int> value) =>
-            $0.GetPrimaryAccountRequest.fromBuffer(value),
-        ($0.VirtualAccountResponse value) => value.writeToBuffer()));
+            $0.GetProveKYCStatusRequest.fromBuffer(value),
+        ($0.GetProveKYCStatusResponse value) => value.writeToBuffer()));
     $addMethod(
         $grpc.ServiceMethod<$0.FreezeAccountRequest, $0.FreezeAccountResponse>(
             'FreezeAccount',
@@ -1426,6 +1366,15 @@ abstract class BankingServiceBase extends $grpc.Service {
             $0.GetAccountWithTransactionsRequest.fromBuffer(value),
         ($0.GetAccountWithTransactionsResponse value) =>
             value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetExternalBankAnalyticsRequest,
+            $0.GetExternalBankAnalyticsResponse>(
+        'GetExternalBankAnalytics',
+        getExternalBankAnalytics_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.GetExternalBankAnalyticsRequest.fromBuffer(value),
+        ($0.GetExternalBankAnalyticsResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.RefreshAccountTransactionsRequest,
             $0.RefreshAccountTransactionsResponse>(
         'RefreshAccountTransactions',
@@ -1463,6 +1412,15 @@ abstract class BankingServiceBase extends $grpc.Service {
             ($core.List<$core.int> value) =>
                 $0.GetUserDepositsRequest.fromBuffer(value),
             ($0.DepositsResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AdminListDepositsRequest,
+            $0.AdminListDepositsResponse>(
+        'AdminListDeposits',
+        adminListDeposits_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.AdminListDepositsRequest.fromBuffer(value),
+        ($0.AdminListDepositsResponse value) => value.writeToBuffer()));
     $addMethod(
         $grpc.ServiceMethod<$0.CancelDepositRequest, $0.CancelDepositResponse>(
             'CancelDeposit',
@@ -1669,24 +1627,6 @@ abstract class BankingServiceBase extends $grpc.Service {
         ($0.MultiSourceCreditScoresResponse value) => value.writeToBuffer()));
   }
 
-  $async.Future<$0.VirtualAccountResponse> createVirtualAccount_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$0.CreateVirtualAccountRequest> request) async {
-    return createVirtualAccount(call, await request);
-  }
-
-  $async.Future<$0.VirtualAccountResponse> getVirtualAccount_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$0.GetVirtualAccountRequest> request) async {
-    return getVirtualAccount(call, await request);
-  }
-
-  $async.Future<$0.VirtualAccountsResponse> getUserVirtualAccounts_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$0.GetUserVirtualAccountsRequest> request) async {
-    return getUserVirtualAccounts(call, await request);
-  }
-
   $async.Future<$0.TransferResponse> initiateDomesticTransfer_Pre(
       $grpc.ServiceCall call,
       $async.Future<$0.DomesticTransferRequest> request) async {
@@ -1762,12 +1702,6 @@ abstract class BankingServiceBase extends $grpc.Service {
       $grpc.ServiceCall call,
       $async.Future<$0.VerifyNINForSignupRequest> request) async {
     return verifyNINForSignup(call, await request);
-  }
-
-  $async.Future<$0.VirtualAccountResponse> createVirtualAccountForUser_Pre(
-      $grpc.ServiceCall call,
-      $async.Future<$0.CreateVirtualAccountForUserRequest> request) async {
-    return createVirtualAccountForUser(call, await request);
   }
 
   $async.Future<$0.TransferResponse> initiateUsernameTransfer_Pre(
@@ -1854,10 +1788,10 @@ abstract class BankingServiceBase extends $grpc.Service {
     return completeProveKYC(call, await request);
   }
 
-  $async.Future<$0.VirtualAccountResponse> getPrimaryAccount_Pre(
+  $async.Future<$0.GetProveKYCStatusResponse> getProveKYCStatus_Pre(
       $grpc.ServiceCall call,
-      $async.Future<$0.GetPrimaryAccountRequest> request) async {
-    return getPrimaryAccount(call, await request);
+      $async.Future<$0.GetProveKYCStatusRequest> request) async {
+    return getProveKYCStatus(call, await request);
   }
 
   $async.Future<$0.FreezeAccountResponse> freezeAccount_Pre(
@@ -1967,6 +1901,12 @@ abstract class BankingServiceBase extends $grpc.Service {
     return getAccountWithTransactions(call, await request);
   }
 
+  $async.Future<$0.GetExternalBankAnalyticsResponse>
+      getExternalBankAnalytics_Pre($grpc.ServiceCall call,
+          $async.Future<$0.GetExternalBankAnalyticsRequest> request) async {
+    return getExternalBankAnalytics(call, await request);
+  }
+
   $async.Future<$0.RefreshAccountTransactionsResponse>
       refreshAccountTransactions_Pre($grpc.ServiceCall call,
           $async.Future<$0.RefreshAccountTransactionsRequest> request) async {
@@ -1986,6 +1926,12 @@ abstract class BankingServiceBase extends $grpc.Service {
   $async.Future<$0.DepositsResponse> getUserDeposits_Pre($grpc.ServiceCall call,
       $async.Future<$0.GetUserDepositsRequest> request) async {
     return getUserDeposits(call, await request);
+  }
+
+  $async.Future<$0.AdminListDepositsResponse> adminListDeposits_Pre(
+      $grpc.ServiceCall call,
+      $async.Future<$0.AdminListDepositsRequest> request) async {
+    return adminListDeposits(call, await request);
   }
 
   $async.Future<$0.CancelDepositResponse> cancelDeposit_Pre(
@@ -2123,12 +2069,6 @@ abstract class BankingServiceBase extends $grpc.Service {
     return getMultiSourceCreditScores(call, await request);
   }
 
-  $async.Future<$0.VirtualAccountResponse> createVirtualAccount(
-      $grpc.ServiceCall call, $0.CreateVirtualAccountRequest request);
-  $async.Future<$0.VirtualAccountResponse> getVirtualAccount(
-      $grpc.ServiceCall call, $0.GetVirtualAccountRequest request);
-  $async.Future<$0.VirtualAccountsResponse> getUserVirtualAccounts(
-      $grpc.ServiceCall call, $0.GetUserVirtualAccountsRequest request);
   $async.Future<$0.TransferResponse> initiateDomesticTransfer(
       $grpc.ServiceCall call, $0.DomesticTransferRequest request);
   $async.Future<$0.TransferResponse> getTransferStatus(
@@ -2155,8 +2095,6 @@ abstract class BankingServiceBase extends $grpc.Service {
       $grpc.ServiceCall call, $0.VerifyBVNForSignupRequest request);
   $async.Future<$0.SignupIdentityVerificationResponse> verifyNINForSignup(
       $grpc.ServiceCall call, $0.VerifyNINForSignupRequest request);
-  $async.Future<$0.VirtualAccountResponse> createVirtualAccountForUser(
-      $grpc.ServiceCall call, $0.CreateVirtualAccountForUserRequest request);
   $async.Future<$0.TransferResponse> initiateUsernameTransfer(
       $grpc.ServiceCall call, $0.UsernameTransferRequest request);
   $async.Future<$0.TransferResponse> initiatePhoneTransfer(
@@ -2185,8 +2123,8 @@ abstract class BankingServiceBase extends $grpc.Service {
       $grpc.ServiceCall call, $0.InitiateProveKYCRequest request);
   $async.Future<$0.CompleteProveKYCResponse> completeProveKYC(
       $grpc.ServiceCall call, $0.CompleteProveKYCRequest request);
-  $async.Future<$0.VirtualAccountResponse> getPrimaryAccount(
-      $grpc.ServiceCall call, $0.GetPrimaryAccountRequest request);
+  $async.Future<$0.GetProveKYCStatusResponse> getProveKYCStatus(
+      $grpc.ServiceCall call, $0.GetProveKYCStatusRequest request);
   $async.Future<$0.FreezeAccountResponse> freezeAccount(
       $grpc.ServiceCall call, $0.FreezeAccountRequest request);
   $async.Future<$0.UnfreezeAccountResponse> unfreezeAccount(
@@ -2226,6 +2164,8 @@ abstract class BankingServiceBase extends $grpc.Service {
   $async.Future<$0.GetAccountWithTransactionsResponse>
       getAccountWithTransactions(
           $grpc.ServiceCall call, $0.GetAccountWithTransactionsRequest request);
+  $async.Future<$0.GetExternalBankAnalyticsResponse> getExternalBankAnalytics(
+      $grpc.ServiceCall call, $0.GetExternalBankAnalyticsRequest request);
   $async.Future<$0.RefreshAccountTransactionsResponse>
       refreshAccountTransactions(
           $grpc.ServiceCall call, $0.RefreshAccountTransactionsRequest request);
@@ -2235,6 +2175,8 @@ abstract class BankingServiceBase extends $grpc.Service {
       $grpc.ServiceCall call, $0.GetDepositStatusRequest request);
   $async.Future<$0.DepositsResponse> getUserDeposits(
       $grpc.ServiceCall call, $0.GetUserDepositsRequest request);
+  $async.Future<$0.AdminListDepositsResponse> adminListDeposits(
+      $grpc.ServiceCall call, $0.AdminListDepositsRequest request);
   $async.Future<$0.CancelDepositResponse> cancelDeposit(
       $grpc.ServiceCall call, $0.CancelDepositRequest request);
   $async.Future<$0.CalculateDepositFeeResponse> calculateDepositFee(

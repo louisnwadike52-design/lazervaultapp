@@ -1509,6 +1509,30 @@ const SkipKYCUpgradeRequest$json = const {
 
 /// Descriptor for `SkipKYCUpgradeRequest`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List skipKYCUpgradeRequestDescriptor = $convert.base64Decode('ChVTa2lwS1lDVXBncmFkZVJlcXVlc3QSHgoLc2tpcF90aWVyXzIYASABKAhSCXNraXBUaWVyMhIeCgtza2lwX3RpZXJfMxgCIAEoCFIJc2tpcFRpZXIz');
+@$core.Deprecated('Use syncVerifiedKYCTierRequestDescriptor instead')
+const SyncVerifiedKYCTierRequest$json = const {
+  '1': 'SyncVerifiedKYCTierRequest',
+  '2': const [
+    const {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'tier', '3': 2, '4': 1, '5': 14, '6': '.pb.KYCTier', '10': 'tier'},
+    const {'1': 'source', '3': 3, '4': 1, '5': 9, '10': 'source'},
+  ],
+};
+
+/// Descriptor for `SyncVerifiedKYCTierRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List syncVerifiedKYCTierRequestDescriptor = $convert.base64Decode('ChpTeW5jVmVyaWZpZWRLWUNUaWVyUmVxdWVzdBIXCgd1c2VyX2lkGAEgASgJUgZ1c2VySWQSHwoEdGllchgCIAEoDjILLnBiLktZQ1RpZXJSBHRpZXISFgoGc291cmNlGAMgASgJUgZzb3VyY2U=');
+@$core.Deprecated('Use syncVerifiedKYCTierResponseDescriptor instead')
+const SyncVerifiedKYCTierResponse$json = const {
+  '1': 'SyncVerifiedKYCTierResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'current_tier', '3': 2, '4': 1, '5': 14, '6': '.pb.KYCTier', '10': 'currentTier'},
+    const {'1': 'message', '3': 3, '4': 1, '5': 9, '10': 'message'},
+  ],
+};
+
+/// Descriptor for `SyncVerifiedKYCTierResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List syncVerifiedKYCTierResponseDescriptor = $convert.base64Decode('ChtTeW5jVmVyaWZpZWRLWUNUaWVyUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2VzcxIuCgxjdXJyZW50X3RpZXIYAiABKA4yCy5wYi5LWUNUaWVyUgtjdXJyZW50VGllchIYCgdtZXNzYWdlGAMgASgJUgdtZXNzYWdl');
 @$core.Deprecated('Use skipKYCUpgradeResponseDescriptor instead')
 const SkipKYCUpgradeResponse$json = const {
   '1': 'SkipKYCUpgradeResponse',

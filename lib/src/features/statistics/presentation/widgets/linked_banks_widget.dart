@@ -465,13 +465,13 @@ class _BankAccountItem extends StatelessWidget {
                         Container(
                           padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 1.h),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                            color: const Color(0xFF3B82F6).withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(4.r),
                           ),
                           child: Text(
                             'Default',
                             style: GoogleFonts.inter(
-                              color: const Color(0xFF10B981),
+                              color: const Color(0xFF3B82F6),
                               fontSize: 9.sp,
                               fontWeight: FontWeight.w600,
                             ),
@@ -500,19 +500,44 @@ class _BankAccountItem extends StatelessWidget {
                 child: CircularProgressIndicator(
                   strokeWidth: 1.5,
                   valueColor: const AlwaysStoppedAnimation<Color>(
-                    Color(0xFF10B981),
+                    Color(0xFF3B82F6),
                   ),
                 ),
               )
             else
-              Text(
-                CurrencySymbols.formatAmount(account.lastKnownBalance),
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+              Builder(builder: (_) {
+                // LIVE-ONLY: show a figure only when this session's Mono
+                // read landed (minutes-fresh) — never a DB cache as truth.
+                final fresh = account.balanceUpdatedAt != null &&
+                    DateTime.now()
+                            .difference(account.balanceUpdatedAt!)
+                            .inMinutes <
+                        3;
+                if (fresh) {
+                  return Text(
+                    CurrencySymbols.formatAmount(account.lastKnownBalance),
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  );
+                }
+                return Row(mainAxisSize: MainAxisSize.min, children: [
+                  SizedBox(
+                    width: 10.w,
+                    height: 10.w,
+                    child: const CircularProgressIndicator(
+                        strokeWidth: 1.5, color: Color(0xFF9CA3AF)),
+                  ),
+                  SizedBox(width: 6.w),
+                  Text(
+                    'Fetching balance…',
+                    style: GoogleFonts.inter(
+                        color: const Color(0xFF6B7280), fontSize: 11.sp),
+                  ),
+                ]);
+              }),
           ],
         ),
       ),
