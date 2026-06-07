@@ -146,6 +146,8 @@ class _StatisticsState extends State<Statistics> {
   bool _includeExternalBanks = true; // Track external banks filter state
   StatisticsSource _statsSource = StatisticsSource.both; // 3-way source filter
   String? _selectedBankId; // null = ALL linked banks (when external in scope)
+  ExternalDataStatus _externalStatus = ExternalDataStatus.notApplicable;
+  String? _externalError;
   String _userId = '';
   String _accessToken = '';
 
@@ -256,11 +258,14 @@ class _StatisticsState extends State<Statistics> {
           // Sync source filter state
           if (_includeExternalBanks != state.includeExternalBanks ||
               _statsSource != state.source ||
-              _selectedBankId != state.selectedBankAccountId) {
+              _selectedBankId != state.selectedBankAccountId ||
+              _externalStatus != state.externalStatus) {
             setState(() {
               _includeExternalBanks = state.includeExternalBanks;
               _statsSource = state.source;
               _selectedBankId = state.selectedBankAccountId;
+              _externalStatus = state.externalStatus;
+              _externalError = state.externalError;
             });
           }
         }
@@ -308,7 +313,11 @@ class _StatisticsState extends State<Statistics> {
                   // LazerVault wallet only / external banks only / combined —
                   // plus, when banks are in scope, All-banks vs one linked bank.
                   _buildSourceFilterBar(),
-                  SizedBox(height: 16.h),
+                  SizedBox(height: 12.h),
+
+                  // Honesty signal: when bank data couldn't be fetched from
+                  // Mono, say so (with Retry) instead of rendering fake zeros.
+                  _buildExternalStatusNotice(),
 
                   // ==================== LINKED BANKS + CREDIT (TOP) ====================
                   // Linking is the gateway to every external-bank number below,
@@ -321,39 +330,47 @@ class _StatisticsState extends State<Statistics> {
                   _buildCreditScoreCTA(),
                   SizedBox(height: 16.h),
 
-                  // ==================== OVERVIEW SECTION ====================
-                  _buildSectionHeader('Overview', trailing: _buildScopeBadge()),
-                  SizedBox(height: 12.h),
-                  _buildQuickStats(state),
-                  SizedBox(height: 12.h),
-                  _buildPerformanceAlert(state),
-                  SizedBox(height: 16.h),
-
-                  // ==================== INSIGHTS SECTION ====================
-                  _buildSectionHeader('Insights'),
-                  SizedBox(height: 12.h),
-                  _buildFinancialHealthScore(state),
-                  SizedBox(height: 12.h),
-                  _buildCashFlowInsights(state),
-                  SizedBox(height: 16.h),
-
-                  // ==================== QUICK ACTIONS SECTION ====================
+                  // ==================== QUICK ACTIONS SECTION (always) ========
                   _buildSectionHeader('Quick Actions'),
                   SizedBox(height: 12.h),
                   _buildFeatureGrid(state),
                   SizedBox(height: 16.h),
 
-                  // ==================== ANALYTICS SECTION ====================
-                  _buildSectionHeader('Analytics', trailing: _buildPeriodSelector()),
-                  SizedBox(height: 12.h),
-                  _buildSpendingChart(state),
-                  SizedBox(height: 12.h),
-                  _buildMonthlyTrendChart(state),
-                  SizedBox(height: 16.h),
+                  // Metrics below depend on real transaction data. For a
+                  // BANK-ONLY scope whose data couldn't be read, we already
+                  // show the notice above and SKIP the metric sections rather
+                  // than render misleading zeros/scores.
+                  if (!_bankScopeDataMissing) ...[
+                    // ================ OVERVIEW SECTION ================
+                    _buildSectionHeader('Overview', trailing: _buildScopeBadge()),
+                    SizedBox(height: 12.h),
+                    _buildQuickStats(state),
+                    SizedBox(height: 12.h),
+                    _buildPerformanceAlert(state),
+                    SizedBox(height: 16.h),
 
-                  // ==================== CATEGORY BREAKDOWN SECTION ====================
-                  _buildCategoryAnalysisSection(state),
-                  SizedBox(height: 16.h),
+                    // ================ INSIGHTS SECTION ================
+                    _buildSectionHeader('Insights'),
+                    SizedBox(height: 12.h),
+                    _buildFinancialHealthScore(state),
+                    SizedBox(height: 12.h),
+                    _buildCashFlowInsights(state),
+                    SizedBox(height: 16.h),
+                  ],
+
+                  if (!_bankScopeDataMissing) ...[
+                    // ================ ANALYTICS SECTION ================
+                    _buildSectionHeader('Analytics', trailing: _buildPeriodSelector()),
+                    SizedBox(height: 12.h),
+                    _buildSpendingChart(state),
+                    SizedBox(height: 12.h),
+                    _buildMonthlyTrendChart(state),
+                    SizedBox(height: 16.h),
+
+                    // ============ CATEGORY BREAKDOWN SECTION ============
+                    _buildCategoryAnalysisSection(state),
+                    SizedBox(height: 16.h),
+                  ],
 
                   // ==================== MANAGEMENT SECTION ====================
                   _buildManagementSection(state),
@@ -1039,6 +1056,21 @@ class _StatisticsState extends State<Statistics> {
         if (_selectedBankId == id) return;
         setState(() => _selectedBankId = id);
         context.read<StatisticsCubit>().changeBank(id);
+        // Live balance for the picked bank, straight from Mono (the Linked
+        // Banks rows reflect it). 'All banks' refreshes every stale account.
+        if (id == null) {
+          context.read<OpenBankingCubit>().autoRefreshStaleBalances(
+                userId: _userId,
+                accessToken: _accessToken,
+                staleAfter: Duration.zero,
+              );
+        } else if (_userId.isNotEmpty) {
+          context.read<OpenBankingCubit>().refreshBalance(
+                accountId: id,
+                userId: _userId,
+                accessToken: _accessToken,
+              );
+        }
       },
       child: Container(
         margin: EdgeInsets.only(right: 8.w),
@@ -1072,6 +1104,123 @@ class _StatisticsState extends State<Statistics> {
         ),
       ),
     );
+  }
+
+  /// True when the active scope is BANK-ONLY and that bank data could not be
+  /// read (failed sync/fetch) OR is genuinely empty — so the metric sections
+  /// must be skipped instead of rendering misleading zeros. (Combined scope
+  /// keeps showing the real wallet numbers + a banner.)
+  bool get _bankScopeDataMissing =>
+      _statsSource == StatisticsSource.bank &&
+      (_externalStatus == ExternalDataStatus.unavailable ||
+          _externalStatus == ExternalDataStatus.empty);
+
+  /// Honest external-data notice. Renders nothing when external is ready or
+  /// out of scope; an amber retry card when unavailable; a neutral empty card
+  /// when the scope has no synced activity. For combined scope an unavailable
+  /// external shows a slim "showing LazerVault only" banner.
+  Widget _buildExternalStatusNotice() {
+    if (!_statsSource.includesExternal) return const SizedBox.shrink();
+
+    final bankLabel = () {
+      if (_selectedBankId == null) return 'your banks';
+      final banks = context.read<OpenBankingCubit>().linkedAccounts;
+      for (final b in banks) {
+        if (b.id == _selectedBankId) return b.bankName;
+      }
+      return 'this bank';
+    }();
+
+    Widget card({
+      required IconData icon,
+      required Color color,
+      required String title,
+      required String body,
+      bool showRetry = false,
+    }) {
+      return Container(
+        margin: EdgeInsets.fromLTRB(16.w, 0, 16.w, 12.h),
+        padding: EdgeInsets.all(14.w),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, color: color, size: 20.sp),
+            SizedBox(width: 10.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w600)),
+                  SizedBox(height: 3.h),
+                  Text(body,
+                      style: GoogleFonts.inter(
+                          color: const Color(0xFF9CA3AF), fontSize: 11.5.sp, height: 1.4)),
+                ],
+              ),
+            ),
+            if (showRetry) ...[
+              SizedBox(width: 8.w),
+              GestureDetector(
+                onTap: () => context.read<StatisticsCubit>().refresh(),
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 7.h),
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Text('Retry',
+                      style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w700)),
+                ),
+              ),
+            ],
+          ],
+        ),
+      );
+    }
+
+    switch (_externalStatus) {
+      case ExternalDataStatus.unavailable:
+        if (_statsSource == StatisticsSource.both) {
+          return card(
+            icon: Icons.info_outline_rounded,
+            color: const Color(0xFFFB923C),
+            title: 'Showing LazerVault only',
+            body: _externalError ??
+                'We couldn\'t load $bankLabel right now. Pull to refresh to retry.',
+            showRetry: true,
+          );
+        }
+        return card(
+          icon: Icons.cloud_off_rounded,
+          color: const Color(0xFFEF4444),
+          title: 'Couldn\'t load $bankLabel',
+          body: _externalError ??
+              'We couldn\'t read transactions from $bankLabel. Your numbers aren\'t shown to avoid guessing.',
+          showRetry: true,
+        );
+      case ExternalDataStatus.empty:
+        return card(
+          icon: Icons.inbox_rounded,
+          color: const Color(0xFF6B7280),
+          title: 'No bank activity yet',
+          body: 'No synced transactions for $bankLabel in this period.',
+        );
+      case ExternalDataStatus.ready:
+      case ExternalDataStatus.notApplicable:
+        return const SizedBox.shrink();
+    }
   }
 
   /// Small read-only badge restating the active scope next to "Overview" —

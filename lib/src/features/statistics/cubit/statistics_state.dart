@@ -7,6 +7,25 @@ import '../../../generated/accounts.pb.dart' as accounts_pb;
 /// - [both]: LazerVault wallet + linked banks combined.
 enum StatisticsSource { lazervault, bank, both }
 
+/// Honesty signal for the external-bank leg of the analytics. The UI uses
+/// this to NEVER render fabricated metrics: it shows loading / retry / empty
+/// states instead of zeros when bank data could not be fetched from Mono.
+enum ExternalDataStatus {
+  /// Wallet-only source — external not in scope.
+  notApplicable,
+
+  /// External data loaded successfully and has activity.
+  ready,
+
+  /// External fetched fine but the selected scope has no synced transactions
+  /// in this window (genuine empty, not an error).
+  empty,
+
+  /// External could not be synced/fetched from Mono (provider error, sync
+  /// failure). Numbers that depend on it must NOT be shown as real.
+  unavailable,
+}
+
 extension StatisticsSourceX on StatisticsSource {
   /// Human label shown in the filter bottom sheet / header chip.
   String get label {
@@ -63,6 +82,10 @@ class StatisticsLoaded extends StatisticsState {
   // When external banks are in scope: null/empty = ALL linked banks
   // (default), otherwise the one linked-account id the numbers reflect.
   final String? selectedBankAccountId;
+  // Honesty signal for the external leg (see ExternalDataStatus).
+  final ExternalDataStatus externalStatus;
+  // Human-readable reason when externalStatus == unavailable.
+  final String? externalError;
 
   const StatisticsLoaded({
     required this.startDate,
@@ -76,6 +99,8 @@ class StatisticsLoaded extends StatisticsState {
     this.includeExternalBanks = true,
     this.source = StatisticsSource.both,
     this.selectedBankAccountId,
+    this.externalStatus = ExternalDataStatus.notApplicable,
+    this.externalError,
   });
 
   @override
@@ -91,6 +116,8 @@ class StatisticsLoaded extends StatisticsState {
         includeExternalBanks,
         source,
         selectedBankAccountId,
+        externalStatus,
+        externalError,
       ];
 
   /// Create a copy with updated fields
@@ -106,6 +133,8 @@ class StatisticsLoaded extends StatisticsState {
     bool? includeExternalBanks,
     StatisticsSource? source,
     String? selectedBankAccountId,
+    ExternalDataStatus? externalStatus,
+    String? externalError,
   }) {
     return StatisticsLoaded(
       startDate: startDate ?? this.startDate,
@@ -119,6 +148,8 @@ class StatisticsLoaded extends StatisticsState {
       includeExternalBanks: includeExternalBanks ?? this.includeExternalBanks,
       source: source ?? this.source,
       selectedBankAccountId: selectedBankAccountId ?? this.selectedBankAccountId,
+      externalStatus: externalStatus ?? this.externalStatus,
+      externalError: externalError ?? this.externalError,
     );
   }
 }

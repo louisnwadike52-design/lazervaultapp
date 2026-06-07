@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../generated/accounts.pb.dart' as accounts_pb;
 import '../../../generated/banking.pb.dart' as banking_pb;
@@ -124,15 +125,30 @@ class StatisticsCubit extends Cubit<StatisticsState> {
       final monthlyTrendsFuture = analyticsRepository.getMonthlyTrends(months: 6);
 
       // Freshness: incremental sync of all linked banks once per session
-      // before the first external-including load. Non-fatal.
+      // before the first external-including load. The sync OUTCOME drives the
+      // honesty signal below — a failed sync surfaces as 'unavailable', never
+      // as fabricated zeros.
+      bool syncFailedHard = false;
+      String? syncError;
       if (includesExternal && !_syncedThisSession && bankingDataSource != null && _userId.isNotEmpty) {
         try {
-          await bankingDataSource!
+          final res = await bankingDataSource!
               .syncAllAccountTransactions(userId: _userId, syncType: 'incremental')
               .timeout(const Duration(seconds: 25));
           _syncedThisSession = true;
-        } catch (_) {
-          // Last synced rows still serve; banks screen offers manual sync.
+          final relevant = _selectedBankAccountId == null
+              ? res.accounts
+              : res.accounts.where((a) => a.accountId == _selectedBankAccountId).toList();
+          if (relevant.isNotEmpty && relevant.every((a) => !a.success)) {
+            syncFailedHard = true;
+            syncError = relevant.first.error ?? 'Could not sync bank transactions.';
+          }
+        } on TimeoutException {
+          syncFailedHard = true;
+          syncError = 'Bank sync timed out. Pull to refresh to try again.';
+        } catch (e) {
+          syncFailedHard = true;
+          syncError = 'Could not reach your bank right now.';
         }
       }
 
@@ -159,18 +175,41 @@ class StatisticsCubit extends Cubit<StatisticsState> {
 
       // ---- External leg (banking-service, all banks or one) ----
       banking_pb.GetExternalBankAnalyticsResponse? external;
-      if (includesExternal && bankingDataSource != null && _userId.isNotEmpty) {
-        try {
-          final resp = await bankingDataSource!.getExternalBankAnalytics(
-            userId: _userId,
-            linkedAccountId: _selectedBankAccountId,
-            startDate: start,
-            endDate: end,
-          );
-          if (resp.success) external = resp;
-        } catch (_) {
-          // External unavailable — wallet leg (or zeros for bank-only)
-          // still renders; the banks section surfaces sync state.
+      var externalStatus = ExternalDataStatus.notApplicable;
+      String? externalError;
+      if (includesExternal) {
+        if (bankingDataSource == null || _userId.isEmpty) {
+          externalStatus = ExternalDataStatus.unavailable;
+          externalError = 'Bank data is not available right now.';
+        } else if (syncFailedHard) {
+          externalStatus = ExternalDataStatus.unavailable;
+          externalError = syncError;
+        } else {
+          try {
+            final resp = await bankingDataSource!.getExternalBankAnalytics(
+              userId: _userId,
+              linkedAccountId: _selectedBankAccountId,
+              startDate: start,
+              endDate: end,
+            );
+            if (resp.success) {
+              external = resp;
+              final hasActivity = resp.currentPeriod.transactionCount > 0 ||
+                  resp.currentPeriod.totalExpenses > 0 ||
+                  resp.currentPeriod.totalIncome > 0;
+              externalStatus = hasActivity
+                  ? ExternalDataStatus.ready
+                  : ExternalDataStatus.empty;
+            } else {
+              externalStatus = ExternalDataStatus.unavailable;
+              externalError = resp.errorMessage.isNotEmpty
+                  ? resp.errorMessage
+                  : 'Could not load bank analytics.';
+            }
+          } catch (e) {
+            externalStatus = ExternalDataStatus.unavailable;
+            externalError = 'Could not load bank analytics.';
+          }
         }
       }
 
@@ -209,6 +248,8 @@ class StatisticsCubit extends Cubit<StatisticsState> {
         includeExternalBanks: includesExternal,
         source: _source,
         selectedBankAccountId: _selectedBankAccountId,
+        externalStatus: externalStatus,
+        externalError: externalError,
       ));
     } catch (e, stackTrace) {
       if (isClosed) return;
