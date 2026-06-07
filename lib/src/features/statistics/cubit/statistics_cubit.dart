@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../generated/accounts.pb.dart' as accounts_pb;
 import '../../../generated/banking.pb.dart' as banking_pb;
@@ -52,6 +53,14 @@ class StatisticsCubit extends Cubit<StatisticsState> {
   /// User id used for banking-service calls; set once by the screen.
   // ignore: avoid_setters_without_getters
   set userId(String id) => _userId = id;
+
+  /// Test-only: set source without triggering the debounced reload.
+  @visibleForTesting
+  void changeSourceForTest(StatisticsSource s) => _source = s;
+
+  /// Test-only: set bank scope without triggering the debounced reload.
+  @visibleForTesting
+  void changeBankForTest(String? id) => _selectedBankAccountId = id;
 
   @override
   Future<void> close() {
